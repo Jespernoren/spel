@@ -8,6 +8,13 @@ import {
 } from '../../delat/extra.js';
 import { BACKAR, BANBREDD, byggBana, fysik, botStyr, nyAkare, markY, cxVid, riktning, bankVid } from './bana.js';
 import { skapaAkare } from './akare.js';
+import { laddaAkareModell, skapaAkare3D } from './akare3d.js';
+
+// Riktig 3D-figur om den går att ladda, annars klossåkaren (akare.js)
+let figur3D = false;
+if (new URLSearchParams(location.search).get('figur') !== 'kloss') {
+  try { figur3D = await laddaAkareModell('modeller/skidakare.glb'); } catch (e) { console.warn('Kunde inte ladda 3D-figuren, använder klossåkaren', e); }
+}
 
 // ================= JUSTERBARA VÄRDEN =================
 const SPEL_ID = 'slalom';
@@ -505,7 +512,7 @@ function uppdateraKonfetti(dt) {
 // ---------- Åkarna ----------
 const skuggGeo = new THREE.CircleGeometry(0.75, 20);
 function skapaForare(def, nr) {
-  const modell = skapaAkare({ jacka: def.farg, byxor: def.byxor, hjalm: def.hjalm, skidor: def.skidor, nummer: nr });
+  const modell = (figur3D ? skapaAkare3D : skapaAkare)({ jacka: def.farg, byxor: def.byxor, hjalm: def.hjalm, skidor: def.skidor, nummer: nr });
   scene.add(modell.grupp);
   const skugga = new THREE.Mesh(skuggGeo, new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.25, depthWrite: false }));
   scene.add(skugga);
@@ -559,6 +566,12 @@ let backeId = 'gron';
 let racetid = 0, nedrakning = 0, efterMal = 0, malOrdning = [];
 let kamSkak = 0;
 let haller = 0, forraPump = false; // hur länge mellanslag hållits
+const arTraning = () => backeId === 'traning';
+const aktiva = () => (arTraning() ? [forare[0]] : forare); // i träningen åker du ensam
+let tidsSkala = 1;                                       // slow motion före hoppen i träningen
+const coach = { steg: '', sagt: new Set(), portar: 0, pumpTid: 0, hopp: 0, klarat: { svang: false, pumpa: false, hoppa: false } };
+// Tävlingarna låses upp efter träningen (eller om man redan har tävlat förut)
+const TRANAD = () => hamta('slalom:tranad', false) || Number(localStorage.getItem('rekord:slalom') || 0) > 0;
 
 function nollstall() {
   const b = varld.b;
@@ -566,8 +579,14 @@ function nollstall() {
   forare.forEach((f, i) => {
     f.s = nyAkare(b, cxVid(b, 2) + STARTSPAR[i], 2);
     f.run = { tid: 0, missar: 0, bonus: 0, landningar: 0, nastaPort: 0, klar: false, total: null, popFel: 1, hopp: -1, krock: -9, landa: 0, popVisa: 0 };
-    f.motstand = f.spelare ? 1 : sv[i - 1];
+    f.motstand = f.spelare ? 1 : (sv ? sv[i - 1] : 1);
+    const syns = !arTraning() || !!f.spelare;
+    f.modell.grupp.visible = syns; f.skugga.visible = syns;
+    f.s.d = syns ? f.s.d : -50; // ur vägen
   });
+  Object.assign(coach, { steg: '', sagt: new Set(), portar: 0, pumpTid: 0, hopp: 0, klarat: { svang: false, pumpa: false, hoppa: false } });
+  tidsSkala = 1;
+  prickar.forEach((p, i) => (p.style.display = !arTraning() || i === 0 ? '' : 'none'));
   for (const p of varld.portar) p.stolpar.forEach((st) => (st.vingla = 0));
   racetid = 0; nedrakning = 3.5; efterMal = 0; malOrdning = [];
   konfetti.splice(0).forEach((m) => scene.remove(m));
@@ -595,20 +614,26 @@ const MEDALJ = ['', '🥇', '🥈', '🥉', '🎿'];
 function visaStartmeny() {
   lage = 'meny';
   const t = tider(), p = platser();
-  const html = `<div class="backval">${Object.entries(BACKAR).map(([id, B]) => `
-      <button class="backe" data-id="${id}">
+  const tranad = TRANAD();
+  const html = `<button class="backe traning" data-id="traning">
+        <span class="symbol">🎓</span>
+        <span><b>Träningsåk ${tranad ? '✅' : '– börja här!'}</b><span>Lär dig svänga, pumpa och hoppa. Inga motståndare.</span></span>
+      </button>
+    <div class="backval">${Object.entries(BACKAR).filter(([, B]) => !B.dold).map(([id, B]) => `
+      <button class="backe${tranad ? '' : ' last'}" data-id="${id}" ${tranad ? '' : 'disabled'}>
         <span class="symbol">${B.ikon}</span>
         <span><b>${B.namn}</b><span>${bana(id).hopp.length} hopp · ${bana(id).portar.length} portar · ${t[id] != null ? 'Bästa ' + tidText(t[id]) : 'Inte åkt än'}</span></span>
-        <span class="medalj">${p[id] ? MEDALJ[p[id]] : ''}</span>
+        <span class="medalj">${tranad ? (p[id] ? MEDALJ[p[id]] : '') : '🔒'}</span>
       </button>`).join('')}</div>
+    ${tranad ? '' : '<div class="last-text">🔒 Klara träningsåket så låses tävlingarna upp!</div>'}
     <div class="hjalp">Tävla mot <b>Frost-Fia</b>, <b>Turbo-Tage</b> och <b>Sigge Snabb</b>!<br>
     <b>Höger hand:</b> piltangenterna ◀ ▶ svänger, ▼ hukar<br>
     <b>Vänster hand:</b> MELLANSLAG<br>
     <b>HÅLL ${KNAPP}</b> på de <span style="color:#7cc4ff">blå</span> partierna = pumpa, släpp uppför<br>
     <b>SLÄPP</b> vid blå linjen = perfekt pop · i luften: tryck igen = 360 · Esc = paus</div>`;
   const m = visaMeny({ titel: '⛷️ Skicross', text: 'Välj backe', html, knappar: [{ text: '🏠 Till spelhallen', gor: tillHallen }] });
-  m.element.querySelectorAll('.backe').forEach((b) => b.addEventListener('click', () => { m.stang(); startaBacke(b.dataset.id); }));
-  setTimeout(() => m.element.querySelector('.backe')?.focus(), 60);
+  m.element.querySelectorAll('.backe').forEach((b) => b.addEventListener('click', () => { if (b.disabled) return; m.stang(); startaBacke(b.dataset.id); }));
+  setTimeout(() => m.element.querySelector(tranad ? '.backval .backe' : '.backe.traning')?.focus(), 60);
   if (BOT) { m.stang(); startaBacke(params.get('backe') || 'gron'); }
 }
 
@@ -642,6 +667,7 @@ function resultatLista() {
 }
 
 function visaResultat() {
+  if (arTraning()) return visaTraningsResultat();
   lage = 'resultat';
   const B = BACKAR[backeId];
   const lista = resultatLista();
@@ -673,6 +699,69 @@ function visaResultat() {
   });
 }
 
+function visaTraningsResultat() {
+  lage = 'resultat';
+  const k = coach.klarat;
+  const allt = k.svang && k.pumpa && k.hoppa;
+  const redanTranad = TRANAD();
+  if (allt) spara('slalom:tranad', true);
+  const rad = (ok, text, tips) => `<tr><td>${ok ? '✅' : '⬜'} ${text}</td><td>${ok ? 'Klart!' : tips}</td></tr>`;
+  const html = `
+    <div style="font-size:64px;line-height:1">${allt ? '🏆' : '💪'}</div>
+    <p>${allt ? (redanTranad ? 'Snyggt åkt!' : 'Du är redo att tävla! Tävlingarna är upplåsta.') : 'Nästan! Träna lite till.'}</p>
+    <table class="resultat">
+      ${rad(k.svang, 'Svänga genom portar', 'Styr med ◀ ▶')}
+      ${rad(k.pumpa, 'Pumpa i kullarna', `Håll ${KNAPP} från blå linjen`)}
+      ${rad(k.hoppa, 'Poppa vid hoppet', 'Släpp vid blå linjen')}
+    </table>`;
+  ljud.tala(allt ? 'Bra jobbat! Nu är du redo att tävla!' : 'Nästan! Träna lite till.');
+  visaMeny({
+    titel: '🎓 Träningsåk', html,
+    knappar: allt
+      ? [{ text: '🏁 Börja tävla!', primar: true, gor: visaStartmeny }, { text: '↻ Träna igen', gor: () => startaBacke('traning') }, { text: '🏠 Till spelhallen', gor: tillHallen }]
+      : [{ text: '↻ Träna igen', primar: true, gor: () => startaBacke('traning') }, { text: '⛰ Till menyn', gor: visaStartmeny }],
+  });
+}
+
+// ---------- Coachen i träningsåket ----------
+const coachRuta = el('div', 'coach');
+document.body.appendChild(coachRuta);
+function uppdateraCoach(dt) {
+  const visas = arTraning() && (lage === 'akning' || lage === 'nedrakning');
+  coachRuta.style.display = visas ? '' : 'none';
+  tidsSkala = 1;
+  if (!visas) return;
+  const b = varld.b, s = spelaren().s, k = coach.klarat;
+  const typ = b.TYP[Math.max(0, Math.round(s.d / 0.5))];
+  const nasta = b.hopp[s.nastaHopp];
+  const kvar = nasta ? nasta.lapp - s.d : 999;
+  let steg = 'svang';
+  if (s.luft && s.franHopp) steg = 'luft';
+  else if (nasta && kvar < 32 && kvar > -1) steg = 'hoppa';
+  else if (typ === 'vagor') steg = 'pumpa';
+  else if (s.d > 125) steg = 'mellan';
+  // slow motion när man närmar sig hoppkanten
+  if (steg === 'hoppa' && kvar < 11 && !s.luft) tidsSkala = 0.45;
+  // räkna framsteg
+  if (steg === 'pumpa' && s.pumpBra > 0) coach.pumpTid += dt;
+  if (!k.pumpa && coach.pumpTid > 1.5) { k.pumpa = true; visa('Bra pumpat! ✅', { klass: 'gron', liten: true }); ljud.tala('Bra pumpat!'); }
+  if (!k.svang && coach.portar >= 3) { k.svang = true; visa('Bra svängt! ✅', { klass: 'gron', liten: true }); ljud.tala('Bra svängt!'); }
+  const texter = {
+    svang: [`Styr med <b>◀ ▶</b> genom portarna`, 'Styr med pilarna genom portarna'],
+    mellan: ['Snart kommer kullar…', ''],
+    pumpa: [`<b>HÅLL ${KNAPP}</b> från den blå linjen, <b>släpp</b> uppför`, 'Håll inne nerför kullen, släpp uppför'],
+    hoppa: [`<b>HÅLL ${KNAPP}</b> … <b>SLÄPP</b> precis vid blå linjen!`, 'Håll inne, och släpp precis vid den blå linjen!'],
+    luft: ['Bra! Landa i backen ⬇', ''],
+  };
+  if (steg !== coach.steg) {
+    coach.steg = steg;
+    if (texter[steg][1] && !coach.sagt.has(steg)) { coach.sagt.add(steg); ljud.tala(texter[steg][1]); }
+  }
+  const bock = (ok) => (ok ? '✅' : '⬜');
+  coachRuta.innerHTML = `<div class="coach-text">🎓 ${texter[steg][0]}</div>
+    <div class="coach-lista">${bock(k.svang)} Svänga · ${bock(k.pumpa)} Pumpa · ${bock(k.hoppa)} Hoppa</div>`;
+}
+
 // ---------- Händelser från fysiken (bara din åkare visar text) ----------
 const logg = [];
 function hantera(f, e) {
@@ -682,6 +771,10 @@ function hantera(f, e) {
     sprutaSno(s.x, markY(b, s.x, s.d), -s.d, e.luftTid > 0.5 ? 40 : 12, 1.2, 0, 2);
     f.run.landa = Math.max(f.run.landa, Math.min(1, e.luftTid * 0.6));
     if (e.kvalitet === 'perfekt') { f.run.bonus += LANDNING_BONUS; f.run.landningar++; }
+    if (f.spelare && arTraning() && e.franHopp && (e.kvalitet === 'perfekt' || e.kvalitet === 'mjuk') && !coach.klarat.hoppa) {
+      coach.hopp++;
+      if (coach.hopp >= 1) { coach.klarat.hoppa = true; setTimeout(() => ljud.tala('Perfekt hopp!'), 400); }
+    }
     if (e.trick === 'klar') f.run.bonus += TRICK_BONUS;
   }
   if (e.typ === 'pop') f.run.popVisa = 0.35;
@@ -744,7 +837,7 @@ function indata(f, dt, forsta) {
     f.run.popFel = lo + Math.random() * (hi - lo);
   }
   let undvik = 0;
-  for (const o of forare) {
+  for (const o of aktiva()) {
     if (o === f || o.run.klar) continue;
     const fram = o.s.d - s.d, dx = s.x - o.s.x;
     if (fram > 0 && fram < 7 && Math.abs(dx) < 1.4) undvik += (dx >= 0 ? 1 : -1) * 1.6;
@@ -795,7 +888,7 @@ function uppdatera(dt) {
   if (lage === 'akning' || lage === 'mal') {
     racetid += dt;
     const n = Math.max(1, Math.ceil(dt / (1 / 120)));
-    for (const f of forare) {
+    for (const f of aktiva()) {
       const forraD = f.s.d;
       for (let k = 0; k < n; k++) {
         const in_ = indata(f, dt, k === 0);
@@ -808,7 +901,8 @@ function uppdatera(dt) {
       const p = V.portar[f.run.nastaPort];
       if (p && forraD < p.d && s.d >= p.d) {
         const tagen = Math.abs(s.x - p.x) <= p.bredd / 2;
-        if (!tagen) f.run.missar++;
+        if (!tagen && !arTraning()) f.run.missar++;
+        if (tagen && f.spelare) coach.portar++;
         if (f.spelare) {
           if (tagen) ljud.ton(p.farg === 0xe5383b ? 784 : 988, 0.12, 'triangle', 0.18);
           else { visa(`Missad port! +${STRAFF_MISS} s`, { klass: 'rod', liten: true }); ljud.ton(160, 0.35, 'sawtooth', 0.15, -60); }
@@ -847,7 +941,7 @@ function uppdatera(dt) {
     }
 
     // krockar mellan åkare
-    for (let i = 0; i < forare.length; i++) for (let j = i + 1; j < forare.length; j++) {
+    if (!arTraning()) for (let i = 0; i < forare.length; i++) for (let j = i + 1; j < forare.length; j++) {
       const a = forare[i], c = forare[j];
       if (a.run.klar || c.run.klar) continue;
       const dd = a.s.d - c.s.d, dx = a.s.x - c.s.x;
@@ -869,8 +963,8 @@ function uppdatera(dt) {
 
     if (lage === 'mal') {
       efterMal += dt;
-      if (efterMal > 1.8 && (malOrdning.length === forare.length || efterMal > VANTA_EFTER_MAL)) {
-        forare.forEach((f) => { if (!f.run.klar) { f.run.klar = true; f.run.total = f.run.tid + (b.malD - f.s.d) / Math.max(8, f.s.fart) + f.run.missar * STRAFF_MISS - f.run.bonus; } });
+      if (efterMal > 1.8 && (malOrdning.length === aktiva().length || efterMal > VANTA_EFTER_MAL)) {
+        aktiva().forEach((f) => { if (!f.run.klar) { f.run.klar = true; f.run.total = f.run.tid + (b.malD - f.s.d) / Math.max(8, f.s.fart) + f.run.missar * STRAFF_MISS - f.run.bonus; } });
         visaResultat();
       }
     }
@@ -884,7 +978,7 @@ function uppdatera(dt) {
 
   // --- åkarna: modell, skugga, snöspray ---
   const ar = lage === 'akning' || lage === 'mal';
-  for (const f of forare) {
+  for (const f of aktiva()) {
     const s = f.s;
     const mark = markY(b, s.x, s.d);
     const rikt = riktning(b, s.d);
@@ -979,7 +1073,7 @@ function uppdatera(dt) {
     popMatare.classList.toggle('haller', !!s.pumpar && !s.popHopp);
   }
   // pump-tips på kullarna
-  const iKullar = lage === 'akning' && !visaPop && !s.luft && b.TYP[Math.round(s.d / 0.5)] === 'vagor';
+  const iKullar = lage === 'akning' && !arTraning() && !visaPop && !s.luft && b.TYP[Math.round(s.d / 0.5)] === 'vagor';
   pumpTips.style.display = iKullar ? '' : 'none';
   kontrollSkylt.style.display = lage === 'nedrakning' || (lage === 'akning' && racetid < 3) ? '' : 'none';
   if (iKullar) {
@@ -987,9 +1081,11 @@ function uppdatera(dt) {
     pumpTips.textContent = s.pumpBra > 0 ? '⬇ PUMPA! +fart' : s.pumpBra < 0 ? '⬆ släpp uppför!' : `Håll ${KNAPP} från blå linjen`;
   }
 
+  uppdateraCoach(dt);
+
   // --- namnskyltar över datoråkarna ---
   for (const f of forare) {
-    const syns = !f.spelare && (ar || lage === 'nedrakning') && Math.abs(f.s.d - s.d) < 70;
+    const syns = !f.spelare && !arTraning() && (ar || lage === 'nedrakning') && Math.abs(f.s.d - s.d) < 70;
     if (syns) {
       projicera.set(f.s.x, f.s.y + 2.3, -f.s.d).project(camera);
       const pa = projicera.z < 1 && Math.abs(projicera.x) < 1.1 && Math.abs(projicera.y) < 1.1;
@@ -1005,6 +1101,7 @@ function uppdatera(dt) {
   if (kontroll._touchElement) kontroll._touchElement.style.visibility = (lage === 'akning' || lage === 'nedrakning') ? 'visible' : 'hidden';
   const ordning = [...forare].sort((a, c) => (a.run.klar && c.run.klar ? malOrdning.indexOf(a) - malOrdning.indexOf(c) : a.run.klar ? -1 : c.run.klar ? 1 : c.s.d - a.s.d));
   const plats = ordning.indexOf(jag) + 1;
+  hudPlats.style.display = arTraning() ? 'none' : '';
   hudPlats.innerHTML = `<small>plats</small><span class="p${plats}">${placeringText(plats)}</span>`;
   const totalNu = jag.run.klar ? jag.run.total : jag.run.tid + jag.run.missar * STRAFF_MISS - jag.run.bonus;
   hudTid.innerHTML = `<small>tid</small>${tidText(totalNu)}`;
@@ -1015,7 +1112,7 @@ function uppdatera(dt) {
 startaLoop((dt, t) => {
   spelTid = t;
   const steg = BOT ? Number(params.get('snabb') || 1) : 1;
-  for (let i = 0; i < steg; i++) if (lage !== 'paus' && varld) uppdatera(dt);
+  for (let i = 0; i < steg; i++) if (lage !== 'paus' && varld) uppdatera(dt * tidsSkala);
   if (meddelandeTimer > 0) { meddelandeTimer -= dt; if (meddelandeTimer <= 0) meddelande.style.opacity = 0; }
   renderer.render(scene, camera);
 });

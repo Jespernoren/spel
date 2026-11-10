@@ -40,6 +40,13 @@ const LUTNING = { platt: 0.1, backe: 0.2, brant: 0.38, vagor: 0.2, sving: 0.18, 
 
 // medalj = [guld, silver, brons] i sekunder
 export const BACKAR = {
+  // Träningsbacken: rak, lugn, inga motståndare. Portar bara i början (portSlut).
+  traning: {
+    namn: 'Träningsbacken', ikon: '🎓', lutFaktor: 0.55, portbredd: 6.5, portSidled: 1.8, portAvstand: 22, portSlut: 115, dold: true,
+    medalj: [0, 0, 0],
+    segment: [['platt', 20], ['backe', 80], ['platt', 10], ['vagor', 78, 0.5, 13], ['backe', 25], ['hopp', 'liten'], ['backe', 30],
+      ['hopp', 'liten'], ['backe', 25], ['vagor', 52, 0.5, 13], ['backe', 15], ['hopp', 'liten'], ['mal', 50]],
+  },
   gron: {
     namn: 'Gröna backen', ikon: '🟢', lutFaktor: 0.6, portbredd: 5.2, portSidled: 2.2, portAvstand: 26,
     medalj: [0, 0, 0],
@@ -202,6 +209,7 @@ function byggPortar(bana) {
   const portar = [];
   let sida = 1;
   for (let d = 40; d < bana.malD - 10; d += B.portAvstand) {
+    if (B.portSlut && d > B.portSlut) break;
     // inga portar i hopp eller precis före dem
     const iHopp = bana.hopp.some((h) => d > h.start - 12 && d < h.slut + 4);
     if (iHopp) continue;
