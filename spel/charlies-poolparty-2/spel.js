@@ -13,7 +13,9 @@ const ACC_LUFT = 0.6;       // ... och i luften
 const HOPP = 11.8;          // hoppkraft (håll inne hopp = högre hopp)
 const RING_STUDS = 19;      // hur högt badringarna studsar
 const KRABB_STUDS = 10;     // studs när man hoppar på en krabba
-const KNUFF = 6;            // hur hårt krabbor knuffar (ingen skada, bara knuff)
+const KNUFF = 4.5;          // hur hårt krabbor knuffar (ingen skada, bara knuff)
+const MUSIK_VOLYM = 0.35;   // bakgrundsmusikens volym (0 = tyst, 1 = full)
+const MUSIK_FART = 1.3;     // högre = lugnare musik
 const KOYOTE = 8;           // bildrutor man får hoppa efter att ha gått över en kant
 const HOPP_BUFFERT = 9;     // bildrutor ett för tidigt hopp-tryck "kommer ihåg"
 const SPELID = 'charlies-poolparty-2';
@@ -165,22 +167,30 @@ function skapaFraga(typ, niva) {
 // =============================================================
 //  LJUD (syntetiskt, inga filer behövs)
 // =============================================================
+let musikPa = true;
+try { musikPa = localStorage.getItem('charlies-poolparty-2:musik') !== 'av'; } catch (e) { }
 let ac = null, ljudPa = true, musikTimer = null, musikSteg = 0, musikNasta = 0, musikLat = null, musikGain = null;
 function initLjud() {
   if (!ac) {
-    try { ac = new (window.AudioContext || window.webkitAudioContext)(); musikGain = ac.createGain(); musikGain.gain.value = 0.5; musikGain.connect(ac.destination); } catch (e) { ac = null; }
+    try {
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      // musiken går genom ett mjukt filter så den inte blir pipig
+      const filter = ac.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 1500;
+      musikGain = ac.createGain(); musikGain.gain.value = MUSIK_VOLYM;
+      musikGain.connect(filter); filter.connect(ac.destination);
+    } catch (e) { ac = null; }
   }
   if (ac && ac.state === 'suspended') ac.resume();
 }
 const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
-function ton(frekv, langd, typ = 'square', vol = 0.06, till = null, start = 0, mal = null) {
+function ton(frekv, langd, typ = 'square', vol = 0.06, till = null, start = 0, mal = null, attack = 0.01) {
   if (!ac || !ljudPa) return;
   const t = ac.currentTime + start;
   const o = ac.createOscillator(), g = ac.createGain();
   o.type = typ; o.frequency.setValueAtTime(frekv, t);
   if (till) o.frequency.exponentialRampToValueAtTime(till, t + langd);
   g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+  g.gain.exponentialRampToValueAtTime(vol, t + attack);
   g.gain.exponentialRampToValueAtTime(0.0001, t + langd);
   o.connect(g); g.connect(mal || ac.destination);
   o.start(t); o.stop(t + langd + 0.02);
@@ -196,8 +206,8 @@ function brus(langd, vol = 0.08, start = 0) {
 }
 function ljud(typ) {
   switch (typ) {
-    case 'hopp': ton(520, 0.14, 'square', 0.05, 900); break;
-    case 'anka': ton(988, 0.08, 'square', 0.05); ton(1319, 0.12, 'square', 0.05, null, 0.07); break;
+    case 'hopp': ton(520, 0.14, 'triangle', 0.07, 900); break;
+    case 'anka': ton(988, 0.08, 'triangle', 0.08); ton(1319, 0.14, 'triangle', 0.08, null, 0.07); break;
     case 'guld': [1047, 1319, 1568, 2093].forEach((f, i) => ton(f, 0.16, 'triangle', 0.08, null, i * 0.07)); break;
     case 'studs': ton(220, 0.25, 'sine', 0.12, 660); break;
     case 'boing': ton(330, 0.2, 'triangle', 0.1, 140); break;
@@ -205,10 +215,10 @@ function ljud(typ) {
     case 'ratt': [784, 1047, 1319].forEach((f, i) => ton(f, 0.18, 'triangle', 0.08, null, i * 0.1)); break;
     case 'fel': ton(220, 0.25, 'sawtooth', 0.04, 160); break;
     case 'plask': brus(0.5, 0.15); ton(600, 0.3, 'sine', 0.05, 120); break;
-    case 'klader': [659, 784, 988, 1319].forEach((f, i) => ton(f, 0.14, 'square', 0.05, null, i * 0.08)); break;
+    case 'klader': [659, 784, 988, 1319].forEach((f, i) => ton(f, 0.16, 'triangle', 0.08, null, i * 0.08)); break;
     case 'land': ton(150, 0.06, 'triangle', 0.06); break;
     case 'grind': ton(200, 0.6, 'sawtooth', 0.03, 90); brus(0.6, 0.05); break;
-    case 'klar': [523, 659, 784, 1047, 784, 1047].forEach((f, i) => ton(f, 0.2, 'square', 0.05, null, i * 0.11)); break;
+    case 'klar': [523, 659, 784, 1047, 784, 1047].forEach((f, i) => ton(f, 0.22, 'triangle', 0.08, null, i * 0.11)); break;
     case 'smack': brus(0.08, 0.12); break;
   }
 }
@@ -226,17 +236,19 @@ const FEST_LAT = { tempo: 0.12, mel: [72, 76, 79, 84, 79, 76, 72, 76, 74, 77, 81
 
 function startaMusik(lat) {
   stoppaMusik();
-  if (!ljudPa) return;
+  if (!ljudPa || !musikPa) return;
   initLjud(); if (!ac) return;
   musikLat = lat; musikSteg = 0; musikNasta = ac.currentTime + 0.05;
   musikTimer = setInterval(() => {
     while (musikNasta < ac.currentTime + 0.12) {
       const i = musikSteg % 16, d = musikNasta - ac.currentTime;
       const m = musikLat.mel[i], b = musikLat.bas[i];
-      if (m) ton(midi(m), musikLat.tempo * 0.9, 'square', 0.035, null, d, musikGain);
-      if (b) ton(midi(b), musikLat.tempo * 1.6, 'triangle', 0.07, null, d, musikGain);
-      if (i % 4 === 2) ton(1800, 0.03, 'square', 0.008, null, d, musikGain);
-      musikSteg++; musikNasta += musikLat.tempo;
+      const steg = musikLat.tempo * MUSIK_FART;
+      // varannan runda spelas bara basen, så musiken andas och inte tjatar
+      const vila = Math.floor(musikSteg / 16) % 2 === 1;
+      if (m && !vila) ton(midi(m - 12), steg * 1.4, 'triangle', 0.09, null, d, musikGain, 0.04);
+      if (b && i % 2 === 0) ton(midi(b), steg * 2.6, 'sine', 0.12, null, d, musikGain, 0.05);
+      musikSteg++; musikNasta += steg;
     }
   }, 30);
 }
@@ -353,6 +365,14 @@ $('knapp-ljud').onclick = () => {
   else if (lage === 'spel') startaMusik(LATAR[banIndex % LATAR.length]);
   else if (lage === 'fest') startaMusik(FEST_LAT);
 };
+function uppdateraMusikKnapp() { $('knapp-musik').style.opacity = musikPa ? 1 : 0.4; $('knapp-musik').title = musikPa ? 'Stäng av musiken (M)' : 'Sätt på musiken (M)'; }
+uppdateraMusikKnapp();
+$('knapp-musik').onclick = () => {
+  musikPa = !musikPa; uppdateraMusikKnapp();
+  try { localStorage.setItem('charlies-poolparty-2:musik', musikPa ? 'pa' : 'av'); } catch (e) { }
+  if (!musikPa) stoppaMusik();
+  else { initLjud(); if (lage === 'spel') startaMusik(LATAR[banIndex % LATAR.length]); else if (lage === 'fest') startaMusik(FEST_LAT); }
+};
 $('knapp-fortsatt').onclick = () => togglePaus();
 $('knapp-om').onclick = () => startaBana(banIndex);
 $('knapp-paus-banor').onclick = () => oppnaBanval();
@@ -416,6 +436,7 @@ addEventListener('keydown', (e) => {
   if (lage === 'quiz' && /^[1-3]$/.test(e.key)) {
     const k = $('quiz-svar').children[Number(e.key) - 1]; if (k) k.click(); return;
   }
+  if (e.key === 'm' || e.key === 'M') { $('knapp-musik').click(); return; }
   if ((e.key === 'p' || e.key === 'P' || e.key === 'Escape') && (lage === 'spel' || lage === 'paus')) { togglePaus(); return; }
   if (e.key === 'Enter') {
     const prim = { meny: $('ov-start').classList.contains('dold') ? null : 'knapp-starta', klar: 'knapp-nasta', paus: 'knapp-fortsatt' }[lage];
@@ -508,13 +529,15 @@ function uppdatera() {
   const varILuften = !s.paMark;
   s.paMark = false; s.flotte = null; s.paPlattform = false;
 
-  // sidväggar på markkanter (när man ramlat ner i vattnet)
-  if (s.y + s.h > MARK_Y + 4) {
+  // sidväggar på markkanter: gäller bara när Charlie redan var nere i ett hål förra bildrutan
+  // (annars kunde en snabb landning tolkas som "inne i marken" och skicka henne bakåt)
+  if (forraBotten > MARK_Y + 4) {
     for (const m of bana.mark) {
       if (s.x + s.w > m.x && s.x < m.x + m.w) {
         if (s.x + s.w / 2 < m.x + m.w / 2) s.x = m.x - s.w; else s.x = m.x + m.w;
       }
     }
+    s.x = begransa(s.x, 0, bana.bredd - s.w);
   }
   const landaPa = (topp, x1, x2, tolerans = 2) =>
     s.vy >= 0 && s.x + s.w - 4 > x1 && s.x + 4 < x2 && forraBotten <= topp + tolerans && s.y + s.h >= topp;
