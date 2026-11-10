@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Charlies Poolparty 2</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --ink: #6b3a6e;
+    --rosa: #ffb3d9; --rosa-mork: #e36fae;
+    --bla: #7fd4ff; --bla-mork: #45a8e0;
+    --panel: rgba(255,255,255,0.9);
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
+    background: radial-gradient(120% 120% at 50% 0%, #d8c4ff 0%, #ffc6e8 55%, #aee6ff 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 12px; user-select: none; -webkit-user-select: none; color: var(--ink);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  #hud, #spel-ram, #tips { width: min(960px, 100%, calc((100vh - 120px) * 16 / 9)); }
+  body.touch #hud, body.touch #spel-ram { width: min(960px, 100%, calc((100vh - 64px) * 16 / 9)); }
+  body.touch #tips { display: none; }
+  body.touch { padding: 6px; }
+  body.touch #hud { margin-bottom: 6px; }
+  #vand { display: none; }
+  @media (orientation: portrait) { body.touch #vand { display: block; } }
+  #hud { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .pill {
+    background: var(--panel); padding: 7px 15px; border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(10,40,70,0.18), inset 0 0 0 2px rgba(255,255,255,0.6);
+    display: inline-flex; align-items: center; gap: 8px;
+    font-weight: 700; font-size: 17px; color: var(--ink); white-space: nowrap;
+  }
+  .hud-grupp { display: flex; gap: 8px; align-items: center; }
+  #ank-ikon { width: 30px; height: 27px; }
+  #ank-antal { font-variant-numeric: tabular-nums; }
+  #guld-ikon { opacity: .25; filter: grayscale(1); transition: all .3s; }
+  #guld-ikon.hittad { opacity: 1; filter: none; transform: scale(1.2); }
+  button.pill { border: none; cursor: pointer; font-family: inherit; transition: transform .12s; }
+  button.pill:hover { transform: translateY(-2px); }
+
+  #spel-ram {
+    position: relative; aspect-ratio: 16 / 9; border-radius: 20px; overflow: hidden;
+    box-shadow: 0 18px 50px rgba(10,40,70,0.35), 0 0 0 6px rgba(255,255,255,0.5);
+    background: #aee7ff;
+  }
+  canvas#c { display: block; width: 100%; height: 100%; }
+
+  .overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    padding: 18px; gap: 14px; overflow-y: auto;
+    background: radial-gradient(120% 120% at 50% 0%, rgba(90,50,130,0.80), rgba(20,40,80,0.90));
+    color: #fff; z-index: 5;
+  }
+  .overlay.genomskinlig { background: radial-gradient(120% 120% at 50% 0%, rgba(90,50,130,0.35), rgba(20,40,80,0.55)); }
+  .dold { display: none !important; }
+  .kort {
+    background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.28);
+    border-radius: 22px; padding: 22px 28px; max-width: 680px; width: 100%;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    animation: pop .35s cubic-bezier(.2,1.6,.4,1);
+  }
+  @keyframes pop { from { transform: scale(.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .overlay h1 { font-size: clamp(28px, 5vw, 46px); line-height: 1.1; margin-bottom: 8px; text-shadow: 0 3px 0 rgba(60,20,80,0.5); }
+  .overlay h2 { font-size: clamp(22px, 3.6vw, 32px); margin-bottom: 6px; }
+  .overlay p { font-size: clamp(15px, 2.2vw, 19px); line-height: 1.5; margin: 0 auto 6px; opacity: .96; }
+  .knappar { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+  .btn {
+    font-family: inherit; font-size: clamp(17px, 2.6vw, 22px); font-weight: 800;
+    padding: 12px 30px; border: none; border-radius: 999px;
+    background: linear-gradient(#ffd0ea, var(--rosa)); color: #7a2f5c; cursor: pointer;
+    box-shadow: 0 6px 0 var(--rosa-mork), 0 10px 22px rgba(110,40,90,0.25);
+    transition: transform .1s, box-shadow .1s;
+  }
+  .btn.bla { background: linear-gradient(#bfe9ff, var(--bla)); color: #0b3a5c; box-shadow: 0 6px 0 var(--bla-mork), 0 10px 22px rgba(20,60,110,0.25); }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--rosa-mork); }
+
+  /* Banval */
+  #ban-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px; }
+  .ban-kort {
+    font-family: inherit; border: none; cursor: pointer; border-radius: 18px; padding: 12px 8px;
+    color: #4a2050; font-weight: 800; font-size: clamp(14px, 2vw, 17px);
+    background: linear-gradient(#fff, #ffe3f3); box-shadow: 0 5px 0 #e3a3c9;
+    display: flex; flex-direction: column; align-items: center; gap: 4px; transition: transform .1s;
+  }
+  .ban-kort:hover { transform: translateY(-3px) rotate(-1deg); }
+  .ban-kort .ikon { font-size: clamp(28px, 5vw, 40px); }
+  .ban-kort .stj { letter-spacing: 2px; font-size: 18px; }
+  .ban-kort.last { filter: grayscale(.9); opacity: .55; cursor: not-allowed; }
+  .ban-kort.last:hover { transform: none; }
+  #total-stj { font-size: 20px; font-weight: 800; margin-top: 8px; }
+
+  /* Quiz */
+  #quiz-fraga {
+    font-size: clamp(24px, 4.4vw, 38px); font-weight: 800; background: #fff; color: var(--ink);
+    padding: 14px 24px; border-radius: 18px; display: inline-block; margin: 6px 0 4px;
+    box-shadow: inset 0 0 0 3px rgba(77,181,255,0.25); max-width: 100%;
+  }
+  #quiz-fraga .emojirad { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; font-size: clamp(30px, 5vw, 44px); line-height: 1.15; }
+  .svar { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 12px; }
+  .svar button {
+    font-family: inherit; font-size: clamp(22px, 3.6vw, 30px); font-weight: 800;
+    min-width: 110px; padding: 14px 26px; border: none; border-radius: 16px;
+    background: linear-gradient(#bfe9ff, var(--bla)); color: #062f4d; cursor: pointer;
+    box-shadow: 0 5px 0 var(--bla-mork); transition: transform .1s;
+  }
+  .svar button:hover { transform: translateY(-2px); }
+  .svar button.fel { background: linear-gradient(#ffb0b0,#ff8a8a); box-shadow:0 5px 0 #cc4a4a; animation: skaka .3s; }
+  .svar button.ratt { background: linear-gradient(#aeffb9,#8aff9e); box-shadow:0 5px 0 #3cc456; }
+  .svar button small { display: block; font-size: 12px; opacity: .55; }
+  @keyframes skaka { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+  #quiz-respons { font-size: 22px; min-height: 30px; font-weight: 700; margin-top: 8px; }
+  .las-upp { background: rgba(255,255,255,.2); border: none; color: #fff; font-size: 22px; border-radius: 999px; padding: 4px 12px; cursor: pointer; margin-left: 6px; vertical-align: middle; }
+
+  /* Stjärnor */
+  .stjarnor { font-size: clamp(44px, 8vw, 64px); letter-spacing: 6px; margin: 4px 0 8px; }
+  .stjarnor span { display: inline-block; filter: grayscale(1) brightness(1.6); opacity: .35; transform: scale(.6); transition: all .35s cubic-bezier(.2,1.8,.4,1); }
+  .stjarnor span.tand { filter: none; opacity: 1; transform: scale(1); }
+
+  /* Touchkontroller */
+  #touch { position: absolute; inset: auto 0 0 0; height: 0; z-index: 4; pointer-events: none; }
+  .tknapp {
+    position: absolute; bottom: 14px; width: clamp(50px, 8vw, 72px); height: clamp(50px, 8vw, 72px);
+    border-radius: 50%; border: 3px solid rgba(255,255,255,.6); background: rgba(255,255,255,.18);
+    color: #fff; font-size: clamp(24px, 4.5vw, 36px); font-weight: 900; pointer-events: auto;
+    display: flex; align-items: center; justify-content: center; touch-action: none;
+    text-shadow: 0 2px 4px rgba(0,0,0,.35); box-shadow: 0 4px 12px rgba(0,0,0,.2);
+  }
+  .tknapp.tryckt { background: rgba(255,255,255,.55); transform: scale(.94); }
+  @media (max-height: 500px) { .pill { font-size: 14px; padding: 5px 11px; } #ank-ikon { width: 24px; height: 22px; } }
+  #t-v { left: 14px; } #t-h { left: calc(28px + clamp(50px, 8vw, 72px)); }
+  #t-n { left: auto; right: calc(26px + clamp(66px, 11vw, 92px)); bottom: 14px; width: clamp(40px, 6vw, 52px); height: clamp(40px, 6vw, 52px); font-size: 18px; }
+  #t-hopp { right: 14px; width: clamp(66px, 11vw, 92px); height: clamp(66px, 11vw, 92px); background: rgba(255,140,200,.35); font-size: clamp(16px, 2.6vw, 22px); }
+
+  #tips {
+    margin-top: 10px; font-size: 14px; color: var(--ink); text-align: center;
+    background: var(--panel); padding: 7px 16px; border-radius: 999px; font-weight: 600;
+    box-shadow: 0 3px 10px rgba(10,40,70,0.15);
+  }
+  kbd { background:#fff; border-radius:6px; padding:1px 7px; font-family:inherit; font-weight:800; box-shadow: 0 2px 0 rgba(10,40,70,0.25); margin: 0 1px; }
+  @media (max-width: 640px) { #tips { display: none; } .pill { font-size: 14px; padding: 6px 11px; } #ban-grid { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div id="hud">
+  <span class="pill" id="ban-namn">🏠 Charlies hus</span>
+  <div class="hud-grupp">
+    <span class="pill"><canvas id="ank-ikon" width="60" height="54"></canvas><span id="ank-antal">0 / 0</span><span id="guld-ikon" title="Hemlig guldanka">✨</span></span>
+    <button class="pill" id="knapp-banor" title="Banor">🗺️</button>
+    <button class="pill" id="knapp-paus" title="Paus">⏸️</button>
+    <button class="pill" id="knapp-ljud" title="Ljud">🔊</button>
+  </div>
+</div>
+
+<div id="spel-ram">
+  <canvas id="c"></canvas>
+
+  <div id="touch" class="dold">
+    <div class="tknapp" id="t-v">◀</div>
+    <div class="tknapp" id="t-h">▶</div>
+    <div class="tknapp" id="t-n">▼</div>
+    <div class="tknapp" id="t-hopp">HOPP</div>
+  </div>
+
+  <div id="ov-start" class="overlay genomskinlig">
+    <div class="kort">
+      <h1>🌴 Charlies<br>Poolparty 2 🩷</h1>
+      <p>Charlie är bjuden på det STORA poolpartyt! Hämta badkläderna, samla badankor genom sex banor och hitta den hemliga guldankan på varje bana. 🦆✨</p>
+      <div class="knappar">
+        <button class="btn" id="knapp-starta">▶ Spela</button>
+        <button class="btn bla" id="knapp-start-banor">🗺️ Välj bana</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="ov-banval" class="overlay dold">
+    <div class="kort">
+      <h2>🗺️ Välj bana</h2>
+      <div id="ban-grid"></div>
+      <div id="total-stj">⭐ 0 / 18</div>
+    </div>
+  </div>
+
+  <div id="ov-quiz" class="overlay dold">
+    <div class="kort">
+      <h2 id="quiz-titel">🔒 Klurig grind!</h2>
+      <div id="quiz-fraga">?</div><button class="las-upp" id="quiz-las" title="Läs upp">🔊</button>
+      <div class="svar" id="quiz-svar"></div>
+      <div id="quiz-respons"></div>
+    </div>
+  </div>
+
+  <div id="ov-klar" class="overlay genomskinlig dold">
+    <div class="kort">
+      <h1 id="klar-titel">🎉 Bana klar!</h1>
+      <div class="stjarnor" id="klar-stj"><span>⭐</span><span>⭐</span><span>⭐</span></div>
+      <p id="klar-ankor">🦆 Ankor: 0 / 0</p>
+      <p id="klar-guld">✨ Guldankan: hittad!</p>
+      <div class="knappar">
+        <button class="btn" id="knapp-nasta">🚌 Nästa bana</button>
+        <button class="btn bla" id="knapp-igen">↺ Spela igen</button>
+        <button class="btn bla" id="knapp-klar-banor">🗺️ Banor</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="ov-vinst" class="overlay genomskinlig dold">
+    <div class="kort">
+      <h1>🎉 POOLPARTY! 🌴</h1>
+      <div class="stjarnor" id="vinst-stj"><span>⭐</span><span>⭐</span><span>⭐</span></div>
+      <p id="vinst-text">Charlie klarade alla banor! PLASK! 💦🩷</p>
+      <div class="knappar">
+        <button class="btn" id="knapp-vinst-banor">🗺️ Banor</button>
+        <button class="btn bla" id="knapp-vinst-igen">↺ Spela finalen igen</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="ov-paus" class="overlay dold">
+    <div class="kort">
+      <h2>⏸ Paus</h2>
+      <div class="knappar">
+        <button class="btn" id="knapp-fortsatt">▶ Fortsätt</button>
+        <button class="btn bla" id="knapp-om">↺ Börja om banan</button>
+        <button class="btn bla" id="knapp-paus-banor">🗺️ Banor</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="vand" class="pill" style="margin-top:10px">📱 Vänd mobilen på bredden för större spel!</div>
+<div id="tips"><kbd>←</kbd><kbd>→</kbd> gå &nbsp;•&nbsp; <kbd>↑</kbd>/<kbd>mellanslag</kbd> hoppa (håll = högre) &nbsp;•&nbsp; <kbd>↓</kbd> hoppa ner &nbsp;•&nbsp; <kbd>P</kbd> paus</div>
+
+<script src="spel.js"></script>
+<script src="../../delat/hem.js"></script>
+</body>
+</html>

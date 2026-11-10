@@ -60,6 +60,17 @@ window.SPEL = [
     status: "klar",
   },
   {
+    mapp: "charlies-poolparty-2",
+    namn: "Charlies Poolparty 2",
+    ikon: "🏖️",
+    beskrivning: "Sex banor till STORA poolpartyt: badringar, flottar, krabbor och en hemlig guldanka på varje bana.",
+    typ: "Plattform · Matte · Engelska",
+    spelare: ["Charlie"],
+    farg: ["#ff8fc8", "#7fd4ff"],
+    status: "klar",
+    ny: true,
+  },
+  {
     mapp: "charlies-popcorn-aventyr",
     namn: "Charlies Popcorn-Äventyr",
     ikon: "🍿",

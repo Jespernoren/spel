@@ -15,6 +15,6 @@ Jesper är nybörjare på kod. Spelen byggs ofta för och tillsammans med hans b
 - Spelen ska fungera med tangentbord **och** touch (mobil/surfplatta).
 - Relativa sökvägar överallt, eftersom sajten ligger under `/<repo-namn>/` på GitHub Pages.
 - Äldre spel byggda som React-artefakter (.tsx) konverteras till en fristående index.html med `verktyg/bygg-react.sh` (esbuild, React bakas in). Lägg till `<script src="../../delat/hem.js"></script>` före `</body>` i fristående spel så att 🏠-knappen tillbaka till spelhallen finns.
-- Charlies Poolparty styrs bara med tangentbord. Att lägga till touchkontroller är en känd förbättring.
+- Charlies Poolparty (originalet) styrs bara med tangentbord och ska lämnas orört. Vidareutveckling sker i `spel/charlies-poolparty-2/` (touch, 6 banor, stjärnor). Banornas nåbarhet kan testas med testkrokarna på `window.__poolparty2` (steg, ogonblick, aterstall).
 - Förstapersonsspel (städa/sortera/samla) bygger på `delat/fp/` (Spelare, Interaktor, Hand, Smuts, Sparning, Butik, ljud, FpUI). Utgå från `spel/testrummet/` som mall. Exponera spelets objekt på `window.__<spelid>` så att det kan testas automatiskt.
 - Testa alltid i headless Chrome (Playwright) före leverans: inga sidfel, och klicka igenom kärnloopen.
