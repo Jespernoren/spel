@@ -19,7 +19,9 @@ const SVANG_MAX = 0.75;           // max vinkel ut från banans riktning (radian
 const SVANG_SNABBHET = 4.5;
 const AUTOSTYR = 0.85;            // hur mycket åkaren följer kurvan själv (1 = helt)
 const BANK_DRAG = 0.3;            // hur mycket doseringen drar dig mot innerkurvan
-const POP_FONSTER = 7;            // meter före hoppkanten där Enter räknas
+const POP_FONSTER = 7;            // meter före hoppkanten där man ska släppa mellanslag (pop)
+const PUMP_KRAFT = 0.55;          // fart av att pumpa nerför kullar (håll mellanslag nerför, släpp uppför)
+const PUMP_MOT = 0.35;            // broms om man håller in uppför
 const POP_MAX = 2.6;              // extra uppåtfart vid perfekt pop
 const OLLIE = 4.2;                // uppåtfart när man hoppar på plan mark
 const MJUK_LANDNING = 3.5;        // under detta = mjuk landning (fartbonus)
@@ -130,7 +132,7 @@ function byggMedHopp(id, hoppParam) {
   let totalt = 0;
   typer.forEach((s, k) => { totalt += s[0] === 'hopp' ? langdHopp(hp[k]) : s[1]; });
   const n = Math.ceil(totalt / STEG) + 400; // extra efter mål
-  const Y = new Float32Array(n), CX = new Float32Array(n), BANK = new Float32Array(n), TYP = new Array(n);
+  const Y = new Float32Array(n), CX = new Float32Array(n), BANK = new Float32Array(n), LUT = new Float32Array(n), TYP = new Array(n);
   const hopp = [];
   const segment = [];
   let bas = 0, cx = 0, i = 0, d = 0;
@@ -172,6 +174,7 @@ function byggMedHopp(id, hoppParam) {
       Y[i] = bas + extra;
       CX[i] = cx;
       TYP[i] = typ;
+      LUT[i] = lut;
       bas -= lut * STEG;
       d += STEG;
     }
@@ -179,7 +182,7 @@ function byggMedHopp(id, hoppParam) {
     if (typ === 'mal') { /* mållinjen ligger i början av mal-segmentet */ }
   }
   // utåkning
-  for (; i < n; i++) { Y[i] = bas; CX[i] = cx; TYP[i] = 'mal'; bas -= 0.04 * STEG; }
+  for (; i < n; i++) { Y[i] = bas; CX[i] = cx; TYP[i] = 'mal'; LUT[i] = 0.04; bas -= 0.04 * STEG; }
   // jämna ut banken lite så kurvorna blir mjuka
   const B2 = Float32Array.from(BANK);
   for (let j = 6; j < n - 6; j++) { let sum = 0; for (let q = -6; q <= 6; q++) sum += BANK[j + q]; B2[j] = sum / 13; }
@@ -187,7 +190,7 @@ function byggMedHopp(id, hoppParam) {
   const malSeg = segment.find((x) => x.typ === 'mal');
   const malD = malSeg.start;
 
-  const bana = { id, B, Y, CX, BANK: B2, TYP, n, hopp, segment, malD, langd: n * STEG };
+  const bana = { id, B, Y, CX, BANK: B2, LUT, TYP, n, hopp, segment, malD, langd: n * STEG };
   bana.portar = byggPortar(bana);
   return bana;
 }
@@ -228,12 +231,15 @@ export function markY(bana, x, d) {
 // Banans riktning (radianer, 0 = rakt ner, + = åt höger)
 export function riktning(bana, d) { return Math.atan2(cxVid(bana, d + 2) - cxVid(bana, d - 2), 4); }
 
-export function nyAkare(bana) {
-  return { x: 0, d: 2, y: markY(bana, 0, 2), vy: 0, fart: 0, vinkel: 0, glid: 0, luft: false, luftTid: 0,
+export function nyAkare(bana, x = 0, d = 2) {
+  return { x, d, y: markY(bana, x, d), pumpar: false, pumpBra: 0, vy: 0, fart: 0, vinkel: 0, glid: 0, luft: false, luftTid: 0,
     pop: 0, popHopp: null, franHopp: false, snurr: 0, snurrar: false, vingel: 0, nastaHopp: 0 };
 }
 
-// Ett fysiksteg. in = { styr: -1..1, huka: bool, hopp: bool (nyss tryckt), aktiv: bool }
+// Ett fysiksteg. in = {
+//   styr: -1..1, huka: bool, aktiv: bool,
+//   pump: bool (mellanslag hålls in), slapp: bool (mellanslag släpptes nyss), holdTid: sekunder det hölls,
+//   tryck: bool (nyss nedtryckt – i luften = 360), hopp: bool (Enter = släpp direkt), motstand: faktor (datoråkare) }
 // Returnerar händelser som spelet kan visa/spela ljud för.
 export function fysik(s, bana, in_, dt) {
   const h = [];
@@ -247,8 +253,15 @@ export function fysik(s, bana, in_, dt) {
   if (!s.luft) {
     const fram = Math.cos(s.vinkel);
     const lutLangs = (markY(bana, s.x, s.d + 0.5) - markY(bana, s.x, s.d - 0.5)); // per meter (negativ = nerför)
-    const motstand = LUFTMOTSTAND * (in_.huka ? HUK_MOTSTAND : 1);
+    const motstand = LUFTMOTSTAND * (in_.huka ? HUK_MOTSTAND : 1) * (in_.motstand || 1);
     let acc = -G * lutLangs * fram - motstand * s.fart * s.fart - SVANG_BROMS * Math.abs(s.vinkel - rikt) * s.fart;
+    // pumpa: lutning jämfört med backens grundlutning (negativ = brantare nerför än vanligt)
+    const rel = lutLangs + lerp(bana.LUT, idx(bana, s.d));
+    s.pumpBra = 0;
+    if (in_.pump) {
+      if (rel < -0.03) { acc += PUMP_KRAFT * G * -rel; s.pumpBra = 1; }
+      else if (rel > 0.03) { acc -= PUMP_MOT * G * rel; s.pumpBra = -1; }
+    }
     if (!in_.aktiv) acc = -s.fart * 1.2; // bromsar efter mål
     s.fart = Math.max(in_.aktiv ? MIN_FART : 0, s.fart + acc * dt);
     // doseringen drar mot innerkurvan
@@ -278,19 +291,23 @@ export function fysik(s, bana, in_, dt) {
   const nasta = bana.hopp[s.nastaHopp];
   if (nasta && forraD > nasta.lapp + 1) s.nastaHopp++;
   const iFonster = nasta && !s.luft && s.d > nasta.lapp - POP_FONSTER && s.d <= nasta.lapp + 0.3;
-  if (in_.hopp) {
+  s.pumpar = !!in_.pump && !s.luft;
+  const slapp = in_.slapp || in_.hopp;
+  const holdTid = in_.hopp ? 0 : (in_.holdTid || 0);
+  if (slapp && !s.luft) {
     if (iFonster && !s.popHopp) {
       const avst = Math.max(0, nasta.lapp - s.d);
       s.pop = klamp(1 - avst / POP_FONSTER, 0, 1);
       s.popHopp = nasta;
       h.push({ typ: 'pop', kvalitet: s.pop });
-    } else if (!s.luft && !iFonster) {
-      s.luft = true; s.vy += OLLIE; s.luftTid = 0; s.franHopp = false;
+    } else if (!iFonster && holdTid < 0.25) {
+      s.luft = true; s.vy += OLLIE; s.luftTid = 0; s.franHopp = false; // snabbt tryck = litet hopp
       h.push({ typ: 'ollie' });
-    } else if (s.luft && s.franHopp && !s.snurrar && s.snurr === 0 && s.luftTid < 0.6) {
-      s.snurrar = true;
-      h.push({ typ: 'snurr' });
     }
+  }
+  if ((in_.tryck || in_.hopp) && s.luft && s.franHopp && !s.snurrar && s.snurr === 0 && s.luftTid < 0.6) {
+    s.snurrar = true;
+    h.push({ typ: 'snurr' });
   }
 
   // --- höjd: mark eller luft ---
@@ -299,7 +316,7 @@ export function fysik(s, bana, in_, dt) {
     const markVy = (mark - s.y) / dt;
     // marken försvinner under oss snabbare än tyngdkraften hinner dra ner oss → vi flyger
     const vidKant = nasta && Math.abs(s.d - nasta.lapp) < 2.5;
-    if ((vidKant && markVy < s.vy - G * dt * 1.6 && s.fart > 4) || markVy < s.vy - G * dt * 9) {
+    if ((vidKant && markVy < s.vy - G * dt * 1.6 && s.fart > 4) || markVy < s.vy - G * dt * (in_.pump ? 16 : 9)) {
       s.luft = true; s.luftTid = 0;
       s.franHopp = !!vidKant;
       if (vidKant) {
@@ -356,17 +373,36 @@ export function fysik(s, bana, in_, dt) {
   return h;
 }
 
-// Autopilot (för test): siktar på nästa port och poppar perfekt
-export function botStyr(s, bana, nastaPort, { pop = true } = {}) {
+// Autopilot: används av datoråkarna och för test.
+// alt: { pop: släpp vid kanten, offset: sidled från portens mitt, popFel: meter före kanten man släpper, pumpa: bool }
+export function botStyr(s, bana, nastaPort, { pop = true, offset = 0, popFel = 0.4, pumpa = true, undvik = 0 } = {}) {
   const p = bana.portar[nastaPort];
-  const malX = p && p.d - s.d < 30 ? p.x : cxVid(bana, s.d + 8);
-  const malD = p && p.d - s.d < 30 ? p.d : s.d + 8;
-  // vilken sidledsfart behövs för att nå målet i tid?
+  let malX, malD;
+  if (p && p.d - s.d < 30) {
+    const maxOff = p.bredd / 2 - 0.7;
+    malX = p.x + klamp(offset, -maxOff, maxOff); malD = p.d;
+  } else {
+    malX = cxVid(bana, s.d + 8) + offset * 1.5; malD = s.d + 8;
+  }
+  malX += undvik;
   const tidKvar = Math.max(0.35, (malD - s.d) / Math.max(5, s.fart));
   const onskadVx = (malX - s.x) / tidKvar;
   const nuVx = Math.sin(s.vinkel) * s.fart + s.glid;
   const styr = klamp((onskadVx - nuVx) * 0.22, -1, 1);
   const nasta = bana.hopp[s.nastaHopp];
-  const hopp = pop && nasta && !s.luft && !s.popHopp && nasta.lapp - s.d < 0.6 && nasta.lapp - s.d > 0;
-  return { styr, huka: true, hopp: !!hopp, aktiv: true };
+  const kvar = nasta ? nasta.lapp - s.d : 999;
+  s.bot = s.bot || { haller: false, tid: 0 };
+  let pump = false, slapp = false;
+  if (pop && nasta && !s.luft && !s.popHopp && kvar < POP_FONSTER + 4 && kvar > -0.3) {
+    // håll inne före hoppet, släpp vid kanten
+    pump = kvar > popFel;
+    if (!pump && s.bot.haller) slapp = true;
+  } else if (pumpa && !s.luft) {
+    const rel = (markY(bana, s.x, s.d + 0.5) - markY(bana, s.x, s.d - 0.5)) + lerp(bana.LUT, idx(bana, s.d));
+    pump = rel < -0.03;
+  }
+  const holdTid = s.bot.tid;
+  if (pump) s.bot.tid += 1 / 120; else s.bot.tid = 0;
+  s.bot.haller = pump;
+  return { styr, huka: !pump, pump, slapp, holdTid: Math.max(holdTid, 1), aktiv: true };
 }

@@ -48,6 +48,38 @@
     .pop-zon::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 5px; background: #1e6bff; }
     .pop-pil { position: absolute; top: -2px; bottom: -2px; width: 6px; margin-left: -3px; background: #fff; border-radius: 3px; box-shadow: 0 0 8px #fff; }
     .popmatare.poppad .pop-bar { border-color: #6cff9a; }
+    .popmatare.haller .pop-pil { background: #ffd54a; box-shadow: 0 0 10px #ffd54a; }
+    /* Namnskyltar över datoråkarna */
+    .namnskylt {
+      position: fixed; left: 0; top: 0; z-index: 3; pointer-events: none; white-space: nowrap;
+      background: rgba(10,16,40,.6); border-radius: 10px; padding: 3px 9px; font-size: 13px; font-weight: 800;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .namnskylt span, .resultat .prick { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+    .resultat .prick { margin: 0 6px 0 2px; vertical-align: middle; }
+    .resultat tr.jag td { color: #ffd54a; }
+    .detaljer { font-size: 14px; opacity: .8; }
+    /* Positionsstapel till höger: vem leder? */
+    .positionsstapel {
+      position: fixed; right: 18px; top: 50%; transform: translateY(-50%); height: min(46vh, 320px); width: 10px;
+      background: rgba(10,16,40,.45); border-radius: 6px; z-index: 5; pointer-events: none;
+    }
+    .stapel-mal { position: absolute; top: -26px; left: 50%; transform: translateX(-50%); font-size: 18px; }
+    .stapel-prick {
+      position: absolute; left: 50%; width: 20px; height: 20px; margin: 0 0 -10px -10px; border-radius: 50%;
+      border: 2px solid #fff; font-size: 11px; line-height: 16px; text-align: center; color: #fff; font-weight: 900;
+      box-shadow: 0 2px 6px rgba(0,0,0,.35); transition: bottom .1s linear;
+    }
+    /* Pumptips på kullarna */
+    .pumptips {
+      position: fixed; left: 50%; bottom: max(130px, calc(env(safe-area-inset-bottom) + 120px)); transform: translateX(-50%);
+      z-index: 7; pointer-events: none; font-weight: 900; font-size: 20px; padding: 6px 14px; border-radius: 12px;
+      background: rgba(10,16,40,.5); text-shadow: 0 2px 6px rgba(0,0,0,.4);
+    }
+    .pumptips.bra { color: #6cff9a; }
+    .pumptips.fel { color: #ffb4b4; }
+    .hud .plats { font-size: 30px; }
+    .hud .plats .p1 { color: #ffd54a; } .hud .plats .p2 { color: #e0e6f0; } .hud .plats .p3 { color: #f0a868; }
     .popmatare.poppad .pop-text { color: #6cff9a; }
     .hud .delta-rod { color: #ff8a8a; }
   </style>
