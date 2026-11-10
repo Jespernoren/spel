@@ -11,6 +11,7 @@ spel-lista.js       ← listan över spel (lägg till nya här)
 delat/
   motor.js          ← gemensam kod: scen, kamera, ljus, styrning, meny, rekord
   stil.css          ← gemensam stil: HUD, menyer
+  extra.js/.css     ← tillägg: paus-meny (Esc), touch-knappar, ljud och röst (används av Slalom)
 spel/
   _mall/            ← mall för nya spel (kopiera denna)
   slalom/           ← ett spel = en mapp med index.html + spel.js
@@ -42,6 +43,20 @@ Pusha till `main` så ligger spelet live efter ungefär en minut.
 | `visaMeny({ titel, text, knapp, onStart })` | Start- eller game over-skärm |
 | `rekord('spelnamn')` | `.hamta()` / `.spara(poang)`, sparas i webbläsaren |
 | `slump(min, max)`, `begransa(v, min, max)` | Små hjälpfunktioner |
+
+## Vad finns i extra.js?
+
+Fristående tillägg (rör inte motor.js). Länka `delat/extra.css` i spelets index.html.
+
+| Funktion | Gör |
+|---|---|
+| `knappar(karta, touch)` | Egna tangenter + stora touch-knappar, `tryckt('hopp')` ger sant en gång |
+| `visaMeny({ titel, text, html, knappar })` | Meny med flera knappar, t.ex. paus- eller resultatskärm |
+| `lyssnaPaus(fn)` | Esc, P och ⏸-knapp anropar `fn` |
+| `tillHallen()` | Tillbaka till spelhallen |
+| `skapaLjud()` | `ton`, `brus`, `loop` (t.ex. vind), `tala('Kör!')` på svenska, `vaxla()` ljud på/av |
+| `hamta(nyckel)`, `spara(nyckel, v)` | localStorage med JSON |
+| `slump(fro)` | Slump med frö: samma frö ger samma bana |
 
 ## Förstapersonsmotorn (delat/fp/)
 

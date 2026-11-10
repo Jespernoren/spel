@@ -11,7 +11,7 @@ window.SPEL = [
     mapp: "slalom",
     namn: "Slalom",
     ikon: "⛷️",
-    beskrivning: "Åk nerför backen, ta portarna och undvik träden.",
+    beskrivning: "Tre backar, portar, hopp och 360:or. Jaga guldet och slå ditt spöke!",
     typ: "3D · Fart",
     spelare: ["Alla"],
     farg: ["#2b7de9", "#7fd4ff"],

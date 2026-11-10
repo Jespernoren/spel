@@ -1,0 +1,73 @@
+/* Stil för delat/extra.js (paus-meny, HUD-rutor, touch-knappar) */
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; height: 100%; overflow: hidden;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: #0b1020; color: #fff;
+  -webkit-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+canvas { display: block; }
+
+/* HUD */
+.hud {
+  position: fixed; top: max(10px, env(safe-area-inset-top)); left: 12px; right: 70px;
+  display: flex; gap: 10px; flex-wrap: wrap; pointer-events: none; z-index: 5;
+}
+.hud .ruta {
+  background: rgba(10, 16, 40, .62); backdrop-filter: blur(6px);
+  border-radius: 14px; padding: 8px 14px; font-weight: 800; font-size: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.25);
+}
+.hud .ruta small { display: block; font-size: 11px; font-weight: 600; opacity: .7; letter-spacing: .06em; text-transform: uppercase; }
+
+/* Paus-knapp */
+.pausknapp {
+  position: fixed; top: max(10px, env(safe-area-inset-top)); right: 12px; z-index: 6;
+  width: 50px; height: 50px; border-radius: 14px; border: 0;
+  background: rgba(10, 16, 40, .62); color: #fff; font-size: 22px; cursor: pointer;
+}
+
+/* Menyer */
+.meny-bakgrund {
+  position: fixed; inset: 0; z-index: 20; display: grid; place-items: center;
+  background: rgba(5, 8, 25, .55); backdrop-filter: blur(4px); padding: 16px;
+  animation: tona .2s ease-out;
+}
+.meny {
+  width: min(460px, 100%); max-height: 92vh; overflow: auto;
+  background: linear-gradient(160deg, #1b2556, #121a3d);
+  border: 2px solid rgba(255,255,255,.12); border-radius: 24px;
+  padding: 24px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  animation: hoppaIn .25s cubic-bezier(.2,1.4,.4,1);
+}
+.meny h1 { margin: 0 0 8px; font-size: 32px; }
+.meny p { margin: 0 0 14px; opacity: .85; font-size: 17px; line-height: 1.4; }
+.meny-knappar { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.menyknapp {
+  font: inherit; font-size: 19px; font-weight: 800; padding: 15px 18px; border-radius: 16px;
+  border: 0; cursor: pointer; background: rgba(255,255,255,.12); color: #fff;
+  transition: transform .1s, background .15s;
+}
+.menyknapp:hover, .menyknapp:focus-visible { background: rgba(255,255,255,.22); outline: none; transform: scale(1.02); }
+.menyknapp.primar { background: linear-gradient(135deg, #ff4f8b, #ff8a3d); box-shadow: 0 4px 0 #b23460; }
+.menyknapp.primar:hover { background: linear-gradient(135deg, #ff6aa0, #ffa05a); }
+
+/* Touch-knappar */
+.touchknappar {
+  position: fixed; left: 0; right: 0; bottom: max(14px, env(safe-area-inset-bottom));
+  display: none; justify-content: space-between; padding: 0 14px; z-index: 4; pointer-events: none;
+}
+.touchrad { display: flex; gap: 12px; align-items: flex-end; pointer-events: auto; }
+.touchknapp {
+  width: 84px; height: 84px; border-radius: 50%; border: 3px solid rgba(255,255,255,.5);
+  background: rgba(10, 16, 40, .45); color: #fff; font-size: 34px; font-weight: 900;
+  touch-action: none;
+}
+.touchknapp.liten { width: 66px; height: 66px; font-size: 24px; }
+.touchknapp.nere { background: rgba(255, 255, 255, .45); transform: scale(.94); }
+@media (hover: none), (pointer: coarse) { .touchknappar { display: flex; } }
+
+@keyframes tona { from { opacity: 0; } }
+@keyframes hoppaIn { from { transform: scale(.85); opacity: 0; } }
