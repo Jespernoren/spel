@@ -37,6 +37,18 @@
     .nytt-rekord { color: #ffd54a; font-weight: 900; font-size: 22px; animation: puls .8s infinite alternate; }
     @keyframes puls { to { transform: scale(1.08); } }
     .hud .delta-gron { color: #6cff9a; }
+    /* Pop-mätare: pilen rör sig mot hoppkanten, tryck Enter i gröna zonen */
+    .popmatare {
+      position: fixed; left: 50%; bottom: max(120px, calc(env(safe-area-inset-bottom) + 110px)); transform: translateX(-50%);
+      width: min(420px, 80vw); z-index: 7; pointer-events: none; text-align: center;
+    }
+    .pop-text { font-weight: 900; font-size: 18px; margin-bottom: 6px; text-shadow: 0 2px 6px rgba(0,0,0,.45); }
+    .pop-bar { position: relative; height: 18px; border-radius: 9px; background: rgba(10,16,40,.55); border: 2px solid rgba(255,255,255,.6); overflow: hidden; }
+    .pop-zon { position: absolute; top: 0; bottom: 0; right: 0; width: 25%; background: linear-gradient(90deg, #3ddc84aa, #3ddc84); }
+    .pop-zon::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 5px; background: #1e6bff; }
+    .pop-pil { position: absolute; top: -2px; bottom: -2px; width: 6px; margin-left: -3px; background: #fff; border-radius: 3px; box-shadow: 0 0 8px #fff; }
+    .popmatare.poppad .pop-bar { border-color: #6cff9a; }
+    .popmatare.poppad .pop-text { color: #6cff9a; }
     .hud .delta-rod { color: #ff8a8a; }
   </style>
   <script type="importmap">

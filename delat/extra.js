@@ -54,6 +54,8 @@ export function knappar(karta, touch = []) {
   const hitta = (code) => Object.keys(karta).filter((n) => karta[n].includes(code));
 
   window.addEventListener('keydown', (e) => {
+    // Låt Enter/mellanslag fungera som vanligt på knappar i menyer
+    if (e.target && (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT')) return;
     const namn = hitta(e.code);
     if (namn.length) { e.preventDefault(); namn.forEach((n) => satt(n, true)); }
   });

@@ -11,7 +11,7 @@ window.SPEL = [
     mapp: "slalom",
     namn: "Slalom",
     ikon: "⛷️",
-    beskrivning: "Tre backar, portar, hopp och 360:or. Jaga guldet och slå ditt spöke!",
+    beskrivning: "Skicross med kullar, doserade kurvor och hopp. Tajma Enter för perfekt landning!",
     typ: "3D · Fart",
     spelare: ["Alla"],
     farg: ["#2b7de9", "#7fd4ff"],
