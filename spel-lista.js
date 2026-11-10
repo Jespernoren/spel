@@ -1,0 +1,102 @@
+// =============================================================
+//  Alla spel i spelhallen. Lägg till ett nytt spel = lägg till ett block här.
+//
+//  mapp:      mappnamnet under spel/ (små bokstäver, inga åäö)
+//  status:    "klar" = spelbart, "snart" = filen är inte uppladdad än
+//  spelare:   vilka filterknappar spelet syns under
+//  farg:      två färger för kortets bakgrund
+// =============================================================
+window.SPEL = [
+  {
+    mapp: "slalom",
+    namn: "Slalom",
+    ikon: "⛷️",
+    beskrivning: "Åk nerför backen, ta portarna och undvik träden.",
+    typ: "3D · Fart",
+    spelare: ["Alla"],
+    farg: ["#2b7de9", "#7fd4ff"],
+    status: "klar",
+    ny: true,
+  },
+  {
+    mapp: "testrummet",
+    namn: "Testrummet",
+    ikon: "🧪",
+    beskrivning: "Borsta golvet och sortera böcker. Teknikdemo för förstapersonsspel.",
+    typ: "3D · Förstaperson · Labb",
+    spelare: ["Alla"],
+    farg: ["#5b6cff", "#9fe3ff"],
+    status: "klar",
+    ny: true,
+  },
+  {
+    mapp: "majistos-torn",
+    namn: "Majistos Torn",
+    ikon: "🏰",
+    beskrivning: "Hjälp trollkarlen Majisto att bygga tornet högre och högre.",
+    typ: "Pussel · Tänka",
+    spelare: ["Beppe"],
+    farg: ["#3a4fa8", "#8aa6ff"],
+    status: "klar",
+  },
+  {
+    mapp: "krangs-bajsmaskin",
+    namn: "Krangs Bajsmaskin",
+    ikon: "💩",
+    beskrivning: "Bygg en galen maskin som leder bajset ner i tunnan.",
+    typ: "Fysik · Bygga",
+    spelare: ["Beppe", "Charlie"],
+    farg: ["#8a5a2b", "#e0a96d"],
+    status: "klar",
+  },
+  {
+    mapp: "charlies-poolparty",
+    namn: "Charlies Poolparty",
+    ikon: "🏊‍♀️",
+    beskrivning: "Samla badankor och ta dig till poolpartyt.",
+    typ: "Plattform · Dator ⌨️",
+    spelare: ["Charlie"],
+    farg: ["#b98cff", "#7fd4ff"],
+    status: "klar",
+  },
+  {
+    mapp: "charlies-popcorn-aventyr",
+    namn: "Charlies Popcorn-Äventyr",
+    ikon: "🍿",
+    beskrivning: "Samla 100 popcorn på vägen till bion. Se upp för tjuven!",
+    typ: "Äventyr · Matte · Ord",
+    spelare: ["Charlie"],
+    farg: ["#ff5fa2", "#ffc46b"],
+    status: "klar",
+  },
+  {
+    mapp: "sudoku-aventyr",
+    namn: "Sudoku-äventyret",
+    ikon: "🌴",
+    beskrivning: "Lös sudokun genom fyra världar: ö, is, rymd och saga.",
+    typ: "Sudoku · Logik",
+    spelare: ["Charlie", "Beppe"],
+    farg: ["#16a085", "#6fe3c1"],
+    status: "klar",
+  },
+  {
+    mapp: "charlies-magiska-larospel",
+    namn: "Charlies Magiska Lärospel",
+    ikon: "🦄",
+    beskrivning: "Hänga gubbe, matte och engelska. Samla stjärnor!",
+    typ: "Lära · Ord · Matte",
+    spelare: ["Charlie"],
+    farg: ["#d94fd0", "#ff9ad5"],
+    status: "klar",
+  },
+  {
+    mapp: "simons-cnc-maskin",
+    namn: "Simons CNC-Maskin",
+    ikon: "⚔️",
+    beskrivning: "Fräs fram riddarens sköld och svärd och bryt förbannelsen.",
+    typ: "Precision · Svårt",
+    spelare: ["Simon"],
+    farg: ["#5b4632", "#c9a86a"],
+    status: "klar",
+  },
+];

@@ -1,0 +1,168 @@
+// =============================================================
+//  spelare.js – förstapersonsrörelse
+//  Dator: WASD/pilar + mus (pointer lock), Shift = spring, Space = hopp
+//  Touch: vänster halva = joystick, höger halva = dra för att titta
+// =============================================================
+import * as THREE from 'three';
+
+export class Spelare {
+  constructor(kamera, dom, opt = {}) {
+    this.kamera = kamera;
+    this.dom = dom;
+    this.pos = new THREE.Vector3(...(opt.start || [0, 0, 0]));
+    this.hojd = opt.hojd ?? 1.6;         // ögonhöjd (meter)
+    this.radie = opt.radie ?? 0.35;      // kroppens radie för krockar
+    this.fart = opt.fart ?? 4;           // meter/sekund
+    this.springFaktor = opt.springFaktor ?? 1.7;
+    this.hoppKraft = opt.hopp ?? 5;
+    this.gravitation = opt.gravitation ?? 15;
+    this.kanslighet = opt.kanslighet ?? 0.0022;
+    this.granser = opt.granser || null;  // { minX, maxX, minZ, maxZ }
+    this.hinder = [];                    // THREE.Box3[] som man inte kan gå igenom
+    this.yaw = opt.yaw ?? 0;
+    this.pitch = 0;
+    this.vy = 0;
+    this.paMark = true;
+    this.aktiv = false;                  // styrning på/av (t.ex. när meny visas)
+    this.arTouch = false;
+    this.tangenter = {};
+    this.joy = { x: 0, y: 0 };
+    this.rorelse = 0;                    // 0..1, används för gung/stegljud
+
+    kamera.rotation.order = 'YXZ';
+
+    addEventListener('keydown', (e) => {
+      this.tangenter[e.code] = true;
+      if (this.aktiv && ['Space', 'ArrowUp', 'ArrowDown'].includes(e.code)) e.preventDefault();
+    });
+    addEventListener('keyup', (e) => { this.tangenter[e.code] = false; });
+    addEventListener('blur', () => { this.tangenter = {}; });
+    addEventListener('mousemove', (e) => {
+      if (document.pointerLockElement === this.dom) this.titta(e.movementX, e.movementY);
+    });
+    this.#touchStyrning();
+  }
+
+  /** Fånga musen (anropa från ett klick). */
+  lasMus() {
+    if (!this.arTouch && document.pointerLockElement !== this.dom) {
+      try { this.dom.requestPointerLock?.(); } catch { /* ignorera */ }
+    }
+  }
+  get musLast() { return document.pointerLockElement === this.dom; }
+
+  titta(dx, dy) {
+    this.yaw -= dx * this.kanslighet;
+    this.pitch -= dy * this.kanslighet;
+    this.pitch = Math.max(-1.45, Math.min(1.45, this.pitch));
+  }
+
+  hopp() {
+    if (this.paMark) { this.vy = this.hoppKraft; this.paMark = false; }
+  }
+
+  /** Riktningen spelaren tittar åt (enhetsvektor). */
+  riktning(ut = new THREE.Vector3()) {
+    return this.kamera.getWorldDirection(ut);
+  }
+
+  uppdatera(dt) {
+    let fx = 0, fz = 0;
+    if (this.aktiv) {
+      const t = this.tangenter;
+      if (t.KeyW || t.ArrowUp) fz += 1;
+      if (t.KeyS || t.ArrowDown) fz -= 1;
+      if (t.KeyA || t.ArrowLeft) fx -= 1;
+      if (t.KeyD || t.ArrowRight) fx += 1;
+      fx += this.joy.x; fz += this.joy.y;
+      const len = Math.hypot(fx, fz);
+      if (len > 1) { fx /= len; fz /= len; }
+      const spring = (t.ShiftLeft || t.ShiftRight) ? this.springFaktor : 1;
+      const v = this.fart * spring;
+      const s = Math.sin(this.yaw), c = Math.cos(this.yaw);
+      const vx = (fx * c - fz * s) * v;
+      const vz = (-fx * s - fz * c) * v;
+      this.#flytta(vx * dt, vz * dt);
+      if (t.Space) this.hopp();
+    }
+    this.rorelse = Math.min(1, Math.hypot(fx, fz));
+
+    // gravitation
+    this.vy -= this.gravitation * dt;
+    this.pos.y += this.vy * dt;
+    if (this.pos.y <= 0) { this.pos.y = 0; this.vy = 0; this.paMark = true; }
+
+    this.kamera.position.set(this.pos.x, this.pos.y + this.hojd, this.pos.z);
+    this.kamera.rotation.set(this.pitch, this.yaw, 0);
+  }
+
+  #flytta(dx, dz) {
+    this.pos.x += dx; if (this.#krock()) this.pos.x -= dx;
+    this.pos.z += dz; if (this.#krock()) this.pos.z -= dz;
+    const g = this.granser;
+    if (g) {
+      this.pos.x = Math.max(g.minX + this.radie, Math.min(g.maxX - this.radie, this.pos.x));
+      this.pos.z = Math.max(g.minZ + this.radie, Math.min(g.maxZ - this.radie, this.pos.z));
+    }
+  }
+
+  #krock() {
+    const p = this.pos, r = this.radie;
+    for (const b of this.hinder) {
+      if (p.x > b.min.x - r && p.x < b.max.x + r &&
+          p.z > b.min.z - r && p.z < b.max.z + r &&
+          p.y < b.max.y - 0.3 && p.y + this.hojd > b.min.y) return true;
+    }
+    return false;
+  }
+
+  // ---------- Touch: joystick + titta ----------
+  #touchStyrning() {
+    const bas = document.createElement('div');
+    const knopp = document.createElement('div');
+    bas.className = 'fp-joy'; knopp.className = 'fp-joy-knopp';
+    bas.appendChild(knopp);
+    document.body.appendChild(bas);
+    const R = 55;
+    let joyId = null, joyStart = null, tittId = null, tittSist = null;
+
+    const ar = (e) => e.target === this.dom;
+    addEventListener('touchstart', (e) => {
+      this.arTouch = true;
+      document.body.classList.add('fp-touch');
+      for (const t of e.changedTouches) {
+        if (!ar(t)) continue;
+        if (t.clientX < innerWidth / 2 && joyId === null) {
+          joyId = t.identifier; joyStart = { x: t.clientX, y: t.clientY };
+          bas.style.left = (t.clientX - R) + 'px'; bas.style.top = (t.clientY - R) + 'px';
+          bas.style.display = 'block'; knopp.style.transform = 'translate(0,0)';
+        } else if (tittId === null) {
+          tittId = t.identifier; tittSist = { x: t.clientX, y: t.clientY };
+        }
+      }
+    }, { passive: true });
+    addEventListener('touchmove', (e) => {
+      for (const t of e.changedTouches) {
+        if (t.identifier === joyId) {
+          let dx = t.clientX - joyStart.x, dy = t.clientY - joyStart.y;
+          const l = Math.hypot(dx, dy);
+          if (l > R) { dx = dx / l * R; dy = dy / l * R; }
+          knopp.style.transform = `translate(${dx}px,${dy}px)`;
+          this.joy.x = dx / R; this.joy.y = -dy / R;
+        } else if (t.identifier === tittId) {
+          this.titta((t.clientX - tittSist.x) * 2.2, (t.clientY - tittSist.y) * 2.2);
+          tittSist = { x: t.clientX, y: t.clientY };
+        }
+      }
+      if (this.aktiv) e.preventDefault();
+    }, { passive: false });
+    const slut = (e) => {
+      for (const t of e.changedTouches) {
+        if (t.identifier === joyId) { joyId = null; this.joy.x = this.joy.y = 0; bas.style.display = 'none'; }
+        if (t.identifier === tittId) tittId = null;
+      }
+    };
+    addEventListener('touchend', slut);
+    addEventListener('touchcancel', slut);
+  }
+}

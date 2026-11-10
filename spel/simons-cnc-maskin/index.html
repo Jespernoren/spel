@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Simons CNC-Maskin</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; touch-action:none; }
+  html,body { width:100%; height:100%; overflow:hidden; background:#1a1410; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+  #game { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+  canvas { display:block; touch-action:none; }
+  .overlay { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; z-index:50; }
+  .hidden { display:none !important; }
+  .btn {
+    background:linear-gradient(180deg,#c9a35a,#9a7634); color:#2a1d0c; border:none;
+    padding:16px 32px; font-size:19px; font-weight:700; border-radius:14px; margin-top:18px;
+    box-shadow:0 6px 0 #6e5424, 0 8px 14px rgba(0,0,0,.5); cursor:pointer; letter-spacing:.3px;
+  }
+  .btn:active { transform:translateY(4px); box-shadow:0 2px 0 #6e5424; }
+  .title-fx { font-size:34px; font-weight:800; color:#e8c977; text-shadow:0 2px 0 #5a3d12, 0 0 20px rgba(232,201,119,.4); margin-bottom:8px; }
+  .sub { color:#cdb78c; font-size:16px; line-height:1.5; max-width:420px; }
+  .hud { position:fixed; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:max(10px,env(safe-area-inset-top)) 16px 10px; z-index:40; pointer-events:none; }
+  .hud-chip { background:rgba(30,22,14,.85); border:1px solid #5a4423; color:#e8c977; padding:7px 13px; border-radius:11px; font-size:14px; font-weight:700; backdrop-filter:blur(4px); }
+  .hud-chip.danger { color:#ff8a6a; border-color:#7a3320; }
+  #controls { position:fixed; bottom:0; left:0; right:0; display:flex; gap:10px; justify-content:center; padding:14px 12px max(14px,env(safe-area-inset-bottom)); z-index:40; }
+  .ctrl {
+    flex:1; max-width:120px; background:rgba(40,30,18,.9); border:1px solid #6e5424; color:#e8c977;
+    padding:14px 6px; border-radius:13px; font-size:14px; font-weight:700; text-align:center;
+    box-shadow:0 3px 0 rgba(0,0,0,.4); pointer-events:auto;
+  }
+  .ctrl:active { transform:translateY(2px); }
+  .ctrl.ready { background:linear-gradient(180deg,#5aa84a,#3a8a2a); color:#fff; border-color:#7fd06a; }
+  .ctrl small { display:block; font-size:11px; color:#a88c5e; font-weight:500; }
+  .ctrl.ready small { color:#e8ffd8; }
+  .skip { position:fixed; top:max(14px,env(safe-area-inset-top)); right:16px; z-index:46;
+    background:rgba(30,22,14,.8); border:1px solid #5a4423; color:#cdb78c; padding:8px 14px;
+    border-radius:10px; font-size:13px; font-weight:600; pointer-events:auto; }
+  #cut-text, #cut-text-final { position:fixed; bottom:9%; left:50%; transform:translateX(-50%); width:88%; max-width:480px;
+    background:rgba(20,14,8,.92); border:1px solid #5a4423; border-radius:14px; padding:15px 18px;
+    color:#f0dcae; font-size:17px; line-height:1.5; text-align:center; z-index:45; }
+  .fade { animation:fadein .6s ease; }
+  @keyframes fadein { from{opacity:0} to{opacity:1} }
+  .pulse { animation:pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+  .hint { position:fixed; bottom:88px; left:50%; transform:translateX(-50%); width:90%; max-width:460px;
+    background:rgba(20,14,8,.8); border:1px solid #4a3a20; color:#cdb78c; padding:8px 12px;
+    border-radius:10px; font-size:13px; text-align:center; z-index:39; pointer-events:none !important; }
+  .overlay.hidden { pointer-events:none !important; }
+</style>
+</head>
+<body>
+<div id="game"><canvas id="cv"></canvas></div>
+
+<!-- START -->
+<div id="screen-start" class="overlay" style="background:radial-gradient(circle at 50% 30%,#2a2014,#120d08);">
+  <div class="title-fx">Simons CNC-Maskin</div>
+  <div class="sub">En riddare. En oturlig kyss. En förbannelse.<br>Bygg om din utrustning med medeltida precision och bryt förtrollningen.</div>
+  <button class="btn" id="btn-start">Börja äventyret</button>
+  <div style="display:flex;gap:8px;margin-top:14px;">
+    <button class="btn" id="btn-dev1" style="padding:10px 16px;font-size:14px;margin-top:0;">▸ Bana 1</button>
+    <button class="btn" id="btn-dev2" style="padding:10px 16px;font-size:14px;margin-top:0;">▸ Bana 2</button>
+    <button class="btn" id="btn-dev3" style="padding:10px 16px;font-size:14px;margin-top:0;">▸ Bana 3</button>
+  </div>
+  <div class="sub pulse" style="margin-top:22px;font-size:13px;">🔊 Slå på ljudet för bästa upplevelse</div>
+</div>
+
+<!-- INTRO CUTSCENE -->
+<div id="screen-intro" class="overlay hidden" style="background:transparent; justify-content:flex-start; padding:0; pointer-events:none;">
+  <div class="skip" id="skip-intro" style="pointer-events:auto;">Hoppa över ▸</div>
+  <div id="cut-text"></div>
+</div>
+
+<!-- LEVEL INTRO -->
+<div id="screen-levelintro" class="overlay hidden" style="background:radial-gradient(circle at 50% 40%,#241a10,#0e0a06);">
+  <div class="title-fx" id="li-title"></div>
+  <div class="sub" id="li-sub"></div>
+  <button class="btn" id="btn-levelgo">Starta fräsning</button>
+</div>
+
+<!-- WIN LEVEL -->
+<div id="screen-levelwin" class="overlay hidden" style="background:radial-gradient(circle at 50% 40%,#1e2a14,#0a0e06);">
+  <div class="title-fx" id="lw-title">Klart!</div>
+  <div class="sub" id="lw-sub"></div>
+  <button class="btn" id="btn-next">Nästa</button>
+</div>
+
+<!-- GAME OVER -->
+<div id="screen-over" class="overlay hidden" style="background:radial-gradient(circle at 50% 40%,#2a1410,#0e0606);">
+  <div class="title-fx" style="color:#ff8a6a;">Förbannelsen består</div>
+  <div class="sub" id="over-sub"></div>
+  <button class="btn" id="btn-retry">Försök igen</button>
+</div>
+
+<!-- FINAL CUTSCENE -->
+<div id="screen-final" class="overlay hidden" style="background:transparent; justify-content:flex-start; padding:0; pointer-events:none;">
+  <div class="skip" id="skip-final" style="pointer-events:auto;">Hoppa över ▸</div>
+  <div id="cut-text-final"></div>
+</div>
+
+<!-- HUD + CONTROLS -->
+<div id="hud" class="hud hidden">
+  <div class="hud-chip" id="hud-level">Bana 1</div>
+  <div class="hud-chip" id="hud-pieces">0/0</div>
+  <div class="hud-chip" id="hud-time">⏱ 0:00</div>
+  <div class="hud-chip danger" id="hud-lives">❤ 3</div>
+</div>
+<div id="hint" class="hint hidden">Dra en bit, rotera till rätt vinkel, tryck ✓ när knappen blir grön.</div>
+<div id="controls" class="hidden">
+  <div class="ctrl" id="ctrl-rl">⟲ −5°<small>vänster</small></div>
+  <div class="ctrl" id="ctrl-rr">⟳ +5°<small>höger</small></div>
+  <div class="ctrl" id="ctrl-place">✓ Passa in<small>lås biten</small></div>
+</div>
+
+<script>
+//==================================================================
+// SIMONS CNC-MASKIN — komplett spel i en fil (v2: lättare + bild-cutscenes)
+//==================================================================
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let W=0,H=0,DPR=1;
+
+function resize(){
+  DPR = Math.min(window.devicePixelRatio||1, 2.5);
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = W*DPR; cv.height = H*DPR;
+  cv.style.width = W+'px'; cv.style.height = H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener('resize',resize);
+resize();
+
+//------------------- LJUD -------------------
+let AC=null;
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } return AC; }
+function beep(freq,dur,type,vol){
+  const a=ac(); if(!a) return;
+  const o=a.createOscillator(), g=a.createGain();
+  o.type=type||'sine'; o.frequency.value=freq;
+  g.gain.value=0; o.connect(g); g.connect(a.destination);
+  const t=a.currentTime;
+  g.gain.linearRampToValueAtTime(vol||.12,t+.01);
+  g.gain.exponentialRampToValueAtTime(.0001,t+(dur||.2));
+  o.start(t); o.stop(t+(dur||.2)+.02);
+}
+const SFX={
+  fit(){ beep(660,.08,'triangle',.14); setTimeout(()=>beep(990,.16,'triangle',.14),70); },
+  rotate(){ beep(420,.04,'square',.05); },
+  bad(){ beep(150,.25,'sawtooth',.16); setTimeout(()=>beep(90,.3,'sawtooth',.14),90); },
+  win(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.22,'triangle',.14),i*120)); },
+  over(){ [330,247,165].forEach((f,i)=>setTimeout(()=>beep(f,.4,'sawtooth',.14),i*180)); },
+  saw(){ beep(220,.5,'sawtooth',.06); }
+};
+let TTSon=true;
+function say(text){
+  if(!TTSon||!window.speechSynthesis) return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='sv-SE'; u.rate=.96; u.pitch=.95;
+    const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.startsWith('sv'));
+    if(v) u.voice=v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+const $=id=>document.getElementById(id);
+function show(id){ $(id).classList.remove('hidden'); }
+function hide(id){ $(id).classList.add('hidden'); }
+function showHUD(b){ $('hud').classList.toggle('hidden',!b); $('controls').classList.toggle('hidden',!b); $('hint').classList.toggle('hidden',!b); }
+
+//==================================================================
+// BANDESIGN
+//==================================================================
+function poly(...pts){ return pts.map(p=>({x:p[0],y:p[1]})); }
+
+// Sköldkontur (silhuett): rundad upptill, spetsig nedtill. Returnerar true om (x,y) är inuti.
+// Koordinatsystem: x in [-1,1], y in [-1,1] (y neråt). Topp y=-1, spets y=+1.
+function inShield(x,y){
+  if(y<-1||y>1||x<-1||x>1) return false;
+  // bredd som funktion av y
+  let halfW;
+  if(y<0.35){
+    // övre del: nästan rak/lätt rundad sida
+    halfW = 1.0;
+    // rundade övre hörn
+    if(y<-0.7){ const t=(y+1)/0.3; halfW = Math.sqrt(Math.max(0,1-(1-t)*(1-t)))*1.0; }
+  } else {
+    // nedre del: linjär avsmalning mot spets
+    halfW = 1.0*(1-(y-0.35)/0.65);
+  }
+  return Math.abs(x)<=halfW;
+}
+
+// Bygg pusselbitar genom att rasterisera sköldformen i ett rutnät (cols x rows).
+// Varje cell som ligger (delvis) inom skölden blir en bit, klippt mot konturen.
+function shieldPuzzle(cols,rows,colorA,colorB){
+  const slots=[];
+  const cw=2/cols, ch=2/rows;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const x0=-1+c*cw, x1=x0+cw;
+      const y0=-1+r*ch, y1=y0+ch;
+      // sampla cellens hörn + kanter mot sköldformen -> bygg klippt polygon
+      const cell = clipCellToShield(x0,y0,x1,y1);
+      if(cell && polyArea(cell)>0.012){
+        // mål-centrum = cellens centroid i sköldkoord
+        const ctr=centroid(cell);
+        // lokala punkter relativt centroid
+        const lpts=cell.map(p=>({x:p.x-ctr.x, y:p.y-ctr.y}));
+        slots.push({ _lpts:lpts, tx:ctr.x, ty:ctr.y, trot:0,
+          color: ((r+c)%2)?colorA:colorB });
+      }
+    }
+  }
+  return slots;
+}
+
+// Klipp en rektangulär cell mot sköldkonturen (Sutherland-Hodgman mot implicit form
+// approximeras: vi samplar konturen som polygon och skär). Enkel robust metod:
+// gör en finkornig polygon av cellen och behåll punkter inom skölden, plus skärningar.
+function clipCellToShield(x0,y0,x1,y1){
+  // Starta med cellens 4 hörn, subdividera varje kant så vi fångar konturen.
+  const corners=[[x0,y0],[x1,y0],[x1,y1],[x0,y1]];
+  const N=10; // subdivisioner per kant
+  let dense=[];
+  for(let i=0;i<4;i++){
+    const a=corners[i], b=corners[(i+1)%4];
+    for(let k=0;k<N;k++){
+      dense.push([a[0]+(b[0]-a[0])*k/N, a[1]+(b[1]-a[1])*k/N]);
+    }
+  }
+  // Behåll endast punkter inom skölden; för kanter som korsar, klipp till konturen
+  // genom att flytta utanförpunkter in till närmaste tillåtna bredd.
+  const out=[];
+  for(let i=0;i<dense.length;i++){
+    let [px,py]=dense[i];
+    if(inShield(px,py)){ out.push({x:px,y:py}); }
+    else {
+      // projicera in i x-led mot sköldbredden vid detta y
+      const proj=projectIntoShield(px,py);
+      if(proj) out.push(proj);
+    }
+  }
+  // ta bort dubbletter/nära punkter och förenkla
+  return simplify(out);
+}
+function projectIntoShield(x,y){
+  if(y<-1||y>1) return null;
+  let halfW;
+  if(y<0.35){ halfW=1.0; if(y<-0.7){ const t=(y+1)/0.3; halfW=Math.sqrt(Math.max(0,1-(1-t)*(1-t)))*1.0; } }
+  else { halfW=1.0*(1-(y-0.35)/0.65); }
+  const cx=Math.max(-halfW,Math.min(halfW,x));
+  return {x:cx,y:y};
+}
+function polyArea(pts){ let a=0; for(let i=0;i<pts.length;i++){ const p=pts[i],q=pts[(i+1)%pts.length]; a+=p.x*q.y-q.x*p.y; } return Math.abs(a)/2; }
+function simplify(pts){
+  const out=[]; const tol=0.012;
+  for(const p of pts){ if(!out.length || Math.hypot(p.x-out[out.length-1].x,p.y-out[out.length-1].y)>tol) out.push(p); }
+  if(out.length>2 && Math.hypot(out[0].x-out[out.length-1].x,out[0].y-out[out.length-1].y)<tol) out.pop();
+  return out;
+}
+
+function buildLevel(n){
+  let slots=[];
+  if(n===0){ // SKÖLDEN — 12 pusselbitar i sköldform (3 kolumner x 5 rader ≈ 12 giltiga celler)
+    slots=shieldPuzzle(3,5,'#a86a3a','#7a4a2a');
+    slots.forEach(s=>{ s.pts=s._lpts.map(p=>({x:p.x*110,y:p.y*110})); s.tx*=110; s.ty*=110; });
+  } else if(n===1){ // SVÄRDET — pusselbitar längs en svärdsilhuett
+    slots=swordPuzzle();
+  } else { // SLUTBANAN — finare sköldpussel (4x5) + svärd ovanpå
+    slots=shieldPuzzle(4,5,'#9a5a9a','#6a3f6a');
+    slots.forEach(s=>{ s.pts=s._lpts.map(p=>({x:p.x*100,y:p.y*100})); s.tx*=100; s.ty*=100; });
+    // svärd diagonalt
+    const ang=-35*Math.PI/180;
+    for(let i=0;i<3;i++){ const d=-50+i*38; const w=8;
+      slots.push({pts:poly([-w,18],[w,18],[w,-18],[-w,-18]),tx:Math.cos(ang)*d,ty:Math.sin(ang)*d,trot:-35,color:'#dfe3ea'}); }
+    slots.push({pts:poly([-7,14],[7,14],[0,-24]),tx:Math.cos(ang)*68,ty:Math.sin(ang)*68,trot:-35,color:'#f0f3f8'});
+  }
+  return slots;
+}
+
+// Svärd uppdelat i distinkta pusselbitar — omisskännlig svärdsilhuett (spets upp, knapp ner)
+function swordPuzzle(){
+  const parts=[];
+  // SPETS — smal triangel överst
+  parts.push({pts:poly([-9,18],[9,18],[0,-40]),tx:0,ty:-200,trot:0,color:'#e8ecf2'});
+  // KLINGA — 5 smala, långa segment (tydligt avlång klinga, smalnar uppåt)
+  const seg=[{y:-160,w:9},{y:-122,w:10.5},{y:-84,w:12},{y:-46,w:13.5},{y:-8,w:15}];
+  for(let i=0;i<seg.length;i++){
+    const s=seg[i];
+    const wTop = i===0 ? 9 : seg[i-1].w;
+    parts.push({pts:poly([-s.w,19],[s.w,19],[wTop,-19],[-wTop,-19]),tx:0,ty:s.y,trot:0,color:'#c8ccd4'});
+  }
+  // PARÉRSTÅNG — mycket bred, tunn korsbalk i två halvor (gör svärdformen entydig)
+  parts.push({pts:poly([-66,-8],[-5,-8],[-5,8],[-66,8]),tx:-35,ty:18,trot:0,color:'#9a7634'});
+  parts.push({pts:poly([5,-8],[66,-8],[66,8],[5,8]),tx:35,ty:18,trot:0,color:'#9a7634'});
+  // GREPP — smalt avlångt handtag
+  parts.push({pts:poly([-9,36],[9,36],[9,-18],[-9,-18]),tx:0,ty:62,trot:0,color:'#5a3d22'});
+  // KNAPP (pommel) — rund knopp längst ner
+  parts.push({pts:poly([-14,-13],[14,-13],[12,14],[-12,14]),tx:0,ty:108,trot:0,color:'#c9a35a'});
+  return parts;
+}
+
+//==================================================================
+// GEOMETRI
+//==================================================================
+function rotPt(p,deg){ const r=deg*Math.PI/180,c=Math.cos(r),s=Math.sin(r); return {x:p.x*c-p.y*s, y:p.x*s+p.y*c}; }
+function centroid(pts){ let x=0,y=0; pts.forEach(p=>{x+=p.x;y+=p.y;}); return {x:x/pts.length,y:y/pts.length}; }
+function bbox(pts){ let a=1e9,b=1e9,c=-1e9,d=-1e9; pts.forEach(p=>{a=Math.min(a,p.x);b=Math.min(b,p.y);c=Math.max(c,p.x);d=Math.max(d,p.y);}); return {minx:a,miny:b,maxx:c,maxy:d,w:c-a,h:d-b}; }
+function pointInPoly(px,py,pts){
+  let inside=false;
+  for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+    const xi=pts[i].x,yi=pts[i].y,xj=pts[j].x,yj=pts[j].y;
+    if(((yi>py)!=(yj>py)) && (px < (xj-xi)*(py-yi)/(yj-yi)+xi)) inside=!inside;
+  }
+  return inside;
+}
+
+//==================================================================
+// SPELTILLSTÅND — banparametrar (lättare progression)
+//==================================================================
+const LEVELS=[
+  {key:'shield', title:'Bana 1 — Skölden', sub:'Fräs ut sköldens 12 delar och passa ihop dem. Färgade fält visar vart bitarna hör hemma.', time:180, lives:5,
+   posTol:30, rotTol:12, decoys:0, snapStart:true,
+   wintext:'Skölden är komplett! Men en riddare behöver mer än försvar...'},
+  {key:'sword', title:'Bana 2 — Svärdet', sub:'Slip klingan och montera parérstång, grepp och knapp. Lite snävare passning.', time:180, lives:4,
+   posTol:24, rotTol:9, decoys:2, snapStart:false,
+   wintext:'Svärdet glänser! En sista prövning återstår.'},
+  {key:'runes', title:'Bana 3 — Gravera runorna', sub:'Bryt förbannelsen: styr fräshuvudet längs varje runslinga med stadig hand. Håll dig på linjen!', time:200, lives:4,
+   wintext:'Runorna lyser! Förbannelsen brister!'}
+];
+const ROT_STEP=5;
+
+let state={ level:0, slots:[], pieces:[], placedCount:0, lives:5, time:0, timerId:null, sel:-1,
+  posTol:30, rotTol:12, mode:'puzzle' };
+
+//==================================================================
+// GRAVYR-LÄGE (Bana 3) — följ runslingan med fräshuvudet
+//==================================================================
+let rune={
+  active:false, runes:[], idx:0, path:[], progress:0, head:{x:0,y:0},
+  carving:false, tol:34, lives:4, completed:0
+};
+
+// Runslingor ritade som de äkta runtecknen (Äldre futharken).
+// Varje runa = en sammanhängande dragväg. Koordinater normaliserade -1..1 (y neråt).
+function runeDefs(){
+  return [
+    // FEHU ᚠ — lodrät stav + två snedstreck uppåt höger
+    { name:'Fehu ᚠ', glyph:'ᚠ', pts:[
+      [-0.35,0.9],[-0.35,-0.9],          // huvudstav nerifrån upp
+      [-0.35,-0.5],[0.45,-0.85],         // övre snedstreck ut
+      [-0.35,-0.5],[-0.35,-0.1],[0.45,-0.45]  // nedre snedstreck ut
+    ]},
+    // ALGIZ ᛉ — lodrät stav + två grenar uppåt (skydd)
+    { name:'Algiz ᛉ', glyph:'ᛉ', pts:[
+      [0,0.9],[0,-0.9],                  // huvudstav
+      [0,-0.4],[-0.55,-0.9],             // vänster gren upp
+      [0,-0.4],[0.55,-0.9]              // höger gren upp
+    ]},
+    // OTHALA ᛟ — romb med två ben (arv/försegling)
+    { name:'Othala ᛟ', glyph:'ᛟ', pts:[
+      [0,-0.85],[0.5,-0.25],[0,0.35],[-0.5,-0.25],[0,-0.85],  // romb (sluten)
+      [0,0.35],[0.5,0.9],               // höger ben ner
+      [0,0.35],[-0.5,0.9]              // vänster ben ner
+    ]}
+  ];
+}
+
+// Bygg en tät polyline från kontrollpunkter (linjär interpolation), ger jämn "linje att följa".
+function densify(pts, perSeg){
+  const out=[];
+  for(let i=0;i<pts.length-1;i++){
+    const a=pts[i], b=pts[i+1];
+    for(let k=0;k<perSeg;k++){
+      const t=k/perSeg;
+      out.push({x:a[0]+(b[0]-a[0])*t, y:a[1]+(b[1]-a[1])*t});
+    }
+  }
+  out.push({x:pts[pts.length-1][0], y:pts[pts.length-1][1]});
+  return out;
+}
+
+function setupRunes(){
+  const def=LEVELS[2];
+  rune.runes=runeDefs();
+  rune.idx=0; rune.completed=0; rune.lives=def.lives; rune.tol=38; rune.active=true;
+  state.mode='rune'; state.level=2; state.lives=def.lives; state.time=def.time;
+  loadRune(0);
+}
+function loadRune(i){
+  const r=rune.runes[i];
+  // skala normaliserade punkter till skärmens gravyrfält
+  const cx=W/2, cy=H*0.40, sx=Math.min(W*0.34, 150), sy=Math.min(H*0.22, 190);
+  rune.path=densify(r.pts, 26).map(p=>({x:cx+p.x*sx, y:cy+p.y*sy, done:false}));
+  rune.progress=0; rune.carving=false;
+  rune.head={x:rune.path[0].x, y:rune.path[0].y};
+  rune.idx=i;
+}
+
+function runeDistToNext(x,y){
+  // hitta närmaste ogjorda punkt framåt från progress
+  let i=rune.progress;
+  return Math.hypot(x-rune.path[i].x, y-rune.path[i].y);
+}
+
+function onRuneDown(e){
+  const pos=getXY(e);
+  const d=Math.hypot(pos.x-rune.head.x, pos.y-rune.head.y);
+  // generös träffyta runt START / fräshuvudet
+  if(d < 70){ rune.carving=true; SFX.saw(); }
+}
+function onRuneMove(e){
+  if(!rune.carving) return;
+  const pos=getXY(e);
+  // avancera så länge pekaren är nära kommande punkter på linjen
+  let guard=0;
+  while(rune.progress < rune.path.length-1 && guard++ < 200){
+    const nxt=rune.path[rune.progress+1];
+    const d=Math.hypot(pos.x-nxt.x, pos.y-nxt.y);
+    if(d < rune.tol){
+      rune.progress++; rune.path[rune.progress].done=true;
+      rune.head={x:nxt.x,y:nxt.y};
+      if(rune.progress%6===0) beep(520+rune.progress*4,.03,'square',.05);
+    } else break;
+  }
+  // för långt från linjen => avbryt fräsningen (men kosta liv bara om man kommit en bit)
+  const dHead=Math.hypot(pos.x-rune.head.x, pos.y-rune.head.y);
+  if(dHead > rune.tol*2.6){
+    rune.carving=false;
+    if(rune.progress>0){ SFX.bad(); state.lives--; updateHUD();
+      if(state.lives<=0){ rune.active=false; gameOver(); return; } }
+  }
+  if(rune.progress >= rune.path.length-1){ runeComplete(); }
+}
+function onRuneUp(){ rune.carving=false; }
+function onRuneMove(e){
+  if(!rune.carving) return;            // graverar bara medan knapp/finger hålls nere efter START
+  const pos=getXY(e);
+  let advanced=false;
+  while(rune.progress < rune.path.length-1){
+    const nxt=rune.path[rune.progress+1];
+    const d=Math.hypot(pos.x-nxt.x, pos.y-nxt.y);
+    if(d < rune.tol){
+      rune.progress++; rune.path[rune.progress].done=true;
+      rune.head={x:nxt.x,y:nxt.y}; advanced=true;
+      if(rune.progress%6===0) beep(520+rune.progress*4,.03,'square',.05);
+    } else break;
+  }
+  const dHead=Math.hypot(pos.x-rune.head.x, pos.y-rune.head.y);
+  if(dHead > rune.tol*2.4){
+    rune.carving=false;
+    SFX.bad(); state.lives--; updateHUD();
+    if(state.lives<=0){ rune.active=false; gameOver(); return; }
+  }
+  if(rune.progress >= rune.path.length-1){ runeComplete(); }
+}
+function onRuneUp(){ rune.carving=false; }
+
+function runeComplete(){
+  rune.carving=false; rune.completed++; SFX.fit();
+  flashHUD(); updateHUD();
+  if(rune.completed >= rune.runes.length){
+    rune.active=false; levelComplete();
+  } else {
+    // kort paus, ladda nästa runa
+    setTimeout(()=>{ if(rune.active){ beep(700,.12,'triangle',.12); loadRune(rune.idx+1); } }, 700);
+  }
+}
+
+function drawRunes(){
+  ctx.clearRect(0,0,W,H);
+  drawWorkshop();
+  // metallplatta att gravera i
+  ctx.fillStyle='#2a2418'; roundRect(W*0.5-W*0.42, H*0.16, W*0.84, H*0.5, 18); ctx.fill();
+  ctx.strokeStyle='#5a4a2a'; ctx.lineWidth=3; ctx.stroke();
+
+  if(!rune.path.length) return;
+  const r=rune.runes[rune.idx];
+
+  // 1) spår att följa (ogjort) — svag streckad
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.strokeStyle='rgba(200,170,110,.35)'; ctx.lineWidth=rune.tol*1.1;
+  drawPolyline(rune.path, 0, rune.path.length-1);
+  ctx.strokeStyle='rgba(120,95,50,.5)'; ctx.lineWidth=2; ctx.setLineDash([4,6]);
+  drawPolyline(rune.path,0,rune.path.length-1); ctx.setLineDash([]);
+
+  // 2) graverad del (glödande)
+  if(rune.progress>0){
+    ctx.strokeStyle='#ffd27a'; ctx.lineWidth=10; ctx.shadowColor='#ffb347'; ctx.shadowBlur=16;
+    drawPolyline(rune.path,0,rune.progress); ctx.shadowBlur=0;
+    ctx.strokeStyle='#fff2d0'; ctx.lineWidth=3; drawPolyline(rune.path,0,rune.progress);
+  }
+
+  // 3) start-markör + fräshuvud
+  const start=rune.path[0];
+  if(rune.progress===0){
+    // stor tydlig grön START-cirkel med puls
+    const pulse=6+Math.sin(Date.now()/250)*3;
+    ctx.fillStyle='rgba(127,255,154,.25)'; ctx.beginPath(); ctx.arc(start.x,start.y,28+pulse,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#3fd06a'; ctx.beginPath(); ctx.arc(start.x,start.y,16,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center'; ctx.fillText('START', start.x, start.y-30);
+  } else {
+    // fräshuvud bara när man börjat gravera
+    ctx.save(); ctx.translate(rune.head.x,rune.head.y);
+    ctx.fillStyle = rune.carving? '#7fff9a':'#c0c4cc';
+    ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#3a2c18'; ctx.lineWidth=2; ctx.stroke();
+    if(rune.carving){ for(let i=0;i<5;i++){ ctx.fillStyle='rgba(255,200,80,'+Math.random()+')'; ctx.beginPath(); ctx.arc((Math.random()*16-8),(Math.random()*16-8),1.5,0,Math.PI*2); ctx.fill(); } }
+    ctx.restore();
+  }
+
+  // runnamn + räknare
+  ctx.fillStyle='#e8c977'; ctx.font='bold 18px -apple-system,sans-serif'; ctx.textAlign='center';
+  ctx.fillText(r.name+'  ('+(rune.completed+1)+'/'+rune.runes.length+')', W/2, H*0.72);
+  // visa det äkta runtecknet stort som referens
+  ctx.fillStyle='rgba(232,201,119,.5)'; ctx.font='42px serif';
+  ctx.fillText(r.glyph, W/2, H*0.70);
+  ctx.fillStyle='#cdb78c'; ctx.font='14px -apple-system,sans-serif';
+  ctx.fillText(rune.progress===0?'Tryck på START och dra längs runans linje':'Följ glöden — släpp inte linjen', W/2, H*0.78);
+}
+function drawPolyline(path,a,b){
+  ctx.beginPath();
+  for(let i=a;i<=b;i++){ const p=path[i]; i===a?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y); }
+  ctx.stroke();
+}
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+function setupLevel(idx){
+  const def=LEVELS[idx];
+  state.posTol=def.posTol; state.rotTol=def.rotTol;
+  let slots=buildLevel(idx);
+
+  // Normalisera: alla bitar har .pts (lokala punkter kring egen centroid) + tx,ty,trot
+  let all=[];
+  slots.forEach(s=>{
+    const c=centroid(s.pts);
+    s._lpts=s.pts.map(p=>({x:p.x-c.x,y:p.y-c.y}));  // säkerställ centrering
+    s._lpts.forEach(p=>{ const rp=rotPt(p,s.trot); all.push({x:rp.x+s.tx,y:rp.y+s.ty}); });
+  });
+  const bb=bbox(all);
+  // Svärdet är högt & smalt — ge mallen mer höjd; skölden är bredare
+  const tall = (bb.h > bb.w*1.6);
+  const availW=W*0.9, availH=H*(tall?0.50:0.42);
+  const sc=Math.min(availW/bb.w, availH/bb.h, 1.8);
+  const mcx=(bb.minx+bb.maxx)/2, mcy=(bb.miny+bb.maxy)/2;
+  const ox=W/2, oy=H*(tall?0.31:0.29);
+
+  const finalSlots=slots.map((s,i)=>{
+    const lpts=s._lpts.map(p=>({x:p.x*sc,y:p.y*sc}));
+    const tx=ox+(s.tx-mcx)*sc, ty=oy+(s.ty-mcy)*sc;
+    return {id:i, lpts, tx, ty, trot:((s.trot%360)+360)%360, color:s.color, filled:false};
+  });
+
+  const pieces=finalSlots.map((s,i)=>{
+    const p=makePiece(s.lpts, s.color, i, false);
+    p.slotId=i;   // varje bit hör till exakt sin slot
+    if(def.snapStart){
+      const off=[-10,-5,0,5,10][Math.floor(Math.random()*5)];
+      p.rot=((s.trot+off)%360+360)%360;
+    }
+    return p;
+  });
+
+  const decoys=[];
+  for(let k=0;k<def.decoys;k++){
+    const base=finalSlots[Math.floor(Math.random()*finalSlots.length)].lpts;
+    const warp=base.map(p=>({x:p.x*(1+(Math.random()*.4-.2))+(Math.random()*8-4), y:p.y*(1+(Math.random()*.4-.2))+(Math.random()*8-4)}));
+    decoys.push(makePiece(warp,'#4a4030',1000+k,true));
+  }
+
+  const allPieces=shuffle(pieces.concat(decoys));
+  scatter(allPieces);
+
+  state.level=idx; state.slots=finalSlots; state.pieces=allPieces;
+  state.placedCount=0; state.sel=-1; state.lives=def.lives; state.time=def.time;
+}
+
+function makePiece(lpts,color,id,decoy){
+  return { id, lpts, color, decoy, x:0, y:0, rot:Math.floor(Math.random()*72)*ROT_STEP, filled:false, dragging:false };
+}
+function scatter(pieces){
+  // PUSSEL-LAYOUT: lägg ut alla bitar i ett rutnät, var och en i egen cell, ingen överlappning.
+  const fieldTop=H*0.53, fieldBot=H*0.87;
+  let maxR=0;
+  pieces.forEach(p=>{ p.lpts.forEach(pt=>{ maxR=Math.max(maxR, Math.hypot(pt.x,pt.y)); }); });
+  const cell=Math.max(50, maxR*2+18);
+  let cols=Math.max(1, Math.floor((W-16)/cell));
+  let rows=Math.ceil(pieces.length/cols);
+  const availH=fieldBot-fieldTop;
+  // skala cellen så hela rutnätet får plats både i bredd och höjd
+  const fit=Math.min((W-16)/(cols*cell), availH/(rows*cell), 1);
+  const c=cell*fit;
+  const startX=(W-cols*c)/2 + c/2;
+  const startY=fieldTop + (availH-rows*c)/2 + c/2;
+  pieces.forEach((p,i)=>{
+    const col=i%cols, row=Math.floor(i/cols);
+    p.x=startX+col*c; p.y=startY+row*c;
+  });
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+//==================================================================
+// MATCHNING — hjälpfunktion för "redo att passa in"
+//==================================================================
+function matchSlotFor(sp){
+  if(sp.decoy || sp.slotId==null) return null;       // distraktioner matchar aldrig
+  const s=state.slots[sp.slotId];
+  if(!s || s.filled) return null;
+  const dp=Math.hypot(sp.x-s.tx,sp.y-s.ty);
+  const dr=Math.abs(((sp.rot-s.trot+540)%360)-180);
+  return (dp<=state.posTol && dr<=state.rotTol) ? s : null;
+}
+function sameShape(a,b){
+  if(a.length!==b.length) return false;
+  for(let i=0;i<a.length;i++){ if(Math.abs(a[i].x-b[i].x)>0.5||Math.abs(a[i].y-b[i].y)>0.5) return false; }
+  return true;
+}
+
+//==================================================================
+// RENDER
+//==================================================================
+let gameRenderOn=false;
+function draw(){
+  requestAnimationFrame(draw);
+  if(!gameRenderOn) return;            // pausa under cutscenes så bilderna syns
+  if(state.mode==='rune'){ drawRunes(); return; }   // gravyr-läge har egen rendering
+  ctx.clearRect(0,0,W,H);
+  drawWorkshop();
+  state.slots.forEach(s=>drawSlotOutline(s));
+  ctx.strokeStyle='rgba(120,90,50,.35)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(0,H*0.5); ctx.lineTo(W,H*0.5); ctx.stroke();
+
+  const filled=state.pieces.filter(p=>p.filled);
+  const loose=state.pieces.filter(p=>!p.filled && p.id!==state.sel);
+  const selP=state.pieces.find(p=>p.id===state.sel && !p.filled);
+  filled.forEach(p=>drawPiece(p,false,false));
+  loose.forEach(p=>drawPiece(p,false,false));
+  let ready=false;
+  if(selP){ ready=!!matchSlotFor(selP); drawPiece(selP,true,ready); }
+  $('ctrl-place').classList.toggle('ready',ready);
+}
+
+function drawWorkshop(){
+  const g=ctx.createLinearGradient(0,0,0,H*0.5);
+  g.addColorStop(0,'#2b2218'); g.addColorStop(1,'#231a12'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H*0.5);
+  const g2=ctx.createLinearGradient(0,H*0.5,0,H);
+  g2.addColorStop(0,'#1c140c'); g2.addColorStop(1,'#120c07'); ctx.fillStyle=g2; ctx.fillRect(0,H*0.5,W,H*0.5);
+  ctx.strokeStyle='rgba(0,0,0,.18)'; ctx.lineWidth=1;
+  for(let y=30;y<H*0.5;y+=46){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  const rg=ctx.createRadialGradient(W*0.5,H*0.29,10,W*0.5,H*0.29,Math.max(W,H)*0.55);
+  rg.addColorStop(0,'rgba(255,200,120,.10)'); rg.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
+}
+
+function drawSlotOutline(s){
+  ctx.save();
+  ctx.translate(s.tx,s.ty); ctx.rotate(s.trot*Math.PI/180);
+  ctx.beginPath();
+  s.lpts.forEach((p,i)=> i? ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+  ctx.closePath();
+  if(s.filled){
+    ctx.fillStyle=s.color; ctx.fill();
+    ctx.strokeStyle='rgba(255,230,170,.5)'; ctx.lineWidth=1.5; ctx.stroke();
+  }else{
+    // FÄRGAD LEDTRÅD: svag version av bitens egen färg så man ser vart den hör hemma
+    ctx.globalAlpha=0.22; ctx.fillStyle=s.color; ctx.fill(); ctx.globalAlpha=1;
+    ctx.setLineDash([5,5]); ctx.strokeStyle='rgba(220,180,110,.55)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.setLineDash([]);
+  }
+  ctx.restore();
+}
+
+function drawPiece(p,selected,ready){
+  ctx.save();
+  ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
+  ctx.beginPath();
+  p.lpts.forEach((pt,i)=> i? ctx.lineTo(pt.x,pt.y):ctx.moveTo(pt.x,pt.y));
+  ctx.closePath();
+  ctx.shadowColor='rgba(0,0,0,.5)'; ctx.shadowBlur=selected?14:6; ctx.shadowOffsetY=4;
+  ctx.fillStyle=p.color; ctx.fill();
+  ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+  ctx.strokeStyle = ready?'#7fff9a' : (selected?'#ffe9b0':'rgba(0,0,0,.35)');
+  ctx.lineWidth = ready?3.5 : (selected?2.5:1.5); ctx.stroke();
+  const bb=bbox(p.lpts);
+  const lg=ctx.createLinearGradient(bb.minx,bb.miny,bb.maxx,bb.maxy);
+  lg.addColorStop(0,'rgba(255,255,255,.18)'); lg.addColorStop(.5,'rgba(255,255,255,0)'); lg.addColorStop(1,'rgba(0,0,0,.15)');
+  ctx.fillStyle=lg; ctx.fill();
+  ctx.restore();
+
+  if(selected){
+    ctx.save(); ctx.translate(p.x,p.y);
+    ctx.strokeStyle = ready?'rgba(127,255,154,.7)':'rgba(255,233,176,.5)';
+    ctx.lineWidth=1.5; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.arc(0,0,46,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.rotate(p.rot*Math.PI/180);
+    ctx.fillStyle = ready?'#7fff9a':'#ffe9b0'; ctx.beginPath(); ctx.arc(0,-46,5,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+}
+
+//==================================================================
+// INTERAKTION
+//==================================================================
+let dragOffset={x:0,y:0}, lastPinchDist=null;
+function getXY(e){
+  const r=cv.getBoundingClientRect();
+  let cx, cy;
+  if(e.touches && e.touches.length){ cx=e.touches[0].clientX; cy=e.touches[0].clientY; }
+  else if(e.changedTouches && e.changedTouches.length){ cx=e.changedTouches[0].clientX; cy=e.changedTouches[0].clientY; }
+  else { cx=e.clientX; cy=e.clientY; }
+  return {x:cx-r.left, y:cy-r.top};
+}
+function pickPiece(x,y){
+  for(let i=state.pieces.length-1;i>=0;i--){
+    const p=state.pieces[i]; if(p.filled) continue;
+    const lx=x-p.x, ly=y-p.y; const rp=rotPt({x:lx,y:ly},-p.rot);
+    if(pointInPoly(rp.x,rp.y,p.lpts)) return p;
+  } return null;
+}
+function onDown(e){
+  if($('controls').classList.contains('hidden')) return;
+  e.preventDefault();
+  if(state.mode==='rune'){ onRuneDown(e); return; }
+  const pos=getXY(e);
+  if(e.touches && e.touches.length===2){ lastPinchDist=pinchDist(e); return; }
+  const p=pickPiece(pos.x,pos.y);
+  if(p){ state.sel=p.id; p.dragging=true; dragOffset.x=pos.x-p.x; dragOffset.y=pos.y-p.y;
+    state.pieces=state.pieces.filter(x=>x!==p); state.pieces.push(p); }
+}
+function onMove(e){
+  if($('controls').classList.contains('hidden')) return;
+  e.preventDefault();
+  if(state.mode==='rune'){ onRuneMove(e); return; }
+  if(e.touches && e.touches.length===2){
+    const sp=state.pieces.find(p=>p.id===state.sel);
+    if(sp){ const ang=pinchAngle(e);
+      if(state._startAngle==null){ state._startAngle=ang; state._startRot=sp.rot; }
+      let nr=state._startRot+(ang-state._startAngle)*180/Math.PI;
+      sp.rot=((Math.round(nr/ROT_STEP)*ROT_STEP)%360+360)%360; }
+    return;
+  }
+  const sp=state.pieces.find(p=>p.id===state.sel && p.dragging);
+  if(sp){ const pos=getXY(e); sp.x=pos.x-dragOffset.x; sp.y=pos.y-dragOffset.y; }
+}
+function onUp(){ state._startAngle=null; lastPinchDist=null;
+  if(state.mode==='rune'){ onRuneUp(); return; }
+  const sp=state.pieces.find(p=>p.dragging); if(sp) sp.dragging=false; }
+function pinchDist(e){ const a=e.touches[0],b=e.touches[1]; return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY); }
+function pinchAngle(e){ const a=e.touches[0],b=e.touches[1]; return Math.atan2(b.clientY-a.clientY,b.clientX-a.clientX); }
+
+cv.addEventListener('touchstart',onDown,{passive:false});
+cv.addEventListener('touchmove',onMove,{passive:false});
+cv.addEventListener('touchend',onUp,{passive:false});
+cv.addEventListener('mousedown',onDown);
+window.addEventListener('mousemove',onMove);
+window.addEventListener('mouseup',onUp);
+
+// GRAVYR-LÄGE: fånga pekare i capture-fas på window så ingen overlay kan blockera.
+window.addEventListener('pointerdown',function(e){
+  if(state.mode==='rune' && gameRenderOn){ onRuneDown(e); }
+}, true);
+window.addEventListener('pointermove',function(e){
+  if(state.mode==='rune' && gameRenderOn){ onRuneMove(e); }
+}, true);
+window.addEventListener('pointerup',function(e){
+  if(state.mode==='rune' && gameRenderOn){ onRuneUp(e); }
+}, true);
+window.addEventListener('touchmove',function(e){
+  if(state.mode==='rune' && gameRenderOn){ e.preventDefault(); onRuneMove(e); }
+}, {passive:false, capture:true});
+
+function rotateSel(d){ const sp=state.pieces.find(p=>p.id===state.sel && !p.filled); if(!sp) return; sp.rot=(sp.rot+d+360)%360; SFX.rotate(); }
+$('ctrl-rl').addEventListener('click',()=>rotateSel(-ROT_STEP));
+$('ctrl-rr').addEventListener('click',()=>rotateSel(ROT_STEP));
+$('ctrl-place').addEventListener('click',tryPlace);
+
+function tryPlace(){
+  const sp=state.pieces.find(p=>p.id===state.sel && !p.filled);
+  if(!sp) return;
+  const best=matchSlotFor(sp);
+  if(best){
+    best.filled=true; sp.filled=true;
+    sp.x=best.tx; sp.y=best.ty; sp.rot=best.trot; // lås snyggt på plats
+    state.sel=-1; state.placedCount++;
+    SFX.fit(); flashHUD(); updateHUD();
+    if(state.placedCount>=state.slots.length) levelComplete();
+  }else{
+    SFX.bad(); state.lives--; shakePiece(sp); updateHUD();
+    if(state.lives<=0) gameOver();
+  }
+}
+function shakePiece(p){ let n=0; const ox=p.x;
+  const iv=setInterval(()=>{ p.x=ox+(n%2?6:-6); n++; if(n>5){clearInterval(iv);p.x=ox;} },40); }
+
+//==================================================================
+// HUD / TIMER
+//==================================================================
+function updateHUD(){
+  $('hud-level').textContent='Bana '+(state.level+1);
+  if(state.mode==='rune'){
+    $('hud-pieces').textContent='ᚱ '+rune.completed+'/'+rune.runes.length;
+  } else {
+    $('hud-pieces').textContent=state.placedCount+'/'+state.slots.length;
+  }
+  $('hud-lives').textContent='❤ '+state.lives;
+  const m=Math.floor(state.time/60), s=state.time%60;
+  $('hud-time').textContent='⏱ '+m+':'+(s<10?'0':'')+s;
+  $('hud-time').classList.toggle('danger',state.time<=20);
+}
+function flashHUD(){ const c=$('hud-pieces'); c.style.transition='transform .15s'; c.style.transform='scale(1.25)'; setTimeout(()=>c.style.transform='scale(1)',160); }
+function startTimer(){ stopTimer(); state.timerId=setInterval(()=>{ state.time--; updateHUD();
+  if(state.time<=10 && state.time>0) beep(880,.05,'square',.05);
+  if(state.time<=0){ stopTimer(); gameOver(); } },1000); }
+function stopTimer(){ if(state.timerId){clearInterval(state.timerId);state.timerId=null;} }
+
+//==================================================================
+// FLÖDE
+//==================================================================
+function gotoLevelIntro(idx){
+  const def=LEVELS[idx];
+  state.mode = def.key==='runes' ? 'rune' : 'puzzle';
+  rune.active=false;
+  $('li-title').textContent=def.title; $('li-sub').textContent=def.sub;
+  showHUD(false); stopTimer(); stopCutAnim();
+  hideAllScreens(); show('screen-levelintro'); say(def.title.replace('—','.'));
+}
+function startLevel(idx){
+  hideAllScreens(); gameRenderOn=true;
+  if(LEVELS[idx].key==='runes'){
+    state.mode='rune'; setupRunes();
+    showHUD(true);
+    // göm rotations/passa-knappar, visa gravyr-instruktion
+    $('controls').classList.add('hidden');
+    $('hint').textContent='Tryck på den gröna START-punkten och dra fräshuvudet längs runans linje. Släpp inte!';
+    updateHUD(); startTimer(); SFX.saw();
+  } else {
+    state.mode='puzzle'; setupLevel(idx);
+    showHUD(true); $('controls').classList.remove('hidden');
+    $('hint').textContent='Dra en bit, rotera till rätt vinkel, tryck ✓ när knappen blir grön.';
+    updateHUD(); startTimer(); SFX.saw();
+  }
+}
+function levelComplete(){
+  stopTimer(); SFX.win(); showHUD(false);
+  const def=LEVELS[state.level];
+  $('lw-title').textContent= state.level<2?'Bana klar! 🔨':'Mästerverk! ✨';
+  $('lw-sub').textContent=def.wintext;
+  hideAllScreens(); show('screen-levelwin'); say('Bana klar.');
+}
+function gameOver(){
+  stopTimer(); SFX.over(); showHUD(false);
+  $('over-sub').textContent = state.time<=0
+    ? 'Tiden rann ut innan utrustningen blev klar. Grodan suckar vid CNC-maskinen.'
+    : 'För många felsågningar — materialet tog slut. Försök igen med stadigare hand.';
+  hideAllScreens(); show('screen-over'); say('Förbannelsen består.');
+}
+function hideAllScreens(){ ['screen-start','screen-intro','screen-levelintro','screen-levelwin','screen-over','screen-final'].forEach(hide); }
+
+$('btn-levelgo').addEventListener('click',()=>{ ac(); startLevel(state.level); });
+$('btn-next').addEventListener('click',()=>{ if(state.level<LEVELS.length-1) gotoLevelIntro(state.level+1); else runFinal(); });
+$('btn-retry').addEventListener('click',()=> gotoLevelIntro(state.level));
+
+//==================================================================
+// CUTSCENES — nu med en unik ILLUSTRATION per scen
+//==================================================================
+const introScenes=[
+  {t:'För länge sedan red en stolt riddare genom den dunkla skogen.', d:4200, art:'ride'},
+  {t:'Han sökte sin prinsessa — men dimman förvillade hans väg.', d:4200, art:'fog'},
+  {t:'Vid en mossig sten satt en liten skogsgroda och kväkte.', d:4000, art:'frog_sit'},
+  {t:'I trötthet lutade han sig ner... och kysste grodan.', d:4400, art:'kiss'},
+  {t:'Fel groda. Fel kyss. En urgammal förbannelse vaknade.', d:4200, art:'curse'},
+  {t:'I ett blixtsken förvandlades riddaren själv till en groda!', d:4200, art:'become_frog'},
+  {t:'Vid den medeltida CNC-maskinen måste han återskapa sin utrustning.', d:4600, art:'cnc'},
+  {t:'Fräs ut sköld och svärd. Bryt förbannelsen. Återförena de älskande.', d:4600, art:'goal'}
+];
+const finalScenes=[
+  {t:'Det sista emblemet låses på plats. Maskinen tystnar.', d:4000, art:'cnc'},
+  {t:'Ett gyllene ljus sveper över verkstaden...', d:3800, art:'glow'},
+  {t:'Grodans hud faller bort — riddaren reser sig i mänsklig gestalt!', d:4400, art:'restore'},
+  {t:'Vid porten väntar prinsessan, med tårar av glädje.', d:4000, art:'princess'},
+  {t:'De omfamnar varandra. Förbannelsen är för alltid bruten.', d:4200, art:'hug'},
+  {t:'Och så, under klingande klockor, står bröllopet. 🎉💍', d:4400, art:'wedding'},
+  {t:'Tack för att du spelade Simons CNC-Maskin!', d:4200, art:'thanks'}
+];
+
+// ---- Illustrationsmotor: ritar scen "kind" med animationsfas ph (0..1+) ----
+let cutAnim=null, cutScene=null, cutT=0;
+function startCutAnim(scene){ cutScene=scene; cutT=0; if(!cutAnim) loopCut(); }
+function loopCut(){ cutT++; drawScene(cutScene, cutT); cutAnim=requestAnimationFrame(loopCut); }
+function stopCutAnim(){ if(cutAnim){cancelAnimationFrame(cutAnim);cutAnim=null;} cutScene=null; }
+
+function skyBg(top,bot){ const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,top); g.addColorStop(1,bot); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
+function ground(col,y){ ctx.fillStyle=col; ctx.fillRect(0,y,W,H-y); }
+function trees(col,y){ ctx.fillStyle=col; for(let i=0;i<7;i++){ const x=(i/6)*W; ctx.beginPath(); ctx.moveTo(x-34,y); ctx.lineTo(x,y-90); ctx.lineTo(x+34,y); ctx.fill(); } }
+function moon(x,y,r){ ctx.fillStyle='rgba(235,225,185,.9)'; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill(); }
+function frog(x,y,s,col){ // enkel groda
+  ctx.fillStyle=col||'#3f8e3a';
+  ctx.beginPath(); ctx.ellipse(x,y,26*s,20*s,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x-14*s,y-16*s,9*s,9*s,0,0,Math.PI*2); ctx.ellipse(x+14*s,y-16*s,9*s,9*s,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(x-14*s,y-17*s,6*s,0,Math.PI*2); ctx.arc(x+14*s,y-17*s,6*s,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(x-14*s,y-16*s,2.6*s,0,Math.PI*2); ctx.arc(x+14*s,y-16*s,2.6*s,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#1d5a1d'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x,y+4*s,10*s,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+}
+function knight(x,y,s,col){ // enkel riddare (hjälm + kropp)
+  ctx.fillStyle=col||'#9aa3ad';
+  ctx.fillRect(x-14*s,y-10*s,28*s,40*s); // kropp
+  ctx.beginPath(); ctx.arc(x,y-22*s,15*s,0,Math.PI*2); ctx.fill(); // hjälm
+  ctx.fillStyle='#222'; ctx.fillRect(x-9*s,y-26*s,18*s,6*s); // visir
+  ctx.fillStyle='#c0392b'; ctx.fillRect(x-3*s,y-44*s,6*s,16*s); // plym
+}
+function princess(x,y,s){
+  ctx.fillStyle='#d98ec0'; ctx.beginPath(); ctx.moveTo(x-16*s,y+30*s); ctx.lineTo(x,y-6*s); ctx.lineTo(x+16*s,y+30*s); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#f1c27d'; ctx.beginPath(); ctx.arc(x,y-16*s,11*s,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#ffd700'; ctx.beginPath(); ctx.moveTo(x-9*s,y-24*s); ctx.lineTo(x-5*s,y-32*s); ctx.lineTo(x,y-24*s); ctx.lineTo(x+5*s,y-32*s); ctx.lineTo(x+9*s,y-24*s); ctx.closePath(); ctx.fill();
+}
+function sparkles(n,seed){ ctx.fillStyle='rgba(255,225,150,.9)';
+  for(let i=0;i<n;i++){ const a=(i*97+seed*13)%360*Math.PI/180; const rr=60+((i*53+seed*7)%120);
+    const x=W/2+Math.cos(a)*rr, y=H*0.42+Math.sin(a)*rr*0.7; const sz=2+((i+seed)%3);
+    ctx.beginPath(); ctx.arc(x,y,sz,0,Math.PI*2); ctx.fill(); } }
+
+function drawScene(scene, t){
+  if(!scene){ ctx.clearRect(0,0,W,H); return; }
+  const kind=scene.art; const cx=W/2, gy=H*0.62;
+  ctx.clearRect(0,0,W,H);
+
+  if(kind==='ride'){
+    skyBg('#1a1530','#0c0a18'); moon(W*0.78,H*0.18,38); trees('#0c0a12',gy); ground('#0e0c14',gy);
+    const x=cx+Math.sin(t/60)*40; knight(x,gy-50,1.0); // riddare rider (gungar)
+    ctx.fillStyle='#0a0810'; ctx.beginPath(); ctx.ellipse(x,gy-6,40,12,0,0,Math.PI*2); ctx.fill(); // häst-silhuett antydd
+  }
+  else if(kind==='fog'){
+    skyBg('#222033','#101018'); trees('#0c0a12',gy); ground('#0e0c14',gy); knight(cx,gy-50,1.0);
+    for(let i=0;i<6;i++){ ctx.fillStyle='rgba(200,200,210,'+(0.05+0.04*i)+')'; const yy=H*0.3+i*40+Math.sin(t/40+i)*8;
+      ctx.beginPath(); ctx.ellipse(cx+Math.sin(t/50+i)*60,yy,180,30,0,0,Math.PI*2); ctx.fill(); }
+  }
+  else if(kind==='frog_sit'){
+    skyBg('#1a2618','#0a120a'); moon(W*0.2,H*0.2,26); trees('#08120a',gy); ground('#0a160a',gy);
+    ctx.fillStyle='#22331f'; ctx.beginPath(); ctx.ellipse(cx,gy+6,46,22,0,0,Math.PI*2); ctx.fill(); // sten
+    frog(cx,gy-14-Math.abs(Math.sin(t/30))*4,1.0);
+    knight(cx-90,gy-50,0.9);
+  }
+  else if(kind==='kiss'){
+    skyBg('#241c30','#100c18'); moon(W*0.78,H*0.18,32); trees('#0c0a12',gy); ground('#0e0c14',gy);
+    knight(cx-40,gy-46,0.95); frog(cx+34,gy-10,1.0);
+    // hjärtan
+    ctx.fillStyle='rgba(255,120,150,'+(0.5+0.5*Math.sin(t/20))+')';
+    for(let i=0;i<3;i++){ const hy=gy-70-((t/2+i*30)%80); heart(cx,hy,8); }
+  }
+  else if(kind==='curse'){
+    skyBg('#2a1030','#140618');
+    if(t%14<7){ ctx.fillStyle='rgba(180,90,255,.35)'; ctx.fillRect(0,0,W,H); }
+    trees('#150818',gy); ground('#180820',gy);
+    knight(cx,gy-50,1.0);
+    ctx.strokeStyle='rgba(190,120,255,.8)'; ctx.lineWidth=3;
+    for(let i=0;i<5;i++){ ctx.beginPath(); const a=t*0.1+i; ctx.arc(cx,gy-30,40+i*14,a,a+1.6); ctx.stroke(); }
+  }
+  else if(kind==='become_frog'){
+    skyBg('#201a30','#0e0a18'); trees('#0c0a12',gy); ground('#0e0c14',gy);
+    const morph=Math.min(1,t/120);
+    if(morph<1){ knight(cx,gy-50,1.0-morph*0.4); } 
+    if(morph>0.4) frog(cx,gy-14,0.6+morph*0.4);
+    if(t%10<5){ ctx.fillStyle='rgba(150,255,150,.25)'; ctx.fillRect(0,0,W,H); }
+  }
+  else if(kind==='cnc'){
+    skyBg('#2b2218','#140e08'); ground('#160f08',H*0.55);
+    // maskinram
+    ctx.fillStyle='#3a2c18'; ctx.fillRect(cx-110,H*0.28,220,170);
+    ctx.fillStyle='#1c140a'; ctx.fillRect(cx-90,H*0.32,180,120);
+    // fräshuvud som rör sig
+    const hx=cx+Math.sin(t/25)*70; 
+    ctx.fillStyle='#c0c4cc'; ctx.fillRect(hx-6,H*0.30,12,40);
+    ctx.fillStyle='#888'; ctx.beginPath(); ctx.moveTo(hx-6,H*0.30+40); ctx.lineTo(hx+6,H*0.30+40); ctx.lineTo(hx,H*0.30+52); ctx.fill();
+    // gnistor
+    for(let i=0;i<6;i++){ ctx.fillStyle='rgba(255,200,80,'+Math.random()+')'; ctx.beginPath(); ctx.arc(hx+(Math.random()*30-15),H*0.30+52+Math.random()*10,1.5,0,Math.PI*2); ctx.fill(); }
+    frog(cx,H*0.5+30,0.7);
+  }
+  else if(kind==='goal'){
+    skyBg('#241a10','#0e0a06');
+    // sköld + svärd ikon
+    ctx.fillStyle='#a86a3a'; ctx.beginPath(); ctx.moveTo(cx-60,H*0.32); ctx.lineTo(cx-10,H*0.32); ctx.lineTo(cx-35,H*0.5); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='#c0c4cc'; ctx.lineWidth=8; ctx.beginPath(); ctx.moveTo(cx+40,H*0.30); ctx.lineTo(cx+40,H*0.52); ctx.stroke();
+    ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(cx+24,H*0.40); ctx.lineTo(cx+56,H*0.40); ctx.stroke();
+    sparkles(14,t);
+  }
+  else if(kind==='glow'){
+    skyBg('#2b2418','#140e08');
+    const rg=ctx.createRadialGradient(cx,H*0.42,10,cx,H*0.42,Math.max(W,H)*0.6);
+    const a=Math.min(0.9,t/80); rg.addColorStop(0,'rgba(255,225,150,'+a+')'); rg.addColorStop(1,'rgba(255,225,150,0)');
+    ctx.fillStyle=rg; ctx.fillRect(0,0,W,H); frog(cx,H*0.5,0.8); sparkles(18,t);
+  }
+  else if(kind==='restore'){
+    skyBg('#1a2030','#0c0e18'); ground('#0e1018',H*0.6);
+    const m=Math.min(1,t/100);
+    if(m<1) frog(cx,H*0.5,0.8-m*0.3);
+    if(m>0.3) knight(cx,H*0.5-40,0.7+m*0.4);
+    sparkles(12,t);
+  }
+  else if(kind==='princess'){
+    skyBg('#241c30','#100c18'); ground('#120e1a',H*0.6);
+    // slottsport
+    ctx.fillStyle='#3a3040'; ctx.fillRect(cx-30,H*0.30,60,H*0.3);
+    ctx.fillStyle='#211a28'; ctx.beginPath(); ctx.arc(cx,H*0.30,30,Math.PI,0); ctx.fill();
+    princess(cx,H*0.5,1.0); 
+  }
+  else if(kind==='hug'){
+    skyBg('#241c30','#100c18'); ground('#120e1a',H*0.6);
+    knight(cx-22,H*0.5-40,0.8); princess(cx+22,H*0.5,0.9);
+    ctx.fillStyle='rgba(255,120,150,'+(0.5+0.5*Math.sin(t/20))+')';
+    for(let i=0;i<4;i++){ heart(cx,H*0.34-((t/2+i*24)%70),9); }
+  }
+  else if(kind==='wedding'){
+    skyBg('#2a2440','#120e20'); ground('#141022',H*0.62);
+    knight(cx-26,H*0.5-40,0.8); princess(cx+26,H*0.5,0.9);
+    // valv av blommor
+    ctx.strokeStyle='#6a8a4a'; ctx.lineWidth=8; ctx.beginPath(); ctx.arc(cx,H*0.5,90,Math.PI,0); ctx.stroke();
+    // konfetti
+    for(let i=0;i<24;i++){ ctx.fillStyle=['#ffd700','#ff7aa0','#7ad0ff','#9aff7a'][i%4];
+      const x=(i*53+t*1.5)%W, y=((i*31+t*2)%H); ctx.fillRect(x,y,4,4); }
+  }
+  else if(kind==='thanks'){
+    skyBg('#241a10','#0e0a06');
+    knight(cx-26,H*0.5-40,0.8); princess(cx+26,H*0.5,0.9); sparkles(20,t);
+    ctx.fillStyle='#e8c977'; ctx.font='bold 26px -apple-system,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('🎉 Lyckligt slut 🎉',cx,H*0.24);
+  }
+  else { skyBg('#15100a','#0a0805'); }
+}
+function heart(x,y,s){ ctx.beginPath(); ctx.moveTo(x,y+s*0.6); ctx.bezierCurveTo(x+s,y-s*0.4,x+s*1.4,y+s*0.5,x,y+s*1.3); ctx.bezierCurveTo(x-s*1.4,y+s*0.5,x-s,y-s*0.4,x,y+s*0.6); ctx.fill(); }
+
+//==================================================================
+// CUTSCENE-SPELARE
+//==================================================================
+let cutTimer=null;
+function playCutscene(scenes,elId,onDone){
+  let i=0; const el=$(elId);
+  function step(){
+    if(i>=scenes.length){ onDone(); return; }
+    const sc=scenes[i];
+    startCutAnim(sc);
+    el.textContent=sc.t; el.classList.remove('fade'); void el.offsetWidth; el.classList.add('fade');
+    say(sc.t);
+    cutTimer=setTimeout(()=>{ i++; step(); }, sc.d);
+  }
+  step();
+  return ()=>{ if(cutTimer)clearTimeout(cutTimer); if(window.speechSynthesis)speechSynthesis.cancel(); };
+}
+
+let stopIntro=null, stopFinal=null;
+function runIntro(){ gameRenderOn=false; ctx.clearRect(0,0,W,H); hideAllScreens(); show('screen-intro'); showHUD(false);
+  stopIntro=playCutscene(introScenes,'cut-text',()=>{ stopCutAnim(); gotoLevelIntro(0); }); }
+function runFinal(){ gameRenderOn=false; ctx.clearRect(0,0,W,H); hideAllScreens(); show('screen-final'); showHUD(false);
+  stopFinal=playCutscene(finalScenes,'cut-text-final',()=>{ stopCutAnim(); backToStart(); }); }
+function backToStart(){ stopCutAnim(); hideAllScreens(); show('screen-start'); }
+
+$('skip-intro').addEventListener('click',()=>{ if(stopIntro)stopIntro(); stopCutAnim(); gotoLevelIntro(0); });
+$('skip-final').addEventListener('click',()=>{ if(stopFinal)stopFinal(); stopCutAnim(); backToStart(); });
+
+//==================================================================
+// START
+//==================================================================
+$('btn-start').addEventListener('click',()=>{ ac(); if(window.speechSynthesis) speechSynthesis.getVoices(); runIntro(); });
+$('btn-dev1').addEventListener('click',()=>{ ac(); startLevel(0); });
+$('btn-dev2').addEventListener('click',()=>{ ac(); startLevel(1); });
+$('btn-dev3').addEventListener('click',()=>{ ac(); startLevel(2); });
+if(window.speechSynthesis){ speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices(); }
+
+draw();
+</script>
+<script src="../../delat/hem.js"></script>
+</body>
+</html>

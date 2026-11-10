@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Charlies Äventyr">
+<meta name="theme-color" content="#ff8fc6">
+<title>Charlies Popcorn-Äventyr</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+  html,body { height:100%; margin:0; }
+  body { font-family:'Comic Sans MS','Trebuchet MS',sans-serif; background:linear-gradient(160deg,#ffd9ec,#ffc0e0 50%,#ffb3d9); display:flex; align-items:center; justify-content:center; overflow:hidden; position:fixed; inset:0; overscroll-behavior:none; touch-action:manipulation; -webkit-user-select:none; -webkit-touch-callout:none; color:#7a2a5a; }
+  #game { width:100%; max-width:560px; height:100vh; height:100dvh; position:relative; overflow:hidden; background:#ffe6f4; box-shadow:0 0 40px rgba(200,50,130,0.3); display:flex; flex-direction:column; }
+  #game.shake { animation:screenShake 0.4s ease; }
+  @keyframes screenShake { 0%,100%{transform:translate(0,0)} 20%{transform:translate(-5px,3px)} 40%{transform:translate(5px,-3px)} 60%{transform:translate(-4px,-2px)} 80%{transform:translate(4px,2px)} }
+  #scanlines { position:absolute; inset:0; pointer-events:none; z-index:70; background:repeating-linear-gradient(0deg,rgba(0,0,0,0.05) 0 1px,transparent 1px 3px); opacity:0.5; mix-blend-mode:multiply; }
+
+  #hud { height:58px; flex-shrink:0; display:none; align-items:center; gap:8px; padding:0 12px; z-index:30; background:linear-gradient(180deg,rgba(255,170,215,0.97),rgba(255,170,215,0.7)); border-bottom:3px solid #ff8fc6; }
+  .counter { background:#fff; border-radius:30px; padding:6px 12px; font-size:18px; font-weight:bold; color:#d6357f; box-shadow:0 3px 0 #e88bb8; display:flex; align-items:baseline; gap:4px; white-space:nowrap; }
+  .counter .slash { font-size:12px; opacity:0.55; }
+  .spacer { flex:1; }
+  .bounce { animation:bounce 0.5s ease; }
+  @keyframes bounce { 0%,100%{transform:scale(1) rotate(0)} 30%{transform:scale(1.35) rotate(-10deg)} 60%{transform:scale(1.15) rotate(7deg)} }
+  @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.4)} 100%{transform:scale(1)} }
+  .icon-btn { background:#fff; border:none; border-radius:50%; width:38px; height:38px; font-size:18px; cursor:pointer; box-shadow:0 3px 0 #e88bb8; flex-shrink:0; }
+  .icon-btn:active { transform:translateY(2px); box-shadow:0 1px 0 #e88bb8; }
+
+  #mapbar { display:none; height:58px; flex-shrink:0; padding:4px 10px; position:relative; z-index:29; background:linear-gradient(180deg,#ecd3a4,#dcbb86); border-bottom:4px solid #b9935f; box-shadow:inset 0 0 22px rgba(120,80,30,0.3); }
+  #mapbar::before { content:''; position:absolute; inset:0; pointer-events:none; background:radial-gradient(circle at 20% 30%,rgba(150,110,60,0.12) 0 2px,transparent 3px),radial-gradient(circle at 70% 70%,rgba(150,110,60,0.1) 0 2px,transparent 3px); background-size:40px 40px; }
+  #mapSvg { width:100%; height:100%; display:block; }
+  #mapDot { transform-box:fill-box; transform-origin:center; animation:dotPulse 1s ease-in-out infinite; }
+  @keyframes dotPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.45)} }
+
+  #stage { flex:1; position:relative; min-height:0; }
+  .scene { position:absolute; inset:0; display:none; flex-direction:column; }
+
+  #start,#intro { align-items:center; justify-content:center; text-align:center; padding:22px; background:linear-gradient(180deg,#bfe9ff,#ffe6f4 60%,#ffd0ec); }
+  #start h1 { font-size:34px; color:#d6357f; text-shadow:3px 3px 0 #fff, 5px 5px 0 #ffb3d9; margin-bottom:8px; line-height:1.15; }
+  #start .sub { font-size:16px; margin-bottom:14px; }
+  #startCharlie { width:86px; height:132px; margin-bottom:6px; }
+  .big-btn { background:linear-gradient(180deg,#ff6fb5,#ff3d9a); color:#fff; border:none; border-radius:16px; padding:16px 34px; font-size:22px; font-weight:bold; cursor:pointer; box-shadow:0 6px 0 #c92e76; font-family:inherit; margin-top:10px; animation:bob 1.2s ease-in-out infinite; }
+  .big-btn:active { transform:translateY(4px); box-shadow:0 2px 0 #c92e76; }
+  @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+  .intro-stage { position:relative; width:240px; height:240px; margin-bottom:6px; }
+  #introCharlie { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:84px; height:130px; animation:idleBob 1.2s infinite ease-in-out; }
+  #introCharlie svg { width:100%; height:100%; }
+  .thought { position:absolute; top:0; left:50%; transform:translateX(-50%); background:#fff; border-radius:26px; padding:14px 18px; box-shadow:0 5px 0 rgba(200,50,130,0.2); display:flex; gap:10px; font-size:36px; }
+  .thought::after { content:''; position:absolute; bottom:-10px; left:38%; width:18px; height:18px; background:#fff; border-radius:50%; box-shadow:-14px 12px 0 -4px #fff; }
+  .thought span { opacity:0; transform:scale(0.3); animation:dreamPop 0.5s ease forwards; }
+  .thought span:nth-child(1){animation-delay:0.5s} .thought span:nth-child(2){animation-delay:1.3s} .thought span:nth-child(3){animation-delay:2.1s} .thought span:nth-child(4){animation-delay:3.1s}
+  @keyframes dreamPop { 0%{opacity:0;transform:scale(0.3) translateY(8px)} 60%{transform:scale(1.3)} 100%{opacity:1;transform:scale(1)} }
+  .intro-cap { font-size:18px; color:#d6357f; font-weight:bold; min-height:26px; margin-bottom:10px; }
+
+  #track-area { flex:1; position:relative; overflow:hidden; min-height:0; background:linear-gradient(180deg,#bfe9ff,#e3f4ff); transition:background 0.6s; }
+  #sun { position:absolute; top:10px; right:16px; font-size:38px; animation:sunPulse 3s ease-in-out infinite; z-index:1; }
+  @keyframes sunPulse { 0%,100%{transform:scale(1) rotate(0)} 50%{transform:scale(1.12) rotate(20deg)} }
+  #hills { position:absolute; bottom:54px; left:0; right:0; height:90px; z-index:1; background-size:300px 100%; background-repeat:repeat-x; opacity:0.85; }
+  #hills.moving { animation:hillScroll 2.4s linear infinite; }
+  @keyframes hillScroll { from{background-position-x:0} to{background-position-x:-300px} }
+  .cloud { position:absolute; font-size:30px; opacity:0.9; animation:drift 13s linear infinite; z-index:1; }
+  @keyframes drift { from{transform:translateX(560px)} to{transform:translateX(-120px)} }
+  #ground { position:absolute; bottom:0; left:0; right:0; height:56px; z-index:2; border-top:5px solid #6fc04e; box-shadow:inset 0 6px 0 rgba(255,255,255,0.18); background:repeating-linear-gradient(90deg,#8fd672 0 22px,#84cc66 22px 44px); }
+  #ground.moving { animation:tread 0.45s linear infinite; }
+  @keyframes tread { from{background-position-x:0} to{background-position-x:-44px} }
+  #building { position:absolute; bottom:56px; left:120%; width:120px; height:122px; z-index:7; display:none; transition:left 1.7s ease; }
+  #building svg { width:100%; height:100%; display:block; }
+
+  #track-area.z-forest { background:linear-gradient(180deg,#bfe9ff,#e3f4ff); }
+  #track-area.z-forest #hills { background-image:radial-gradient(circle at 15% 100%,#9bd97f 0 60px,transparent 61px),radial-gradient(circle at 50% 100%,#8ace6f 0 80px,transparent 81px),radial-gradient(circle at 85% 100%,#9bd97f 0 70px,transparent 71px); }
+  #track-area.z-forest #ground { background:repeating-linear-gradient(90deg,#8fd672 0 22px,#84cc66 22px 44px); border-top-color:#6fc04e; }
+  #track-area.z-desert { background:linear-gradient(180deg,#ffe3a8,#ffd98a); }
+  #track-area.z-desert #hills { background-image:radial-gradient(circle at 20% 100%,#e3bd72 0 70px,transparent 71px),radial-gradient(circle at 70% 100%,#e8c47e 0 90px,transparent 91px); background-size:320px 100%; }
+  #track-area.z-desert #ground { background:repeating-linear-gradient(90deg,#e6c07a 0 22px,#dcb368 22px 44px); border-top-color:#c79a4e; }
+  #track-area.z-beach { background:linear-gradient(180deg,#aee9ff,#d9f6ff); }
+  #track-area.z-beach #hills { background-image:linear-gradient(180deg,#5fc1e6,#4fb0d8); background-size:auto; height:64px; }
+  #track-area.z-beach #ground { background:repeating-linear-gradient(90deg,#f2dca0 0 22px,#ecd29a 22px 44px); border-top-color:#e0c074; }
+  #track-area.z-mountain { background:linear-gradient(180deg,#cdd9e6,#eef3f8); }
+  #track-area.z-mountain #hills { background-image:radial-gradient(circle at 20% 100%,#aab6c2 0 80px,transparent 81px),radial-gradient(circle at 60% 100%,#9fb0bd 0 100px,transparent 101px),radial-gradient(circle at 90% 100%,#b6c2cd 0 70px,transparent 71px); background-size:320px 100%; }
+  #track-area.z-mountain #ground { background:repeating-linear-gradient(90deg,#e3e9ef 0 22px,#d4dde4 22px 44px); border-top-color:#b9c4cf; }
+
+  #zoneBanner { position:absolute; top:34%; left:50%; transform:translate(-50%,-50%) scale(0.6); background:rgba(255,255,255,0.94); border:3px solid #ff8fc6; border-radius:18px; padding:12px 24px; font-size:25px; font-weight:bold; color:#d6357f; z-index:22; opacity:0; pointer-events:none; box-shadow:0 6px 0 rgba(200,50,130,0.2); }
+  #zoneBanner.show { animation:banner 2s ease; }
+  @keyframes banner { 0%{opacity:0; transform:translate(-50%,-50%) scale(0.6)} 18%{opacity:1; transform:translate(-50%,-50%) scale(1.05)} 28%{transform:translate(-50%,-50%) scale(1)} 80%{opacity:1} 100%{opacity:0; transform:translate(-50%,-50%) scale(1.15)} }
+
+  #charlie { position:absolute; bottom:48px; left:44px; width:54px; height:86px; z-index:10; transition:left 1s ease; }
+  #charlie svg, #thief svg, #bossThief svg { width:100%; height:100%; overflow:visible; }
+  .leg,.arm { transform-box:fill-box; transform-origin:50% 8%; }
+  #charlie.walking { animation:bobWalk 0.4s infinite ease-in-out; }
+  @keyframes bobWalk { 0%,100%{transform:translateY(0) rotate(2deg)} 50%{transform:translateY(-4px) rotate(2deg)} }
+  #charlie.walking .leg-l, #charlie.walking .arm-r { animation:swingA 0.4s infinite ease-in-out; }
+  #charlie.walking .leg-r, #charlie.walking .arm-l { animation:swingB 0.4s infinite ease-in-out; }
+  @keyframes swingA { 0%{transform:rotate(-26deg)} 50%{transform:rotate(26deg)} 100%{transform:rotate(-26deg)} }
+  @keyframes swingB { 0%{transform:rotate(26deg)} 50%{transform:rotate(-26deg)} 100%{transform:rotate(26deg)} }
+  #charlie.idle { animation:idleBob 1.2s infinite ease-in-out; }
+  @keyframes idleBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+  #charlie.jump { animation:jumpAnim 0.7s ease; }
+  @keyframes jumpAnim { 0%{transform:translateY(0) scaleY(1)} 12%{transform:translateY(0) scaleY(0.8) scaleX(1.15)} 50%{transform:translateY(-78px) rotate(-12deg) scaleY(1.1)} 65%{transform:translateY(-78px) rotate(12deg)} 100%{transform:translateY(0) scaleY(1)} }
+  #charlie.land { animation:landSquash 0.22s ease; }
+  @keyframes landSquash { 0%{transform:scaleY(0.7) scaleX(1.2)} 100%{transform:scaleY(1) scaleX(1)} }
+  #obstacle { position:absolute; bottom:56px; left:78%; z-index:8; font-size:44px; transition:left 0.7s ease,opacity 0.4s,transform 0.4s; animation:obWobble 0.5s ease-in-out infinite; }
+  @keyframes obWobble { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-3px) rotate(3deg)} }
+  #speech { position:absolute; top:8px; left:50%; transform:translateX(-50%); background:#fff; border-radius:14px; padding:8px 16px; font-size:16px; font-weight:bold; color:#d6357f; box-shadow:0 4px 0 rgba(200,50,130,0.25); z-index:20; max-width:92%; text-align:center; opacity:0; transition:opacity 0.25s; }
+  #speech.show { opacity:1; }
+  #speech.angry { color:#b02050; }
+  #speech::after { content:''; position:absolute; bottom:-10px; left:50%; transform:translateX(-50%); border-left:10px solid transparent; border-right:10px solid transparent; border-top:12px solid #fff; }
+
+  #qbox { flex-shrink:0; background:#fff; border-radius:22px 22px 0 0; padding:12px 14px 16px; box-shadow:0 -6px 0 rgba(255,143,198,0.5); z-index:25; }
+  .q-label { text-align:center; font-size:14px; color:#b85a8a; margin-bottom:2px; }
+  .q-text { text-align:center; font-size:34px; font-weight:bold; color:#d6357f; margin-bottom:10px; }
+  .answers { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+  .ans-btn { background:linear-gradient(180deg,#ffe0f0,#ffc4e2); border:3px solid #ff9ace; border-radius:14px; padding:14px; font-size:26px; font-weight:bold; color:#c92e76; cursor:pointer; font-family:inherit; transition:transform 0.08s; box-shadow:0 4px 0 #ff9ace; }
+  .ans-btn:active { transform:translateY(3px); box-shadow:0 1px 0 #ff9ace; }
+  .ans-btn.correct { background:linear-gradient(180deg,#b6f5a0,#7de25e); border-color:#4cae2c; color:#2a6e15; box-shadow:0 4px 0 #4cae2c; animation:pulse 0.4s; }
+  .ans-btn.wrong { background:linear-gradient(180deg,#ffc4c4,#ff9a9a); border-color:#e25c5c; color:#a02020; box-shadow:0 4px 0 #e25c5c; animation:shake 0.4s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+  /* BOSS scene (Hangman vs thief) */
+  #boss { align-items:center; justify-content:center; padding:16px; overflow:hidden; }
+  #bossBg { position:absolute; inset:0; z-index:0; }
+  #bossBg::after { content:''; position:absolute; inset:0; background:rgba(40,10,30,0.18); }
+  #bossThief { position:absolute; top:16px; left:50%; transform:translateX(-50%); width:72px; height:88px; z-index:3; animation:taunt 0.5s ease-in-out infinite; }
+  @keyframes taunt { 0%,100%{transform:translateX(-50%) rotate(-5deg)} 50%{transform:translateX(-50%) rotate(5deg) translateY(-3px)} }
+  .card { position:relative; z-index:2; background:rgba(255,255,255,0.95); border:4px solid #ff8fc6; border-radius:22px; padding:14px 14px 16px; width:100%; max-width:430px; box-shadow:0 8px 0 rgba(200,50,130,0.22); text-align:center; margin-top:60px; }
+  .card-title { font-size:19px; font-weight:bold; color:#b02050; margin:2px 0 4px; }
+  .hang-label { text-align:center; font-size:14px; color:#7a2a5a; font-weight:bold; margin-bottom:6px; }
+  .clue { text-align:center; font-size:16px; color:#7a2a5a; background:#fff4d6; border:2px dashed #ffce4f; border-radius:12px; padding:7px 10px; margin-bottom:6px; }
+  #missRow { text-align:center; font-size:20px; letter-spacing:2px; margin-bottom:6px; }
+  #missRow .gone { opacity:0.2; }
+  #wordDisplay { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:10px; }
+  #wordDisplay span { width:26px; height:36px; border-bottom:4px solid #ff9ace; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:bold; color:#d6357f; }
+  #wordDisplay span.filled { animation:pulse 0.3s; }
+  #alphabet { display:grid; grid-template-columns:repeat(8,1fr); gap:5px; }
+  .letter-btn { background:linear-gradient(180deg,#ffe0f0,#ffc4e2); border:2px solid #ff9ace; border-radius:9px; padding:8px 0; font-size:16px; font-weight:bold; color:#c92e76; cursor:pointer; font-family:inherit; box-shadow:0 3px 0 #ff9ace; }
+  .letter-btn:active { transform:translateY(2px); box-shadow:0 1px 0 #ff9ace; }
+  .letter-btn.hit { background:linear-gradient(180deg,#b6f5a0,#7de25e); border-color:#4cae2c; color:#2a6e15; box-shadow:0 3px 0 #4cae2c; }
+  .letter-btn.miss { background:#e6b8cc; border-color:#cc8fb0; color:#fff; opacity:0.55; box-shadow:none; }
+  .letter-btn:disabled { cursor:default; }
+
+  /* GATE scene (Sudoku unlock) */
+  #gate { align-items:center; justify-content:center; padding:16px; overflow:hidden; }
+  #gateBg { position:absolute; inset:0; z-index:0; filter:blur(9px) saturate(1.1); transform:scale(1.15); display:flex; align-items:center; justify-content:center; }
+  .gate-bigicon { font-size:150px; opacity:0.4; }
+  .gate-lock { font-size:40px; animation:lockWiggle 1.6s ease-in-out infinite; }
+  @keyframes lockWiggle { 0%,100%{transform:rotate(-7deg)} 50%{transform:rotate(7deg)} }
+  .gate-title { font-size:19px; font-weight:bold; color:#b02050; margin:2px 0 4px; }
+  .sud-instr { font-size:14px; color:#7a2a5a; margin-bottom:8px; }
+  #sudoku { display:grid; grid-template-columns:repeat(4,1fr); gap:3px; width:210px; margin:0 auto 10px; background:#c98bb0; padding:4px; border-radius:10px; }
+  .scell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:bold; color:#d6357f; border-radius:6px; cursor:pointer; background:#fff; }
+  .scell.blkB { background:#fde9f3; }
+  .scell.given { color:#7a2a5a; cursor:default; opacity:0.95; }
+  .scell.given.blkB,.scell.given { background:#ffd0e6; }
+  .scell.filled { background:#b6f5a0 !important; color:#2a6e15; }
+  .scell.sel { outline:4px solid #ff3d9a; outline-offset:-2px; }
+  #sudoku.sshake { animation:shake 0.4s; }
+  #numpad { display:flex; gap:8px; justify-content:center; }
+  .numbtn { width:48px; height:48px; border-radius:12px; background:linear-gradient(180deg,#ffe0f0,#ffc4e2); border:3px solid #ff9ace; font-size:24px; font-weight:bold; color:#c92e76; font-family:inherit; box-shadow:0 4px 0 #ff9ace; cursor:pointer; }
+  .numbtn:active { transform:translateY(3px); box-shadow:0 1px 0 #ff9ace; }
+
+  #flash { position:absolute; inset:0; background:radial-gradient(circle,rgba(255,0,80,0) 40%,rgba(120,0,40,0.5)); opacity:0; z-index:40; pointer-events:none; }
+  #flash.boom { animation:boomFx 0.6s ease 2; }
+  @keyframes boomFx { 0%,100%{opacity:0} 50%{opacity:1} }
+  .fly { position:absolute; z-index:60; pointer-events:none; transition:left 0.7s cubic-bezier(.4,0,.6,1),top 0.7s cubic-bezier(.5,-0.5,.7,1),opacity 0.7s; }
+  .fly span { display:inline-block; font-size:24px; animation:coinSpin 0.4s linear infinite; }
+  @keyframes coinSpin { 0%{transform:scaleX(1)} 50%{transform:scaleX(0.2)} 100%{transform:scaleX(1)} }
+  .popup { position:absolute; z-index:62; pointer-events:none; font-family:'Courier New',monospace; font-weight:bold; font-size:22px; text-shadow:2px 2px 0 #fff; animation:popUp 1s ease forwards; }
+  @keyframes popUp { 0%{opacity:1; transform:translateY(0) scale(0.8)} 100%{opacity:0; transform:translateY(-50px) scale(1.2)} }
+  .spark { position:absolute; font-size:22px; z-index:55; pointer-events:none; animation:sparkUp 1s ease forwards; }
+  @keyframes sparkUp { 0%{opacity:1; transform:translateY(0) scale(0.5)} 100%{opacity:0; transform:translateY(-60px) scale(1.3)} }
+  .dust { position:absolute; font-size:16px; z-index:6; pointer-events:none; opacity:0.7; animation:dustPuff 0.6s ease forwards; }
+  @keyframes dustPuff { 0%{opacity:0.7; transform:translateX(0) scale(0.6)} 100%{opacity:0; transform:translateX(-30px) scale(1.3)} }
+  .confetti { position:absolute; width:11px; height:11px; z-index:50; pointer-events:none; animation:fall 2.2s linear forwards; }
+  @keyframes fall { 0%{opacity:1; transform:translateY(-20px) rotate(0)} 100%{opacity:0.3; transform:translateY(820px) rotate(720deg)} }
+
+  #cinema { background:linear-gradient(180deg,#2a1640,#160a26); align-items:center; justify-content:flex-start; text-align:center; padding:18px; color:#ffe6f4; }
+  #cinema h1 { font-size:28px; color:#ffd24f; text-shadow:2px 2px 0 #7a2a5a; margin:6px 0; }
+  #cinema .screen { width:90%; max-width:420px; height:140px; border-radius:12px; background:linear-gradient(180deg,#fff,#cfe6ff); border:8px solid #111; display:flex; align-items:center; justify-content:center; font-size:52px; animation:flicker 1.2s infinite; margin-bottom:8px; }
+  @keyframes flicker { 0%,100%{box-shadow:0 0 40px rgba(255,255,200,0.6)} 50%{box-shadow:0 0 70px rgba(255,255,180,0.95)} }
+  #cinema .seats { font-size:24px; letter-spacing:6px; opacity:0.55; margin:4px 0; }
+  #cinema .charlie-row { display:flex; align-items:flex-end; justify-content:center; gap:4px; margin-top:6px; }
+  #cinema #cinCharlie { width:76px; height:118px; }
+  #cinema #cinCharlie svg { width:100%; height:100%; }
+  #cinema .treat { font-size:42px; animation:munch 0.7s infinite ease-in-out; }
+  #cinema .treat.soda { animation-delay:0.35s; }
+  @keyframes munch { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px) rotate(-4deg)} }
+  #cinema .stars { font-size:32px; animation:munch 0.9s ease infinite; }
+  #cinema p { font-size:17px; margin:10px 0 4px; }
+
+  /* iPhone safe areas */
+  #hud { padding-top: env(safe-area-inset-top); height: calc(58px + env(safe-area-inset-top)); }
+  #start, #intro, #cinema, #gate, #boss { padding-top: calc(20px + env(safe-area-inset-top)); padding-bottom: calc(22px + env(safe-area-inset-bottom)); }
+  #qbox { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+</style>
+</head>
+<body>
+<div id="game">
+
+  <div id="hud">
+    <div class="counter" id="popCounter">🍿 <span id="popNum">0</span><span class="slash">/100</span></div>
+    <div class="counter" id="sodaCounter">🥤 <span id="sodaNum">0</span></div>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="soundBtn">🔊</button>
+  </div>
+
+  <div id="mapbar">
+    <svg id="mapSvg" viewBox="0 0 520 56" preserveAspectRatio="xMidYMid meet">
+      <path id="routeBg" d="M30 30 C74 8 124 10 162 30 S236 54 274 30 S348 8 388 30 S454 52 490 28" fill="none" stroke="#b03a2e" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round" opacity="0.45"/>
+      <path id="routeDone" d="M30 30 C74 8 124 10 162 30 S236 54 274 30 S348 8 388 30 S454 52 490 28" fill="none" stroke="#e0241b" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="0 9999"/>
+      <text x="6" y="38" font-size="20">🏠</text>
+      <text x="86" y="18" font-size="15">🌲</text>
+      <text x="182" y="50" font-size="15">🏜️</text>
+      <text x="280" y="18" font-size="15">🏖️</text>
+      <text x="398" y="50" font-size="15">⛰️</text>
+      <text x="474" y="40" font-size="22">🎬</text>
+      <text x="478" y="20" font-size="16" fill="#e0241b" font-weight="bold">❌</text>
+      <circle id="mapDot" cx="30" cy="30" r="5.5" fill="#e0241b" stroke="#fff" stroke-width="2"/>
+    </svg>
+  </div>
+
+  <div id="stage">
+    <div class="scene" id="start">
+      <div id="startCharlie"></div>
+      <h1>Charlies<br>Popcorn-Äventyr</h1>
+      <p class="sub">Skog 🌲 → Öken 🏜️ → Strand 🏖️ → Berg ⛰️ → Bio 🎬</p>
+      <button class="big-btn" id="startBtn">▶ Spela</button>
+    </div>
+
+    <div class="scene" id="intro">
+      <div class="intro-stage">
+        <div class="thought"><span>🎬</span><span>🍿</span><span>🥤</span><span>🗺️</span></div>
+        <div id="introCharlie"></div>
+      </div>
+      <div class="intro-cap" id="introCap">Charlie har en skattkarta! 🗺️🎬</div>
+      <button class="big-btn" id="introBtn">▶ Hjälp Charlie!</button>
+    </div>
+
+    <div class="scene" id="play">
+      <div id="track-area" class="z-forest">
+        <span id="sun">☀️</span>
+        <span class="cloud" style="top:12px; animation-delay:0s;">☁️</span>
+        <span class="cloud" style="top:44px; animation-delay:-5s;">☁️</span>
+        <span class="cloud" style="top:24px; animation-delay:-9s;">☁️</span>
+        <div id="hills"></div>
+        <div id="ground"></div>
+        <div id="building"></div>
+        <div id="charlie"></div>
+        <div id="obstacle">🪨</div>
+        <div id="zoneBanner"></div>
+        <div id="speech"></div>
+      </div>
+      <div id="qbox">
+        <div class="q-label" id="qLabel">Skogen</div>
+        <div class="q-text" id="qText">2 + 3 = ?</div>
+        <div class="answers" id="answers"></div>
+      </div>
+    </div>
+
+    <!-- BOSS: Hangman vs thief -->
+    <div class="scene" id="boss">
+      <div id="bossBg"></div>
+      <div id="bossThief"></div>
+      <div class="card">
+        <div class="card-title" id="bossTitle">👿 Popcorntjuven dök upp!</div>
+        <div class="hang-label" id="hangLabel">Gissa ordet och vinn läsk!</div>
+        <div class="clue" id="clue">💡 ...</div>
+        <div id="missRow">🍿🍿🍿🍿🍿🍿</div>
+        <div id="wordDisplay"></div>
+        <div id="alphabet"></div>
+      </div>
+    </div>
+
+    <!-- GATE: Sudoku unlock -->
+    <div class="scene" id="gate">
+      <div id="gateBg"></div>
+      <div class="card">
+        <div class="gate-lock" id="gateLock">🔒</div>
+        <div class="gate-title" id="gateTitle">Lås upp Öknen 🏜️</div>
+        <div class="sud-instr" id="sudInstr">Fyll i 1–4 i varje rad, kolumn och ruta!</div>
+        <div id="sudoku"></div>
+        <div id="numpad"></div>
+      </div>
+    </div>
+
+    <div class="scene" id="cinema">
+      <div class="stars">⭐⭐⭐</div>
+      <h1>Bio! 🎬</h1>
+      <div class="screen" id="cinScreen">🎬</div>
+      <div class="seats">💺 💺 💺 💺 💺</div>
+      <div class="charlie-row">
+        <span class="treat">🍿</span>
+        <div id="cinCharlie"></div>
+        <span class="treat soda">🥤</span>
+      </div>
+      <p><b id="cinPop">0</b> 🍿 &nbsp; <b id="cinSoda">0</b> 🥤</p>
+      <button class="big-btn" id="againBtn">▶ Spela igen!</button>
+    </div>
+
+    <div id="flash"></div>
+  </div>
+  <div id="scanlines"></div>
+</div>
+
+<script>
+function charlieSVG(){return `<svg viewBox="0 0 70 110" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="35" cy="27" rx="20" ry="19" fill="#c9a063"/>
+  <path d="M15 30 Q8 60 16 88 Q22 72 24 48 Z" fill="#c9a063"/>
+  <path d="M55 30 Q62 60 54 88 Q48 72 46 48 Z" fill="#c9a063"/>
+  <path d="M18 34 Q13 58 18 80 Q22 64 23 46 Z" fill="#d8b478"/>
+  <g class="leg leg-l"><path d="M27 82 L34 82 L37 104 L23 104 Z" fill="#7d5bc6"/><path d="M28 83 L31 83 L31 100 L28 100 Z" fill="#8c6bd6" opacity="0.6"/><rect x="22" y="103" width="15" height="6" rx="3" fill="#ff7eb0"/><rect x="22" y="107" width="15" height="2.4" rx="1" fill="#fff"/></g>
+  <g class="leg leg-r"><path d="M36 82 L43 82 L47 104 L33 104 Z" fill="#7d5bc6"/><path d="M39 83 L42 83 L42 100 L39 100 Z" fill="#8c6bd6" opacity="0.6"/><rect x="33" y="103" width="15" height="6" rx="3" fill="#ff7eb0"/><rect x="33" y="107" width="15" height="2.4" rx="1" fill="#fff"/></g>
+  <rect x="31" y="41" width="8" height="14" rx="3" fill="#f2c4a0"/>
+  <path d="M26 50 Q35 46 44 50 L43 84 Q35 88 27 84 Z" fill="#fff"/>
+  <rect x="29" y="55" width="12" height="3" rx="1.5" fill="#ff5a5a"/><rect x="29" y="59" width="12" height="3" rx="1.5" fill="#ff9a3c"/><rect x="29" y="63" width="12" height="3" rx="1.5" fill="#ffd24f"/><rect x="29" y="67" width="12" height="3" rx="1.5" fill="#6fcf6f"/><rect x="29" y="71" width="12" height="3" rx="1.5" fill="#5ec8ff"/>
+  <path d="M26 50 Q18 51 20 62 L22 86 Q27 88 30 85 L30 52 Q28 50 26 50 Z" fill="#ffc0d8"/>
+  <path d="M44 50 Q52 51 50 62 L48 86 Q43 88 40 85 L40 52 Q42 50 44 50 Z" fill="#ffc0d8"/>
+  <circle cx="24" cy="53" r="4" fill="#ffd3e4"/><circle cx="22" cy="63" r="4" fill="#ffd3e4"/><circle cx="23" cy="74" r="4" fill="#ffd3e4"/>
+  <circle cx="46" cy="53" r="4" fill="#ffd3e4"/><circle cx="48" cy="63" r="4" fill="#ffd3e4"/><circle cx="47" cy="74" r="4" fill="#ffd3e4"/>
+  <circle cx="35" cy="51" r="4.5" fill="#ffd3e4"/>
+  <g class="arm arm-l"><path d="M23 53 Q15 56 17 70 Q19 76 24 73 L27 55 Z" fill="#ffc0d8"/><circle cx="20" cy="72" r="3.4" fill="#f7d3ab"/></g>
+  <g class="arm arm-r"><path d="M47 53 Q55 56 53 70 Q51 76 46 73 L43 55 Z" fill="#ffc0d8"/><circle cx="50" cy="72" r="3.4" fill="#f7d3ab"/></g>
+  <circle cx="35" cy="29" r="16" fill="#f7d3ab"/>
+  <path d="M19 30 Q17 11 35 10 Q53 11 51 30 Q47 19 40 20 Q35 14 30 20 Q23 19 19 30 Z" fill="#c9a063"/>
+  <path d="M19 30 Q14 21 21 16 Q17 25 24 30 Z" fill="#c9a063"/><path d="M51 30 Q56 21 49 16 Q53 25 46 30 Z" fill="#c9a063"/>
+  <ellipse cx="29" cy="31" rx="3.2" ry="4" fill="#fff"/><ellipse cx="41" cy="31" rx="3.2" ry="4" fill="#fff"/>
+  <circle cx="29" cy="32" r="2.6" fill="#6b3b1a"/><circle cx="41" cy="32" r="2.6" fill="#6b3b1a"/>
+  <circle cx="29.8" cy="31" r="0.9" fill="#fff"/><circle cx="41.8" cy="31" r="0.9" fill="#fff"/>
+  <path d="M25 25 Q29 23 32 25" stroke="#a87f4a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <path d="M38 25 Q41 23 45 25" stroke="#a87f4a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <circle cx="25" cy="36" r="3" fill="#ff9ec4" opacity="0.55"/><circle cx="45" cy="36" r="3" fill="#ff9ec4" opacity="0.55"/>
+  <circle cx="26" cy="35" r="0.6" fill="#c98b5a"/><circle cx="28" cy="36" r="0.6" fill="#c98b5a"/><circle cx="44" cy="35" r="0.6" fill="#c98b5a"/><circle cx="42" cy="36" r="0.6" fill="#c98b5a"/>
+  <path d="M30 38 Q35 43 40 38" stroke="#c0502a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+</svg>`;}
+function thiefSVG(){return `<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+  <rect x="32" y="74" width="7" height="20" rx="3" fill="#333"/><rect x="42" y="74" width="7" height="20" rx="3" fill="#333"/>
+  <path d="M26 44 Q40 38 54 44 L58 78 Q40 84 22 78 Z" fill="#5a5a6e"/>
+  <rect x="20" y="46" width="7" height="22" rx="3" fill="#5a5a6e" transform="rotate(15 23 46)"/><rect x="53" y="46" width="7" height="22" rx="3" fill="#5a5a6e" transform="rotate(-15 56 46)"/>
+  <circle cx="40" cy="30" r="15" fill="#e8c9a0"/><path d="M24 26 Q40 10 56 26 L56 22 Q40 8 24 22 Z" fill="#2b2b3a"/><rect x="24" y="26" width="32" height="8" rx="2" fill="#1f1f2e"/>
+  <circle cx="33" cy="30" r="2.5" fill="#fff"/><circle cx="33" cy="30" r="1.3" fill="#000"/><circle cx="47" cy="30" r="2.5" fill="#fff"/><circle cx="47" cy="30" r="1.3" fill="#000"/>
+  <path d="M33 40 Q40 36 47 40" stroke="#7a4a2a" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M34 37 Q40 41 46 37" stroke="#2b2b3a" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;}
+const el=id=>document.getElementById(id);
+el('startCharlie').innerHTML=charlieSVG(); el('introCharlie').innerHTML=charlieSVG(); el('charlie').innerHTML=charlieSVG(); el('cinCharlie').innerHTML=charlieSVG(); el('bossThief').innerHTML=thiefSVG();
+
+// ---------- Sound ----------
+let audioCtx=null, soundOn=true, currentScene='start', _noise=null;
+function ac(){ if(!audioCtx){ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); } return audioCtx; }
+function tone(f,d,t='square',v=0.18,delay=0){ if(!soundOn||!f) return; const c=ac(),o=c.createOscillator(),g=c.createGain(); o.type=t; o.frequency.value=f; o.connect(g); g.connect(c.destination); const s=c.currentTime+delay; g.gain.setValueAtTime(0,s); g.gain.linearRampToValueAtTime(v,s+0.01); g.gain.exponentialRampToValueAtTime(0.001,s+d); o.start(s); o.stop(s+d+0.04); }
+function noiseBuf(){ const c=ac(); if(!_noise){ const len=c.sampleRate; const b=c.createBuffer(1,len,c.sampleRate); const dd=b.getChannelData(0); for(let i=0;i<len;i++) dd[i]=Math.random()*2-1; _noise=b; } return _noise; }
+function windGust(dur,freq,vol){ if(!soundOn) return; const c=ac(); const src=c.createBufferSource(); src.buffer=noiseBuf(); src.loop=true; const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=freq; const g=c.createGain(); src.connect(f); f.connect(g); g.connect(c.destination); const t=c.currentTime; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+dur*0.4); g.gain.linearRampToValueAtTime(0,t+dur); src.start(t); src.stop(t+dur+0.05); }
+function sCoin(){ tone(988,0.08,'square',0.2); tone(1319,0.18,'square',0.2,0.07); }
+function sJump(){ tone(330,0.07,'square',0.18); tone(523,0.07,'square',0.18,0.06); tone(784,0.1,'square',0.16,0.12); }
+function sCorrect(){ [523,659,784,1047].forEach((f,i)=>tone(f,0.1,'square',0.18,i*0.07)); }
+function sWrong(){ tone(311,0.12,'square',0.18); tone(233,0.2,'square',0.18,0.1); }
+function sPowerup(){ [392,523,659,784,1047,1319].forEach((f,i)=>tone(f,0.09,'square',0.18,i*0.06)); }
+function sLose(){ [440,392,349,294,233].forEach((f,i)=>tone(f,0.16,'square',0.2,i*0.13)); }
+function sBlip(){ tone(700,0.04,'square',0.12); }
+function sClick(){ tone(600,0.05,'square',0.14); }
+function sWhoosh(){ tone(523,0.1,'square',0.12); tone(784,0.12,'square',0.12,0.09); tone(1047,0.14,'square',0.1,0.18); }
+function sUnlock(){ tone(523,0.09,'square',0.18); tone(659,0.09,'square',0.18,0.08); tone(880,0.12,'square',0.18,0.16); tone(1175,0.18,'square',0.16,0.26); }
+function sBossIntro(){ const hit=(f,d,delay)=>{ tone(f,d,'sawtooth',0.3,delay); tone(f*0.5,d,'square',0.22,delay); }; hit(165,0.3,0); hit(165,0.3,0.38); hit(110,0.9,0.8); tone(55,1.0,'square',0.28,0.8); }
+function birdChirp(){ const b=1900+Math.random()*700; [0,0.07,0.15].forEach((d,i)=>tone(b+(i%2?180:-120),0.05,'sine',0.05,d)); }
+function mooseCall(){ tone(125,0.5,'sawtooth',0.07); tone(95,0.5,'sawtooth',0.06,0.32); }
+function gullCry(){ tone(1250,0.16,'sawtooth',0.045); tone(950,0.18,'sawtooth',0.045,0.16); tone(1100,0.14,'sawtooth',0.04,0.34); }
+function eagleScreech(){ [2100,1750,1450,1150].forEach((f,i)=>tone(f,0.07,'sawtooth',0.045,i*0.05)); }
+let ambientTimer=null;
+function startAmbient(zoneKey){ stopAmbient(); ambientTimer=setInterval(()=>{ if(!soundOn) return; const r=Math.random();
+  if(zoneKey==='forest'){ if(r<0.72) birdChirp(); else mooseCall(); }
+  else if(zoneKey==='desert'){ windGust(1.7,420,0.07); }
+  else if(zoneKey==='beach'){ if(r<0.5) windGust(2.2,700,0.06); else gullCry(); }
+  else if(zoneKey==='mountain'){ if(r<0.7) windGust(1.9,620,0.06); else eagleScreech(); }
+}, 2500); }
+function stopAmbient(){ if(ambientTimer){ clearInterval(ambientTimer); ambientTimer=null; } }
+
+let musicTimer=null, mStep=0;
+const LEAD=[659,784,880,784, 659,523,587,659, 698,880,784,698, 659,523,392,0];
+const BASS=[262,0,0,0, 220,0,0,0, 175,0,0,0, 196,0,0,0];
+function startMusic(){ stopMusic(); mStep=0; musicTimer=setInterval(()=>{ if(soundOn){ tone(LEAD[mStep%16],0.14,'square',0.05); if(BASS[mStep%16]) tone(BASS[mStep%16],0.18,'triangle',0.07); } mStep++; },165); }
+function stopMusic(){ if(musicTimer){ clearInterval(musicTimer); musicTimer=null; } }
+
+// ---------- Narrator ----------
+let svVoice=null, enVoice=null, anyVoice=null;
+function loadVoices(){ try{ const vs=window.speechSynthesis.getVoices(); if(vs&&vs.length){ anyVoice=vs[0]; svVoice=vs.find(v=>v.lang&&v.lang.toLowerCase().startsWith('sv'))||vs.find(v=>/swed|svensk/i.test(v.name))||null; enVoice=vs.find(v=>v.lang&&v.lang.toLowerCase().startsWith('en'))||vs.find(v=>/english/i.test(v.name))||null; } }catch(e){} }
+if('speechSynthesis' in window){ loadVoices(); window.speechSynthesis.onvoiceschanged=loadVoices; setTimeout(loadVoices,300); setTimeout(loadVoices,1200); }
+function speakLang(){ return svVoice?'sv':(enVoice?'en':'sv'); }
+const EN={
+  "Det här är Charlie. Charlie älskar att gå på bio! Hon drömmer om mjukt popcorn och iskall läsk framför en stor film. Charlie har en hemlig skattkarta. Om vi följer kartan så hittar vi hela vägen fram till biografen! Men på vägen måste hon klara alla hinder och räkna sina mattetal. Är du redo att hjälpa Charlie? Då följer vi kartan!":
+  "This is Charlie. Charlie loves going to the movies! She dreams of soft popcorn and ice-cold soda in front of a big film. Charlie has a secret treasure map. If we follow the map, we will find our way all the way to the cinema! But along the way she must clear all the obstacles and solve her math problems. Are you ready to help Charlie? Then let's follow the map!",
+  "Hurra! Du klarade det, Charlie! Nu blir det bio med popcorn och läsk. Bravo!":"Hooray! You did it, Charlie! Now it is movie time with popcorn and soda. Bravo!"
+};
+function speakRaw(text,lang,opts){ if(!soundOn||!('speechSynthesis' in window)) return; try{ const synth=window.speechSynthesis; synth.cancel(); setTimeout(()=>{ try{ const u=new SpeechSynthesisUtterance(text); const v=(lang==='en'?enVoice:svVoice)||anyVoice; if(v){ u.voice=v; u.lang=v.lang; } else { u.lang=(lang==='en'?'en-US':'sv-SE'); } u.rate=opts.rate||0.95; u.pitch=opts.pitch||1.05; u.volume=1; if(opts.onend) u.onend=opts.onend; synth.resume(); synth.speak(u); }catch(e){} },90); }catch(e){} }
+function speak(svText,opts={}){ const lang=speakLang(); const text=(lang==='en'&&EN[svText])?EN[svText]:svText; speakRaw(text,lang,opts); }
+function narrate(sv,en,opts={}){ const lang=speakLang(); speakRaw(lang==='en'?en:sv,lang,opts); }
+function unlockSpeech(){ if(!('speechSynthesis' in window)) return; try{ const u=new SpeechSynthesisUtterance(' '); u.volume=0; window.speechSynthesis.speak(u); loadVoices(); }catch(e){} }
+function stopSpeak(){ try{ window.speechSynthesis.cancel(); }catch(e){} }
+function speakIntro(){ speak(INTRO_TEXT); }
+const INTRO_TEXT="Det här är Charlie. Charlie älskar att gå på bio! Hon drömmer om mjukt popcorn och iskall läsk framför en stor film. Charlie har en hemlig skattkarta. Om vi följer kartan så hittar vi hela vägen fram till biografen! Men på vägen måste hon klara alla hinder och räkna sina mattetal. Är du redo att hjälpa Charlie? Då följer vi kartan!";
+
+const ZONES=[
+  { key:'forest', sv:'Skogen', en:'Forest', icon:'🌲', sky:'linear-gradient(180deg,#bfe9ff,#e3f4ff)', narr:{sv:'Nu går vi genom skogen.', en:'Now we walk through the forest.'}, obs:['🪨','🌳','🪵','🍄','🌲'], pad:['🌲','🍄','🦌','🐿️'] },
+  { key:'desert', sv:'Öknen', en:'Desert', icon:'🏜️', sky:'linear-gradient(180deg,#ffe3a8,#ffd98a)', narr:{sv:'Nu kommer vi till öknen. Så varmt och sandigt!', en:'Now we reach the desert. So hot and sandy!'}, obs:['🌵','🪨','☀️','🦂','🏜️'], pad:['🐫','🌴','🌵','☀️'] },
+  { key:'beach', sv:'Stranden', en:'Beach', icon:'🏖️', sky:'linear-gradient(180deg,#aee9ff,#d9f6ff)', narr:{sv:'Nu är vi på stranden! Hör du vågorna?', en:'Now we are at the beach! Can you hear the waves?'}, obs:['🌊','🦀','🐚','🏖️','💧'], pad:['🦀','🐚','🌊','🐠'] },
+  { key:'mountain', sv:'Berget', en:'Mountain', icon:'⛰️', sky:'linear-gradient(180deg,#cdd9e6,#eef3f8)', narr:{sv:'Nu klättrar vi upp på berget. Snart är vi framme!', en:'Now we climb the mountain. Almost there!'}, obs:['⛰️','🪨','❄️','🏔️','🌲'], pad:['🐐','🏔️','❄️','🌲'] }
+];
+const BIO_TARGET={ key:'bio', sv:'Biografen', en:'Cinema', icon:'🎬', sky:'linear-gradient(180deg,#2a1640,#160a26)', pad:['🎬','🍿','🥤','⭐'] };
+const PER_ZONE=7, MATH_PER_ZONE=5, GOAL=100, REG=5, STEAL=10, SODA_WIN=3;
+const PLAN=(()=>{ const a=[]; for(let z=0;z<4;z++){ for(let i=0;i<MATH_PER_ZONE;i++) a.push('math'); a.push('boss'); a.push('sudoku'); } return a; })();
+const WORDS=[
+  {w:'KATT',h:'Ett djur som säger mjau',eh:'An animal that says meow'},{w:'HUND',h:'Ett djur som säger voff',eh:'An animal that says woof'},
+  {w:'GLASS',h:'Något kallt och sött man äter på sommaren',eh:'Something cold and sweet you eat in summer'},{w:'BANAN',h:'En gul frukt som apor gillar',eh:'A yellow fruit that monkeys like'},
+  {w:'BLOMMA',h:'Den växer i trädgården och luktar gott',eh:'It grows in the garden and smells nice'},{w:'STJÄRNA',h:'Den lyser på himlen på natten',eh:'It shines in the sky at night'},
+  {w:'KANIN',h:'Ett djur med långa öron som hoppar',eh:'An animal with long ears that hops'},{w:'TÅRTA',h:'Något sött man äter på födelsedagar',eh:'Something sweet you eat on birthdays'},
+  {w:'POPCORN',h:'Det godaste man äter på bio',eh:'The yummiest thing you eat at the movies'},{w:'ÄPPLE',h:'En frukt som kan vara röd eller grön',eh:'A fruit that can be red or green'},
+  {w:'FJÄRIL',h:'En insekt med vackra vingar',eh:'An insect with beautiful wings'},{w:'REGNBÅGE',h:'Färgglad båge på himlen efter regn',eh:'A colorful arc in the sky after rain'},
+  {w:'SOL',h:'Den lyser och värmer på dagen',eh:'It shines and warms during the day'},{w:'FISK',h:'Ett djur som simmar i vattnet',eh:'An animal that swims in the water'}
+];
+const ALPHA='ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'.split('');
+
+let level=0, mathDone=0, popcorn=0, soda=0, answering=false, appliedZone=-1;
+let usedWords=[], curWord='', guessed=new Set(), misses=0, hangActive=false, dustTimer=null;
+let gateTarget=null, sSol=[], sGiven=[], sGrid=[], sSel=-1, sudActive=false;
+
+const charlie=el('charlie'), obstacle=el('obstacle'), ground=el('ground'), hills=el('hills'), trackArea=el('track-area'), speech=el('speech'), flash=el('flash'), game=el('game');
+const scenes={start:el('start'),intro:el('intro'),play:el('play'),boss:el('boss'),gate:el('gate'),cinema:el('cinema')};
+
+function goScene(n){ currentScene=n; for(const k in scenes){ scenes[k].style.display=(k===n)?'flex':'none'; } const top=(n==='play'||n==='boss'||n==='gate'); el('hud').style.display=top?'flex':'none'; el('mapbar').style.display=top?'block':'none'; }
+function shake(){ game.classList.remove('shake'); void game.offsetWidth; game.classList.add('shake'); }
+function say(txt,ms=1600,angry=false){ speech.textContent=txt; speech.classList.toggle('angry',angry); speech.classList.add('show'); clearTimeout(speech._t); speech._t=setTimeout(()=>speech.classList.remove('show'),ms); }
+function updateHUD(){ el('popNum').textContent=popcorn; el('sodaNum').textContent=soda; updateMap(Math.min(1,popcorn/GOAL)); }
+function updateMap(frac){ const done=el('routeDone'), bg=el('routeBg'), dot=el('mapDot'); if(!done||!bg) return; let L=done._len; if(!L){ L=done._len=done.getTotalLength(); } if(!L) return; done.style.strokeDasharray=(frac*L)+' '+L; let bL=bg._len; if(!bL){ bL=bg._len=bg.getTotalLength(); } const pt=bg.getPointAtLength(frac*bL); dot.setAttribute('cx',pt.x); dot.setAttribute('cy',pt.y); }
+function setMoving(on){ ground.classList.toggle('moving',on); hills.classList.toggle('moving',on); }
+function startWalkDust(){ stopWalkDust(); dustTimer=setInterval(()=>{ const cr=charlie.getBoundingClientRect(), gr=game.getBoundingClientRect(); const d=document.createElement('div'); d.className='dust'; d.textContent='💨'; d.style.left=(cr.left-gr.left)+'px'; d.style.top=(cr.top-gr.top+58)+'px'; game.appendChild(d); setTimeout(()=>d.remove(),600); },360); }
+function stopWalkDust(){ if(dustTimer){ clearInterval(dustTimer); dustTimer=null; } }
+function applyEnv(z){ trackArea.className='z-'+ZONES[z].key; startAmbient(ZONES[z].key); }
+function setZone(z){ applyEnv(z); const b=el('zoneBanner'); b.textContent=ZONES[z].icon+' '+ZONES[z].sv; b.classList.remove('show'); void b.offsetWidth; b.classList.add('show'); sWhoosh(); narrate(ZONES[z].narr.sv, ZONES[z].narr.en); }
+
+const HOUSE_SVG=`<svg viewBox="0 0 120 122" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="54" width="80" height="62" fill="#ffe3b3" stroke="#e0b87f" stroke-width="2"/><rect x="76" y="26" width="9" height="20" fill="#e85a9c"/><circle cx="80" cy="24" r="3" fill="#fff" opacity="0.8"/><circle cx="86" cy="19" r="4" fill="#fff" opacity="0.65"/><polygon points="12,56 60,20 108,56" fill="#ff7ec0" stroke="#e85a9c" stroke-width="2"/><rect x="49" y="80" width="22" height="36" rx="3" fill="#9a5bd0"/><circle cx="65" cy="99" r="2" fill="#ffd24f"/><rect x="28" y="64" width="16" height="16" fill="#aee9ff" stroke="#fff" stroke-width="2"/><path d="M36 64 v16 M28 72 h16" stroke="#fff" stroke-width="1.5"/><rect x="76" y="64" width="16" height="16" fill="#aee9ff" stroke="#fff" stroke-width="2"/><path d="M84 64 v16 M76 72 h16" stroke="#fff" stroke-width="1.5"/></svg>`;
+const CINEMA_SVG=`<svg viewBox="0 0 120 122" xmlns="http://www.w3.org/2000/svg"><rect x="18" y="46" width="84" height="70" fill="#7a2a5a"/><rect x="10" y="30" width="100" height="20" rx="4" fill="#ffd24f" stroke="#e0a020" stroke-width="2"/><text x="60" y="45" font-size="13" text-anchor="middle" fill="#7a2a5a" font-weight="bold" font-family="monospace">BIO</text><circle cx="16" cy="40" r="2" fill="#fff"/><circle cx="30" cy="40" r="2" fill="#fff"/><circle cx="44" cy="40" r="2" fill="#fff"/><circle cx="76" cy="40" r="2" fill="#fff"/><circle cx="90" cy="40" r="2" fill="#fff"/><circle cx="104" cy="40" r="2" fill="#fff"/><text x="60" y="72" font-size="20" text-anchor="middle">🎬</text><rect x="40" y="84" width="17" height="32" fill="#3a1430"/><rect x="63" y="84" width="17" height="32" fill="#3a1430"/><rect x="57" y="84" width="6" height="32" fill="#5a2a44"/></svg>`;
+function setBuilding(type){ el('building').innerHTML = type==='house'?HOUSE_SVG:CINEMA_SVG; }
+
+function genProblem(){
+  let a,b,ans,text; const r=Math.random();
+  if(r<0.55){ a=1+Math.floor(Math.random()*8); b=1+Math.floor(Math.random()*8); ans=a+b; text=`${a} + ${b} = ?`; }
+  else { a=3+Math.floor(Math.random()*8); b=1+Math.floor(Math.random()*a); ans=a-b; text=`${a} − ${b} = ?`; }
+  const opts=new Set([ans]); while(opts.size<4){ let d=ans+(Math.floor(Math.random()*7)-3); if(d>=0 && d!==ans) opts.add(d); }
+  return {text,ans,arr:[...opts].sort(()=>Math.random()-0.5)};
+}
+
+function playOpening(){
+  applyEnv(0); setBuilding('house');
+  const b=el('building'); b.style.transition='none'; b.style.left='2%'; b.style.display='block'; void b.offsetWidth;
+  el('qLabel').textContent='🏠 Hemma'; el('qText').textContent='Nu börjar äventyret!'; el('answers').innerHTML='';
+  charlie.className='idle'; charlie.style.left='66px'; setMoving(false);
+  say('Hej då, hemma! 👋',1700);
+  setTimeout(()=>{ charlie.className='walking'; setMoving(true); startWalkDust(); b.style.transition='left 1.7s ease'; b.style.left='-55%'; },1600);
+  setTimeout(()=>{ b.style.display='none'; stopWalkDust(); startLevel(); },3500);
+}
+function playEnding(){
+  el('qLabel').textContent='🎬 Biografen'; el('qText').textContent='Vi är nästan framme!'; el('answers').innerHTML='';
+  goScene('play'); setBuilding('cinema');
+  const b=el('building'); b.style.transition='none'; b.style.left='118%'; b.style.display='block'; void b.offsetWidth;
+  charlie.className='walking'; charlie.style.left='44px'; setMoving(true); startWalkDust();
+  say('Vi är nästan framme! 🎬',1800);
+  setTimeout(()=>{ b.style.transition='left 1.8s ease'; b.style.left='42%'; },200);
+  setTimeout(()=>{ setMoving(false); stopWalkDust(); charlie.style.left='30%'; },2100);
+  setTimeout(()=>{ charlie.className='idle'; say('Vi är framme vid bion! 🎉',1600); },3200);
+  setTimeout(()=>{ b.style.display='none'; reachCinema(); },4400);
+}
+
+function startLevel(){
+  if(level>=PLAN.length){ playEnding(); return; }
+  const z=Math.floor(level/PER_ZONE);
+  if(z!==appliedZone){ appliedZone=z; setZone(z); }
+  const kind=PLAN[level];
+  if(kind==='boss'){ startBoss(); return; }
+  if(kind==='sudoku'){ startSudoku(); return; }
+  goScene('play');
+  answering=true; mathDone++;
+  charlie.style.left='44px'; charlie.className='walking'; setMoving(true); startWalkDust();
+  const zone=ZONES[z]; const zoneMath=(level%PER_ZONE)+1;
+  obstacle.style.transition='none'; obstacle.style.left='110%'; obstacle.style.opacity='1'; obstacle.style.transform='scale(1)';
+  obstacle.textContent=zone.obs[(zoneMath-1)%zone.obs.length];
+  void obstacle.offsetWidth;
+  obstacle.style.transition='left 0.7s ease,opacity 0.4s,transform 0.4s'; obstacle.style.left='78%';
+  const p=genProblem();
+  el('qLabel').textContent=`${zone.icon} ${zone.sv} – hinder ${zoneMath}/${MATH_PER_ZONE}`;
+  el('qText').textContent=p.text;
+  const box=el('answers'); box.innerHTML='';
+  p.arr.forEach(v=>{ const bt=document.createElement('button'); bt.className='ans-btn'; bt.textContent=v; bt.onclick=()=>checkMath(bt,v,p.ans); box.appendChild(bt); });
+}
+function checkMath(btn,val,correct){
+  if(!answering) return;
+  if(val===correct){ answering=false; btn.classList.add('correct'); sCorrect(); passObstacle(); }
+  else { btn.classList.add('wrong'); sWrong(); shake(); say('Oj! Försök igen 💪',1200); setTimeout(()=>btn.classList.remove('wrong'),400); }
+}
+function passObstacle(){
+  sJump(); stopWalkDust(); charlie.classList.remove('walking'); charlie.classList.add('jump');
+  obstacle.style.left='-25%';
+  say('Jippie! 🌟',1100); sparkleAt();
+  setTimeout(()=>{ charlie.classList.remove('jump'); charlie.classList.add('land'); shake(); setTimeout(()=>charlie.classList.remove('land'),220); },700);
+  setTimeout(()=>{ scorePopup('+'+REG,'#2a6e15'); flyGain('🍿','popCounter',5,1,false); },820);
+  setTimeout(()=>{ nextLevel(); },1700);
+}
+
+/* ---------- BOSS (Hangman) ---------- */
+function startBoss(){
+  const z=Math.floor(level/PER_ZONE);
+  el('bossBg').style.background=ZONES[z].sky;
+  goScene('boss');
+  sBossIntro(); shake();
+  flash.classList.remove('boom'); void flash.offsetWidth; flash.classList.add('boom');
+  let pool=WORDS.filter(o=>!usedWords.includes(o.w)); if(pool.length===0){ usedWords=[]; pool=WORDS.slice(); }
+  const pick=pool[Math.floor(Math.random()*pool.length)]; curWord=pick.w; usedWords.push(curWord);
+  guessed=new Set(); misses=0; hangActive=true;
+  el('bossTitle').textContent='👿 Popcorntjuven dök upp!';
+  el('hangLabel').textContent='Gissa ordet och vinn läsk!';
+  el('clue').textContent='💡 '+pick.h; renderMiss(); renderWord(); renderAlphabet();
+  setTimeout(()=>{ narrate('Haha! Jag ska ta dina popcorn! Men du får läsk om du gissar rätt ord. Ledtråden är: '+pick.h+'.', 'Haha! I will take your popcorn! But you can win soda if you guess the right word. The clue is: '+pick.eh+'.', {pitch:0.55, rate:0.92}); },800);
+}
+function renderMiss(){ let s=''; for(let i=0;i<6;i++){ s+= i<misses?'<span class="gone">💨</span>':'🍿'; } el('missRow').innerHTML=s; }
+function renderWord(){ const wrap=el('wordDisplay'); wrap.innerHTML=''; [...curWord].forEach(ch=>{ const sp=document.createElement('span'); if(guessed.has(ch)){ sp.textContent=ch; sp.classList.add('filled'); } wrap.appendChild(sp); }); }
+function renderAlphabet(){ const wrap=el('alphabet'); wrap.innerHTML=''; ALPHA.forEach(L=>{ const b=document.createElement('button'); b.className='letter-btn'; b.textContent=L; b.onclick=()=>guessLetter(L,b); wrap.appendChild(b); }); }
+function guessLetter(L,btn){
+  if(!hangActive || btn.disabled) return; btn.disabled=true; sBlip();
+  if(curWord.includes(L)){
+    guessed.add(L); btn.classList.add('hit'); sCoin(); renderWord();
+    if([...curWord].every(c=>guessed.has(c))){ hangActive=false; bossWin(); }
+  } else {
+    misses++; btn.classList.add('miss'); sWrong(); renderMiss(); shake();
+    flash.classList.remove('boom'); void flash.offsetWidth; flash.classList.add('boom');
+    if(misses>=6){ hangActive=false; bossLose(); }
+  }
+}
+function bossWin(){
+  sPowerup();
+  el('bossTitle').textContent='🎉 Du vann! Tjuven flyr!';
+  el('hangLabel').textContent='Du vinner 3 läsk! 🥤🥤🥤';
+  speak('Hurra! Du gissade rätt ord! Här får du tre läsk!');
+  burstConfetti(); setTimeout(burstConfetti,300);
+  setTimeout(()=>{ flyGain('🥤','sodaCounter',SODA_WIN,1,true,'bossThief'); scorePopup('+3 🥤','#ffd24f'); },600);
+  setTimeout(()=>{ nextLevel(); },2400);
+}
+function bossLose(){
+  sLose(); shake();
+  el('bossTitle').textContent='Tjuven snor 10 popcorn!';
+  el('hangLabel').textContent='Ordet var: '+curWord;
+  [...curWord].forEach(c=>guessed.add(c)); renderWord();
+  narrate('Hähä! Tack för dina popcorn! Ordet var '+curWord+'.', 'Heh heh! Thanks for your popcorn! The word was '+curWord+'.', {pitch:0.55, rate:0.92});
+  stealPopcorn(STEAL);
+  setTimeout(()=>{ nextLevel(); },2800);
+}
+
+/* ---------- SUDOKU GATE ---------- */
+function makeSudoku(){
+  let g=[[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]];
+  const perm=[1,2,3,4].sort(()=>Math.random()-0.5);
+  g=g.map(r=>r.map(v=>perm[v-1]));
+  if(Math.random()<0.5) g=[g[1],g[0],g[2],g[3]];
+  if(Math.random()<0.5) g=[g[0],g[1],g[3],g[2]];
+  if(Math.random()<0.5) g=[g[2],g[3],g[0],g[1]];
+  if(Math.random()<0.5){ const t=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]; for(let r=0;r<4;r++)for(let c=0;c<4;c++)t[c][r]=g[r][c]; g=t; }
+  if(Math.random()<0.5) g=g.map(r=>[r[1],r[0],r[2],r[3]]);
+  if(Math.random()<0.5) g=g.map(r=>[r[0],r[1],r[3],r[2]]);
+  if(Math.random()<0.5) g=g.map(r=>[r[2],r[3],r[0],r[1]]);
+  const sol=[]; for(let r=0;r<4;r++)for(let c=0;c<4;c++) sol.push(g[r][c]);
+  const idx=[...Array(16).keys()].sort(()=>Math.random()-0.5);
+  const given=Array(16).fill(false); for(let i=0;i<8;i++) given[idx[i]]=true;
+  return {sol, given};
+}
+function startSudoku(){
+  const z=Math.floor(level/PER_ZONE); const nextIdx=z+1;
+  gateTarget = nextIdx<4 ? ZONES[nextIdx] : BIO_TARGET;
+  setMoving(false); stopWalkDust();
+  el('gateBg').style.background=gateTarget.sky;
+  el('gateBg').innerHTML='<div class="gate-bigicon">'+gateTarget.icon+'</div>';
+  el('gateLock').textContent='🔒';
+  el('gateTitle').textContent='🔒 Lås upp '+gateTarget.sv+' '+gateTarget.icon;
+  el('sudInstr').textContent='Fyll i 1–4 i varje rad, kolumn och ruta!';
+  const s=makeSudoku(); sSol=s.sol; sGiven=s.given; sGrid=Array(16).fill(0); sSel=-1; sudActive=true;
+  renderSudoku(); renderNumpad();
+  goScene('gate'); sWhoosh();
+  setTimeout(()=>{ narrate('Lös sudokut för att låsa upp '+gateTarget.sv+'! Fyll i siffrorna ett till fyra.', 'Solve the sudoku to unlock the '+gateTarget.en+'! Fill in the numbers one to four.'); },500);
+}
+function renderSudoku(){
+  const grid=el('sudoku'); grid.innerHTML='';
+  for(let i=0;i<16;i++){
+    const r=Math.floor(i/4), col=i%4; const block=Math.floor(r/2)*2+Math.floor(col/2);
+    const c=document.createElement('div');
+    c.className='scell '+((block===0||block===3)?'blkA':'blkB');
+    if(sGiven[i]){ c.classList.add('given'); c.textContent=sSol[i]; }
+    else if(sGrid[i]){ c.classList.add('filled'); c.textContent=sGrid[i]; }
+    if(i===sSel) c.classList.add('sel');
+    if(!sGiven[i] && sGrid[i]!==sSol[i]) c.onclick=()=>selectCell(i);
+    grid.appendChild(c);
+  }
+}
+function renderNumpad(){ const p=el('numpad'); p.innerHTML=''; [1,2,3,4].forEach(n=>{ const b=document.createElement('button'); b.className='numbtn'; b.textContent=n; b.onclick=()=>placeNum(n); p.appendChild(b); }); }
+function selectCell(i){ if(!sudActive||sGiven[i]||sGrid[i]===sSol[i]) return; sSel=i; sBlip(); renderSudoku(); }
+function placeNum(n){
+  if(!sudActive||sSel<0||sGiven[sSel]) return;
+  if(n===sSol[sSel]){ sGrid[sSel]=n; sCoin(); sSel=-1; renderSudoku(); if(sudComplete()) sudokuSolved(); }
+  else { sWrong(); const grid=el('sudoku'); grid.classList.remove('sshake'); void grid.offsetWidth; grid.classList.add('sshake'); }
+}
+function sudComplete(){ for(let i=0;i<16;i++){ if(!sGiven[i] && sGrid[i]!==sSol[i]) return false; } return true; }
+function sudokuSolved(){
+  sudActive=false; sUnlock();
+  el('gateLock').textContent='🔓'; el('gateTitle').textContent='🔓 Upplåst! '+gateTarget.icon; el('sudInstr').textContent='🎉 Bra jobbat!';
+  burstConfetti(); setTimeout(burstConfetti,300);
+  narrate('Bra jobbat! Du löste sudokut och låste upp '+gateTarget.sv+'!', 'Great job! You solved the sudoku and unlocked the '+gateTarget.en+'!');
+  setTimeout(()=>{ nextLevel(); },2200);
+}
+
+function nextLevel(){ level++; startLevel(); }
+
+/* ---------- fx ---------- */
+function flyGain(emoji,counterId,total,perKernel,isSoda,srcId){
+  const bucket=el(counterId), src=el(srcId||'charlie'), br=bucket.getBoundingClientRect(), gr=game.getBoundingClientRect(), cr=src.getBoundingClientRect();
+  const tx=br.left-gr.left+8, ty=br.top-gr.top+12, sx=cr.left-gr.left+cr.width/2, sy=cr.top-gr.top+6; const N=total/perKernel;
+  for(let i=0;i<N;i++){ setTimeout(()=>{
+    const p=document.createElement('div'); p.className='fly'; p.innerHTML='<span>'+emoji+'</span>'; p.style.left=(sx+(Math.random()*26-13))+'px'; p.style.top=sy+'px'; game.appendChild(p);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ p.style.left=tx+'px'; p.style.top=ty+'px'; p.style.opacity='0.95'; }));
+    setTimeout(()=>{ p.remove(); if(isSoda) soda+=perKernel; else popcorn+=perKernel; updateHUD(); bucket.classList.add('bounce'); sCoin(); setTimeout(()=>bucket.classList.remove('bounce'),500); },700);
+  }, i*130); }
+}
+function stealPopcorn(amount){
+  const bucket=el('popCounter'), tEl=el('bossThief'), br=bucket.getBoundingClientRect(), gr=game.getBoundingClientRect(), tr=tEl.getBoundingClientRect();
+  const sx=br.left-gr.left+8, sy=br.top-gr.top+12, tx=tr.left-gr.left+tr.width/2, ty=tr.top-gr.top+10; const N=5, per=amount/N;
+  for(let i=0;i<N;i++){ setTimeout(()=>{
+    const p=document.createElement('div'); p.className='fly'; p.innerHTML='<span>🍿</span>'; p.style.left=sx+'px'; p.style.top=sy+'px'; game.appendChild(p);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ p.style.left=(tx+(Math.random()*20-10))+'px'; p.style.top=ty+'px'; p.style.opacity='0.9'; }));
+    setTimeout(()=>{ p.remove(); popcorn=Math.max(0,popcorn-per); updateHUD(); bucket.classList.add('bounce'); sBlip(); setTimeout(()=>bucket.classList.remove('bounce'),400); },700);
+  }, i*130); }
+  scorePopup('-'+amount,'#b02050',true);
+}
+function scorePopup(txt,color,atBucket){
+  const gr=game.getBoundingClientRect(); let x,y;
+  if(atBucket){ const b=el('popCounter').getBoundingClientRect(); x=b.left-gr.left+10; y=b.top-gr.top+30; }
+  else { const cr=charlie.getBoundingClientRect(); x=cr.left-gr.left; y=cr.top-gr.top-6; }
+  const e=document.createElement('div'); e.className='popup'; e.textContent=txt; e.style.color=color; e.style.left=x+'px'; e.style.top=y+'px'; game.appendChild(e); setTimeout(()=>e.remove(),1000);
+}
+function sparkleAt(){ const cr=charlie.getBoundingClientRect(), gr=game.getBoundingClientRect(), x=cr.left-gr.left+16, y=cr.top-gr.top;
+  ['✨','⭐','🌟','✨'].forEach((s,i)=>setTimeout(()=>{ const e=document.createElement('div'); e.className='spark'; e.textContent=s; e.style.left=(x+(Math.random()*50-25))+'px'; e.style.top=(y+Math.random()*20)+'px'; game.appendChild(e); setTimeout(()=>e.remove(),1000); },i*90)); }
+function burstConfetti(){ const cols=['#ff7ec0','#ffd24f','#7de25e','#5ec8ff','#ff5fa8','#fff'];
+  for(let i=0;i<18;i++){ const c=document.createElement('div'); c.className='confetti'; c.style.background=cols[i%cols.length]; c.style.left=Math.random()*100+'%'; c.style.top='-20px'; c.style.borderRadius=Math.random()>0.5?'50%':'2px'; c.style.animationDelay=(Math.random()*0.4)+'s'; game.appendChild(c); setTimeout(()=>c.remove(),2600); } }
+
+function reachCinema(){
+  setMoving(false); stopWalkDust(); stopMusic(); stopAmbient(); sPowerup(); goScene('cinema');
+  el('cinPop').textContent=popcorn; el('cinSoda').textContent=soda;
+  speak('Hurra! Du klarade det, Charlie! Nu blir det bio med popcorn och läsk. Bravo!');
+  const movies=['🎬','🦄','🌈','🐱','🚀','🧚']; let mi=0; const sc=el('cinScreen'); clearInterval(sc._t); sc._t=setInterval(()=>{ sc.textContent=movies[mi++%movies.length]; },900);
+  let n=0; const ci=setInterval(()=>{ burstConfetti(); if(++n>7) clearInterval(ci); },350);
+}
+function goIntro(){ goScene('intro'); const t=document.querySelector('.thought'); const html=t.innerHTML; t.innerHTML=''; void t.offsetWidth; t.innerHTML=html; setTimeout(speakIntro,400); }
+function beginGame(){
+  stopSpeak(); stopAmbient();
+  level=0; mathDone=0; popcorn=0; soda=0; usedWords=[]; appliedZone=-1; updateHUD();
+  goScene('play'); startMusic();
+  playOpening();
+}
+el('startBtn').onclick=()=>{ ac(); sClick(); unlockSpeech(); goIntro(); };
+el('introBtn').onclick=()=>{ sClick(); beginGame(); };
+el('againBtn').onclick=()=>{ sClick(); beginGame(); };
+el('soundBtn').onclick=(e)=>{ soundOn=!soundOn; e.target.textContent=soundOn?'🔊':'🔇'; if(!soundOn){ stopMusic(); stopSpeak(); } else { sClick(); if(currentScene==='play') startMusic(); } };
+goScene('start');
+</script>
+<script src="../../delat/hem.js"></script>
+</body>
+</html>

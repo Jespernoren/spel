@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sudoku-äventyret</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding: 16px; color: #2b4a5c;
+    overflow-x: hidden;
+    transition: background 0.6s;
+  }
+  /* World themes */
+  body.world-start  { background: linear-gradient(160deg,#fff1c1,#ffd1dc,#a0e7e5); }
+  body.world-0 { background: linear-gradient(160deg,#ffe29a 0%,#ffcad4 35%,#a0e7e5 100%); }
+  body.world-1 { background: linear-gradient(160deg,#e8f4ff 0%,#bcdcf5 50%,#8ec5e8 100%); }
+  body.world-2 { background: linear-gradient(160deg,#2a1a4a 0%,#3d2c6d 50%,#5b4b8a 100%); color:#fff; }
+  body.world-3 { background: linear-gradient(160deg,#ffe0f5 0%,#e0c3fc 50%,#c8f0ff 100%); }
+
+  h1 { font-size: 1.9rem; margin: 6px 0 2px; text-shadow: 2px 2px 0 rgba(255,255,255,0.6); text-align:center; }
+  .subtitle { font-size: 0.98rem; margin-bottom: 10px; opacity:0.9; text-align:center; max-width: 90vw; }
+
+  .screen { display:none; flex-direction:column; align-items:center; width:100%; }
+  .screen.active { display:flex; animation: fadein 0.5s; }
+  @keyframes fadein { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;} }
+
+  /* ---- Start screen ---- */
+  .story-card {
+    background: rgba(255,255,255,0.85);
+    border-radius: 22px; padding: 22px 20px; max-width: 420px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18); text-align:center; color:#2b4a5c;
+    margin-bottom: 18px;
+  }
+  .story-card p { font-size: 1.05rem; line-height:1.5; margin-bottom: 10px; }
+  .big-emoji { font-size: 3rem; }
+
+  .who-row { display:flex; gap:14px; margin-bottom: 8px; flex-wrap:wrap; justify-content:center; }
+  .who-btn {
+    border:none; border-radius:22px; padding:16px 24px; font-family:inherit;
+    font-size:1.15rem; font-weight:bold; cursor:pointer; color:#fff;
+    box-shadow:0 5px 0 rgba(0,0,0,0.18); transition:transform 0.1s;
+  }
+  .who-btn:active { transform:translateY(3px); box-shadow:0 2px 0 rgba(0,0,0,0.18); }
+  .who-beppe  { background:#4ecdc4; }
+  .who-charlie{ background:#ff8fab; }
+  .who-note { font-size:0.85rem; opacity:0.8; margin-top:2px; }
+
+  /* ---- Map / level select ---- */
+  .map { display:flex; flex-direction:column; gap:12px; width:min(92vw,420px); margin-bottom:14px; }
+  .map-node {
+    display:flex; align-items:center; gap:14px;
+    background:rgba(255,255,255,0.85); border-radius:18px; padding:14px 16px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15); color:#2b4a5c;
+    cursor:pointer; transition:transform 0.1s; position:relative;
+  }
+  .map-node:active { transform:scale(0.98); }
+  .map-node.locked { opacity:0.55; cursor:not-allowed; filter:grayscale(0.4); }
+  .map-node .icon { font-size:2.2rem; }
+  .map-node .info { text-align:left; flex:1; }
+  .map-node .info b { font-size:1.1rem; }
+  .map-node .info span { font-size:0.85rem; opacity:0.8; }
+  .map-node .status { font-size:1.5rem; }
+
+  /* ---- Game board ---- */
+  .topbar { display:flex; align-items:center; justify-content:space-between; width:min(88vw,360px); margin-bottom:10px; }
+  .back-btn {
+    border:none; background:rgba(255,255,255,0.8); border-radius:16px; padding:8px 14px;
+    font-family:inherit; font-weight:bold; cursor:pointer; color:#2b4a5c; box-shadow:0 3px 0 rgba(0,0,0,0.12);
+  }
+  .back-btn:active { transform:translateY(2px); }
+  .world-label { font-weight:bold; font-size:1.05rem; }
+
+  .board {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:4px;
+    padding:6px; border-radius:16px; box-shadow:0 8px 20px rgba(0,0,0,0.25);
+    width:min(88vw,360px); aspect-ratio:1;
+  }
+  body.world-0 .board{background:#2b4a5c;} body.world-1 .board{background:#3a6b8c;}
+  body.world-2 .board{background:#1a0f33;} body.world-3 .board{background:#a064c9;}
+  .cell {
+    background:#fff; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    font-size:clamp(1.8rem,11vw,3rem); cursor:pointer; user-select:none;
+    transition:transform 0.08s, background 0.2s;
+  }
+  .cell[data-c="1"]{margin-right:3px;} .cell[data-r="1"]{margin-bottom:3px;}
+  .cell.fixed{background:#ffe6a7;cursor:default;}
+  body.world-1 .cell.fixed{background:#cce7ff;}
+  body.world-2 .cell.fixed{background:#4a3a7a;color:#fff;}
+  body.world-3 .cell.fixed{background:#ffd6f5;}
+  .cell.editable:active{transform:scale(0.92);}
+  .cell.wrong{background:#ffc2c2 !important;animation:shake 0.3s;}
+  .cell.correct-pop{animation:pop 0.4s;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  @keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.25)}100%{transform:scale(1)}}
+
+  .controls{display:flex;gap:10px;margin-top:16px;}
+  .btn{border:none;border-radius:22px;padding:12px 22px;font-family:inherit;font-size:1rem;font-weight:bold;cursor:pointer;color:#fff;box-shadow:0 4px 0 rgba(0,0,0,0.18);transition:transform 0.1s;}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,0.18);}
+  .btn-new{background:#4ecdc4;} .btn-hint{background:#ffb347;}
+
+  .legend{margin-top:16px;display:flex;gap:14px;font-size:1.6rem;}
+  .message{margin-top:12px;font-size:1.15rem;font-weight:bold;min-height:28px;text-align:center;color:#d6336c;}
+  body.world-2 .message{color:#ffd966;}
+
+  /* ---- Overlays ---- */
+  .overlay {
+    position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+    background:rgba(255,255,255,0.6); z-index:10; flex-direction:column; padding:20px;
+  }
+  body.world-2 .overlay{background:rgba(20,10,40,0.75);}
+  .overlay.show{display:flex;}
+  .overlay-card{
+    background:#fff; border-radius:24px; padding:26px 24px; max-width:380px; text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3); color:#2b4a5c; animation:pop 0.5s;
+  }
+  .overlay-card .big{font-size:1.5rem;font-weight:bold;color:#d6336c;margin-bottom:12px;}
+  .overlay-card p{font-size:1.05rem;line-height:1.5;margin-bottom:16px;}
+  .confetti{position:fixed;top:-20px;font-size:1.6rem;animation:fall linear forwards;z-index:9;pointer-events:none;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:0.9;}}
+</style>
+</head>
+<body class="world-start">
+
+  <!-- START SCREEN -->
+  <div class="screen active" id="screen-start">
+    <h1>Sudoku-äventyret 🌟</h1>
+    <div class="story-card">
+      <div class="big-emoji">🗺️</div>
+      <p><b>Det var en gång</b> fyra magiska världar som hade tappat bort sina pussel-bitar!</p>
+      <p>Bara en riktig pussel-hjälte kan resa genom alla fyra och rädda dem. 🧩</p>
+      <p><b>Vem är dagens hjälte?</b></p>
+    </div>
+    <div class="who-row">
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <button class="who-btn who-beppe" onclick="chooseHero('beppe')">Beppe 🐢</button>
+        <div class="who-note">lite lättare</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <button class="who-btn who-charlie" onclick="chooseHero('charlie')">Charlie 🦋</button>
+        <div class="who-note">lite svårare</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP SCREEN -->
+  <div class="screen" id="screen-map">
+    <h1 id="map-title">Välj din värld 🗺️</h1>
+    <div class="subtitle" id="map-sub"></div>
+    <div class="map" id="map"></div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="screen" id="screen-game">
+    <div class="topbar">
+      <button class="back-btn" onclick="goToMap()">← Karta</button>
+      <span class="world-label" id="world-label"></span>
+    </div>
+    <div class="subtitle" id="game-sub"></div>
+    <div class="board" id="board"></div>
+    <div class="controls">
+      <button class="btn btn-new" onclick="newPuzzle()">🔄 Nytt</button>
+      <button class="btn btn-hint" onclick="giveHint()">💡 Hjälp</button>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="message" id="message"></div>
+  </div>
+
+  <!-- WIN-LEVEL OVERLAY -->
+  <div class="overlay" id="overlay-level">
+    <div class="overlay-card">
+      <div class="big" id="level-win-title"></div>
+      <p id="level-win-text"></p>
+      <button class="btn btn-new" id="level-win-btn"></button>
+    </div>
+  </div>
+
+  <!-- ENDING OVERLAY -->
+  <div class="overlay" id="overlay-end">
+    <div class="overlay-card">
+      <div class="big">🏆 Du klarade hela äventyret! 🏆</div>
+      <p id="end-text"></p>
+      <button class="btn btn-new" onclick="restartAll()">🔄 Spela igen</button>
+    </div>
+  </div>
+
+<script>
+  // ---- Worlds ----
+  const WORLDS = [
+    { id:0, name:'Tropiska ön', icon:'🌴', symbols:['🌴','☀️','💧','🦩'],
+      intro:'Du landar på en solig ö där palmerna tappat sina pussel-bitar!',
+      done:'Ön är räddad! Flamingorna dansar av glädje! 🦩' },
+    { id:1, name:'Isriket', icon:'❄️', symbols:['⛄','❄️','🐧','🎿'],
+      intro:'Brrr! I det frusna Isriket har snöflingorna blandats ihop.',
+      done:'Isriket glittrar igen! Pingvinerna hejar på dig! 🐧' },
+    { id:2, name:'Rymden', icon:'🚀', symbols:['🚀','⭐','🪐','🌙'],
+      intro:'Zoom! Ute bland stjärnorna har planeterna kommit på fel plats.',
+      done:'Rymden är i ordning! Stjärnorna lyser starkast för dig! ⭐' },
+    { id:3, name:'Sagolandet', icon:'🦄', symbols:['🦄','🌈','🏰','✨'],
+      intro:'I Sagolandet behöver enhörningen din hjälp med sin magi.',
+      done:'Sagolandet är räddat! Enhörningen viftar tack! 🦄' }
+  ];
+  const DIFF = { beppe: 5, charlie: 9 }; // blanks
+  let hero = 'charlie';
+  let heroEmoji = '🦋';
+  let unlocked = 0;            // highest unlocked world index
+  let completed = [false,false,false,false];
+  let current = 0;            // world currently playing
+  let solution=[], puzzle=[], fixed=[];
+
+  // ---- Audio ----
+  let actx=null;
+  function tone(freq,dur,type='sine',vol=0.2,delay=0){
+    try{ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+      const o=actx.createOscillator(),g=actx.createGain();
+      o.type=type;o.frequency.value=freq;o.connect(g);g.connect(actx.destination);
+      const t=actx.currentTime+delay; g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(vol,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      o.start(t);o.stop(t+dur);
+    }catch(e){}
+  }
+  const sndTap=()=>tone(440,0.12,'triangle',0.18);
+  const sndWrong=()=>tone(180,0.25,'sawtooth',0.15);
+  const sndCorrect=()=>{tone(660,0.12,'sine',0.18,0);tone(880,0.18,'sine',0.18,0.1);};
+  const sndWin=()=>[523,659,784,1047].forEach((f,i)=>tone(f,0.3,'triangle',0.2,i*0.13));
+  const sndUnlock=()=>[392,523,659,784,1047].forEach((f,i)=>tone(f,0.35,'triangle',0.2,i*0.12));
+
+  // ---- Navigation ----
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+  function chooseHero(h){
+    sndTap(); hero=h; heroEmoji = h==='beppe'?'🐢':'🦋';
+    buildMap();
+    showScreen('screen-map');
+    document.body.className='world-start';
+  }
+  function buildMap(){
+    document.getElementById('map-sub').textContent =
+      (hero==='beppe'?'Beppe 🐢':'Charlie 🦋') + ' — res genom alla fyra världarna!';
+    const map=document.getElementById('map'); map.innerHTML='';
+    WORLDS.forEach((w,i)=>{
+      const locked = i>unlocked;
+      const node=document.createElement('div');
+      node.className='map-node'+(locked?' locked':'');
+      const status = completed[i]?'⭐':(locked?'🔒':'▶️');
+      node.innerHTML=`<div class="icon">${locked?'❔':w.icon}</div>
+        <div class="info"><b>${locked?'Hemlig värld':w.name}</b><br>
+        <span>${locked?'Klara förra världen först':'Nivå '+(i+1)}</span></div>
+        <div class="status">${status}</div>`;
+      if(!locked) node.addEventListener('click',()=>startWorld(i));
+      map.appendChild(node);
+    });
+  }
+  function goToMap(){ sndTap(); buildMap(); showScreen('screen-map'); document.body.className='world-start'; }
+
+  function startWorld(i){
+    sndTap(); current=i;
+    document.body.className='world-'+i;
+    const w=WORLDS[i];
+    document.getElementById('world-label').textContent=`${w.icon} ${w.name}`;
+    document.getElementById('game-sub').textContent=w.intro;
+    newPuzzle();
+    showScreen('screen-game');
+  }
+
+  // ---- Puzzle gen ----
+  function makeSolution(){
+    let base=[[0,1,2,3],[2,3,0,1],[1,0,3,2],[3,2,1,0]];
+    const perm=shuffle([0,1,2,3]);
+    base=base.map(r=>r.map(v=>perm[v]));
+    if(Math.random()<0.5) swapRows(base,0,1);
+    if(Math.random()<0.5) swapRows(base,2,3);
+    if(Math.random()<0.5) swapRows(base,[0,1],[2,3]);
+    if(Math.random()<0.5) swapCols(base,0,1);
+    if(Math.random()<0.5) swapCols(base,2,3);
+    if(Math.random()<0.5) swapCols(base,[0,1],[2,3]);
+    return base;
+  }
+  function swapRows(g,a,b){ if(Array.isArray(a)){const t=[g[a[0]],g[a[1]]];g[a[0]]=g[b[0]];g[a[1]]=g[b[1]];g[b[0]]=t[0];g[b[1]]=t[1];} else {const t=g[a];g[a]=g[b];g[b]=t;} }
+  function swapCols(g,a,b){ const d=(c1,c2)=>g.forEach(r=>{const t=r[c1];r[c1]=r[c2];r[c2]=t;}); if(Array.isArray(a)){d(a[0],b[0]);d(a[1],b[1]);} else d(a,b); }
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+  function newPuzzle(){
+    solution=makeSolution();
+    puzzle=solution.map(r=>r.slice());
+    fixed=[[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1]].map(r=>r.map(()=>true));
+    const cells=shuffle([...Array(16).keys()]);
+    let toRemove=DIFF[hero];
+    for(const idx of cells){ if(toRemove<=0)break; const r=Math.floor(idx/4),c=idx%4; puzzle[r][c]=-1; fixed[r][c]=false; toRemove--; }
+    document.getElementById('message').textContent='';
+    render();
+  }
+  function render(){
+    const w=WORLDS[current], S=w.symbols;
+    const board=document.getElementById('board'); board.innerHTML='';
+    for(let r=0;r<4;r++)for(let c=0;c<4;c++){
+      const cell=document.createElement('div');
+      cell.className='cell '+(fixed[r][c]?'fixed':'editable');
+      cell.dataset.r=r; cell.dataset.c=c;
+      cell.textContent= puzzle[r][c]===-1?'':S[puzzle[r][c]];
+      if(!fixed[r][c]) cell.addEventListener('click',()=>cycleCell(r,c,cell));
+      board.appendChild(cell);
+    }
+    document.getElementById('legend').innerHTML=S.join(' ');
+  }
+  function cycleCell(r,c,cell){
+    sndTap(); let v=puzzle[r][c]; v=(v+2)%5-1; puzzle[r][c]=v;
+    cell.textContent= v===-1?'':WORLDS[current].symbols[v];
+    cell.classList.remove('wrong'); checkComplete();
+  }
+  function giveHint(){
+    const cand=[];
+    for(let r=0;r<4;r++)for(let c=0;c<4;c++) if(!fixed[r][c]&&puzzle[r][c]!==solution[r][c]) cand.push([r,c]);
+    if(!cand.length){ setMsg('Allt ser bra ut! 🌟'); return; }
+    const [r,c]=cand[Math.floor(Math.random()*cand.length)];
+    puzzle[r][c]=solution[r][c]; sndCorrect(); render();
+    const cell=document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`); if(cell) cell.classList.add('correct-pop');
+    setMsg('Här är en till! 💡'); checkComplete();
+  }
+  function setMsg(t){ document.getElementById('message').textContent=t; }
+  function checkComplete(){
+    for(let r=0;r<4;r++)for(let c=0;c<4;c++) if(puzzle[r][c]===-1) return;
+    let ok=true;
+    for(let r=0;r<4;r++)for(let c=0;c<4;c++) if(puzzle[r][c]!==solution[r][c]) ok=false;
+    if(ok){ winLevel(); }
+    else{
+      sndWrong();
+      for(let r=0;r<4;r++)for(let c=0;c<4;c++) if(!fixed[r][c]&&puzzle[r][c]!==solution[r][c]){
+        const cell=document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`); if(cell) cell.classList.add('wrong');
+      }
+      setMsg('Nästan! Kolla de rosa rutorna 💗');
+    }
+  }
+  function confettiBurst(){
+    const e=['🌴','☀️','💧','🦩','❄️','⛄','🚀','⭐','🦄','🌈','🎈'];
+    for(let i=0;i<45;i++){ const c=document.createElement('div'); c.className='confetti';
+      c.textContent=e[Math.floor(Math.random()*e.length)];
+      c.style.left=Math.random()*100+'vw'; c.style.animationDuration=(2+Math.random()*2)+'s';
+      c.style.animationDelay=(Math.random()*0.5)+'s'; document.body.appendChild(c);
+      setTimeout(()=>c.remove(),4500);
+    }
+  }
+  function winLevel(){
+    sndWin(); setMsg(''); confettiBurst();
+    completed[current]=true;
+    const wasLast = current===WORLDS.length-1;
+    if(current===unlocked && !wasLast) unlocked=current+1;
+
+    const w=WORLDS[current];
+    if(wasLast && completed.every(Boolean)){
+      // Ending
+      setTimeout(()=>{ sndUnlock();
+        document.getElementById('end-text').textContent=
+          `${hero==='beppe'?'Beppe':'Charlie'}, du räddade alla fyra världarna och blev en riktig pussel-hjälte! ${heroEmoji}🏆`;
+        document.getElementById('overlay-end').classList.add('show');
+      },700);
+      return;
+    }
+    setTimeout(()=>{
+      const ov=document.getElementById('overlay-level');
+      document.getElementById('level-win-title').textContent=`${w.icon} ${w.name} räddad!`;
+      document.getElementById('level-win-text').textContent=w.done;
+      const btn=document.getElementById('level-win-btn');
+      const nextLocked = current+1>=WORLDS.length;
+      if(!nextLocked){
+        sndUnlock();
+        btn.textContent=`➡️ Till ${WORLDS[current+1].name}`;
+        btn.onclick=()=>{ ov.classList.remove('show'); startWorld(current+1); };
+      } else {
+        btn.textContent='🗺️ Till kartan';
+        btn.onclick=()=>{ ov.classList.remove('show'); goToMap(); };
+      }
+      ov.classList.add('show');
+    },700);
+  }
+  function restartAll(){
+    unlocked=0; completed=[false,false,false,false];
+    document.getElementById('overlay-end').classList.remove('show');
+    document.body.className='world-start';
+    showScreen('screen-start');
+  }
+</script>
+<script src="../../delat/hem.js"></script>
+</body>
+</html>

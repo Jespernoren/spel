@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Charlies Poolparty</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --ink: #6b3a6e;
+    --sky1: #c9b6ff; --sky2: #ffd6ef;
+    --accent: #ffb3d9; --accent-dark: #e36fae;
+    --blue: #7fd4ff; --blue-dark: #45a8e0;
+    --panel: rgba(255,255,255,0.9);
+  }
+  body {
+    font-family: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
+    background: radial-gradient(120% 120% at 50% 0%, #d8c4ff 0%, #ffc6e8 55%, #aee6ff 100%);
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh; padding: 16px; user-select: none; color: var(--ink);
+  }
+  #game-wrap {
+    position: relative; width: 800px; max-width: 100%;
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 18px 50px rgba(10,40,70,0.35), 0 0 0 6px rgba(255,255,255,0.5);
+  }
+  canvas { display: block; width: 100%; background: #aee7ff; }
+
+  #hud {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    width: 800px; max-width: 100%; margin-bottom: 12px;
+  }
+  .pill {
+    background: var(--panel); backdrop-filter: blur(6px);
+    padding: 8px 16px; border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(10,40,70,0.18), inset 0 0 0 2px rgba(255,255,255,0.6);
+    display: inline-flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 18px; color: var(--ink); white-space: nowrap;
+  }
+  #level-name { font-size: 17px; }
+  #ducks { gap: 7px; padding-left: 12px; }
+  #duck-icon { display:block; flex:0 0 auto; width:44px; height:40px; background:transparent; }
+  #duck-count { font-variant-numeric: tabular-nums; letter-spacing: .5px; }
+  #music-btn {
+    border: none; cursor: pointer; font-family: inherit;
+    transition: transform .12s, box-shadow .12s;
+  }
+  #music-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 18px rgba(10,40,70,0.22); }
+  #music-btn:active { transform: translateY(1px); }
+
+  .overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    padding: 28px; gap: 18px;
+    background: radial-gradient(120% 120% at 50% 0%, rgba(20,58,82,0.82), rgba(8,30,48,0.92));
+    color: #fff; backdrop-filter: blur(3px);
+    transition: opacity .35s ease; opacity: 1;
+  }
+  .overlay.hidden { display: none; }
+  .overlay .card {
+    background: rgba(255,255,255,0.10); border: 2px solid rgba(255,255,255,0.25);
+    border-radius: 22px; padding: 26px 30px; max-width: 620px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+  .overlay h1 {
+    font-size: 40px; line-height: 1.1; margin-bottom: 10px;
+    text-shadow: 0 3px 0 rgba(8,30,48,0.6); letter-spacing: .5px;
+  }
+  .overlay p { font-size: 19px; max-width: 560px; line-height: 1.55; margin: 0 auto 6px; opacity: .96; }
+  .btn {
+    font-family: inherit; font-size: 22px; font-weight: 800; letter-spacing:.5px;
+    padding: 14px 40px; border: none; border-radius: 999px;
+    background: linear-gradient(#ffd0ea, var(--accent)); color: #7a2f5c; cursor: pointer;
+    box-shadow: 0 6px 0 var(--accent-dark), 0 10px 22px rgba(110,40,90,0.25);
+    transition: transform .1s, box-shadow .1s; margin-top: 6px;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 0 var(--accent-dark), 0 14px 26px rgba(110,40,90,0.28); }
+  .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--accent-dark), 0 6px 14px rgba(110,40,90,0.25); }
+
+  /* Quiz */
+  #quiz .card { min-width: 420px; }
+  #quiz h2 { font-size: 28px; margin-bottom: 4px; }
+  #quiz .q {
+    font-size: 34px; font-weight: 800; background: #fff; color: var(--ink);
+    padding: 16px 30px; border-radius: 18px; display: inline-block; margin: 6px 0 4px;
+    box-shadow: inset 0 0 0 3px rgba(77,181,255,0.25);
+  }
+  .answers { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 14px; }
+  .ans {
+    font-family: inherit; font-size: 26px; font-weight: 800;
+    min-width: 96px; padding: 14px 26px; border: none; border-radius: 16px;
+    background: linear-gradient(#7fccff, var(--blue)); color: #062f4d; cursor: pointer;
+    box-shadow: 0 5px 0 var(--blue-dark); transition: transform .1s, box-shadow .1s;
+  }
+  .ans:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--blue-dark); }
+  .ans:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--blue-dark); }
+  .ans.wrong { background: linear-gradient(#ffb0b0,#ff8a8a); box-shadow:0 5px 0 #cc4a4a; animation: shake .3s; }
+  .ans.right { background: linear-gradient(#aeffb9,#8aff9e); box-shadow:0 5px 0 #3cc456; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+  #feedback { font-size: 22px; min-height: 30px; font-weight: 700; margin-top: 10px; }
+  #controls-hint {
+    margin-top: 12px; font-size: 15px; color: var(--ink); text-align: center;
+    background: var(--panel); padding: 8px 18px; border-radius: 999px;
+    box-shadow: 0 3px 10px rgba(10,40,70,0.15); font-weight: 600;
+  }
+  kbd {
+    background:#fff; border-radius:6px; padding:1px 7px; font-family:inherit; font-weight:800;
+    box-shadow: 0 2px 0 rgba(10,40,70,0.25); margin: 0 1px;
+  }
+</style>
+</head>
+<body>
+<div id="hud">
+  <span class="pill" id="level-name">🏠 Charlies hus</span>
+  <span class="pill" id="ducks"><canvas id="duck-icon" width="90" height="81"></canvas><span id="duck-count">0 / 0</span></span>
+  <button class="pill" id="music-btn" onclick="toggleMusic()">🔊 Musik</button>
+</div>
+<div id="game-wrap">
+  <canvas id="c" width="800" height="450"></canvas>
+
+  <div id="start" class="overlay">
+    <div class="card">
+      <h1>🌴 Charlies<br>Poolparty 🩷</h1>
+      <p>Charlie glömde sina badkläder! Hämta dem hemma och samla alla badankor på vägen till poolpartyt. 🦆</p>
+      <button class="btn" onclick="startGame()">▶ Starta spelet</button>
+    </div>
+  </div>
+
+  <div id="quiz" class="overlay hidden">
+    <div class="card">
+      <h2 id="quiz-title">🔒 Klurig dörr!</h2>
+      <div class="q" id="quiz-q">Fråga</div>
+      <div class="answers" id="quiz-answers"></div>
+      <div id="feedback"></div>
+    </div>
+  </div>
+
+  <div id="win" class="overlay hidden">
+    <div class="card">
+      <h1>🎉 POOLPARTY! 🌴</h1>
+      <p id="win-text">Charlie hittade badkläderna och samlade alla badankor. Nu börjar det tropiska poolpartyt — PLASK! 💦🩷</p>
+      <button class="btn" onclick="restart()">↺ Spela igen</button>
+    </div>
+  </div>
+</div>
+<div id="controls-hint"><kbd>←</kbd><kbd>→</kbd> gå &nbsp;•&nbsp; <kbd>↑</kbd> / <kbd>mellanslag</kbd> hoppa &nbsp;•&nbsp; <kbd>↓</kbd> krypa</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = 800, H = 450;
+const GRAV = 0.6, MOVE = 3.2, JUMP = 12;
+const GROUND_Y = 410;
+
+// ---------- Input ----------
+const keys = {};
+addEventListener('keydown', e => {
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key)) e.preventDefault();
+  keys[e.key] = true;
+});
+addEventListener('keyup', e => keys[e.key] = false);
+
+// ---------- Player ----------
+const player = { x:60, y:300, w:26, h:42, vx:0, vy:0, onGround:false, crouch:false,
+                 face:1, hasSwimwear:false, walkPhase:0, moving:false,
+                 sx:1, sy:1, wasInAir:false, idle:0 };
+
+// ---------- Levels ----------
+let levelIndex = 0, camX = 0;
+let ducksCollected = 0, ducksTotal = 0;
+let solvedDoors = {}, currentDoor = null, particles = [];
+let busAnim = { active:false, x:0 };
+
+const levels = [
+  {
+    name: "🏠 Charlies hus", bg1:"#d6c4ff", bg2:"#ffe1f3", scene:"city", intro:true, width:2000,
+    ground: [ {x:0,w:2000} ],
+    platforms: [ {x:300,y:330,w:120,h:18}, {x:520,y:270,w:120,h:18}, {x:760,y:330,w:140,h:18} ],
+    ducks: [ {x:340,y:295}, {x:560,y:235}, {x:800,y:295}, {x:1250,y:368} ],
+    doors: [ {x:1500,need:'math'} ],
+    goal: {x:1850, label:"🚏 Bussen!"},
+    swimwear: {x:160,y:368},
+  },
+  {
+    name: "🌴 Palmparken", bg1:"#c4e8ff", bg2:"#ffe1f3", scene:"forest", width:2200,
+    ground: [ {x:0,w:700}, {x:820,w:560}, {x:1500,w:700} ],
+    platforms: [ {x:420,y:320,w:110,h:18}, {x:900,y:300,w:120,h:18}, {x:1120,y:250,w:120,h:18}, {x:1620,y:320,w:120,h:18} ],
+    ducks: [ {x:450,y:285}, {x:940,y:265}, {x:1160,y:215}, {x:1660,y:285}, {x:2050,y:368} ],
+    doors: [ {x:2080,need:'english'} ],
+    goal: {x:2150, label:"🚏 Bussen!"},
+  },
+  {
+    name: "🏖️ Stranden", bg1:"#bfe6ff", bg2:"#ffd9ee", scene:"beach", sand:true, width:2400,
+    ground: [ {x:0,w:600}, {x:740,w:500}, {x:1380,w:480}, {x:2000,w:400} ],
+    platforms: [ {x:360,y:320,w:100,h:18}, {x:820,y:300,w:120,h:18}, {x:1010,y:255,w:140,h:18}, {x:1450,y:300,w:120,h:18}, {x:1700,y:260,w:120,h:18} ],
+    ducks: [ {x:390,y:285}, {x:860,y:265}, {x:1065,y:222}, {x:1490,y:265}, {x:1740,y:225}, {x:2150,y:368} ],
+    doors: [ {x:2230,need:'math'} ],
+    goal: {x:2330, label:"🏊 Poolen!", finale:true},
+  },
+];
+
+// ---------- Questions ----------
+const mathQs = () => {
+  const a = 2 + Math.floor(Math.random()*7), b = 1 + Math.floor(Math.random()*6);
+  const plus = Math.random() > 0.4; let q, ans;
+  if (plus) { q = `${a} + ${b} = ?`; ans = a+b; }
+  else { const big=Math.max(a,b), small=Math.min(a,b); q=`${big} - ${small} = ?`; ans=big-small; }
+  const opts = new Set([ans]);
+  while(opts.size<3){ let o = ans + (Math.floor(Math.random()*5)-2); if(o>=0) opts.add(o); }
+  return { title:"🔢 Matte!", q, ans:String(ans), opts:[...opts].map(String).sort(()=>Math.random()-0.5) };
+};
+const englishWords = [
+  {sv:"hund", en:"dog", others:["cat","fish"]}, {sv:"katt", en:"cat", others:["dog","bird"]},
+  {sv:"sol", en:"sun", others:["moon","star"]}, {sv:"blå", en:"blue", others:["red","green"]},
+  {sv:"röd", en:"red", others:["blue","yellow"]}, {sv:"fisk", en:"fish", others:["frog","duck"]},
+  {sv:"anka", en:"duck", others:["dog","fish"]}, {sv:"hus", en:"house", others:["tree","car"]},
+  {sv:"vatten", en:"water", others:["fire","sand"]}, {sv:"tre", en:"three", others:["two","five"]},
+];
+const englishQs = () => {
+  const w = englishWords[Math.floor(Math.random()*englishWords.length)];
+  const opts = [w.en, ...w.others].sort(()=>Math.random()-0.5);
+  return { title:"🇬🇧 Engelska!", q:`Vad heter "${w.sv}" på engelska?`, ans:w.en, opts };
+};
+
+// ---------- Audio (retro chiptune) ----------
+let audioCtx = null, musicOn = true, musicTimer = null;
+const melodies = [
+  { tempo:200, notes:[523,659,784,659,523,587,659,523, 698,784,880,784,698,659,587,523] },
+  { tempo:180, notes:[440,554,659,554,440,523,659,880, 784,659,587,523,494,440,494,523] },
+  { tempo:160, notes:[659,784,988,784,659,587,659,523, 587,659,784,988,1047,988,784,659] },
+];
+function initAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+function playNote(freq, dur){
+  if(!audioCtx) return;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'square'; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur/1000);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime + dur/1000);
+}
+function startMusic(idx){
+  stopMusic(); if(!musicOn) return; initAudio();
+  const m = melodies[idx % melodies.length]; let i = 0;
+  const step = () => {
+    if(!musicOn) return;
+    playNote(m.notes[i % m.notes.length], m.tempo*0.9); i++;
+    musicTimer = setTimeout(step, m.tempo);
+  };
+  step();
+}
+function stopMusic(){ if(musicTimer){ clearTimeout(musicTimer); musicTimer=null; } }
+function playSfx(type){
+  if(!audioCtx || !musicOn) return;
+  if(type==='jump'){ playNote(660, 90); setTimeout(()=>playNote(990,90),60); }
+  if(type==='duck'){ playNote(880,70); setTimeout(()=>playNote(1175,90),70); }
+  if(type==='right'){ playNote(784,100); setTimeout(()=>playNote(1047,120),100); setTimeout(()=>playNote(1319,160),220); }
+  if(type==='land'){ playNote(330,60); }
+}
+function toggleMusic(){
+  musicOn = !musicOn;
+  document.getElementById('music-btn').textContent = musicOn ? '🔊 Musik' : '🔇 Musik';
+  if(musicOn && running) startMusic(levelIndex); else stopMusic();
+}
+
+// ---------- Game flow ----------
+let running = false, won = false;
+
+function loadLevel(i){
+  const lv = levels[i];
+  ducksTotal = lv.ducks.length; ducksCollected = 0;
+  lv.ducks.forEach(d => d.got = false);
+  solvedDoors = {};
+  player.x = 60; player.y = 300; player.vx=0; player.vy=0; player.sx=1; player.sy=1;
+  camX = 0;
+  document.getElementById('level-name').textContent = lv.name;
+  updateHud(); startMusic(i);
+}
+function startGame(){
+  initAudio();
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  document.getElementById('start').classList.add('hidden');
+  levelIndex = 0; loadLevel(0);
+  running = true; won = false;
+  requestAnimationFrame(loop);
+}
+let introDone = false;
+function speakIntro(){
+  if(introDone || !('speechSynthesis' in window)) return;
+  introDone = true;
+  const text = "Charlie glömde sina badkläder! Hjälp henne hämta dem och samla alla badankor på vägen till poolen. Lycka till!";
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'sv-SE'; u.rate = 1.02; u.pitch = 1.12;
+  const pick = () => {
+    const sv = speechSynthesis.getVoices().find(v => v.lang && v.lang.toLowerCase().startsWith('sv'));
+    if(sv) u.voice = sv; speechSynthesis.speak(u);
+  };
+  if(speechSynthesis.getVoices().length) pick();
+  else speechSynthesis.onvoiceschanged = pick;
+}
+function restart(){
+  document.getElementById('win').classList.add('hidden');
+  player.hasSwimwear = false; startGame();
+}
+function updateHud(){ document.getElementById('duck-count').textContent = `${ducksCollected} / ${ducksTotal}`; }
+
+// ---------- Quiz ----------
+function openQuiz(door){
+  running = false; stopMusic();
+  currentDoor = door;
+  const q = door.need === 'math' ? mathQs() : englishQs();
+  document.getElementById('quiz-title').textContent = q.title;
+  document.getElementById('quiz-q').textContent = q.q;
+  document.getElementById('feedback').textContent = '';
+  const box = document.getElementById('quiz-answers'); box.innerHTML = '';
+  q.opts.forEach(opt => {
+    const b = document.createElement('button');
+    b.className = 'ans'; b.textContent = opt;
+    b.onclick = () => answer(b, opt, q);
+    box.appendChild(b);
+  });
+  document.getElementById('quiz').classList.remove('hidden');
+}
+function answer(btn, opt, q){
+  if(opt === q.ans){
+    btn.classList.add('right'); playSfx('right');
+    document.getElementById('feedback').textContent = 'Rätt! 🎉';
+    solvedDoors[currentDoor.x] = true;
+    setTimeout(()=>{
+      document.getElementById('quiz').classList.add('hidden');
+      running = true; startMusic(levelIndex);
+      requestAnimationFrame(loop);
+    }, 700);
+  } else {
+    btn.classList.add('wrong');
+    document.getElementById('feedback').textContent = 'Försök igen! 💪';
+    setTimeout(()=>btn.classList.remove('wrong'), 400);
+  }
+}
+
+// ---------- Collision ----------
+function rectsOverlap(a,b){ return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y; }
+const doorRect = (door) => ({x:door.x, y:GROUND_Y-90, w:44, h:90});
+function roundRect(g,x,y,w,h,r){
+  g.beginPath(); g.moveTo(x+r,y);
+  g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r);
+  g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath();
+}
+
+// ---------- Main loop ----------
+function loop(){ if(!running) return; const lv = levels[levelIndex]; update(lv); draw(lv); requestAnimationFrame(loop); }
+
+function update(lv){
+  player.crouch = keys['ArrowDown'] && player.onGround;
+  const ph = player.crouch ? 28 : 42;
+  if(player.crouch && player.h===42){ player.y += 14; }
+  if(!player.crouch && player.h===28){ player.y -= 14; }
+  player.h = ph;
+
+  player.vx = 0;
+  const speed = player.crouch ? MOVE*0.6 : MOVE;
+  if(keys['ArrowLeft']) { player.vx = -speed; player.face=-1; }
+  if(keys['ArrowRight']) { player.vx = speed; player.face=1; }
+  player.moving = player.vx !== 0;
+
+  if((keys['ArrowUp']||keys[' ']) && player.onGround && !player.crouch){
+    player.vy = -JUMP; player.onGround = false; playSfx('jump');
+    player.sx = 0.8; player.sy = 1.25; // stretch on takeoff
+  }
+
+  player.vy += GRAV;
+  player.x += player.vx;
+  player.y += player.vy;
+
+  if(player.x < 0) player.x = 0;
+  if(player.x + player.w > lv.width) player.x = lv.width - player.w;
+
+  const wasAir = !player.onGround;
+  player.onGround = false;
+  let onSolid = false;
+  for(const g of lv.ground){ if(player.x + player.w > g.x && player.x < g.x + g.w){ onSolid = true; break; } }
+  if(onSolid && player.y + player.h >= GROUND_Y && player.vy >= 0){
+    player.y = GROUND_Y - player.h; player.vy = 0; player.onGround = true;
+  }
+  for(const p of lv.platforms){
+    if(player.vy >= 0 &&
+       player.x + player.w > p.x && player.x < p.x + p.w &&
+       player.y + player.h >= p.y && player.y + player.h <= p.y + p.h + 14 &&
+       player.y + player.h - player.vy <= p.y + 2){
+      player.y = p.y - player.h; player.vy = 0; player.onGround = true;
+    }
+  }
+  // landing squash
+  if(player.onGround && wasAir && player.wasInAir){
+    player.sx = 1.3; player.sy = 0.7; playSfx('land');
+    spawnDust(player.x + player.w/2, player.y + player.h);
+  }
+  player.wasInAir = !player.onGround;
+
+  // ease scale back to normal
+  player.sx += (1 - player.sx) * 0.2;
+  player.sy += (1 - player.sy) * 0.2;
+
+  if(player.y > H + 60){ player.x = 60; player.y = 300; player.vx=0; player.vy=0; camX=0; }
+
+  for(const door of lv.doors){
+    if(solvedDoors[door.x]) continue;
+    const dr = doorRect(door);
+    if(rectsOverlap(player, dr)){
+      if(player.x + player.w/2 < dr.x + dr.w/2){ player.x = dr.x - player.w - 1; }
+      else { player.x = dr.x + dr.w + 1; }
+      openQuiz(door); return;
+    }
+  }
+
+  if(lv.swimwear && !player.hasSwimwear){
+    const sw = {x:lv.swimwear.x, y:lv.swimwear.y, w:30, h:30};
+    if(rectsOverlap(player, sw)){
+      player.hasSwimwear = true; playSfx('duck');
+      spawnSparkle(sw.x+15, sw.y+15, '#ff6fae');
+      flashLevelName("👙 Badkläder hittade!", lv.name);
+    }
+  }
+
+  for(const d of lv.ducks){
+    if(d.got) continue;
+    const dr = {x:d.x, y:d.y, w:28, h:24};
+    if(rectsOverlap(player, dr)){
+      d.got = true; ducksCollected++; updateHud(); playSfx('duck');
+      spawnSparkle(d.x+14, d.y+12, '#ffd23f');
+    }
+  }
+
+  const goal = lv.goal;
+  const gr = {x:goal.x, y:GROUND_Y-90, w:50, h:90};
+  if(rectsOverlap(player, gr)){
+    const allDoors = lv.doors.every(d => solvedDoors[d.x]);
+    const allDucks = ducksCollected >= ducksTotal;
+    const swimOk = !lv.intro || player.hasSwimwear;
+    if(allDoors && allDucks && swimOk){ nextLevel(lv); }
+    else {
+      let msg = lv.name;
+      if(!swimOk) msg = "👙 Hämta badkläderna först!";
+      else if(!allDucks) msg = `🦆 Samla alla ankor! (${ducksCollected}/${ducksTotal})`;
+      document.getElementById('level-name').textContent = msg;
+    }
+  } else if(!nameFlashing){
+    document.getElementById('level-name').textContent = lv.name;
+  }
+
+  if(player.moving && player.onGround) player.walkPhase += 0.25;
+  else if(!player.onGround) player.walkPhase = 0;
+  if(!player.moving && player.onGround) player.idle += 0.08;
+
+  // smooth camera
+  const targetCam = Math.max(0, Math.min(player.x - W/2 + player.w/2, lv.width - W));
+  camX += (targetCam - camX) * 0.12;
+
+  particles.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.life--; });
+  particles = particles.filter(p => p.life>0);
+}
+
+let nameFlashing = false;
+function flashLevelName(msg, restore){
+  nameFlashing = true;
+  document.getElementById('level-name').textContent = msg;
+  setTimeout(()=>{ document.getElementById('level-name').textContent = restore; nameFlashing=false; }, 1500);
+}
+function nextLevel(lv){
+  if(lv.goal.finale){
+    running = false; won = true; stopMusic();
+    document.getElementById('win').classList.remove('hidden');
+    return;
+  }
+  playBusTransition();
+}
+function playBusTransition(){
+  running = false; stopMusic(); playSfx('right');
+  busAnim.active = true; let t = 0;
+  const drive = () => {
+    t++;
+    if(t < 60) busAnim.x = camX - 200 + t*9;
+    else if(t < 90) busAnim.x = camX + 340;
+    else busAnim.x = camX + 340 + (t-90)*14;
+    draw(levels[levelIndex]);
+    if(t < 150) requestAnimationFrame(drive);
+    else { busAnim.active = false; levelIndex++; loadLevel(levelIndex); running = true; requestAnimationFrame(loop); }
+  };
+  drive();
+}
+function spawnSparkle(x,y,color){
+  for(let i=0;i<12;i++) particles.push({x,y,vx:(Math.random()-0.5)*5,vy:(Math.random()-0.5)*5-2,life:28,color,g:0.25,r:Math.random()*3+2});
+}
+function spawnDust(x,y){
+  for(let i=0;i<6;i++) particles.push({x,y,vx:(Math.random()-0.5)*3,vy:-Math.random()*1.5,life:18,color:'#ffffff',g:0.05,r:Math.random()*3+2});
+}
+
+// ---------- Drawing ----------
+function draw(lv){
+  // sky gradient
+  const sky = ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0, lv.bg1); sky.addColorStop(1, lv.bg2);
+  ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
+
+  // clouds (parallax, screen-space)
+  drawClouds();
+
+  ctx.save(); ctx.translate(-camX, 0);
+
+  drawScenery(lv);
+
+  // ground
+  for(const g of lv.ground){
+    if(lv.sand){
+      ctx.fillStyle = '#ffe8c2'; ctx.fillRect(g.x, GROUND_Y, g.w, 40);
+      ctx.fillStyle = '#ffdca6'; ctx.fillRect(g.x, GROUND_Y, g.w, 7);
+      ctx.fillStyle = 'rgba(230,190,140,0.6)';
+      for(let sx=g.x; sx<g.x+g.w; sx+=22){ ctx.fillRect(sx + (sx*7%11), GROUND_Y+16+(sx*3%10), 3, 3); }
+    } else {
+      ctx.fillStyle = '#9adfb5'; ctx.fillRect(g.x, GROUND_Y, g.w, 40);
+      ctx.fillStyle = '#b6f0cd'; ctx.fillRect(g.x, GROUND_Y, g.w, 8);
+      ctx.fillStyle = '#7fce9c';
+      for(let sx=g.x+6; sx<g.x+g.w; sx+=30){
+        ctx.beginPath(); ctx.moveTo(sx,GROUND_Y+8); ctx.lineTo(sx+3,GROUND_Y); ctx.lineTo(sx+6,GROUND_Y+8); ctx.fill();
+      }
+      ctx.fillStyle = '#8c6a8e'; ctx.fillRect(g.x, GROUND_Y+30, g.w, 20);
+    }
+  }
+
+  if(lv.intro) drawHouse(120, 300);
+
+  // platforms (rounded, sticker style)
+  for(const p of lv.platforms){
+    ctx.save();
+    ctx.shadowColor = 'rgba(10,40,70,0.25)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
+    ctx.fillStyle = lv.sand ? '#e8b97e' : '#c79ad0';
+    roundRect(ctx, p.x, p.y, p.w, p.h+8, 8); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = lv.sand ? '#ffdca6' : '#e3c4ec';
+    roundRect(ctx, p.x, p.y, p.w, 8, 6); ctx.fill();
+  }
+
+  if(lv.swimwear && !player.hasSwimwear) drawSwimwear(lv.swimwear.x, lv.swimwear.y);
+  for(const d of lv.ducks){ if(!d.got) drawDuck(ctx, d.x, d.y, 1, true); }
+
+  for(const door of lv.doors){
+    const solved = solvedDoors[door.x];
+    const dx = door.x, dtop = GROUND_Y-90;
+    ctx.save();
+    ctx.shadowColor='rgba(10,40,70,0.3)'; ctx.shadowBlur=10; ctx.shadowOffsetY=4;
+    ctx.fillStyle = solved ? '#9ccc65' : '#a86d2c';
+    roundRect(ctx, dx, dtop, 44, 90, 8); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = solved ? '#7cb342' : '#7a4f1a';
+    roundRect(ctx, dx+4, dtop+5, 36, 80, 6); ctx.fill();
+    ctx.fillStyle = solved ? '#9ccc65' : '#925f26';
+    roundRect(ctx, dx+9, dtop+11, 26, 26, 4); ctx.fill();
+    roundRect(ctx, dx+9, dtop+44, 26, 26, 4); ctx.fill();
+    ctx.font = '20px sans-serif'; ctx.fillText(solved ? '🔓' : '🔒', dx+12, dtop+62);
+  }
+
+  const goal = lv.goal;
+  if(goal.finale) drawPool(goal.x-20, GROUND_Y-30); else drawBusStop(goal.x, GROUND_Y);
+  // goal label bubble
+  ctx.save();
+  ctx.font = 'bold 15px Trebuchet MS, sans-serif';
+  const lw = ctx.measureText(goal.label).width + 18;
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  roundRect(ctx, goal.x-4, GROUND_Y-148, lw, 26, 13); ctx.fill();
+  ctx.fillStyle = '#143a52'; ctx.fillText(goal.label, goal.x+5, GROUND_Y-130);
+  ctx.restore();
+
+  drawCharlie(player.x, player.y, player.h, player.face, player.crouch, player.walkPhase, player.onGround, player.moving, player.sx, player.sy, player.idle);
+
+  // particles
+  particles.forEach(p => {
+    ctx.globalAlpha = Math.max(0, p.life/28);
+    ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r||3, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  if(busAnim.active) drawBus(busAnim.x);
+
+  ctx.restore();
+
+  // soft vignette frame
+  const vg = ctx.createRadialGradient(W/2,H/2,H*0.45, W/2,H/2,H*0.95);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(10,30,50,0.18)');
+  ctx.fillStyle = vg; ctx.fillRect(0,0,W,H);
+}
+
+const clouds = [{x:80,y:60,s:1},{x:380,y:100,s:0.8},{x:620,y:50,s:1.1},{x:760,y:120,s:0.7}];
+function drawClouds(){
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  for(const c of clouds){
+    const x = ((c.x - camX*0.15) % (W+200) + W+200) % (W+200) - 100;
+    const s = c.s;
+    ctx.beginPath();
+    ctx.arc(x, c.y, 22*s, 0, Math.PI*2);
+    ctx.arc(x+26*s, c.y-10*s, 28*s, 0, Math.PI*2);
+    ctx.arc(x+56*s, c.y, 24*s, 0, Math.PI*2);
+    ctx.arc(x+28*s, c.y+8*s, 26*s, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+function drawScenery(lv){
+  const gy = GROUND_Y;
+  if(lv.scene === 'city'){
+    // soft sun
+    ctx.fillStyle = '#fff0c2';
+    ctx.beginPath(); ctx.arc(680 - camX*0.1, 78, 40, 0, Math.PI*2); ctx.fill();
+    // pastel houses
+    const colors = ['#cdb4f0','#ffc6e3','#b8e3ff','#ffd9b8','#c6f0e0'];
+    for(let i=0;i<14;i++){
+      const x = i*200 - camX*0.4;
+      const bh = 130 + (i*53 % 90);
+      ctx.fillStyle = colors[i % colors.length];
+      roundRect(ctx, x, gy - bh, 130, bh, 10); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      for(let wy=gy-bh+16; wy<gy-18; wy+=26)
+        for(let wx=x+14; wx<x+116; wx+=28) { roundRect(ctx, wx, wy, 14, 14, 4); ctx.fill(); }
+    }
+    drawPalm(640 - camX*0.5, gy, 0.9);
+    drawPalm(180 - camX*0.5, gy, 0.7);
+  }
+  else if(lv.scene === 'forest'){
+    ctx.fillStyle = '#fff0c2';
+    ctx.beginPath(); ctx.arc(130 - camX*0.1, 72, 36, 0, Math.PI*2); ctx.fill();
+    // pastel rolling dunes
+    ctx.fillStyle = '#d8c4ff';
+    for(let i=0;i<7;i++){ const hx = i*340 - camX*0.2; ctx.beginPath(); ctx.arc(hx, gy+40, 170, Math.PI, 0); ctx.fill(); }
+    ctx.fillStyle = '#bfe6c9';
+    for(let i=0;i<7;i++){ const hx = i*300 - camX*0.3 + 150; ctx.beginPath(); ctx.arc(hx, gy+30, 150, Math.PI, 0); ctx.fill(); }
+    // lots of palms (parallax)
+    for(let i=0;i<12;i++){ drawPalm(i*220 - camX*0.55, gy, 0.85 + (i%3)*0.12); }
+  }
+  else if(lv.scene === 'beach'){
+    ctx.fillStyle = '#fff0c2';
+    ctx.beginPath(); ctx.arc(660 - camX*0.1, 80, 44, 0, Math.PI*2); ctx.fill();
+    // pastel sea
+    const sea = ctx.createLinearGradient(0,gy-66,0,gy);
+    sea.addColorStop(0,'#8fd6ff'); sea.addColorStop(1,'#b8e8ff');
+    ctx.fillStyle = sea; ctx.fillRect(camX, gy-66, W, 66);
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 3;
+    const t = Date.now()/400;
+    for(let row=0; row<3; row++){
+      ctx.beginPath();
+      for(let wx=0; wx<=W; wx+=18){
+        const yy = gy-54 + row*16 + Math.sin((wx/40) + t + row)*4;
+        if(wx===0) ctx.moveTo(camX+wx, yy); else ctx.lineTo(camX+wx, yy);
+      }
+      ctx.stroke();
+    }
+    for(let i=0;i<6;i++){ drawPalm(i*440 - camX*0.45 + 120, gy, 1 + (i%2)*0.15); }
+  }
+}
+
+function drawPalm(x, gy, s){
+  s = s || 1;
+  const th = 110*s;
+  // trunk (gentle curve)
+  ctx.strokeStyle = '#b88a5e'; ctx.lineWidth = 9*s; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(x, gy); ctx.quadraticCurveTo(x-10*s, gy-th*0.6, x+4*s, gy-th); ctx.stroke();
+  // fronds (pastel green)
+  const top = {x:x+4*s, y:gy-th};
+  ctx.fillStyle = '#7fd6a3';
+  const angles = [-2.5,-1.8,-1.0,-0.3, 0.4, 1.1];
+  for(const a of angles){
+    ctx.save(); ctx.translate(top.x, top.y); ctx.rotate(a);
+    ctx.beginPath(); ctx.ellipse(34*s, 0, 36*s, 10*s, 0, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  // coconuts
+  ctx.fillStyle = '#a9744f';
+  ctx.beginPath(); ctx.arc(top.x-5*s, top.y+5*s, 4*s, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(top.x+5*s, top.y+6*s, 4*s, 0, Math.PI*2); ctx.fill();
+}
+
+function drawCharlie(x,y,h,face,crouch,phase,onGround,moving,sx,sy,idle){
+  ctx.save();
+  const cx = x + 13, baseY = y + h;
+  ctx.translate(cx, baseY);
+  ctx.scale(face<0 ? -sx : sx, sy);
+  ctx.translate(0, -h);
+
+  const bob = (moving && onGround) ? Math.abs(Math.sin(phase))*2 : (onGround ? Math.sin(idle)*1.2 : 0);
+  const swing = (moving && onGround) ? Math.sin(phase)*6 : 0;
+
+  ctx.lineJoin = 'round';
+  const outline = (fn) => { ctx.strokeStyle='rgba(20,45,65,0.55)'; ctx.lineWidth=2; fn(); ctx.stroke(); };
+
+  // soft shadow on ground
+  ctx.save();
+  ctx.scale(1/(face<0?-sx:sx), 1/sy);
+  ctx.fillStyle = 'rgba(10,40,70,0.18)';
+  ctx.beginPath(); ctx.ellipse(0, 2, 16, 5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  // legs
+  ctx.fillStyle = '#3a6ea5';
+  if(!onGround){
+    roundRect(ctx, -8, h-15, 6, 15, 3); ctx.fill();
+    roundRect(ctx, 2, h-17, 6, 17, 3); ctx.fill();
+  } else if(crouch){
+    roundRect(ctx, -9, h-9, 7, 9, 3); ctx.fill(); roundRect(ctx, 3, h-9, 7, 9, 3); ctx.fill();
+  } else {
+    roundRect(ctx, -8 - swing*0.4, h-13, 6, 13, 3); ctx.fill();
+    roundRect(ctx, 2 + swing*0.4, h-13, 6, 13, 3); ctx.fill();
+  }
+
+  // body (dress)
+  ctx.fillStyle = '#ff6fae';
+  outline(()=>{ roundRect(ctx, -12, h-31 - bob, 24, 22, 7); ctx.fill(); });
+  // dress trim
+  ctx.fillStyle = '#ff9ccb';
+  roundRect(ctx, -12, h-15 - bob, 24, 5, 3); ctx.fill();
+
+  // arms
+  ctx.fillStyle = '#ffd9b3';
+  if(!onGround){
+    roundRect(ctx, -16, h-36, 5, 13, 2.5); ctx.fill(); roundRect(ctx, 11, h-36, 5, 13, 2.5); ctx.fill();
+  } else {
+    roundRect(ctx, -15, h-29-bob + swing*0.3, 5, 13, 2.5); ctx.fill();
+    roundRect(ctx, 10, h-29-bob - swing*0.3, 5, 13, 2.5); ctx.fill();
+  }
+
+  // head
+  ctx.fillStyle = '#ffd9b3';
+  outline(()=>{ ctx.beginPath(); ctx.arc(0, h-39 - bob, 12, 0, Math.PI*2); ctx.fill(); });
+  // hair
+  ctx.fillStyle = '#7a4a22';
+  ctx.beginPath(); ctx.arc(0, h-43 - bob, 12, Math.PI, 0); ctx.fill();
+  roundRect(ctx, -14, h-45 - bob, 5, 16, 2); ctx.fill();
+  // little bow
+  ctx.fillStyle = '#ff5ea0';
+  ctx.beginPath(); ctx.arc(7, h-48 - bob, 4, 0, Math.PI*2); ctx.fill();
+  // eyes
+  ctx.fillStyle = '#222';
+  ctx.beginPath(); ctx.arc(4, h-39 - bob, 2.2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(-4, h-39 - bob, 2.2, 0, Math.PI*2); ctx.fill();
+  // rosy cheeks
+  ctx.fillStyle = 'rgba(255,140,170,0.6)';
+  ctx.beginPath(); ctx.arc(7, h-35 - bob, 2.5, 0, Math.PI*2); ctx.fill();
+  // smile
+  ctx.strokeStyle = '#a33'; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.arc(0, h-35 - bob, 4, 0.15*Math.PI, 0.85*Math.PI); ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawDuck(g, x, y, scale, bobAnim){
+  g.save(); g.translate(x,y); g.scale(scale,scale);
+  if(bobAnim){ g.translate(0, Math.sin(Date.now()/300 + x)*2); }
+  // shadow
+  g.fillStyle='rgba(10,40,70,0.15)';
+  g.beginPath(); g.ellipse(14, 26, 12, 3, 0, 0, Math.PI*2); g.fill();
+  // body
+  g.fillStyle = '#ffd23f';
+  g.strokeStyle = 'rgba(160,110,0,0.5)'; g.lineWidth = 1.5;
+  g.beginPath(); g.ellipse(14, 16, 13, 10, 0, 0, Math.PI*2); g.fill(); g.stroke();
+  g.beginPath(); g.arc(20, 7, 7, 0, Math.PI*2); g.fill(); g.stroke();
+  // shine
+  g.fillStyle = 'rgba(255,255,255,0.55)';
+  g.beginPath(); g.ellipse(11, 13, 4, 2.5, -0.5, 0, Math.PI*2); g.fill();
+  // beak
+  g.fillStyle = '#ff9800';
+  g.beginPath(); g.moveTo(26,6); g.lineTo(34,8); g.lineTo(26,11); g.fill();
+  // eye
+  g.fillStyle = '#222'; g.beginPath(); g.arc(22, 5, 1.7, 0, Math.PI*2); g.fill();
+  g.restore();
+}
+
+function drawSwimwear(x,y){
+  ctx.save(); ctx.translate(0, Math.sin(Date.now()/300)*2);
+  ctx.fillStyle = '#ff6fae'; ctx.strokeStyle='rgba(180,40,110,0.5)'; ctx.lineWidth=1.5;
+  roundRect(ctx, x, y, 30, 16, 5); ctx.fill(); ctx.stroke();
+  roundRect(ctx, x+2, y+13, 11, 13, 4); ctx.fill();
+  roundRect(ctx, x+17, y+13, 11, 13, 4); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(x+9,y+6,2,0,7); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+21,y+6,2,0,7); ctx.fill();
+  ctx.restore();
+}
+
+function drawHouse(x,y){
+  ctx.save();
+  ctx.shadowColor='rgba(10,40,70,0.2)'; ctx.shadowBlur=12; ctx.shadowOffsetY=6;
+  ctx.fillStyle = '#ffe0b2'; roundRect(ctx, x, y-10, 150, 120, 6); ctx.fill();
+  ctx.restore();
+  ctx.fillStyle = '#e2533a';
+  ctx.beginPath(); ctx.moveTo(x-14,y-8); ctx.lineTo(x+75,y-72); ctx.lineTo(x+164,y-8); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#7a4a3a'; roundRect(ctx, x+56, y+50, 40, 60, 4); ctx.fill();
+  ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(x+89, y+82, 3, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#9fdcff'; roundRect(ctx, x+15, y+20, 34, 34, 4); ctx.fill(); roundRect(ctx, x+100, y+20, 34, 34, 4); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(x+32,y+20); ctx.lineTo(x+32,y+54); ctx.moveTo(x+15,y+37); ctx.lineTo(x+49,y+37); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x+117,y+20); ctx.lineTo(x+117,y+54); ctx.moveTo(x+100,y+37); ctx.lineTo(x+134,y+37); ctx.stroke();
+}
+
+function drawBusStop(x,y){
+  ctx.fillStyle = '#9aa7b3'; roundRect(ctx, x+18, y-112, 6, 112, 3); ctx.fill();
+  ctx.save();
+  ctx.shadowColor='rgba(10,40,70,0.25)'; ctx.shadowBlur=8; ctx.shadowOffsetY=3;
+  ctx.fillStyle = '#0f86c9'; roundRect(ctx, x-8, y-112, 58, 32, 8); ctx.fill();
+  ctx.restore();
+  ctx.font = '20px sans-serif'; ctx.fillText('🚌', x+9, y-89);
+  ctx.fillStyle = '#8d6e63';
+  roundRect(ctx, x-12, y-26, 64, 8, 3); ctx.fill();
+  ctx.fillRect(x-6, y-18, 6, 18); ctx.fillRect(x+46, y-18, 6, 18);
+}
+function drawBus(x){
+  const y = GROUND_Y - 72;
+  ctx.save();
+  ctx.shadowColor='rgba(10,40,70,0.3)'; ctx.shadowBlur=14; ctx.shadowOffsetY=6;
+  ctx.fillStyle = '#ffca28'; roundRect(ctx, x, y, 184, 66, 12); ctx.fill();
+  ctx.restore();
+  ctx.fillStyle = '#f0a500'; roundRect(ctx, x, y+50, 184, 16, 8); ctx.fill();
+  ctx.fillStyle = '#bfeaff';
+  for(let i=0;i<4;i++){ roundRect(ctx, x+14+i*42, y+10, 32, 24, 5); ctx.fill(); }
+  ctx.fillStyle = '#7fd0ff'; roundRect(ctx, x+150, y+20, 24, 44, 4); ctx.fill();
+  ctx.fillStyle = '#fff'; roundRect(ctx, x+8, y+30, 8, 10, 2); ctx.fill();
+  ctx.fillStyle = '#263238';
+  ctx.beginPath(); ctx.arc(x+42, y+66, 14, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+142, y+66, 14, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#cfd8dc';
+  ctx.beginPath(); ctx.arc(x+42, y+66, 5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+142, y+66, 5, 0, Math.PI*2); ctx.fill();
+}
+
+function drawPool(x,y){
+  ctx.save();
+  ctx.shadowColor='rgba(10,40,70,0.25)'; ctx.shadowBlur=10; ctx.shadowOffsetY=4;
+  ctx.fillStyle = '#e8eef2'; roundRect(ctx, x-34, y-6, 140, 80, 14); ctx.fill();
+  ctx.restore();
+  const water = ctx.createLinearGradient(0,y,0,y+60);
+  water.addColorStop(0,'#39b6f0'); water.addColorStop(1,'#0e8fd6');
+  ctx.fillStyle = water; roundRect(ctx, x-26, y+2, 124, 64, 10); ctx.fill();
+  // ripples
+  ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=2;
+  const t=Date.now()/350;
+  for(let r=0;r<2;r++){ ctx.beginPath();
+    for(let wx=x-22; wx<x+94; wx+=14){ const yy=y+18+r*18+Math.sin(wx/30+t+r)*3; (wx===x-22)?ctx.moveTo(wx,yy):ctx.lineTo(wx,yy);} ctx.stroke(); }
+  // umbrella
+  ctx.fillStyle = '#795548'; ctx.fillRect(x+92, y-44, 4, 46);
+  ctx.fillStyle = '#ff5a5a';
+  ctx.beginPath(); ctx.arc(x+94, y-44, 30, Math.PI, 0); ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.beginPath(); ctx.moveTo(x+94,y-44); ctx.arc(x+94,y-44,30,Math.PI,Math.PI*1.25); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x+94,y-44); ctx.arc(x+94,y-44,30,Math.PI*1.5,Math.PI*1.75); ctx.closePath(); ctx.fill();
+  drawDuck(ctx, x+6, y+14, 1, true);
+}
+
+// HUD duck icon
+const di = document.getElementById('duck-icon').getContext('2d');
+drawDuck(di, 0, 0, 1, false);
+
+draw(levels[0]);
+</script>
+<script src="../../delat/hem.js"></script>
+</body>
+</html>
