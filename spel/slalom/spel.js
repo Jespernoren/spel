@@ -16,7 +16,9 @@ const TRICK_BONUS = 0.5;      // sekunder avdrag per lyckad 360 från hopp
 const LANDNING_BONUS = 0.4;   // sekunder avdrag för perfekt landning efter pop
 const STOLP_BROMS = 0.75;     // farten multipliceras med detta när man kör på en stolpe
 const POP_ZON = 7;            // meter grön pop-zon före hoppkanten (samma som POP_FONSTER i bana.js)
-const VANTA_EFTER_MAL = 7;    // sekunder vi väntar på datoråkarna efter att du gått i mål
+const VANTA_EFTER_MAL = 7;
+const PUMP_FARG = 1;          // 0–1: hur tydligt pumpzonerna (nerförsidan av kullar) färgas blå
+const STARTSKJUTS = 9;        // fart (m/s) ur startluckan    // sekunder vi väntar på datoråkarna efter att du gått i mål
 
 // Datoråkarna. popFel: hur många meter före kanten de släpper (lägre = bättre)
 const MOTSTANDARE = [
@@ -64,8 +66,8 @@ const banor = {};
 const bana = (id) => (banor[id] = banor[id] || byggBana(id));
 
 // ---------- Ljus och himmel ----------
-scene.add(new THREE.HemisphereLight(0xe3f2ff, 0x9fb3cf, 1.15));
-const sol = new THREE.DirectionalLight(0xfff4e0, 2.4);
+scene.add(new THREE.HemisphereLight(0xe3f2ff, 0x8095b8, 0.75));
+const sol = new THREE.DirectionalLight(0xfff1d6, 3.2);
 sol.castShadow = true;
 sol.shadow.mapSize.set(2048, 2048);
 sol.shadow.bias = -0.0005;
@@ -154,9 +156,9 @@ const REKLAM_FARGER = ['#e5383b', '#1e6bff', '#ff8a00', '#2a9d8f', '#8e44ad', '#
 const reklamTexturer = REKLAM.map((t, i) => textTextur(t, { bak: REKLAM_FARGER[i % REKLAM_FARGER.length], storlek: 80, bredd: 768, hojd: 128 }));
 
 // Ett "band" som följer marken: från d0 till d1, från u0 till u1 (sidled från mittlinjen)
-function band(b, d0, d1, u0, u1, material, { lyft = 0.03, stegD = 0.5, stegU = 8, uvSkala = null } = {}) {
+function band(b, d0, d1, u0, u1, material, { lyft = 0.03, stegD = 0.5, stegU = 8, uvSkala = null, farg = null } = {}) {
   const rader = Math.max(1, Math.ceil((d1 - d0) / stegD));
-  const pos = [], uv = [], idx = [];
+  const pos = [], uv = [], idx = [], col = [];
   for (let r = 0; r <= rader; r++) {
     const d = d0 + (d1 - d0) * (r / rader);
     const cx = cxVid(b, d);
@@ -165,6 +167,7 @@ function band(b, d0, d1, u0, u1, material, { lyft = 0.03, stegD = 0.5, stegU = 8
       const x = cx + u;
       pos.push(x, markY(b, x, d) + lyft, -d);
       if (uvSkala) uv.push(u / uvSkala[0], d / uvSkala[1]); else uv.push(k / stegU, r / rader);
+      if (farg) col.push(...farg(x, d));
     }
   }
   for (let r = 0; r < rader; r++) for (let k = 0; k < stegU; k++) {
@@ -174,6 +177,7 @@ function band(b, d0, d1, u0, u1, material, { lyft = 0.03, stegD = 0.5, stegU = 8
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  if (farg) geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   geo.setIndex(idx);
   geo.computeVertexNormals();
   return new THREE.Mesh(geo, material);
@@ -192,7 +196,16 @@ function byggBacke(id) {
   const sno = band(b, -40, slutD, -70, 70, std(0xf7fbff, { roughness: 0.95 }), { lyft: -0.04, stegD: 1, stegU: 56 });
   sno.receiveShadow = true;
   grupp.add(sno);
-  const pist = band(b, -40, slutD, -BANBREDD - 0.6, BANBREDD + 0.6, std(0xffffff, { map: PIST_TEXTUR, roughness: 0.85 }), { lyft: 0.0, stegD: 0.5, stegU: 10, uvSkala: [1.2, 4] });
+  // Pistens färg: ljusblått där det lutar brantare nerför än vanligt (= pumpa här!), mörkare i dalarna
+  const pistFarg = (x, d) => {
+    const lut = b.LUT[Math.max(0, Math.min(b.n - 1, Math.round(d / 0.5)))];
+    const rel = (markY(b, x, d + 0.5) - markY(b, x, d - 0.5)) + lut;
+    const dal = markY(b, x, d + 2) + markY(b, x, d - 2) - 2 * markY(b, x, d);
+    const bla = begransa((-rel - 0.015) * 7, 0, 1) * PUMP_FARG;
+    const mork = 1 - begransa(dal * 1.2, 0, 0.28);
+    return [(1 - bla * 0.8) * mork, (1 - bla * 0.45) * mork, mork];
+  };
+  const pist = band(b, -40, slutD, -BANBREDD - 0.6, BANBREDD + 0.6, std(0xffffff, { map: PIST_TEXTUR, roughness: 0.85, vertexColors: true }), { lyft: 0.0, stegD: 0.5, stegU: 10, uvSkala: [1.2, 4], farg: pistFarg });
   pist.receiveShadow = true;
   grupp.add(pist);
 
@@ -277,6 +290,25 @@ function byggBacke(id) {
     }
   }
 
+  // Pumplinjer: en blå linje på varje krön i kullarna = börja hålla in här
+  {
+    const relVid = (d) => (markY(b, cxVid(b, d), d + 0.5) - markY(b, cxVid(b, d), d - 0.5)) + b.LUT[Math.round(d / 0.5)];
+    let forra = relVid(0);
+    for (let d = 1; d < b.malD; d += 0.5) {
+      const rel = relVid(d);
+      if (forra > 0 && rel <= 0 && b.TYP[Math.round(d / 0.5)] === 'vagor') {
+        grupp.add(band(b, d - 0.35, d + 0.35, -BANBREDD, BANBREDD, new THREE.MeshBasicMaterial({ color: 0x2f8bff }), { lyft: 0.08, stegD: 0.35 }));
+        for (const sida of [-1, 1]) {
+          const x = cxVid(b, d) + sida * (BANBREDD - 0.2), y = markY(b, x, d);
+          const pinne = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.7, 6), lam(0x2f8bff));
+          pinne.position.set(x, y + 0.35, -d);
+          grupp.add(pinne);
+        }
+      }
+      forra = rel;
+    }
+  }
+
   // Portar
   const portar = b.portar.map((p) => ({ ...p }));
   const stolpGeo = new THREE.CylinderGeometry(0.06, 0.06, 2.1, 8);
@@ -309,11 +341,11 @@ function byggBacke(id) {
     const vagg = std(0x1e3a8a), tak = std(0xe5383b);
     const golv = new THREE.Mesh(new THREE.BoxGeometry(12, 0.4, 5), std(0xdfe7f2));
     golv.position.set(0, -0.15, 2); kur.add(golv);
-    for (const sida of [-1, 1]) { const v = new THREE.Mesh(new THREE.BoxGeometry(0.4, 3.2, 5), vagg); v.position.set(sida * 6, 1.6, 2); kur.add(v); }
-    const bakv = new THREE.Mesh(new THREE.BoxGeometry(12.4, 3.2, 0.4), vagg); bakv.position.set(0, 1.6, 4.4); kur.add(bakv);
-    const t = new THREE.Mesh(new THREE.BoxGeometry(13, 0.5, 5.8), tak); t.position.set(0, 3.4, 2); t.rotation.x = -0.08; kur.add(t);
+    for (const sida of [-1, 1]) { const v = new THREE.Mesh(new THREE.BoxGeometry(0.4, 5.4, 5), vagg); v.position.set(sida * 6, 2.7, 2); kur.add(v); }
+    const bakv = new THREE.Mesh(new THREE.BoxGeometry(12.4, 5.4, 0.4), vagg); bakv.position.set(0, 2.7, 4.4); kur.add(bakv);
+    const t = new THREE.Mesh(new THREE.BoxGeometry(13, 0.5, 5.8), tak); t.position.set(0, 5.6, 2); t.rotation.x = -0.08; kur.add(t);
     const skylt = new THREE.Mesh(new THREE.BoxGeometry(8, 1, 0.2), [tak, tak, tak, tak, new THREE.MeshBasicMaterial({ map: textTextur('START') }), tak]);
-    skylt.position.set(0, 4.2, -0.6); kur.add(skylt);
+    skylt.position.set(0, 6.4, -0.6); kur.add(skylt);
     const luckor = [];
     for (let i = 0; i < 4; i++) {
       const l = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.9, 0.12), std(0xffcc00, { metalness: 0.3 }));
@@ -512,6 +544,11 @@ const stapel = el('div', 'positionsstapel');
 stapel.innerHTML = '<div class="stapel-mal">🏁</div>' + forare.map((f) => `<div class="stapel-prick" style="background:${hex(f.farg)}">${f.spelare ? '★' : ''}</div>`).join('');
 document.body.appendChild(stapel);
 const prickar = [...stapel.querySelectorAll('.stapel-prick')];
+const kontrollSkylt = el('div', 'kontrollskylt');
+kontrollSkylt.innerHTML = TOUCH
+  ? '<div><b>◀ ▶</b> svänga</div><div><b>⏎</b> håll = pumpa · släpp = hoppa</div>'
+  : '<div><kbd>◀</kbd> <kbd>▶</kbd> <span>piltangenterna svänger</span></div><div><kbd class="lang">MELLANSLAG</kbd> <span>håll = pumpa · släpp = hoppa</span></div><div><kbd>▼</kbd> <span>huka för fart</span></div>';
+document.body.appendChild(kontrollSkylt);
 const pumpTips = el('div', 'pumptips');
 document.body.appendChild(pumpTips);
 
@@ -565,8 +602,9 @@ function visaStartmeny() {
         <span class="medalj">${p[id] ? MEDALJ[p[id]] : ''}</span>
       </button>`).join('')}</div>
     <div class="hjalp">Tävla mot <b>Frost-Fia</b>, <b>Turbo-Tage</b> och <b>Sigge Snabb</b>!<br>
-    ◀ ▶ svänga · ⬇ huka för fart<br>
-    <b>HÅLL ${KNAPP}</b> nerför kullarna = pumpa, släpp uppför<br>
+    <b>Höger hand:</b> piltangenterna ◀ ▶ svänger, ▼ hukar<br>
+    <b>Vänster hand:</b> MELLANSLAG<br>
+    <b>HÅLL ${KNAPP}</b> på de <span style="color:#7cc4ff">blå</span> partierna = pumpa, släpp uppför<br>
     <b>SLÄPP</b> vid blå linjen = perfekt pop · i luften: tryck igen = 360 · Esc = paus</div>`;
   const m = visaMeny({ titel: '⛷️ Skicross', text: 'Välj backe', html, knappar: [{ text: '🏠 Till spelhallen', gor: tillHallen }] });
   m.element.querySelectorAll('.backe').forEach((b) => b.addEventListener('click', () => { m.stang(); startaBacke(b.dataset.id); }));
@@ -746,7 +784,8 @@ function uppdatera(dt) {
       visa('KÖR!', { klass: 'gron', tid: 0.8 });
       ljud.ton(880, 0.35, 'square', 0.25);
       ljud.tala('Kör!', { hastighet: 1.2 });
-      forare.forEach((f) => (f.s.fart = 5));
+      forare.forEach((f) => (f.s.fart = STARTSKJUTS * (f.spelare ? 1 : 0.95 + Math.random() * 0.1)));
+      kamSkak = 0.4;
       kontroll.rensa();
       forraPump = !!kontroll.pump;
     }
@@ -885,7 +924,7 @@ function uppdatera(dt) {
   const bak = 7.5 + Math.min(1, s.fart / 30) * 2.5;
   const cd = s.d - Math.cos(rikt) * bak;
   const cxk = s.x * 0.75 + cxVid(b, cd) * 0.25 - Math.sin(rikt) * bak;
-  camMal.set(cxk, Math.max(s.y - hojd * 0.55, markY(b, cxk, cd)) + 3.3, -cd);
+  camMal.set(cxk, Math.max(s.y - hojd * 0.55, markY(b, cxk, cd)) + 4.1, -cd);
   if (lage === 'meny') camMal.set(s.x + Math.sin(spelTid * 0.2) * 6, s.y + 5, -s.d + 12);
   camera.position.x += (camMal.x - camera.position.x) * Math.min(1, dt * 6);
   camera.position.y += (camMal.y - camera.position.y) * Math.min(1, dt * 5);
@@ -895,7 +934,7 @@ function uppdatera(dt) {
   camera.position.x += (Math.random() - 0.5) * skak;
   camera.position.y += (Math.random() - 0.5) * skak;
   const fd = s.d + 10;
-  titta.set(s.x * 0.6 + cxVid(b, fd) * 0.4, (s.y - hojd * 0.4) * 0.6 + markY(b, cxVid(b, fd), fd) * 0.4 + 0.8, -fd);
+  titta.set(s.x * 0.6 + cxVid(b, fd) * 0.4, (s.y - hojd * 0.4) * 0.6 + markY(b, cxVid(b, fd), fd) * 0.4 + 0.2, -fd);
   camera.lookAt(titta);
   camera.rotateZ(bankVid(b, s.d) * 0.5 - (s.vinkel - rikt) * 0.08); // lutar med doseringen
   const fov = 62 + Math.min(1, s.fart / 30) * 16;
@@ -905,8 +944,8 @@ function uppdatera(dt) {
   berg.position.set(camera.position.x, camera.position.y - 20, camera.position.z);
   solSkiva.position.set(camera.position.x + 160, camera.position.y + 140, camera.position.z - 330);
   solSkiva.lookAt(camera.position);
-  sol.position.set(s.x + 12, s.y + 26, -s.d + 4);
-  sol.target.position.set(s.x, s.y, -s.d - 6);
+  sol.position.set(s.x + 22, s.y + 13, -s.d - 22); // låg sol snett framifrån → kullarna får skuggsidor
+  sol.target.position.set(s.x, s.y - 3, -s.d - 8);
 
   for (let i = 0; i < FLINGOR; i++) {
     const j = i * 3;
@@ -942,9 +981,10 @@ function uppdatera(dt) {
   // pump-tips på kullarna
   const iKullar = lage === 'akning' && !visaPop && !s.luft && b.TYP[Math.round(s.d / 0.5)] === 'vagor';
   pumpTips.style.display = iKullar ? '' : 'none';
+  kontrollSkylt.style.display = lage === 'nedrakning' || (lage === 'akning' && racetid < 3) ? '' : 'none';
   if (iKullar) {
     pumpTips.className = 'pumptips ' + (s.pumpBra > 0 ? 'bra' : s.pumpBra < 0 ? 'fel' : '');
-    pumpTips.textContent = s.pumpBra > 0 ? '⬇ PUMPA! +fart' : s.pumpBra < 0 ? '⬆ släpp uppför!' : `Håll ${KNAPP} nerför kullen`;
+    pumpTips.textContent = s.pumpBra > 0 ? '⬇ PUMPA! +fart' : s.pumpBra < 0 ? '⬆ släpp uppför!' : `Håll ${KNAPP} från blå linjen`;
   }
 
   // --- namnskyltar över datoråkarna ---

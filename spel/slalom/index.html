@@ -79,6 +79,18 @@
     .pumptips.bra { color: #6cff9a; }
     .pumptips.fel { color: #ffb4b4; }
     .hud .plats { font-size: 30px; }
+    /* Kontrollskylt i början av åket */
+    .kontrollskylt {
+      position: fixed; left: 50%; bottom: max(150px, calc(env(safe-area-inset-bottom) + 140px)); transform: translateX(-50%);
+      z-index: 7; pointer-events: none; background: rgba(10,16,40,.62); border-radius: 16px; padding: 12px 18px;
+      display: grid; gap: 8px; font-weight: 700; font-size: 16px; white-space: nowrap;
+    }
+    .kontrollskylt kbd {
+      display: inline-block; min-width: 30px; padding: 3px 8px; border-radius: 7px; text-align: center;
+      background: #fff; color: #111; font: 900 15px system-ui, sans-serif; box-shadow: 0 3px 0 #9aa4b1;
+    }
+    .kontrollskylt kbd.lang { min-width: 130px; }
+    .kontrollskylt span { opacity: .9; margin-left: 6px; }
     .hud .plats .p1 { color: #ffd54a; } .hud .plats .p2 { color: #e0e6f0; } .hud .plats .p3 { color: #f0a868; }
     .popmatare.poppad .pop-text { color: #6cff9a; }
     .hud .delta-rod { color: #ff8a8a; }
