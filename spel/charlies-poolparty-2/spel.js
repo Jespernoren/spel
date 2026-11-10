@@ -1,8 +1,9 @@
 // =============================================================
 //  Charlies Poolparty 2
-//  Plattformsspel på canvas. Originalet ligger kvar i spel/charlies-poolparty/.
+//  Plattformsspel i 3D (Three.js, se grafik.js). Originalet ligger kvar i spel/charlies-poolparty/.
+//  Här finns all spellogik: banor, fysik, frågor, ljud och sparning.
 // =============================================================
-'use strict';
+import { skapaGrafik } from './grafik.js';
 
 // ---------- JUSTERBARA VÄRDEN (lek gärna med dessa!) ----------
 const GRAVITATION = 0.55;   // hur snabbt Charlie faller
@@ -28,7 +29,11 @@ const blanda = (lista) => lista.map(v => [Math.random(), v]).sort((a, b) => a[0]
 const begransa = (v, a, b) => Math.max(a, Math.min(b, v));
 const overlapp = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
+let grafik = null;
+try { grafik = skapaGrafik(document.getElementById('c3d')); }
+catch (e) { console.error(e); document.getElementById('c3d').insertAdjacentHTML('afterend', '<div class="overlay">Din webbläsare kan inte visa 3D-grafik 😢</div>'); }
 function anpassaStorlek() {
+  if (grafik) grafik.storlek();
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const r = canvas.getBoundingClientRect();
   canvas.width = Math.round(r.width * dpr);
@@ -299,6 +304,7 @@ function laddaBana(i) {
   kamX = 0;
   djur = [];
   for (let k = 0; k < 5; k++) djur.push({ x: slump(0, W), y: slump(60, 220), fas: slump(0, 6), fart: slump(0.4, 0.9), farg: ['#ff8fc8', '#ffd23f', '#8fd0ff', '#b48cff'][k % 4] });
+  if (grafik) grafik.byggBana(bana);
   $('ban-namn').textContent = `${mall.ikon} ${mall.namn}`;
   uppdateraHud();
   startaMusik(LATAR[i % LATAR.length]);
@@ -734,533 +740,35 @@ function uppdateraDjur() {
 }
 
 // =============================================================
-//  RITNING
+//  RITNING: 3D-världen ritas i grafik.js, text och karta ritas ovanpå här
 // =============================================================
 function rundRekt(x, y, w, h, r) {
   ctx.beginPath(); ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
   ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
 }
-const TEMAN = {
-  stad: { himmel: ['#cdb8ff', '#ffe1f3'], sol: '#fff0c2' },
-  park: { himmel: ['#b9e2ff', '#ffe6f4'], sol: '#fff3c4' },
-  glass: { himmel: ['#ffcce6', '#fff2d9'], sol: '#fff6cf' },
-  brygga: { himmel: ['#8fd2ff', '#e8f7ff'], sol: '#fff6cf' },
-  vattenpark: { himmel: ['#9fe4ff', '#fff0f8'], sol: '#fff6cf' },
-  strand: { himmel: ['#8f7bd8', '#ff9fb8', '#ffd59e'], sol: '#ffe08a' },
+const ritData = {
+  get bana() { return bana; }, spelare: null, get s() { return s; }, get kamX() { return kamX; }, get tid() { return tid; }, get lage() { return lage; },
+  get partiklar() { return partiklar; }, get buss() { return buss; }, get fest() { return fest; }, get guldTagen() { return guldTagen; }, get skak() { return skak; },
+  get finalKlar() { return banIndex === BANOR.length - 1 && framsteg[banIndex].klar; },
 };
-
 function rita() {
   if (!bana) return;
-  const tema = TEMAN[bana.tema];
-  ctx.save();
-  if (skak > 0) ctx.translate(slump(-skak, skak) * 0.4, slump(-skak, skak) * 0.4);
-
-  // himmel
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  tema.himmel.forEach((f, i) => g.addColorStop(i / (tema.himmel.length - 1), f));
-  ctx.fillStyle = g; ctx.fillRect(-20, -20, W + 40, H + 40);
-
-  // sol med strålar
-  const solX = 760 - kamX * 0.05, solY = bana.tema === 'strand' ? 300 : 85;
-  ctx.save(); ctx.translate(solX, solY); ctx.rotate(tid / 400);
-  ctx.fillStyle = 'rgba(255,255,255,0.18)';
-  for (let i = 0; i < 12; i++) { ctx.rotate(Math.PI / 6); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(160, -14); ctx.lineTo(160, 14); ctx.fill(); }
-  ctx.restore();
-  ctx.fillStyle = tema.sol; ctx.beginPath(); ctx.arc(solX, solY, bana.tema === 'strand' ? 70 : 44, 0, Math.PI * 2); ctx.fill();
-
-  ritaMoln();
-  ritaBakgrund(bana.tema);
-  ritaDjurBak();
-
-  ctx.save(); ctx.translate(-Math.round(kamX), 0);
-  if (bana.vatten) ritaVatten();
-  ritaMark();
-  if (bana.tema === 'stad') ritaHus(110, 330);
-  ritaDekor();
-  for (const p of bana.plattformar) ritaPlattform(p);
-  for (const f of bana.flottar) ritaFlotte(f);
-  for (const r of bana.ringar) ritaRing(r);
-  for (const d of bana.dorrar) ritaGrind(d);
-  if (bana.mal.typ === 'buss') ritaHallplats(bana.mal.x, MARK_Y); else ritaPool(bana.mal.x, MARK_Y);
-  if (bana.badklader && !s.badklader) ritaBadklader(bana.badklader.x, bana.badklader.y);
-  for (const a of bana.ankor) if (!a.tagen) ritaAnka(ctx, a.x, a.y, 1, true, false);
-  if (!guldTagen) ritaAnka(ctx, bana.guld.x, bana.guld.y, 1, true, true);
-  for (const f of bana.fiender) f.typ === 'boll' ? ritaBoll(f) : ritaKrabba(f);
-  const iPoolen = lage === 'fest' && fest.t > 50;
-  if (iPoolen) { ctx.save(); ctx.beginPath(); ctx.rect(s.x - 40, 0, 110, MARK_Y - 16); ctx.clip(); }
-  if (s.synlig && !(s.osarbar > 0 && Math.floor(s.osarbar / 4) % 2 === 0 && lage === 'spel')) ritaCharlie();
-  if (iPoolen) { ctx.restore(); ritaBadring(s.x + 13, MARK_Y - 16); }
-  if (lage === 'buss' || lage === 'klar') ritaBuss(buss.x);
-  if (bana.mal.typ === 'pool') ritaPoolFram(bana.mal.x, MARK_Y);
-  ritaPartiklar();
-  ctx.restore();
-
-  // vinjett
-  const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.45, W / 2, H / 2, H * 0.95);
-  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(40,20,60,0.2)');
-  ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
-
+  if (grafik) grafik.rita(ritData);
+  ctx.clearRect(0, 0, W, H);
   ritaFramsteg();
-
-  // meddelande
   if (meddelande) {
     const a = Math.min(1, meddelande.t / 20, (meddelande.max - meddelande.t + 1) / 10);
     ctx.save(); ctx.globalAlpha = a;
     ctx.font = 'bold 30px Trebuchet MS, sans-serif'; ctx.textAlign = 'center';
     const bw = ctx.measureText(meddelande.text).width + 50;
     const y = 70 - (1 - a) * 20;
-    ctx.fillStyle = 'rgba(255,255,255,0.92)'; rundRekt(W / 2 - bw / 2, y - 32, bw, 48, 24); ctx.fill();
+    ctx.shadowColor = 'rgba(60,20,80,0.25)'; ctx.shadowBlur = 16; ctx.shadowOffsetY = 4;
+    ctx.fillStyle = 'rgba(255,255,255,0.94)'; rundRekt(W / 2 - bw / 2, y - 32, bw, 48, 24); ctx.fill();
+    ctx.shadowColor = 'transparent';
     ctx.fillStyle = '#6b3a6e'; ctx.fillText(meddelande.text, W / 2, y + 2);
     ctx.restore();
   }
-  ctx.restore();
-}
-
-const moln = [{ x: 80, y: 60, s: 1 }, { x: 380, y: 100, s: 0.8 }, { x: 620, y: 50, s: 1.1 }, { x: 860, y: 120, s: 0.7 }, { x: 1100, y: 70, s: 0.9 }];
-function ritaMoln() {
-  ctx.fillStyle = bana.tema === 'strand' ? 'rgba(255,220,235,0.75)' : 'rgba(255,255,255,0.85)';
-  for (const c of moln) {
-    const x = ((c.x - kamX * 0.12 - tid * 0.15 * c.s) % (W + 300) + W + 300) % (W + 300) - 150, s2 = c.s;
-    ctx.beginPath();
-    ctx.arc(x, c.y, 22 * s2, 0, Math.PI * 2); ctx.arc(x + 26 * s2, c.y - 10 * s2, 28 * s2, 0, Math.PI * 2);
-    ctx.arc(x + 56 * s2, c.y, 24 * s2, 0, Math.PI * 2); ctx.arc(x + 28 * s2, c.y + 8 * s2, 26 * s2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-const upprepa = (avst, faktor, fn) => { // ritar saker som upprepas i parallax
-  const off = kamX * faktor;
-  const start = Math.floor(off / avst) - 1;
-  for (let i = start; i < start + Math.ceil(W / avst) + 3; i++) fn(i * avst - off, i);
-};
-const hashv = (i) => { const v = Math.sin(i * 127.1) * 43758.5453; return v - Math.floor(v); };
-
-function ritaBakgrund(tema) {
-  const gy = MARK_Y;
-  if (tema === 'stad') {
-    const f = ['#cdb4f0', '#ffc6e3', '#b8e3ff', '#ffd9b8', '#c6f0e0'];
-    upprepa(200, 0.4, (x, i) => {
-      const bh = 130 + hashv(i) * 100;
-      ctx.fillStyle = f[((i % 5) + 5) % 5]; rundRekt(x, gy - bh, 140, bh, 10); ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.75)';
-      for (let wy = gy - bh + 16; wy < gy - 18; wy += 26) for (let wx = x + 14; wx < x + 126; wx += 28) { rundRekt(wx, wy, 14, 14, 4); ctx.fill(); }
-    });
-    upprepa(520, 0.6, (x, i) => ritaPalm(x + hashv(i) * 100, gy, 0.8));
-  } else if (tema === 'park') {
-    ctx.fillStyle = '#d8c4ff';
-    upprepa(340, 0.2, (x) => { ctx.beginPath(); ctx.arc(x, gy + 40, 170, Math.PI, 0); ctx.fill(); });
-    ctx.fillStyle = '#bfe6c9';
-    upprepa(300, 0.32, (x) => { ctx.beginPath(); ctx.arc(x + 150, gy + 30, 150, Math.PI, 0); ctx.fill(); });
-    upprepa(220, 0.55, (x, i) => ritaPalm(x, gy, 0.8 + hashv(i) * 0.3));
-  } else if (tema === 'glass') {
-    upprepa(260, 0.4, (x, i) => ritaKiosk(x, gy, i));
-    upprepa(700, 0.6, (x) => ritaJatteglass(x + 100, gy));
-    // vimplar
-    ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 2;
-    upprepa(240, 0.5, (x, i) => {
-      ctx.beginPath(); ctx.moveTo(x, 150); ctx.quadraticCurveTo(x + 120, 190, x + 240, 150); ctx.stroke();
-      for (let k = 0; k < 6; k++) {
-        const px = x + 20 + k * 36, py = 150 + Math.sin((k + 0.5) / 6 * Math.PI) * 30;
-        ctx.fillStyle = ['#ff8fc8', '#ffd23f', '#8fd0ff', '#b48cff'][(k + i) & 3];
-        ctx.beginPath(); ctx.moveTo(px - 9, py); ctx.lineTo(px + 9, py); ctx.lineTo(px, py + 18); ctx.fill();
-      }
-    });
-  } else if (tema === 'brygga' || tema === 'strand') {
-    // hav i horisonten
-    const hy = tema === 'strand' ? 330 : 300;
-    const hav = ctx.createLinearGradient(0, hy, 0, gy);
-    hav.addColorStop(0, tema === 'strand' ? '#c08ad8' : '#6cc6f5'); hav.addColorStop(1, tema === 'strand' ? '#ffb3c7' : '#a8e2ff');
-    ctx.fillStyle = hav; ctx.fillRect(0, hy, W, gy - hy + 20);
-    if (tema === 'strand') { ctx.fillStyle = 'rgba(255,230,160,0.55)'; for (let i = 0; i < 6; i++) ctx.fillRect(760 - kamX * 0.05 - 60 + i * 6, hy + 10 + i * 18, 120 - i * 12, 4); }
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 2;
-    for (let r = 0; r < 4; r++) { ctx.beginPath(); for (let x = 0; x <= W; x += 20) { const y = hy + 20 + r * 38 + Math.sin(x / 50 + tid / 40 + r) * 3; x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); }
-    // segelbåtar
-    upprepa(600, 0.15, (x, i) => ritaBat(x + hashv(i) * 200 + Math.sin(tid / 90 + i) * 10, hy + 18 + hashv(i + 3) * 20, 0.6 + hashv(i + 5) * 0.4));
-    if (tema === 'brygga') ritaFyr(1100 - kamX * 0.15, hy + 8);
-    upprepa(tema === 'strand' ? 380 : 700, 0.55, (x, i) => tema === 'strand' ? (i % 2 ? ritaParasoll(x, gy, i) : ritaPalm(x, gy, 1)) : ritaPalm(x, gy, 0.9));
-  } else if (tema === 'vattenpark') {
-    ctx.fillStyle = '#bfe8ff';
-    upprepa(500, 0.25, (x) => { rundRekt(x + 60, 150, 70, gy - 150, 8); ctx.fill(); });
-    upprepa(500, 0.3, (x, i) => ritaRutschkana(x, gy, i));
-    upprepa(330, 0.55, (x, i) => ritaPalm(x + hashv(i) * 80, gy, 0.85));
-  }
-}
-
-function ritaDjurBak() {
-  for (const d of djur) {
-    if (bana.tema === 'brygga' || bana.tema === 'strand') { // måsar
-      ctx.strokeStyle = 'rgba(255,255,255,0.95)'; ctx.lineWidth = 2.5;
-      const v = Math.sin(d.fas) * 6;
-      ctx.beginPath(); ctx.moveTo(d.x - 12, d.y - v); ctx.quadraticCurveTo(d.x - 6, d.y - 6, d.x, d.y); ctx.quadraticCurveTo(d.x + 6, d.y - 6, d.x + 12, d.y - v); ctx.stroke();
-    } else { // fjärilar
-      const v = Math.abs(Math.sin(d.fas)) * 8 + 2;
-      ctx.fillStyle = d.farg;
-      ctx.beginPath(); ctx.ellipse(d.x - 4, d.y, v * 0.6, 7, -0.4, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(d.x + 4, d.y, v * 0.6, 7, 0.4, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#6b3a6e'; ctx.fillRect(d.x - 1, d.y - 5, 2, 10);
-    }
-  }
-}
-
-function ritaVatten() {
-  const y0 = MARK_Y + 14;
-  const vg = ctx.createLinearGradient(0, y0, 0, H);
-  const tema = bana.tema;
-  vg.addColorStop(0, tema === 'park' ? '#7fd6c8' : tema === 'strand' ? '#7ab6f0' : '#4cc3f2');
-  vg.addColorStop(1, tema === 'park' ? '#4fa9b8' : '#1e86cf');
-  ctx.fillStyle = vg; ctx.fillRect(kamX - 10, y0, W + 20, H - y0);
-  ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 3;
-  for (let r = 0; r < 2; r++) {
-    ctx.beginPath();
-    for (let x = Math.floor(kamX / 16) * 16 - 16; x <= kamX + W + 16; x += 16) { const y = y0 + 4 + r * 16 + Math.sin(x / 40 + tid / 25 + r * 2) * 3; ctx.lineTo(x, y); }
-    ctx.stroke();
-  }
-  // fiskar som hoppar
-  if (tema !== 'park') {
-    for (const m of [[0, 1], [1, 2.3], [2, 3.7]]) {
-      const per = 240, t = (tid + m[0] * 80) % per;
-      if (t < 50) {
-        let fx = 0;
-        // hitta ett mellanrum att hoppa i
-        const gap = mellanrum()[m[0] % Math.max(1, mellanrum().length)];
-        if (!gap) continue;
-        fx = gap.x + gap.w * (0.3 + 0.4 * hashv(Math.floor((tid + m[0] * 80) / per) + m[1]));
-        const p = t / 50, fy = y0 + 6 - Math.sin(p * Math.PI) * 60;
-        ctx.save(); ctx.translate(fx + p * 40, fy); ctx.rotate((p - 0.5) * 2.2);
-        ctx.fillStyle = '#ff9f5a'; ctx.beginPath(); ctx.ellipse(0, 0, 12, 6, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(-18, -6); ctx.lineTo(-18, 6); ctx.fill();
-        ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(6, -1, 1.5, 0, 7); ctx.fill();
-        ctx.restore();
-      }
-    }
-  }
-}
-let mellanrumCache = null, mellanrumBana = null;
-function mellanrum() {
-  if (mellanrumBana === bana) return mellanrumCache;
-  const res = []; const m = [...bana.mark].sort((a, b) => a.x - b.x);
-  for (let i = 0; i < m.length - 1; i++) res.push({ x: m[i].x + m[i].w, w: m[i + 1].x - (m[i].x + m[i].w) });
-  mellanrumBana = bana; mellanrumCache = res; return res;
-}
-
-function ritaMark() {
-  const t = bana.tema;
-  for (const m of bana.mark) {
-    const x = m.x, w = m.w, y = MARK_Y, h = H - MARK_Y + 10;
-    ctx.save();
-    if (t === 'brygga') {
-      // stolpar ner i vattnet
-      ctx.fillStyle = '#7a5236';
-      for (let px = x + 12; px < x + w - 10; px += 70) ctx.fillRect(px, y + 10, 12, h);
-      ctx.fillStyle = '#c99566'; rundRekt(x, y, w, 22, 5); ctx.fill();
-      ctx.strokeStyle = 'rgba(110,70,40,0.5)'; ctx.lineWidth = 2;
-      for (let px = x + 24; px < x + w; px += 24) { ctx.beginPath(); ctx.moveTo(px, y + 2); ctx.lineTo(px, y + 20); ctx.stroke(); }
-      ctx.fillStyle = '#e0b081'; ctx.fillRect(x + 3, y, w - 6, 4);
-    } else if (t === 'sand' || t === 'strand') {
-      ctx.fillStyle = '#ffe2b8'; rundRekt(x, y, w, h, 14); ctx.fill();
-      ctx.fillStyle = '#ffd59a'; rundRekt(x, y, w, 9, 6); ctx.fill();
-      ctx.fillStyle = 'rgba(220,170,120,0.55)';
-      for (let sx = x + 8; sx < x + w - 6; sx += 19) ctx.fillRect(sx + (sx * 7 % 11), y + 18 + (sx * 3 % 20), 3, 3);
-    } else if (t === 'vattenpark') {
-      ctx.fillStyle = '#f2fbff'; rundRekt(x, y, w, h, 10); ctx.fill();
-      ctx.strokeStyle = '#bfe3f5'; ctx.lineWidth = 2;
-      for (let gx = x + 24; gx < x + w; gx += 24) { ctx.beginPath(); ctx.moveTo(gx, y + 8); ctx.lineTo(gx, y + h); ctx.stroke(); }
-      for (let gy = y + 30; gy < y + h; gy += 24) { ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x + w, gy); ctx.stroke(); }
-      ctx.fillStyle = '#5fc4f0'; rundRekt(x, y, w, 9, 5); ctx.fill();
-    } else if (t === 'glass') {
-      ctx.fillStyle = '#ffe9d6'; rundRekt(x, y, w, h, 12); ctx.fill();
-      ctx.fillStyle = 'rgba(240,190,170,0.6)';
-      for (let gx = x + 6, k = 0; gx < x + w - 30; gx += 34, k++) { rundRekt(gx + (k % 2) * 10, y + 18, 26, 14, 5); ctx.fill(); rundRekt(gx + ((k + 1) % 2) * 10, y + 38, 26, 14, 5); ctx.fill(); }
-      ctx.fillStyle = '#ffb8d6'; rundRekt(x, y, w, 9, 5); ctx.fill();
-    } else { // gräs
-      ctx.fillStyle = '#9adfb5'; rundRekt(x, y, w, h, 12); ctx.fill();
-      ctx.fillStyle = '#8c6a8e'; ctx.fillRect(x, y + 32, w, h);
-      ctx.fillStyle = '#b6f0cd'; rundRekt(x, y, w, 9, 6); ctx.fill();
-      ctx.fillStyle = '#7fce9c';
-      for (let sx = x + 6; sx < x + w - 6; sx += 26) { ctx.beginPath(); ctx.moveTo(sx, y + 8); ctx.lineTo(sx + 3, y - 2); ctx.lineTo(sx + 6, y + 8); ctx.fill(); }
-    }
-    ctx.restore();
-  }
-}
-
-function ritaDekor() {
-  // blommor, snäckor m.m. på marken
-  for (const m of bana.mark) {
-    for (let x = m.x + 40; x < m.x + m.w - 30; x += 90) {
-      const h = hashv(x);
-      if (h < 0.45) continue;
-      const y = MARK_Y;
-      if (bana.tema === 'park' || bana.tema === 'stad') {
-        ctx.strokeStyle = '#5fb07c'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 14); ctx.stroke();
-        ctx.fillStyle = ['#ff8fc8', '#ffd23f', '#b48cff', '#ffffff'][Math.floor(h * 4) % 4];
-        for (let k = 0; k < 5; k++) { const v = k / 5 * Math.PI * 2; ctx.beginPath(); ctx.arc(x + Math.cos(v) * 4, y - 16 + Math.sin(v) * 4, 3.4, 0, 7); ctx.fill(); }
-        ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(x, y - 16, 2.5, 0, 7); ctx.fill();
-      } else if (bana.tema === 'strand' || bana.tema === 'brygga') {
-        if (bana.tema === 'brygga' && h < 0.8) continue;
-        ctx.fillStyle = h > 0.7 ? '#ffc0d4' : '#fff1dc';
-        ctx.beginPath(); ctx.arc(x, y + 4, 7, Math.PI, 0); ctx.fill();
-        ctx.strokeStyle = 'rgba(200,120,140,0.6)'; ctx.lineWidth = 1;
-        for (let k = -2; k <= 2; k++) { ctx.beginPath(); ctx.moveTo(x, y + 4); ctx.lineTo(x + k * 3, y - 2); ctx.stroke(); }
-      }
-    }
-  }
-}
-
-function ritaPalm(x, gy, s2 = 1) {
-  const th = 110 * s2, sv = Math.sin(tid / 60 + x / 100) * 0.06;
-  ctx.strokeStyle = '#b88a5e'; ctx.lineWidth = 9 * s2; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(x, gy); ctx.quadraticCurveTo(x - 10 * s2, gy - th * 0.6, x + 4 * s2, gy - th); ctx.stroke();
-  const tx = x + 4 * s2, ty = gy - th;
-  ctx.fillStyle = bana.tema === 'strand' ? '#5fae8f' : '#7fd6a3';
-  for (const a of [-2.5, -1.8, -1.0, -0.3, 0.4, 1.1]) {
-    ctx.save(); ctx.translate(tx, ty); ctx.rotate(a + sv);
-    ctx.beginPath(); ctx.ellipse(34 * s2, 0, 36 * s2, 10 * s2, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.restore();
-  }
-  ctx.fillStyle = '#a9744f';
-  ctx.beginPath(); ctx.arc(tx - 5 * s2, ty + 5 * s2, 4 * s2, 0, 7); ctx.fill();
-  ctx.beginPath(); ctx.arc(tx + 5 * s2, ty + 6 * s2, 4 * s2, 0, 7); ctx.fill();
-}
-function ritaKiosk(x, gy, i) {
-  const f = ['#ffb3d1', '#b8e3ff', '#d3c1ff', '#ffe0a8'][((i % 4) + 4) % 4];
-  ctx.fillStyle = '#fff6ef'; rundRekt(x, gy - 150, 170, 150, 10); ctx.fill();
-  ctx.fillStyle = 'rgba(160,210,240,0.6)'; rundRekt(x + 20, gy - 110, 130, 60, 8); ctx.fill();
-  // randig markis
-  for (let k = 0; k < 7; k++) {
-    ctx.fillStyle = k % 2 ? '#ffffff' : f;
-    ctx.beginPath(); ctx.moveTo(x - 10 + k * 27, gy - 160); ctx.lineTo(x + 17 + k * 27, gy - 160); ctx.lineTo(x + 17 + k * 27, gy - 132);
-    ctx.arc(x + 3.5 + k * 27, gy - 132, 13.5, 0, Math.PI); ctx.closePath(); ctx.fill();
-  }
-  ctx.font = '28px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(['🍦', '🍨', '🍧', '🍭'][((i % 4) + 4) % 4], x + 85, gy - 168); ctx.textAlign = 'left';
-}
-function ritaJatteglass(x, gy) {
-  ctx.fillStyle = '#e6b07a';
-  ctx.beginPath(); ctx.moveTo(x - 30, gy - 160); ctx.lineTo(x + 30, gy - 160); ctx.lineTo(x, gy - 40); ctx.fill();
-  ctx.strokeStyle = 'rgba(160,100,50,0.5)'; ctx.lineWidth = 2;
-  for (let k = -2; k <= 2; k++) { ctx.beginPath(); ctx.moveTo(x + k * 12, gy - 160); ctx.lineTo(x + k * 3, gy - 70); ctx.stroke(); }
-  ctx.fillStyle = '#9c7a5a'; ctx.fillRect(x - 3, gy - 40, 6, 40);
-  ['#ffb3d1', '#fff1c9', '#b8e9d1'].forEach((c, k) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x + (k - 1) * 16, gy - 168 - (k === 1 ? 24 : 0), 26, 0, 7); ctx.fill(); });
-  ctx.fillStyle = '#ff4d6d'; ctx.beginPath(); ctx.arc(x, gy - 218, 8, 0, 7); ctx.fill();
-}
-function ritaBat(x, y, s2) {
-  ctx.save(); ctx.translate(x, y); ctx.scale(s2, s2);
-  ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.moveTo(0, -60); ctx.lineTo(0, -6); ctx.lineTo(36, -6); ctx.fill();
-  ctx.fillStyle = '#ffd0e6'; ctx.beginPath(); ctx.moveTo(-3, -50); ctx.lineTo(-3, -6); ctx.lineTo(-26, -6); ctx.fill();
-  ctx.fillStyle = '#d76a8d'; ctx.beginPath(); ctx.moveTo(-34, -4); ctx.lineTo(44, -4); ctx.lineTo(34, 8); ctx.lineTo(-26, 8); ctx.fill();
-  ctx.restore();
-}
-function ritaFyr(x, y) {
-  ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.moveTo(x - 18, y); ctx.lineTo(x + 18, y); ctx.lineTo(x + 11, y - 120); ctx.lineTo(x - 11, y - 120); ctx.fill();
-  ctx.fillStyle = '#ff6f8f'; for (let k = 0; k < 3; k++) ctx.fillRect(x - 16 + k * 2, y - 30 - k * 36, 32 - k * 4, 14);
-  ctx.fillStyle = '#fff2a8'; ctx.fillRect(x - 10, y - 140, 20, 20);
-  ctx.fillStyle = '#ff6f8f'; ctx.beginPath(); ctx.moveTo(x - 14, y - 140); ctx.lineTo(x + 14, y - 140); ctx.lineTo(x, y - 156); ctx.fill();
-}
-function ritaParasoll(x, gy, i) {
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(x - 2, gy - 110, 4, 110);
-  const f = ['#ff6f8f', '#7fd4ff', '#ffd23f'][((i % 3) + 3) % 3];
-  for (let k = 0; k < 6; k++) {
-    ctx.fillStyle = k % 2 ? '#ffffff' : f;
-    ctx.beginPath(); ctx.moveTo(x, gy - 110); ctx.arc(x, gy - 110, 60, Math.PI + k * Math.PI / 6, Math.PI + (k + 1) * Math.PI / 6); ctx.closePath(); ctx.fill();
-  }
-}
-function ritaRutschkana(x, gy, i) {
-  const f = ['#ff8fc8', '#ffd23f', '#7fe0a3', '#b48cff'][((i % 4) + 4) % 4];
-  ctx.strokeStyle = f; ctx.lineWidth = 22; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(x + 95, 170); ctx.bezierCurveTo(x + 260, 200, x - 40, 300, x + 120, 360); ctx.bezierCurveTo(x + 240, 400, x + 260, 440, x + 330, gy - 10); ctx.stroke();
-  ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 5;
-  ctx.beginPath(); ctx.moveTo(x + 95, 164); ctx.bezierCurveTo(x + 260, 194, x - 40, 294, x + 120, 354); ctx.bezierCurveTo(x + 240, 394, x + 260, 434, x + 330, gy - 16); ctx.stroke();
-  ctx.lineCap = 'butt';
-}
-
-function ritaPlattform(p) {
-  const t = bana.tema;
-  ctx.save();
-  ctx.shadowColor = 'rgba(40,20,70,0.25)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 5;
-  if (t === 'glass') {
-    ctx.fillStyle = '#e6b07a'; rundRekt(p.x, p.y, p.w, 22, 8); ctx.fill(); ctx.restore();
-    ctx.strokeStyle = 'rgba(160,100,50,0.45)'; ctx.lineWidth = 1.5;
-    for (let k = p.x + 10; k < p.x + p.w; k += 12) { ctx.beginPath(); ctx.moveTo(k, p.y + 4); ctx.lineTo(k - 6, p.y + 20); ctx.stroke(); }
-    ctx.fillStyle = ['#ffb3d1', '#fff1c9', '#b8e9d1', '#d3c1ff'][Math.floor(p.x / 100) % 4];
-    rundRekt(p.x - 2, p.y - 4, p.w + 4, 12, 6); ctx.fill();
-    for (let k = p.x + 12; k < p.x + p.w - 6; k += 26) { ctx.beginPath(); ctx.ellipse(k, p.y + 8 + (k % 3) * 2, 5, 7 + (k % 3) * 2, 0, 0, 7); ctx.fill(); }
-    return;
-  }
-  if (t === 'brygga' || t === 'strand') {
-    ctx.fillStyle = '#b07a4c'; rundRekt(p.x, p.y, p.w, 18, 5); ctx.fill(); ctx.restore();
-    if (p.y > 400 && t === 'brygga') { ctx.fillStyle = '#7a5236'; ctx.fillRect(p.x + p.w / 2 - 7, p.y + 16, 14, H - p.y); }
-    ctx.fillStyle = '#d9a372'; rundRekt(p.x, p.y, p.w, 7, 4); ctx.fill();
-    ctx.strokeStyle = 'rgba(110,70,40,0.4)'; ctx.lineWidth = 1.5;
-    for (let k = p.x + 22; k < p.x + p.w; k += 22) { ctx.beginPath(); ctx.moveTo(k, p.y + 2); ctx.lineTo(k, p.y + 16); ctx.stroke(); }
-    return;
-  }
-  if (t === 'vattenpark') {
-    ctx.fillStyle = '#ffffff'; rundRekt(p.x, p.y, p.w, 20, 8); ctx.fill(); ctx.restore();
-    ctx.fillStyle = '#5fc4f0'; rundRekt(p.x, p.y, p.w, 7, 5); ctx.fill();
-    ctx.fillStyle = '#ffd23f'; for (let k = p.x + 10; k < p.x + p.w - 6; k += 20) { ctx.beginPath(); ctx.arc(k, p.y + 14, 2.5, 0, 7); ctx.fill(); }
-    return;
-  }
-  ctx.fillStyle = '#c79ad0'; rundRekt(p.x, p.y, p.w, 22, 8); ctx.fill(); ctx.restore();
-  ctx.fillStyle = '#e8cdef'; rundRekt(p.x, p.y, p.w, 8, 6); ctx.fill();
-  if (t === 'park') { ctx.fillStyle = '#9adfb5'; rundRekt(p.x - 2, p.y - 3, p.w + 4, 9, 5); ctx.fill(); }
-}
-function ritaFlotte(f) {
-  const vippa = Math.sin(tid / 20 + f.bx) * 0.03;
-  ctx.save(); ctx.translate(f.x + f.w / 2, f.y + 9); ctx.rotate(vippa);
-  if (bana.tema === 'vattenpark' || bana.tema === 'glass') {
-    ctx.fillStyle = bana.tema === 'glass' ? '#b8e3ff' : '#ff8fc8'; rundRekt(-f.w / 2, -9, f.w, 20, 10); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.6)'; rundRekt(-f.w / 2 + 8, -6, f.w - 16, 5, 3); ctx.fill();
-    if (bana.tema === 'glass') { ctx.font = '18px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('☁️', 0, 26); ctx.textAlign = 'left'; }
-  } else {
-    for (let k = 0; k < f.w; k += 18) { ctx.fillStyle = k % 36 ? '#b07a4c' : '#c48b59'; rundRekt(-f.w / 2 + k, -9, 17, 20, 7); ctx.fill(); }
-    ctx.fillStyle = '#e0c08a'; ctx.fillRect(-f.w / 2 + 4, -2, f.w - 8, 4);
-  }
-  ctx.restore();
-  if (bana.vatten && f.y > MARK_Y - 60) { ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(f.x + f.w / 2, MARK_Y + 20, f.w / 2 + 8 + Math.sin(tid / 15) * 3, 4, 0, 0, 7); ctx.stroke(); }
-}
-function ritaRing(r) {
-  const tr = r.tryck, y = MARK_Y - 12 + tr * 4;
-  ctx.save(); ctx.translate(r.x + 32, y); ctx.scale(1 + tr * 0.15, 1 - tr * 0.3);
-  ctx.fillStyle = 'rgba(40,20,70,0.18)'; ctx.beginPath(); ctx.ellipse(0, 12, 34, 5, 0, 0, 7); ctx.fill();
-  for (let k = 0; k < 8; k++) {
-    ctx.fillStyle = k % 2 ? '#ffffff' : '#ff5f9e';
-    ctx.beginPath(); ctx.ellipse(0, 0, 32, 13, 0, k / 8 * Math.PI * 2, (k + 1) / 8 * Math.PI * 2); ctx.lineTo(0, 0); ctx.fill();
-  }
-  ctx.fillStyle = 'rgba(255,255,255,0.0)';
-  ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.ellipse(0, -1, 13, 5, 0, 0, 7); ctx.fill();
-  ctx.restore();
-  ctx.save(); ctx.translate(r.x + 32, y); ctx.scale(1 + tr * 0.15, 1 - tr * 0.3);
-  ctx.fillStyle = 'rgba(80,40,90,0.35)'; ctx.beginPath(); ctx.ellipse(0, -1, 13, 5, 0, 0, 7); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.beginPath(); ctx.ellipse(-16, -6, 7, 2.5, -0.3, 0, 7); ctx.fill();
-  ctx.restore();
-  // liten pil som visar att man kan studsa
-  if (lage === 'spel' && Math.abs(s.x - r.x) < 260) {
-    ctx.fillStyle = `rgba(255,255,255,${0.5 + Math.sin(tid / 10) * 0.3})`;
-    const py = MARK_Y - 50 + Math.sin(tid / 10) * 4;
-    ctx.beginPath(); ctx.moveTo(r.x + 32, py - 12); ctx.lineTo(r.x + 22, py); ctx.lineTo(r.x + 42, py); ctx.fill();
-  }
-}
-function ritaGrind(d) {
-  const sank = d.sank * (MARK_Y - 0);
-  const t = bana.tema;
-  ctx.save();
-  ctx.beginPath(); ctx.rect(d.x - 20, 0, 90, MARK_Y); ctx.clip();
-  ctx.translate(0, sank);
-  // hög vägg/häck
-  const farg = t === 'park' ? '#7fce9c' : t === 'glass' ? '#ffc4dd' : t === 'brygga' || t === 'strand' ? '#c99566' : t === 'vattenpark' ? '#9fdcf7' : '#c7a6ec';
-  ctx.fillStyle = farg; rundRekt(d.x, -20, 50, MARK_Y + 20, 12); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,0.25)';
-  for (let y = 20; y < MARK_Y - 100; y += 40) { rundRekt(d.x + 6, y, 38, 26, 8); ctx.fill(); }
-  // dörr
-  const dx = d.x + 3, dt = MARK_Y - 92;
-  ctx.fillStyle = '#a86d2c'; rundRekt(dx, dt, 44, 92, 10); ctx.fill();
-  ctx.fillStyle = '#7a4f1a'; rundRekt(dx + 4, dt + 5, 36, 82, 7); ctx.fill();
-  // skylt
-  ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(d.x + 25, dt - 30, 24, 0, 7); ctx.fill();
-  ctx.font = '26px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText({ matte: '🔢', engelska: '🇬🇧', rakna: '🍦' }[d.typ], d.x + 25, dt - 29);
-  ctx.font = '22px sans-serif'; ctx.fillText('🔒', d.x + 25, dt + 50);
-  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-  ctx.restore();
-  if (!d.lost && lage === 'spel' && Math.abs(s.x - d.x) < 250) {
-    ctx.save(); ctx.font = 'bold 15px Trebuchet MS, sans-serif'; ctx.textAlign = 'center';
-    const txt = 'Gå fram till grinden!'; const bw = ctx.measureText(txt).width + 18;
-    ctx.globalAlpha = 0.6 + Math.sin(tid / 12) * 0.3;
-    ctx.fillStyle = 'rgba(255,255,255,0.92)'; rundRekt(d.x + 25 - bw / 2, MARK_Y - 190, bw, 24, 12); ctx.fill();
-    ctx.fillStyle = '#6b3a6e'; ctx.fillText(txt, d.x + 25, MARK_Y - 173); ctx.restore();
-  }
-}
-function ritaHus(x, y) {
-  ctx.save(); ctx.shadowColor = 'rgba(40,20,70,0.2)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 6;
-  ctx.fillStyle = '#ffe0b2'; rundRekt(x, y, 160, MARK_Y - y, 6); ctx.fill(); ctx.restore();
-  ctx.fillStyle = '#e2533a'; ctx.beginPath(); ctx.moveTo(x - 14, y + 2); ctx.lineTo(x + 80, y - 66); ctx.lineTo(x + 174, y + 2); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 118, y - 50, 16, 30);
-  ctx.fillStyle = '#7a4a3a'; rundRekt(x + 60, y + 100, 40, 60, 4); ctx.fill();
-  ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(x + 93, y + 132, 3, 0, 7); ctx.fill();
-  ctx.fillStyle = '#9fdcff'; rundRekt(x + 16, y + 30, 34, 34, 4); ctx.fill(); rundRekt(x + 110, y + 30, 34, 34, 4); ctx.fill();
-  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
-  for (const wx of [x + 16, x + 110]) { ctx.beginPath(); ctx.moveTo(wx + 17, y + 30); ctx.lineTo(wx + 17, y + 64); ctx.moveTo(wx, y + 47); ctx.lineTo(wx + 34, y + 47); ctx.stroke(); }
-  ctx.font = 'bold 13px Trebuchet MS'; ctx.fillStyle = '#7a4a3a'; ctx.textAlign = 'center'; ctx.fillText('CHARLIE', x + 80, y + 90); ctx.textAlign = 'left';
-}
-function ritaBadklader(x, y) {
-  const b = Math.sin(tid / 18) * 3;
-  ctx.save(); ctx.translate(x, y + b);
-  ctx.fillStyle = `rgba(255,255,255,${0.35 + Math.sin(tid / 10) * 0.2})`; ctx.beginPath(); ctx.arc(16, 14, 26, 0, 7); ctx.fill();
-  ctx.fillStyle = '#36c9c6'; ctx.strokeStyle = 'rgba(20,90,100,0.5)'; ctx.lineWidth = 1.5;
-  rundRekt(0, 0, 32, 16, 5); ctx.fill(); ctx.stroke();
-  rundRekt(2, 13, 12, 13, 4); ctx.fill(); rundRekt(18, 13, 12, 13, 4); ctx.fill();
-  ctx.fillStyle = '#fff'; for (const [a, c] of [[8, 6], [22, 7], [15, 11], [7, 19], [24, 20]]) { ctx.beginPath(); ctx.arc(a, c, 2, 0, 7); ctx.fill(); }
-  ctx.restore();
-  ctx.save(); ctx.font = 'bold 14px Trebuchet MS'; ctx.textAlign = 'center'; ctx.fillStyle = '#6b3a6e';
-  ctx.fillText('👙 Badkläder!', x + 16, y - 22 + b); ctx.restore();
-}
-function ritaHallplats(x, y) {
-  ctx.fillStyle = '#9aa7b3'; rundRekt(x + 18, y - 112, 6, 112, 3); ctx.fill();
-  ctx.fillStyle = '#0f86c9'; rundRekt(x - 8, y - 116, 58, 34, 8); ctx.fill();
-  ctx.font = '20px sans-serif'; ctx.fillText('🚌', x + 9, y - 92);
-  ctx.fillStyle = '#8d6e63'; rundRekt(x - 12, y - 26, 64, 8, 3); ctx.fill();
-  ctx.fillRect(x - 6, y - 18, 6, 18); ctx.fillRect(x + 46, y - 18, 6, 18);
-  ctx.save(); ctx.font = 'bold 15px Trebuchet MS'; const t = '🚏 Bussen!'; const bw = ctx.measureText(t).width + 18;
-  ctx.fillStyle = 'rgba(255,255,255,0.92)'; rundRekt(x - 4, y - 156, bw, 26, 13); ctx.fill();
-  ctx.fillStyle = '#143a52'; ctx.fillText(t, x + 5, y - 138); ctx.restore();
-}
-function ritaBuss(x) {
-  const y = MARK_Y - 76, st = Math.sin(tid / 4) * 1.2;
-  ctx.save(); ctx.translate(0, st);
-  ctx.fillStyle = '#ffca28'; rundRekt(x, y, 200, 68, 14); ctx.fill();
-  ctx.fillStyle = '#f0a500'; rundRekt(x, y + 52, 200, 16, 8); ctx.fill();
-  ctx.fillStyle = '#bfeaff'; for (let i = 0; i < 4; i++) { rundRekt(x + 14 + i * 44, y + 10, 34, 26, 5); ctx.fill(); }
-  // Charlie i fönstret
-  if (!s.synlig) { ctx.fillStyle = '#ffd9b3'; ctx.beginPath(); ctx.arc(x + 75, y + 26, 9, 0, 7); ctx.fill(); ctx.fillStyle = '#7a4a22'; ctx.beginPath(); ctx.arc(x + 75, y + 23, 9, Math.PI, 0); ctx.fill(); }
-  ctx.fillStyle = '#7fd0ff'; rundRekt(x + 166, y + 20, 24, 46, 4); ctx.fill();
-  ctx.fillStyle = '#ff6fae'; ctx.font = 'bold 12px Trebuchet MS'; ctx.fillText('POOLPARTY', x + 14, y + 49);
-  ctx.restore();
-  ctx.fillStyle = '#263238';
-  for (const hx of [x + 44, x + 156]) { ctx.beginPath(); ctx.arc(hx, y + 68, 14, 0, 7); ctx.fill(); }
-  ctx.fillStyle = '#cfd8dc'; for (const hx of [x + 44, x + 156]) { ctx.beginPath(); ctx.arc(hx, y + 68, 5, 0, 7); ctx.fill(); }
-}
-function ritaPool(x, y) {
-  // festdekor: ballonger och vimplar
-  for (let k = 0; k < 5; k++) {
-    const bx = x - 60 + k * 50, by = y - 210 + Math.sin(tid / 30 + k) * 6;
-    ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(bx, by + 22); ctx.lineTo(bx + 5, y - 60); ctx.stroke();
-    ctx.fillStyle = ['#ff6fae', '#ffd23f', '#7fd4ff', '#b48cff', '#7fe0a3'][k];
-    ctx.beginPath(); ctx.ellipse(bx, by, 17, 21, 0, 0, 7); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.ellipse(bx - 6, by - 7, 4, 6, -0.4, 0, 7); ctx.fill();
-  }
-  ctx.fillStyle = '#e8eef2'; rundRekt(x - 40, y - 34, 220, 44, 14); ctx.fill();
-  const v = ctx.createLinearGradient(0, y - 28, 0, y + 6);
-  v.addColorStop(0, '#39d0f0'); v.addColorStop(1, '#0e8fd6');
-  ctx.fillStyle = v; rundRekt(x - 30, y - 26, 200, 30, 10); ctx.fill();
-  ctx.fillStyle = '#795548'; ctx.fillRect(x + 185, y - 110, 4, 80);
-  ctx.fillStyle = '#ff5a5a'; ctx.beginPath(); ctx.arc(x + 187, y - 110, 34, Math.PI, 0); ctx.fill();
-  ctx.fillStyle = '#fff';
-  ctx.beginPath(); ctx.moveTo(x + 187, y - 110); ctx.arc(x + 187, y - 110, 34, Math.PI, Math.PI * 1.25); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(x + 187, y - 110); ctx.arc(x + 187, y - 110, 34, Math.PI * 1.5, Math.PI * 1.75); ctx.closePath(); ctx.fill();
-  ctx.save(); ctx.font = 'bold 15px Trebuchet MS'; const t = '🏊 Poolpartyt!'; const bw = ctx.measureText(t).width + 18;
-  ctx.fillStyle = 'rgba(255,255,255,0.92)'; rundRekt(x + 10, y - 290, bw, 26, 13); ctx.fill();
-  ctx.fillStyle = '#143a52'; ctx.fillText(t, x + 19, y - 272); ctx.restore();
-}
-function ritaPoolFram(x, y) {
-  // vattenkant framför Charlie + ankor som flyter
-  ctx.save(); ctx.globalAlpha = 0.55;
-  const v = ctx.createLinearGradient(0, y - 18, 0, y + 6);
-  v.addColorStop(0, '#5fdcff'); v.addColorStop(1, '#0e8fd6');
-  ctx.fillStyle = v; rundRekt(x - 30, y - 14, 200, 18, 8); ctx.fill(); ctx.restore();
-  ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 2;
-  ctx.beginPath(); for (let wx = x - 26; wx < x + 166; wx += 12) { const yy = y - 18 + Math.sin(wx / 20 + tid / 15) * 2; wx === x - 26 ? ctx.moveTo(wx, yy) : ctx.lineTo(wx, yy); } ctx.stroke();
-  ritaAnka(ctx, x + 10 + Math.sin(tid / 40) * 8, y - 34, 0.9, true, false);
-  ritaAnka(ctx, x + 120 + Math.sin(tid / 50 + 2) * 8, y - 34, 0.9, true, false);
-  if (lage === 'fest' || banIndex === BANOR.length - 1 && framsteg[banIndex].klar) ritaAnka(ctx, x + 140, y - 36, 1, true, true);
-}
-
-function ritaBadring(x, y) {
-  ctx.save(); ctx.translate(x, y);
-  for (let k = 0; k < 8; k++) {
-    ctx.fillStyle = k % 2 ? '#ffffff' : '#ff5f9e';
-    ctx.beginPath(); ctx.ellipse(0, 0, 22, 8, 0, k / 8 * Math.PI * 2, (k + 1) / 8 * Math.PI * 2); ctx.lineTo(0, 0); ctx.fill();
-  }
-  ctx.fillStyle = '#ffd9b3'; ctx.beginPath(); ctx.ellipse(0, -1, 11, 4, 0, 0, 7); ctx.fill();
-  ctx.restore();
 }
 function ritaFramsteg() {
   // liten karta högst upp: hur långt kvar till målet
@@ -1277,47 +785,6 @@ function ritaFramsteg() {
   ctx.fillStyle = '#ffd9b3'; ctx.beginPath(); ctx.arc(x0 + b * p, y0 + 1, 4.5, 0, Math.PI); ctx.fill();
   ctx.restore();
 }
-function ritaKrabba(f) {
-  const r = fiendeRuta(f), yr = f.yr > 0;
-  const cx = r.x + r.w / 2, by = MARK_Y;
-  const ben = yr ? 0 : Math.sin(tid / 4) * 3;
-  ctx.save(); ctx.translate(cx, by);
-  if (yr) ctx.scale(1.1, 0.8);
-  ctx.strokeStyle = '#e0533d'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-  for (let k = -1; k <= 1; k += 2) for (let j = 0; j < 3; j++) { ctx.beginPath(); ctx.moveTo(k * 10, -10); ctx.lineTo(k * (18 + j * 3), -3 + (j % 2 ? ben : -ben)); ctx.stroke(); }
-  // klor
-  ctx.fillStyle = '#ff6a4d';
-  for (const k of [-1, 1]) { ctx.beginPath(); ctx.arc(k * 22, -22 + (yr ? 6 : Math.sin(tid / 8 + k) * 2), 7, 0, 7); ctx.fill(); }
-  ctx.beginPath(); ctx.ellipse(0, -13, 19, 12, 0, 0, 7); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.beginPath(); ctx.ellipse(-6, -18, 6, 3, -0.3, 0, 7); ctx.fill();
-  // ögon
-  ctx.strokeStyle = '#e0533d'; ctx.lineWidth = 2.5;
-  for (const k of [-6, 6]) { ctx.beginPath(); ctx.moveTo(k, -22); ctx.lineTo(k, -30); ctx.stroke(); }
-  ctx.fillStyle = '#fff'; for (const k of [-6, 6]) { ctx.beginPath(); ctx.arc(k, -31, 4.5, 0, 7); ctx.fill(); }
-  ctx.fillStyle = '#222';
-  if (yr) { ctx.strokeStyle = '#222'; ctx.lineWidth = 1.5; for (const k of [-6, 6]) { ctx.beginPath(); ctx.moveTo(k - 3, -34); ctx.lineTo(k + 3, -28); ctx.moveTo(k + 3, -34); ctx.lineTo(k - 3, -28); ctx.stroke(); } }
-  else for (const k of [-6, 6]) { ctx.beginPath(); ctx.arc(k + f.riktning * 1.5, -31, 2, 0, 7); ctx.fill(); }
-  ctx.strokeStyle = '#a33'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, -12, 4, 0.1 * Math.PI, 0.9 * Math.PI); ctx.stroke();
-  ctx.restore();
-  if (yr) ritaYrStjarnor(cx, r.y - 14);
-}
-function ritaBoll(f) {
-  const r = fiendeRuta(f), cx = r.x + 19, cy = r.y + 19, yr = f.yr > 0;
-  ctx.fillStyle = 'rgba(40,20,70,0.2)'; ctx.beginPath(); ctx.ellipse(cx, MARK_Y, 18, 4, 0, 0, 7); ctx.fill();
-  ctx.save(); ctx.translate(cx, cy + (yr ? 4 : 0)); if (yr) ctx.scale(1.15, 0.8); ctx.rotate(f.rot);
-  const farger = ['#ff5f6d', '#ffffff', '#ffd23f', '#ffffff', '#4fb7ff', '#ffffff'];
-  for (let k = 0; k < 6; k++) { ctx.fillStyle = farger[k]; ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 19, k * Math.PI / 3, (k + 1) * Math.PI / 3); ctx.fill(); }
-  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(0, 0, 5, 0, 7); ctx.fill();
-  ctx.restore();
-  ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.ellipse(cx - 7, cy - 8, 6, 3, -0.5, 0, 7); ctx.fill();
-  if (yr) ritaYrStjarnor(cx, r.y - 8);
-}
-function ritaYrStjarnor(x, y) {
-  ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
-  for (let k = 0; k < 3; k++) { const v = tid / 12 + k * 2.1; ctx.fillText('⭐', x + Math.cos(v) * 16, y + Math.sin(v) * 5); }
-  ctx.textAlign = 'left';
-}
-
 function ritaAnka(g, x, y, skala, gunga, guld) {
   g.save(); g.translate(x, y); g.scale(skala, skala);
   if (gunga) g.translate(0, Math.sin(Date.now() / 300 + x) * 2);
@@ -1340,84 +807,6 @@ function ritaAnka(g, x, y, skala, gunga, guld) {
     g.fillStyle = '#fff'; g.save(); g.translate(4 + Math.cos(t) * 2, 2); g.rotate(t); g.fillRect(-1, -4, 2, 8); g.fillRect(-4, -1, 8, 2); g.restore();
   }
   g.restore();
-}
-
-function ritaCharlie() {
-  const x = s.x, y = s.y, h = s.h, ducka = s.ducka;
-  const gar = Math.abs(s.vx) > 0.3 && s.paMark;
-  const fas = s.gangFas;
-  ctx.save();
-  ctx.translate(x + 13, y + h);
-  ctx.scale(s.vand < 0 ? -s.sx : s.sx, s.sy);
-  ctx.translate(0, -h);
-  const gung = gar ? Math.abs(Math.sin(fas)) * 2 : (s.paMark ? Math.sin(s.vila) * 1.2 : 0);
-  const sving = gar ? Math.sin(fas) * 6 : 0;
-  const kontur = (fn) => { ctx.strokeStyle = 'rgba(60,30,70,0.55)'; ctx.lineWidth = 2; fn(); ctx.stroke(); };
-
-  if (lage !== 'fest' || fest.t < 50) {
-    ctx.save(); ctx.scale(1 / (s.vand < 0 ? -s.sx : s.sx), 1 / s.sy);
-    ctx.fillStyle = 'rgba(40,20,70,0.18)'; ctx.beginPath(); ctx.ellipse(0, h + 2, 15, 4.5, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.restore();
-  }
-  const bad = s.badklader;
-  const hud = '#ffd9b3';
-  // ben
-  ctx.fillStyle = bad ? hud : '#3a6ea5';
-  if (!s.paMark) { rundRekt(-8, h - 15, 6, 15, 3); ctx.fill(); rundRekt(2, h - 18, 6, 15, 3); ctx.fill(); }
-  else if (ducka) { rundRekt(-9, h - 9, 7, 9, 3); ctx.fill(); rundRekt(3, h - 9, 7, 9, 3); ctx.fill(); }
-  else { rundRekt(-8 - sving * 0.4, h - 13, 6, 13, 3); ctx.fill(); rundRekt(2 + sving * 0.4, h - 13, 6, 13, 3); ctx.fill(); }
-  // skor/fötter
-  ctx.fillStyle = bad ? '#ff8fc8' : '#ffffff';
-  if (s.paMark && !ducka) { rundRekt(-10 - sving * 0.4, h - 3, 9, 4, 2); ctx.fill(); rundRekt(1 + sving * 0.4, h - 3, 9, 4, 2); ctx.fill(); }
-
-  // kropp
-  const ky = h - 31 - gung + (ducka ? 10 : 0);
-  if (bad) {
-    ctx.fillStyle = '#36c9c6'; kontur(() => { rundRekt(-11, ky + 2, 22, 19, 7); ctx.fill(); });
-    ctx.fillStyle = '#ffffff'; for (const [a, b] of [[-5, ky + 7], [4, ky + 9], [-2, ky + 15], [6, ky + 16]]) { ctx.beginPath(); ctx.arc(a, b, 1.8, 0, 7); ctx.fill(); }
-    ctx.fillStyle = '#2aa9a6'; ctx.fillRect(-11, ky + 13, 22, 2);
-  } else {
-    ctx.fillStyle = '#ff6fae'; kontur(() => { rundRekt(-12, ky, 24, 22, 7); ctx.fill(); });
-    ctx.fillStyle = '#ff9ccb'; rundRekt(-12, ky + 16, 24, 5, 3); ctx.fill();
-  }
-  // armar
-  ctx.fillStyle = hud;
-  if (!s.paMark) { rundRekt(-16, ky - 6, 5, 13, 2.5); ctx.fill(); rundRekt(11, ky - 6, 5, 13, 2.5); ctx.fill(); }
-  else { rundRekt(-15, ky + 2 + sving * 0.3, 5, 13, 2.5); ctx.fill(); rundRekt(10, ky + 2 - sving * 0.3, 5, 13, 2.5); ctx.fill(); }
-  // huvud
-  const hy = ky - 8;
-  ctx.fillStyle = hud; kontur(() => { ctx.beginPath(); ctx.arc(0, hy, 12, 0, Math.PI * 2); ctx.fill(); });
-  // hår + hästsvans som gungar
-  ctx.fillStyle = '#7a4a22';
-  ctx.beginPath(); ctx.arc(0, hy - 4, 12, Math.PI, 0); ctx.fill();
-  const svans = Math.sin(tid / 6) * (gar ? 4 : 1) + (s.paMark ? 0 : -s.vy * 0.6);
-  ctx.beginPath(); ctx.ellipse(-13, hy - 2 + svans * 0.3, 5, 10, 0.5 + svans * 0.05, 0, 7); ctx.fill();
-  // rosett / blomma
-  if (bad) {
-    ctx.fillStyle = '#ff8fc8'; for (let k = 0; k < 5; k++) { const v = k / 5 * Math.PI * 2; ctx.beginPath(); ctx.arc(6 + Math.cos(v) * 3.5, hy - 11 + Math.sin(v) * 3.5, 3, 0, 7); ctx.fill(); }
-    ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(6, hy - 11, 2.2, 0, 7); ctx.fill();
-  } else { ctx.fillStyle = '#ff5ea0'; ctx.beginPath(); ctx.arc(7, hy - 9, 4, 0, Math.PI * 2); ctx.fill(); }
-  // ögon (blinkar)
-  ctx.fillStyle = '#222';
-  if (s.blink > 0 || (lage === 'fest' && fest.t > 50)) { ctx.strokeStyle = '#222'; ctx.lineWidth = 1.6; for (const k of [-4, 4]) { ctx.beginPath(); ctx.arc(k, hy, 2.2, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke(); } }
-  else { ctx.beginPath(); ctx.arc(4, hy, 2.2, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(-4, hy, 2.2, 0, 7); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(4.8, hy - 0.8, 0.8, 0, 7); ctx.fill(); }
-  ctx.fillStyle = 'rgba(255,140,170,0.6)'; ctx.beginPath(); ctx.arc(7, hy + 4, 2.5, 0, 7); ctx.fill();
-  ctx.strokeStyle = '#a33'; ctx.lineWidth = 1.6;
-  ctx.beginPath();
-  if (s.knuff > 0) ctx.arc(1, hy + 6, 2.5, 0, 7); else ctx.arc(1, hy + 3.5, 4, 0.15 * Math.PI, 0.85 * Math.PI);
-  ctx.stroke();
-  ctx.restore();
-}
-
-function ritaPartiklar() {
-  for (const p of partiklar) {
-    ctx.globalAlpha = Math.max(0, Math.min(1, p.liv / p.max * 1.5));
-    ctx.fillStyle = p.farg;
-    if (p.konfetti) { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); ctx.restore(); }
-    else if (p.stjarna) { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.liv / 5); const r = p.r * 1.4; ctx.beginPath(); for (let k = 0; k < 10; k++) { const v = k / 10 * Math.PI * 2, rr = k % 2 ? r * 0.45 : r; ctx.lineTo(Math.cos(v) * rr, Math.sin(v) * rr); } ctx.fill(); ctx.restore(); }
-    else { ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill(); }
-  }
-  ctx.globalAlpha = 1;
 }
 
 // =============================================================
@@ -1448,6 +837,7 @@ window.__poolparty2 = {
   get lage() { return lage; }, get bana() { return bana; }, get banIndex() { return banIndex; }, spelare: s, tangent, BANOR,
   startaBana, get ankor() { return ankorTagna; }, get guld() { return guldTagen; }, framsteg: () => framsteg,
   teleport: (x, y) => { s.x = x; s.y = y; s.vx = 0; s.vy = 0; },
+  grafikInfo: () => grafik && grafik.info(),
   // testverktyg: kör en uppdatering, spara/återställ läget
   steg: () => uppdatera(),
   ogonblick: () => JSON.stringify({ s: { ...s, flotte: s.flotte ? bana.flottar.indexOf(s.flotte) : -1 }, bana, tid, ankorTagna, guldTagen, hoppForra }),
