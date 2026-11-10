@@ -198,10 +198,14 @@
     const SPEL = window.SPEL || [];
 
     // ---------- Direktlänk till ett spel: index.html#slalom ----------
-    const direkt = location.hash.slice(1);
-    if (direkt && SPEL.some((s) => s.mapp === direkt && s.status === 'klar')) {
-      location.replace(`spel/${direkt}/index.html`);
+    function oppnaDirektlank() {
+      const direkt = location.hash.slice(1);
+      if (direkt && SPEL.some((s) => s.mapp === direkt && s.status === 'klar')) {
+        location.replace(`spel/${direkt}/index.html`);
+      }
     }
+    oppnaDirektlank();
+    addEventListener('hashchange', oppnaDirektlank);
 
     // ---------- Pling-ljud vid klick ----------
     let ac;
