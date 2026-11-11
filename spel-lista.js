@@ -8,6 +8,17 @@
 // =============================================================
 window.SPEL = [
   {
+    mapp: "printa-hem",
+    namn: "Printa Hem",
+    ikon: "🏚️",
+    beskrivning: "Flytta till soptippen, mal skräp till filament och printa dig ett eget hem.",
+    typ: "3D · Förstaperson · Bygga",
+    spelare: ["Alla"],
+    farg: ["#2e7b4f", "#ffd43b"],
+    status: "klar",
+    ny: true,
+  },
+  {
     mapp: "slalom",
     namn: "Slalom",
     ikon: "⛷️",
@@ -15,17 +26,6 @@ window.SPEL = [
     typ: "3D · Fart",
     spelare: ["Alla"],
     farg: ["#2b7de9", "#7fd4ff"],
-    status: "klar",
-    ny: true,
-  },
-  {
-    mapp: "testrummet",
-    namn: "Testrummet",
-    ikon: "🧪",
-    beskrivning: "Borsta golvet och sortera böcker. Teknikdemo för förstapersonsspel.",
-    typ: "3D · Förstaperson · Labb",
-    spelare: ["Alla"],
-    farg: ["#5b6cff", "#9fe3ff"],
     status: "klar",
     ny: true,
   },

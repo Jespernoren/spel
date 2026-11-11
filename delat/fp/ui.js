@@ -106,10 +106,12 @@ export class FpUI {
     if (this.o.spelare) this.o.spelare.aktiv = false;
     this.overlay.innerHTML = `<div class="fp-ruta"><h1>${titel}</h1><p>${text}</p>
       <button class="fp-knapp">${knapp}</button>
+      ${this.o.onSparplatser ? '<br><button class="fp-knapp sek" data-sparplatser>Sparplatser – spara, ladda, börja om</button>' : ''}
       ${this.o.onNollstall ? '<br><button class="fp-knapp sek" data-noll>Börja om från början</button>' : ''}
       <a class="fp-tillbaka" href="../../index.html">← Alla spel</a></div>`;
     this.overlay.hidden = false;
     this.overlay.querySelector('.fp-knapp').onclick = () => this.starta();
+    const sp = this.overlay.querySelector('[data-sparplatser]'); if (sp) sp.onclick = () => this.o.onSparplatser();
     const noll = this.overlay.querySelector('[data-noll]');
     if (noll) noll.onclick = () => { if (noll.dataset.saker) { this.o.onNollstall(); } else { noll.dataset.saker = 1; noll.textContent = 'Säker? Tryck igen'; } };
   }
