@@ -4135,7 +4135,7 @@ const rostLage = () => S.rost === false ? 'av' : (S.rostLage || 'rost');
 const ROST_FIGURER = ['rolf', 'ali', 'pappa', 'bror', 'chefen', 'du', 'mamma', 'berattare'];
 let rostIndex = null, rostLjud = null;
 const rostPack = {};
-try { fetch('roster/index.json').then((x) => x.json()).then((a) => { rostIndex = a; }).catch(() => {}); } catch {}
+const rostKlar = fetch('roster/index.json').then((x) => x.json()).then((a) => { rostIndex = a; }).catch(() => {});
 const hamtaPack = (namn) => rostPack[namn] || (rostPack[namn] = fetch(`roster/${namn}.mp3`).then((x) => x.arrayBuffer()));
 function rostNyckel(t) {
   const ren = String(t).replace(/<[^>]+>/g, ' ').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
@@ -4581,15 +4581,17 @@ function visaIntro(klar) {
       ${p.titel ? `<div class="ph-intro-titel">${p.titel}</div>` : ''}</div>
       <div class="ph-intro-nere"><span class="ph-intro-prickar">${INTRO.map((_, j) => `<span class="${j <= i ? 'pa' : ''}"></span>`).join('')}</span><span>Klicka eller mellanslag för att fortsätta</span></div>`;
     el.querySelector('.ph-intro-hoppa').onclick = (e) => { e.stopPropagation(); slut(); };
-    prata(p.talare || (p.bubbla ? (p.du ? 'du' : 'mamma') : 'berattare'), p.bubbla || p.text);
+    // berättarrösten läser varje ruta (vänta in röstfilerna första gången)
+    Promise.race([rostKlar, new Promise((ok) => setTimeout(ok, 2000))]).then(() => { if (INTRO[i] === p) prata(p.talare || (p.bubbla ? (p.du ? 'du' : 'mamma') : 'berattare'), p.bubbla || p.text); });
     try { ljudCtx(); if (p.ljud === 'stor') { ton(90, 0.25, 0.25, 'square'); ton(60, 0.35, 0.2, 'sawtooth', 0.05); } else ljud.plock(); } catch {}
   };
   const nasta = () => { i++; if (i >= INTRO.length) slut(); else visa(); };
   const tangent = (e) => { if (['Space', 'Enter', 'ArrowRight', 'KeyE'].includes(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); nasta(); } else if (e.code === 'Escape') { e.stopImmediatePropagation(); slut(); } };
   function slut() { tystna(); removeEventListener('keydown', tangent, true); el.remove(); S.introSett = true; sparaSnart(); klar?.(); }
-  el.onclick = nasta;
-  addEventListener('keydown', tangent, true);
-  visa();
+  // en startruta först: webbläsaren spelar bara upp ljud efter ett klick
+  el.innerHTML = `<div class="ph-intro-kort"><div class="ph-intro-titel" style="margin:0 0 18px">${SPEL_TITEL}</div><div class="ph-intro-text">Slå på ljudet – berättaren läser upp historien.</div><button class="fp-knapp" style="margin-top:22px">Börja</button></div>`;
+  const borja = () => { el.onclick = nasta; addEventListener('keydown', tangent, true); try { ljudCtx(); } catch {} visa(); };
+  el.onclick = (e) => { e.stopPropagation(); borja(); };
 }
 if (!S.introSett) visaIntro();
 
