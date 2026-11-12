@@ -115,4 +115,29 @@ export const ljud = {
   klar: () => [523, 659, 784, 1047].forEach((f, i) => ton(f, 0.25, 'triangle', 0.12, i * 0.09)),
   stor: () => [392, 523, 659, 784, 1047, 1319].forEach((f, i) => ton(f, 0.35, 'triangle', 0.12, i * 0.1)),
   kop: () => { ton(660, 0.08, 'square', 0.06); ton(880, 0.08, 'square', 0.06, 0.07); ton(1320, 0.15, 'square', 0.06, 0.14); },
+  // --- magi ---
+  magi: () => [880, 1175, 1568, 2093].forEach((f, i) => ton(f, 0.35, 'sine', 0.07, i * 0.05)),
+  svav: () => { ton(440, 0.5, 'sine', 0.08, 0, 880); ton(660, 0.5, 'triangle', 0.04, 0.05, 1320); },
+  flyg: () => { bruss(0.35, 2200, 0.05); ton(600, 0.35, 'sine', 0.05, 0, 1400); },
+  landa: () => { ton(1047, 0.12, 'triangle', 0.08); ton(1568, 0.25, 'sine', 0.06, 0.06); bruss(0.05, 700, 0.04); },
+  slapp: () => ton(700, 0.3, 'sine', 0.06, 0, 300),
+  dammsug: () => {
+    const nu = performance.now();
+    if (nu - sistBorst < 90) return;
+    sistBorst = nu;
+    bruss(0.12, 2600 + Math.random() * 1500, 0.035);
+    if (Math.random() < 0.3) ton(1800 + Math.random() * 900, 0.08, 'sine', 0.025);
+  },
+  /** Läs upp en text på svenska (för den som inte läser själv). */
+  saga: (text) => {
+    if (!ljudPa || !window.speechSynthesis) return;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'sv-SE'; u.rate = 0.95; u.pitch = 1.1;
+      const r = speechSynthesis.getVoices().find((v) => v.lang && v.lang.toLowerCase().startsWith('sv'));
+      if (r) u.voice = r;
+      speechSynthesis.speak(u);
+    } catch { /* ingen röst */ }
+  },
 };
