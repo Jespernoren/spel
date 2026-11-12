@@ -28,6 +28,13 @@ export class Spelare {
     this.tangenter = {};
     this.joy = { x: 0, y: 0 };
     this.rorelse = 0;                    // 0..1, används för gung/stegljud
+    this.pilarSvanger = opt.pilarSvanger ?? false;  // ← → svänger i stället för att gå i sidled
+    this.svangFart = opt.svangFart ?? 2.2;          // radianer/sekund med piltangenterna
+    // Reservläge: om webbläsaren nekar muslåsning styr man ändå med musen.
+    this.lasFel = false;
+    this.harLast = false;               // true när muslåsningen har fungerat minst en gång
+    this.musX = null;                    // muspekarens x (0..1) i reservläget
+    this.onLasFel = null;                // valfri funktion som körs när reservläget slås på
 
     kamera.rotation.order = 'YXZ';
 
@@ -38,16 +45,35 @@ export class Spelare {
     addEventListener('keyup', (e) => { this.tangenter[e.code] = false; });
     addEventListener('blur', () => { this.tangenter = {}; });
     addEventListener('mousemove', (e) => {
-      if (document.pointerLockElement === this.dom) this.titta(e.movementX, e.movementY);
+      if (document.pointerLockElement === this.dom) { this.titta(e.movementX, e.movementY); return; }
+      if (this.lasFel && this.aktiv && !this.arTouch && e.target === this.dom) {
+        this.titta(e.movementX, e.movementY);
+        this.musX = e.clientX / innerWidth;
+      }
     });
+    document.addEventListener('pointerlockerror', () => this.#lasMisslyckades());
+    document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement === this.dom) this.harLast = true; });
     this.#touchStyrning();
   }
 
   /** Fånga musen (anropa från ett klick). */
   lasMus() {
-    if (!this.arTouch && document.pointerLockElement !== this.dom) {
-      try { this.dom.requestPointerLock?.(); } catch { /* ignorera */ }
-    }
+    if (this.arTouch || this.lasFel || document.pointerLockElement === this.dom) return;
+    try {
+      const r = this.dom.requestPointerLock?.();
+      if (r && r.catch) r.catch(() => this.#lasMisslyckades());
+    } catch { this.#lasMisslyckades(); }
+  }
+
+  // Har låsningen fungerat förut är det bara tillfälligt (t.ex. för snabbt efter Esc) → klicka igen.
+  #lasMisslyckades() { if (!this.harLast) this.#aktiveraReserv(); }
+
+  /** Muslåsning fungerar inte här (t.ex. i en inbäddad ruta) → styr med fri mus. */
+  #aktiveraReserv() {
+    if (this.lasFel) return;
+    this.lasFel = true;
+    this.dom.style.cursor = 'none';
+    this.onLasFel?.();
   }
   get musLast() { return document.pointerLockElement === this.dom; }
 
@@ -72,8 +98,18 @@ export class Spelare {
       const t = this.tangenter;
       if (t.KeyW || t.ArrowUp) fz += 1;
       if (t.KeyS || t.ArrowDown) fz -= 1;
-      if (t.KeyA || t.ArrowLeft) fx -= 1;
-      if (t.KeyD || t.ArrowRight) fx += 1;
+      if (t.KeyA || (!this.pilarSvanger && t.ArrowLeft)) fx -= 1;
+      if (t.KeyD || (!this.pilarSvanger && t.ArrowRight)) fx += 1;
+      if (this.pilarSvanger) {
+        if (t.ArrowLeft) this.yaw += this.svangFart * dt;
+        if (t.ArrowRight) this.yaw -= this.svangFart * dt;
+      }
+      // reservläge: muspekaren nära kanten fortsätter att svänga
+      if (this.lasFel && this.musX !== null) {
+        const kant = 0.12;
+        if (this.musX < kant) this.yaw += (1 - this.musX / kant) * this.svangFart * dt;
+        if (this.musX > 1 - kant) this.yaw -= (1 - (1 - this.musX) / kant) * this.svangFart * dt;
+      }
       fx += this.joy.x; fz += this.joy.y;
       const len = Math.hypot(fx, fz);
       if (len > 1) { fx /= len; fz /= len; }

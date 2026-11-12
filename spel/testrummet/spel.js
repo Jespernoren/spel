@@ -54,6 +54,7 @@ const lampa = new THREE.PointLight(0xfff1d6, 25, 20); lampa.position.set(0, VAGG
 // ---------- Spelare, interaktion, magi ----------
 const spelare = new Spelare(kamera, renderer.domElement, {
   start: [0, 0, 3], granser: { minX: -RUM / 2, maxX: RUM / 2, minZ: -RUM / 2, maxZ: RUM / 2 },
+  pilarSvanger: true,          // ← → svänger, ↑ ↓ går (lätt för barn)
 });
 const interaktor = new Interaktor(kamera, scen, { rackvidd: 3.5 });
 const stav = new Trollstav(kamera);
@@ -252,8 +253,9 @@ let forstaStart = true;
 const ui = new FpUI({
   titel: '🪄 Trollstaven',
   text: 'Du är en trollkarl! Peka på en bok och tryck för att lyfta den med trollstaven. Skicka in den på hyllan med samma färg. Håll inne mot golvet för att suga upp dammet.',
-  hjalp: 'WASD gå · Mus titta · Klick/E lyft och skicka · Håll inne: suga damm · Shift spring · B butik',
+  hjalp: 'Mus eller ← → titta · ↑ ↓ / WASD gå · Klick/E lyft och skicka · Håll inne: suga damm · Esc paus · B butik',
   spelare,
+  escPausar: true,
   onStart: () => {
     if (forstaStart) {
       forstaStart = false;
@@ -270,6 +272,7 @@ const ui = new FpUI({
   onNollstall: () => { spar.nollstall(); location.reload(); },
 });
 ui.mynt(butik.mynt);
+spelare.onLasFel = () => ui.toast('Rör musen för att titta runt 🖱️', 'guld');
 
 // ---------- Spelloop ----------
 let anvandNere = false, rutBank = 0, klar = false, tid = 0;

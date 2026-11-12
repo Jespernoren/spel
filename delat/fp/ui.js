@@ -116,17 +116,21 @@ export class FpUI {
     if (noll) noll.onclick = () => { if (noll.dataset.saker) { this.o.onNollstall(); } else { noll.dataset.saker = 1; noll.textContent = 'Säker? Tryck igen'; } };
   }
 
-  starta() {
+  starta(utanMuslas = false) {
+    this.pausad = false;
     ljud.vakna();
     this.overlay.hidden = true;
     this.igang = true;
-    if (this.o.spelare) { this.o.spelare.aktiv = true; this.o.spelare.lasMus(); }
+    if (this.o.spelare) { this.o.spelare.aktiv = true; if (!utanMuslas) this.o.spelare.lasMus(); }
     this.o.onStart?.();
   }
 
   pausa() {
     if (!this.igang || !this.butiksOverlay.hidden) return;
-    this.visaStart('Pausad', 'Klicka för att fortsätta.', 'Fortsätt');
+    if (document.pointerLockElement) document.exitPointerLock();
+    this.visaStart('⏸️ Pausad', this.o.escPausar ? 'Tryck på Esc eller knappen för att fortsätta.' : 'Klicka för att fortsätta.', 'Fortsätt');
+    this.pausad = true;
+    this.pausTid = performance.now();
   }
 
   // ---------- Butik ----------
@@ -167,13 +171,19 @@ export class FpUI {
     addEventListener('mousedown', (e) => {
       if (e.button !== 0 || !this.igang) return;
       if (e.target !== canvas()) return;
-      if (!this.o.spelare?.musLast) { this.o.spelare?.lasMus(); return; }
+      const sp = this.o.spelare;
+      if (sp && !sp.musLast && !sp.lasFel && !sp.arTouch) { sp.lasMus(); return; }
       anvand(true);
     });
     addEventListener('mouseup', (e) => { if (e.button === 0) anvand(false); });
     addEventListener('keydown', (e) => {
       if (e.repeat) return;
       if (e.code === 'KeyE') anvand(true);
+      if (e.code === 'Escape' && this.o.escPausar && this.butiksOverlay.hidden) {
+        if (this.igang && !this.overlay.hidden) return;
+        if (this.igang) this.pausa();
+        else if (!this.overlay.hidden && this.pausad && performance.now() - this.pausTid > 300) this.starta(true);
+      }
       if (e.code === 'KeyB' && this.igang) {
         this.butiksOverlay.hidden ? this.o.onButik?.() : this.stangButik();
       }
