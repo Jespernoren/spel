@@ -18,6 +18,7 @@ export class Interaktor {
     this.rackvidd = rackvidd;
     this.ray = new THREE.Raycaster();
     this.mal = [];
+    this.blockerare = [];   // väggar m.m. som stoppar siktet (valfritt)
     this.hovrad = null;
     this.ram = new THREE.BoxHelper(undefined, 0xffffff);
     this.ram.material.depthTest = false;
@@ -55,9 +56,11 @@ export class Interaktor {
 
   uppdatera() {
     this.hovrad = null;
-    const traffar = this.stralFranMitten().intersectObjects(this.mal, true);
+    const lista = this.blockerare.length ? this.mal.concat(this.blockerare) : this.mal;
+    const traffar = this.stralFranMitten().intersectObjects(lista, true);
     for (const h of traffar) {
       if (h.distance > this.rackvidd) break;
+      if (this.blockerare.length && this.#arBlockerare(h.object)) break;
       let o = h.object;
       while (o && !o.userData.interaktion) o = o.parent;
       if (!o) continue;
@@ -73,6 +76,11 @@ export class Interaktor {
       this.ram.visible = false;
     }
     return this.hovrad;
+  }
+
+  #arBlockerare(o) {
+    for (; o; o = o.parent) if (this.blockerare.includes(o)) return true;
+    return false;
   }
 
   /** Text för det man tittar på (för knappen/prompten). */

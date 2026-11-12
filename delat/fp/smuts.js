@@ -104,6 +104,24 @@ export class Smuts {
     return nya;
   }
 
+  /**
+   * Räkna en rektangel som redan ren utan att rita (t.ex. golvet under väggar
+   * som man aldrig kan nå). Anropa efter importera().
+   */
+  raknaSomRen(minX, minZ, maxX, maxZ) {
+    const N = this.N;
+    for (let j = 0; j < N; j++) {
+      const z = this.mitt[1] - this.djup / 2 + ((j + 0.5) / N) * this.djup;
+      if (z < minZ || z > maxZ) continue;
+      for (let i = 0; i < N; i++) {
+        const x = this.mitt[0] - this.bredd / 2 + ((i + 0.5) / N) * this.bredd;
+        if (x < minX || x > maxX) continue;
+        const k = j * N + i;
+        if (!this.rena[k]) { this.rena[k] = 1; this.antalRena++; }
+      }
+    }
+  }
+
   /** Spara/återställ (för sparning i webbläsaren). */
   exportera() {
     let s = '';
