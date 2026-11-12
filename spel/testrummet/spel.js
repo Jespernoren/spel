@@ -3,7 +3,7 @@
 //  Peka på en bok och tryck → den lyfts med magi och svävar runt staven.
 //  Peka på rätt färghylla och tryck → böckerna seglar in.
 //  Håll inne mot golvet → staven suger upp dammet.
-//  Hitta 3 trollkristaller → staven blir starkare (och snyggare!).
+//  Hitta trollkristaller (4, sen 5, sen 6) → staven blir starkare (och snyggare!).
 //  Högar, kistor, vaser och väggskåp kan gömma saker – eller vara tomma.
 // =============================================================
 import { THREE, skapaSpel, startaLoop } from '../../delat/motor.js';
@@ -38,8 +38,11 @@ const RUTOR_PER_MYNT = 12;            // hur mycket damm man suger upp per mynt
 const FLYGTID = 0.8;                  // sekunder för en bok att flyga in i hyllan
 const UPPLASNING = true;              // läs upp med svensk röst
 const SOKAR_AVSTAND = 6;              // inom så här många meter börjar staven pinga
-const KRISTALLER_PER_OMGANG = 6;      // så många kristaller göms varje omgång...
-const KRISTALLER_KRAV = 3;            // ...och så många behöver man hitta för att staven ska bli starkare
+// Per omgång (blå, guld, regnbåge): så många kristaller göms...
+const KRISTALLER_PER_OMGANG = [6, 8, 9];
+// ...och så många behöver man hitta för att staven ska bli starkare (svårare för varje omgång)
+const KRISTALLER_KRAV = [4, 5, 6];
+const krav = () => KRISTALLER_KRAV[Math.min(spar.data.niva, KRISTALLER_KRAV.length - 1)];
 // Hur många böcker staven orkar lyfta: start, sen efter varje omgång
 const KRAFT_NIVAER = [1, 3, 6, 10];
 const OMGANGAR = [
@@ -661,11 +664,11 @@ function platserForOmgang(n) {
     // första omgången: nära mitten, så att man lär sig hur det funkar
     const narmast = kristallPlatser.filter((p) => p.behallare && !oppnade.has(p.id))
       .sort((a, b) => stegFranStart(a.pos.x, a.pos.z) - stegFranStart(b.pos.x, b.pos.z));
-    val = [platsMedId('bord'), ...narmast.slice(0, KRISTALLER_PER_OMGANG - 1)];
+    val = [platsMedId('bord'), ...narmast.slice(0, KRISTALLER_PER_OMGANG[0] - 1)];
   } else {
     let s = 100 + n * 37; const r = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
     const prio = (p) => (p.behallare && !oppnade.has(p.id) ? 0 : p.behallare ? 2 : 1) + r();
-    val = kristallPlatser.filter((p) => !anvanda.has(p.id)).map((p) => [prio(p), p]).sort((a, b) => a[0] - b[0]).slice(0, KRISTALLER_PER_OMGANG).map(([, p]) => p);
+    val = kristallPlatser.filter((p) => !anvanda.has(p.id)).map((p) => [prio(p), p]).sort((a, b) => a[0] - b[0]).slice(0, KRISTALLER_PER_OMGANG[n]).map(([, p]) => p);
   }
   spar.data.omgangar[n] = val.map((p) => p.id);
   spar.spara(true);
@@ -728,10 +731,10 @@ function hittaKristall(k) {
   ljud.kristall();
   gnistor.skjut(k.position, { antal: 80, fart: 2, spridning: 0.2, liv: 1.1, farger: [OMGANGAR[k.userData.omgang].farg, 0xffffff, 0xffe27a] });
   const antal = spar.data.hittade.length;
-  if (antal < KRISTALLER_KRAV) {
+  if (antal < krav()) {
     visaKristaller();
     pulsaHud();
-    const kvar = KRISTALLER_KRAV - antal;
+    const kvar = krav() - antal;
     ui.toast('💎'.repeat(antal) + '◇'.repeat(kvar), 'guld');
     saga(`Trollkristall! ${stor(ORD[kvar])} kvar.`);
     return;
@@ -748,7 +751,7 @@ function hittaKristall(k) {
   gnistor.skjut(spets.clone(), { antal: 220, fart: 2.5, liv: 1.6, spridning: 0.4, farger: [0xffe27a, 0xc58bff, 0x8fe8ff, 0xff7ae0] });
   visaUppgradering(nu);
   let text = `Wow! Staven blev starkare! Nu kan du lyfta ${ORD[nu] || nu} böcker samtidigt!`;
-  if (spar.data.niva < OMGANGAR.length) text += ` Nya ${OMGANGAR[spar.data.niva].namn}kristaller har gömt sig. Hitta tre!`;
+  if (spar.data.niva < OMGANGAR.length) text += ` Nya ${OMGANGAR[spar.data.niva].namn}kristaller har gömt sig. Hitta ${ORD[krav()]}!`;
   else text += ' Du har den starkaste trollstaven av alla!';
   setTimeout(() => saga(text), 900);
 }
@@ -767,7 +770,7 @@ for (const c of behallare) if (spar.data.oppnade.includes(c.id)) oppna(c, true);
 let forstaStart = true;
 const ui = new FpUI({
   titel: '🪄 Trollstaven – Boklabyrinten',
-  text: 'Du är en trollkarl i ett magiskt bibliotek! Lyft böckerna med trollstaven och skicka in dem på hyllan med samma färg – följ golvets färg till rätt hörn. Hitta 3 trollkristaller 💎 så blir staven starkare. Högar, kistor, vaser och skåp kan gömma saker, men en del är tomma!',
+  text: 'Du är en trollkarl i ett magiskt bibliotek! Lyft böckerna med trollstaven och skicka in dem på hyllan med samma färg – följ golvets färg till rätt hörn. Hitta trollkristaller 💎 så blir staven starkare. Högar, kistor, vaser och skåp kan gömma saker, men en del är tomma!',
   hjalp: 'Mus eller ← → titta · ↑ ↓ / WASD gå · Klick/E lyft, skicka, öppna · Håll inne: suga damm · M karta · Esc paus · B butik',
   spelare,
   escPausar: true,
@@ -776,7 +779,7 @@ const ui = new FpUI({
     forstaStart = false;
     saga(spar.data.niva || spar.data.hittade.length
       ? 'Välkommen tillbaka, trollkarl! Leta efter fler trollkristaller.'
-      : 'Välkommen till boklabyrinten, trollkarl! Skicka in böckerna på hyllan med samma färg. Följ golvets färg! Och hitta tre trollkristaller, så blir staven starkare. Den första ligger på bordet.');
+      : 'Välkommen till boklabyrinten, trollkarl! Skicka in böckerna på hyllan med samma färg. Följ golvets färg! Och hitta fyra trollkristaller, så blir staven starkare. Den första ligger på bordet.');
   },
   onAnvand: (nere) => {
     anvandNere = nere;
@@ -811,7 +814,7 @@ function ritaHud() {
   const hittade = spar.data.hittade.length;
   const filter = ['', 'hue-rotate(185deg) saturate(2.5) brightness(1.2)', 'hue-rotate(110deg) saturate(2)'][n];
   let html = '';
-  for (let i = 0; i < KRISTALLER_KRAV; i++) {
+  for (let i = 0; i < krav(); i++) {
     html += `<span style="filter:${i < hittade ? filter || 'none' : 'grayscale(1) opacity(.3)'}">💎</span>`;
   }
   html += `<span style="font-size:20px;opacity:.85">➜</span><span style="font-size:20px">${STAV_IKON[n + 1]} 📚${KRAFT_NIVAER[n + 1]}</span>`;
