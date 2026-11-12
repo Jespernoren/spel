@@ -153,6 +153,7 @@ export class Levitation {
     this._dir = new THREE.Vector3();
     this._mal = new THREE.Vector3();
     this._h = new THREE.Vector3();
+    this._lokalMal = new THREE.Vector3();
   }
 
   get obj() { return this.saker[0] || null; }      // första saken (bakåtkompatibelt)
@@ -166,6 +167,7 @@ export class Levitation {
   lyft(obj) {
     if (this.full) return false;
     obj.userData.svavStart = this.tid;
+    obj.userData.lokal = null;
     this.saker.push(obj);
     return true;
   }
@@ -204,18 +206,24 @@ export class Levitation {
   uppdatera(dt) {
     this.tid += dt;
     const n = this.saker.length;
+    // Positionen räknas i kamerans egna koordinater, så att sakerna följer
+    // blicken direkt när man vrider eller går (annars "simmar" de efter).
+    this.kamera.updateMatrixWorld();
     this.saker.forEach((o, i) => {
-      const mal = this.malPunkt(new THREE.Vector3());
+      if (!o.userData.lokal) o.userData.lokal = this.kamera.worldToLocal(o.position.clone());
+      const mal = this._lokalMal.set(0.32, -0.32, -this.avstand);
       if (n > 1) {
         // snurra i en ring runt mittpunkten
         const r = 0.28 + n * 0.035;
         const v = this.tid * 0.9 + (i / n) * Math.PI * 2;
-        mal.addScaledVector(this._h, Math.cos(v) * r);
+        mal.x += Math.cos(v) * r;
         mal.y += Math.sin(v) * r * 0.75;
       }
       const svav = Math.min(1, (this.tid - o.userData.svavStart) / 0.5); // mjuk start
       mal.y += Math.sin(this.tid * 2.4 + i) * 0.04;
-      o.position.lerp(mal, 1 - Math.exp(-dt * (4 + svav * 6)));
+      o.userData.lokal.lerp(mal, 1 - Math.exp(-dt * (4 + svav * 8)));
+      o.position.copy(o.userData.lokal);
+      this.kamera.localToWorld(o.position);
       o.rotation.x += (Math.sin(this.tid * 1.3 + i) * 0.25 - o.rotation.x) * dt * 3;
       o.rotation.y += dt * 0.6;
       o.rotation.z += (0 - o.rotation.z) * dt * 4;

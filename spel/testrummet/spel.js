@@ -79,6 +79,9 @@ const rnd = () => ((fro = (fro * 9301 + 49297) % 233280) / 233280);
 // ---------- Scen ----------
 const { scen, kamera, renderer, sol } = skapaSpel({ bakgrund: 0xdfe8f2, dimma: false });
 kamera.near = 0.05; kamera.updateProjectionMatrix();
+// lite lägre upplösning på skärmar med väldigt tät pixeltäthet = jämnare bildflöde
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.shadowMap.type = THREE.PCFShadowMap;
 scen.add(kamera);
 sol.position.set(4, 10, 3);
 sol.intensity = 0.9;
@@ -218,16 +221,22 @@ FARGER.forEach((f, i) => {
   const p = HYLL_PLATS[i];
   const g = new THREE.Group();
   const B = 1.9, H = 2.1, D = 0.42;
-  const del = (w, h, d, x, y, z, mat = traMorkt) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
+  // hela hyllan har sin färg, så den syns på långt håll
+  const hyllMat = new THREE.MeshStandardMaterial({ color: f.hex, roughness: 0.6 });
+  const bakMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(f.hex).lerp(new THREE.Color(0xffffff), 0.45), roughness: 0.8 });
+  const del = (w, h, d, x, y, z, mat = hyllMat) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
   for (const y of [0.05, 0.73, 1.41]) del(B, 0.06, D, 0, y, 0);
   del(B, 0.06, D, 0, H, 0);
-  del(0.06, H, D, -B / 2, H / 2, 0); del(0.06, H, D, B / 2, H / 2, 0); del(B, H, 0.03, 0, H / 2, -D / 2 + 0.015);
+  del(0.06, H, D, -B / 2, H / 2, 0); del(0.06, H, D, B / 2, H / 2, 0); del(B, H, 0.03, 0, H / 2, -D / 2 + 0.015, bakMat);
   const skyltMat = new THREE.MeshStandardMaterial({ color: f.hex, emissive: f.hex, emissiveIntensity: 0.25 });
   del(1.0, 0.24, 0.05, 0, H + 0.6, 0.1, skyltMat);
+  // färgad matta framför hyllan
+  const matta = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.1), new THREE.MeshStandardMaterial({ color: f.hex, roughness: 1 }));
+  matta.rotation.x = -Math.PI / 2; matta.position.set(0, 0.013, 0.85); g.add(matta);
   g.position.set(p.x, 0, p.z); g.rotation.y = p.ry;
   scen.add(g);
   g.updateMatrixWorld(true);
-  spelare.hinder.push(new THREE.Box3().setFromObject(g));
+  { const box = new THREE.Box3().setFromObject(g); box.min.y = 0.02; spelare.hinder.push(box); }
   const platser = [];
   for (const y of [0.08, 0.76, 1.44]) for (const x of [-0.66, -0.22, 0.22, 0.66]) platser.push(new THREE.Vector3(x, y + 0.2, 0.02));
   const hylla = { farg: f, grupp: g, platser, bocker: [], reserverade: 0, skyltMat };
@@ -591,7 +600,7 @@ let forstaStart = true;
 const ui = new FpUI({
   titel: '🪄 Trollstaven – Boklabyrinten',
   text: 'Du är en trollkarl i ett magiskt bibliotek! Lyft böckerna med trollstaven och skicka in dem på hyllan med samma färg. Hyllorna står i labyrintens hörn. Hitta trollkristallerna 💎 en i taget, så kan staven lyfta fler böcker. Högar och skattkistor kan gömma saker!',
-  hjalp: 'Mus eller ← → titta · ↑ ↓ / WASD gå · Klick/E lyft, skicka, öppna · Håll inne: suga damm · Esc paus · B butik',
+  hjalp: 'Mus eller ← → titta · ↑ ↓ / WASD gå · Klick/E lyft, skicka, öppna · Håll inne: suga damm · M karta · Esc paus · B butik',
   spelare,
   escPausar: true,
   onStart: () => {
@@ -617,6 +626,7 @@ spelare.onLasFel = () => ui.toast('Rör musen för att titta runt 🖱️', 'gul
 // chip med stavens kraft + kort med aktuell utmaning
 const kristallChip = document.createElement('div');
 kristallChip.className = 'fp-chip';
+kristallChip.style.whiteSpace = 'nowrap';
 kristallChip.title = 'Hur många böcker staven orkar lyfta';
 document.querySelector('.fp-topp')?.appendChild(kristallChip);
 const utmaning = document.createElement('div');
@@ -635,6 +645,72 @@ function ritaHud() {
 }
 
 visaKristaller();
+
+// ---------- Minikarta (uppe till vänster, M visar/döljer) ----------
+const KARTA_PX = Math.min(180, Math.round(Math.min(innerWidth, innerHeight) * 0.28));
+const skala = KARTA_PX / Math.max(BREDD, DJUP);
+const minikarta = document.createElement('canvas');
+minikarta.width = minikarta.height = KARTA_PX * 2;   // skarp på täta skärmar
+Object.assign(minikarta.style, {
+  position: 'fixed', left: '12px', top: '12px', width: KARTA_PX + 'px', height: KARTA_PX + 'px', zIndex: 30,
+  pointerEvents: 'none', borderRadius: '12px', border: '3px solid rgba(255,255,255,.85)', boxShadow: '0 4px 14px rgba(0,0,0,.3)',
+});
+document.body.appendChild(minikarta);
+const mk = minikarta.getContext('2d');
+const tillPx = (x, z) => [(x + BREDD / 2) * skala * 2, (z + DJUP / 2) * skala * 2];
+// fast bakgrund: golv, väggar och hyllor (ritas en gång)
+const kartBakgrund = document.createElement('canvas');
+kartBakgrund.width = kartBakgrund.height = KARTA_PX * 2;
+{
+  const g = kartBakgrund.getContext('2d'), R = RUTA * skala * 2;
+  g.fillStyle = '#e9dcc6'; g.fillRect(0, 0, KARTA_PX * 2, KARTA_PX * 2);
+  g.fillStyle = '#5b3a22';
+  for (const [r, k] of vaggRutor) g.fillRect(k * R, r * R, R + 0.5, R + 0.5);
+  for (const h of hyllor) {
+    const p = new THREE.Vector3(); h.grupp.getWorldPosition(p);
+    const [x, y] = tillPx(p.x, p.z);
+    g.fillStyle = '#' + h.farg.hex.toString(16).padStart(6, '0');
+    g.fillRect(x - R * 0.55, y - R * 0.3, R * 1.1, R * 0.6);
+  }
+}
+let kartTid = 0, visaKarta = true;
+function ritaMinikarta(dt) {
+  // karta och utmaning syns bara medan man spelar (inte ovanpå menyn)
+  const synlig = ui.igang ? '' : 'none';
+  minikarta.style.display = visaKarta ? synlig : 'none';
+  utmaning.style.display = synlig;
+  kartTid -= dt;
+  if (kartTid > 0 || !visaKarta || !ui.igang) return;
+  kartTid = 0.08;
+  const R = RUTA * skala * 2;
+  mk.drawImage(kartBakgrund, 0, 0);
+  // gömställen som inte är öppnade
+  for (const c of behallare) {
+    if (c.oppen) continue;
+    const [x, y] = tillPx(c.x, c.z);
+    mk.fillStyle = c.typ === 'hog' ? '#c7a0e8' : '#c8902e';
+    mk.beginPath(); mk.arc(x, y, R * 0.26, 0, Math.PI * 2); mk.fill();
+  }
+  // lösa böcker som små prickar i sin färg
+  for (const b of bocker) {
+    if (!b.visible || b.userData.placerad || b.parent !== scen) continue;
+    const [x, y] = tillPx(b.position.x, b.position.z);
+    mk.fillStyle = '#' + b.userData.farg.hex.toString(16).padStart(6, '0');
+    mk.fillRect(x - 2.5, y - 2.5, 5, 5);
+  }
+  // du = en pil som pekar dit du tittar
+  const [px, py] = tillPx(spelare.pos.x, spelare.pos.z);
+  mk.save();
+  mk.translate(px, py);
+  mk.rotate(-spelare.yaw);
+  mk.fillStyle = '#7b3fe4'; mk.strokeStyle = '#fff'; mk.lineWidth = 3;
+  mk.beginPath(); mk.moveTo(0, -R * 0.55); mk.lineTo(R * 0.38, R * 0.38); mk.lineTo(0, R * 0.18); mk.lineTo(-R * 0.38, R * 0.38); mk.closePath();
+  mk.fill(); mk.stroke();
+  mk.restore();
+}
+addEventListener('keydown', (e) => {
+  if (e.code === 'KeyM') { visaKarta = !visaKarta; kartTid = 0; }
+});
 
 // ---------- Spelloop ----------
 let anvandNere = false, rutBank = 0, klar = false, tid = 0, pingTid = 0;
@@ -677,6 +753,7 @@ function uppdatera(dt) {
     if (Math.random() < dt * 3) gnistor.skjut(nu.position, { antal: 1, fart: 0.3, liv: 0.8, spridning: 0.25, farger: [0xffffff, 0xffe27a] });
   }
 
+  ritaMinikarta(dt);
   if (!ui.igang) { stav.uppdatera(dt, 0); return; }
 
   // kristallsökare: staven plingar oftare ju närmare kristallen du är

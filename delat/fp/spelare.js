@@ -43,7 +43,8 @@ export class Spelare {
       if (this.aktiv && ['Space', 'ArrowUp', 'ArrowDown'].includes(e.code)) e.preventDefault();
     });
     addEventListener('keyup', (e) => { this.tangenter[e.code] = false; });
-    addEventListener('blur', () => { this.tangenter = {}; });
+    addEventListener('blur', () => { this.tangenter = {}; this.musX = null; });
+    document.addEventListener('mouseleave', () => { this.musX = null; });
     addEventListener('mousemove', (e) => {
       if (document.pointerLockElement === this.dom) { this.titta(e.movementX, e.movementY); return; }
       if (this.lasFel && this.aktiv && !this.arTouch && e.target === this.dom) {
@@ -106,9 +107,10 @@ export class Spelare {
       }
       // reservläge: muspekaren nära kanten fortsätter att svänga
       if (this.lasFel && this.musX !== null) {
-        const kant = 0.12;
-        if (this.musX < kant) this.yaw += (1 - this.musX / kant) * this.svangFart * dt;
-        if (this.musX > 1 - kant) this.yaw -= (1 - (1 - this.musX) / kant) * this.svangFart * dt;
+        // bara allra närmast kanten, och mjukt, så att vyn inte driver iväg av sig själv
+        const kant = 0.06;
+        if (this.musX < kant) this.yaw += (1 - this.musX / kant) ** 2 * this.svangFart * dt;
+        if (this.musX > 1 - kant) this.yaw -= (1 - (1 - this.musX) / kant) ** 2 * this.svangFart * dt;
       }
       fx += this.joy.x; fz += this.joy.y;
       const len = Math.hypot(fx, fz);
