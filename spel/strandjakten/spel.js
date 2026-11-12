@@ -11,7 +11,10 @@ import * as THREE from "three";
 // ================= JUSTERBARA VÄRDEN =================
 const GA_FART = 4.2;          // meter per sekund
 const SPRING_FART = 7.0;      // med Shift
-const SVANG_FART = 2.0;       // radianer per sekund
+const SVANG_FART = 2.0;       // radianer per sekund (pekknapparna på surfplatta)
+const MUS_KANSLA = 0.0035;    // hur mycket vyn svänger när musen flyttas åt sidan (större = snabbare)
+const MUS_MJUKHET = 12;       // hur mjukt vyn följer musen (mindre = mjukare)
+const KANT_SVANG = 1.6;       // svängfart när musen är vid skärmkanten och musen inte är låst
 const PLOCK_AVSTAND = 2.6;    // hur nära gruppen måste vara för att plocka upp
 const GRUPP_RADIE = 0.9;      // hur stor gruppen är när den krockar
 const TJUV_FART = 6.5;
@@ -562,10 +565,35 @@ addEventListener("keydown", e => {
   tangent[e.code] = true;
   if (lage === "gubbe" && !e.repeat) { const b = e.key.toUpperCase(); if (ALFABET.includes(b)) gissa(b); }
   if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
-  if (e.code === "Escape" || e.code === "KeyP") { if (lage === "paus") fortsatt(); else pausa(); }
+  if (e.code === "KeyP" || (e.code === "Escape" && !musLast)) { if (lage === "paus") fortsatt(); else pausa(); }
 });
 addEventListener("keyup", e => { tangent[e.code] = false; });
 addEventListener("blur", () => { for (const k in tangent) tangent[k] = false; });
+// --- Musen styr bara vart man tittar (åt sidan). Klick låser musen till spelet. ---
+let lastTid = 0, musLast = false, musMal = null, musX = 0.5, forvantadUpplasning = false;
+const duk = renderer.domElement;
+function lasMus() {
+  if (!duk.requestPointerLock || musLast) return;
+  try { const r = duk.requestPointerLock(); if (r && r.catch) r.catch(() => {}); } catch (e) {}
+}
+function slappMus() { if (document.pointerLockElement) { forvantadUpplasning = true; document.exitPointerLock(); } }
+duk.addEventListener("click", () => { if (lage === "spel" || lage === "tjuvKommer" || lage === "snallTjuv") lasMus(); });
+document.addEventListener("pointerlockchange", () => {
+  musLast = document.pointerLockElement === duk;
+  lastTid = performance.now();
+  $("musTips").classList.toggle("dold", musLast || !["spel", "tjuvKommer", "snallTjuv"].includes(lage));
+  if (!musLast && !forvantadUpplasning && ["spel", "tjuvKommer"].includes(lage)) pausa();
+  forvantadUpplasning = false;
+});
+document.addEventListener("pointerlockerror", () => { $("musTips").textContent = "Flytta musen till kanten av skärmen för att titta åt sidan"; });
+addEventListener("mousemove", e => {
+  if (!musLast) musX = e.clientX / innerWidth;
+  if (!musLast || !["spel", "tjuvKommer", "snallTjuv"].includes(lage)) return;
+  if (performance.now() - lastTid < 250) return; // första rörelsen efter låsning kan hoppa
+  const dx = Math.max(-80, Math.min(80, e.movementX || 0)); // tar bort konstiga hopp
+  if (musMal === null) musMal = spelare.yaw;
+  musMal -= dx * MUS_KANSLA;
+});
 document.querySelectorAll("#pekplatta button").forEach(b => {
   const t = b.dataset.t;
   b.addEventListener("pointerdown", e => { e.preventDefault(); tangent[t] = true; });
@@ -650,14 +678,15 @@ function starta() {
   aterstall(); gomKladerna();
   spelTid = 0; sedanFynd = 0; tjuvTimer = -1; tjuvNr = 0; besegrade = 0; ledtipsTimer = 10;
   kameraMal = null;
-  lage = "spel";
+  lage = "spel"; musMal = null;
+  lasMus(); $("musTips").classList.toggle("dold", musLast);
   setTimeout(() => visa(N().nedgravt ? "Hjälp mamma, barnet och bebisen att hitta fem kläder! Tjuven har grävt ner en del i sanden, leta efter små sandhögar som glittrar." : "Hjälp mamma, barnet och bebisen att hitta fem kläder på stranden! Gå fram till dem som glittrar.", 7), 300);
 }
 $("spelaKnapp").onclick = starta;
 $("igenKnapp").onclick = starta;
 let fortsattLage = "spel";
-function pausa() { if (lage !== "spel" && lage !== "tjuvKommer") return; fortsattLage = lage; lage = "paus"; $("paus").classList.remove("dold"); }
-function fortsatt() { lage = fortsattLage; $("paus").classList.add("dold"); }
+function pausa() { if (lage !== "spel" && lage !== "tjuvKommer") return; fortsattLage = lage; lage = "paus"; $("paus").classList.remove("dold"); slappMus(); for (const k in tangent) tangent[k] = false; }
+function fortsatt() { lage = fortsattLage; $("paus").classList.add("dold"); musMal = null; lasMus(); }
 $("fortsattKnapp").onclick = fortsatt;
 
 function plockaUpp(p) {
@@ -709,7 +738,7 @@ function tjuvBlirSnall() {
 let gubbeOrd = "", gubbeLedtrad = "", gissat = new Set(), felAntal = 0, gubbeKlar = false;
 const anvandaOrd = new Set();
 function startaGubbe() {
-  lage = "gubbe"; $("tjuvvarning").classList.add("dold");
+  lage = "gubbe"; slappMus(); $("musTips").classList.add("dold"); $("tjuvvarning").classList.add("dold");
   for (const k in tangent) tangent[k] = false;
   const idx = Math.min(tjuvNr, N().ordniva.length) - 1;
   const ordniva = N().ordniva[idx];
@@ -790,13 +819,13 @@ $("gubbeVidare").onclick = () => {
   }
   const p = tjuv.g.position;
   tjuv.flyr = new THREE.Vector3(p.x + (p.x - spelare.pos.x) * 8, 0, p.z + (p.z - spelare.pos.z) * 8);
-  sedanFynd = 0; lage = "spel";
+  sedanFynd = 0; lage = "spel"; musMal = null; lasMus();
 };
 
 // ================= FEST =================
 let festTid = 0, barnHopp = null;
 function startaFest() {
-  lage = "fest"; festTid = 0;
+  lage = "fest"; slappMus(); $("musTips").classList.add("dold"); festTid = 0;
   ["hud", "tid", "tjuvvarning", "pekplatta"].forEach(id => $(id).classList.add("dold"));
   $("medd").classList.add("osynlig");
   poolLjus.visible = false; konfetti.visible = true; skylt.visible = false;
@@ -847,18 +876,29 @@ function loop() {
   if (spelar) {
     spelTid += dt; sedanFynd += dt;
     $("tid").textContent = tidText(spelTid);
-    const vanster = tangent.ArrowLeft || tangent.KeyA, hoger = tangent.ArrowRight || tangent.KeyD;
-    if (vanster) spelare.yaw += SVANG_FART * dt;
-    if (hoger) spelare.yaw -= SVANG_FART * dt;
-    const fram = (tangent.KeyW || tangent.ArrowUp ? 1 : 0) - (tangent.KeyS || tangent.ArrowDown ? 0.6 : 0);
+    // titta: musen (mjukt), pekknapparna, eller musen vid skärmkanten om den inte är låst
+    if (tangent.SvangV) { spelare.yaw += SVANG_FART * dt; musMal = null; }
+    if (tangent.SvangH) { spelare.yaw -= SVANG_FART * dt; musMal = null; }
+    if (!musLast && !tangent.SvangV && !tangent.SvangH && matchMedia("(pointer:fine)").matches) {
+      if (musX < 0.08) spelare.yaw += KANT_SVANG * dt * (1 - musX / 0.08);
+      if (musX > 0.92) spelare.yaw -= KANT_SVANG * dt * ((musX - 0.92) / 0.08);
+    }
+    if (musMal !== null) { const steg = (musMal - spelare.yaw) * Math.min(1, dt * MUS_MJUKHET); spelare.yaw += steg; if (Math.abs(musMal - spelare.yaw) < 0.0005) musMal = null; }
+    // gå: W/S fram och bak, A/D åt sidan (pilarna gör samma sak)
+    const fram = (tangent.KeyW || tangent.ArrowUp ? 1 : 0) - (tangent.KeyS || tangent.ArrowDown ? 0.7 : 0);
+    const sida = (tangent.KeyD || tangent.ArrowRight ? 1 : 0) - (tangent.KeyA || tangent.ArrowLeft ? 1 : 0);
     const fart = (tangent.ShiftLeft || tangent.ShiftRight) ? SPRING_FART : GA_FART;
     const fx = Math.sin(spelare.yaw), fz = Math.cos(spelare.yaw);
-    if (fram) { spelare.pos.x += fx * fram * fart * dt; spelare.pos.z += fz * fram * fart * dt; }
+    let rx = fx * fram - fz * sida * 0.8, rz = fz * fram + fx * sida * 0.8;
+    const len = Math.hypot(rx, rz);
+    if (len > 1) { rx /= len; rz /= len; }
+    spelare.pos.x += rx * fart * dt; spelare.pos.z += rz * fart * dt;
+    const vanster = sida || tangent.SvangV || tangent.SvangH, hoger = false;
     krock(spelare.pos, GRUPP_RADIE);
     grupp.position.copy(spelare.pos); grupp.rotation.y = spelare.yaw;
-    const rorelse = fram ? Math.abs(fram) * fart : (vanster || hoger ? 1.5 : 0);
+    const rorelse = Math.min(1, Math.hypot(rx, rz)) * fart || (vanster || hoger ? 1.5 : 0);
     mamma.ga(dt, rorelse); barn.ga(dt, rorelse);
-    barnvagn.children.forEach(c => { if (c.geometry && c.geometry.type === "TorusGeometry") c.rotation.x += fram * fart * dt / 0.15; });
+    barnvagn.children.forEach(c => { if (c.geometry && c.geometry.type === "TorusGeometry") c.rotation.x += (fram || Math.abs(sida) * 0.5) * fart * dt / 0.15; });
 
     if (lage === "spel") {
       for (const p of plagg) {

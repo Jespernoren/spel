@@ -36,6 +36,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7fd3e8;font-family:"F
 .plats.pop{animation:pop .6s}
 @keyframes pop{40%{transform:scale(1.35)}}
 #tid{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:16px;font-weight:700;font-size:20px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.35);z-index:5;pointer-events:none}
+#musTips{position:fixed;top:96px;left:50%;transform:translateX(-50%);background:rgba(58,42,28,.8);color:#fff;font-weight:600;font-size:18px;padding:8px 18px;border-radius:14px;z-index:6;pointer-events:none}
+@media (hover:none),(pointer:coarse){#musTips{display:none!important}}
 #medd{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);transform:translateX(-50%);width:max-content;max-width:min(860px,94vw);background:var(--panel);border:4px solid var(--kant);border-radius:20px;padding:10px 22px;font-size:22px;font-weight:600;text-align:center;box-shadow:0 6px 0 var(--kant);z-index:6;pointer-events:none;transition:opacity .3s}
 #medd.osynlig{opacity:0}
 #pekplatta{position:fixed;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(2,64px);gap:6px;z-index:7}
@@ -98,9 +100,10 @@ h1{font-size:clamp(54px,9vw,96px);line-height:.95;margin:0 0 8px;font-weight:700
 <div id="tid" class="dold">0:00</div>
 <div id="tjuvvarning" class="dold">Tjuven kommer!</div>
 <div id="medd" class="osynlig"></div>
+<div id="musTips" class="dold">Klicka i spelet så styr musen vart ni tittar</div>
 <div id="pekplatta" class="dold">
   <span></span><button data-t="ArrowUp" aria-label="Gå framåt">▲</button><span></span>
-  <button data-t="ArrowLeft" aria-label="Sväng vänster">◀</button><button data-t="ArrowDown" aria-label="Gå bakåt">▼</button><button data-t="ArrowRight" aria-label="Sväng höger">▶</button>
+  <button data-t="SvangV" aria-label="Sväng vänster">◀</button><button data-t="ArrowDown" aria-label="Gå bakåt">▼</button><button data-t="SvangH" aria-label="Sväng höger">▶</button>
 </div>
 
 <div id="start" class="skarm tona">
@@ -114,8 +117,8 @@ h1{font-size:clamp(54px,9vw,96px);line-height:.95;margin:0 0 8px;font-weight:700
     </div>
     <button class="knapp" id="spelaKnapp">Spela!</button>
     <div class="styr">
-      <span>Gå: <b>↑</b><b>↓</b> eller <b>W</b><b>S</b></span>
-      <span>Sväng: <b>←</b><b>→</b> eller <b>A</b><b>D</b></span>
+      <span>Gå: <b>W</b><b>A</b><b>S</b><b>D</b></span>
+      <span>Titta åt sidan: musen</span>
       <span>Spring: <b>Shift</b></span>
     </div>
     <div class="rekord" id="rekordText"></div>
