@@ -22,7 +22,7 @@ window.SPEL = [
     mapp: "testrummet",
     namn: "Trollstaven",
     ikon: "🪄",
-    beskrivning: "Ett magiskt bibliotek som en labyrint! Lyft böckerna med trollstaven och sortera dem på rätt färghylla. Trolla bort högar, öppna skattkistor och hitta trollkristallerna en i taget så blir staven starkare. Idé: Beppe.",
+    beskrivning: "Ett magiskt bibliotek som en labyrint! Lyft böckerna med trollstaven och sortera dem på rätt färghylla. Följ golvets färg till rätt hylla, öppna högar, kistor, vaser och skåp och hitta 3 trollkristaller så blir staven starkare. Idé: Beppe.",
     typ: "3D · Förstaperson · Magi",
     spelare: ["Beppe", "Alla"],
     farg: ["#5b3cc4", "#c59bff"],

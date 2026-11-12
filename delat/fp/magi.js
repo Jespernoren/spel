@@ -92,6 +92,7 @@ export class Trollstav {
     this.grupp = new THREE.Group();
     const tra = new THREE.MeshStandardMaterial({ color: 0x5a3417, roughness: 0.6 });
     const guld = new THREE.MeshStandardMaterial({ color: 0xd8a93a, metalness: 0.8, roughness: 0.3 });
+    this.traMat = tra;
     const stav = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.018, 0.46, 10), tra);
     const greppring = new THREE.Mesh(new THREE.TorusGeometry(0.02, 0.006, 8, 16), guld);
     greppring.rotation.x = Math.PI / 2; greppring.position.y = -0.12;
@@ -101,15 +102,29 @@ export class Trollstav {
     // mjukt sken runt spetsen
     const c = document.createElement('canvas'); c.width = c.height = 64;
     const x = c.getContext('2d'), g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
-    g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.3, 'rgba(200,160,255,.8)'); g.addColorStop(1, 'rgba(160,100,255,0)');
+    g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.3, 'rgba(255,255,255,.8)'); g.addColorStop(1, 'rgba(255,255,255,0)');
     x.fillStyle = g; x.fillRect(0, 0, 64, 64);
-    this.sken = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+    this.sken = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), color: 0xc8a0ff, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
     this.sken.scale.setScalar(0.09);
     this.sken.position.y = 0.25;
     this.ljus = new THREE.PointLight(0xc59bff, 0.6, 2.2);
     this.ljus.position.y = 0.25;
     const inre = new THREE.Group();
     inre.add(stav, greppring, this.spets, this.sken, this.ljus);
+    // extra ringar och små stjärnor som snurrar runt spetsen (visas på högre nivåer)
+    this.ringar = [0.02, 0.09, 0.16].map((y) => {
+      const r = new THREE.Mesh(new THREE.TorusGeometry(0.017, 0.005, 8, 16), guld);
+      r.rotation.x = Math.PI / 2; r.position.y = y; r.visible = false; inre.add(r); return r;
+    });
+    this.snurr = new THREE.Group(); this.snurr.position.y = 0.25; inre.add(this.snurr);
+    this.stjarnor = [0, 1, 2].map((i) => {
+      const m = new THREE.Mesh(new THREE.OctahedronGeometry(0.008), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+      const v = (i / 3) * Math.PI * 2; m.position.set(Math.cos(v) * 0.05, 0, Math.sin(v) * 0.05);
+      m.visible = false; this.snurr.add(m); return m;
+    });
+    this.skenStorlek = 1;
+    this.regnbage = false;
+    this.niva = 0;
     inre.rotation.set(-1.15, 0, -0.12);       // pekar framåt-upp
     this.inre = inre;
     this.grupp.add(inre);
@@ -118,6 +133,29 @@ export class Trollstav {
     this.tid = 0;
     this.kraft = 0;          // 0..1 hur mycket magi som används just nu (glöd, skak)
     this._v = new THREE.Vector3();
+  }
+
+  /**
+   * Byt utseende på staven: 0 = trästav, 1 = blå, 2 = guld, 3 = regnbåge.
+   * Högre nivå = större spets, starkare sken, fler ringar och snurrande stjärnor.
+   */
+  sattNiva(n) {
+    const N = [
+      { tra: 0x5a3417, metall: 0, spets: 0xd9c2ff, sken: 0x9b6bff, storlek: 1, ringar: 0, stjarnor: 0 },
+      { tra: 0x1f3c6e, metall: 0.3, spets: 0xbff0ff, sken: 0x3fb6ff, storlek: 1.4, ringar: 1, stjarnor: 0 },
+      { tra: 0xd8a93a, metall: 0.85, spets: 0xfff3b0, sken: 0xffb81f, storlek: 1.75, ringar: 2, stjarnor: 2 },
+      { tra: 0xf2ecff, metall: 0.6, spets: 0xffffff, sken: 0xff7ae0, storlek: 2.1, ringar: 3, stjarnor: 3, regnbage: true },
+    ][Math.max(0, Math.min(3, n))];
+    this.niva = n;
+    this.traMat.color.setHex(N.tra); this.traMat.metalness = N.metall; this.traMat.roughness = N.metall ? 0.3 : 0.6;
+    this.spetsMat.color.setHex(N.spets); this.spetsMat.emissive.setHex(N.sken);
+    this.sken.material.color.setHex(N.sken);
+    this.ljus.color.setHex(N.sken);
+    this.spets.scale.setScalar(N.storlek);
+    this.skenStorlek = N.storlek;
+    this.ringar.forEach((r, i) => { r.visible = i < N.ringar; });
+    this.stjarnor.forEach((s, i) => { s.visible = i < N.stjarnor; s.material.color.setHex(N.sken); });
+    this.regnbage = !!N.regnbage;
   }
 
   /** Spetsens position i världen. */
@@ -129,7 +167,16 @@ export class Trollstav {
     this.spets.rotation.y += dt * (1.5 + k * 10);
     this.spetsMat.emissiveIntensity = 1.4 + Math.sin(this.tid * 4) * 0.3 + k * 2.5;
     this.ljus.intensity = 0.5 + k * 2.2;
-    this.sken.scale.setScalar(0.08 + k * 0.08 + Math.sin(this.tid * 6) * 0.01);
+    this.sken.scale.setScalar((0.08 + k * 0.08 + Math.sin(this.tid * 6) * 0.01) * this.skenStorlek);
+    this.snurr.rotation.y += dt * 3;
+    this.snurr.rotation.x = Math.sin(this.tid * 1.3) * 0.5;
+    if (this.regnbage) {
+      const f = (this.tid * 0.25) % 1;
+      this.spetsMat.emissive.setHSL(f, 0.9, 0.6);
+      this.sken.material.color.setHSL(f, 0.9, 0.65);
+      this.ljus.color.setHSL(f, 0.9, 0.6);
+      this.stjarnor.forEach((s, i) => s.material.color.setHSL((f + i / 3) % 1, 0.9, 0.65));
+    }
     const gung = Math.sin(this.tid * (4 + rorelse * 5)) * 0.008 * (0.4 + rorelse);
     const skak = k * 0.006;
     this.grupp.position.set(

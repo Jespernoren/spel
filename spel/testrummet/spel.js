@@ -3,8 +3,8 @@
 //  Peka på en bok och tryck → den lyfts med magi och svävar runt staven.
 //  Peka på rätt färghylla och tryck → böckerna seglar in.
 //  Håll inne mot golvet → staven suger upp dammet.
-//  Hitta trollkristallerna, en i taget → staven orkar lyfta fler böcker.
-//  Högar och skattkistor kan gömma både böcker och kristaller.
+//  Hitta 3 trollkristaller → staven blir starkare (och snyggare!).
+//  Högar, kistor, vaser och väggskåp kan gömma saker – eller vara tomma.
 // =============================================================
 import { THREE, skapaSpel, startaLoop } from '../../delat/motor.js';
 import { Spelare, Interaktor, Smuts, Sparning, Butik, ljud, FpUI, Gnistor, Trollstav, Levitation } from '../../delat/fp/index.js';
@@ -12,55 +12,55 @@ import { Spelare, Interaktor, Smuts, Sparning, Butik, ljud, FpUI, Gnistor, Troll
 const SPEL_ID = 'testrummet';
 
 // ---------- Inställningar (lek fritt med dessa) ----------
-// Labyrinten: # = vägg, . = gång, h = hög (trolla bort), k = skattkista (öppna)
+// Labyrinten: # = vägg/bokhylla, . = gång, h = hög, k = skattkista, v = vas, s = skåp i väggen
 // Varje tecken är en ruta på RUTA × RUTA meter. Norr (överst) är bort från start.
 const KARTA = [
-  'h..k#..#....',
+  'h..k#.s#....',
   '.##.#..#.##.',
-  '.#...#...#h.',
+  '.#s..#.v.#h.',
   '.#.###.###.#',
-  '...#.....#..',
-  '##.#.....#.#',
-  'h..#.....#.k',
-  '.###.##.##.#',
-  '...#.#...#..',
-  '.#.#.#.#.##.',
-  '.#h..#.#....',
-  'k...##.##..h',
+  's..#.....#v.',
+  '##.#.....#s#',
+  'h..#....v#.k',
+  's###.##.##.#',
+  '...#s#...#v.',
+  'v#.#.#.#s##.',
+  '.#h..#.#.s..',
+  'k...##k##..h',
 ];
+const START = [6, 6];                 // rad, kolumn där man börjar
 const RUTA = 2;                       // meter per ruta (gångarnas bredd)
 const VAGG_HOJD = 3.4;
 const BOCKER_PER_FARG = 12;           // 4 färger × 12 = 48 böcker
-const BOCKER_I_HOG = 2;               // böcker gömda i varje hög
-const BOCKER_I_KISTA = 3;             // böcker gömda i varje skattkista
 const MYNT_PER_BOK = 3;
+const MYNT_I_PASE = 10;               // en myntpåse i ett gömställe
 const RUTOR_PER_MYNT = 12;            // hur mycket damm man suger upp per mynt
 const FLYGTID = 0.8;                  // sekunder för en bok att flyga in i hyllan
 const UPPLASNING = true;              // läs upp med svensk röst
 const SOKAR_AVSTAND = 6;              // inom så här många meter börjar staven pinga
-// Hur många böcker staven orkar lyfta: start, efter 3, 6 och 9 kristaller
+const KRISTALLER_PER_OMGANG = 6;      // så många kristaller göms varje omgång...
+const KRISTALLER_KRAV = 3;            // ...och så många behöver man hitta för att staven ska bli starkare
+// Hur många böcker staven orkar lyfta: start, sen efter varje omgång
 const KRAFT_NIVAER = [1, 3, 6, 10];
+const OMGANGAR = [
+  { namn: 'blå', farg: 0x6fd8ff },
+  { namn: 'guld', farg: 0xffd447 },
+  { namn: 'regnbåge', farg: 0xff7ae0 },
+];
 const FARGER = [
   { id: 'rod', namn: 'röd', namnBest: 'röda', hex: 0xe5484d },
   { id: 'bla', namn: 'blå', namnBest: 'blå', hex: 0x3b82f6 },
   { id: 'gron', namn: 'grön', namnBest: 'gröna', hex: 0x2fb36b },
   { id: 'gul', namn: 'gul', namnBest: 'gula', hex: 0xf5b82e },
 ];
-// Kristallerna kommer en i taget, i den här ordningen. Var tredje gör staven starkare.
-// rad/kol = ruta i KARTA. y = höjd. Ligger kristallen i en hög eller kista syns den först när den är öppnad.
-const KRISTALLER = [
-  { id: 'k1', rad: 4, kol: 6, y: 0.98, tips: 'på bordet i mitten' },
-  { id: 'k2', rad: 11, kol: 6, y: 0.22, tips: 'längst bort i en korridor' },
-  { id: 'k3', rad: 6, kol: 0, y: 0.22, tips: 'i en hög. Trolla bort högen!' },
-  { id: 'k4', rad: 11, kol: 0, y: 0.62, tips: 'i en skattkista. Öppna den!' },
-  { id: 'k5', x: 8, z: -11.6, y: 2.32, tips: 'högt uppe. Titta upp på hyllorna!' },
-  { id: 'k6', rad: 2, kol: 10, y: 0.22, tips: 'i en hög' },
-  { id: 'k7', rad: 10, kol: 2, y: 0.22, tips: 'i en hög' },
-  { id: 'k8', rad: 6, kol: 11, y: 0.62, tips: 'i en skattkista' },
-  { id: 'k9', rad: 0, kol: 0, y: 0.22, tips: 'i högen längst bort i ett hörn' },
-];
-const KRISTALL_FARGER = [0x6fd8ff, 0xffd447, 0xff7ae0];   // blå, guld, regnbåge (per omgång)
-const OMGANG_NAMN = ['blå', 'guld', 'regnbåge'];
+// Vad som göms i gömställena (utöver kristallerna, som flyttar runt varje omgång).
+// {} = falskt gömställe, tomt
+const INNEHALL = {
+  h: () => ({ bocker: 2 }),
+  k: () => ({ bocker: 3, mynt: true }),
+  v: (i) => [{ bocker: 1 }, { mynt: true }, {}][i % 3],
+  s: (i) => [{ bocker: 1 }, {}, { mynt: true }][i % 3],
+};
 
 const RADER = KARTA.length, KOLUMNER = KARTA[0].length;
 const BREDD = KOLUMNER * RUTA, DJUP = RADER * RUTA;
@@ -70,9 +70,14 @@ const rutaVid = (x, z) => {
   const kol = Math.floor((x + BREDD / 2) / RUTA), rad = Math.floor((z + DJUP / 2) / RUTA);
   return rad < 0 || kol < 0 || rad >= RADER || kol >= KOLUMNER ? '#' : KARTA[rad][kol];
 };
+const arVagg = (r, k) => r < 0 || k < 0 || r >= RADER || k >= KOLUMNER || KARTA[r][k] === '#';
+// Fyra färgade delar av labyrinten, samma färg som hyllan i det hörnet. Mitten är neutral.
+const arMitten = (r, k) => r >= 4 && r <= 6 && k >= 4 && k <= 8;
+const zonFarg = (r, k) => (arMitten(r, k) ? null : FARGER[(r < RADER / 2 ? 0 : 2) + (k < KOLUMNER / 2 ? 0 : 1)]);
 const saga = (t) => { if (UPPLASNING) ljud.saga(t); };
 const stor = (t) => t[0].toUpperCase() + t.slice(1);
 const ORD = ['noll', 'en', 'två', 'tre', 'fyra', 'fem', 'sex', 'sju', 'åtta', 'nio', 'tio'];
+const hex = (h) => '#' + h.toString(16).padStart(6, '0');
 let fro = 11;
 const rnd = () => ((fro = (fro * 9301 + 49297) % 233280) / 233280);
 
@@ -87,19 +92,36 @@ sol.position.set(4, 10, 3);
 sol.intensity = 0.9;
 scen.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-const golv = new THREE.Mesh(new THREE.PlaneGeometry(BREDD, DJUP), new THREE.MeshStandardMaterial({ color: 0xc8a27a, roughness: 0.8 }));
-golv.rotation.x = -Math.PI / 2; golv.receiveShadow = true; scen.add(golv);
+// golvet: trägolv som är färgat i varje del av labyrinten
+const golvMesh = (() => {
+  const P = 64, c = document.createElement('canvas'); c.width = KOLUMNER * P; c.height = RADER * P;
+  const x = c.getContext('2d');
+  for (let r = 0; r < RADER; r++) for (let k = 0; k < KOLUMNER; k++) {
+    const z = zonFarg(r, k);
+    const f = new THREE.Color(0xc8a27a);
+    if (z) f.lerp(new THREE.Color(z.hex), 0.55);
+    x.fillStyle = '#' + f.getHexString(); x.fillRect(k * P, r * P, P, P);
+    x.fillStyle = 'rgba(0,0,0,.08)';
+    for (let i = 1; i < 4; i++) x.fillRect(k * P, r * P + i * 16, P, 2);   // plankor
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const golv = new THREE.Mesh(new THREE.PlaneGeometry(BREDD, DJUP), new THREE.MeshStandardMaterial({ map: t, roughness: 0.8 }));
+  golv.rotation.x = -Math.PI / 2; golv.receiveShadow = true; scen.add(golv);
+  return golv;
+})();
 
 // bokryggar som tapet på väggarna (det är ett magiskt bibliotek)
-function bokryggTextur() {
+function bokryggTextur(ljus = false) {
   const c = document.createElement('canvas'); c.width = 256; c.height = 512;
   const x = c.getContext('2d');
-  x.fillStyle = '#4a2f1b'; x.fillRect(0, 0, 256, 512);
-  const farger = ['#7d3b3b', '#3b5a7d', '#4d6e45', '#8a7a3b', '#5e3f73', '#8a5a3b', '#3f6b6b', '#6b6b6b'];
+  x.fillStyle = ljus ? '#cbb8a0' : '#4a2f1b'; x.fillRect(0, 0, 256, 512);
+  // ljus variant = grå/vita bokryggar, så att zonfärgen syns tydligt på labyrintens väggar
+  const farger = ljus ? ['#ffffff', '#e6e6e6', '#cfcfcf', '#f2f2f2', '#bdbdbd', '#dcdcdc']
+    : ['#7d3b3b', '#3b5a7d', '#4d6e45', '#8a7a3b', '#5e3f73', '#8a5a3b', '#3f6b6b', '#6b6b6b'];
   let s = 7; const r = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
   for (let hylla = 0; hylla < 4; hylla++) {
     const y0 = hylla * 128 + 14;
-    x.fillStyle = '#2e1c10'; x.fillRect(0, y0 + 104, 256, 10);
+    x.fillStyle = ljus ? '#7a6048' : '#2e1c10'; x.fillRect(0, y0 + 104, 256, 10);
     for (let px = 6; px < 250;) {
       const w = 8 + r() * 14, h = 70 + r() * 30;
       x.fillStyle = farger[Math.floor(r() * farger.length)];
@@ -114,6 +136,7 @@ function bokryggTextur() {
 const ryggTex = bokryggTextur();
 const traMorkt = new THREE.MeshStandardMaterial({ color: 0x6b4426, roughness: 0.8 });
 const traLjust = new THREE.MeshStandardMaterial({ color: 0xa8743f, roughness: 0.7 });
+const guldMat = new THREE.MeshStandardMaterial({ color: 0xd8a93a, metalness: 0.7, roughness: 0.35 });
 
 // ytterväggar
 for (const [x, z, ry, langd] of [[0, -DJUP / 2, 0, BREDD], [0, DJUP / 2, Math.PI, BREDD], [-BREDD / 2, 0, Math.PI / 2, DJUP], [BREDD / 2, 0, -Math.PI / 2, DJUP]]) {
@@ -121,16 +144,30 @@ for (const [x, z, ry, langd] of [[0, -DJUP / 2, 0, BREDD], [0, DJUP / 2, Math.PI
   const v = new THREE.Mesh(new THREE.PlaneGeometry(langd, VAGG_HOJD), new THREE.MeshStandardMaterial({ map: t, roughness: 0.9 }));
   v.position.set(x, VAGG_HOJD / 2, z); v.rotation.y = ry; scen.add(v);
 }
-// labyrintens väggar: bokhyllor i varje #-ruta
+// labyrintens väggar: bokhyllor i varje #-ruta, färgade efter vilken del av labyrinten de står i
 const vaggRutor = [];
 KARTA.forEach((rad, r) => [...rad].forEach((t, k) => { if (t === '#') vaggRutor.push([r, k]); }));
-const sidaMat = new THREE.MeshStandardMaterial({ map: ryggTex, roughness: 0.9 });
-const vaggar = new THREE.InstancedMesh(new THREE.BoxGeometry(RUTA, VAGG_HOJD, RUTA), [sidaMat, sidaMat, traMorkt, traMorkt, sidaMat, sidaMat], vaggRutor.length);
+const sidaMat = new THREE.MeshStandardMaterial({ map: bokryggTextur(true), roughness: 0.9 });
+const toppMat = new THREE.MeshStandardMaterial({ color: 0x8a6a4a, roughness: 0.8 });
+const vaggar = new THREE.InstancedMesh(new THREE.BoxGeometry(RUTA, VAGG_HOJD, RUTA), [sidaMat, sidaMat, toppMat, toppMat, sidaMat, sidaMat], vaggRutor.length);
 {
-  const m = new THREE.Matrix4();
-  vaggRutor.forEach(([r, k], i) => { m.makeTranslation(rutX(k), VAGG_HOJD / 2, rutZ(r)); vaggar.setMatrixAt(i, m); });
+  const m = new THREE.Matrix4(), f = new THREE.Color();
+  vaggRutor.forEach(([r, k], i) => {
+    m.makeTranslation(rutX(k), VAGG_HOJD / 2, rutZ(r)); vaggar.setMatrixAt(i, m);
+    const z = zonFarg(r, k);
+    f.set(0xd9c4a8); if (z) f.set(z.hex).lerp(new THREE.Color(0xffffff), 0.15);
+    vaggar.setColorAt(i, f);
+  });
   vaggar.castShadow = true; vaggar.receiveShadow = true;
   scen.add(vaggar);
+  // lysande färgad list högst upp på väggarna, syns på långt håll
+  const list = new THREE.InstancedMesh(new THREE.BoxGeometry(RUTA + 0.04, 0.18, RUTA + 0.04), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.25 }), vaggRutor.length);
+  vaggRutor.forEach(([r, k], i) => {
+    m.makeTranslation(rutX(k), VAGG_HOJD - 0.12, rutZ(r)); list.setMatrixAt(i, m);
+    const z = zonFarg(r, k);
+    list.setColorAt(i, f.set(z ? z.hex : 0xd8a93a));
+  });
+  scen.add(list);
 }
 const tak = new THREE.Mesh(new THREE.PlaneGeometry(BREDD, DJUP), new THREE.MeshStandardMaterial({ color: 0x2b2550, emissive: 0x1a1640 }));
 tak.rotation.x = Math.PI / 2; tak.position.y = VAGG_HOJD; scen.add(tak);
@@ -145,7 +182,7 @@ scen.add(new THREE.HemisphereLight(0xfff4e0, 0x6b4a30, 0.6));
 
 // ---------- Spelare, interaktion, magi ----------
 const spelare = new Spelare(kamera, renderer.domElement, {
-  start: [1, 0, 1.4], granser: { minX: -BREDD / 2, maxX: BREDD / 2, minZ: -DJUP / 2, maxZ: DJUP / 2 },
+  start: [rutX(START[1]), 0, rutZ(START[0]) + 0.4], granser: { minX: -BREDD / 2, maxX: BREDD / 2, minZ: -DJUP / 2, maxZ: DJUP / 2 },
   pilarSvanger: true,          // ← → svänger, ↑ ↓ går (lätt för barn)
 });
 for (const [r, k] of vaggRutor) {
@@ -161,7 +198,7 @@ const spets = new THREE.Vector3();
 // fri plats på golvet? (inte i vägg, inte i möbler)
 const friPunkt = (x, z, marg = 0.3) =>
   [[0, 0], [marg, 0], [-marg, 0], [0, marg], [0, -marg]].every(([dx, dz]) => rutaVid(x + dx, z + dz) !== '#')
-  && !spelare.hinder.some((b) => x > b.min.x - marg && x < b.max.x + marg && z > b.min.z - marg && z < b.max.z + marg);
+  && !spelare.hinder.some((b) => b.min.y < 0.5 && x > b.min.x - marg && x < b.max.x + marg && z > b.min.z - marg && z < b.max.z + marg);
 
 // ---------- Inredning i mitten ----------
 function lada(w, h, d, x, y, z, mat, hinder = false, foralder = scen) {
@@ -170,15 +207,16 @@ function lada(w, h, d, x, y, z, mat, hinder = false, foralder = scen) {
   if (hinder) spelare.hinder.push(new THREE.Box3().setFromObject(m));
   return m;
 }
+const BORD = { x: 1, z: -3 };
 {
   const m = new THREE.Mesh(new THREE.CircleGeometry(2.2, 40), new THREE.MeshStandardMaterial({ color: 0x7b4fbf, roughness: 1 }));
   m.rotation.x = -Math.PI / 2; m.position.set(1, 0.012, -1); scen.add(m);
   const k = new THREE.Mesh(new THREE.RingGeometry(1.95, 2.08, 40), new THREE.MeshStandardMaterial({ color: 0xffd447 }));
   k.rotation.x = -Math.PI / 2; k.position.set(1, 0.014, -1); scen.add(k);
 }
-lada(1.6, 0.08, 1.0, 1, 0.78, -3, traLjust);
-for (const [x, z] of [[0.28, -3.42], [1.72, -3.42], [0.28, -2.58], [1.72, -2.58]]) lada(0.08, 0.76, 0.08, x, 0.38, z, traLjust);
-spelare.hinder.push(new THREE.Box3(new THREE.Vector3(0.2, 0, -3.5), new THREE.Vector3(1.8, 0.82, -2.5)));
+lada(1.6, 0.08, 1.0, BORD.x, 0.78, BORD.z, traLjust);
+for (const [x, z] of [[-0.72, -0.42], [0.72, -0.42], [-0.72, 0.42], [0.72, 0.42]]) lada(0.08, 0.76, 0.08, BORD.x + x, 0.38, BORD.z + z, traLjust);
+spelare.hinder.push(new THREE.Box3(new THREE.Vector3(BORD.x - 0.8, 0, BORD.z - 0.5), new THREE.Vector3(BORD.x + 0.8, 0.82, BORD.z + 0.5)));
 function blomkruka(x, z) {
   const kruka = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.28, 0.7, 16), new THREE.MeshStandardMaterial({ color: 0xc8643c }));
   kruka.position.set(x, 0.35, z); scen.add(kruka);
@@ -200,7 +238,7 @@ const smuts = new Smuts(BREDD, DJUP, { rutnat: 96, upplosning: 1024 });
 scen.add(smuts.mesh);
 
 // ---------- Sparning och butik ----------
-const spar = new Sparning(SPEL_ID, { mynt: 0, nivaer: {}, smuts: '', placerade: [], kristaller: [], oppnade: [] }, 3);
+const spar = new Sparning(SPEL_ID, { mynt: 0, nivaer: {}, smuts: '', placerade: [], oppnade: [], niva: 0, hittade: [], omgangar: [] }, 4);
 const effekt = { radie: 0.45 };
 const butik = new Butik(spar, [
   { id: 'virvel', namn: 'Större dammvirvel', ikon: '🌪️', beskrivning: 'Suger upp mer damm', priser: [15, 40, 90],
@@ -211,7 +249,7 @@ const butik = new Butik(spar, [
     effekt: (n) => { spelare.fart = [4, 5, 6.2][n]; } },
 ]);
 
-// ---------- Hyllor (i labyrintens fyra hörn) ----------
+// ---------- Färghyllor (i labyrintens fyra hörn) ----------
 const hyllor = [];
 const HYLL_PLATS = [
   { x: -8, z: -DJUP / 2 + 0.25, ry: 0 }, { x: 8, z: -DJUP / 2 + 0.25, ry: 0 },
@@ -230,13 +268,13 @@ FARGER.forEach((f, i) => {
   del(0.06, H, D, -B / 2, H / 2, 0); del(0.06, H, D, B / 2, H / 2, 0); del(B, H, 0.03, 0, H / 2, -D / 2 + 0.015, bakMat);
   const skyltMat = new THREE.MeshStandardMaterial({ color: f.hex, emissive: f.hex, emissiveIntensity: 0.25 });
   del(1.0, 0.24, 0.05, 0, H + 0.6, 0.1, skyltMat);
-  // färgad matta framför hyllan
-  const matta = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.1), new THREE.MeshStandardMaterial({ color: f.hex, roughness: 1 }));
-  matta.rotation.x = -Math.PI / 2; matta.position.set(0, 0.013, 0.85); g.add(matta);
   g.position.set(p.x, 0, p.z); g.rotation.y = p.ry;
   scen.add(g);
   g.updateMatrixWorld(true);
-  { const box = new THREE.Box3().setFromObject(g); box.min.y = 0.02; spelare.hinder.push(box); }
+  spelare.hinder.push(new THREE.Box3().setFromObject(g));   // bara själva hyllan är ett hinder
+  // färgad matta framför hyllan (läggs till efteråt, så man kan gå på den)
+  const matta = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.1), new THREE.MeshStandardMaterial({ color: f.hex, roughness: 1 }));
+  matta.rotation.x = -Math.PI / 2; matta.position.set(0, 0.013, 0.85); g.add(matta);
   const platser = [];
   for (const y of [0.08, 0.76, 1.44]) for (const x of [-0.66, -0.22, 0.22, 0.66]) platser.push(new THREE.Vector3(x, y + 0.2, 0.02));
   const hylla = { farg: f, grupp: g, platser, bocker: [], reserverade: 0, skyltMat };
@@ -253,16 +291,22 @@ FARGER.forEach((f, i) => {
   });
 });
 
-// ---------- Högar och skattkistor (gömställen) ----------
+// ---------- Gömställen: högar, skattkistor, vaser och skåp i väggarna ----------
 const behallare = [];
 const HOG_FARGER = [0xf4a7b9, 0xa7d8f4, 0xf9e2a2, 0xc7b3f2, 0xb8e6c1, 0xf6c39b];
-const guldMat = new THREE.MeshStandardMaterial({ color: 0xd8a93a, metalness: 0.7, roughness: 0.35 });
+const VAS_FARGER = [0x2f8f9d, 0x3b5bdb, 0xc2563a, 0x7a4fbf, 0x2b8a3e];
+const RIKTNINGAR = [[-1, 0], [0, 1], [1, 0], [0, -1]];   // norr, öster, söder, väster (rad, kol)
+const raknare = { h: 0, k: 0, v: 0, s: 0 };
 KARTA.forEach((rad, r) => [...rad].forEach((t, k) => {
-  if (t !== 'h' && t !== 'k') return;
-  const x = rutX(k), z = rutZ(r);
-  const g = new THREE.Group(); g.position.set(x, 0, z); scen.add(g);
-  const b = { id: `${t}${r}-${k}`, typ: t === 'h' ? 'hog' : 'kista', x, z, grupp: g, bocker: [], oppen: false };
-  if (b.typ === 'hog') {
+  if (!'hkvs'.includes(t)) return;
+  const nr = raknare[t]++;
+  let x = rutX(k), z = rutZ(r);
+  const vagg = RIKTNINGAR.find(([dr, dk]) => arVagg(r + dr, k + dk)) || [0, 1];
+  const g = new THREE.Group(); scen.add(g);
+  const typ = { h: 'hog', k: 'kista', v: 'vas', s: 'skap' }[t];
+  const inn = INNEHALL[t](nr);
+  const b = { id: `${t}${r}-${k}`, typ, x, z, grupp: g, bocker: [], oppen: false, mynt: !!inn.mynt, antalBocker: inn.bocker || 0 };
+  if (typ === 'hog') {
     // en mjuk hög med kuddar och tyg
     b.delar = [];
     for (let i = 0; i < 20; i++) {
@@ -275,20 +319,73 @@ KARTA.forEach((rad, r) => [...rad].forEach((t, k) => {
       m.castShadow = true;
       g.add(m); b.delar.push(m);
     }
+    g.position.set(x, 0, z);
     b.hinder = new THREE.Box3(new THREE.Vector3(x - 0.75, 0, z - 0.75), new THREE.Vector3(x + 0.75, 0.9, z + 0.75));
-  } else {
+    b.kristallPos = new THREE.Vector3(x, 0.22, z);
+    b.utPos = new THREE.Vector3(x, 0.4, z);
+  } else if (typ === 'kista') {
     // skattkista med lock som kan öppnas
     lada(1.1, 0.55, 0.7, 0, 0.28, 0, traMorkt, false, g);
     lada(1.12, 0.06, 0.72, 0, 0.42, 0, guldMat, false, g);
     b.lock = new THREE.Group(); b.lock.position.set(0, 0.55, -0.35); g.add(b.lock);
     lada(1.1, 0.2, 0.7, 0, 0.1, 0.35, traMorkt, false, b.lock);
     lada(0.16, 0.16, 0.05, 0, 0.0, 0.71, guldMat, false, b.lock);
+    g.position.set(x, 0, z);
     b.hinder = new THREE.Box3(new THREE.Vector3(x - 0.6, 0, z - 0.4), new THREE.Vector3(x + 0.6, 0.8, z + 0.4));
+    b.kristallPos = new THREE.Vector3(x, 0.62, z);
+    b.utPos = new THREE.Vector3(x, 0.6, z);
+  } else if (typ === 'vas') {
+    // stor vas med lock, ställd mot en vägg
+    x += vagg[1] * 0.5; z += vagg[0] * 0.5; b.x = x; b.z = z;
+    const profil = [[0.0, 0], [0.28, 0], [0.38, 0.18], [0.42, 0.45], [0.34, 0.75], [0.24, 0.9], [0.26, 0.98]].map(([a, y]) => new THREE.Vector2(a, y));
+    const vasMat = new THREE.MeshStandardMaterial({ color: VAS_FARGER[nr % VAS_FARGER.length], roughness: 0.35, metalness: 0.1 });
+    const kropp = new THREE.Mesh(new THREE.LatheGeometry(profil, 20), vasMat); kropp.castShadow = true; g.add(kropp);
+    const rand = new THREE.Mesh(new THREE.TorusGeometry(0.43, 0.025, 8, 20), guldMat); rand.rotation.x = Math.PI / 2; rand.position.y = 0.45; g.add(rand);
+    b.lock = new THREE.Group(); b.lock.position.y = 0.98; g.add(b.lock);
+    const lockDel = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.29, 0.06, 20), vasMat); b.lock.add(lockDel);
+    const knopp = new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 8), guldMat); knopp.position.y = 0.07; b.lock.add(knopp);
+    g.position.set(x, 0, z);
+    b.hinder = new THREE.Box3(new THREE.Vector3(x - 0.42, 0, z - 0.42), new THREE.Vector3(x + 0.42, 1.0, z + 0.42));
+    b.kristallPos = new THREE.Vector3(x, 1.12, z);
+    b.utPos = new THREE.Vector3(x, 1.05, z);
+  } else {
+    // skåp med två dörrar, uppsatt på väggen (en hylla i väggen där saker står gömda)
+    const zf = zonFarg(r, k) || FARGER[nr % 4];
+    const ram = new THREE.MeshStandardMaterial({ color: new THREE.Color(zf.hex).multiplyScalar(0.75), roughness: 0.6 });
+    const inne = new THREE.MeshStandardMaterial({ color: 0x3a2617, roughness: 0.9 });
+    const W = 1.0, H = 0.9, D = 0.34;
+    lada(W, H, 0.03, 0, 0, -D / 2 + 0.015, inne, false, g);          // bakstycke
+    lada(W, 0.05, D, 0, -H / 2, 0, ram, false, g); lada(W, 0.05, D, 0, H / 2, 0, ram, false, g);
+    lada(0.05, H, D, -W / 2, 0, 0, ram, false, g); lada(0.05, H, D, W / 2, 0, 0, ram, false, g);
+    lada(W, 0.03, D, 0, 0, 0, ram, false, g);                         // hyllplan i mitten
+    // små trolldrycker som pynt på övre hyllan
+    for (const [px, f] of [[-0.3, 0x58d68d], [0.32, 0xf06292]]) {
+      const flaska = new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 8), new THREE.MeshStandardMaterial({ color: f, emissive: f, emissiveIntensity: 0.4, transparent: true, opacity: 0.85 }));
+      flaska.position.set(px, 0.08, 0); g.add(flaska);
+    }
+    const dorrMat = new THREE.MeshStandardMaterial({ color: zf.hex, roughness: 0.55 });
+    b.dorrar = [-1, 1].map((sida) => {
+      const led = new THREE.Group(); led.position.set(sida * W / 2, 0, D / 2); g.add(led);
+      lada(W / 2 - 0.01, H - 0.02, 0.04, -sida * W / 4, 0, 0.02, dorrMat, false, led);
+      lada(0.05, 0.05, 0.04, -sida * (W / 2 - 0.09), 0, 0.06, guldMat, false, led);
+      led.userData.sida = sida;
+      return led;
+    });
+    // skåpet sitter på väggens yta, med framsidan mot gången
+    const ut = RUTA / 2 - D / 2;
+    x += vagg[1] * ut; z += vagg[0] * ut; b.x = x; b.z = z;
+    g.position.set(x, 1.2, z);
+    g.rotation.y = Math.atan2(-vagg[1], -vagg[0]);
+    const bx = Math.abs(vagg[1]) ? D / 2 : W / 2, bz = Math.abs(vagg[0]) ? D / 2 : W / 2;
+    b.hinder = new THREE.Box3(new THREE.Vector3(x - bx, 0.72, z - bz), new THREE.Vector3(x + bx, 1.68, z + bz));
+    g.updateMatrixWorld(true);
+    b.kristallPos = g.localToWorld(new THREE.Vector3(0, -0.28, 0.02));
+    b.utPos = g.localToWorld(new THREE.Vector3(0, 0.15, 0.2));
   }
   spelare.hinder.push(b.hinder);
   behallare.push(b);
   interaktor.registrera(g, {
-    text: b.typ === 'hog' ? 'Trolla bort högen ✨' : 'Öppna skattkistan 🗝️',
+    text: { hog: 'Trolla bort högen ✨', kista: 'Öppna skattkistan 🗝️', vas: 'Lyft locket ✨', skap: 'Öppna skåpet ✨' }[typ],
     kanAktivera: () => !b.oppen && !lev.svavar,
     aktivera: () => oppna(b),
   });
@@ -313,7 +410,7 @@ const bokFarger = [];
 FARGER.forEach((f) => { bokMat[f.id] = new THREE.MeshStandardMaterial({ color: f.hex, roughness: 0.6 }); for (let i = 0; i < BOCKER_PER_FARG; i++) bokFarger.push([f, i]); });
 for (let i = bokFarger.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [bokFarger[i], bokFarger[j]] = [bokFarger[j], bokFarger[i]]; }
 const friaRutor = [];
-KARTA.forEach((rad, r) => [...rad].forEach((t, k) => { if (t === '.' && !(r === 6 && k === 6)) friaRutor.push([r, k]); }));
+KARTA.forEach((rad, r) => [...rad].forEach((t, k) => { if (t === '.' && !(r === START[0] && k === START[1])) friaRutor.push([r, k]); }));
 for (let i = friaRutor.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [friaRutor[i], friaRutor[j]] = [friaRutor[j], friaRutor[i]]; }
 
 let rutIndex = 0;
@@ -325,11 +422,11 @@ bokFarger.forEach(([f, i]) => {
   scen.add(b);
   bocker.push(b);
   // först fylls gömställena, sen läggs resten ut i gångarna
-  const gomstalle = behallare.find((c) => c.bocker.length < (c.typ === 'hog' ? BOCKER_I_HOG : BOCKER_I_KISTA));
+  const gomstalle = behallare.find((c) => c.bocker.length < c.antalBocker);
   if (gomstalle) {
     gomstalle.bocker.push(b);
     b.visible = false;
-    b.position.set(gomstalle.x, 0.3, gomstalle.z);
+    b.position.copy(gomstalle.utPos);
     return;
   }
   let x, z, forsok = 0;
@@ -368,7 +465,7 @@ const framat = new THREE.Vector3();
 function slappBok() {
   const b = lev.slapp();
   if (!b) return;
-  const h = interaktor.traffa([smuts.mesh, golv, vaggar], interaktor.rackvidd + 1);
+  const h = interaktor.traffa([smuts.mesh, golvMesh, vaggar], interaktor.rackvidd + 1);
   let mal;
   if (h && h.object !== vaggar && friPunkt(h.point.x, h.point.z, 0.15)) mal = h.point.clone();
   else {
@@ -456,12 +553,12 @@ const animera = (tid, steg, klar) => animationer.push({ t: 0, tid, steg, klar })
 
 // var böckerna landar när ett gömställe öppnas (runt gömstället, på fri plats)
 function spridPlats(c, i) {
-  for (let f = 0; f < 24; f++) {
-    const v = (i * 2.1 + f * 0.9), r = 1.0 + (f % 3) * 0.25;
+  for (let f = 0; f < 30; f++) {
+    const v = (i * 2.1 + f * 0.9), r = 0.9 + (f % 3) * 0.25;
     const x = c.x + Math.cos(v) * r, z = c.z + Math.sin(v) * r;
     if (friPunkt(x, z, 0.2)) return new THREE.Vector3(x, 0.05, z);
   }
-  return new THREE.Vector3(c.x, 0.05, c.z + 0.9);
+  return spelare.pos.clone().setY(0.05);
 }
 
 function oppna(c, direkt = false) {
@@ -474,51 +571,107 @@ function oppna(c, direkt = false) {
   }
   if (direkt) {
     if (c.typ === 'hog') scen.remove(c.grupp);
-    else c.lock.rotation.x = -1.9;
+    else if (c.typ === 'kista') c.lock.rotation.x = -1.9;
+    else if (c.typ === 'vas') c.grupp.remove(c.lock);
+    else c.dorrar.forEach((d) => { d.rotation.y = d.userData.sida * 1.9; });
     c.bocker.forEach((b, i) => {
       if (b.userData.placerad) return;
       b.visible = true;
       b.position.copy(spridPlats(c, i));
       registreraBok(b);
     });
-  } else {
-    if (!spar.data.oppnade.includes(c.id)) spar.data.oppnade.push(c.id);
-    spar.spara(true);
-    ljud.magi();
-    const mitt = new THREE.Vector3(c.x, 0.5, c.z);
-    gnistor.skjut(mitt, { antal: 120, fart: 2.2, spridning: 0.6, liv: 1.2, farger: [0xffe27a, 0xc58bff, 0xffffff] });
-    if (c.typ === 'hog') {
-      const fart = c.delar.map((d) => new THREE.Vector3(d.position.x * 3, 2 + Math.random() * 2, d.position.z * 3));
-      animera(0.8, (p, dt) => c.delar.forEach((d, i) => {
-        d.position.addScaledVector(fart[i], dt);
-        d.rotation.y += dt * 6;
-        d.scale.multiplyScalar(1 - dt * 3);
-      }), () => scen.remove(c.grupp));
-    } else {
-      animera(0.6, (p) => { c.lock.rotation.x = -1.9 * (1 - (1 - p) ** 3); });
-    }
-    let n = 0;
-    c.bocker.forEach((b, i) => {
-      if (b.userData.placerad) return;
-      b.visible = true;
-      b.userData.flyger = true;
-      b.position.set(c.x, 0.4, c.z);
-      setTimeout(() => ljud.svav(), 250 + n * 150);
-      lev.flyg(b, {
-        mal: spridPlats(c, i), rot: new THREE.Euler(0, Math.random() * Math.PI * 2, Math.PI / 2), tid: 0.7, hojd: 1.2, fordrojning: 0.25 + n++ * 0.15,
-        klar: () => { b.userData.flyger = false; registreraBok(b); },
-      });
-    });
-    const k = aktuellKristall();
-    if (k && k.userData.gomstalle === c) setTimeout(() => saga('Där är trollkristallen!'), 700);
-    else if (n) setTimeout(() => saga(n === 1 ? 'En bok var gömd här!' : `${stor(ORD[n])} böcker var gömda här!`), 700);
-    else setTimeout(() => saga('Tomt! Leta vidare.'), 700);
-    visaKristaller();
+    return;
   }
+  if (!spar.data.oppnade.includes(c.id)) spar.data.oppnade.push(c.id);
+  spar.spara(true);
+  ljud.magi();
+  gnistor.skjut(c.utPos, { antal: 120, fart: 2.2, spridning: 0.5, liv: 1.2, farger: [0xffe27a, 0xc58bff, 0xffffff] });
+  if (c.typ === 'hog') {
+    const fart = c.delar.map((d) => new THREE.Vector3(d.position.x * 3, 2 + Math.random() * 2, d.position.z * 3));
+    animera(0.8, (p, dt) => c.delar.forEach((d, i) => {
+      d.position.addScaledVector(fart[i], dt);
+      d.rotation.y += dt * 6;
+      d.scale.multiplyScalar(1 - dt * 3);
+    }), () => scen.remove(c.grupp));
+  } else if (c.typ === 'kista') {
+    animera(0.6, (p) => { c.lock.rotation.x = -1.9 * (1 - (1 - p) ** 3); });
+  } else if (c.typ === 'vas') {
+    animera(0.9, (p) => { c.lock.position.set(p * 0.5, 0.98 + Math.sin(p * Math.PI) * 0.5, 0); c.lock.rotation.z = -p * 1.5; c.lock.scale.setScalar(1 - p * 0.9); },
+      () => c.grupp.remove(c.lock));
+  } else {
+    animera(0.6, (p) => c.dorrar.forEach((d) => { d.rotation.y = d.userData.sida * 1.9 * (1 - (1 - p) ** 3); }));
+  }
+  let n = 0;
+  c.bocker.forEach((b, i) => {
+    if (b.userData.placerad) return;
+    b.visible = true;
+    b.userData.flyger = true;
+    b.position.copy(c.utPos);
+    setTimeout(() => ljud.svav(), 250 + n * 150);
+    lev.flyg(b, {
+      mal: spridPlats(c, i), rot: new THREE.Euler(0, Math.random() * Math.PI * 2, Math.PI / 2), tid: 0.7, hojd: 1.0, fordrojning: 0.25 + n++ * 0.15,
+      klar: () => { b.userData.flyger = false; registreraBok(b); },
+    });
+  });
+  if (c.mynt) {
+    setTimeout(() => {
+      butik.mynt += MYNT_I_PASE; spar.spara();
+      ljud.mynt(); setTimeout(() => ljud.mynt(), 120); setTimeout(() => ljud.mynt(), 240);
+      gnistor.skjut(c.utPos, { antal: 60, fart: 1.6, liv: 1, spridning: 0.3, farger: [0xffd447, 0xffe27a, 0xffffff] });
+      ui.toast(`+${MYNT_I_PASE} 🪙`, 'guld');
+    }, 400);
+  }
+  const harKristall = kristaller.some((k) => k.userData.plats.behallare === c && !k.userData.hittad);
+  visaKristaller();
+  if (harKristall) setTimeout(() => saga('Där är en trollkristall!'), 700);
+  else if (n) setTimeout(() => saga(n === 1 ? 'En bok var gömd här!' : `${stor(ORD[n])} böcker var gömda här!`), 700);
+  else if (c.mynt) setTimeout(() => saga('Mynt!'), 700);
+  else setTimeout(() => { saga('Tomt! Leta vidare.'); ui.toast('Tomt! 🤷', 'fel'); }, 700);
 }
 
-// ---------- Trollkristaller (en i taget) ----------
-const kristaller = [];
+// ---------- Trollkristaller ----------
+// Platser där en kristall kan ligga: alla gömställen + några öppna ställen.
+const kristallPlatser = behallare.map((c) => ({ id: c.id, behallare: c, pos: c.kristallPos }));
+kristallPlatser.push(
+  { id: 'bord', pos: new THREE.Vector3(BORD.x, 0.98, BORD.z) },
+  { id: 'underbord', pos: new THREE.Vector3(BORD.x + 0.35, 0.22, BORD.z) },
+  ...HYLL_PLATS.map((p, i) => ({ id: `hylltopp${i}`, pos: new THREE.Vector3(p.x, 2.32, p.z + Math.sign(-p.z) * 0.1) })),
+);
+const platsMedId = (id) => kristallPlatser.find((p) => p.id === id);
+// hur många steg det är att gå till en ruta från start (för att välja lätta platser först)
+const stegFranStart = (() => {
+  const d = new Map([[START.join(','), 0]]), ko = [START];
+  while (ko.length) {
+    const [r, k] = ko.shift();
+    for (const [dr, dk] of RIKTNINGAR) {
+      const n = [r + dr, k + dk];
+      if (!arVagg(...n) && !d.has(n.join(','))) { d.set(n.join(','), d.get(`${r},${k}`) + 1); ko.push(n); }
+    }
+  }
+  return (x, z) => d.get(`${Math.floor((z + DJUP / 2) / RUTA)},${Math.floor((x + BREDD / 2) / RUTA)}`) ?? 99;
+})();
+
+// välj var omgångens kristaller göms (sparas, så de ligger kvar på samma ställen)
+function platserForOmgang(n) {
+  if (spar.data.omgangar[n]) return spar.data.omgangar[n].map(platsMedId).filter(Boolean);
+  const anvanda = new Set(spar.data.omgangar.flat());
+  const oppnade = new Set(spar.data.oppnade);
+  let val;
+  if (n === 0) {
+    // första omgången: nära mitten, så att man lär sig hur det funkar
+    const narmast = kristallPlatser.filter((p) => p.behallare && !oppnade.has(p.id))
+      .sort((a, b) => stegFranStart(a.pos.x, a.pos.z) - stegFranStart(b.pos.x, b.pos.z));
+    val = [platsMedId('bord'), ...narmast.slice(0, KRISTALLER_PER_OMGANG - 1)];
+  } else {
+    let s = 100 + n * 37; const r = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+    const prio = (p) => (p.behallare && !oppnade.has(p.id) ? 0 : p.behallare ? 2 : 1) + r();
+    val = kristallPlatser.filter((p) => !anvanda.has(p.id)).map((p) => [prio(p), p]).sort((a, b) => a[0] - b[0]).slice(0, KRISTALLER_PER_OMGANG).map(([, p]) => p);
+  }
+  spar.data.omgangar[n] = val.map((p) => p.id);
+  spar.spara(true);
+  return val;
+}
+
 const glodTextur = (() => {
   const c = document.createElement('canvas'); c.width = c.height = 64;
   const x = c.getContext('2d'), g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
@@ -526,63 +679,78 @@ const glodTextur = (() => {
   x.fillStyle = g; x.fillRect(0, 0, 64, 64);
   return new THREE.CanvasTexture(c);
 })();
-KRISTALLER.forEach((kd, i) => {
-  const omg = Math.floor(i / 3);
-  const fargOmg = KRISTALL_FARGER[omg];
-  const x = kd.x ?? rutX(kd.kol), z = kd.z ?? rutZ(kd.rad);
+let kristaller = [];
+function skapaKristall(plats, omg) {
+  const farg = OMGANGAR[omg].farg;
   const g = new THREE.Group();
-  const mat = new THREE.MeshStandardMaterial({ color: omg === 2 ? 0xffffff : fargOmg, emissive: fargOmg, emissiveIntensity: 0.9, metalness: 0.2, roughness: 0.15, transparent: true, opacity: 0.92 });
+  const mat = new THREE.MeshStandardMaterial({ color: omg === 2 ? 0xffffff : farg, emissive: farg, emissiveIntensity: 0.9, metalness: 0.2, roughness: 0.15, transparent: true, opacity: 0.92 });
   const k = new THREE.Mesh(new THREE.OctahedronGeometry(0.11), mat);
   k.scale.y = 1.7;
-  const sken = new THREE.Sprite(new THREE.SpriteMaterial({ map: glodTextur, color: fargOmg, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+  const sken = new THREE.Sprite(new THREE.SpriteMaterial({ map: glodTextur, color: farg, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
   sken.scale.setScalar(0.65);
   // osynlig, större träffyta så att den är lätt att sikta på
   const traffyta = new THREE.Mesh(new THREE.SphereGeometry(0.32, 10, 8), new THREE.MeshBasicMaterial());
   traffyta.visible = false;
   g.add(k, sken, traffyta);
-  g.position.set(x, kd.y, z);
-  const gomstalle = behallare.find((c) => Math.hypot(c.x - x, c.z - z) < 0.9) || null;
-  g.userData = { id: kd.id, nr: i, omgang: omg, kristall: k, sken, bas: kd.y, tips: kd.tips, gomstalle };
+  g.position.copy(plats.pos);
+  g.userData = { id: plats.id, plats, omgang: omg, kristall: k, sken, mat, bas: plats.pos.y, hittad: spar.data.hittade.includes(plats.id) };
   g.visible = false;
   scen.add(g);
-  kristaller.push(g);
-});
-const hittadeAntal = () => spar.data.kristaller.length;
-const aktuellKristall = () => kristaller[hittadeAntal()] || null;
+  return g;
+}
+
+function startaOmgang() {
+  for (const k of kristaller) { interaktor.avregistrera(k); scen.remove(k); }
+  kristaller = [];
+  const n = spar.data.niva;
+  if (n < OMGANGAR.length) kristaller = platserForOmgang(n).map((p) => skapaKristall(p, n));
+  visaKristaller();
+}
 
 function visaKristaller() {
-  const nu = aktuellKristall();
   for (const k of kristaller) {
-    const synlig = k === nu && (!k.userData.gomstalle || k.userData.gomstalle.oppen);
+    const c = k.userData.plats.behallare;
+    const synlig = !k.userData.hittad && (!c || c.oppen);
     if (synlig && !k.visible) interaktor.registrera(k, { text: 'Ta trollkristallen 💎', aktivera: () => hittaKristall(k) });
     if (!synlig && k.visible) interaktor.avregistrera(k);
     k.visible = synlig;
   }
-  lev.kapacitet = KRAFT_NIVAER[Math.min(KRAFT_NIVAER.length - 1, Math.floor(hittadeAntal() / 3))];
+  lev.kapacitet = KRAFT_NIVAER[Math.min(KRAFT_NIVAER.length - 1, spar.data.niva)];
+  stav.sattNiva(spar.data.niva);
   ritaHud();
 }
 
 function hittaKristall(k) {
-  if (k !== aktuellKristall()) return;
-  spar.data.kristaller.push(k.userData.id);
+  if (k.userData.hittad) return;
+  k.userData.hittad = true;
+  spar.data.hittade.push(k.userData.id);
   spar.spara(true);
   ljud.kristall();
-  gnistor.skjut(k.position, { antal: 80, fart: 2, spridning: 0.2, liv: 1.1, farger: [KRISTALL_FARGER[k.userData.omgang], 0xffffff, 0xffe27a] });
-  const fore = lev.kapacitet;
-  visaKristaller();
-  const nu = lev.kapacitet, nasta = aktuellKristall();
-  if (nu > fore) {
-    ljud.stor();
-    gnistor.skjut(spets.clone(), { antal: 200, fart: 2.5, liv: 1.6, spridning: 0.4, farger: [0xffe27a, 0xc58bff, 0x8fe8ff, 0xff7ae0] });
-    ui.toast(`🪄 Staven är starkare! Lyft ${nu} böcker samtidigt`, 'guld');
-    let text = `Wow! Staven blev starkare! Nu kan du lyfta ${ORD[nu] || nu} böcker samtidigt!`;
-    if (nasta) text += ` Nästa utmaning: en ${OMGANG_NAMN[nasta.userData.omgang]}kristall. Den är gömd ${nasta.userData.tips}`;
-    else text += ' Du har hittat alla trollkristaller!';
-    setTimeout(() => saga(text), 900);
-  } else {
-    ui.toast(`💎 Trollkristall! ${hittadeAntal() % 3}/3`, 'guld');
-    saga(`Du hittade en trollkristall! Nästa är gömd ${nasta.userData.tips}`);
+  gnistor.skjut(k.position, { antal: 80, fart: 2, spridning: 0.2, liv: 1.1, farger: [OMGANGAR[k.userData.omgang].farg, 0xffffff, 0xffe27a] });
+  const antal = spar.data.hittade.length;
+  if (antal < KRISTALLER_KRAV) {
+    visaKristaller();
+    pulsaHud();
+    const kvar = KRISTALLER_KRAV - antal;
+    ui.toast('💎'.repeat(antal) + '◇'.repeat(kvar), 'guld');
+    saga(`Trollkristall! ${stor(ORD[kvar])} kvar.`);
+    return;
   }
+  // tre hittade: staven blir starkare och nästa omgång börjar
+  spar.data.niva++;
+  spar.data.hittade = [];
+  spar.spara(true);
+  // de kristaller som var kvar i omgången försvinner med ett glitter
+  for (const rest of kristaller) if (rest.visible && rest !== k) gnistor.skjut(rest.position, { antal: 30, fart: 1, liv: 0.8 });
+  startaOmgang();
+  const nu = lev.kapacitet;
+  ljud.stor();
+  gnistor.skjut(spets.clone(), { antal: 220, fart: 2.5, liv: 1.6, spridning: 0.4, farger: [0xffe27a, 0xc58bff, 0x8fe8ff, 0xff7ae0] });
+  visaUppgradering(nu);
+  let text = `Wow! Staven blev starkare! Nu kan du lyfta ${ORD[nu] || nu} böcker samtidigt!`;
+  if (spar.data.niva < OMGANGAR.length) text += ` Nya ${OMGANGAR[spar.data.niva].namn}kristaller har gömt sig. Hitta tre!`;
+  else text += ' Du har den starkaste trollstaven av alla!';
+  setTimeout(() => saga(text), 900);
 }
 
 // ---------- Ladda sparning ----------
@@ -599,17 +767,16 @@ for (const c of behallare) if (spar.data.oppnade.includes(c.id)) oppna(c, true);
 let forstaStart = true;
 const ui = new FpUI({
   titel: '🪄 Trollstaven – Boklabyrinten',
-  text: 'Du är en trollkarl i ett magiskt bibliotek! Lyft böckerna med trollstaven och skicka in dem på hyllan med samma färg. Hyllorna står i labyrintens hörn. Hitta trollkristallerna 💎 en i taget, så kan staven lyfta fler böcker. Högar och skattkistor kan gömma saker!',
+  text: 'Du är en trollkarl i ett magiskt bibliotek! Lyft böckerna med trollstaven och skicka in dem på hyllan med samma färg – följ golvets färg till rätt hörn. Hitta 3 trollkristaller 💎 så blir staven starkare. Högar, kistor, vaser och skåp kan gömma saker, men en del är tomma!',
   hjalp: 'Mus eller ← → titta · ↑ ↓ / WASD gå · Klick/E lyft, skicka, öppna · Håll inne: suga damm · M karta · Esc paus · B butik',
   spelare,
   escPausar: true,
   onStart: () => {
     if (!forstaStart) return;
     forstaStart = false;
-    const k = aktuellKristall();
-    const tips = k ? ` Första utmaningen: hitta trollkristallen. Den ligger ${k.userData.tips}` : '';
-    saga(hittadeAntal() ? `Välkommen tillbaka, trollkarl!${k ? ' Nästa kristall är gömd ' + k.userData.tips : ''}`
-      : `Välkommen till boklabyrinten, trollkarl! Skicka in böckerna på hyllan med samma färg.${tips}`);
+    saga(spar.data.niva || spar.data.hittade.length
+      ? 'Välkommen tillbaka, trollkarl! Leta efter fler trollkristaller.'
+      : 'Välkommen till boklabyrinten, trollkarl! Skicka in böckerna på hyllan med samma färg. Följ golvets färg! Och hitta tre trollkristaller, så blir staven starkare. Den första ligger på bordet.');
   },
   onAnvand: (nere) => {
     anvandNere = nere;
@@ -623,28 +790,54 @@ const ui = new FpUI({
 ui.mynt(butik.mynt);
 spelare.onLasFel = () => ui.toast('Rör musen för att titta runt 🖱️', 'guld');
 
-// chip med stavens kraft + kort med aktuell utmaning
-const kristallChip = document.createElement('div');
-kristallChip.className = 'fp-chip';
-kristallChip.style.whiteSpace = 'nowrap';
-kristallChip.title = 'Hur många böcker staven orkar lyfta';
-document.querySelector('.fp-topp')?.appendChild(kristallChip);
-const utmaning = document.createElement('div');
-Object.assign(utmaning.style, {
-  position: 'fixed', top: '62px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none',
-  background: 'rgba(20,26,51,.82)', color: '#fff', padding: '7px 16px', borderRadius: '999px',
-  font: '600 15px system-ui, sans-serif', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(0,0,0,.25)',
+// Kristall-mätaren: tre platser som fylls (syns även för den som inte kan läsa)
+const kristallKort = document.createElement('div');
+Object.assign(kristallKort.style, {
+  position: 'fixed', top: '64px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none',
+  background: 'rgba(20,26,51,.82)', color: '#fff', padding: '6px 16px', borderRadius: '999px',
+  font: '800 26px system-ui, sans-serif', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(0,0,0,.25)',
+  display: 'flex', alignItems: 'center', gap: '10px', transition: 'transform .25s',
 });
-document.body.appendChild(utmaning);
+document.body.appendChild(kristallKort);
+const nivaChip = document.createElement('div');
+nivaChip.className = 'fp-chip'; nivaChip.style.whiteSpace = 'nowrap';
+nivaChip.title = 'Hur många böcker staven orkar lyfta';
+document.querySelector('.fp-topp')?.appendChild(nivaChip);
+const STAV_IKON = ['🪄', '🪄🔵', '🪄🟡', '🪄🌈'];
 function ritaHud() {
-  kristallChip.textContent = `🪄 ×${lev.kapacitet}`;
-  const k = aktuellKristall();
-  utmaning.textContent = k
-    ? `💎 Utmaning ${k.userData.nr + 1} av ${KRISTALLER.length}: kristallen är ${k.userData.tips.split('.')[0]}`
-    : '💎 Alla trollkristaller hittade!';
+  const n = spar.data.niva;
+  nivaChip.textContent = `${STAV_IKON[Math.min(3, n)]} 📚${lev.kapacitet}`;
+  if (n >= OMGANGAR.length) { kristallKort.innerHTML = '🌈🪄 <span style="font-size:18px">Starkaste staven!</span>'; return; }
+  const hittade = spar.data.hittade.length;
+  const filter = ['', 'hue-rotate(185deg) saturate(2.5) brightness(1.2)', 'hue-rotate(110deg) saturate(2)'][n];
+  let html = '';
+  for (let i = 0; i < KRISTALLER_KRAV; i++) {
+    html += `<span style="filter:${i < hittade ? filter || 'none' : 'grayscale(1) opacity(.3)'}">💎</span>`;
+  }
+  html += `<span style="font-size:20px;opacity:.85">➜</span><span style="font-size:20px">${STAV_IKON[n + 1]} 📚${KRAFT_NIVAER[n + 1]}</span>`;
+  kristallKort.innerHTML = html;
+}
+function pulsaHud() {
+  kristallKort.style.transform = 'translateX(-50%) scale(1.3)';
+  setTimeout(() => { kristallKort.style.transform = 'translateX(-50%)'; }, 300);
+}
+// stor bild när staven blir starkare: ny stav + så många böcker man kan lyfta
+const uppgradering = document.createElement('div');
+Object.assign(uppgradering.style, {
+  position: 'fixed', left: '50%', top: '42%', transform: 'translate(-50%,-50%) scale(.6)', zIndex: 40, pointerEvents: 'none',
+  background: 'rgba(20,26,51,.9)', color: '#fff', padding: '18px 28px', borderRadius: '24px', textAlign: 'center',
+  font: '800 22px system-ui, sans-serif', boxShadow: '0 10px 40px rgba(0,0,0,.4)', opacity: 0, transition: 'opacity .3s, transform .3s', maxWidth: '80vw',
+});
+document.body.appendChild(uppgradering);
+function visaUppgradering(kapacitet) {
+  uppgradering.innerHTML = `<div style="font-size:64px;line-height:1.1">${STAV_IKON[Math.min(3, spar.data.niva)]}</div>`
+    + `<div style="font-size:30px;margin:6px 0;letter-spacing:2px">${'📖'.repeat(kapacitet)}</div>`
+    + `<div>Staven lyfter ${kapacitet} böcker!</div>`;
+  uppgradering.style.opacity = 1; uppgradering.style.transform = 'translate(-50%,-50%) scale(1)';
+  setTimeout(() => { uppgradering.style.opacity = 0; uppgradering.style.transform = 'translate(-50%,-50%) scale(.6)'; }, 3200);
 }
 
-visaKristaller();
+startaOmgang();
 
 // ---------- Minikarta (uppe till vänster, M visar/döljer) ----------
 const KARTA_PX = Math.min(180, Math.round(Math.min(innerWidth, innerHeight) * 0.28));
@@ -658,27 +851,30 @@ Object.assign(minikarta.style, {
 document.body.appendChild(minikarta);
 const mk = minikarta.getContext('2d');
 const tillPx = (x, z) => [(x + BREDD / 2) * skala * 2, (z + DJUP / 2) * skala * 2];
-// fast bakgrund: golv, väggar och hyllor (ritas en gång)
+// fast bakgrund: färgade gångar, väggar och hyllor (ritas en gång)
 const kartBakgrund = document.createElement('canvas');
 kartBakgrund.width = kartBakgrund.height = KARTA_PX * 2;
 {
   const g = kartBakgrund.getContext('2d'), R = RUTA * skala * 2;
-  g.fillStyle = '#e9dcc6'; g.fillRect(0, 0, KARTA_PX * 2, KARTA_PX * 2);
-  g.fillStyle = '#5b3a22';
-  for (const [r, k] of vaggRutor) g.fillRect(k * R, r * R, R + 0.5, R + 0.5);
+  for (let r = 0; r < RADER; r++) for (let k = 0; k < KOLUMNER; k++) {
+    const z = zonFarg(r, k);
+    const f = new THREE.Color(0xf1e6d2); if (z) f.lerp(new THREE.Color(z.hex), 0.4);
+    g.fillStyle = arVagg(r, k) ? '#5b3a22' : '#' + f.getHexString();
+    g.fillRect(k * R, r * R, R + 0.5, R + 0.5);
+  }
   for (const h of hyllor) {
     const p = new THREE.Vector3(); h.grupp.getWorldPosition(p);
     const [x, y] = tillPx(p.x, p.z);
-    g.fillStyle = '#' + h.farg.hex.toString(16).padStart(6, '0');
+    g.fillStyle = hex(h.farg.hex);
     g.fillRect(x - R * 0.55, y - R * 0.3, R * 1.1, R * 0.6);
   }
 }
 let kartTid = 0, visaKarta = true;
 function ritaMinikarta(dt) {
-  // karta och utmaning syns bara medan man spelar (inte ovanpå menyn)
+  // karta och kristallmätare syns bara medan man spelar (inte ovanpå menyn)
   const synlig = ui.igang ? '' : 'none';
   minikarta.style.display = visaKarta ? synlig : 'none';
-  utmaning.style.display = synlig;
+  kristallKort.style.display = synlig === '' ? 'flex' : 'none';
   kartTid -= dt;
   if (kartTid > 0 || !visaKarta || !ui.igang) return;
   kartTid = 0.08;
@@ -688,15 +884,15 @@ function ritaMinikarta(dt) {
   for (const c of behallare) {
     if (c.oppen) continue;
     const [x, y] = tillPx(c.x, c.z);
-    mk.fillStyle = c.typ === 'hog' ? '#c7a0e8' : '#c8902e';
-    mk.beginPath(); mk.arc(x, y, R * 0.26, 0, Math.PI * 2); mk.fill();
+    mk.fillStyle = { hog: '#b48be0', kista: '#c8902e', vas: '#2f8f9d', skap: '#7a5230' }[c.typ];
+    mk.beginPath(); mk.arc(x, y, R * 0.22, 0, Math.PI * 2); mk.fill();
   }
   // lösa böcker som små prickar i sin färg
   for (const b of bocker) {
     if (!b.visible || b.userData.placerad || b.parent !== scen) continue;
     const [x, y] = tillPx(b.position.x, b.position.z);
-    mk.fillStyle = '#' + b.userData.farg.hex.toString(16).padStart(6, '0');
-    mk.fillRect(x - 2.5, y - 2.5, 5, 5);
+    mk.fillStyle = hex(b.userData.farg.hex); mk.strokeStyle = '#fff'; mk.lineWidth = 1.5;
+    mk.fillRect(x - 3, y - 3, 6, 6); mk.strokeRect(x - 3, y - 3, 6, 6);
   }
   // du = en pil som pekar dit du tittar
   const [px, py] = tillPx(spelare.pos.x, spelare.pos.z);
@@ -744,33 +940,39 @@ function uppdatera(dt) {
     h.skyltMat.emissiveIntensity = match ? 0.6 + Math.sin(tid * 6) * 0.5 : 0.25;
   }
 
-  // kristallen snurrar och glittrar
-  const nu = aktuellKristall();
-  if (nu && nu.visible) {
-    nu.userData.kristall.rotation.y += dt * 1.8;
-    nu.position.y = nu.userData.bas + Math.sin(tid * 2) * 0.05;
-    nu.userData.sken.scale.setScalar(0.55 + Math.sin(tid * 4) * 0.12);
-    if (Math.random() < dt * 3) gnistor.skjut(nu.position, { antal: 1, fart: 0.3, liv: 0.8, spridning: 0.25, farger: [0xffffff, 0xffe27a] });
+  // kristallerna snurrar och glittrar (regnbågskristaller byter färg)
+  for (const k of kristaller) {
+    if (!k.visible) continue;
+    k.userData.kristall.rotation.y += dt * 1.8;
+    k.position.y = k.userData.bas + Math.sin(tid * 2 + k.userData.bas * 3) * 0.05;
+    k.userData.sken.scale.setScalar(0.55 + Math.sin(tid * 4) * 0.12);
+    if (k.userData.omgang === 2) {
+      const f = (tid * 0.3 + k.userData.bas) % 1;
+      k.userData.mat.emissive.setHSL(f, 0.9, 0.55); k.userData.sken.material.color.setHSL(f, 0.9, 0.6);
+    }
+    if (Math.random() < dt * 3) gnistor.skjut(k.position, { antal: 1, fart: 0.3, liv: 0.8, spridning: 0.25, farger: [0xffffff, 0xffe27a] });
   }
 
   ritaMinikarta(dt);
   if (!ui.igang) { stav.uppdatera(dt, 0); return; }
 
-  // kristallsökare: staven plingar oftare ju närmare kristallen du är
-  let sokKraft = 0;
-  if (nu) {
-    const avst = Math.hypot(nu.position.x - spelare.pos.x, nu.position.z - spelare.pos.z);
-    if (avst < SOKAR_AVSTAND) {
-      sokKraft = 1 - avst / SOKAR_AVSTAND;
-      pingTid -= dt;
-      if (pingTid <= 0) {
-        ljud.ping(1 + sokKraft * 0.5);
-        pingTid = 0.25 + (1 - sokKraft) * 1.4;
-        gnistor.skjut(spets, { antal: 6, fart: 0.5, liv: 0.5, farger: [0xffffff, 0x8fe8ff] });
-        // gömstället glittrar lite när man är nära
-        const c = nu.userData.gomstalle;
-        if (c && !c.oppen && sokKraft > 0.5) gnistor.skjut(new THREE.Vector3(c.x, 0.9, c.z), { antal: 10, fart: 0.6, liv: 0.9, spridning: 0.4, farger: [KRISTALL_FARGER[nu.userData.omgang], 0xffffff] });
-      }
+  // kristallsökare: staven plingar oftare ju närmare en kristall du är
+  let sokKraft = 0, narmast = null, avst = Infinity;
+  for (const k of kristaller) {
+    if (k.userData.hittad) continue;
+    const a = Math.hypot(k.position.x - spelare.pos.x, k.position.z - spelare.pos.z);
+    if (a < avst) { avst = a; narmast = k; }
+  }
+  if (narmast && avst < SOKAR_AVSTAND) {
+    sokKraft = 1 - avst / SOKAR_AVSTAND;
+    pingTid -= dt;
+    if (pingTid <= 0) {
+      ljud.ping(1 + sokKraft * 0.5);
+      pingTid = 0.25 + (1 - sokKraft) * 1.4;
+      gnistor.skjut(spets, { antal: 6, fart: 0.5, liv: 0.5, farger: [0xffffff, 0x8fe8ff] });
+      // gömstället glittrar lite när man är nära
+      const c = narmast.userData.plats.behallare;
+      if (c && !c.oppen && sokKraft > 0.45) gnistor.skjut(c.utPos, { antal: 10, fart: 0.6, liv: 0.9, spridning: 0.4, farger: [OMGANGAR[narmast.userData.omgang].farg, 0xffffff] });
     }
   }
 
@@ -829,6 +1031,9 @@ function uppdatera(dt) {
 }
 
 // för automatiska tester
-window.__testrummet = { spelare, interaktor, lev, stav, gnistor, smuts, butik, spar, bocker, hyllor, kristaller, behallare, ui, hittaKristall, oppna, aktuellKristall, KARTA, renderer, scen, smutsTex: smuts.textur };
+window.__testrummet = {
+  spelare, interaktor, lev, stav, gnistor, smuts, butik, spar, bocker, hyllor, behallare, ui, oppna, KARTA, renderer, scen,
+  get kristaller() { return kristaller; }, hittaKristall,
+};
 
 startaLoop(uppdatera, { scen, kamera, renderer });
