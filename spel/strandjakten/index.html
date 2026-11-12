@@ -61,6 +61,11 @@ h1{font-size:clamp(54px,9vw,96px);line-height:.95;margin:0 0 8px;font-weight:700
 .knapp:active{transform:translateY(5px);box-shadow:0 2px 0 var(--kant)}
 .knapp:focus-visible{outline:4px solid #2f9bff;outline-offset:4px}
 .knapp.bla{background:var(--hav)}
+.nivaval{display:inline-flex;gap:0;margin:0 0 16px;border:3px solid var(--kant);border-radius:16px;overflow:hidden}
+.nivaval button{font:inherit;font-size:21px;font-weight:700;padding:8px 26px;border:0;background:#fff;color:#3a2a1c;cursor:pointer}
+.nivaval button+button{border-left:3px solid var(--kant)}
+.nivaval button[aria-pressed="true"]{background:#ffd23f}
+.nivaval button:focus-visible{outline:4px solid #2f9bff;outline-offset:-4px}
 .styr{display:flex;justify-content:center;gap:26px;margin-top:20px;font-size:17px;color:var(--dampad);flex-wrap:wrap}
 .styr b{display:inline-block;min-width:30px;padding:2px 7px;border:2px solid var(--dampad);border-radius:8px;margin:0 2px;color:var(--text)}
 .rekord{margin-top:10px;font-size:17px;color:var(--dampad)}
@@ -103,6 +108,10 @@ h1{font-size:clamp(54px,9vw,96px);line-height:.95;margin:0 0 8px;font-weight:700
     <h1>Strandjakten</h1>
     <p class="ingress">Mamma, barnet och bebisen har tappat sina kläder på stranden. Hitta alla fem, slå tjuven i hänga gubbe och fira med poolparty!</p>
     <div class="rad" id="startIkoner"></div>
+    <div class="nivaval" role="group" aria-label="Nivå">
+      <button type="button" data-niva="latt">Lätt</button>
+      <button type="button" data-niva="svar">Svår</button>
+    </div>
     <button class="knapp" id="spelaKnapp">Spela!</button>
     <div class="styr">
       <span>Gå: <b>↑</b><b>↓</b> eller <b>W</b><b>S</b></span>

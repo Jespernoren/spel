@@ -16,10 +16,30 @@ const PLOCK_AVSTAND = 2.6;    // hur nära gruppen måste vara för att plocka u
 const GRUPP_RADIE = 0.9;      // hur stor gruppen är när den krockar
 const TJUV_FART = 6.5;
 const TJUV_VANTAN = 3.5;      // sekunder efter en hel sort innan tjuven kommer
-const LEDLJUS_EFTER = 30;     // sekunder utan fynd innan ett ljus pekar ut nästa plagg
 const GRANS = { minX: -38, maxX: 38, minZ: -26, maxZ: 38 };
-const ORDNIVA_PER_TJUV = [1, 2];  // vilken ordlista tjuv nr 1 och 2 använder (se ORD)
-const FEL_TILLATNA = [8, 7];      // fel man får göra mot tjuv nr 1 och 2 (av 10 streck)
+// Två nivåer. Charlie klarade Lätt direkt, så Svår är standard.
+const NIVAER = {
+  latt: {
+    namn: "Lätt",
+    ordniva: [1, 2],       // vilken ordlista (se ORD) tjuv nr 1, 2, 3... använder
+    fel: [8, 7],           // fel man får göra mot tjuv nr 1, 2, 3... (av 10 streck)
+    tips: true,            // barnet säger till när något glittrar nära
+    ledljusEfter: 30,      // sekunder utan fynd innan ett ljus visar närmaste plagg
+    nedgravt: false,       // kläderna ligger nedgrävda i sanden
+    minAvstand: 9,         // minsta avstånd mellan gömda kläder
+    gomIgen: false,        // förlorar man gömmer tjuven den sortens kläder igen
+  },
+  svar: {
+    namn: "Svår",
+    ordniva: [2, 3, 3, 4],
+    fel: [6, 6, 5, 5],
+    tips: false,
+    ledljusEfter: 90,
+    nedgravt: true,
+    minAvstand: 13,
+    gomIgen: true,
+  },
+};
 const KAMERA_BAKOM = 5.2;     // hur långt bakom gruppen kameran är
 const KAMERA_HOJD = 4.4;
 const SPEL_ID = "strandjakten";
@@ -303,6 +323,13 @@ function strandboll(x, z) {
 [[-34, -12, 1.4], [35, 10, 1.6], [-20, 24, 1.3], [22, 27, 1.2]].forEach(p => sten(...p));
 bat(-29, -24); livraddartorn(0, -21); glasskiosk(-31, 6);
 [[-8, 0], [6, 2], [16, 0], [-24, -4], [26, -8]].forEach(p => strandboll(p[0], p[1]));
+// Öppna sandplatser: där kan kläder ligga nedgrävda (bara på Svår)
+for (let forsok = 0, antal = 0; forsok < 400 && antal < 12; forsok++) {
+  const x = rnd(-35, 35), z = rnd(-24, 21);
+  if (cirklar.some(c => Math.hypot(c.x - x, c.z - z) < c.r + 2.5)) continue;
+  if (gomstallen.some(g => Math.hypot(g.x - x, g.z - z) < 5)) continue;
+  gomstallen.push({ x, y: 0.35, z, namn: "nedgrävt i sanden", sand: true }); antal++;
+}
 for (let i = 0; i < 60; i++) {
   const x = rnd(-36, 36), z = rnd(-26, 22);
   if (Math.random() < 0.5) { const s = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6, 4, 0, Math.PI * 2, 0, Math.PI / 2), m(valj([0xfff0f5, 0xffd1dc, 0xffe4b5]))); s.position.set(x, 0, z); scen.add(s); }
@@ -500,13 +527,16 @@ function uppdateraGlitter(p, t) {
   p.userData.fas.forEach(([f, r, h], i) => { const v = f + t * 1.4; a[i * 3] = Math.cos(v) * r; a[i * 3 + 1] = (h + t * 0.4 * (i % 3 + 1)) % 1.6; a[i * 3 + 2] = Math.sin(v) * r; });
   p.geometry.attributes.position.needsUpdate = true;
 }
+const sandHogMat = new THREE.MeshStandardMaterial({ color: 0xead09a, roughness: 1 });
 const plagg = KLADER.map(k => {
   const g = new THREE.Group(), modell = plaggModell(k), gl = glitter(18, 0xfff6a0);
   g.add(modell, gl);
   const ljus = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 40, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0xfff27a, transparent: true, opacity: 0.32, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
   ljus.position.y = 20; ljus.visible = false; g.add(ljus);
+  const hog = new THREE.Mesh(new THREE.SphereGeometry(0.75, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), sandHogMat);
+  hog.scale.y = 0.35; hog.position.y = -0.35; hog.visible = false; hog.receiveShadow = true; g.add(hog);
   g.visible = false; scen.add(g);
-  return { k, g, modell, gl, ljus, hittad: false, plats: null, flyg: 0 };
+  return { k, g, modell, gl, ljus, hog, hittad: false, plats: null, flyg: 0, bas: 0 };
 });
 const poolLjus = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 40, 16, 1, true), new THREE.MeshBasicMaterial({ color: 0xff9fd0, transparent: true, opacity: 0.28, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
 poolLjus.position.set(0, 20, 26); poolLjus.visible = false; scen.add(poolLjus);
@@ -544,27 +574,53 @@ document.querySelectorAll("#pekplatta button").forEach(b => {
 
 // ================= SPELLÄGE =================
 let lage = "start", spelTid = 0, sedanFynd = 0, tjuvTimer = -1, tjuvNr = 0, hittadeAntal = 0, ledtipsTimer = 8, besegrade = 0;
-let bebisTagen = false, tjuvSnall = false, festRedo = false;
+let bebisTagen = false, tjuvSnall = false, festRedo = false, senasteSort = null;
+let niva = (() => { try { return localStorage.getItem("niva:" + SPEL_ID) || "svar"; } catch (e) { return "svar"; } })();
+if (!NIVAER[niva]) niva = "svar";
+const N = () => NIVAER[niva];
+function visaNiva() { document.querySelectorAll("[data-niva]").forEach(b => b.setAttribute("aria-pressed", b.dataset.niva === niva ? "true" : "false")); }
+document.querySelectorAll("[data-niva]").forEach(b => b.onclick = () => { niva = b.dataset.niva; try { localStorage.setItem("niva:" + SPEL_ID, niva); } catch (e) {} visaNiva(); visaRekord(); });
+visaNiva();
 const hudEl = $("hud");
 KLADER.forEach(k => { const d = document.createElement("div"); d.className = "plats"; d.id = "plats-" + k.id; d.title = k.namn; d.innerHTML = ikon(k); hudEl.appendChild(d); });
 KLADER.forEach(k => { const d = document.createElement("div"); d.className = "plats"; d.innerHTML = ikon(k); $("startIkoner").appendChild(d); });
 
-function lasRekord() { try { return JSON.parse(localStorage.getItem("rekord:" + SPEL_ID) || "null"); } catch (e) { return null; } }
-function sparaRekord(r) { try { localStorage.setItem("rekord:" + SPEL_ID, JSON.stringify(r)); } catch (e) {} }
+// rekord:strandjakten = antal poolpartyn på Svår (visas med 🏆 i spelhallen). Bästa tiden sparas per nivå.
+function lasTid() { try { return Number(localStorage.getItem(`tid:${SPEL_ID}:${niva}`)) || 0; } catch (e) { return 0; } }
+function sparaTid(t) { try { localStorage.setItem(`tid:${SPEL_ID}:${niva}`, String(Math.round(t))); } catch (e) {} }
+function raknaPoolparty() { if (niva !== "svar") return; try { const k = "rekord:" + SPEL_ID; localStorage.setItem(k, String((Number(localStorage.getItem(k)) || 0) + 1)); } catch (e) {} }
 function tidText(s) { s = Math.round(s); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
-function visaRekord() { const r = lasRekord(); $("rekordText").textContent = r ? `Snabbaste poolparty: ${tidText(r.tid)}` : ""; }
+function visaRekord() { const r = lasTid(); $("rekordText").textContent = r ? `Snabbaste poolparty på ${N().namn}: ${tidText(r)}` : ""; }
 visaRekord();
 
-function gomKladerna() {
-  const kandidater = gomstallen.filter(s => Math.hypot(s.x - spelare.pos.x, s.z - spelare.pos.z) > 7);
+function placera(p, s) {
+  p.plats = s; p.hittad = false; p.flyg = 0; p.g.visible = true; p.ljus.visible = false; p.g.scale.setScalar(1);
+  const ner = N().nedgravt && s.y < 0.5;   // på marken: halvt nedgrävt med en liten sandhög
+  p.bas = ner ? -0.5 : 0;
+  p.hog.visible = ner;
+  p.gl.visible = true; p.gl.material.size = ner ? 0.07 : 0.12; p.gl.material.opacity = ner ? 0.55 : 0.9;
+  p.g.position.set(s.x, s.y, s.z);
+}
+function gomPlagg(lista) {
+  const upptagna = plagg.filter(p => !lista.includes(p) && !p.hittad).map(p => p.plats);
+  const kandidater = gomstallen.filter(s => (N().nedgravt || !s.sand) && Math.hypot(s.x - spelare.pos.x, s.z - spelare.pos.z) > 10 && !upptagna.includes(s));
   const val = [];
-  for (let forsok = 0; forsok < 300 && val.length < plagg.length; forsok++) {
-    const s = valj(kandidater);
-    if (val.includes(s) || val.some(v => Math.hypot(v.x - s.x, v.z - s.z) < 9)) continue;
-    val.push(s);
+  for (let minA = N().minAvstand; val.length < lista.length && minA >= 0; minA -= 3) {
+    for (let forsok = 0; forsok < 300 && val.length < lista.length; forsok++) {
+      const s = valj(kandidater);
+      if (val.includes(s) || [...val, ...upptagna].some(v => Math.hypot(v.x - s.x, v.z - s.z) < minA)) continue;
+      val.push(s);
+    }
   }
-  while (val.length < plagg.length) { const s = valj(kandidater); if (!val.includes(s)) val.push(s); }
-  plagg.forEach((p, i) => { p.plats = val[i]; p.hittad = false; p.flyg = 0; p.g.visible = true; p.ljus.visible = false; p.g.position.set(val[i].x, val[i].y, val[i].z); p.g.scale.setScalar(1); });
+  lista.forEach((p, i) => placera(p, val[i] || valj(kandidater)));
+}
+function gomKladerna() { gomPlagg(plagg); }
+function klaAv(k) {
+  if (k.id === "mklanning") mamma.klanning(null);
+  if (k.id === "mskor") mamma.skor(null);
+  if (k.id === "bklanning") barn.klanning(null);
+  if (k.id === "jacka") barn.jacka(null);
+  if (k.id === "bskor") barn.skor(null);
 }
 function lamnaBebisen() {
   bebisTagen = false; barnvagn.add(bebis); bebis.position.set(0, 0.86, 0.02); bebis.rotation.set(0, 0, 0); bebis.scale.setScalar(1);
@@ -595,7 +651,7 @@ function starta() {
   spelTid = 0; sedanFynd = 0; tjuvTimer = -1; tjuvNr = 0; besegrade = 0; ledtipsTimer = 10;
   kameraMal = null;
   lage = "spel";
-  setTimeout(() => visa("Hjälp mamma, barnet och bebisen att hitta fem kläder på stranden! Gå fram till dem som glittrar.", 6), 300);
+  setTimeout(() => visa(N().nedgravt ? "Hjälp mamma, barnet och bebisen att hitta fem kläder! Tjuven har grävt ner en del i sanden, leta efter små sandhögar som glittrar." : "Hjälp mamma, barnet och bebisen att hitta fem kläder på stranden! Gå fram till dem som glittrar.", 7), 300);
 }
 $("spelaKnapp").onclick = starta;
 $("igenKnapp").onclick = starta;
@@ -621,7 +677,7 @@ function plockaUpp(p) {
   else if (sortKlar) text += `Nu har ni ${SORTNAMN[p.k.typ]}. Akta er för tjuven!`;
   else text += kvar === 1 ? "En sak kvar." : `${kvar} saker kvar.`;
   visa(text, 4);
-  if (sortKlar) { tjuvTimer = TJUV_VANTAN; tjuvSnall = kvar === 0; }
+  if (sortKlar) { tjuvTimer = TJUV_VANTAN; tjuvSnall = kvar === 0; senasteSort = p.k.typ; }
 }
 function slappTjuven() {
   const vinkel = rnd(0, Math.PI * 2), p = spelare.pos;
@@ -655,12 +711,12 @@ const anvandaOrd = new Set();
 function startaGubbe() {
   lage = "gubbe"; $("tjuvvarning").classList.add("dold");
   for (const k in tangent) tangent[k] = false;
-  const idx = Math.min(tjuvNr, ORDNIVA_PER_TJUV.length) - 1;
-  const niva = ORDNIVA_PER_TJUV[idx];
-  const lista = ORD[niva].filter(o => !anvandaOrd.has(o[0]));
-  const valt = valj(lista.length ? lista : ORD[niva]); anvandaOrd.add(valt[0]);
+  const idx = Math.min(tjuvNr, N().ordniva.length) - 1;
+  const ordniva = N().ordniva[idx];
+  const lista = ORD[ordniva].filter(o => !anvandaOrd.has(o[0]));
+  const valt = valj(lista.length ? lista : ORD[ordniva]); anvandaOrd.add(valt[0]);
   gubbeOrd = valt[0]; gubbeLedtrad = valt[1]; gissat = new Set(); gubbeKlar = false;
-  felAntal = 10 - FEL_TILLATNA[idx];
+  felAntal = 10 - N().fel[Math.min(idx, N().fel.length - 1)];
   $("gubbeRubrik").textContent = bebisTagen ? `Tjuv nummer ${tjuvNr} är tillbaka!` : `Tjuv nummer ${tjuvNr} vill ta bebisen!`;
   $("ledtradText").textContent = gubbeLedtrad;
   const bs = $("bokstaver"); bs.innerHTML = "";
@@ -708,9 +764,10 @@ function avslutaGubbe(vann) {
     t.textContent = `Rätt, ${gubbeOrd}! Tjuven blev så förvånad att han sprang iväg.`;
   } else {
     ljud.forlust();
+    const gomt = N().gomIgen && senasteSort ? ` Han gömde ${SORTNAMN[senasteSort]} igen!` : "";
     t.textContent = bebisTagen
-      ? `Åh nej! Ordet var ${gubbeOrd}. Tjuven har fortfarande bebisen. Hitta alla kläder så blir han snäll!`
-      : `Åh nej! Ordet var ${gubbeOrd}. Tjuven tog bebisen! Hitta alla kläder så blir han snäll och ger tillbaka den.`;
+      ? `Åh nej! Ordet var ${gubbeOrd}. Tjuven har fortfarande bebisen.${gomt} Hitta alla kläder så blir han snäll!`
+      : `Åh nej! Ordet var ${gubbeOrd}. Tjuven tog bebisen!${gomt} Hitta alla kläder så blir han snäll och ger tillbaka den.`;
   }
   saga(t.textContent);
   $("gubbeSlut").classList.remove("dold"); $("gubbeSlut").dataset.vann = vann ? "1" : "0";
@@ -722,6 +779,14 @@ $("gubbeVidare").onclick = () => {
   if (!vann && !bebisTagen) {
     // tjuven tar bebisen och bär den i famnen
     bebisTagen = true; tjuv.g.add(bebis); bebis.position.set(0, 1.05, 0.28); bebis.rotation.set(-1.2, 0, 0); bebis.scale.setScalar(1 / 1.05);
+  }
+  if (!vann && N().gomIgen && senasteSort) {
+    // tjuven gömmer den sortens kläder på nya ställen
+    const igen = plagg.filter(p => p.k.typ === senasteSort);
+    igen.forEach(p => { klaAv(p.k); $("plats-" + p.k.id).classList.remove("hittad"); });
+    hittadeAntal -= igen.filter(p => p.hittad).length;
+    gomPlagg(igen);
+    setTimeout(() => { if (lage === "spel") visa(`Leta efter ${SORTNAMN[senasteSort]} igen!`, 4); }, 400);
   }
   const p = tjuv.g.position;
   tjuv.flyr = new THREE.Vector3(p.x + (p.x - spelare.pos.x) * 8, 0, p.z + (p.z - spelare.pos.z) * 8);
@@ -745,8 +810,9 @@ function startaFest() {
   tjuv.g.position.set(2.4, 0, 26.6); tjuv.g.rotation.y = Math.PI;
   barnHopp = null;
   ljud.vinst(); startaFestMusik();
-  const r = lasRekord(), nytt = !r || spelTid < r.tid;
-  if (nytt) sparaRekord({ tid: spelTid, datum: new Date().toISOString().slice(0, 10) });
+  const r = lasTid(), nytt = !r || spelTid < r;
+  if (nytt) sparaTid(spelTid);
+  raknaPoolparty();
   $("festText").textContent = `Alla kläder hittade på ${tidText(spelTid)}! Ni slog tjuven ${besegrade} gång${besegrade === 1 ? "" : "er"} i hänga gubbe, och nu är han snäll och festar med er.${nytt ? " Nytt rekord!" : ""}`;
   setTimeout(() => { if (lage === "fest") { $("fest").classList.remove("dold"); saga("Poolparty! " + $("festText").textContent); } }, 5500);
 }
@@ -771,8 +837,8 @@ function loop() {
   lampor.forEach((l, i) => l.material.color.set(REGNBAGE[(i + Math.floor(t * 3)) % 6]));
   plagg.forEach(p => {
     if (!p.g.visible) return;
-    if (p.hittad) { p.flyg += dt; p.g.position.y += dt * 4; p.g.scale.setScalar(Math.max(0.01, 1 - p.flyg * 1.4)); if (p.flyg > 0.7) p.g.visible = false; return; }
-    p.modell.rotation.y += dt * 0.8; p.modell.position.y = Math.sin(t * 2 + p.plats.x) * 0.08;
+    if (p.hittad) { p.hog.visible = false; p.flyg += dt; p.g.position.y += dt * 4; p.g.scale.setScalar(Math.max(0.01, 1 - p.flyg * 1.4)); if (p.flyg > 0.7) p.g.visible = false; return; }
+    p.modell.rotation.y += dt * (p.bas ? 0.25 : 0.8); p.modell.position.y = p.bas + Math.sin(t * 2 + p.plats.x) * (p.bas ? 0.02 : 0.08);
     uppdateraGlitter(p.gl, t);
   });
   if (!bebisTagen) bebis.rotation.z = Math.sin(t * 1.5) * 0.08; // bebisen gungar lite
@@ -800,13 +866,13 @@ function loop() {
         if (Math.hypot(p.g.position.x - spelare.pos.x, p.g.position.z - spelare.pos.z) < PLOCK_AVSTAND) { plockaUpp(p); break; }
       }
       const kvar = plagg.filter(p => !p.hittad);
-      if (kvar.length && sedanFynd > LEDLJUS_EFTER) {
+      if (kvar.length && sedanFynd > N().ledljusEfter) {
         const avst = p => Math.hypot(p.g.position.x - spelare.pos.x, p.g.position.z - spelare.pos.z);
         const narmast = kvar.reduce((x, y) => avst(x) < avst(y) ? x : y);
         if (!narmast.ljus.visible) { narmast.ljus.visible = true; visa("Titta! Ett ljus visar var något är gömt.", 4); }
       }
       ledtipsTimer -= dt;
-      if (ledtipsTimer < 0 && kvar.length) {
+      if (N().tips && ledtipsTimer < 0 && kvar.length) {
         const nara = kvar.find(p => Math.hypot(p.g.position.x - spelare.pos.x, p.g.position.z - spelare.pos.z) < 11);
         if (nara) { visa(`Barnet: Jag ser något som glittrar ${nara.plats.namn}!`, 4); ledtipsTimer = 18; } else ledtipsTimer = 5;
       }
@@ -887,5 +953,5 @@ loop();
 // testkrokar
 window.__strandjakten = {
   spelare, plagg, mamma, barn, bebis, barnvagn, tjuv, starta, gissa, slappTjuven, startaFest, plockaUpp,
-  get lage() { return lage; }, get ord() { return gubbeOrd; }, get bebisTagen() { return bebisTagen; }, get festRedo() { return festRedo; },
+  get lage() { return lage; }, get ord() { return gubbeOrd; }, get bebisTagen() { return bebisTagen; }, get festRedo() { return festRedo; }, get hittade() { return hittadeAntal; }, get tjuvNr() { return tjuvNr; },
 };
