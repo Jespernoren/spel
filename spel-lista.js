@@ -8,6 +8,17 @@
 // =============================================================
 window.SPEL = [
   {
+    mapp: "strandjakten",
+    namn: "Strandjakten",
+    ikon: "🏖️",
+    beskrivning: "Mamma, barnet och bebisen i barnvagnen letar efter sina kläder på stranden. Slå tjuven i hänga gubbe så att han inte tar bebisen, och fira med poolparty! Idé: Charlie.",
+    typ: "3D · Leta · Ord",
+    spelare: ["Charlie", "Alla"],
+    farg: ["#ff6fae", "#2f9bff"],
+    status: "klar",
+    ny: true,
+  },
+  {
     mapp: "printa-hem",
     namn: "Printa Hem",
     ikon: "🏚️",
