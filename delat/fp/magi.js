@@ -140,44 +140,57 @@ export class Trollstav {
   }
 }
 
-// ---------- Levitation: ett föremål svävar framför staven ----------
+// ---------- Levitation: föremål svävar framför staven ----------
+// En sak svävar framför staven. Flera saker snurrar i en magisk ring.
 export class Levitation {
-  constructor(kamera) {
+  constructor(kamera, { kapacitet = 1 } = {}) {
     this.kamera = kamera;
-    this.obj = null;           // det som svävar just nu
+    this.saker = [];           // det som svävar just nu
+    this.kapacitet = kapacitet;
     this.flygande = [];        // föremål på väg till ett mål
     this.avstand = 1.6;        // hur långt fram det svävar
     this.tid = 0;
     this._dir = new THREE.Vector3();
     this._mal = new THREE.Vector3();
+    this._h = new THREE.Vector3();
   }
 
-  get svavar() { return !!this.obj; }
+  get obj() { return this.saker[0] || null; }      // första saken (bakåtkompatibelt)
+  get svavar() { return this.saker.length > 0; }
+  get full() { return this.saker.length >= this.kapacitet; }
+  get antal() { return this.saker.length; }
+  /** Hur stora sakerna är när n stycken svävar (1 = normal). */
+  krympning(n) { return n > 1 ? Math.max(0.6, 1 - n * 0.05) : 1; }
 
-  /** Lyft ett föremål (det ska ligga direkt i scenen). */
+  /** Lyft ett föremål (det ska ligga direkt i scenen). Ger false om staven är full. */
   lyft(obj) {
-    this.obj = obj;
+    if (this.full) return false;
     obj.userData.svavStart = this.tid;
+    this.saker.push(obj);
+    return true;
   }
 
-  /** Släpp och returnera föremålet som svävar. */
-  slapp() { const o = this.obj; this.obj = null; return o; }
+  /** Släpp ett visst föremål, eller det senast lyfta. Returnerar det. */
+  slapp(obj) {
+    if (!obj) return this.saker.pop() || null;
+    const i = this.saker.indexOf(obj);
+    if (i >= 0) this.saker.splice(i, 1);
+    return obj;
+  }
 
-  /** Var föremålet ska sväva just nu (framför kameran, lite nedanför blicken). */
+  /** Mittpunkten där sakerna svävar (framför kameran, lite åt höger och nedåt). */
   malPunkt(ut = this._mal) {
     this.kamera.getWorldDirection(this._dir);
     ut.copy(this.kamera.position).addScaledVector(this._dir, this.avstand);
-    // lite åt höger och nedåt så att boken inte skymmer hårkorset
-    const hoger = this._h || (this._h = new THREE.Vector3());
-    hoger.set(-this._dir.z, 0, this._dir.x).normalize();
-    ut.addScaledVector(hoger, 0.32);
+    this._h.set(-this._dir.z, 0, this._dir.x).normalize();
+    ut.addScaledVector(this._h, 0.32);
     ut.y -= 0.32;
     return ut;
   }
 
   /**
    * Låt ett föremål flyga i en båge till en punkt i världen.
-   * opt: { mal:Vector3, rot:Euler|Quaternion (världsrotation), tid:sek, hojd:båghöjd, klar:fn, varjeBild:fn(pos) }
+   * opt: { mal:Vector3, rot:Euler|Quaternion (världsrotation), tid:sek, hojd:båghöjd, fordrojning:sek, klar:fn, varjeBild:fn(pos) }
    */
   flyg(obj, opt) {
     const start = obj.position.clone();
@@ -185,23 +198,33 @@ export class Levitation {
     ctrl.y = Math.max(start.y, opt.mal.y) + (opt.hojd ?? 0.6);
     const q0 = obj.quaternion.clone();
     const q1 = opt.rot instanceof THREE.Quaternion ? opt.rot : new THREE.Quaternion().setFromEuler(opt.rot || new THREE.Euler());
-    this.flygande.push({ obj, start, ctrl, slut: opt.mal.clone(), q0, q1, t: 0, tid: opt.tid ?? 0.7, klar: opt.klar, varjeBild: opt.varjeBild });
+    this.flygande.push({ obj, start, ctrl, slut: opt.mal.clone(), q0, q1, skala0: obj.scale.x, t: 0, tid: opt.tid ?? 0.7, vanta: opt.fordrojning ?? 0, klar: opt.klar, varjeBild: opt.varjeBild });
   }
 
   uppdatera(dt) {
     this.tid += dt;
-    const o = this.obj;
-    if (o) {
-      const mal = this.malPunkt();
+    const n = this.saker.length;
+    this.saker.forEach((o, i) => {
+      const mal = this.malPunkt(new THREE.Vector3());
+      if (n > 1) {
+        // snurra i en ring runt mittpunkten
+        const r = 0.28 + n * 0.035;
+        const v = this.tid * 0.9 + (i / n) * Math.PI * 2;
+        mal.addScaledVector(this._h, Math.cos(v) * r);
+        mal.y += Math.sin(v) * r * 0.75;
+      }
       const svav = Math.min(1, (this.tid - o.userData.svavStart) / 0.5); // mjuk start
-      mal.y += Math.sin(this.tid * 2.4) * 0.05;
+      mal.y += Math.sin(this.tid * 2.4 + i) * 0.04;
       o.position.lerp(mal, 1 - Math.exp(-dt * (4 + svav * 6)));
-      o.rotation.x += (Math.sin(this.tid * 1.3) * 0.25 - o.rotation.x) * dt * 3;
+      o.rotation.x += (Math.sin(this.tid * 1.3 + i) * 0.25 - o.rotation.x) * dt * 3;
       o.rotation.y += dt * 0.6;
       o.rotation.z += (0 - o.rotation.z) * dt * 4;
-    }
+      // många saker i ringen: krymp dem lite så att de inte skymmer sikten
+      o.scale.setScalar(o.scale.x + (this.krympning(n) - o.scale.x) * Math.min(1, dt * 5));
+    });
     for (let i = this.flygande.length - 1; i >= 0; i--) {
       const f = this.flygande[i];
+      if (f.vanta > 0) { f.vanta -= dt; f.start.copy(f.obj.position); continue; }
       f.t = Math.min(1, f.t + dt / f.tid);
       const e = f.t < 0.5 ? 2 * f.t * f.t : 1 - (-2 * f.t + 2) ** 2 / 2; // mjuk in/ut
       const a = 1 - e;
@@ -211,6 +234,7 @@ export class Levitation {
         a * a * f.start.z + 2 * a * e * f.ctrl.z + e * e * f.slut.z,
       );
       f.obj.quaternion.slerpQuaternions(f.q0, f.q1, e);
+      f.obj.scale.setScalar(f.skala0 + (1 - f.skala0) * e);
       f.varjeBild?.(f.obj.position);
       if (f.t >= 1) { this.flygande.splice(i, 1); f.klar?.(f.obj); }
     }

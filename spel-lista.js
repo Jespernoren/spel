@@ -22,7 +22,7 @@ window.SPEL = [
     mapp: "testrummet",
     namn: "Trollstaven",
     ikon: "🪄",
-    beskrivning: "Lyft böcker med trollstaven, skicka in dem på rätt färghylla och sug upp dammet med magi. Idé: Beppe.",
+    beskrivning: "Lyft 48 böcker med trollstaven och skicka in dem på rätt färghylla. Hitta gömda trollkristaller så orkar staven lyfta fler böcker samtidigt. Idé: Beppe.",
     typ: "3D · Förstaperson · Magi",
     spelare: ["Beppe", "Alla"],
     farg: ["#5b3cc4", "#c59bff"],

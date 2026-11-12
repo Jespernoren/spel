@@ -76,7 +76,7 @@ import { Spelare, Interaktor, Hand, Smuts, Sparning, Butik, ljud, FpUI } from '.
 | `ljud` | Syntetiska ljud: plock, placera, borsta, mynt, klar, fel, köp |
 | `FpUI` | Hårkors, framstegsmätare, mynt, meddelanden, start/paus, butik, touchknappar |
 | `Trollstav` (magi.js) | Trollstav i handen med glödande spets. `kraft` 0..1 styr glöden, `spetsPos()` ger spetsen i världen |
-| `Levitation` (magi.js) | Ett föremål svävar framför staven (`lyft`, `slapp`) och kan flyga i en båge till ett mål (`flyg`) |
+| `Levitation` (magi.js) | Föremål svävar framför staven (`lyft`, `slapp`). `kapacitet` styr hur många samtidigt (de snurrar i en ring) och `flyg(obj, { mal, fordrojning })` skickar dem i en båge till ett mål |
 | `Gnistor` (magi.js) | Glitter och damm som partiklar, kan sugas mot en punkt (`skjut(punkt, { mal })`) |
 
 Se `spel/testrummet/spel.js` för ett komplett exempel som använder allt.
