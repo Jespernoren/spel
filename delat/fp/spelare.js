@@ -126,22 +126,37 @@ export class Spelare {
     this.rorelse = Math.min(1, Math.hypot(fx, fz));
 
     // gravitation
+    // man kan landa ovanpå låga saker (bord, lådor) och kliver av dem igen
+    const mark = this.#markHojd();          // räknas före fallet, så man inte faller igenom
     this.vy -= this.gravitation * dt;
     this.pos.y += this.vy * dt;
-    if (this.pos.y <= 0) { this.pos.y = 0; this.vy = 0; this.paMark = true; }
+    if (this.pos.y <= mark) { this.pos.y = mark; this.vy = 0; this.paMark = true; }
 
     this.kamera.position.set(this.pos.x, this.pos.y + this.hojd, this.pos.z);
     this.kamera.rotation.set(this.pitch, this.yaw, 0);
   }
 
   #flytta(dx, dz) {
-    this.pos.x += dx; if (this.#krock()) this.pos.x -= dx;
-    this.pos.z += dz; if (this.#krock()) this.pos.z -= dz;
+    // står man redan fast i något (t.ex. landat i ett hinder) får man alltid gå ut
+    const fast = this.#krock();
+    this.pos.x += dx; if (!fast && this.#krock()) this.pos.x -= dx;
+    this.pos.z += dz; if (!fast && this.#krock()) this.pos.z -= dz;
     const g = this.granser;
     if (g) {
       this.pos.x = Math.max(g.minX + this.radie, Math.min(g.maxX - this.radie, this.pos.x));
       this.pos.z = Math.max(g.minZ + this.radie, Math.min(g.maxZ - this.radie, this.pos.z));
     }
+  }
+
+  /** Höjden man står på: golvet (0) eller toppen av ett hinder man är ovanför. */
+  #markHojd() {
+    const p = this.pos, r = this.radie * 0.6;
+    let h = 0;
+    for (const b of this.hinder) {
+      if (b.max.y > h && b.max.y <= p.y + 0.05 &&
+          p.x > b.min.x - r && p.x < b.max.x + r && p.z > b.min.z - r && p.z < b.max.z + r) h = b.max.y;
+    }
+    return h;
   }
 
   #krock() {
