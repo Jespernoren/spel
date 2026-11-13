@@ -57,6 +57,8 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
   }
 
   const trad = [];
+  const allt = [];   // allt som kan röjas bort när man köper mark: [objekt, x, z]
+  const lagg = (o, x, z) => { scen.add(o); allt.push([o, x, z]); return o; };
   const stamBrun = 0x6b4a2f;
 
   // ---------- Trädsorter ----------
@@ -120,11 +122,11 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
     t.position.set(x, 0, z); t.rotation.y = rnd() * Math.PI * 2;
     t.userData.fas = rnd() * 10; t.userData.lut = mellan(-0.04, 0.04);
     t.rotation.z = t.userData.lut;
-    scen.add(t); trad.push(t);
+    lagg(t, x, z); trad.push(t);
     // en dunge: ibland ett par småträd av samma sort runt om
     if (rnd() < 0.18) for (let k = 0; k < 2; k++) {
       const x2 = x + mellan(-2.5, 2.5), z2 = z + mellan(-2.5, 2.5); if (!ledig(x2, z2, 2)) continue;
-      const u = valjSort()(s * mellan(0.45, 0.7)); u.position.set(x2, 0, z2); u.rotation.y = rnd() * 6; u.userData.fas = rnd() * 10; u.userData.lut = 0; scen.add(u); trad.push(u);
+      const u = valjSort()(s * mellan(0.45, 0.7)); u.position.set(x2, 0, z2); u.rotation.y = rnd() * 6; u.userData.fas = rnd() * 10; u.userData.lut = 0; lagg(u, x2, z2); trad.push(u);
     }
   }
 
@@ -134,7 +136,7 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
     const g = new THREE.Group(), farg = ton(rnd() < 0.3 ? 0x5a8f3c : 0x3f7a3a, 0.14), n = 2 + Math.floor(rnd() * 3);
     for (let k = 0; k < n; k++) { const b = skugga(new THREE.Mesh(skrynkla(new THREE.IcosahedronGeometry(mellan(0.35, 0.7), 0), 0.18), mat(farg))); b.position.set(mellan(-0.5, 0.5), mellan(0.2, 0.45), mellan(-0.5, 0.5)); b.scale.y = 0.75; g.add(b); }
     if (rnd() < 0.3) for (let k = 0; k < 6; k++) { const bar = new THREE.Mesh(new THREE.SphereGeometry(0.05, 5, 4), mat(rnd() < 0.5 ? 0xc0303a : 0x3a3a8a)); bar.position.set(mellan(-0.5, 0.5), mellan(0.35, 0.7), mellan(-0.5, 0.5)); g.add(bar); }   // lingon och blåbär
-    g.position.set(pos[0], 0, pos[1]); g.rotation.y = rnd() * 6; scen.add(g);
+    g.position.set(pos[0], 0, pos[1]); g.rotation.y = rnd() * 6; lagg(g, pos[0], pos[1]);
   }
 
   // ---------- Stenar och stubbar ----------
@@ -142,18 +144,18 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
     const pos = plats(TOMT + 2, TOMT + 34, 0); if (!pos) continue;
     const s = rnd() < 0.12 ? mellan(0.9, 1.6) : mellan(0.15, 0.5);   // några stora stenblock
     const m = skugga(new THREE.Mesh(skrynkla(new THREE.DodecahedronGeometry(s, 0), 0.25), mat(ton(0x8a8a85, 0.08))));
-    m.scale.y = mellan(0.45, 0.8); m.position.set(pos[0], s * 0.25, pos[1]); m.rotation.set(rnd(), rnd() * 6, rnd()); scen.add(m);
-    if (s > 0.8) { const mossa = new THREE.Mesh(skrynkla(new THREE.DodecahedronGeometry(s * 0.7, 0), 0.2), mat(0x6f8f3a)); mossa.scale.set(1, 0.3, 1); mossa.position.set(pos[0], s * 0.55, pos[1]); scen.add(mossa); }
+    m.scale.y = mellan(0.45, 0.8); m.position.set(pos[0], s * 0.25, pos[1]); m.rotation.set(rnd(), rnd() * 6, rnd()); lagg(m, pos[0], pos[1]);
+    if (s > 0.8) { const mossa = new THREE.Mesh(skrynkla(new THREE.DodecahedronGeometry(s * 0.7, 0), 0.2), mat(0x6f8f3a)); mossa.scale.set(1, 0.3, 1); mossa.position.set(pos[0], s * 0.55, pos[1]); lagg(mossa, pos[0], pos[1]); }
   }
   for (let i = 0; i < ANTAL_STUBBAR; i++) {
     const pos = plats(TOMT + 3, TOMT + 30, 0); if (!pos) continue;
     if (rnd() < 0.5) {
       const st = skugga(new THREE.Mesh(new THREE.CylinderGeometry(mellan(0.2, 0.3), mellan(0.28, 0.38), mellan(0.25, 0.5), 8), mat(ton(stamBrun))));
-      st.position.set(pos[0], 0.15, pos[1]); scen.add(st);
-      const topp = new THREE.Mesh(new THREE.CircleGeometry(0.24, 8), mat(0xc9a36a)); topp.rotation.x = -Math.PI / 2; topp.position.set(pos[0], st.geometry.parameters.height / 2 + 0.151, pos[1]); scen.add(topp);
+      st.position.set(pos[0], 0.15, pos[1]); lagg(st, pos[0], pos[1]);
+      const topp = new THREE.Mesh(new THREE.CircleGeometry(0.24, 8), mat(0xc9a36a)); topp.rotation.x = -Math.PI / 2; topp.position.set(pos[0], st.geometry.parameters.height / 2 + 0.151, pos[1]); lagg(topp, pos[0], pos[1]);
     } else {   // en vindfälld stock
       const l = mellan(2, 4), st = skugga(new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, l, 7), mat(ton(0x5d4330))));
-      st.rotation.set(0, rnd() * 6, Math.PI / 2); st.position.set(pos[0], 0.2, pos[1]); scen.add(st);
+      st.rotation.set(0, rnd() * 6, Math.PI / 2); st.position.set(pos[0], 0.2, pos[1]); lagg(st, pos[0], pos[1]);
     }
   }
 
@@ -188,7 +190,9 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
 
   // ---------- Gärdesgård runt området man får vara i – Rolf öppnar mer senare ----------
   const staket = new THREE.Group();
-  if (grans) {
+  function byggStaket(grans) {
+    while (staket.children.length) staket.remove(staket.children[0]);
+    if (!grans) return;
     const tra = mat(0x7a5a3a), bomMat = mat(0xd03030), vitMat = mat(0xf2f2f2);
     const g = { x1: grans.minX - 0.6, x2: grans.maxX + 0.6, z1: grans.minZ - 0.6, z2: grans.maxZ + 0.6 };
     const vagZ = TOMT + 3, vagB = 2.8;
@@ -223,12 +227,18 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
       const sk = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.34), new THREE.MeshStandardMaterial({ map: tx, side: THREE.DoubleSide })); sk.position.set(x, 1.25, z); sk.rotation.y = r; staket.add(sk);
     }
   }
+  byggStaket(grans);
   scen.add(staket);
+  // röj bort träd, buskar och stenar inom ett område (köpt mark)
+  function rojUt(r) {
+    for (const [o, x, z] of allt) if (x > r.minX - 1.2 && x < r.maxX + 1.2 && z > r.minZ - 1.2 && z < r.maxZ + 1.2) o.visible = false;
+    for (let i = trad.length - 1; i >= 0; i--) if (!trad[i].visible) trad.splice(i, 1);
+  }
 
   // vinden: träden vajar lite, i otakt
   function uppdatera(tid) {
     const v = VIND * (0.7 + Math.sin(tid * 0.13) * 0.3);
     for (const t of trad) { const f = t.userData.fas; t.rotation.z = t.userData.lut + Math.sin(tid * 0.9 + f) * v; t.rotation.x = Math.sin(tid * 0.7 + f * 1.3) * v * 0.6; }
   }
-  return { uppdatera, trad, mark, staket };
+  return { uppdatera, trad, mark, staket, byggStaket, rojUt };
 }
