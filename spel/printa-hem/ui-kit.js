@@ -48,16 +48,73 @@ export const IKON = {
 };
 export const ik = (namn, klass = '') => `<span class="ui-ik ${klass}">${IKON[namn] || IKON.info}</span>`;
 
-// ---------- Porträtt (40×40) ----------
-const P = (inre, bg) => `<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="${bg}"/>${inre}</svg>`;
+// ---------- Porträtt (ritade i 100×100, skalas fritt) ----------
+// Stil: "printat & skrotigt" – mjuk skuggning, tydliga silhuetter och svaga lagerlinjer som på en 3D-print
+const P = (id, bg1, bg2, inre) => `<svg viewBox="0 0 100 100"><defs><radialGradient id="pb-${id}" cx="50%" cy="38%" r="70%"><stop offset="0" stop-color="${bg1}"/><stop offset="1" stop-color="${bg2}"/></radialGradient><pattern id="pl-${id}" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="1.2" fill="#fff" opacity=".035"/></pattern></defs><rect width="100" height="100" fill="url(#pb-${id})"/>${inre}<rect width="100" height="100" fill="url(#pl-${id})"/></svg>`;
+// gemensamma delar: hals, öron, ögon (med glans), kinder
+const hals = (hud, sk) => `<path d="M41 62h18v14H41z" fill="${hud}"/><path d="M41 66c6 4 12 4 18 0v-4H41z" fill="${sk}" opacity=".55"/>`;
+const oron = (hud, sk, y = 50) => `<ellipse cx="27" cy="${y}" rx="5" ry="7" fill="${hud}"/><ellipse cx="73" cy="${y}" rx="5" ry="7" fill="${hud}"/><ellipse cx="27.5" cy="${y}" rx="2.2" ry="3.6" fill="${sk}" opacity=".6"/><ellipse cx="72.5" cy="${y}" rx="2.2" ry="3.6" fill="${sk}" opacity=".6"/>`;
+const huvud = (hud, sk, rx = 23, ry = 26, cy = 46) => `<ellipse cx="50" cy="${cy}" rx="${rx}" ry="${ry}" fill="${hud}"/><path d="M${50 - rx + 2} ${cy + 6}c4 ${ry - 6} ${rx * 2 - 8} ${ry - 6} ${rx * 2 - 4} 0c-2 ${ry - 2}-${rx * 2 - 8} ${ry}-${rx * 2 - 4} 0z" fill="${sk}" opacity=".35"/>`;
+const oga = (x, y, o = {}) => `<ellipse cx="${x}" cy="${y}" rx="${o.rx || 3.6}" ry="${o.ry || 4.2}" fill="#fff"/><circle cx="${x + (o.dx || 0.6)}" cy="${y + 0.6}" r="${o.r || 2.5}" fill="${o.iris || '#2a1c12'}"/><circle cx="${x + (o.dx || 0.6) + 0.9}" cy="${y - 0.5}" r=".9" fill="#fff"/>` + (o.lock ? `<path d="M${x - 4.2} ${y - 1.5}q4.2-${o.lock} 8.4 0" fill="${o.lockFarg}" />` : '');
+const kinder = (f = '#ff8f8f', op = 0.35) => `<ellipse cx="36" cy="58" rx="5" ry="3" fill="${f}" opacity="${op}"/><ellipse cx="64" cy="58" rx="5" ry="3" fill="${f}" opacity="${op}"/>`;
 export const PORTRATT = {
-  ali: P(`<path d="M7 40c1-8 6-11 13-11s12 3 13 11z" fill="#2f6b4f"/><ellipse cx="20" cy="19" rx="9" ry="10" fill="#b07a4e"/><path d="M11 15c0-6 4-9 9-9s9 3 9 9c-2-3-5-4-9-4s-7 1-9 4z" fill="#1a1410"/><path d="M13 13.5l4 1.2M27 13.5l-4 1.2" stroke="#1a1410" stroke-width="1.8" stroke-linecap="round"/><circle cx="16.5" cy="17" r="1.2" fill="#111"/><circle cx="23.5" cy="17" r="1.2" fill="#111"/><path d="M13 23.5c2-2.5 5-2.5 7-1 2-1.5 5-1.5 7 1-2.5 1-4.5.5-7-.5-2.5 1-4.5 1.5-7 .5z" fill="#1a1410"/><path d="M17.5 27h5" stroke="#5a2a20" stroke-width="1.3" stroke-linecap="round"/>`, '#3d5a80'),
-  rolf: P(`<path d="M6 40c1-8 7-11 14-11s13 3 14 11z" fill="#ff7a1a"/><path d="M12 32l1 8M28 32l-1 8" stroke="#f5f5f5" stroke-width="2"/><ellipse cx="20" cy="20" rx="9" ry="9.5" fill="#d9a07a"/><path d="M11.5 22c1 5 4 7.5 8.5 7.5s7.5-2.5 8.5-7.5c-2 2-5 3-8.5 3s-6.5-1-8.5-3z" fill="#6e6a64" opacity=".8"/><path d="M10 14c0-5 4.5-7 10-7s10 2 10 7z" fill="#2e8b57"/><path d="M8 14h16" stroke="#2e8b57" stroke-width="3" stroke-linecap="round"/><circle cx="16.5" cy="18" r="1.2" fill="#111"/><circle cx="23.5" cy="18" r="1.2" fill="#111"/><circle cx="20" cy="22" r="2.6" fill="#e0605a"/><path d="M17.5 26c1.5 1 3.5 1 5 0" stroke="#5a2a20" stroke-width="1.2" fill="none" stroke-linecap="round"/>`, '#4a5d3a'),
-  mamma: P(`<path d="M7 40c1-8 6-11 13-11s12 3 13 11z" fill="#e0567a"/><circle cx="20" cy="8" r="4.5" fill="#7a4a2a"/><ellipse cx="20" cy="19" rx="8.5" ry="9.5" fill="#f2c9a5"/><path d="M11.5 18c0-6 3.5-9 8.5-9s8.5 3 8.5 9c-1.5-3-4-5-8.5-5s-7 2-8.5 5z" fill="#7a4a2a"/><path d="M14.5 15l3 .8M25.5 15l-3 .8" stroke="#5a3a20" stroke-width="1.5" stroke-linecap="round"/><circle cx="16.5" cy="18" r="1.1" fill="#111"/><circle cx="23.5" cy="18" r="1.1" fill="#111"/><path d="M17 24.5h6" stroke="#b03a50" stroke-width="1.6" stroke-linecap="round"/><circle cx="11.3" cy="21" r="1" fill="#ffd43b"/><circle cx="28.7" cy="21" r="1" fill="#ffd43b"/>`, '#7a3b5a'),
-  pappa: P(`<path d="M7 40c1-8 6-11 13-11s12 3 13 11z" fill="#5f6b7a"/><ellipse cx="20" cy="19.5" rx="8.5" ry="9.5" fill="#efc4a0"/><path d="M11.5 16c0-5 4-7.5 8.5-7.5s8.5 2.5 8.5 7.5c-1-2-3-3-8.5-3s-7.5 1-8.5 3z" fill="#9aa0a8"/><circle cx="16.5" cy="18.5" r="3" fill="none" stroke="#333" stroke-width="1.3"/><circle cx="23.5" cy="18.5" r="3" fill="none" stroke="#333" stroke-width="1.3"/><path d="M19.5 18.5h1" stroke="#333" stroke-width="1.3"/><circle cx="16.5" cy="18.5" r=".9" fill="#111"/><circle cx="23.5" cy="18.5" r=".9" fill="#111"/><path d="M17 25h6" stroke="#6a3a2a" stroke-width="1.4" stroke-linecap="round"/>`, '#3a4250'),
-  bror: P(`<path d="M7 40c1-8 6-11 13-11s12 3 13 11z" fill="#8e44ad"/><ellipse cx="20" cy="19.5" rx="8.5" ry="9.5" fill="#f0c6a2"/><path d="M11 16c0-6 4-8.5 9-8.5s9 2.5 9 8.5h-6l-3-2-3 2z" fill="#222"/><path d="M27 14h5" stroke="#222" stroke-width="2.5" stroke-linecap="round"/><circle cx="16.5" cy="18.5" r="1.1" fill="#111"/><circle cx="23.5" cy="18.5" r="1.1" fill="#111"/><path d="M16 23.5c2 2.5 6 2.5 8 0" stroke="#6a3a2a" stroke-width="1.4" fill="none" stroke-linecap="round"/>`, '#4a2a5e'),
-  du: P(`<path d="M6 40c1-9 6-12 14-12s13 3 14 12z" fill="#2d6cdf"/><path d="M10 18c0-7 4.5-10 10-10s10 3 10 10v4c-1-3-3-8-10-8s-9 5-10 8z" fill="#2d6cdf"/><ellipse cx="20" cy="20" rx="7.5" ry="8" fill="#f0c6a2"/><circle cx="17" cy="19" r="1" fill="#111"/><circle cx="23" cy="19" r="1" fill="#111"/><path d="M17.5 24c1.5 1 3.5 1 5 0" stroke="#6a3a2a" stroke-width="1.2" fill="none" stroke-linecap="round"/>`, '#24304a'),
+  // Ali: tog över pappans butik för 25 år sedan – gråsprängd, stor mustasch, trött blick, grönt förkläde med penna
+  ali: P('ali', '#3b7a63', '#1d3d33',
+    `<path d="M14 100c2-20 16-28 36-28s34 8 36 28z" fill="#e8dcc0"/><path d="M30 100l4-26h32l4 26z" fill="#2f6b4f"/><path d="M34 74h32l-2 6H36z" fill="#245542"/><rect x="56" y="80" width="2" height="9" fill="#2a6fdb"/><rect x="54" y="84" width="7" height="2" fill="#fff" opacity=".7"/>`
+    + hals('#a8724a', '#7a4f30') + oron('#b07a4e', '#7a4f30') + huvud('#b07a4e', '#7a4f30')
+    + `<path d="M27 40c0-14 10-21 23-21s23 7 23 21c-3-6-7-9-11-10-4 3-20 3-24 0-4 1-8 4-11 10z" fill="#3a3632"/><path d="M33 26c5-3 9-4 17-4" stroke="#b9b3ab" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M62 24c3 1 6 3 8 7" stroke="#b9b3ab" stroke-width="2" fill="none" stroke-linecap="round"/>`
+    + oga(40, 47, { ry: 3.4, lock: 3, lockFarg: '#a06c44' }) + oga(60, 47, { ry: 3.4, lock: 3, lockFarg: '#a06c44' })
+    + `<path d="M33 40l12 2.5M67 40l-12 2.5" stroke="#3a3632" stroke-width="3" stroke-linecap="round"/><path d="M36 53c2 1.5 6 1.5 8 0M56 53c2 1.5 6 1.5 8 0" stroke="#7a4f30" stroke-width="1.2" fill="none" opacity=".7"/>`
+    + `<path d="M50 50c-2 4-3 7-1 9h4" stroke="#7a4f30" stroke-width="1.6" fill="none" stroke-linecap="round"/>`
+    + `<path d="M50 60c-6-2-13-1-17 4 5 0 10-1 13-2 1 1 3 1 4 0 1 1 3 1 4 0 3 1 8 2 13 2-4-5-11-6-17-4z" fill="#2b2724"/><path d="M45 68c3 1.5 7 1.5 10 0" stroke="#5a2a20" stroke-width="2" stroke-linecap="round" fill="none"/>`),
+  // Rolf: sopbilschauffören – orange varselkläder med reflexband, keps, gråskäggig, röd näsa, glad
+  rolf: P('rolf', '#6f7d3a', '#2f3a19',
+    `<path d="M12 100c2-21 17-29 38-29s36 8 38 29z" fill="#ff7a1a"/><path d="M24 86h52M21 95h58" stroke="#e8f0f0" stroke-width="4"/><path d="M24 86h52M21 95h58" stroke="#9aa" stroke-width="1" opacity=".5"/><path d="M42 72l8 10 8-10" fill="#e06a12"/>`
+    + hals('#cf9670', '#9a6a4a') + oron('#d9a07a', '#9a6a4a', 49) + huvud('#d9a07a', '#9a6a4a', 24, 25, 47)
+    + `<path d="M28 54c1 14 10 22 22 22s21-8 22-22c-3 5-7 7-11 7-3-3-19-3-22 0-4 0-8-2-11-7z" fill="#8a8580"/><path d="M33 60c4 3 8 4 11 3M67 60c-4 3-8 4-11 3" stroke="#6e6a64" stroke-width="1.4" fill="none"/>`
+    + `<path d="M24 36c0-12 12-18 26-18s26 6 26 18z" fill="#2e8a4f"/><path d="M22 36h40c8 0 16 1 20 4-6 1-12 1-20 0H22z" fill="#23703f"/><rect x="44" y="24" width="12" height="6" rx="1.5" fill="#f4e9c8"/>`
+    + oga(40, 45, { ry: 3.2 }) + oga(60, 45, { ry: 3.2 }) + `<path d="M35 40q5-3 10 0M55 40q5-3 10 0" stroke="#6e6a64" stroke-width="2.6" fill="none" stroke-linecap="round"/>`
+    + `<ellipse cx="50" cy="54" rx="5.5" ry="4.5" fill="#e0675f"/><ellipse cx="48.5" cy="52.5" rx="1.6" ry="1.1" fill="#fff" opacity=".5"/>` + kinder('#ff7070', 0.4)
+    + `<path d="M41 63q9 7 18 0" stroke="#5a2a20" stroke-width="2.4" fill="#fff" stroke-linecap="round"/>`),
+  // Mamma: hårknut, örhängen, rosa kofta, varm men orolig blick
+  mamma: P('mamma', '#d77a97', '#7a2f4a',
+    `<path d="M14 100c2-20 16-28 36-28s34 8 36 28z" fill="#e0567a"/><path d="M38 72l12 14 12-14" fill="#fff5ea"/><path d="M50 86v14" stroke="#c0405f" stroke-width="2"/><circle cx="50" cy="91" r="1.6" fill="#f5d7a0"/><circle cx="50" cy="97" r="1.6" fill="#f5d7a0"/>`
+    + hals('#efc09a', '#c08c68') + `<circle cx="50" cy="16" r="10" fill="#7a4a2a"/><path d="M44 12q6-4 12 0" stroke="#5e381f" stroke-width="1.5" fill="none"/>`
+    + oron('#f2c9a5', '#c08c68') + huvud('#f2c9a5', '#c08c68', 22, 25)
+    + `<path d="M27 44c0-15 10-22 23-22s23 7 23 22c-4-8-12-12-23-12-6 0-10 1-13 4-3-2-7 2-10 8z" fill="#7a4a2a"/><path d="M27 44c-1 6 0 12 2 15M73 44c1 6 0 12-2 15" stroke="#7a4a2a" stroke-width="4" stroke-linecap="round"/>`
+    + `<circle cx="27" cy="58" r="2.6" fill="#ffd23b"/><circle cx="73" cy="58" r="2.6" fill="#ffd23b"/>`
+    + oga(41, 47, { iris: '#4a3020' }) + oga(59, 47, { iris: '#4a3020' }) + `<path d="M36 41q5-3 9 0M55 41q5-3 9 0" stroke="#5e381f" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M37 43l-2-2M63 43l2-2" stroke="#5e381f" stroke-width="1.2"/>`
+    + `<path d="M50 50c-1 3-2 5 0 6" stroke="#c08c68" stroke-width="1.4" fill="none"/>` + kinder('#ff6f8f', 0.45)
+    + `<path d="M43 62q7 5 14 0" stroke="#b83a52" stroke-width="2.6" fill="none" stroke-linecap="round"/>`),
+  // Pappa: grått hår, runda glasögon, grå tröja – säger lite, suckar mycket
+  pappa: P('pappa', '#7b8796', '#343c47',
+    `<path d="M14 100c2-20 16-28 36-28s34 8 36 28z" fill="#5f6b7a"/><path d="M40 72c3 5 17 5 20 0v6c-3 4-17 4-20 0z" fill="#4c5664"/><path d="M14 100c2-20 16-28 36-28s34 8 36 28" fill="url(#pl-pappa)"/>`
+    + hals('#e5b892', '#b58a68') + oron('#efc4a0', '#b58a68') + huvud('#efc4a0', '#b58a68', 22, 26)
+    + `<path d="M28 42c0-14 9-20 22-20s22 6 22 20c-2-4-5-7-8-8-5 2-23 2-28 0-3 1-6 4-8 8z" fill="#a9afb6"/><path d="M28 42c-1-4-1-7 1-10M72 42c1-4 1-7-1-10" stroke="#a9afb6" stroke-width="4"/>`
+    + oga(40, 48, { ry: 2.6, r: 2 }) + oga(60, 48, { ry: 2.6, r: 2 })
+    + `<circle cx="40" cy="48" r="7.5" fill="none" stroke="#2a2a2a" stroke-width="2.4"/><circle cx="60" cy="48" r="7.5" fill="none" stroke="#2a2a2a" stroke-width="2.4"/><path d="M47.5 48h5M32.5 47l-5-2M67.5 47l5-2" stroke="#2a2a2a" stroke-width="2"/><path d="M35 44l4-1" stroke="#fff" stroke-width="1.4" opacity=".6"/>`
+    + `<path d="M34 38h11M55 38h11" stroke="#7d838a" stroke-width="2.6" stroke-linecap="round"/><path d="M50 52c-1 3-2 5 0 6" stroke="#b58a68" stroke-width="1.5" fill="none"/>`
+    + `<path d="M43 64h14" stroke="#7a3a2a" stroke-width="2.4" stroke-linecap="round"/><path d="M41 61q-2 2 0 4M59 61q2 2 0 4" stroke="#b58a68" stroke-width="1.1" fill="none"/>`),
+  // Brorsan: bakvänd keps, lila hoodie, flinar, mobilen alltid i handen
+  bror: P('bror', '#9b5cc2', '#3f1f55',
+    `<path d="M14 100c2-20 16-28 36-28s34 8 36 28z" fill="#8e44ad"/><path d="M34 74c4 8 28 8 32 0" stroke="#6f2f8a" stroke-width="3" fill="none"/><path d="M44 80v10M56 80v10" stroke="#e8dcf0" stroke-width="1.8" stroke-linecap="round"/><rect x="62" y="84" width="11" height="16" rx="2" fill="#1d1d24"/><rect x="63.5" y="86" width="8" height="11" rx="1" fill="#3de3ff" opacity=".8"/>`
+    + hals('#e8bc96', '#b88a66') + oron('#f0c6a2', '#b88a66') + huvud('#f0c6a2', '#b88a66', 22, 25)
+    + `<path d="M26 40c0-13 10-20 24-20s24 7 24 20z" fill="#222"/><path d="M26 40c-4 0-7-1-8-3 3-2 6-2 9-1z" fill="#111"/><rect x="45" y="22" width="10" height="4" rx="1" fill="#ffd43b"/><path d="M28 40h44" stroke="#333" stroke-width="2"/>`
+    + oga(41, 48, { dx: 1.2 }) + oga(61, 48, { dx: 1.2 }) + `<path d="M35 42q5-2 10 1M56 43q5-4 10-1" stroke="#222" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
+    + `<path d="M50 52c-1 3-2 5 0 6" stroke="#b88a66" stroke-width="1.4" fill="none"/>` + kinder('#ff8f8f', 0.3)
+    + `<path d="M40 61q9 9 20-1" stroke="#5a2a20" stroke-width="2.4" fill="#fff" stroke-linecap="round"/><path d="M58 60l3-2" stroke="#5a2a20" stroke-width="2" stroke-linecap="round"/>`),
+  // Du: blå hoodie med luvan uppe, ung och trött men envis – nyinflyttad på Soptippsvägen 1
+  du: P('du', '#3a8be0', '#16325e',
+    `<path d="M12 100c2-21 17-29 38-29s36 8 38 29z" fill="#2d6cdf"/><path d="M42 76v16M58 76v16" stroke="#e6eefc" stroke-width="1.8" stroke-linecap="round"/><path d="M38 96h24" stroke="#245bc0" stroke-width="5" stroke-linecap="round"/>`
+    + `<path d="M20 58c-2-26 12-42 30-42s32 16 30 42c-4 10-10 14-14 15H34c-4-1-10-5-14-15z" fill="#2d6cdf"/><path d="M24 56c0-22 11-34 26-34s26 12 26 34" fill="#245bc0"/>`
+    + hals('#e8bc96', '#b88a66') + huvud('#f0c6a2', '#b88a66', 19, 22, 49)
+    + `<path d="M31 44c2-10 10-14 19-14s17 4 19 14c-6-4-10-5-14-5-3 2-6 3-11 3-5 0-9 0-13 2z" fill="#5a3a24"/>`
+    + oga(42, 50, { ry: 3.4, lock: 2.4, lockFarg: '#d9a888' }) + oga(58, 50, { ry: 3.4, lock: 2.4, lockFarg: '#d9a888' }) + `<path d="M37 44q5-2 9 0M54 44q5-2 9 0" stroke="#5a3a24" stroke-width="2.2" fill="none" stroke-linecap="round"/>`
+    + `<path d="M50 54c-1 3-2 4 0 5" stroke="#b88a66" stroke-width="1.4" fill="none"/>` + kinder('#ff8f8f', 0.3)
+    + `<path d="M44 63q6 4 12-1" stroke="#7a3a2a" stroke-width="2.2" fill="none" stroke-linecap="round"/>`),
 };
+// chefen (också Rolf) och berättaren lånar ansikten tills de får egna
+PORTRATT.chefen = PORTRATT.rolf; PORTRATT.berattare = PORTRATT.du;
 export const portratt = (vem, storlek = 40) => `<span class="ui-portratt" style="width:${storlek}px;height:${storlek}px">${PORTRATT[vem] || PORTRATT.du}</span>`;
 
 // ---------- Tar bort emojis ur text (UI ska vara emojifritt) ----------

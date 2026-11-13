@@ -129,10 +129,10 @@ const VAROR = {
   // Rolfs tacksamhetssaker – kan inte köpas, bara få
   // filament nivå 2–5: låses upp med respekt. Kommer från tungt skräp (tunnor, kajaker) och från Rolf.
   rulle2: { namn: 'Filament nivå 2 – röd PETG', ikon: '', gram: 0, tid: 0, pris: 0, fil: 2 },
-  fynd2: { namn: 'Röd PETG-back (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 2, beskr: 'Riktigt bra plast. Mal den i kvarnen – den blir en rulle röd PETG (filament nivå 2).' },
-  fynd3: { namn: 'Kolfiberrester (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 3, beskr: 'Mal i kvarnen – blir en rulle kolfiber (nivå 3).' },
-  fynd4: { namn: 'Guldglittrig plastdunk (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 4, beskr: 'Mal i kvarnen – blir en rulle guldkomposit (nivå 4).' },
-  fynd5: { namn: 'Titanspån i en hink (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 5, beskr: 'Mal i kvarnen – blir en rulle titanblandning (nivå 5).' },
+  fynd2: { namn: 'Röd PETG-back (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 2, beskr: 'Råmaterial: riktigt bra plast. Kvarnen behöver härdade knivar (Ali) – sen blir den en rulle röd PETG, filament nivå 2.' },
+  fynd3: { namn: 'Kolfiberrester (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 3, beskr: 'Råmaterial. Kräver härdade kvarnknivar – blir en rulle kolfiber, nivå 3.' },
+  fynd4: { namn: 'Guldglittrig plastdunk (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 4, beskr: 'Råmaterial. Kräver diamantkvarn – blir en rulle guldkomposit, nivå 4.' },
+  fynd5: { namn: 'Titanspån i en hink (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 5, beskr: 'Råmaterial. Kräver diamantkvarn – blir en rulle titanblandning, nivå 5.' },
   rulle3: { namn: 'Filament nivå 3 – kolfiber', ikon: '', gram: 0, tid: 0, pris: 0, fil: 3 },
   rulle4: { namn: 'Filament nivå 4 – guldkomposit', ikon: '', gram: 0, tid: 0, pris: 0, fil: 4 },
   rulle5: { namn: 'Filament nivå 5 – titanblandning', ikon: '', gram: 0, tid: 0, pris: 0, fil: 5 },
@@ -231,6 +231,8 @@ const MASKINER = {
   spolhallare3: { namn: 'Spoltorn', ikon: '', syns: () => skrivare.some((x) => (x.spolNiva || 0) >= 2), ritning: 1500, delar: 4, gram: 900, tid: 14, monteras: true, beskr: 'Ett torn med 20 rullar – behövs för riktigt stora prints som biljardbord och jacuzzi' },
   matarband: { namn: 'Skräpcontainer – extra kapacitet', ikon: '🗑️', syns: () => S.kvarn.motor && S.rolf.i >= 1, ritning: 220, delar: 3, gram: 700, tid: 14, beskr: `En container som står BAKOM kvarnen. Töm allt skräp i den (60 st) – ett litet band matar kvarnens tratt automatiskt. Montera: välj den och klicka på kvarnen`, monteras: true },
   rullstall: { namn: 'Rullställ vid extrudern', ikon: '', syns: () => (S.stat.hamtat || 0) >= 3 || S.rolf.i >= 1, ritning: 180, delar: 2, gram: 500, tid: 12, beskr: 'Ställs bredvid extrudern och lagrar 4 rullar till – kvarnen kan mala längre utan att stanna. Upp till tre ställ.', monteras: true },
+  hardkniv: { namn: 'Härdade kvarnknivar', ikon: '', syns: () => S.respekt >= 25 || ['fynd2', 'fynd3'].some((f) => antalInv(f)), ritning: 300, delar: 2, gram: 600, tid: 12, monteras: true, beskr: 'Knivar av härdat stål. Utan dem klarar kvarnen inte Rolfs fynd – med dem blir röd PETG och kolfiberrester till filament nivå 2 och 3.' },
+  diamantkniv: { namn: 'Diamantkvarn', ikon: '', syns: () => (S.kvarn.kniv || 0) >= 1 && (S.respekt >= 110 || ['fynd4', 'fynd5'].some((f) => antalInv(f))), ritning: 1500, delar: 3, gram: 1000, tid: 16, monteras: true, beskr: 'Diamantbelagda knivar. Klarar guldkomposit och titanspån – filament nivå 4 och 5.' },
   stortratt: { namn: 'Stor kvarntratt', ikon: '🪣', syns: () => S.karra, ritning: 150, delar: 2, gram: 600, tid: 12, beskr: 'Bred tratt med kross – nu får regntunnor och kajaker plats i kvarnen', monteras: true },
   // bygg ut skjulet till ett riktigt hem – printa delarna, välj dem och klicka på skjulet för att montera
   dorr: { namn: 'Dörr', ikon: '🚪', hem: true, monteras: true, syns: () => S.sang, ritning: 120, delar: 2, gram: 800, tid: 14, trivsel: 8, beskr: 'En riktig dörr – slut på drag och nyfikna katter' },
@@ -254,7 +256,7 @@ const MASKINER = {
 // vad varje del heter – det är de här som printas en i taget
 const DEL_NAMN = {
   kvarnmotor: ['Motorhus', 'Fläkthjul'], bank: ['Batterilåda', 'Lock med kontakter'], korg: ['Korg', 'Axelremmar'],
-  karra: ['Korg', 'Hjul', 'Handtag'], magnet: ['Pistolkropp', 'Magnetspole', 'Batterilucka'], stortratt: ['Tratt', 'Krosskäftar'],
+  karra: ['Korg', 'Hjul', 'Handtag'], magnet: ['Pistolkropp', 'Magnetspole', 'Batterilucka'], stortratt: ['Tratt', 'Krosskäftar'], hardkniv: ['Knivhållare', 'Härdade knivar'], diamantkniv: ['Knivtrumma', 'Diamantknivar', 'Lager'],
   grip: ['Käftar', 'Skaft med avtryckare'], bord: ['Bordsskiva', 'Ben', 'Ben'], sol: ['Panelram', 'Solceller', 'Stativ'],
   skrivare2: ['Ram', 'Byggbädd', 'Skrivhuvud', 'Extruder', 'Styrkort'],
   spolhallare3: ['Torn', 'Axlar', 'Fot', 'Hylsor'],
@@ -2703,6 +2705,13 @@ interaktor.registrera(kvarn, {
     if (valdTyp() === 'byggsats:turbomotor' && S.kvarn.motor) { taBortVald(); S.kvarn.turbo = true; turboDel.visible = true; ljud.stor(); ui.toast('🔥 TURBO! Kvarnen mal 2,5× snabbare.', 'guld'); sparaSnart(); return; }
     if (valdTyp() === 'byggsats:jetmotor' && S.kvarn.turbo) { taBortVald(); S.kvarn.jet = true; jetDel.visible = true; ljud.stor(); ui.toast('🚀 JETMOTOR MED EFTERBRÄNNARE! Kvarnen mal 6× snabbare.', 'guld'); sparaSnart(); return; }
     if (valdTyp()?.startsWith('burk_')) { malBurk(); return; }
+    if (valdTyp() === 'byggsats:hardkniv' || valdTyp() === 'byggsats:diamantkniv') {
+      const n = valdTyp() === 'byggsats:hardkniv' ? 1 : 2;
+      if ((S.kvarn.kniv || 0) >= n) { ui.toast('De knivarna sitter redan i kvarnen', 'fel'); return; }
+      if (n === 2 && !S.kvarn.kniv) { ui.toast('Sätt i de härdade knivarna först', 'fel'); return; }
+      taBortVald(); S.kvarn.kniv = n; ljud.stor(); sparaSnart();
+      ui.toast(n === 1 ? 'Härdade knivar i kvarnen! Nu klarar den röd PETG och kolfiber.' : 'Diamantkvarnen sitter! Guld och titan – kom an.', 'guld'); return;
+    }
     if (VAROR[valdTyp()]?.malTill) { malFynd(); return; }
     if (bandTyp()) { taBortVald(); S.kvarn.band = true; matarband.visible = true; ljud.stor(); ui.toast('🗑️ Skräpcontainern står bakom kvarnen! Töm allt skräp i den – bandet matar kvarnen själv.', 'guld'); sparaSnart(); return; }
     let n = 0;
@@ -4183,13 +4192,16 @@ function andraRespekt(d, varfor) {
     setTimeout(() => ui.toast(`❤️ ${g} i respekt! Upplåst: ${namn}. Tunnor och kajaker ger nu sånt filament.`, 'guld'), 1500);
     S.post.tillMig = [...S.post.tillMig, 'sak:fynd' + n, 'sak:fynd' + n, 'sak:fynd' + n]; visaPostInne();
     const fynd = VAROR['fynd' + n].namn.replace(' (från Rolf)', '').toLowerCase();
-    setTimeout(() => sms('rolf', `Folk pratar gott om dej. Ja hitta tre ${n === 2 ? 'röda backar av riktigt bra plast' : fynd} på tippen. Sånt ger ja bara folk me respekt. Ligger i brevlådan vid grinden. Mal dom i kvarnen så blir det ${namn.split('– ')[1]}. /R`), 5000);
+    setTimeout(() => sms('rolf', `Folk pratar gott om dej. Ja hitta tre ${n === 2 ? 'röda backar av riktigt bra plast' : fynd} på tippen. Sånt ger ja bara folk me respekt. Ligger i brevlådan vid grinden. Din kvarn biter inte på sånt. Ali har ${n <= 3 ? 'härdade knivar' : 'en diamantkvarn'} – sen blir det ${namn.split('– ')[1]}. /R`), 5000);
   });
   sparaSnart();
 }
 // Rolfs fynd: special-plast som kvarnen gör till filament av högre nivå
 function malFynd() {
-  const t = valdTyp(), n = VAROR[t].malTill;
+  const t = valdTyp(), n = VAROR[t].malTill, kravs = n <= 3 ? 1 : 2;
+  if ((S.kvarn.kniv || 0) < kravs) {
+    ui.toast(`Knivarna biter inte på ${VAROR[t].namn.replace(' (från Rolf)', '').toLowerCase()} – köp ${kravs === 1 ? 'Härdade kvarnknivar' : 'Diamantkvarn'} hos Ali och sätt i dem`, 'fel'); ljud.fel(); return;
+  }
   taBortVald();
   const m = skapaVara(t), fran = hand.grupp ? hand.grupp.getWorldPosition(new THREE.Vector3()) : kamera.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, -0.3, 0));
   skickaSkrap(m, fran, trattTopp(), { dur: 0.7, tratt: false });
@@ -4197,7 +4209,7 @@ function malFynd() {
   setTimeout(() => {
     laggTill('rulle' + n); ritaHotbar?.();
     ui.toast(`Kvarnen gav en rulle ${VAROR['rulle' + n].namn.toLowerCase()}! Den behövs för de finare recepten.`, 'guld');
-    if (!S.fyndForklarat) { S.fyndForklarat = true; inkorg({ vem: 'du', titel: 'Tanke', lapp: true, text: `Röd PETG. Starkare än vanlig plast – Ali har recept som kräver den. Rolf hittar mer ju mer folk respekterar mig.` }); }
+    if (!S.fyndForklarat) { S.fyndForklarat = true; inkorg({ vem: 'du', titel: 'Tanke', lapp: true, text: `${VAROR['rulle' + n].namn.split('– ')[1]}. Starkare än vanlig plast – Ali har recept som kräver den. Rolf hittar mer ju mer folk respekterar mig.` }); }
   }, 900);
 }
 // Mal mammas saker till filament. Det funkar. Men mamma får veta.
@@ -4264,7 +4276,7 @@ function arKlar(m, extra = 0) {
   if (fler.includes(m)) return false;
   return (m === 'grip' && S.grip) || (m === 'magnet' && S.magnet) || (m === 'korg' && S.korg) || (m === 'karra' && S.karra) || (m === 'kvarnmotor' && S.kvarn.motor)
     || (m === 'rullband' && S.auto?.band) || (m === 'lastarm' && S.auto?.lastarm) || (m === 'robotarm' && S.auto?.arm) || (m === 'utlada' && S.auto?.lada)
-    || (m === 'rullstall' && (S.rullstall || 0) >= 3) || (m === 'stortratt' && S.kvarn.stor) || (m === 'matarband' && S.kvarn.band) || (m === 'turbomotor' && S.kvarn.turbo) || (m === 'jetmotor' && S.kvarn.jet) || (m === 'gamingbod' && S.bod)
+    || (m === 'rullstall' && (S.rullstall || 0) >= 3) || (m === 'stortratt' && S.kvarn.stor) || (m === 'hardkniv' && (S.kvarn.kniv || 0) >= 1) || (m === 'diamantkniv' && (S.kvarn.kniv || 0) >= 2) || (m === 'matarband' && S.kvarn.band) || (m === 'turbomotor' && S.kvarn.turbo) || (m === 'jetmotor' && S.kvarn.jet) || (m === 'gamingbod' && S.bod)
     || (m === 'spolhallare' && skrivare.every((x) => (x.spolNiva || 0) >= 1)) || (m === 'spolhallare2' && skrivare.every((x) => (x.spolNiva || 0) >= 2)) || (m === 'spolhallare3' && skrivare.every((x) => (x.spolNiva || 0) >= 3))
     || (MASKINER[m]?.hem && m !== 'fonster' && m !== 'vaggar' && !!S.hem?.[m])
     || (m === 'fonster' && fonsterLista().length + antalInv('byggsats:fonster') + extra >= FONSTER.max)
