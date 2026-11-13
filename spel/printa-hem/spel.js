@@ -2149,7 +2149,7 @@ function skrivarText(sk) {
   if (sk.klar) return `Ta ut ${namnPa(sk.klar)}` + (MASKINER[sk.klar.split(':')[1]]?.verktyg || MASKINER[sk.klar.split(':')[1]]?.monteras ? '' : ' → förrådet');
   if (sk.jobb) {
     const j = sk.jobb, vad = j.maskin ? `${MASKINER[j.maskin].namn}: ${delNamn(j.maskin, j.del - 1).toLowerCase()} (del ${j.del}/${MASKINER[j.maskin].delar})` : VAROR[j.typ].namn;
-    return `${namn} printar ${vad} – ${Math.floor(sk.prog * 100)}%${sk.vantar ? ' · ' + sk.vantar : ''}`;
+    return `${vad} – ${Math.floor(sk.prog * 100)} %${sk.vantar ? ' · ' + sk.vantar : ''}`;
   }
   return `Använd skrivaren (${namn})`;
 }
@@ -5228,6 +5228,32 @@ function matFlaskhals(dt) {
   const mEl = malText.parentElement, r = mEl.getBoundingClientRect(), topPx = Math.round((r.height ? r.bottom : 200) + 8) + 'px';
   if (flaskEl.style.top !== topPx) flaskEl.style.top = topPx;
 }
+// ---------- Progress över varje skrivare: bara vad den printar och hur långt den kommit ----------
+const skrivBarLager = document.createElement('div'); skrivBarLager.className = 'hud-stopplager'; document.body.appendChild(skrivBarLager);
+const skrivBarV = new THREE.Vector3(), skrivBarK = new THREE.Vector3();
+function ritaSkrivBarer() {
+  const stopp = new Set(ui.igang ? maskinStopp().filter((x) => x.typ !== 'hit').map((x) => x.obj) : []);
+  skrivare.forEach((sk, i) => {
+    let d = skrivBarLager.children[i];
+    if (!d) { d = document.createElement('div'); d.className = 'hud-skrivbar'; d.innerHTML = '<div class="rad"><b></b><span></span></div><div class="bar"><i></i></div>'; skrivBarLager.appendChild(d); }
+    const j = sk.jobb;
+    if (!ui.igang || !j || stopp.has(sk.mesh) || !sk.mesh.parent) { d.style.display = 'none'; return; }
+    sk.mesh.getWorldPosition(skrivBarV); skrivBarV.y += 0.6 * (sk.mesh.userData.sk || 1) + 0.2;
+    const avst = skrivBarV.distanceTo(kamera.getWorldPosition(skrivBarK));
+    skrivBarV.project(kamera);
+    if (skrivBarV.z > 1 || avst > 14 || Math.abs(skrivBarV.x) > 1.1) { d.style.display = 'none'; return; }
+    d.style.display = '';
+    const namn = j.maskin ? `${MASKINER[j.maskin].namn}${MASKINER[j.maskin].delar > 1 ? ` ${j.del}/${MASKINER[j.maskin].delar}` : ''}` : VAROR[j.typ].namn;
+    const pct = Math.floor(sk.prog * 100) + ' %';
+    const b = d.querySelector('b'), sp = d.querySelector('span');
+    if (b.textContent !== namn) b.textContent = rens(namn);
+    if (sp.textContent !== pct) sp.textContent = pct;
+    d.querySelector('i').style.width = (sk.prog * 100).toFixed(1) + '%';
+    const sc = Math.max(0.65, Math.min(1, 6 / avst));
+    d.style.transform = `translate(${(skrivBarV.x * 0.5 + 0.5) * innerWidth}px,${(-skrivBarV.y * 0.5 + 0.5) * innerHeight}px) translate(-50%,-100%) scale(${sc.toFixed(2)})`;
+  });
+  while (skrivBarLager.children.length > skrivare.length) skrivBarLager.lastChild.remove();
+}
 function ritaStopp() {
   // skyltarna trappas ner när du lärt dig: dag 1 allt, dag 2 kortare, dag 3–4 bara röda stopp, sedan inga
   const dagN = S.dag || 1;
@@ -5813,7 +5839,7 @@ function uppdatera(dt) {
   // matarbandet flyttar skräp från bingen till tratten (drar lite ström)
   if (!STEG[S.steg] && !sover) { const fore = S.dagTid || 0; S.dagTid = Math.min(DAG_LANGD, fore + dt); if (Math.floor(fore / 30) !== Math.floor(S.dagTid / 30)) sparaSnart(); }
   if (harProto('m_fusion')) S.strom = Math.min(stromMax(), S.strom + dt * 0.8);
-  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraBlick(dt); uppdateraMalPil(); ritaStopp(); matFlaskhals(dt); ritaPlatsLappar(); korBud(); kollaPuffar(dt); visaRullstall(); kollaRaddning(dt); for (const sk of skrivare) visaSpolar(sk);
+  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraBlick(dt); uppdateraMalPil(); ritaStopp(); ritaSkrivBarer(); matFlaskhals(dt); ritaPlatsLappar(); korBud(); kollaPuffar(dt); visaRullstall(); kollaRaddning(dt); for (const sk of skrivare) visaSpolar(sk);
   if (S.kvarn.band) {
     const kor = S.kvarn.binge.length > 0 && S.kvarn.tratt < TRATT_MAX && S.strom > 0.5;
     if (kor) {

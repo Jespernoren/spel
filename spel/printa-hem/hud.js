@@ -86,6 +86,9 @@ export const HUD_CSS = `
 .ali-niva-rub .ui-knapp{min-width:0;padding:7px 12px;font-size:13.5px}
 .ali-niva.kop .ui-sektion span{color:#ffc2cb}
 .ph-ali-panel .ui-ruta .pris.minus{color:#ffb3bd}
+.hud-skrivbar{position:absolute;left:0;top:0;transform-origin:50% 100%;width:190px;padding:6px 10px 8px;border-radius:9px;background:${LAGER_SVAG},rgba(25,28,36,.88);color:#fff;font:800 13px/1.2 system-ui;box-shadow:0 6px 14px rgba(0,0,0,.3)}
+.hud-skrivbar .rad{display:flex;justify-content:space-between;gap:8px;margin-bottom:5px}.hud-skrivbar b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hud-skrivbar span{color:#9fe8ff;font-variant-numeric:tabular-nums}
+.hud-skrivbar .bar{height:9px;border-radius:999px;background:rgba(255,255,255,.15);overflow:hidden}.hud-skrivbar .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3de3ff,#7dffb0)}
 .hud-flask{position:fixed;left:max(12px,env(safe-area-inset-left));z-index:21;width:280px;box-sizing:border-box;pointer-events:none;font:700 13px/1.35 system-ui;color:#fff;display:flex;flex-direction:column;gap:6px}
 .hud-flask>div{padding:8px 12px 9px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.88);border-left:5px solid var(--lingon);box-shadow:0 6px 16px rgba(0,0,0,.3)}
 .hud-flask b{display:block;font:900 11px/1.2 system-ui;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
