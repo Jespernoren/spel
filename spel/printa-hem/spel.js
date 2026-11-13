@@ -267,6 +267,28 @@ const DEL_NAMN = {
 const PRIS_SKALA = 0.6;
 for (const v of Object.values(MASKINER)) if (v.ritning >= 150) v.ritning = Math.round(v.ritning * PRIS_SKALA / 10) * 10;
 for (const v of Object.values(VAROR)) if (v.lyx && v.recept >= 150) v.recept = Math.round(v.recept * PRIS_SKALA / 10) * 10;
+// ---------- Ali får in nytt i lagom takt: högst två nyheter per dag ----------
+// Saker som behövs för dagens uppdrag släpps alltid direkt (annars kan man fastna).
+// Övrigt (uppgraderingar, recept, lyx) släpps billigast först, två om dagen – en naturlig progression.
+const SLAPP_PER_DAG = 2;
+const SLAPP_FRI = new Set(['grip', 'kvarnmotor', 'sang', 'dorr', 'vaggar', 'tak', 'fonster', 'golv', 'taklampa', 'tapeter', 'stortratt', 'bord', 'sol', 'skrivare2', 'gamingbod', 'karra', 'hardkniv', 'diamantkniv', 'mobilstall', 'skrivare3', 'jacuzzi', 'gamingstol', 'hogtalare', 'ledpinne']);
+const SLAPP_ORIG = {};
+const slappPris = (id) => MASKINER[id]?.ritning ?? VAROR[id]?.recept ?? 0;
+for (const [id, v] of [...Object.entries(MASKINER), ...Object.entries(VAROR)]) {
+  if (typeof v.syns !== 'function' || SLAPP_FRI.has(id)) continue;
+  SLAPP_ORIG[id] = v.syns;
+  v.syns = () => SLAPP_ORIG[id]() && (!S.slappt || S.slappt.includes(id));
+}
+function slappNya() {
+  const kandidater = Object.keys(SLAPP_ORIG).filter((id) => !S.slappt?.includes(id) && SLAPP_ORIG[id]());
+  if (!S.slappt) { S.slappt = kandidater; S.slapptDag = {}; return; }   // äldre sparning: allt som redan syns stannar
+  if (!kandidater.length) return;
+  S.slapptDag = S.slapptDag || {};
+  const idag = S.slapptDag[S.dag] || 0; if (idag >= SLAPP_PER_DAG) return;
+  kandidater.sort((a, b) => slappPris(a) - slappPris(b));
+  const ny = kandidater.slice(0, SLAPP_PER_DAG - idag);
+  S.slappt.push(...ny); S.slapptDag[S.dag] = idag + ny.length; sparaSnart();
+}
 Object.assign(DEL_NAMN, { turbomotor: ['Turbin', 'Insugsrör', 'Röda ränder'], jetmotor: ['Kompressor', 'Brännkammare', 'Munstycke', 'Efterbrännare'] });
 Object.assign(DEL_NAMN, { tapeter: ['Tapetrulle 1', 'Tapetrulle 2', 'Tapetrulle 3', 'Tapetrulle 4'], gamingbod: ['Golv', 'Bakvägg', 'Sidvägg', 'Sidvägg', 'Tak', 'Dörr och fönster'] });
 Object.assign(DEL_NAMN, { rullstall: ['Ställning', 'Spolaxlar'], spolhallare: ['Ställning', 'Spolaxlar'], spolhallare2: ['Hög ställning', 'Spolaxlar', 'Kullager'] });
@@ -3673,7 +3695,7 @@ function kollaSmsKo() {
   if (pausad || !ui.butiksOverlay.hidden || !medEl2.hidden || medKo.length || performance.now() - senasteSms < 25000) return;
   S.smsKo.shift(); sms(f.vem, f.text, f.id); sparaSnart();
 }
-setInterval(() => { kollaAliKo(); kollaSmsKo(); }, 3000);
+setInterval(() => { slappNya(); kollaAliKo(); kollaSmsKo(); }, 3000);
 function aliStolt(id, namn, arAlis) {
   if (!arAlis || !namn) return;
   S.aliStolt = S.aliStolt || [];
