@@ -185,6 +185,7 @@ const VAROR = {
 Object.assign(VAROR, {
   gamingstol: { namn: 'Gamingstol', ikon: '🪑', recept: 900, pris: 0, gram: 3000, tid: 50, trivsel: 10, placerbar: true, radie: 0.35, syns: () => S.sang, lyx: 'Alis AI-modell nr 7. Han skrev prompten på en servett.' },
   hogtalare: { namn: 'Högtalare', ikon: '🔊', recept: 700, pris: 0, gram: 1500, tid: 30, trivsel: 8, placerbar: true, radie: 0.2, syns: () => S.sang, lyx: 'Lådan printar du – Ali lägger med högtalarelementen.' },
+  kamin: { namn: 'Vedkamin', ikon: '🔥', recept: 900, pris: 0, gram: 4000, tid: 60, trivsel: 25, placerbar: true, radie: 0.35, syns: () => S.dag >= 8, lyx: 'Gjutjärnslook. Ställ den i skjulet så fryser du inte i vinter.' },
   kyl: { namn: 'Minikylskåp', ikon: '🧊', recept: 1200, pris: 0, gram: 4000, tid: 60, trivsel: 10, placerbar: true, radie: 0.3, syns: () => S.rolf.i >= 1, lyx: 'Skalet printar du – kylaggregatet följer med ritningen.' },
   gamingbord: { namn: 'Gamingbord med skärm', ikon: '🖥️', recept: 1800, pris: 0, gram: 5000, tid: 70, trivsel: 15, placerbar: true, radie: 0.6, syns: () => S.rolf.i >= 1, lyx: 'Bordet och skärmramen printar du – panelen ingår.' },
   soffa: { namn: 'Soffa', ikon: '🛋️', recept: 2200, pris: 0, gram: 7000, tid: 80, trivsel: 15, placerbar: true, radie: 0.8, syns: () => S.rolf.i >= 2, lyx: 'Alis stolthet. Han har aldrig suttit i den.' },
@@ -1341,6 +1342,11 @@ function skapaVara(typ) {
     const k = cyl(0.13, 0.13, 0.1, mat(f, { emissive: f, emissiveIntensity: 0.25, metalness: typ === 'rulle4' || typ === 'rulle5' ? 0.7 : 0.1, roughness: 0.4 }), 20); k.rotation.x = Math.PI / 2; k.position.y = 0.16; g.add(k);
     for (const z of [-0.06, 0.06]) { const fl = cyl(0.16, 0.16, 0.015, mat(0x222222), 20); fl.rotation.x = Math.PI / 2; fl.position.set(0, 0.16, z); g.add(fl); }
     const sk = skylt(typ.slice(-1), 0.1, 0.1, '#ffffff', '#111111'); sk.position.set(0, 0.16, 0.07); g.add(sk);
+  } else if (typ === 'kamin') {
+    const j = mat(0x2a2a2a, { metalness: 0.5, roughness: 0.6 });
+    g.add(at(box(0.55, 0.7, 0.45, j), 0, 0.45, 0), at(box(0.6, 0.06, 0.5, j), 0, 0.83, 0), at(cyl(0.07, 0.07, 1.4, j, 10), 0, 1.55, -0.1));
+    for (const [x, z] of [[-0.22, -0.18], [0.22, -0.18], [-0.22, 0.18], [0.22, 0.18]]) g.add(at(box(0.05, 0.1, 0.05, j), x, 0.05, z));
+    g.add(at(box(0.3, 0.25, 0.01, new THREE.MeshStandardMaterial({ color: 0xff7a20, emissive: 0xff5a10, emissiveIntensity: 1.4 })), 0, 0.45, 0.226));
   } else if (typ === 'n2_neon') {
     g.add(at(box(0.7, 0.05, 0.05, mat(0x333333)), 0, 0.03, 0));
     for (const [x, y, w, h] of [[-0.25, 0.35, 0.05, 0.5], [0, 0.6, 0.55, 0.05], [0.25, 0.35, 0.05, 0.5], [0, 0.35, 0.3, 0.05]]) g.add(at(box(w, h, 0.04, new THREE.MeshStandardMaterial({ color: 0x3aa0ff, emissive: 0x3aa0ff, emissiveIntensity: 1.2 })), x, y, 0));
@@ -2995,7 +3001,7 @@ function sov() {
   requestAnimationFrame(() => { sl.style.opacity = '1'; });
   satLjus(KVALL);
   setTimeout(() => {
-    S.dag = natt + 1; S.saltIdag = {}; S.dagTid = 0; aliHamtarLadan(); sparaSnart(); setTimeout(familjSms, 4000); kollaMarkTips(); kollaPolett(); ruttnaOverNatten(); if (S.dag === 5 && !(S.filGava || []).includes(0)) { S.filGava = [...(S.filGava || []), 0]; S.post.tillMig = [...S.post.tillMig, 'sak:rulle2']; visaPostInne(); setTimeout(() => sms('rolf', 'La en blå rulle i lådan. Hitta den i en tunna. Bättre grejer än vanlig plast. Tunnor o kajaker ger mer sånt när folk börjar respektera dej. /R'), 8000); } setTimeout(sparaDagBokmarke, 1500);
+    kollaKyla(); S.dag = natt + 1; S.saltIdag = {}; S.dagTid = 0; aliHamtarLadan(); sparaSnart(); setTimeout(familjSms, 4000); kollaMarkTips(); kollaPolett(); ruttnaOverNatten(); uppdateraArstid(); if (S.dag === 5 && !(S.filGava || []).includes(0)) { S.filGava = [...(S.filGava || []), 0]; S.post.tillMig = [...S.post.tillMig, 'sak:rulle2']; visaPostInne(); setTimeout(() => sms('rolf', 'La en blå rulle i lådan. Hitta den i en tunna. Bättre grejer än vanlig plast. Tunnor o kajaker ger mer sånt när folk börjar respektera dej. /R'), 8000); } setTimeout(sparaDagBokmarke, 1500);
     skymning = 0; sover = false; sol.position.set(14, 24, 8); if (hemiLjus) hemiLjus.intensity = 1.4; if (skjulLampa) skjulLampa.intensity = skjulLampa.userData.bas || 4;
     satLjus(DAG); sl.innerHTML = `<div>☀️ Dag ${S.dag}</div>`; ljud.stor();
   }, 2600);
@@ -3857,6 +3863,36 @@ function uppdateraSopbil(dt) {
 let aliTimer = 0;
 
 // ---------- Trivsel ----------
+// ---------- Årstider och kyla ----------
+const arstid = (d = S.dag) => d < 10 ? 'sommar' : d < 20 ? 'host' : 'vinter';
+const ARSTID_NAMN = { sommar: 'Sommar ☀️', host: 'Höst 🍂', vinter: 'Vinter ❄️' };
+// hur varmt är det i skjulet? tak 2, dörr 1, väggar 1 st per vägg, golv 1, kamin 3
+function varme() {
+  const h = S.hem || {}, kamin = placerade.some((p) => p.typ === 'kamin' && Math.hypot(p.x - SKJUL.x, p.z - SKJUL.z) < 7);
+  return (h.tak ? 2 : 0) + (h.dorr ? 1 : 0) + Math.min(4, h.vagg || 0) + (h.golv ? 1 : 0) + (kamin ? 3 : 0);
+}
+const VARME_KRAV = { sommar: 0, host: 4, vinter: 9 };
+function kollaKyla() {     // körs när man somnar
+  const a = arstid(), krav = VARME_KRAV[a], v = varme();
+  if (v >= krav) { if (a !== 'sommar' && !S.varmVisad?.[a]) { S.varmVisad = { ...(S.varmVisad || {}), [a]: true }; setTimeout(() => ui.toast(`🔥 Varmt och skönt i skjulet trots ${a === 'host' ? 'hösten' : 'vintern'}.`, 'bra'), 7000); } return; }
+  S.frusDag = S.dag + 1; S.frusit = (S.frusit || 0) + 1;
+  const vad = [!S.hem?.tak && 'tak', !S.hem?.dorr && 'dörr', (S.hem?.vagg || 0) < 4 && 'fler väggar', !S.hem?.golv && 'golv', a === 'vinter' && !placerade.some((p) => p.typ === 'kamin') && 'en vedkamin (ritning hos Ali)'].filter(Boolean);
+  setTimeout(() => ui.toast(`🥶 Du frös i natt! Trivsel −40 idag. Skjulet behöver: ${vad.join(', ')}.`, 'fel'), 7000);
+  const r = [['mamma', 'Pappa säger att det var minusgrader i natt. Har du LÅNGKALSONGER?? Jag stickar ett par. Två par.'], ['bror', 'Mamma har googlat "hypotermi". Hon har skickat länken till mig fyra gånger. Skaffa en kamin, för min skull.'], ['mamma', 'Jag har lagt raggsockor i en kasse. Och en filt. Och sylt. Pappa kör i morgon.']][S.frusit % 3];
+  setTimeout(() => sms(r[0], r[1]), 15000);
+}
+let kallVarnadDag = 0;
+function varnaKyla(k) {
+  const a = arstid(); if (a === 'sommar' || k == null || k < 17 * 60 || kallVarnadDag === S.dag || varme() >= VARME_KRAV[a]) return;
+  kallVarnadDag = S.dag; ui.toast(`🌡️ Det blir kallt i natt. Värmen i skjulet: ${varme()}/${VARME_KRAV[a]} – ${a === 'vinter' ? 'tak, dörr, fyra väggar, golv och en vedkamin' : 'tak, dörr och någon vägg'} behövs.`, 'fel');
+}
+let visadArstid = null;
+function uppdateraArstid() {
+  const a = arstid(); if (a === visadArstid) return;
+  const forsta = visadArstid === null; visadArstid = a; miljo.satArstid(a);
+  if (!forsta && a !== 'sommar') ui.toast(a === 'host' ? '🍂 Hösten är här. Nätterna blir kalla – se till att skjulet håller värmen.' : '❄️ Vintern är här! Utan vedkamin och hela väggar fryser du.', 'guld');
+}
+
 // ---------- Respekt ----------
 const BURK_RESPEKT = 4;
 const RESPEKT_NIVAER = [[25, 'Filament nivå 2 – blå PETG'], [60, 'Filament nivå 3 – kolfiber'], [110, 'Filament nivå 4 – guldkomposit'], [180, 'Filament nivå 5 – titanblandning']];
@@ -3916,7 +3952,7 @@ function trivsel() {
   const antal = {};
   const saker = (S.bod ? MASKINER.gamingbod.trivsel : 0) + placerade.reduce((s, p) => { const n = antal[p.typ] = (antal[p.typ] || 0) + 1; return s + (info(p.typ).trivsel || 0) * 0.6 ** (n - 1); }, 0) + Object.keys(S.hem || {}).reduce((s, id) => s + (id === 'vaggar' ? 0 : id === 'skarm' ? 6 : id === 'fonster' ? fonsterLista().length * MASKINER.fonster.trivsel : MASKINER[id]?.trivsel || 0), 0) + (S.hem?.vagg || 0) * MASKINER.vaggar.trivsel;
   const ren = Math.max(0, 1 - skrapLista.filter((x) => !paTippen(x.position.x, x.position.z)).length / ANTAL_SKRAP);
-  return Math.round(saker + ren * 30 + (S.bodTapet ? 15 + S.bodTapet * 5 : 0) + (S.hem?.tapet ? S.hem.tapet * 5 : 0) + (agerMark('egen') ? 40 : 0));
+  return Math.round(saker + ren * 30 + (S.bodTapet ? 15 + S.bodTapet * 5 : 0) + (S.hem?.tapet ? S.hem.tapet * 5 : 0) + (agerMark('egen') ? 40 : 0) - (S.frusDag === S.dag ? 40 : 0));
 }
 
 // ---------- Menyer (använder FpUI:s butiksruta) ----------
@@ -5068,7 +5104,7 @@ function uppdatera(dt) {
     const oppen = aliOppen();
     ali.visible = oppen; aliStangt.visible = !oppen;
     if (oppen) ali.userData.huvud.rotation.y = Math.sin(performance.now() / 2300) * 0.35;
-    const k = klockan(), kt = `Dag ${S.dag}` + (k == null ? '' : (k >= 21 * 60 ? ' · 21:00 · Ali har stängt' : ` · ${klockText(k)}`));
+    const k = klockan(); varnaKyla(k); const kt = `Dag ${S.dag} · ${ARSTID_NAMN[arstid()]}` + (k == null ? '' : (k >= 21 * 60 ? ' · 21:00 · Ali har stängt' : ` · ${klockText(k)}`));
     const ke = document.querySelector('.ph-klocka'), kt2 = rens(kt); if (ke && ke.textContent !== kt2) { ke.textContent = kt2; ke.parentElement.style.display = kt2 ? '' : 'none'; }
   }
   // motorn mal av sig själv (även när menyn är öppen)
@@ -5084,7 +5120,7 @@ function uppdatera(dt) {
   // matarbandet flyttar skräp från bingen till tratten (drar lite ström)
   if (!STEG[S.steg] && !sover) { const fore = S.dagTid || 0; S.dagTid = Math.min(DAG_LANGD, fore + dt); if (Math.floor(fore / 30) !== Math.floor(S.dagTid / 30)) sparaSnart(); }
   if (harProto('m_fusion')) S.strom = Math.min(stromMax(), S.strom + dt * 0.8);
-  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); uppdateraMalPil(); for (const sk of skrivare) visaSpolar(sk);
+  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); uppdateraMalPil(); for (const sk of skrivare) visaSpolar(sk);
   if (S.kvarn.band) {
     const kor = S.kvarn.binge.length > 0 && S.kvarn.tratt < TRATT_MAX && S.strom > 0.5;
     if (kor) {
@@ -5319,7 +5355,7 @@ function folkbokfor() {
   setTimeout(() => sms('bror', 'Pappa sa "fint jobbat". Två gånger. Han har aldrig sagt det två gånger. Grattis brorsan. Eller vad du nu är. Du vet.'), 32000);
   setTimeout(() => ui.visaStart('🏆 Du är hemma', `<b>Du klarade det på dag ${S.dag}.</b><br>Från hobo dweller vid en soptipp till godsägare och folkbokförd. Mamma är imponerad. Pappa log.<br><br>Spelet fortsätter – bygg vidare så länge du vill.`, 'Fortsätt bygga'), 45000);
 }
-uppdateraMark(); kollaMarkTips(); kollaPolett();
+uppdateraMark(); kollaMarkTips(); kollaPolett(); uppdateraArstid();
 
 // ---------- Bokmärken: varje dag sparas så att man kan hoppa tillbaka i storyn ----------
 const BOKMARKE_NYCKEL = 'spar:printa-hem:dagar';
@@ -5524,6 +5560,6 @@ function kapitelSlut() {
 }
 
 // för automatiska tester
-window.__printahem = { folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });

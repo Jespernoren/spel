@@ -37,7 +37,9 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
   };
   const plats = (rMin, rMax, marg) => { for (let f = 0; f < 30; f++) { const a = rnd() * Math.PI * 2, r = rMin + rnd() * (rMax - rMin), x = Math.cos(a) * r, z = Math.sin(a) * r; if (ledig(x, z, marg)) return [x, z]; } return null; };
 
-  let mark = null;   // marken – spelet siktar mot den när man ställer ut saker
+  let mark = null, markBas = null;
+  const lovLista = [];   // lövträdens kronor – byter färg på hösten, faller på vintern
+  const barrLista = [];   // marken – spelet siktar mot den när man ställer ut saker
   // ---------- Marken: fläckigt gräs, mörkare och ljusare partier, lite jord ----------
   {
     const geo = new THREE.PlaneGeometry(160, 160, 96, 96); geo.rotateX(-Math.PI / 2);
@@ -51,7 +53,7 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
       skifta(c, 0, 0, (rnd() - 0.5) * 0.03);
       farg.push(c.r, c.g, c.b);
     }
-    geo.setAttribute('color', new THREE.Float32BufferAttribute(farg, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(farg, 3)); markBas = Float32Array.from(farg);
     const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 }));
     m.receiveShadow = true; scen.add(m); mark = m;
   }
@@ -69,7 +71,7 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
     for (let i = 0; i < lager; i++) {
       const k = i / lager, rad = (1.5 - k * 0.95) * mellan(0.85, 1.15) * s, hh = h / lager * 1.5;
       const kon = skugga(new THREE.Mesh(skrynkla(new THREE.ConeGeometry(rad, hh, 7 + Math.floor(rnd() * 3)), 0.08), mat(skifta(farg.clone(), 0, 0, i * 0.025))));
-      kon.position.y = 1.1 * s + k * h * 0.78 + hh / 2; kon.rotation.y = rnd() * 3; g.add(kon);
+      kon.position.y = 1.1 * s + k * h * 0.78 + hh / 2; kon.rotation.y = rnd() * 3; g.add(kon); barrLista.push([kon, kon.material.color.clone()]);
     }
     return g;
   }
@@ -94,7 +96,7 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
     const n = 3 + Math.floor(rnd() * 3);
     for (let i = 0; i < n; i++) {
       const b = skugga(new THREE.Mesh(skrynkla(new THREE.IcosahedronGeometry(mellan(0.6, 1.0) * s, 1), 0.12), mat(skifta(lov.clone(), 0, 0, mellan(-0.05, 0.05)))));
-      b.scale.y = mellan(1.1, 1.5); b.position.set(mellan(-0.5, 0.5) * s, h * mellan(0.75, 1.0), mellan(-0.5, 0.5) * s); g.add(b);
+      b.scale.y = mellan(1.1, 1.5); b.position.set(mellan(-0.5, 0.5) * s, h * mellan(0.75, 1.0), mellan(-0.5, 0.5) * s); g.add(b); lovLista.push([b, b.material.color.clone(), rnd()]);
     }
     return g;
   }
@@ -107,7 +109,7 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
     const n = 4 + Math.floor(rnd() * 4);
     for (let i = 0; i < n; i++) {
       const b = skugga(new THREE.Mesh(skrynkla(new THREE.IcosahedronGeometry(mellan(0.9, 1.5) * s, 1), 0.14), mat(skifta(lov.clone(), 0, 0, mellan(-0.05, 0.05)))));
-      b.position.set(mellan(-1.1, 1.1) * s, h + mellan(0, 1.4) * s, mellan(-1.1, 1.1) * s); g.add(b);
+      b.position.set(mellan(-1.1, 1.1) * s, h + mellan(0, 1.4) * s, mellan(-1.1, 1.1) * s); g.add(b); lovLista.push([b, b.material.color.clone(), rnd()]);
     }
     return g;
   }
@@ -240,5 +242,36 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
     const v = VIND * (0.7 + Math.sin(tid * 0.13) * 0.3);
     for (const t of trad) { const f = t.userData.fas; t.rotation.z = t.userData.lut + Math.sin(tid * 0.9 + f) * v; t.rotation.x = Math.sin(tid * 0.7 + f * 1.3) * v * 0.6; }
   }
-  return { uppdatera, trad, mark, staket, byggStaket, rojUt };
+  // ---------- Årstider: sommar, höst, vinter ----------
+  const HOST = [new THREE.Color(0xe0a020), new THREE.Color(0xd06020), new THREE.Color(0xb03a20), new THREE.Color(0xc8b030)];
+  const SNO = new THREE.Color(0xf4f6fa);
+  let snoFall = null;
+  function satArstid(a) {
+    for (const [m, bas, r] of lovLista) {
+      if (a === 'sommar') { m.visible = true; m.material.color.copy(bas); }
+      else if (a === 'host') { m.visible = r > 0.15; m.material.color.copy(bas).lerp(HOST[Math.floor(r * 4) % 4], 0.85); }
+      else { m.visible = r > 0.9; m.material.color.copy(HOST[1]).lerp(new THREE.Color(0x6a4a2a), 0.6); }
+    }
+    for (const [m, bas] of barrLista) m.material.color.copy(bas).lerp(SNO, a === 'vinter' ? 0.35 : 0);
+    if (mark && markBas) {
+      const c = mark.geometry.attributes.color, mal = a === 'vinter' ? SNO : a === 'host' ? new THREE.Color(0x9a8a50) : null;
+      for (let i = 0; i < c.count; i++) { const x = new THREE.Color(markBas[i * 3], markBas[i * 3 + 1], markBas[i * 3 + 2]); if (mal) x.lerp(mal, a === 'vinter' ? 0.82 : 0.4); c.setXYZ(i, x.r, x.g, x.b); }
+      c.needsUpdate = true;
+    }
+    if (a === 'vinter' && !snoFall) {
+      const n = 1500, pos = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) { pos[i * 3] = mellan(-25, 25); pos[i * 3 + 1] = mellan(0, 18); pos[i * 3 + 2] = mellan(-25, 25); }
+      const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      snoFall = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.08, transparent: true, opacity: 0.85, depthWrite: false })); scen.add(snoFall);
+    }
+    if (snoFall) snoFall.visible = a === 'vinter';
+  }
+  function uppdateraSno(dt, kamera) {
+    if (!snoFall?.visible) return;
+    snoFall.position.set(kamera.position.x, 0, kamera.position.z);
+    const p = snoFall.geometry.attributes.position;
+    for (let i = 0; i < p.count; i++) { let y = p.getY(i) - dt * (0.8 + (i % 7) * 0.12); if (y < 0) y += 18; p.setY(i, y); p.setX(i, p.getX(i) + Math.sin(y + i) * dt * 0.15); }
+    p.needsUpdate = true;
+  }
+  return { uppdatera, trad, mark, staket, byggStaket, rojUt, satArstid, uppdateraSno };
 }
