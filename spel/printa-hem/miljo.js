@@ -191,6 +191,28 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
   }
 
   // ---------- Gärdesgård runt området man får vara i – Rolf öppnar mer senare ----------
+  // arga skyltar: dödskallar, djävulshorn och serietidningssvordomar (#@!%&)
+  const ARGA = [['PRIVAT MARK!', 'HÅLL ER BORTA FÖR FAN!', 'dod'], ['FÖRSVINN!', 'JÄVLA INKRÄKTARE', 'horn'], ['BETRÄDES EJ!', 'ÄGAREN ÄR FÖRBANNAD', 'dod'], ['VÄND OM', 'FÖR HELVETE!', 'horn'], ['VARNING', 'FÖR ÄGAREN', 'dod'], ['%&#@!', 'BORT FRÅN MITT STAKET', 'horn'], ['INGEN', 'ÅTERVÄNDO', 'dod'], ['DRA ÅT HELVETE', '/BENGT-ÅKE', 'horn'], ['SKITUNGAR', 'OCH SOPGUBBAR: STICK!', 'dod']];
+  const argTex = {};
+  function argTextur(n) {
+    if (argTex[n]) return argTex[n];
+    const [a, b, bild] = ARGA[n], cv = document.createElement('canvas'); cv.width = 256; cv.height = 160; const c = cv.getContext('2d');
+    c.fillStyle = n % 3 === 0 ? '#f2d64b' : '#f4ecd8'; c.fillRect(0, 0, 256, 160);
+    c.strokeStyle = '#1a1a1a'; c.lineWidth = 8; c.strokeRect(6, 6, 244, 148);
+    // dödskalle eller djävulshorn
+    c.fillStyle = '#1a1a1a'; c.save(); c.translate(40, 80);
+    if (bild === 'dod') { c.beginPath(); c.arc(0, -8, 22, 0, Math.PI * 2); c.fill(); c.fillRect(-12, 8, 24, 14); c.fillStyle = n % 3 === 0 ? '#f2d64b' : '#f4ecd8'; c.beginPath(); c.arc(-8, -10, 6, 0, 7); c.arc(8, -10, 6, 0, 7); c.fill(); c.fillRect(-7, 12, 3, 8); c.fillRect(-1, 12, 3, 8); c.fillRect(5, 12, 3, 8); c.fillStyle = '#1a1a1a'; c.lineWidth = 6; c.beginPath(); c.moveTo(-26, 26); c.lineTo(26, 40); c.moveTo(26, 26); c.lineTo(-26, 40); c.strokeStyle = '#1a1a1a'; c.stroke(); }
+    else { c.fillStyle = '#b01818'; c.beginPath(); c.arc(0, 4, 20, 0, Math.PI * 2); c.fill(); c.beginPath(); c.moveTo(-16, -8); c.quadraticCurveTo(-30, -30, -20, -42); c.lineTo(-8, -14); c.fill(); c.beginPath(); c.moveTo(16, -8); c.quadraticCurveTo(30, -30, 20, -42); c.lineTo(8, -14); c.fill(); c.fillStyle = '#fff'; c.fillRect(-10, -2, 7, 4); c.fillRect(3, -2, 7, 4); c.fillStyle = '#1a1a1a'; c.fillRect(-8, 12, 16, 3); }
+    c.restore();
+    c.fillStyle = '#b01818'; c.textAlign = 'center'; c.font = 'bold 30px sans-serif'; c.fillText(a, 150, 70); c.fillStyle = '#1a1a1a'; c.font = 'bold 18px sans-serif'; c.fillText(b, 150, 106);
+    const tx = new THREE.CanvasTexture(cv); tx.colorSpace = THREE.SRGBColorSpace; return (argTex[n] = tx);
+  }
+  function argSkylt(n) {
+    const g = new THREE.Group(), tra = mat(0x6a4a2a);
+    const p = skugga(new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.7, 0.08), tra)); p.position.y = 0.85; g.add(p);
+    const sk = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.62), new THREE.MeshStandardMaterial({ map: argTextur(n % ARGA.length), side: THREE.DoubleSide })); sk.position.set(0, 1.45, 0.05); g.add(sk);
+    return g;
+  }
   const staket = new THREE.Group();
   function byggStaket(grans) {
     while (staket.children.length) staket.remove(staket.children[0]);
@@ -222,11 +244,14 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
       for (let k = 0; k < 8; k++) { const d = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, (vagB * 2 + 0.6) / 8), k % 2 ? vitMat : bomMat); d.position.set(0, 0.95, -vagB - 0.3 + (k + 0.5) * (vagB * 2 + 0.6) / 8); bom.add(d); }
       staket.add(bom);
     }
-    const skylt = document.createElement('canvas'); skylt.width = 256; skylt.height = 96; const c = skylt.getContext('2d');
-    c.fillStyle = '#f4ecd8'; c.fillRect(0, 0, 256, 96); c.fillStyle = '#7a2020'; c.font = 'bold 30px sans-serif'; c.textAlign = 'center'; c.fillText('PRIVAT MARK', 128, 42); c.font = '20px sans-serif'; c.fillText('Tillträde förbjudet', 128, 74);
-    const tx = new THREE.CanvasTexture(skylt); tx.colorSpace = THREE.SRGBColorSpace;
-    for (const [x, z, r] of [[g.x2, 0, -Math.PI / 2], [g.x2 - 15, g.z1, 0], [g.x1, 5, Math.PI / 2], [-10, g.z2, Math.PI]]) {
-      const sk = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.34), new THREE.MeshStandardMaterial({ map: tx, side: THREE.DoubleSide })); sk.position.set(x, 1.25, z); sk.rotation.y = r; staket.add(sk);
+    // Bengt-Åkes arga skyltar längs hela staketet – han är en riktigt ilsken markägare
+    for (const [sx, sz, sr, langd, axel] of [[g.x1, g.z1, 0, g.x2 - g.x1, 'x'], [g.x1, g.z2, Math.PI, g.x2 - g.x1, 'x'], [g.x1, g.z1, Math.PI / 2, g.z2 - g.z1, 'z'], [g.x2, g.z1, -Math.PI / 2, g.z2 - g.z1, 'z']]) {
+      for (let d = 6; d < langd - 3; d += 9 + (Math.floor(d) % 4)) {
+        const x = axel === 'x' ? sx + d : sx, z = axel === 'z' ? sz + d : sz;
+        if (axel === 'z' && Math.abs(z - vagZ) < vagB + 1) continue;
+        const sk = argSkylt(Math.floor(d * 7 + sx * 3 + sz) >>> 0);
+        sk.position.set(x, 0, z); sk.rotation.y = sr + mellan(-0.12, 0.12); sk.rotation.z = mellan(-0.08, 0.08); staket.add(sk);
+      }
     }
   }
   byggStaket(grans);

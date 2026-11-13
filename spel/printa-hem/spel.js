@@ -4770,6 +4770,10 @@ const SMS_POOL = [
   { id: 'b_pappa_dryg1', vem: 'bror', nar: () => (S.burkMalda || 0) >= 2, text: 'Mamma pratar bara om sylten. Pappa har slutat säga "aha, vad lugnt då". Han säger bara "mm". Det är värre.' },
   { id: 'b_pappa_dryg2', vem: 'bror', nar: () => (S.burkMalda || 0) >= 5, text: 'Pappa sover i garaget. Han säger att det är för att lyssna på motorn. Bilen är avstängd.', svar: [['Säg att jag är ledsen.', 'Jag sa det. Han sa "aha". Sen gick han ut i garaget igen.'], ['Det är inte mitt fel.', 'Okej. Säg det till mamma då. Lycka till.']] },
   { id: 'm_pappa_dryg', vem: 'mamma', nar: () => (S.burkMalda || 0) >= 3, text: 'Pappa är så trött. Han säger att han inte orkar köra fler burkar. Men du har ju ätit upp allt! Han får skärpa sig.' },
+  { id: 'r_bengt1', vem: 'rolf', nar: () => S.dag >= 3 && S.rolfNummer, text: 'Akta dej för Bengt-Åke. Han äger all mark runt hä. Han sköt mot en älg som stod på hans gräsmatta. Missa. Älgen e fortfarande rädd. Gå int över staketet. /R' },
+  { id: 'r_bengt2', vem: 'rolf', nar: () => S.dag >= 5 && S.rolfNummer && (S.bengtSkrik || 0) >= 1, text: 'Bengt-Åke ringde mej. Han sa att nån "smyger vid staketet". Ja sa att de va en grävling. Han sa att han skjuter grävlingar oxå. Håll dej borta från kanten ett tag. /R' },
+  { id: 'r_bengt3', vem: 'rolf', nar: () => S.dag >= 6 && S.rolfNummer && S.respekt >= 15, text: 'Bengt-Åke frågade om dej. Ja sa att du e en bra unge som städar. Han sa "HMPF". De e bra. Förra gången sa han nåt mycke värre. Ja jobbar på honom. /R' },
+  { id: 'b_bengt', vem: 'bror', nar: () => (S.bengtSkrik || 0) >= 2, text: 'Mamma såg på Facebook att en gubbe vid soptippen jagat bort en hemtjänstbil med en kratta. Säg att det inte är din granne.', svar: [['Det är min granne.', 'Okej. Mamma har bokat ett pepparsprej på nätet. Till dig.'], ['Ingen aning.', 'Bra. Jag säger till mamma att det var en annan soptipp.']] },
   { id: 'r_pappa', vem: 'rolf', nar: () => !!S.pappaBesok, text: 'Din farsa e en bra karl. Vi snacka Scania o hockey. Han säger "blada" istället för gå. Ja ska börja me det. /R' },
   // mamma och brorsan efter pappas besök
   { id: 'm_pappa_besok', vem: 'mamma', nar: () => !!S.pappaBesok, text: 'Var pappa DÄR?! Han sa att han skulle köpa mjölk! Han kom hem och sa "aha, vad lugnt dom har det". LUGNT?!' },
@@ -5159,7 +5163,7 @@ function uppdatera(dt) {
   // matarbandet flyttar skräp från bingen till tratten (drar lite ström)
   if (!STEG[S.steg] && !sover) { const fore = S.dagTid || 0; S.dagTid = Math.min(DAG_LANGD, fore + dt); if (Math.floor(fore / 30) !== Math.floor(S.dagTid / 30)) sparaSnart(); }
   if (harProto('m_fusion')) S.strom = Math.min(stromMax(), S.strom + dt * 0.8);
-  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); uppdateraMalPil(); for (const sk of skrivare) visaSpolar(sk);
+  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); uppdateraMalPil(); for (const sk of skrivare) visaSpolar(sk);
   if (S.kvarn.band) {
     const kor = S.kvarn.binge.length > 0 && S.kvarn.tratt < TRATT_MAX && S.strom > 0.5;
     if (kor) {
@@ -5312,19 +5316,19 @@ function uppdateraMark() {
 }
 function kollaMarkTips() {
   // markköpen kommer senare: när kapitel 1 är klart, man har Rolfs nummer och det börjar bli fullt (eller dag 8)
-  if (S.mark.tips || !S.rolfNummer || !S.kapitelKlart || !(S.dag >= 8 || placerade.filter((p) => !p.pa).length >= 30)) return;
+  if (S.mark.tips || !S.rolfNummer || !S.kapitelKlart || S.respekt < 20 || !(S.dag >= 8 || placerade.filter((p) => !p.pa).length >= 30)) return;   // Rolf lägger in ett gott ord först när du har bra karma
   S.mark.tips = true; markTavla.visible = true; sparaSnart();
-  setTimeout(() => sms('rolf', 'Vet du vems mark du bor på? Bengt-Åkes. Han äger allt härikring. Han frågade vem som bor i skjulet. Ja sa "en kompis". Ja kan snacka me honom om du vill köpa. Kolla tavlan vid vägen. /R'), 3000);
+  setTimeout(() => sms('rolf', 'Ja har snackat me Bengt-Åke. Han e fortfarande förbannad på hela världen. Men ja berätta om allt du gjort, att du städa, hjälpt mej o sagt nej till skumma grejer. Han lyssna. Han e villig att sälja. Säj int att ja sa att han e snäll. Han e int snäll. Kolla tavlan vid vägen. /R'), 3000);
 }
 // anslagstavlan vid vägen
 const markTavla = new THREE.Group();
 markTavla.add(at(box(0.1, 1.6, 0.1, mat(0x6b4a2f)), -0.7, 0.8, 0), at(box(0.1, 1.6, 0.1, mat(0x6b4a2f)), 0.7, 0.8, 0), at(box(1.6, 0.9, 0.06, mat(0x8a6a3f)), 0, 1.35, 0));
-{ const t = skylt('MARK TILL SALU', 1.4, 0.32, '#f4ecd8', '#7a2020'); t.position.set(0, 1.62, 0.04); markTavla.add(t); const t2 = skylt('Fråga Rolf · Bengt-Åkes mark', 1.4, 0.26, '#f4ecd8', '#333'); t2.position.set(0, 1.25, 0.04); markTavla.add(t2); }
+{ const t = skylt('MARK TILL SALU', 1.4, 0.32, '#f4ecd8', '#7a2020'); t.position.set(0, 1.62, 0.04); markTavla.add(t); const t2 = skylt('(MOTVILLIGT) /Bengt-Åke', 1.4, 0.26, '#f4ecd8', '#333'); t2.position.set(0, 1.25, 0.04); markTavla.add(t2); }
 traffYta(markTavla, 1.7, 1.8, 0.4);
 markTavla.position.set(6, 0, TOMT - 1.2); markTavla.rotation.y = Math.PI; markTavla.visible = false; scen.add(markTavla);
 interaktor.registrera(markTavla, { text: () => markTavla.visible ? `Mark till salu · ${S.mark.agt.length ? 'du äger ' + S.mark.agt.length + ' av ' + MARK_TOMTER.length : 'du är en hobo dweller'}` : '', kanAktivera: () => markTavla.visible, aktivera: () => oppnaMark() });
 function oppnaMark() {
-  const kropp = sektion('Rolf känner markägaren Bengt-Åke och sköter snacket. Du betalar.')
+  const kropp = sektion('Bengt-Åke är den argaste människan i kommunen. Men Rolf känner honom – och han sköter snacket. Du betalar.')
     + MARK_TOMTER.map((t) => {
       const ag = agerMark(t.id), las = t.kraver && !agerMark(t.kraver), resp = S.respekt < t.respekt, dyr = S.mynt < t.pris;
       const knappen = ag ? knapp({ text: 'Din mark', typ: 'neutral', attr: 'disabled' })
@@ -5381,6 +5385,27 @@ function byggFynd(f) {
   } });
 }
 // kolla regelbundet om ny mark blivit tillgänglig (respekten kan växa när som helst)
+// Bengt-Åke skriker från skogen när man går nära staketet
+const BENGT_SKRIK = ['BORT FRÅN MITT STAKET FÖR FAN!', 'JAG SER DIG! JAG HAR KIKARE!', 'EN GÅNG TILL SÅ SLÄPPER JAG LÖS HUNDEN!', 'DRA ÅT HELVETE, SOPUNGE!', 'DETTA ÄR PRIVAT MARK, JÄVLAR!', 'JAG RINGER POLISEN! … NÄR JAG HITTAR TELEFONEN!'];
+let bengtTid = 0;
+function kollaBengt(dt) {
+  bengtTid -= dt; if (bengtTid > 0 || !ui.igang || sover) return;
+  const g = spelare.granser, p = spelare.pos, kant = Math.min(p.x - g.minX, g.maxX - p.x, p.z - g.minZ, g.maxZ - p.z);
+  if (kant > 1.6 || Math.abs(p.z - VAG_Z) < 4) return;
+  if (agerMark('egen') && S.respekt >= 60) return;   // nu känner han dig – han skriker inte längre
+  bengtTid = 40;
+  S.bengtSkrik = (S.bengtSkrik || 0) + 1;
+  const t = BENGT_SKRIK[(S.bengtSkrik - 1) % BENGT_SKRIK.length];
+  ui.toast(`😡 Någon skriker från skogen: "${t}"`, 'fel'); argtSkrik();
+}
+function argtSkrik() {   // ett grovt, argt vrål långt borta
+  const c = lac; if (!c) return;
+  const t = c.currentTime, o = c.createOscillator(), o2 = c.createOscillator(), g = c.createGain(), lp = c.createBiquadFilter();
+  o.type = 'sawtooth'; o2.type = 'square'; lp.type = 'bandpass'; lp.frequency.value = 600; lp.Q.value = 1.4;
+  for (const [i, f] of [[0, 170], [0.25, 210], [0.55, 150]]) { o.frequency.setValueAtTime(f, t + i); o2.frequency.setValueAtTime(f * 1.5, t + i); }
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.05, t + 0.05); g.gain.setValueAtTime(0.05, t + 0.8); g.gain.exponentialRampToValueAtTime(0.001, t + 1.1);
+  o.connect(lp); o2.connect(lp); lp.connect(g); g.connect(c.destination); o.start(t); o2.start(t); o.stop(t + 1.2); o2.stop(t + 1.2);
+}
 let markKollTid = 0;
 function kollaTillgang(dt) {
   markKollTid += dt; if (markKollTid < 2) return; markKollTid = 0;
