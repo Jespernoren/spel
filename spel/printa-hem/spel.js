@@ -3995,7 +3995,7 @@ function uppdateraRolf(dt) {
         S.post.tillMig = [...S.post.tillMig, 'sak:' + ROLF_TACK[id].ger, 'tack:' + id];
         ljud.placera(); sparaSnart();
         // först blir han överraskad och rörd – sen berättar han vad han lagt i lådan
-        if (S.rolfNummer) setTimeout(() => sms('rolf', ['VA?! ', 'NÄMEN?! ', 'Va i hela… '][S.rolf.tack % 3] + ROLF_TACK[id].text), 3000);
+        if (S.rolfNummer) setTimeout(() => sms('rolf', ROLF_TACK[id].text), 3000);
       } else if (S.rolf.jobb != null && S.post.tillRolf === jobbNu().vara) {
         const j = jobbNu(); S.post.tillRolf = null; S.post.tillMig = [...S.post.tillMig, `mynt:${j.ja}`, 'jobb'];
         S.rolf.jobb = null; S.rolf.jobbNr = j.n + 1; S.rolf.ja = (S.rolf.ja || 0) + 1; S.rolf.jobbTack = j.n; rolfLadeILadan();
