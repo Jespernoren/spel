@@ -3592,7 +3592,29 @@ function hamtaBeloning() {
     else if (b === 'heder') { const i = laggTill('trumstockar'); }
     else if (b.startsWith('sak:')) laggTill(b.slice(4));
   }
-  ljud.stor(); ui.toast(`Du fick: ${lista.filter((b) => b !== 'jobb' && !b.startsWith('tack:')).map(beloText).join(' + ')}`, 'guld');
+  ljud.stor(); sparaSnart();
+  // visa vad som låg i lådan – resten (sms, respekt) kommer när du klickat OK
+  visaFynd(lista, () => efterBeloning(lista));
+}
+// fyndrutan: varje sak poppar fram en i taget, OK för att gå vidare
+function visaFynd(lista, efter) {
+  const kort = lista.filter((b) => b !== 'jobb' && !b.startsWith('tack:')).map((b) => {
+    const typ = b.startsWith('sak:') ? b.slice(4) : b === 'karra' ? 'karra' : b === 'heder' ? 'trumstockar' : null;
+    const bild = b.startsWith('mynt:') ? `<span class="ph-fynd-mynt">${IKON.mynt}</span>` : typ ? ikonHtml(typ, 96) : `<span class="ph-fynd-mynt">${IKON.lada}</span>`;
+    const besk = typ ? (info(typ)?.beskr || '') : b.startsWith('mynt:') ? 'Kontanter. Rolf litar inte på banker.' : '';
+    return { bild, namn: beloText(b), besk };
+  });
+  if (!kort.length) { efter(); return; }
+  // slå ihop likadana
+  const ihop = []; for (const k of kort) { const f = ihop.find((x) => x.namn === k.namn); if (f) f.n++; else ihop.push({ ...k, n: 1 }); }
+  const kropp = `<div class="ph-fynd">${ihop.map((k, i) => `<div class="ph-fynd-kort" style="animation-delay:${0.15 + i * 0.35}s"><div class="bild">${k.bild}${k.n > 1 ? `<em>×${k.n}</em>` : ''}</div><b>${k.namn}</b>${k.besk ? `<p>${k.besk}</p>` : ''}</div>`).join('')}</div>`;
+  oppnaRuta(panel({ portrattVem: 'rolf', titel: 'Rolfs postlåda', sub: 'Det här låg i lådan', kropp, fot: knapp({ text: 'OK', typ: 'primar', attr: 'data-fynd-ok' }) }), null);
+  ljud.klar?.();
+  let klar = false; const fardig = () => { if (klar) return; klar = true; efter(); };
+  ui.butiksOverlay.querySelector('[data-fynd-ok]').onclick = () => { ui.stangButik(); fardig(); };
+  const t = setInterval(() => { if (ui.butiksOverlay.hidden) { clearInterval(t); fardig(); } }, 300);
+}
+function efterBeloning(lista) {
   const nr = S.rolf.i - 1;
   for (const b of lista) if (b.startsWith('tack:')) { setTimeout(() => sms('rolf', ROLF_TACK[b.slice(5)].text), 1200); S.rolf.presenter = (S.rolf.presenter || 0) + 1; andraRespekt(Math.round(6 + VAROR[b.slice(5)].present / 400), 'Gav Rolf en present'); }
   if (lista.includes('jobb')) andraRespekt(-3, 'Gjorde ett skumt jobb åt Rolf');
@@ -4211,7 +4233,7 @@ function andraRespekt(d, varfor) {
     setTimeout(() => ui.toast(`❤️ ${g} i respekt! Upplåst: ${namn}. Tunnor och kajaker ger nu sånt filament.`, 'guld'), 1500);
     S.post.tillMig = [...S.post.tillMig, 'sak:fynd' + n, 'sak:fynd' + n, 'sak:fynd' + n]; visaPostInne();
     const fynd = VAROR['fynd' + n].namn.replace(' (från Rolf)', '').toLowerCase();
-    setTimeout(() => sms('rolf', `Folk pratar gott om dej. Ja hitta tre ${n === 2 ? 'röda backar av riktigt bra plast' : fynd} på tippen. Sånt ger ja bara folk me respekt. Ligger i brevlådan vid grinden. Din kvarn biter inte på sånt. Ali har ${n <= 3 ? 'härdade knivar' : 'en diamantkvarn'} – sen blir det ${namn.split('– ')[1]}. /R`), 5000);
+    setTimeout(() => sms('rolf', `Folk pratar gott om dej. Ja hitta tre ${n === 2 ? 'röda backar av riktigt bra plast' : fynd} på tippen. Sånt ger ja bara folk me respekt. Ligger i brevlådan vid grinden. Din kvarn biter inte på sånt. Ali har ${n <= 3 ? 'härdade knivar' : 'en diamantkvarn'} – sen blir det ${namn.split('– ')[1]}. /R`), 800);
   });
   sparaSnart();
 }

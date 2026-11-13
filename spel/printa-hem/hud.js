@@ -89,6 +89,14 @@ export const HUD_CSS = `
 .hud-skrivbar{position:absolute;left:0;top:0;transform-origin:50% 100%;width:190px;padding:6px 10px 8px;border-radius:9px;background:${LAGER_SVAG},rgba(25,28,36,.88);color:#fff;font:800 13px/1.2 system-ui;box-shadow:0 6px 14px rgba(0,0,0,.3)}
 .hud-skrivbar .rad{display:flex;justify-content:space-between;gap:8px;margin-bottom:5px}.hud-skrivbar b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hud-skrivbar span{color:#9fe8ff;font-variant-numeric:tabular-nums}
 .hud-skrivbar .bar{height:9px;border-radius:999px;background:rgba(255,255,255,.15);overflow:hidden}.hud-skrivbar .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3de3ff,#7dffb0)}
+.ui-fot:has([data-fynd-ok]){display:flex;justify-content:center}
+.ph-fynd{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;padding:6px 0 4px}
+.ph-fynd-kort{width:170px;text-align:center;padding:12px 10px 12px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);opacity:0;transform:scale(.4) translateY(20px);animation:fyndPop .55s cubic-bezier(.3,1.6,.5,1) forwards}
+.ph-fynd-kort .bild{position:relative;height:100px;display:grid;place-items:center;margin-bottom:6px}.ph-fynd-kort .bild img{filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
+.ph-fynd-kort .bild em{position:absolute;right:16px;bottom:2px;font:900 18px system-ui;font-style:normal;color:#ffd37a;text-shadow:0 2px 4px #000}
+.ph-fynd-kort b{display:block;font:800 15px/1.25 system-ui;color:#fff}.ph-fynd-kort p{margin:6px 0 0;font:600 12.5px/1.35 system-ui;color:#c5ccda}
+.ph-fynd-mynt{display:block;width:72px;height:72px}.ph-fynd-mynt svg{width:100%;height:100%}
+@keyframes fyndPop{60%{opacity:1;transform:scale(1.08) translateY(-4px)}to{opacity:1;transform:none}}
 .hud-flask{position:fixed;left:max(12px,env(safe-area-inset-left));z-index:21;width:280px;box-sizing:border-box;pointer-events:none;font:700 13px/1.35 system-ui;color:#fff;display:flex;flex-direction:column;gap:6px}
 .hud-flask>div{padding:8px 12px 9px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.88);border-left:5px solid var(--lingon);box-shadow:0 6px 16px rgba(0,0,0,.3)}
 .hud-flask b{display:block;font:900 11px/1.2 system-ui;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
