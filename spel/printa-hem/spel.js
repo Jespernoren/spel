@@ -318,7 +318,7 @@ const LAPPAR = {
   malt: ['📔 Dagbok', 'Kvarnen funkar. Soptippen är en gruva.'],
   motor: ['📔 Dagbok', 'Grip OCH motor. Nu går det undan.'],
   printat: ['📱 Storebror', 'VA FAN?! Fick du den att FUNKA?? Jag gav upp efter två veckor, det var för jävla krångligt att installera allt. Grym du är 🤙 Gå och visa butiken över vägen. Ali köper allt som är printat.'],
-  salt: ['🧺 Ali', 'Ali här. Nyckelringen sålde. … Du har en 3D-skrivare, va? Jag ville bli ingenjör. Blev butiksägare. Pappas butik. Pappas beslut. Jag ser 3D-skrivare på YouTube men har aldrig tid att printa själv. Så i natt bad jag en AI göra modeller åt mig. Mina två FÖRSTA: en skräpgrip och en motor till din kvarn. Kom och titta innan jag ångrar mig.'],
+  salt: ['🧺 Ali', 'Ali här. Nyckelringen sålde. … Du har en 3D-skrivare, va? Jag ville bli ingenjör. Sen dog pappa och någon måste ta över butiken. Det blev jag. Det är tjugofem år sedan nu. Jag ser 3D-skrivare på YouTube men har aldrig tid att printa själv. Så i natt bad jag en AI göra modeller åt mig. Mina två FÖRSTA: en skräpgrip och en motor till din kvarn. Kom och titta innan jag ångrar mig.'],
   ritning: ['📔 Dagbok', 'Min första bygginstruktion! Nu ska den bara printas. Jag printar inte bara saker – jag printar maskiner.'],
   sol: ['📔 Dagbok', 'Slut på trampandet. Nästan.'],
   skrivare2: ['📱 Storebror', 'VA?! Du har byggt en skrivare TILL?? Du har typ en printfarm nu. Okej. Det är faktiskt ganska ballt. 🔥'],
@@ -513,7 +513,7 @@ const vag = new THREE.Mesh(new THREE.PlaneGeometry(160, 5), mat(0x55585e));
 vag.rotation.x = -Math.PI / 2; vag.position.set(0, 0.02, TOMT + 3); vag.receiveShadow = true; scen.add(vag);
 
 // skogen och marken runt tomten (miljo.js): flera trädsorter, buskar, stenar, gräs och blommor
-const BAS_GRANS = { minX: TIPP.x - TIPP.r - 3, maxX: TOMT + 2, minZ: -TOMT - 2, maxZ: TOMT + 10 };   // där spelaren får gå innan man köpt mer mark
+const BAS_GRANS = { minX: TIPP.x - TIPP.r - 3, maxX: TOMT + 0.6, minZ: -TOMT - 0.6, maxZ: TOMT + 10 };   // där spelaren får gå innan man köpt mer mark
 const miljo = byggMiljo({ scen, TOMT, TIPP, ALI, grans: BAS_GRANS });
 const mark = miljo.mark;
 
@@ -4228,7 +4228,7 @@ function kollaAliSteg() {
   if (st === 2) { aliSenare('Ali här. Jag har inte sovit. Inte på grund av AI:n. På grund av dig. Du bygger saker av sopor. Jag har en hel butik och bygger ingenting. Det ska ändras. Kanske. Troligen.'); andraRespekt(5, 'Ali säger att du inspirerar honom'); }
   if (st === 3) { aliSenare('Ali igen. Jag har sagt till min bror att jag inte går i pension. Jag startar något. Han skrattade. Jag skrattade också. Men jag menar det. Tack. Säg inget.'); andraRespekt(8, 'Ali blommar ut tack vare dig'); }
 }
-const ALI_HEJ = ['Satt med AI:n hela natten igen. Fråga inte vad. Okej, en soffa. Fråga inte.', 'Pappa sa: driv butiken, Ali. Så jag driver butiken. På nätterna promptar jag. Det är mitt riktiga jobb.', 'Jag ser 3D-skrivarvideor på YouTube i lagret. Inte för att jag har tid. Jag har aldrig tid.',
+const ALI_HEJ = ['Pappa stod bakom den här disken i trettio år. Jag har stått här i tjugofem. Varje morgon när jag låser upp hälsar jag på honom. Tyst.', 'Satt med AI:n hela natten igen. Fråga inte vad. Okej, en soffa. Fråga inte.', 'Pappa sa: driv butiken, Ali. Så jag driver butiken. På nätterna promptar jag. Det är mitt riktiga jobb.', 'Jag ser 3D-skrivarvideor på YouTube i lagret. Inte för att jag har tid. Jag har aldrig tid.',
   'Du är den enda här som vet vad en tolerans är. Det värmer. Lite. Inte mycket.', 'Kunder, kunder. Ingen ingenjör. Förutom du kanske.',
   'Semesterkassan: 340 kr. Köp nåt, min vän.', 'Du printar mina ritningar. Ingen har gjort det förut. Jag är inte rörd. Det är dammet.','Jag har stått här sedan sex i morse. Vad vill du?', 'Ledig? Vad är det? Har aldrig hört talas om det.', 'Köp nåt eller gå, min vän. Mina fötter värker.', 'Min fru säger att jag bor här. Hon har rätt.',
   'Salam. Ja, ja, jag har nya grejer. Som vanligt. Varje dag.', 'Semester? Jag hade semester 2009. Det regnade.', 'Du igen. Bra. Du är den enda som köper nåt.'];
@@ -4262,7 +4262,7 @@ const prisNu = (t, extra = 0) => { const b = saljPris(t); return t.startsWith('b
 const summaFor = (t, n) => { let s2 = 0; for (let i = 0; i < n; i++) s2 += prisNu(t, i); return s2; };
 let aliRepl = '', aliFlik = 'kop';
 let aliVald = null;
-const ALI_FORSTA = 'Hej. Jag är Ali. Det här är min butik. Eller min pappas. Jag köper det du printar och säljer filament. Öppet till nio. Inte en minut senare.';
+const ALI_FORSTA = 'Hej. Jag är Ali. Det här är min butik. Min pappas egentligen. Jag tog över när han dog, för tjugofem år sedan. Jag köper det du printar och säljer filament. Öppet till nio. Inte en minut senare.';
 function aliKopLista() {
   const L = [];
   const add = (sekt, key, bild, namn, text, pris, faktaLista, kop) => L.push({ sekt, key, bild, namn, text, pris, faktaLista, kop, storlek: key.startsWith('m:') ? storlekRuta(key.slice(2), true) : key.startsWith('r:') ? storlekFor(key.slice(2)) : key === 'sang' ? 1 : 0 });
@@ -4322,33 +4322,40 @@ function aliSaljLista() {
   return Object.entries(ager).filter(([t, n]) => n > 0 && saljPris(t)).map(([t, n]) => ({ key: 's:' + t, typ: t, n, pris: prisNu(t), bas: saljPris(t) }));
 }
 function oppnaMarknad() {
+  // en vy, två nivåer som alltid syns: SÄLJ (grönt – du får pengar) överst, KÖP (rött – det kostar) under
   const kopL = aliKopLista(), saljL = aliSaljLista();
-  const lista = aliFlik === 'kop' ? kopL : saljL;
-  if (!lista.some((x) => x.key === aliVald)) aliVald = lista[0]?.key || null;
-  const vald = lista.find((x) => x.key === aliVald);
+  const hitta = (k) => k?.startsWith('s:') ? saljL.find((x) => 's:' + x.key === k) : k?.startsWith('k:') ? kopL.find((x) => 'k:' + x.key === k) : null;
+  if (!hitta(aliVald)) aliVald = saljL[0] ? 's:' + saljL[0].key : kopL[0] ? 'k:' + kopL[0].key : null;
+  const vald = hitta(aliVald), iKop = aliVald?.startsWith('k:');
   if (!S.aliMott) { S.aliMott = true; aliRepl = ALI_FORSTA; sparaSnart(); }
   const pool = aliSteg() === 3 ? ALI_BLOMMAR : aliSteg() === 2 ? ALI_KLICKAR : ALI_HEJ;
   const bubbla = aliRepl || pool[Math.floor(Math.random() * pool.length)];
   let kropp = '', fot = '';
-  if (aliFlik === 'kop') {
+  // SÄLJ
+  const allt = saljL.reduce((a, x) => a + summaFor(x.typ, x.n), 0);
+  kropp += `<div class="ali-niva salj"><div class="ali-niva-rub"><span>${ik('salj')} Sälj till Ali</span><small>du får pengar</small>${saljL.length ? knapp({ text: `Sälj allt  +${allt.toLocaleString('sv-SE')} kr`, typ: 'plus', attr: 'data-saljallt' }) : ''}</div>`
+    + (saljL.length ? grid(saljL.map((x) => uiRuta({ bild: tumme(x.typ), attr: `data-val="s:${x.key}"`, vald: 's:' + x.key === aliVald, antal: x.n, pris: '+' + x.pris, prisTyp: 'plus', titel: namnFor(x.typ) })))
+      : '<p class="ui-tom">Du har inget att sälja. Printa saker på skrivaren – de hamnar i din verktygsrad.</p>') + '</div>';
+  // KÖP
+  kropp += `<div class="ali-niva kop"><div class="ali-niva-rub"><span>${ik('kop')} Köp av Ali</span><small>det kostar pengar</small></div>`;
+  {
     const sekts = [...new Set(kopL.map((x) => x.sekt))];
-    kropp = sekts.map((sk) => sektion(sk) + grid(kopL.filter((x) => x.sekt === sk).map((x) => uiRuta({ bild: x.bild, attr: `data-val="${x.key}"`, vald: x.key === aliVald, dyr: S.mynt < x.pris, pris: x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris, prisTyp: S.mynt < x.pris ? 'minus' : 'plus', titel: x.namn, storlek: x.storlek })))).join('')
+    kropp += sekts.map((sk) => sektion(sk) + grid(kopL.filter((x) => x.sekt === sk).map((x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: 'minus', titel: x.namn, storlek: x.storlek })))).join('')
       + (Object.values(MASKINER).some((m) => !m.syns()) ? `<p class="ui-tom">${ik('las')} Fler ritningar dyker upp när du kommer vidare – Ali sitter uppe med AI:n varje natt.</p>` : '');
+  }
+  kropp += '</div>';
+  if (vald && iKop) {
     fot = vald ? detalj({ bild: vald.bild, titel: vald.namn, text: vald.text, faktaLista: vald.faktaLista,
-      knappar: [{ text: S.mynt >= vald.pris ? `Köp för ${vald.pris.toLocaleString('sv-SE')} kr` : `Saknar ${(vald.pris - S.mynt).toLocaleString('sv-SE')} kr`, typ: S.mynt >= vald.pris ? 'plus' : 'minus', attr: 'data-kop', av: S.mynt < vald.pris, ikon: 'kop' }] }) : detalj({});
-  } else {
-    const allt = saljL.reduce((a, x) => a + summaFor(x.typ, x.n), 0);
-    kropp = saljL.length ? `<div class="ph-saljallt">${knapp({ text: `Sälj allt till Ali  +${allt.toLocaleString('sv-SE')} kr`, typ: 'plus', attr: 'data-saljallt', ikon: 'salj' })}<span>Allt i verktygsraden och kistan (inte verktygen)</span></div>` + sektion('Dina saker', 'Ali köper nästan allt') + grid(saljL.map((x) => uiRuta({ bild: tumme(x.typ), attr: `data-val="${x.key}"`, vald: x.key === aliVald, antal: x.n, pris: '+' + x.pris, prisTyp: 'plus', titel: namnFor(x.typ) })))
-      : `<p class="ui-tom">Du har inget att sälja. Printa saker på skrivaren – de hamnar i din verktygsrad.</p>`;
+      knappar: [{ text: S.mynt >= vald.pris ? `Köp för ${vald.pris.toLocaleString('sv-SE')} kr` : `Saknar ${(vald.pris - S.mynt).toLocaleString('sv-SE')} kr`, typ: 'minus', attr: 'data-kop', av: S.mynt < vald.pris, ikon: 'kop' }] }) : detalj({});
+  } else if (vald) {
     if (vald) {
       const bygg = vald.typ.startsWith('byggsats:') || !!VAROR[vald.typ]?.lyx, mattad = !bygg && vald.pris < vald.bas;
       fot = detalj({ bild: tumme(vald.typ), titel: `${namnFor(vald.typ)} × ${vald.n}`, text: bygg ? 'Ali köper tillbaka den till begagnat pris.' : mattad ? `Ali har redan köpt ${saltIdag(vald.typ)} st idag – priset är ${Math.round(vald.pris / vald.bas * 100)} % av det vanliga. Imorgon är det fullpris igen.` : 'Ali säljer den vidare i butiken.',
         faktaLista: [['mynt', `${vald.pris} kr styck`, 'plus'], mattad ? ['varning', 'Marknaden är mättad', 'varn'] : null],
         knappar: [{ text: `Sälj 1  +${vald.pris} kr`, typ: 'plus', attr: 'data-salj1', ikon: 'salj' }, vald.n > 1 ? { text: `Sälj alla  +${summaFor(vald.typ, vald.n).toLocaleString('sv-SE')} kr`, typ: 'plus', attr: 'data-saljalla' } : null].filter(Boolean) });
-    } else fot = detalj({ tom: 'Inget att sälja just nu.' });
-  }
-  const html = panel({ portrattVem: 'ali', titel: 'Alis marknad', sub: `<span class="ui-bubbla">${bubbla}</span>`, resurser: resurserHtml(),
-    flikar: [['kop', 'kop', 'Köp'], ['salj', 'salj', 'Sälj', saljL.length || '']], aktivFlik: aliFlik, kropp, fot, klass: 'ph-ali-panel' });
+    }
+  } else fot = detalj({ tom: 'Välj något att sälja eller köpa.' });
+  const html = panel({ portrattVem: 'ali', titel: 'Alis marknad', sub: `<span class="ui-bubbla">${bubbla}</span>`, resurser: resurserHtml(), kropp, fot, klass: 'ph-ali-panel' });
   prata('ali', bubbla);
   aliRepl = '';
   oppnaRuta(html, (el) => {
@@ -4359,13 +4366,13 @@ function oppnaMarknad() {
     });
     const kb = el.querySelector('[data-kop]');
     if (kb) kb.onclick = () => {
-      const x = kopL.find((y) => y.key === aliVald); if (!x || S.mynt < x.pris) return;
+      const x = kopL.find((y) => 'k:' + y.key === aliVald); if (!x || S.mynt < x.pris) return;
       const forut = S.mynt; S.mynt -= x.pris;
       if (x.kop() === false) { S.mynt = forut; ljud.fel(); oppnaMarknad(); return; }
       ljud.kop(); sparaSnart(); oppnaMarknad();
     };
     const salj1 = (n) => {
-      const x = saljL.find((y) => y.key === aliVald); if (!x) return;
+      const x = saljL.find((y) => 's:' + y.key === aliVald); if (!x) return;
       const t = x.typ; n = Math.min(n, antalInv(t)); if (!n) return;
       const summa = summaFor(t, n); taBortInv(t, n);
       if (!t.startsWith('byggsats:') && !VAROR[t]?.lyx) S.saltIdag = { ...(S.saltIdag || {}), [t]: saltIdag(t) + n };

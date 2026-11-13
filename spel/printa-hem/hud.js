@@ -76,7 +76,17 @@ export const HUD_CSS = `
 .hud-dagbok .rub{display:flex;align-items:center;gap:8px;font:800 13px system-ui;opacity:.75;margin-bottom:4px}.hud-dagbok .rub em{margin-left:auto;font-style:normal;font-weight:700}
 .hud-dagbok .txt{font:500 17px/1.45 "Comic Sans MS","Chalkboard SE","Segoe Print",system-ui,sans-serif}
 .hud-dagbok-bar{height:4px;border-radius:2px;background:rgba(0,0,0,.1);margin-top:8px;overflow:hidden}.hud-dagbok-bar i{display:block;height:100%;width:0;background:#c49a6c}
-.hud-hand{position:fixed;right:24%;bottom:150px;z-index:21;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 12px 7px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.82);border-bottom:3px solid rgba(0,0,0,.45);color:#fff}
+.ali-niva{border-radius:10px;padding:10px 12px 12px;margin-bottom:12px;border:2px solid}
+.ali-niva.salj{background:rgba(47,138,82,.12);border-color:rgba(47,138,82,.55)}
+.ali-niva.kop{background:rgba(200,33,58,.10);border-color:rgba(200,33,58,.5)}
+.ali-niva-rub{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.ali-niva-rub>span{display:inline-flex;align-items:center;gap:7px;font:900 15px var(--rubrik);letter-spacing:.04em;text-transform:uppercase}
+.ali-niva.salj .ali-niva-rub>span{color:#7dffb0}.ali-niva.kop .ali-niva-rub>span{color:#ff8fa0}
+.ali-niva-rub small{color:#9aa3b5;font-size:12.5px;flex:1}
+.ali-niva-rub .ui-knapp{min-width:0;padding:7px 12px;font-size:13.5px}
+.ali-niva.kop .ui-sektion span{color:#ffc2cb}
+.ph-ali-panel .ui-ruta .pris.minus{color:#ffb3bd}
+.hud-hand{position:fixed;left:24%;bottom:150px;z-index:21;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 12px 7px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.82);border-bottom:3px solid rgba(0,0,0,.45);color:#fff}
 .hud-hand[hidden]{display:none}
 .hud-hand b{font:900 20px/1 var(--rubrik);letter-spacing:.03em}
 .hud-hand span{display:block;width:64px;height:6px;border-radius:3px;background:rgba(0,0,0,.45);overflow:hidden}.hud-hand i{display:block;height:100%;width:0;transition:width .2s}

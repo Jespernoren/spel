@@ -9,7 +9,7 @@ const ANTAL_BUSKAR = 90;
 const ANTAL_STENAR = 55;
 const ANTAL_STUBBAR = 18;
 const ANTAL_GRAS = 900;        // grästuvor (instansierade, billiga)
-const ANTAL_BLOMMOR = 260;
+const ANTAL_BLOMMOR = 0;
 const VIND = 0.025;            // hur mycket träden vajar (radianer)
 
 export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
