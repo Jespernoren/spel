@@ -25,7 +25,7 @@ def stockholm(ipa):
 def narke(ipa):
     """Mamma: närkingska – långa vokaler glider (diftonger), ä blir e."""
     s = ipa
-    s = s.replace('eː', 'eːə').replace('øː', 'øːə').replace('oː', 'oːə').replace('uː', 'uːə')
+    s = s.replace('eː', 'eə').replace('øː', 'øə').replace('oː', 'oə').replace('uː', 'uə')   # korta glidljud – inte släpigt
     s = s.replace('ɛː', 'eː')
     return s
 

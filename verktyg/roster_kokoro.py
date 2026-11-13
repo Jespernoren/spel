@@ -10,7 +10,7 @@ from dialekt import DIALEKT
 # vem: (Kokoro-röst, tempo, ffmpeg-klang, halvtoner (djupare = minus), dialekt)
 ROSTER = {
     'rolf':      ('Björn',  0.90, 'bass=g=4:f=130', -3.0, 'varmland'),     # värmlänning/dalmas, djup och långsam
-    'mamma':     ('Stina',  1.02, 'bass=g=2:f=200', -1.5, 'narke'),        # närkingska
+    'mamma':     ('Stina',  1.18, 'highpass=f=220,equalizer=f=1150:t=q:w=1.4:g=8,equalizer=f=2700:t=q:w=1:g=4,lowpass=f=6500', 0.5, 'narke'),   # närkingska – nasal och gnällig
     'pappa':     ('Lars',   1.0,  'bass=g=3:f=150', -2.0, 'stockholm'),    # stockholmare, glad och obrydd
     'bror':      ('Anton',  1.03, 'equalizer=f=3000:t=q:w=1:g=2.5', 1.0, 'stockholm'),   # yngre och ljusare än pappa
     'du':        ('Viktor', 1.0,  'bass=g=1:f=150', -1.0, None),
