@@ -5168,7 +5168,33 @@ function ritaStopp() {
   });
 }
 function taBort(k) { if (k.classList.contains('ut')) return; k.classList.add('ut'); setTimeout(() => k.remove(), 400); }
-ui.toast = (text, typ) => notis(text, typ);
+// meddelanden som hör till något du just gjorde visas där du gjorde det – vid saken du klickade på, inte i hörnet
+let aktionObj = null, aktionTid = 0;
+{ const _a = interaktor.aktivera.bind(interaktor); interaktor.aktivera = (...x) => { aktionObj = interaktor.hovrad; aktionTid = performance.now(); try { return _a(...x); } finally { setTimeout(() => { if (performance.now() - aktionTid > 40) aktionObj = null; }, 60); } }; }
+const platsLappar = [], platsV = new THREE.Vector3(), platsK = new THREE.Vector3();
+function platsToast(text, obj, typ = '') {
+  platsLappar.forEach((l) => { if (l.obj === obj) l.slut = 0; });
+  const d = document.createElement('div'); d.className = 'hud-plats ' + typ; d.textContent = rens(text);
+  document.body.appendChild(d);
+  const l = { d, obj, start: performance.now(), slut: performance.now() + 2600 }; platsLappar.push(l);
+}
+function ritaPlatsLappar() {
+  const nu = performance.now();
+  for (let i = platsLappar.length - 1; i >= 0; i--) {
+    const l = platsLappar[i];
+    if (nu > l.slut || !l.obj?.parent) { l.d.remove(); platsLappar.splice(i, 1); continue; }
+    l.obj.getWorldPosition(platsV); platsV.y += 0.6 + (nu - l.start) / 4000;
+    const avst = platsV.distanceTo(kamera.getWorldPosition(platsK)); platsV.project(kamera);
+    if (platsV.z > 1) { l.d.style.display = 'none'; continue; }
+    l.d.style.display = ''; l.d.style.opacity = Math.min(1, (l.slut - nu) / 500);
+    l.d.style.transform = `translate(${(platsV.x * 0.5 + 0.5) * innerWidth}px,${(-platsV.y * 0.5 + 0.5) * innerHeight}px) translate(-50%,-100%) scale(${Math.max(0.7, Math.min(1, 5 / avst)).toFixed(2)})`;
+  }
+}
+ui.toast = (text, typ) => {
+  // under en handling (klick på en sak) och saken finns kvar: visa vid saken
+  if (aktionObj && performance.now() - aktionTid < 400 && aktionObj.parent) { platsToast(text, aktionObj, typ); return; }
+  notis(text, typ);
+};
 // ---------- Inkorgen uppe till höger: sms och dagbok syns direkt, läses upp en i taget ----------
 // block = du kan gå och titta men inte använda något förrän den är uppläst (dag 1 och skylten)
 let dagbokLas = false;
@@ -5692,7 +5718,7 @@ function uppdatera(dt) {
   // matarbandet flyttar skräp från bingen till tratten (drar lite ström)
   if (!STEG[S.steg] && !sover) { const fore = S.dagTid || 0; S.dagTid = Math.min(DAG_LANGD, fore + dt); if (Math.floor(fore / 30) !== Math.floor(S.dagTid / 30)) sparaSnart(); }
   if (harProto('m_fusion')) S.strom = Math.min(stromMax(), S.strom + dt * 0.8);
-  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraBlick(dt); uppdateraMalPil(); ritaStopp(); korBud(); kollaPuffar(dt); visaRullstall(); kollaRaddning(dt); for (const sk of skrivare) visaSpolar(sk);
+  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraBlick(dt); uppdateraMalPil(); ritaStopp(); ritaPlatsLappar(); korBud(); kollaPuffar(dt); visaRullstall(); kollaRaddning(dt); for (const sk of skrivare) visaSpolar(sk);
   if (S.kvarn.band) {
     const kor = S.kvarn.binge.length > 0 && S.kvarn.tratt < TRATT_MAX && S.strom > 0.5;
     if (kor) {
