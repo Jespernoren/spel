@@ -3120,7 +3120,7 @@ addEventListener('keydown', (e) => {
 const ROLF = [
   { vara: 'olhallare', belo: ['nyckel'],
     brev: 'ÖJ! Ja såg att du städa HELA gården. Respekt. Ingen städar här. Är de du som printar grejer oxå?? Ja önskar mig en ölhållare me kylklamp. Lägg den i min postlåda så får du nyckeln till tippen. Kall öl e viktigt. /Rolf (sopbilen)',
-    tack: 'TACK för hållarn!! Ölen e iskall. Nyckeln till tippen ligger i lådan. Ta så mycket plast du vill. Ja skrev mitt nummer på baksidan – sms:a inte efter tio. /Rolf' },
+    tack: 'TACK för hållarn!! Ölen e iskall. Nyckeln till tippen ligger i lådan. Ta så mycket plast du vill.\n\nEn sak. Mina fingrar e stela – artros. Doktorn säger att ja ska skriva mindre för hand. Lägg en lapp me ditt telefonnummer i lådan så sms:ar ja istället. Sms:a inte efter tio. /Rolf' },
   { vara: 'flaskoppnare', belo: ['karra', 'mynt:120'],
     brev: 'Gomorron! Rolf här. Kajsa (katten) knuffa ner min flasköppnare i tippen 😩 Printar du en ny? Me magnet så den sitter på flaket. Ja har en gammal skottkärra som bara står o skräpar – den e din om du fixar öppnarn. /Rolf',
     tack: 'PERFEKT öppnare!!! Kärran e din, o lite stålar. Nu kan du lyfta tunnorna o kajakerna i tippen – de e MYCKET plast i dom! /Rolf' },
@@ -3131,6 +3131,9 @@ const ROLF = [
     brev: 'Flaket e så trist. Folk vinkar aldrig åt sopbilen. Med en tomte på flaket kanske dom gör det. En sån me luva o skägg. 400 spänn + dubbel last! /Rolf 🎅',
     tack: 'Tomten sitter på flaket nu. Vi vinkar åt alla. ALLA. Pengar + dubbel last. /Rolf' },
 ];
+// Rolf lämnar något i lådan och sms:ar om det (när han har ditt nummer)
+const LADAN_SMS = ['Ja la nåt i lådan. /R', 'Kolla lådan. /R', 'Lådan. Nu. Innan Kajsa hittar de. /R', 'De ligger nåt i postlådan. Ja säger inte vad. Jo. Pengar. /R', 'Lådan! Ja va där me bilen nyss. /R'];
+function rolfLadeILadan() { if (S.rolfNummer) setTimeout(() => sms('rolf', LADAN_SMS[Math.floor(Math.random() * LADAN_SMS.length)]), 4000); }
 // ---------- Rolfs skumma jobb: när hans önskningar är klara ber han om saker som är lite olagliga ----------
 // Säger man ja får man mycket pengar (men chefen märker ibland). Säger man nej får man lite – och heder.
 const ROLF_JOBB = [
@@ -3240,6 +3243,7 @@ interaktor.registrera(postlada, {
     if (S.post.lapp === 'jobb') return 'Rolf har lagt en hemlig lapp i postlådan – läs den';
     if (S.post.lapp) return '✉️ Läs lappen i postlådan';
     if (S.post.tillMig.length) return `Öppna postlådan – Rolf har lämnat: ${S.post.tillMig.map(beloText).join(' + ')}`;
+    if (vantarPaNummer()) return '📝 Lägg en lapp med ditt telefonnummer i Rolfs postlåda';
     const v = aktivGava();
     if (S.post.tillRolf) return 'Gåvan ligger i lådan – Rolf hämtar den när sopbilen kommer';
     if (valdTyp() && ROLF_TACK[valdTyp()]) return `Lägg ${VAROR[valdTyp()].namn.toLowerCase()} i Rolfs postlåda`;
@@ -3252,6 +3256,7 @@ interaktor.registrera(postlada, {
     if (S.post.lapp === 'jobb') { S.post.lapp = null; visaPostInne(); ljud.plock(); oppnaJobbVal(); return; }
     if (S.post.lapp) { const l = S.post.lapp; S.post.lapp = null; visaLapp(l); if (l.startsWith('rolf')) S.rolf.aktiv = true; visaPostInne(); ljud.plock(); sparaSnart(); return; }
     if (S.post.tillMig.length) { hamtaBeloning(); return; }
+    if (vantarPaNummer()) { geRolfNummer(); return; }
     const pv = valdTyp(); if (pv && ROLF_TACK[pv] && !S.post.tillRolf) {
       taBortVald(); flygIn(pv); S.post.tillRolf = pv;
       setTimeout(() => { visaPostInne(); ljud.placera(); }, 650);
@@ -3308,7 +3313,19 @@ if (S.tippNyckel) oppnaGrind(true);
 
 // ---------- SMS (när du har mobilen) ----------
 const AVSANDARE = { chefen: { namn: 'Rolf (chefen)', farg: '#7a3030' }, mamma: { namn: 'Mamma', farg: '#b8456a' }, pappa: { namn: 'Pappa', farg: '#4f5b6a' }, rolf: { namn: 'Rolf', farg: '#2e7b4f' }, ali: { namn: 'Ali', farg: '#2d5cbf' }, bror: { namn: 'Storebror', farg: '#7a3a9a' } };
+// Rolf ber om ditt nummer i första tackbrevet (artros i fingrarna)
+if (S.rolfNummer == null) S.rolfNummer = S.rolf.i >= 2;
+const vantarPaNummer = () => !S.rolfNummer && S.rolf.i >= 1 && S.lappar.includes('rolftack:0');
+function geRolfNummer() {
+  S.rolfNummer = true; ljud.placera(); visaPostInne(); sparaSnart();
+  ui.toast('📝 Lappen med ditt nummer ligger i Rolfs postlåda.', 'bra');
+  setTimeout(() => sms('rolf', 'Rolf här!! Funkar de?? Ja skriver me EN finger. Nu slipper ja pennan, fingrarna tackar. Ja lägger fortfarande saker i lådan ibland – då sms:ar ja. Sms:a inte efter tio. /R'), 15000);
+  const vantar = S.rolfVantar || []; S.rolfVantar = [];
+  vantar.forEach(([t, id], i) => setTimeout(() => sms('rolf', t, id), 40000 + i * 30000));
+}
 function sms(fran, text, id) {
+  // Rolf skriver brev tills du lagt ditt nummer i hans postlåda – sms:en väntar så länge
+  if ((fran === 'rolf') && !S.rolfNummer) { S.rolfVantar = [...(S.rolfVantar || []), [text, id]].slice(-3); return; }
   senasteSms = performance.now();
   if (!S.mobil) return;
   S.sms.push({ fran, text }); S.sms = S.sms.slice(-40); sparaSnart();
@@ -3624,16 +3641,16 @@ function uppdateraRolf(dt) {
         const id = S.post.tillRolf; S.post.tillRolf = null;
         S.rolf.fatt = [...(S.rolf.fatt || []), id]; S.rolf.tack = (S.rolf.tack || 0) + 1;
         S.post.tillMig = [...S.post.tillMig, 'sak:' + ROLF_TACK[id].ger, 'tack:' + id];
-        ljud.placera(); sparaSnart();
+        ljud.placera(); sparaSnart(); rolfLadeILadan();
       } else if (S.rolf.jobb != null && S.post.tillRolf === jobbNu().vara) {
         const j = jobbNu(); S.post.tillRolf = null; S.post.tillMig = [...S.post.tillMig, `mynt:${j.ja}`, 'jobb'];
-        S.rolf.jobb = null; S.rolf.jobbNr = j.n + 1; S.rolf.ja = (S.rolf.ja || 0) + 1; S.rolf.jobbTack = j.n;
+        S.rolf.jobb = null; S.rolf.jobbNr = j.n + 1; S.rolf.ja = (S.rolf.ja || 0) + 1; S.rolf.jobbTack = j.n; rolfLadeILadan();
         if (S.rolf.ja % 2 === 0) S.rolf.boter = Math.round(j.ja * 0.4 / 50) * 50;    // chefen märker vartannat jobb
         ljud.placera(); sparaSnart();
       } else if (onskan && S.post.tillRolf === onskan.vara) {
         S.post.tillRolf = null;
         S.post.tillMig = [...onskan.belo];
-        S.rolf.i++; S.rolf.aktiv = false;
+        S.rolf.i++; S.rolf.aktiv = false; if (S.rolf.i > 1) rolfLadeILadan();
         ljud.placera(); sparaSnart();
       }
       visaPostInne();
@@ -5135,7 +5152,8 @@ function uppdateraMark() {
   markTavla.visible = S.mark.tips;
 }
 function kollaMarkTips() {
-  if (S.mark.tips || !(S.dag >= 4 || S.rolf.i >= 3)) return;
+  // markköpen kommer senare: när kapitel 1 är klart, man har Rolfs nummer och det börjar bli fullt (eller dag 8)
+  if (S.mark.tips || !S.rolfNummer || !S.kapitelKlart || !(S.dag >= 8 || placerade.filter((p) => !p.pa).length >= 30)) return;
   S.mark.tips = true; markTavla.visible = true; sparaSnart();
   setTimeout(() => sms('rolf', 'Vet du vems mark du bor på? Bengt-Åkes. Han äger allt härikring. Han frågade vem som bor i skjulet. Ja sa "en kompis". Ja kan snacka me honom om du vill köpa. Kolla tavlan vid vägen. /R'), 3000);
 }
@@ -5382,6 +5400,6 @@ function kapitelSlut() {
 }
 
 // för automatiska tester
-window.__printahem = { ruttnaOverNatten, stallIKyl, kylAntal, kompostera, stallNer, spoke, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { geRolfNummer, vantarPaNummer, kollaMarkTips, postlada, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, stallNer, spoke, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
