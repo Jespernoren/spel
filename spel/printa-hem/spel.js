@@ -2836,7 +2836,7 @@ function flaskaMald() {
 interaktor.registrera(cykel, { text: () => S.strom >= stromMax() - 0.5 ? `🔋 Batteriet är fullt (${stromMax()}) – bygg en batteribank för att lagra mer` : `✋ Klicka och håll – trampa · ⚡ ${Math.floor(S.strom)}/${stromMax()}`, aktivera: () => {} });
 interaktor.registrera(marknad, {
   text: () => aliOppen() ? 'Gå fram till Alis disk – köp och sälj' : '🔒 Alis marknad har stängt (öppnar 08:00) – gå hem och sov',
-  aktivera: () => { if (aliOppen()) oppnaMarknad(); else { const t = ALI_STANGT[Math.floor(Math.random() * ALI_STANGT.length)]; ljud.fel(); prata('ali', t); ui.toast(`🧔🏽 Ali (bakom luckan): ”${t}”`, 'fel'); } },
+  aktivera: () => { if (aliOppen()) { aliSagt = ''; oppnaMarknad(); } else { const t = ALI_STANGT[Math.floor(Math.random() * ALI_STANGT.length)]; ljud.fel(); prata('ali', t); ui.toast(`🧔🏽 Ali (bakom luckan): ”${t}”`, 'fel'); } },
 });
 // fönster: sikta på en plan vägg – grönt spöke där det får plats
 const fonsterGrupp = new THREE.Group(); talt.add(fonsterGrupp);
@@ -4405,6 +4405,7 @@ function aliSaljLista() {
   for (const [t, n] of Object.entries(S.forrad)) ager[t] = (ager[t] || 0) + n;
   return Object.entries(ager).filter(([t, n]) => n > 0 && saljPris(t)).map(([t, n]) => ({ key: 's:' + t, typ: t, n, pris: prisNu(t), bas: saljPris(t) }));
 }
+let aliSagt = '';
 function oppnaMarknad() {
   // en vy, två nivåer som alltid syns: SÄLJ (grönt – du får pengar) överst, KÖP (rött – det kostar) under
   const kopL = aliKopLista(), saljL = aliSaljLista();
@@ -4446,7 +4447,9 @@ function oppnaMarknad() {
     }
   } else fot = detalj({ tom: 'Välj något att sälja eller köpa.' });
   const html = panel({ portrattVem: 'ali', titel: 'Alis marknad', sub: `<span class="ui-bubbla">${bubbla}</span>`, resurser: resurserHtml(), kropp, fot, klass: 'ph-ali-panel' });
-  prata('ali', bubbla);
+  // säg bara repliken om den är ny – annars börjar Ali om varje gång du klickar på en sak
+  if (bubbla !== aliSagt) prata('ali', bubbla);
+  aliSagt = bubbla;
   aliRepl = '';
   oppnaRuta(html, (el) => {
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { aliFlik = k.dataset.flik; aliVald = null; aliRepl = aliFlik === 'salj' ? 'Visa vad du har. Snabbt.' : 'Titta gärna. Rör inte.'; ljud.plock(); oppnaMarknad(); }; });
