@@ -12,9 +12,9 @@ ROSTER = {
     'rolf':      ('Björn',  0.90, 'bass=g=4:f=130', -3.0, 'varmland'),     # värmlänning/dalmas, djup och långsam
     'mamma':     ('Stina',  1.02, 'bass=g=2:f=200', -1.5, 'narke'),        # närkingska
     'pappa':     ('Lars',   1.0,  'bass=g=3:f=150', -2.0, 'stockholm'),    # stockholmare, glad och obrydd
-    'bror':      ('Anton',  1.0,  'bass=g=2:f=150', -1.5, 'stockholm'),
+    'bror':      ('Anton',  1.03, 'equalizer=f=3000:t=q:w=1:g=2.5', 1.0, 'stockholm'),   # yngre och ljusare än pappa
     'du':        ('Viktor', 1.0,  'bass=g=1:f=150', -1.0, None),
-    'chefen':    ('Nils',   0.97, 'highpass=f=250,lowpass=f=3800', -2.0, None),   # låter som i telefon
+    'chefen':    ('Björn+Lars:0.6', 1.06, 'acompressor=threshold=-24dB:ratio=6:attack=5:release=80:makeup=4,asoftclip=type=atan:param=1.6,highpass=f=220,lowpass=f=3800', -4.0, None),   # bastant, arg kommunchef – i telefon
     'berattare': ('Alice',  0.95, 'bass=g=2:f=180', -1.0, None),
 }
 # ren ton: bort med sus och brus (brusreducering + brusspärr i pauserna)
@@ -25,7 +25,11 @@ def lasipa(tts, text, rost, tempo, dialekt):
     import numpy as np
     from kokoro_sv.core import _notch
     torch = tts._torch
-    vp = tts._load_voice(rost); model = tts._model_for(rost)
+    if '+' in rost:   # blandad röst: 'Björn+Lars:0.6'
+        par, mix = rost.split(':'); a1, a2 = par.split('+')
+        vp = tts.blend(a1, a2, float(mix)); model = tts.model
+    else:
+        vp = tts._load_voice(rost); model = tts._model_for(rost)
     ipa = tts.g2p(text).replace('ʏ', 'y')
     if dialekt: ipa = DIALEKT[dialekt](ipa)
     ids = [i for i in (model.vocab.get(p) for p in ipa) if i is not None][:500]
