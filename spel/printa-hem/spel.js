@@ -8,6 +8,7 @@ import { THREE, skapaSpel, startaLoop } from '../../delat/motor.js';
 import { Spelare, Interaktor, Hand, Sparning, ljud, FpUI } from '../../delat/fp/index.js';
 
 import { INTRO_BILDER } from './intro-bilder.js';
+import { byggMiljo } from './miljo.js';
 import { IKON, ik, portratt, rens, knapp, ruta as uiRuta, grid, sektion, detalj, resurs, panel, rad, UI_CSS } from './ui-kit.js';
 { const st = document.createElement('style'); st.textContent = UI_CSS; document.head.appendChild(st); }
 const SPEL_ID = 'printa-hem';
@@ -407,6 +408,8 @@ S.stat = { tipp: 0, plockat: 0, ilagt: 0, malt: 0, hamtat: 0, trampat: 0, printa
 S.kvarn = { tratt: 0, trattGram: 0, prog: 0, ut: 0, motor: false, ...S.kvarn };
 S.post = { tillRolf: null, tillMig: [], lapp: null, ...S.post };
 S.rolf = { i: 0, aktiv: false, nasta: null, extra: 0, ...S.rolf };
+// Respekt (hjärtat): hur andra ser på dig. Trivsel = hur du själv mår. Gamla sparfiler får respekt för det de redan gjort.
+if (S.respekt == null) S.respekt = (S.rolf.heder || 0) * 8 + Math.min(S.rolf.i || 0, 12) * 4 + (S.kapitelKlart ? 10 : 0) + (S.rolf.presenter || 0) * 10;
 S.sms = S.sms || []; S.olasta = 0; S.mobil = true; S.dag = S.dag || (S.sang ? 2 : 1); S.speltid = S.speltid || 0; S.aliSett = S.aliSett || null;
 if (S.tippNyckel && S.rolf.i === 0) { S.rolf.i = 1; S.rolf.aktiv = false; }
 if (S.rolf.i >= 2 && !S.karra) S.karra = true;   // äldre sparningar: flasköppnaren redan levererad
@@ -449,31 +452,13 @@ const at = (o, x, y, z) => { o.position.set(x, y, z); return o; };
 const traffMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false });
 const traffYta = (g, w, h, d, x = 0, y = h / 2, z = 0) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), traffMat); m.position.set(x, y, z); g.add(m); return m; };
 
-// mark
-const mark = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), mat(0x7fae5a));
-mark.rotation.x = -Math.PI / 2; mark.receiveShadow = true; scen.add(mark);
 const tomtYta = new THREE.Mesh(new THREE.PlaneGeometry(TOMT * 2, TOMT * 2), mat(0x9a8a62));
 tomtYta.rotation.x = -Math.PI / 2; tomtYta.position.y = 0.01; tomtYta.receiveShadow = true; scen.add(tomtYta);
 const vag = new THREE.Mesh(new THREE.PlaneGeometry(160, 5), mat(0x55585e));
 vag.rotation.x = -Math.PI / 2; vag.position.set(0, 0.02, TOMT + 3); vag.receiveShadow = true; scen.add(vag);
 
-// träd runt tomten
-let fro = 11;
-const rnd = () => ((fro = (fro * 9301 + 49297) % 233280) / 233280);
-const stamMat = mat(0x6b4a2f), barrMat = [mat(0x2f6b3a), mat(0x3d7d43), mat(0x24593a)];
-for (let i = 0; i < 140; i++) {
-  const a = rnd() * Math.PI * 2, r = TOMT + 3 + rnd() * 26;
-  const x = Math.cos(a) * r, z = Math.sin(a) * r;
-  if (z > TOMT && z < TOMT + 7) continue; // inte på vägen
-  if (Math.abs(x - ALI.x) < 9 && z > TOMT && z < TOMT + 13) continue; // inte på marknaden
-  if (Math.hypot(x - TIPP.x, z - TIPP.z) < TIPP.r + 4) continue; // inte på soptippen
-  const t = new THREE.Group();
-  const h = 3 + rnd() * 4;
-  const stam = cyl(0.15, 0.22, 1.2, stamMat, 6); stam.position.y = 0.6;
-  const barr = new THREE.Mesh(new THREE.ConeGeometry(1 + rnd(), h, 7), barrMat[i % 3]);
-  barr.position.y = 1 + h / 2; barr.castShadow = true;
-  t.add(stam, barr); t.position.set(x, 0, z); scen.add(t);
-}
+// skogen och marken runt tomten (miljo.js): flera trädsorter, buskar, stenar, gräs och blommor
+const miljo = byggMiljo({ scen, TOMT, TIPP, ALI });
 
 // soptippen: en låg kulle av grus och sopor
 const tippHojd = (x, z) => { const d = Math.hypot(x - TIPP.x, z - TIPP.z) / TIPP.r; return d < 1 ? 0.45 * (1 - d * d) : 0; };
@@ -2387,6 +2372,7 @@ interaktor.registrera(kvarn, {
     if (bandTyp()) return '🗑️ Montera skräpcontainern bakom kvarnen';
     if (valdTyp() === 'byggsats:turbomotor') return S.kvarn.motor ? '🔥 Skruva fast turbon på motorn' : 'Kvarnen behöver en vanlig motor först';
     if (valdTyp() === 'byggsats:jetmotor') return S.kvarn.turbo ? '🚀 Montera JETMOTORN' : 'Jetmotorn kräver turbon först';
+    if (valdTyp()?.startsWith('burk_')) return `Mal ${VAROR[valdTyp()].namn.toLowerCase()} till filament (mamma blir ledsen · respekt −${BURK_RESPEKT})`;
     if (valdKarra() && S.karraLast.length) return `Töm kärran i tratten (${S.karraLast.length} st ≈ ${rullar(S.karraLast.reduce((a, v) => a + SKRAP_SORTER[skrapSort(v)].gram, 0))})`;
     const n = hand.saker.filter((s) => s.userData.typ === 'skrap').length;
     if (n) return `Lägg i tratten (${n} st ≈ ${rullar(hand.saker.reduce((a, x) => a + (x.userData.gram || 0), 0))})`;
@@ -2399,6 +2385,7 @@ interaktor.registrera(kvarn, {
     if (trattTyp()) { taBortVald(); monteraTratt(); return; }
     if (valdTyp() === 'byggsats:turbomotor' && S.kvarn.motor) { taBortVald(); S.kvarn.turbo = true; turboDel.visible = true; ljud.stor(); ui.toast('🔥 TURBO! Kvarnen mal 2,5× snabbare.', 'guld'); sparaSnart(); return; }
     if (valdTyp() === 'byggsats:jetmotor' && S.kvarn.turbo) { taBortVald(); S.kvarn.jet = true; jetDel.visible = true; ljud.stor(); ui.toast('🚀 JETMOTOR MED EFTERBRÄNNARE! Kvarnen mal 6× snabbare.', 'guld'); sparaSnart(); return; }
+    if (valdTyp()?.startsWith('burk_')) { malBurk(); return; }
     if (bandTyp()) { taBortVald(); S.kvarn.band = true; matarband.visible = true; ljud.stor(); ui.toast('🗑️ Skräpcontainern står bakom kvarnen! Töm allt skräp i den – bandet matar kvarnen själv.', 'guld'); sparaSnart(); return; }
     let n = 0;
     if (valdKarra() && S.karraLast.length) {
@@ -3125,16 +3112,16 @@ function oppnaJobbVal() {
   const j = jobbNu();
   const kropp = `<div class="ph-jobbbrev">${rens(j.brev)}</div>` + sektion('Vad gör du?') + `<div class="ph-jobbval">`
     + rad({ bild: tumme(j.vara), titel: `Gör det – printa ${VAROR[j.vara].namn.toLowerCase()}`, text: `Lägg den i postlådan. Rolf betalar ${j.ja.toLocaleString('sv-SE')} kr. Chefen kan märka det.`, hoger: knapp({ text: `+${j.ja.toLocaleString('sv-SE')} kr`, typ: 'plus', attr: 'data-ja', ikon: 'mynt' }) })
-    + rad({ bild: `<span class="ui-headik" style="width:54px;height:54px">${IKON.hjarta}</span>`, titel: 'Säg nej', text: `Rolf blir besviken – men respekterar dig. Du får ${j.nej} kr direkt. Din heder blir ${(S.rolf.heder || 0) + 1}.`, hoger: knapp({ text: `+${j.nej} kr`, typ: 'neutral', attr: 'data-nej', ikon: 'hjarta' }) })
+    + rad({ bild: `<span class="ui-headik" style="width:54px;height:54px">${IKON.hjarta}</span>`, titel: 'Säg nej', text: `Rolf blir besviken – men respekterar dig. Du får ${j.nej} kr direkt. Respekt +8.`, hoger: knapp({ text: `+${j.nej} kr`, typ: 'neutral', attr: 'data-nej', ikon: 'hjarta' }) })
     + '</div>';
-  oppnaRuta(panel({ portrattVem: 'rolf', titel: 'En lapp från Rolf', sub: 'Lite olagligt. Bara lite.', resurser: resurserHtml() + resurs('hjarta', `Heder ${S.rolf.heder || 0}`), kropp }), (el) => {
+  oppnaRuta(panel({ portrattVem: 'rolf', titel: 'En lapp från Rolf', sub: 'Lite olagligt. Bara lite.', resurser: resurserHtml() + resurs('hjarta', `Respekt ${S.respekt}`), kropp }), (el) => {
     el.querySelector('[data-stang]').onclick = () => { S.post.lapp = 'jobb'; visaPostInne(); ui.stangButik(); };   // bestäm dig senare
     el.querySelector('[data-ja]').onclick = () => {
       S.rolf.jobb = j.n; ljud.plock(); ui.stangButik();
       ui.toast(`Printa ${VAROR[j.vara].namn.toLowerCase()} (fliken Gåvor på skrivaren) och lägg den i Rolfs postlåda`, 'guld'); sparaSnart();
     };
     el.querySelector('[data-nej]').onclick = () => {
-      S.rolf.jobb = null; S.rolf.heder = (S.rolf.heder || 0) + 1; S.rolf.jobbNr = j.n + 1; S.mynt += j.nej; ljud.mynt(); ui.stangButik();
+      S.rolf.jobb = null; S.rolf.heder = (S.rolf.heder || 0) + 1; S.rolf.jobbNr = j.n + 1; S.mynt += j.nej; ljud.mynt(); ui.stangButik(); andraRespekt(8, 'Sa nej till Rolfs skumma jobb');
       setTimeout(() => sms('rolf', j.tackNej), 1200);
       if (S.rolf.heder === 3) { S.post.tillMig = [...S.post.tillMig, 'mynt:2500', 'heder']; visaPostInne(); setTimeout(() => sms('rolf', 'Tre gånger har du sagt nej. Ingen har sagt nej till mig sen Birgitta. Ja la nåt i lådan. Behåll det. /R'), 4000); }
       sparaSnart();
@@ -3230,11 +3217,13 @@ function hamtaBeloning() {
   }
   ljud.stor(); ui.toast(`Du fick: ${lista.filter((b) => b !== 'jobb' && !b.startsWith('tack:')).map(beloText).join(' + ')}`, 'guld');
   const nr = S.rolf.i - 1;
-  for (const b of lista) if (b.startsWith('tack:')) setTimeout(() => sms('rolf', ROLF_TACK[b.slice(5)].text), 1200);
+  for (const b of lista) if (b.startsWith('tack:')) { setTimeout(() => sms('rolf', ROLF_TACK[b.slice(5)].text), 1200); S.rolf.presenter = (S.rolf.presenter || 0) + 1; andraRespekt(Math.round(6 + VAROR[b.slice(5)].present / 400), 'Gav Rolf en present'); }
+  if (lista.includes('jobb')) andraRespekt(-3, 'Gjorde ett skumt jobb åt Rolf');
   const ovrigt = lista.includes('jobb') || lista.includes('heder') || lista.some((b) => b.startsWith('tack:'));
   if (lista.includes('jobb')) sms('rolf', ROLF_JOBB[S.rolf.jobbTack % ROLF_JOBB.length].tackJa);
   if (lista.includes('heder')) setTimeout(() => sms('mamma', 'Det ringde en Rolf. Han sa att du är den ärligaste människan han känner. VEM ÄR ROLF?? Men… bra. Jag är stolt. Säg inte att jag sa det.'), 6000);
   if (ovrigt) { visaPostInne(); sparaSnart(); return; }
+  andraRespekt(4, 'Fixade det Rolf bad om');
   if (nr === 0) visaLapp('rolftack:0');          // första gången: ett brev (med hans nummer)
   else sms('rolf', ROLF[nr].tack);               // sedan sms:ar han
   visaPostInne(); sparaSnart();
@@ -3392,6 +3381,9 @@ const PAPPA_KORT = [
   [['pappa', 'Tjenare! Mamma sa att ja skulle kolla läget.', 'du'], ['pappa', 'Läget e bra. Nu har ja kollat.'], ['du', 'Har du saknat mig?'], ['pappa', 'Aha, vad lugnt då! Bra snöre hit förresten.', 'du']],
   [['pappa', 'Tjena! Såg Formel 1 i natt. Vilket race!', 'du'], ['pappa', 'Verstappen var en räv bakom örat.'], ['du', 'Jag har ingen säng, pappa.'], ['pappa', 'Aha, vad lugnt då! Kvarta på golvet, de e bra för ryggen.', 'du']],
   [['pappa', 'Hallå! Plurret e varmt idag, ja har badat.', 'du'], ['du', 'Mamma grät i telefon.'], ['pappa', 'Aha, vad lugnt då. Hon gråter på Bingolotto oxå.', 'du']],
+  [['pappa', 'Tjenare! Bara åkte förbi.', 'du'], ['pappa', 'Du, en sak. Varför har du inte kommit längre?'], ['du', 'Va? Jag har byggt allt det här själv.'], ['pappa', 'Aha, vad lugnt då. Grannens grabb har två lägenheter.', 'du']],
+  [['pappa', 'Hallå! Skjulet lutar lite va?', 'du'], ['pappa', 'Hade du inte tänkt ha ett riktigt hus vid det här laget?'], ['du', 'Jag gör så gott jag kan.'], ['pappa', 'Aha, vad lugnt då! Ja hade körkort och Volvo när ja var i din ålder.', 'du']],
+  [['pappa', 'Tjena! Ska du bo här i vinter oxå?', 'du'], ['du', 'Jag vet inte, pappa.'], ['pappa', 'Aha, vad lugnt då. Långrör, de e grejen. Mamma köper.', 'du']],
   [['pappa', 'Tjenare! Fila nötterna gör du va?', 'du'], ['du', 'Ibland.'], ['pappa', 'Aha, vad lugnt då!', 'du'], ['pappa', 'Kolla smulan. Ny. AIK-färger. Fast ja e för Djurgår\'n.']],
 ];
 const PAPPA_SLUT = [['pappa', 'Mamma skicka med lite grejer.', 'burkar'], ['pappa', 'Ja gör bara som hon säger. Då blir de lugnt hemma.'], ['pappa', 'Fint jobbat!', 'du'], ['pappa', 'Nä, nu ska ja blada.'], ['pappa', 'Mamma hälsar!', 'du']];
@@ -3444,7 +3436,7 @@ function uppdateraPappa(dt) {
       if (vem === 'du') { vand(pappaGubbe, spelare.pos); ui.toast('Du: ' + text, ''); prata('du', text); b.t = 1.4 + text.length * 0.06; return; }
       const g = vem === 'pappa' ? pappaGubbe : rolfBesok;
       pappaGubbe.userData.arm.rotation.x = 0;
-      if (till === 'du') { vand(pappaGubbe, spelare.pos); if (text.startsWith('Fint')) { pappaGubbe.userData.arm.rotation.x = -2.6; } }
+      if (till === 'du') { vand(pappaGubbe, spelare.pos); if (text.startsWith('Fint')) { pappaGubbe.userData.arm.rotation.x = -2.6; andraRespekt(2, 'Pappa sa "fint jobbat"'); } }
       if (till === 'burkar') stallBurkar();
       bubbla(g, text); if (text !== '…') prata(vem, text);
       b.t = text === '…' ? 2.2 : 1.6 + text.length * 0.06;
@@ -3654,6 +3646,42 @@ function uppdateraSopbil(dt) {
 let aliTimer = 0;
 
 // ---------- Trivsel ----------
+// ---------- Respekt ----------
+const BURK_RESPEKT = 4;
+const RESPEKT_NIVAER = [[25, 'Filament nivå 2'], [60, 'Filament nivå 3'], [110, 'Filament nivå 4'], [180, 'Filament nivå 5']];
+function andraRespekt(d, varfor) {
+  const fore = S.respekt; S.respekt = Math.max(0, S.respekt + d);
+  S.respektLogg = [[d, varfor, S.dag], ...(S.respektLogg || [])].slice(0, 12);
+  ui.toast(`${d > 0 ? '❤️ Respekt +' + d : '💔 Respekt ' + d} · ${varfor}`, d > 0 ? 'guld' : 'fel');
+  respChip.classList.remove('puls'); void respChip.offsetWidth; respChip.classList.add(d > 0 ? 'puls' : 'puls-ner');
+  for (const [g, namn] of RESPEKT_NIVAER) if (fore < g && S.respekt >= g) setTimeout(() => ui.toast(`❤️ ${g} i respekt! Upplåst: ${namn}`, 'guld'), 1500);
+  sparaSnart();
+}
+// Mal mammas saker till filament. Det funkar. Men mamma får veta.
+const MAMMA_BURK_ARG = [
+  'Pappa sa att han såg min lingonsylt i någon slags MASKIN?!?! Säg att det inte är sant.',
+  'JAG STOD I KÖKET I TRE DAGAR. Tre dagar!! Och du gör PLAST av det??',
+  'Jag ringde Gunnar och bad om ursäkt för honungen. Han förstod inte heller.',
+  'Mina grytvantar. Jag virkade dem medan vi såg på Bingolotto. Hela säsongen.',
+  'Okej. Jag skickar inga fler burkar. … Pappa tar med fyra på torsdag. Det är de sista. Kanske.',
+  'Jag har pratat med prästen.',
+];
+function malBurk() {
+  const t = valdTyp();
+  const vart = iTratten(350, false);
+  if (!vart) { ui.toast('Tratten är full – mal först!', 'fel'); ljud.fel(); return; }
+  taBortVald();
+  const m = skapaVara(t), fran = hand.grupp ? hand.grupp.getWorldPosition(new THREE.Vector3()) : kamera.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, -0.3, 0));
+  skickaSkrap(m, fran, vart === 'tratt' ? trattTopp() : bingePunkt(), { dur: 0.7, tratt: vart === 'tratt' });
+  S.burkMalda = (S.burkMalda || 0) + 1; S.stat.ilagt++;
+  ljud.stor(); ritaHotbar?.();
+  andraRespekt(-BURK_RESPEKT, 'Malde mammas ' + VAROR[t].namn.replace(/ från mamma| \(lila\)/, '').toLowerCase());
+  const n = S.burkMalda;
+  if (n === 1 || n === 3 || n === 6 || n === 10 || n === 15 || n === 22) setTimeout(() => sms('mamma', MAMMA_BURK_ARG[[1, 3, 6, 10, 15, 22].indexOf(n)]), 6000 + Math.random() * 8000);
+  if (n === 4) setTimeout(() => sms('bror', 'Mamma grät i telefon. Hon säger att du gör plast av hennes sylt. Jag sa att det är återvinning. Det hjälpte inte.'), 15000);
+  if (n === 8) setTimeout(() => sms('rolf', 'Hörde att du mal din mammas sylt. Även ja har gränser. /R'), 12000);
+}
+
 function trivsel() {
   const antal = {};
   const saker = (S.bod ? MASKINER.gamingbod.trivsel : 0) + placerade.reduce((s, p) => { const n = antal[p.typ] = (antal[p.typ] || 0) + 1; return s + (info(p.typ).trivsel || 0) * 0.6 ** (n - 1); }, 0) + Object.keys(S.hem || {}).reduce((s, id) => s + (id === 'vaggar' ? 0 : id === 'skarm' ? 6 : id === 'fonster' ? fonsterLista().length * MASKINER.fonster.trivsel : MASKINER[id]?.trivsel || 0), 0) + (S.hem?.vagg || 0) * MASKINER.vaggar.trivsel;
@@ -4192,6 +4220,9 @@ css.textContent = `
 .ph-lastbar{display:inline-block;width:70px;height:9px;border-radius:5px;background:rgba(255,255,255,.18);overflow:hidden;vertical-align:middle;margin:0 6px}
 .ph-lastbar i{display:block;height:100%;width:0;background:#7dffb0;transition:width .2s}
 .fp-chip .ui-ik{width:20px;height:20px}
+.ph-resp-chip.puls{animation:respPuls .7s}.ph-resp-chip.puls-ner{animation:respNer .7s}
+@keyframes respPuls{40%{transform:scale(1.25);background:rgba(255,107,138,.6)}}@keyframes respNer{30%{transform:translateX(-5px);background:rgba(120,20,30,.8)}60%{transform:translateX(5px)}}
+.ph-resp-rad{padding:6px 2px;border-bottom:1px solid rgba(0,0,0,.08);font-size:15px}.ph-resp-rad b{margin-right:8px}.ph-resp-rad b.plus{color:#2e8b57}.ph-resp-rad b.minus{color:#c43d5c}.ph-resp-rad small{opacity:.55;margin-left:6px}
 .ph-notis .rubrik .ui-ik{width:14px;height:14px;vertical-align:-2px}
 .ph-tel-kropp{background:#f4f4f7;min-height:170px;padding:18px 14px;text-align:left}
 .ph-tel-bubbla{display:inline-block;background:#e3e3ea;color:#222;padding:12px 14px;border-radius:18px 18px 18px 5px;font-size:17px;line-height:1.45;max-width:92%}
@@ -4287,7 +4318,7 @@ function visaHotbarNamn() {
   el.textContent = t ? `${namnFor(t)}${t === 'byggsats:gamingbod' ? ' – gå till vänster om skjulet och klicka på det gröna spöket' : t?.startsWith('byggsats:spolhallare') ? ' – klicka på en skrivare för att montera' : t === 'byggsats:matarband' ? ' – gå till kvarnen: den ska stå bakom (grönt spöke)' : t === 'rulle' ? ' – klicka på en skrivare för att ladda' : t === 'magnet' ? ' – håll inne och sikta: suger till sig skräp' : t === 'karra' ? ' – lasta tungt skräp, Q tippar ur' : arPlacerbar(t) ? (VAROR[t]?.pris ? ' – sikta och klicka för att ställa ut (även i skjulet) eller sälj hos Ali' : ' – sikta och klicka för att ställa ut') : VAROR[t]?.gava ? ' – lägg i Rolfs postlåda' : VAROR[t]?.pris ? ' – sälj hos Ali' : ''}` : ['✋ Händerna', '🦾 Skräpgripen', '🎒 Grip + ryggkorg', '🧲 Magnetpistolen'][niva()];
   el.textContent = rens(el.textContent); el.classList.add('syns'); clearTimeout(namnTimer); namnTimer = setTimeout(() => el.classList.remove('syns'), 1800);
 }
-topp.insertAdjacentHTML('beforeend', `<div class="fp-chip">${ik('rulle')}<span class="ph-fil">0</span></div>
+topp.insertAdjacentHTML('beforeend', `<div class="fp-chip ph-resp-chip" title="Respekt – hur andra ser på dig" style="pointer-events:auto;cursor:pointer">${ik('hjarta')}<span class="ph-resp">0</span></div><div class="fp-chip">${ik('rulle')}<span class="ph-fil">0</span></div>
   <div class="fp-chip">${ik('klocka')}<span class="ph-klocka"></span></div>
   <div class="fp-chip">${ik('kista')}<span class="ph-forrad">0</span></div>
   <div class="fp-chip ph-sms-chip" style="display:none;pointer-events:auto;cursor:pointer">${ik('telefon')}<span class="ph-sms-n">0</span></div>
@@ -4309,6 +4340,15 @@ const rolfRad = document.querySelector('.ph-rolfrad'), mobilEl = document.queryS
 const malDel = document.querySelector('.ph-mal-del'), malText = document.querySelector('.ph-mal-text'), lappRuta = document.querySelector('.ph-lapp-ruta');
 const smsChip = document.querySelector('.ph-sms-chip'), smsN = document.querySelector('.ph-sms-n');
 smsChip.onclick = () => oppnaInkorg();
+const respChip = document.querySelector('.ph-resp-chip'), respText = document.querySelector('.ph-resp');
+respChip.onclick = () => oppnaRespekt();
+function oppnaRespekt() {
+  const nasta = RESPEKT_NIVAER.find(([g]) => S.respekt < g);
+  const kropp = sektion('Respekt är hur andra ser på dig. Trivsel är hur du själv mår.')
+    + RESPEKT_NIVAER.map(([g, namn]) => rad({ bild: `<span class="ui-headik" style="width:44px;height:44px;opacity:${S.respekt >= g ? 1 : 0.35}">${IKON.hjarta}</span>`, titel: namn, text: S.respekt >= g ? 'Upplåst' : `Kräver ${g} i respekt (${g - S.respekt} kvar)` })).join('')
+    + sektion('Senast') + ((S.respektLogg || []).map(([d, v, dag]) => `<div class="ph-resp-rad"><b class="${d > 0 ? 'plus' : 'minus'}">${d > 0 ? '+' : ''}${d}</b> ${v} <small>dag ${dag}</small></div>`).join('') || '<div class="ph-resp-rad">Inget än. Ge Rolf något, säg nej till skumma jobb.</div>');
+  oppnaRuta(panel({ ikon: 'hjarta', titel: `Respekt ${S.respekt}`, sub: nasta ? `Nästa: ${nasta[1]} vid ${nasta[0]}` : 'Alla nivåer upplåsta', kropp }));
+}
 const lastNamn = document.querySelector('.ph-bar-namn'), lastBar = document.querySelector('.ph-lastbar i');
 const stromChip = document.querySelector('.ph-strom-chip'), barText = document.querySelector('.ph-bar'), gripIkon = document.querySelector('.ph-grip-ikon'), forradText = document.querySelector('.ph-forrad'), filText = document.querySelector('.ph-fil'), stromBar = document.querySelector('.ph-strom i');
 
@@ -4763,7 +4803,7 @@ function uppdatera(dt) {
       sparaSnart();
     }
     if (S.steg >= STEG.findIndex((x) => x.del === K2) && !S.kapitelKlart) {
-      S.kapitelKlart = true; spar.spara(true);
+      S.kapitelKlart = true; andraRespekt(10, 'Byggde en riktig fristad'); spar.spara(true);
       kapitelSlut();
     }
   }
@@ -4806,7 +4846,7 @@ function uppdatera(dt) {
   // matarbandet flyttar skräp från bingen till tratten (drar lite ström)
   if (!STEG[S.steg] && !sover) { const fore = S.dagTid || 0; S.dagTid = Math.min(DAG_LANGD, fore + dt); if (Math.floor(fore / 30) !== Math.floor(S.dagTid / 30)) sparaSnart(); }
   if (harProto('m_fusion')) S.strom = Math.min(stromMax(), S.strom + dt * 0.8);
-  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); uppdateraMalPil(); for (const sk of skrivare) visaSpolar(sk);
+  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraMalPil(); for (const sk of skrivare) visaSpolar(sk);
   if (S.kvarn.band) {
     const kor = S.kvarn.binge.length > 0 && S.kvarn.tratt < TRATT_MAX && S.strom > 0.5;
     if (kor) {
@@ -4923,6 +4963,7 @@ function uppdatera(dt) {
     }
   }
   ui.framsteg(trivsel() / TRIVSEL_MAL * 100, 'Trivsel');
+  respText.textContent = S.respekt;
 }
 
 raknaOmSteg(); visaPostInne(); uppdateraSkjul();
@@ -5043,6 +5084,7 @@ function konfetti(n = 140) {
 }
 function fanfar() { [523, 659, 784, 1046].forEach((f, i) => ton(f, 0.35, 0.09, 'triangle', i * 0.16)); ton(784, 0.7, 0.08, 'triangle', 0.7); ton(1046, 0.9, 0.09, 'triangle', 0.85); }
 function kapitel2Slut() {
+  andraRespekt(15, 'Gamingbod och jacuzzi – folk pratar');
   konfetti(160); fanfar(); ljud.stor();
   const sv = MAMMA_SVAR_K2; void ['Mamma här. Du skickade en bild på en JACUZZI?!', '…och tapeter. Och en gamingbod med lampor i alla färger.', 'Okej. Jag erkänner. Det är finare än hemma.', 'Kan jag komma och bada på söndag? Pappa tar med korv.'];
   sv.forEach((t, i) => setTimeout(() => sms('mamma', t), 1500 + i * 400));
