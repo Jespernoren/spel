@@ -78,9 +78,9 @@ export const BRAND_CSS = `
 .fp-tillbaka{color:var(--fil)}
 
 /* startrutan: luft, en tydlig STARTA, val bredvid varandra under */
-.fp-ruta.br-start{max-width:520px;padding:30px 38px 22px}
+.fp-ruta.br-start{max-width:640px;padding:30px 40px 22px}
 .br-start .br-logo{margin:0 auto 22px}
-.br-ingress{margin:0 auto 26px;max-width:380px}
+.br-ingress{margin:0 auto 26px;max-width:560px}
 .br-ingress p{margin:0 0 10px!important;font-size:15.5px;line-height:1.5;color:#c9c3b4;opacity:1!important}
 .br-ingress .br-slogan{margin:16px 0 0!important;font:900 20px/1.2 var(--rubrik);color:var(--papper);letter-spacing:.02em}
 .br-starta{display:block;width:100%;max-width:300px;margin:0 auto;font-size:21px!important;padding:16px 30px!important}
