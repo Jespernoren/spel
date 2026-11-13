@@ -77,6 +77,19 @@ export const BRAND_CSS = `
 .fp-ruta p{color:#d9d4c7}
 .fp-tillbaka{color:var(--fil)}
 
+/* startrutan: luft, en tydlig STARTA, val bredvid varandra under */
+.fp-ruta.br-start{max-width:520px;padding:30px 38px 22px}
+.br-start .br-logo{margin:0 auto 22px}
+.br-ingress{margin:0 auto 26px;max-width:380px}
+.br-ingress p{margin:0 0 10px!important;font-size:15.5px;line-height:1.5;color:#c9c3b4;opacity:1!important}
+.br-ingress .br-slogan{margin:16px 0 0!important;font:900 20px/1.2 var(--rubrik);color:var(--papper);letter-spacing:.02em}
+.br-starta{display:block;width:100%;max-width:300px;margin:0 auto;font-size:21px!important;padding:16px 30px!important}
+.br-val{display:flex;gap:10px;justify-content:center;margin:16px auto 0;max-width:300px}
+.br-valknapp{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 10px;border-radius:10px;border:2px solid var(--kant);background:${LAGER_SVAG},transparent;color:#d9d4c7;font:700 13.5px system-ui;cursor:pointer}
+.br-valknapp:hover{border-color:#4a5268;color:#fff}.br-valknapp .ui-ik{width:16px;height:16px}
+.br-valknapp.varning{border-color:var(--lingon);color:#ffb3bd}
+.br-start .fp-tillbaka{margin-top:20px;font-size:13px;opacity:.8}
+
 /* --- knappar: tjocka, printade --- */
 .fp-knapp,.ui-knapp.primar{background:${LAGER},var(--falu)!important;color:var(--papper)!important;border-radius:10px;box-shadow:0 4px 0 var(--falu-mork),0 8px 16px rgba(0,0,0,.3);font-family:var(--rubrik);font-weight:900;letter-spacing:.03em;text-transform:uppercase;transition:transform .06s,box-shadow .06s,filter .1s}
 .fp-knapp{font-size:17px;padding:13px 30px}
@@ -113,7 +126,10 @@ export const BRAND_CSS = `
 .ph-intro{background:radial-gradient(circle at 50% 35%,#3a1d1a,#0d0b10 75%)!important}
 .ph-intro::before{content:"";position:absolute;inset:0;background:${LAGER_SVAG};pointer-events:none}
 .ph-intro-titel{background:none!important;-webkit-background-clip:initial!important;background-clip:initial!important;color:inherit!important;font-size:0!important;letter-spacing:0!important}
-.ph-intro-bubbla.du{background:var(--fil)!important}
+.ph-intro-svg{border-radius:10px!important;filter:drop-shadow(0 6px 0 #0d0f14) drop-shadow(0 18px 30px rgba(0,0,0,.5))}
+.ph-intro-bubbla{background:var(--papper)!important;color:#2a2018!important;box-shadow:0 5px 0 #b9ad94,0 14px 30px rgba(0,0,0,.4)!important;font-family:var(--rubrik)!important;font-weight:900!important;letter-spacing:.01em}
+.ph-intro-bubbla.du{background:var(--fil)!important;box-shadow:0 5px 0 var(--fil-mork),0 14px 30px rgba(0,0,0,.4)!important}
+.ph-intro-hoppa{background:rgba(25,28,36,.8)!important;border:2px solid var(--kant)!important;color:#d9d4c7!important;border-radius:10px!important}
 .ph-intro-vem{color:var(--fil)}
 .ph-intro-prickar span.pa{background:var(--falu)}
 `;

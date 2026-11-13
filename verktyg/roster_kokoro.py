@@ -82,7 +82,7 @@ def main():
         import soundfile as sf
         sf.write(wav, lasipa(tts, tal(text), rost, tempo, dialekt), 24000)
         djup = f'rubberband=pitch={2 ** (st / 12):.4f},' if st else ''
-        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', wav, '-af', f'{REN},{djup}{klang},loudnorm=I=-17:TP=-2', '-ac', '1', '-ar', '24000', '-b:a', '64k', fil], check=True)
+        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', wav, '-af', f'{REN},{djup}{klang},loudnorm=I=-17:TP=-2,silenceremove=start_periods=1:start_silence=0.05:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_silence=0.15:start_threshold=-45dB,areverse', '-ac', '1', '-ar', '24000', '-b:a', '64k', fil], check=True)
         klara += 1
         if klara % 20 == 0: print(del_nr, klara, '/', len(jobb), flush=True)
     print('klar', del_nr, klara)
