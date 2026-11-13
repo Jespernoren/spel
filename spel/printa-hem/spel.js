@@ -3758,22 +3758,57 @@ function ton(f, d, vol, typ = 'square', fordrojning = 0) {
 }
 const bilVolym = () => Math.max(0, 1 - sopbil.position.distanceTo(kamera.position) / 70) ** 2;
 function tuta() { const v = 0.02 + 0.12 * bilVolym(); ton(392, 0.25, v); ton(330, 0.25, v, 'square', 0.28); }
-// motorljud: brum som hörs tydligare ju närmare bilen är
-let bilMotor = null;
+// motorljud: en gammal diesel som brummar, skakar och spruttar – hörs tydligare ju närmare bilen är
+let bilMotor = null, bilPutt = 0;
+function brunBrus(c, sek = 2) {   // mörkt brus (som ett avgasrör)
+  const b = c.createBuffer(1, c.sampleRate * sek, c.sampleRate), d = b.getChannelData(0); let v = 0;
+  for (let i = 0; i < d.length; i++) { v = (v + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = v * 3.5; }
+  return b;
+}
 function motorLjud() {
   const c = lac; if (!c) return;
   if (!bilMotor) {
-    const o = c.createOscillator(), o2 = c.createOscillator(), lp = c.createBiquadFilter(), g = c.createGain();
-    o.type = 'sawtooth'; o.frequency.value = 45; o2.type = 'square'; o2.frequency.value = 46.5;
-    lp.type = 'lowpass'; lp.frequency.value = 260; lp.Q.value = 1.2;
-    o.connect(lp); o2.connect(lp); lp.connect(g); g.gain.value = 0; g.connect(c.destination); o.start(); o2.start();
-    bilMotor = { o, o2, lp, g };
+    const ut = c.createGain(); ut.gain.value = 0; ut.connect(c.destination);
+    // 1) cylindrarna: brus som pulseras i takt med tändningarna
+    const brus = c.createBufferSource(); brus.buffer = brunBrus(c); brus.loop = true;
+    const bp = c.createBiquadFilter(); bp.type = 'lowpass'; bp.frequency.value = 380; bp.Q.value = 0.8;
+    const puls = c.createGain(); puls.gain.value = 0.5;
+    const tand = c.createOscillator(); tand.type = 'sawtooth'; tand.frequency.value = 22;
+    const djup = c.createGain(); djup.gain.value = 0.5; tand.connect(djup); djup.connect(puls.gain);
+    brus.connect(bp); bp.connect(puls); puls.connect(ut);
+    // 2) mullret: låg grundton + en halvton under (ojämn gammal motor)
+    const mull = c.createOscillator(); mull.type = 'triangle'; mull.frequency.value = 44;
+    const mull2 = c.createOscillator(); mull2.type = 'sine'; mull2.frequency.value = 22;
+    const mg = c.createGain(); mg.gain.value = 0.35; mull.connect(mg); mull2.connect(mg);
+    const mlp = c.createBiquadFilter(); mlp.type = 'lowpass'; mlp.frequency.value = 160; mg.connect(mlp); mlp.connect(ut);
+    // 3) skrammel: lite ljust brus från plåten
+    const skr = c.createBufferSource(); skr.buffer = brunBrus(c, 1); skr.loop = true; skr.playbackRate.value = 4;
+    const hp = c.createBiquadFilter(); hp.type = 'bandpass'; hp.frequency.value = 1800; hp.Q.value = 2;
+    const sg = c.createGain(); sg.gain.value = 0.05; skr.connect(hp); hp.connect(sg); sg.connect(ut);
+    // ojämnt varv: en långsam vobbel på tändningen
+    const vob = c.createOscillator(); vob.frequency.value = 0.7; const vg = c.createGain(); vg.gain.value = 1.5; vob.connect(vg); vg.connect(tand.frequency);
+    for (const n of [brus, tand, mull, mull2, skr, vob]) n.start();
+    bilMotor = { ut, tand, mull, mull2, bp, sg };
   }
-  const t = c.currentTime, pa = bil.fas !== 'borta';
-  bilMotor.g.gain.setTargetAtTime(pa && ui.igang ? 0.16 * bilVolym() : 0, t, 0.2);
-  const varv = 42 + Math.abs(bil.fart) * 3.5;
-  bilMotor.o.frequency.setTargetAtTime(varv, t, 0.3); bilMotor.o2.frequency.setTargetAtTime(varv * 1.03, t, 0.3);
-  bilMotor.lp.frequency.setTargetAtTime(220 + Math.abs(bil.fart) * 40, t, 0.3);
+  const t = c.currentTime, pa = bil.fas !== 'borta' && ui.igang, vol = pa ? bilVolym() : 0, fart = Math.abs(bil.fart);
+  bilMotor.ut.gain.setTargetAtTime(0.32 * vol, t, 0.25);
+  const varv = 20 + fart * 2.2;                                   // tändningar per sekund
+  bilMotor.tand.frequency.setTargetAtTime(varv, t, 0.4);
+  bilMotor.mull.frequency.setTargetAtTime(varv * 2, t, 0.4); bilMotor.mull2.frequency.setTargetAtTime(varv, t, 0.4);
+  bilMotor.bp.frequency.setTargetAtTime(300 + fart * 45, t, 0.4);
+  bilMotor.sg.gain.setTargetAtTime(0.03 + Math.min(0.06, fart * 0.006), t, 0.3);
+  // sprutt: ibland en feltändning – en smäll i avgasröret
+  if (vol > 0.02 && t > bilPutt) {
+    bilPutt = t + 0.6 + Math.random() * (fart > 1 ? 1.5 : 3.5);
+    const ant = Math.random() < 0.3 ? 3 : 1;
+    for (let k = 0; k < ant; k++) {
+      const src = c.createBufferSource(); src.buffer = brunBrus(c, 0.12);
+      const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 160 + Math.random() * 220; f.Q.value = 1.5;
+      const g = c.createGain(), t0 = t + k * (0.07 + Math.random() * 0.05);
+      g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.9 * vol, t0 + 0.005); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.11);
+      src.connect(f); f.connect(g); g.connect(c.destination); src.start(t0); src.stop(t0 + 0.13);
+    }
+  }
 }
 function tippaLast() {
   ljud.borsta(); ljud.placera();
