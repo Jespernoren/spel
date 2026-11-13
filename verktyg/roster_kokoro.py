@@ -6,16 +6,32 @@ import json, os, re, subprocess, sys
 from kokoro_sv import SwedishKokoro
 
 
-# vem: (Kokoro-röst, tempo, ffmpeg-klang)
+from dialekt import DIALEKT
+# vem: (Kokoro-röst, tempo, ffmpeg-klang, halvtoner (djupare = minus), dialekt)
 ROSTER = {
-    'rolf':      ('Björn',  0.92, 'bass=g=3:f=140'),          # djup, långsam bonnröst
-    'mamma':     ('Stina',  1.05, 'equalizer=f=2500:t=q:w=1:g=1'),
-    'pappa':     ('Viktor', 1.0,  'anull'),                   # glad och obrydd
-    'bror':      ('Anton',  1.0,  'anull'),
-    'du':        ('Oskar',  1.0,  'anull'),
-    'chefen':    ('Lars',   0.97, 'highpass=f=250,lowpass=f=3800'),   # låter som i telefon
-    'berattare': ('Alice',  0.95, 'anull'),
+    'rolf':      ('Björn',  0.90, 'bass=g=4:f=130', -3.0, 'varmland'),     # värmlänning/dalmas, djup och långsam
+    'mamma':     ('Stina',  1.02, 'bass=g=2:f=200', -1.5, 'narke'),        # närkingska
+    'pappa':     ('Lars',   1.0,  'bass=g=3:f=150', -2.0, 'stockholm'),    # stockholmare, glad och obrydd
+    'bror':      ('Anton',  1.0,  'bass=g=2:f=150', -1.5, 'stockholm'),
+    'du':        ('Viktor', 1.0,  'bass=g=1:f=150', -1.0, None),
+    'chefen':    ('Nils',   0.97, 'highpass=f=250,lowpass=f=3800', -2.0, None),   # låter som i telefon
+    'berattare': ('Alice',  0.95, 'bass=g=2:f=180', -1.0, None),
 }
+# ren ton: bort med sus och brus (brusreducering + brusspärr i pauserna)
+REN = 'highpass=f=70,afftdn=nf=-28,agate=threshold=0.008:ratio=6:attack=3:release=150'
+
+def lasipa(tts, text, rost, tempo, dialekt):
+    """Som SwedishKokoro.synthesize – men talljuden (IPA) går genom dialekten först."""
+    import numpy as np
+    from kokoro_sv.core import _notch
+    torch = tts._torch
+    vp = tts._load_voice(rost); model = tts._model_for(rost)
+    ipa = tts.g2p(text).replace('ʏ', 'y')
+    if dialekt: ipa = DIALEKT[dialekt](ipa)
+    ids = [i for i in (model.vocab.get(p) for p in ipa) if i is not None][:500]
+    with torch.no_grad():
+        a = model.forward_with_tokens(torch.LongTensor([[0] + ids + [0]]).to(tts.device), vp[len(ids) - 1].to(tts.device), speed=tempo)[0].squeeze().cpu().numpy()
+    return _notch(a)
 
 def nyckel(t):
     t = re.sub(r'<[^>]+>', ' ', t).lower()
@@ -57,10 +73,12 @@ def main():
     for vem, text, k in jobb:
         fil = os.path.join(ut, k + '.mp3')
         if os.path.exists(fil): continue
-        rost, tempo, klang = ROSTER[vem]
+        rost, tempo, klang, st, dialekt = ROSTER[vem]
         wav = os.path.join(ut, f'_tmp{del_nr}.wav')
-        tts.speak(tal(text), voice=rost, out=wav, speed=tempo)
-        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', wav, '-af', f'{klang},loudnorm=I=-17:TP=-2', '-ac', '1', '-ar', '22050', '-b:a', '32k', fil], check=True)
+        import soundfile as sf
+        sf.write(wav, lasipa(tts, tal(text), rost, tempo, dialekt), 24000)
+        djup = f'rubberband=pitch={2 ** (st / 12):.4f},' if st else ''
+        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', wav, '-af', f'{REN},{djup}{klang},loudnorm=I=-17:TP=-2', '-ac', '1', '-ar', '24000', '-b:a', '64k', fil], check=True)
         klara += 1
         if klara % 20 == 0: print(del_nr, klara, '/', len(jobb), flush=True)
     print('klar', del_nr, klara)

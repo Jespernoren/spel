@@ -3,7 +3,9 @@
 import os, subprocess, sys, json
 from kokoro_sv import SwedishKokoro
 sys.path.insert(0, os.path.dirname(__file__))
-from roster_kokoro import tal  # samma textrensning som i spelet
+import roster_kokoro as rk  # samma textrensning, dialekter och klang som i spelet
+import soundfile as sf
+tal = rk.tal
 
 ut = sys.argv[1]; os.makedirs(ut, exist_ok=True)
 del_nr, delar = (int(sys.argv[2]), int(sys.argv[3])) if len(sys.argv) > 3 else (0, 1)
@@ -26,7 +28,9 @@ for vem, (_, text) in REPLIK.items():
         if n % delar != del_nr: continue
         fil = os.path.join(ut, f'{vem}-{r}.mp3')
         if os.path.exists(fil): continue
-        tts.speak(tal(text), voice=r, out=f'/tmp/prov{del_nr}.wav')
-        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', f'/tmp/prov{del_nr}.wav', '-af', 'loudnorm=I=-17:TP=-2', '-ac', '1', '-ar', '22050', '-b:a', '40k', fil], check=True)
+        _, tempo, klang, st, dialekt = rk.ROSTER.get(vem, (None, 1.0, 'anull', -1.5, None))
+        sf.write(f'/tmp/prov{del_nr}.wav', rk.lasipa(tts, tal(text), r, tempo, dialekt), 24000)
+        djup = f'rubberband=pitch={2 ** (st / 12):.4f},' if st else ''
+        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', f'/tmp/prov{del_nr}.wav', '-af', f'{rk.REN},{djup}{klang},loudnorm=I=-17:TP=-2', '-ac', '1', '-ar', '24000', '-b:a', '64k', fil], check=True)
     print(vem, flush=True)
 json.dump({'roster': ROSTER, 'replik': REPLIK}, open(os.path.join(ut, 'prov.json'), 'w'), ensure_ascii=False)
