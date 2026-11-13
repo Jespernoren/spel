@@ -128,7 +128,11 @@ const VAROR = {
   p_resa: { namn: 'Resa till Kanarieöarna', ikon: '', gram: 0, tid: 0, pris: 0, present: 20000 },
   // Rolfs tacksamhetssaker – kan inte köpas, bara få
   // filament nivå 2–5: låses upp med respekt. Kommer från tungt skräp (tunnor, kajaker) och från Rolf.
-  rulle2: { namn: 'Filament nivå 2 – blå PETG', ikon: '', gram: 0, tid: 0, pris: 0, fil: 2 },
+  rulle2: { namn: 'Filament nivå 2 – röd PETG', ikon: '', gram: 0, tid: 0, pris: 0, fil: 2 },
+  fynd2: { namn: 'Röd PETG-back (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 2, beskr: 'Riktigt bra plast. Mal den i kvarnen – den blir en rulle röd PETG (filament nivå 2).' },
+  fynd3: { namn: 'Kolfiberrester (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 3, beskr: 'Mal i kvarnen – blir en rulle kolfiber (nivå 3).' },
+  fynd4: { namn: 'Guldglittrig plastdunk (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 4, beskr: 'Mal i kvarnen – blir en rulle guldkomposit (nivå 4).' },
+  fynd5: { namn: 'Titanspån i en hink (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 5, beskr: 'Mal i kvarnen – blir en rulle titanblandning (nivå 5).' },
   rulle3: { namn: 'Filament nivå 3 – kolfiber', ikon: '', gram: 0, tid: 0, pris: 0, fil: 3 },
   rulle4: { namn: 'Filament nivå 4 – guldkomposit', ikon: '', gram: 0, tid: 0, pris: 0, fil: 4 },
   rulle5: { namn: 'Filament nivå 5 – titanblandning', ikon: '', gram: 0, tid: 0, pris: 0, fil: 5 },
@@ -1433,11 +1437,15 @@ function skapaVara(typ) {
     g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), mat(0xf5cba7)), 0, 0.2, 0));
     g.add(at(new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.16, 10), mat(0xc0392b)), 0, 0.32, 0));
     g.add(at(new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.1, 8), mat(0xffffff)), 0, 0.15, 0.04));
+  } else if (/^fynd[2-5]$/.test(typ)) {
+    const n = +typ.slice(-1), f = FIL_FARG[n];
+    const m = mat(f, { roughness: 0.5, metalness: n >= 4 ? 0.6 : 0.05, emissive: f, emissiveIntensity: 0.12 });
+    if (n === 2) { g.add(at(box(0.4, 0.22, 0.28, m), 0, 0.11, 0)); for (const x of [-0.12, 0, 0.12]) g.add(at(box(0.06, 0.12, 0.29, mat(0x8a1f18)), x, 0.13, 0)); }
+    else if (n === 5) { g.add(at(cyl(0.13, 0.11, 0.24, mat(0x777777)), 0, 0.12, 0)); g.add(at(cyl(0.12, 0.12, 0.03, m), 0, 0.25, 0)); }
+    else { g.add(at(box(0.24, 0.3, 0.18, m), 0, 0.15, 0)); g.add(at(cyl(0.04, 0.04, 0.06, mat(0x222222)), 0.05, 0.33, 0)); }
   } else if (/^rulle[2-5]$/.test(typ)) {
-    const f = FIL_FARG[typ.slice(-1)];
-    const k = cyl(0.13, 0.13, 0.1, mat(f, { emissive: f, emissiveIntensity: 0.25, metalness: typ === 'rulle4' || typ === 'rulle5' ? 0.7 : 0.1, roughness: 0.4 }), 20); k.rotation.x = Math.PI / 2; k.position.y = 0.16; g.add(k);
-    for (const z of [-0.06, 0.06]) { const fl = cyl(0.16, 0.16, 0.015, mat(0x222222), 20); fl.rotation.x = Math.PI / 2; fl.position.set(0, 0.16, z); g.add(fl); }
-    const sk = skylt(typ.slice(-1), 0.1, 0.1, '#ffffff', '#111111'); sk.position.set(0, 0.16, 0.07); g.add(sk);
+    const sp = filamentSpole(FIL_FARG[typ.slice(-1)], 0.16, 0.12); sp.position.y = 0.16; sp.rotation.y = 0.5; g.add(sp);
+    const sk = skylt(typ.slice(-1), 0.08, 0.08, '#ffffff', '#111111'); sk.position.set(0, 0.16, 0.067); sp.add(sk); sk.position.set(0, 0, 0.066);
   } else if (typ === 'r_radio') {
     g.add(at(box(0.5, 0.35, 0.25, mat(0x6a4a2a)), 0, 0.18, 0), at(box(0.3, 0.2, 0.01, mat(0xd8c890)), -0.06, 0.2, 0.126));
     for (const x of [0.15, 0.19]) g.add(at(cyl(0.025, 0.025, 0.02, mat(0xd0b060)), x, 0.2, 0.13).rotateX(Math.PI / 2));
@@ -1482,9 +1490,7 @@ function skapaVara(typ) {
     for (const [x, z] of [[-0.2, -0.15], [0.2, -0.15], [-0.2, 0.15], [0.2, 0.15]]) g.add(at(box(0.07, 0.25, 0.07, ti), x, 0.12, z));
     g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 4), mat(0xff3030, { emissive: 0xff3030 })), 0.57, 0.75, 0.07));
   } else if (typ === 'rulle') {
-    const k = cyl(0.13, 0.13, 0.1, mat(0x3de3ff, { emissive: 0x3de3ff, emissiveIntensity: 0.3 }), 20); k.rotation.x = Math.PI / 2; k.position.y = 0.16; g.add(k);
-    for (const z of [-0.06, 0.06]) { const f = cyl(0.16, 0.16, 0.015, mat(0x222222), 20); f.rotation.x = Math.PI / 2; f.position.set(0, 0.16, z); g.add(f); }
-    const nav = cyl(0.03, 0.03, 0.14, mat(0x777777), 10); nav.rotation.x = Math.PI / 2; nav.position.y = 0.16; g.add(nav);
+    const sp = filamentSpole(0x3de3ff, 0.16, 0.12); sp.position.y = 0.16; sp.rotation.y = 0.5; g.add(sp);
   } else if (typ === 'mobilstall') {
     const m = mat(0x2ecc71);
     g.add(at(box(0.14, 0.02, 0.1, m), 0, 0.01, 0));
@@ -2697,6 +2703,7 @@ interaktor.registrera(kvarn, {
     if (valdTyp() === 'byggsats:turbomotor' && S.kvarn.motor) { taBortVald(); S.kvarn.turbo = true; turboDel.visible = true; ljud.stor(); ui.toast('🔥 TURBO! Kvarnen mal 2,5× snabbare.', 'guld'); sparaSnart(); return; }
     if (valdTyp() === 'byggsats:jetmotor' && S.kvarn.turbo) { taBortVald(); S.kvarn.jet = true; jetDel.visible = true; ljud.stor(); ui.toast('🚀 JETMOTOR MED EFTERBRÄNNARE! Kvarnen mal 6× snabbare.', 'guld'); sparaSnart(); return; }
     if (valdTyp()?.startsWith('burk_')) { malBurk(); return; }
+    if (VAROR[valdTyp()]?.malTill) { malFynd(); return; }
     if (bandTyp()) { taBortVald(); S.kvarn.band = true; matarband.visible = true; ljud.stor(); ui.toast('🗑️ Skräpcontainern står bakom kvarnen! Töm allt skräp i den – bandet matar kvarnen själv.', 'guld'); sparaSnart(); return; }
     let n = 0;
     if (valdKarra() && S.karraLast.length) {
@@ -4152,8 +4159,8 @@ function uppdateraArstid() {
 
 // ---------- Respekt ----------
 const BURK_RESPEKT = 4;
-const RESPEKT_NIVAER = [[25, 'Filament nivå 2 – blå PETG'], [60, 'Filament nivå 3 – kolfiber'], [110, 'Filament nivå 4 – guldkomposit'], [180, 'Filament nivå 5 – titanblandning']];
-const FIL_FARG = { 2: 0x2f7fe0, 3: 0x2a2a2a, 4: 0xd4a017, 5: 0x9a8ab8 };
+const RESPEKT_NIVAER = [[25, 'Filament nivå 2 – röd PETG'], [60, 'Filament nivå 3 – kolfiber'], [110, 'Filament nivå 4 – guldkomposit'], [180, 'Filament nivå 5 – titanblandning']];
+const FIL_FARG = { 2: 0xd63a2f, 3: 0x2a2a2a, 4: 0xd4a017, 5: 0x9a8ab8 };
 const nivaUpplast = (n) => n <= 1 || S.respekt >= RESPEKT_NIVAER[n - 2][0];
 const hogstaNiva = () => [5, 4, 3, 2].find((n) => nivaUpplast(n)) || 1;
 // tungt skräp (tunnor, kajaker) kan ge filament av högre nivå när kvarnen mal det
@@ -4174,10 +4181,24 @@ function andraRespekt(d, varfor) {
     const n = i + 2; if ((S.filGava || []).includes(n)) return;
     S.filGava = [...(S.filGava || []), n];
     setTimeout(() => ui.toast(`❤️ ${g} i respekt! Upplåst: ${namn}. Tunnor och kajaker ger nu sånt filament.`, 'guld'), 1500);
-    S.post.tillMig = [...S.post.tillMig, 'sak:rulle' + n, 'sak:rulle' + n, 'sak:rulle' + n]; visaPostInne();
-    setTimeout(() => sms('rolf', `Folk pratar gott om dej. Ja hitta tre rullar ${namn.split('– ')[1]} på tippen. La dom i lådan. Sånt får bara folk me respekt. /R`), 5000);
+    S.post.tillMig = [...S.post.tillMig, 'sak:fynd' + n, 'sak:fynd' + n, 'sak:fynd' + n]; visaPostInne();
+    const fynd = VAROR['fynd' + n].namn.replace(' (från Rolf)', '').toLowerCase();
+    setTimeout(() => sms('rolf', `Folk pratar gott om dej. Ja hitta tre ${n === 2 ? 'röda backar av riktigt bra plast' : fynd} på tippen. Sånt ger ja bara folk me respekt. Ligger i brevlådan vid grinden. Mal dom i kvarnen så blir det ${namn.split('– ')[1]}. /R`), 5000);
   });
   sparaSnart();
+}
+// Rolfs fynd: special-plast som kvarnen gör till filament av högre nivå
+function malFynd() {
+  const t = valdTyp(), n = VAROR[t].malTill;
+  taBortVald();
+  const m = skapaVara(t), fran = hand.grupp ? hand.grupp.getWorldPosition(new THREE.Vector3()) : kamera.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, -0.3, 0));
+  skickaSkrap(m, fran, trattTopp(), { dur: 0.7, tratt: false });
+  ljud.stor(); ritaHotbar?.();
+  setTimeout(() => {
+    laggTill('rulle' + n); ritaHotbar?.();
+    ui.toast(`Kvarnen gav en rulle ${VAROR['rulle' + n].namn.toLowerCase()}! Den behövs för de finare recepten.`, 'guld');
+    if (!S.fyndForklarat) { S.fyndForklarat = true; inkorg({ vem: 'du', titel: 'Tanke', lapp: true, text: `Röd PETG. Starkare än vanlig plast – Ali har recept som kräver den. Rolf hittar mer ju mer folk respekterar mig.` }); }
+  }, 900);
 }
 // Mal mammas saker till filament. Det funkar. Men mamma får veta.
 // mamma tar inte hintsen: hon tror att man har ätit upp allt och skickar MER
@@ -4359,7 +4380,7 @@ const klockText = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${Strin
 const saljPris = (typ) => {
   if (VAROR[typ]?.pris > 0) return Math.round(VAROR[typ].pris * (1 + trimNiva('pris') * 0.1));
   if (VAROR[typ]?.lyx) return Math.round(VAROR[typ].gram * 0.1);
-  if (typ === 'rulle') return 120;                                   // Ali köper rullar billigt (och säljer för 200)
+  if (typ === 'rulle') return 40;                                    // Ali köper rullar billigt (och säljer för 150) – printa hellre
   const m = typ.startsWith('byggsats:') && MASKINER[typ.split(':')[1]];
   if (m) return Math.max(20, Math.round(m.gram * m.delar * SALJ_TILLBAKA));
   if (VAROR[typ]?.gram) return Math.max(10, Math.round(VAROR[typ].gram * 0.06));   // gåvor, säng m.m. – Ali tar det mesta, men snålt
@@ -6121,7 +6142,7 @@ let oppnadGrans = '';
 const FYND = [
   { id: 'volvo', mark: 'norr', x: 4, z: -TOMT - 14, namn: 'En gammal Volvo 240, halvt begravd', ger: () => { S.mynt += 2500; laggTill('rulle3', 2); }, text: 'I bakluckan: 2 500 kr i en kaffeburk och två rullar kolfiber. Bengt-Åke hade rätt!', sms: ['rolf', 'Hitta du VOLVON?? Bengt-Åke har letat i trettio år. Säj int nåt till honom. /R'] },
   { id: 'kallare', mark: 'oster', x: TOMT + 15, z: 9, namn: 'En övervuxen jordkällare', ger: () => { laggTill('r_radio'); S.mynt += 900; }, text: 'Inne i källaren: en gammal rörradio som fortfarande spelar dansband, och 900 kr i en syltburk.', sms: ['mamma', 'Pappa säger att du hittat en RADIO i en källare. Är den smittad?? Torka av den!'] },
-  { id: 'husvagn', mark: 'tippkant', x: TIPP.x - TIPP.r - 12, z: 2, namn: 'En rostig husvagn från -78', ger: () => { laggTill('rulle2', 3); S.mynt += 1200; }, text: 'Någon har bott här. I skåpet: tre rullar blå PETG och 1 200 kr. Och en lapp: "Hej då. /B".', sms: ['rolf', 'Husvagnen? Ja bodde dä innan ja flytta till tippen. Den lappen e från Birgitta. Behåll pengarna. /R'] },
+  { id: 'husvagn', mark: 'tippkant', x: TIPP.x - TIPP.r - 12, z: 2, namn: 'En rostig husvagn från -78', ger: () => { laggTill('rulle2', 3); S.mynt += 1200; }, text: 'Någon har bott här. I skåpet: tre rullar röd PETG och 1 200 kr. Och en lapp: "Hej då. /B".', sms: ['rolf', 'Husvagnen? Ja bodde dä innan ja flytta till tippen. Den lappen e från Birgitta. Behåll pengarna. /R'] },
 ];
 function byggFynd(f) {
   const g = new THREE.Group();
