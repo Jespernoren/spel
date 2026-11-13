@@ -4498,10 +4498,18 @@ function aliKopLista() {
   for (const [k, t] of Object.entries(TRIM)) {
     if (!t.tidig && !(S.kapitelKlart || S.rolf.i >= 3)) continue;
     if (t.syns && !t.syns()) continue;
-    add('Trimning – tar aldrig slut', 't:' + k, ik(t.bild || 'trim'), `${t.namn} nivå ${trimNiva(k) + 1}`, t.beskr(trimNiva(k) + 1) + (trimNiva(k) ? ` (nu: ${t.beskr(trimNiva(k)).toLowerCase()})` : ''), trimPris(k), [['oandlig', `Nivå ${trimNiva(k)} → ${trimNiva(k) + 1}`]],
+    add('Trimning – tar aldrig slut', 't:' + k, trimBild(k), `${t.namn} nivå ${trimNiva(k) + 1}`, t.beskr(trimNiva(k) + 1) + (trimNiva(k) ? ` (nu: ${t.beskr(trimNiva(k)).toLowerCase()})` : ''), trimPris(k), [['oandlig', `Nivå ${trimNiva(k)} → ${trimNiva(k) + 1}`]],
       () => { S.trim = { ...(S.trim || {}), [k]: trimNiva(k) + 1 }; aliRepl = ['AI:n och jag optimerade hela natten. Ingen sömn. Värt det.', 'Trimmad. Snabbare än min pappa någonsin var.', 'Nästa nivå kostar mer. Så funkar teknik. Och mitt liv.'][Math.floor(Math.random() * 3)]; ui.toast(`${t.namn} nivå ${trimNiva(k)}: ${t.beskr(trimNiva(k))}`, 'guld'); return true; });
   }
   return L;
+}
+// trimningens bild: saken som blir bättre + en bricka med vad som händer
+const TRIM_BILD = { kvarn: [null, '+25 % fart', 'kvarn'], skrivare: ['skrivare2', '+20 % fart'], pris: [null, '+10 % kr', 'mynt'], sopbil: [null, '+3 skräp', 'lastbil'], batteri: ['bank', '+100 ström'], utlager: ['rulle', 'fler rullar'], band: ['matarband', 'snabbare band'], arm: ['lastarm', 'lyfter mer'] };
+function trimBild(k) {
+  const [typ, txt, ikon] = TRIM_BILD[k] || [null, '', 'trim'];
+  let bild = ''; try { bild = typ ? tumme(typ, 50) : ''; } catch { bild = ''; }
+  if (!bild || bild.includes('ui-ik')) bild = `<span class="ph-trim-ik">${IKON[ikon] || IKON.trim}</span>`;
+  return `<span class="ph-trimbild">${bild}<i>${txt}</i></span>`;
 }
 function aliSaljLista() {
   const ager = {};

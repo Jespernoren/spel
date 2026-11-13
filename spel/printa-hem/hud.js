@@ -97,6 +97,10 @@ export const HUD_CSS = `
 .ph-fynd-kort b{display:block;font:800 15px/1.25 system-ui;color:#fff}.ph-fynd-kort p{margin:6px 0 0;font:600 12.5px/1.35 system-ui;color:#c5ccda}
 .ph-fynd-mynt{display:block;width:72px;height:72px}.ph-fynd-mynt svg{width:100%;height:100%}
 @keyframes fyndPop{60%{opacity:1;transform:scale(1.08) translateY(-4px)}to{opacity:1;transform:none}}
+.ph-trimbild{position:relative;display:grid;place-items:center;width:100%;height:100%}.ph-trimbild>img{max-width:50px;max-height:50px;margin-top:-8px}
+.ph-trim-ik{display:block;width:34px;height:34px;margin-top:-8px;color:#ffd37a}.ph-trim-ik svg{width:100%;height:100%}
+.ph-trimbild>i{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);display:block;max-width:66px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:900 9px/1.3 system-ui;font-style:normal;color:#0d1a22;background:#7dffb0;padding:1px 5px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.ph-trimbild>i .ui-ik{width:11px;height:11px}
 .hud-flask{position:fixed;left:max(12px,env(safe-area-inset-left));z-index:21;width:280px;box-sizing:border-box;pointer-events:none;font:700 13px/1.35 system-ui;color:#fff;display:flex;flex-direction:column;gap:6px}
 .hud-flask>div{padding:8px 12px 9px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.88);border-left:5px solid var(--lingon);box-shadow:0 6px 16px rgba(0,0,0,.3)}
 .hud-flask b{display:block;font:900 11px/1.2 system-ui;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
