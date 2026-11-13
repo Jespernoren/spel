@@ -56,6 +56,26 @@ export const HUD_CSS = `
 .hud-m .rad span{color:#c5ccda;text-transform:uppercase}.hud-m .rad b{font-weight:900}
 .hud-bar{height:10px;border-radius:3px;background:rgba(0,0,0,.45);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.5)}
 .hud-bar i{display:block;height:100%;width:0;border-radius:3px;transition:width .6s cubic-bezier(.2,.9,.3,1),background .6s;background-image:${LAGER}}
+.hud-flikar{position:fixed;right:max(12px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));z-index:22;display:flex;gap:8px}
+.hud-flik{position:relative;width:46px;height:46px;border-radius:10px;border:1px solid rgba(255,255,255,.07);border-bottom:3px solid rgba(0,0,0,.45);background:${LAGER_SVAG},rgba(25,28,36,.88);color:var(--papper);display:grid;place-items:center;cursor:pointer;pointer-events:auto}
+.hud-flik:hover{background-color:#2c3242}.hud-flik .ui-ik{width:24px;height:24px}
+.hud-flik em{position:absolute;right:-5px;top:-5px;min-width:20px;height:20px;border-radius:10px;padding:0 5px;background:var(--lingon);color:#fff;font:900 12px/20px system-ui;font-style:normal;box-shadow:0 2px 0 #7a1222}
+.hud-flik.larm{animation:hudPuls 1.2s ease-in-out infinite;color:#fff}
+.ph-notis.klickbar{pointer-events:auto;cursor:pointer}.ph-notis.klickbar:hover{filter:brightness(1.15)}
+.hud-klarad{position:relative;display:flex;gap:8px;align-items:flex-start;margin:4px -6px 6px;padding:6px;border-radius:8px;background:rgba(47,138,82,.35);box-shadow:0 0 0 2px #2f8a52;font:700 14px/1.35 system-ui;color:#d8ffe6;overflow:visible;max-height:120px;animation:hudStuds .4s cubic-bezier(.3,1.6,.5,1);transition:max-height .45s ease,opacity .45s ease,margin .45s ease,padding .45s ease,transform .45s ease}
+.hud-klarad .b{flex:none;width:18px;height:18px;border-radius:5px;background:#2f8a52;color:#fff;display:grid;place-items:center;font:900 12px system-ui}
+.hud-klarad .t{background:linear-gradient(#d8ffe6,#d8ffe6) no-repeat 0 55%/0 2px;transition:background-size .5s ease}
+.hud-klarad.stryk .t{background-size:100% 2px;color:#a9d8b9}
+.hud-klarad.bort{max-height:0;opacity:0;margin:0 -6px;padding:0 6px;transform:translateX(40px)}
+.hud-konfetti{position:absolute;top:40%;width:7px;height:10px;border-radius:2px;pointer-events:none}
+.hud-ny{animation:hudStuds .5s cubic-bezier(.3,1.6,.5,1)}
+.ph-meddelanden{z-index:31!important}
+.hud-dagbok{position:fixed;left:50%;top:76px;transform:translateX(-50%) rotate(-.6deg);z-index:23;width:min(520px,60vw);pointer-events:none;background:#fff8e1;color:#3a2e1a;border-radius:8px;padding:12px 16px 12px;box-shadow:0 5px 0 #d8c58f,0 18px 40px rgba(0,0,0,.4);animation:hudDagIn .45s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes hudDagIn{from{transform:translate(-50%,-30px) rotate(-.6deg);opacity:0}}
+.hud-dagbok.ut{transition:opacity .6s,transform .6s;opacity:0;transform:translate(-50%,-20px) rotate(-.6deg)}
+.hud-dagbok .rub{display:flex;align-items:center;gap:8px;font:800 13px system-ui;opacity:.75;margin-bottom:4px}.hud-dagbok .rub em{margin-left:auto;font-style:normal;font-weight:700}
+.hud-dagbok .txt{font:500 17px/1.45 "Comic Sans MS","Chalkboard SE","Segoe Print",system-ui,sans-serif}
+.hud-dagbok-bar{height:4px;border-radius:2px;background:rgba(0,0,0,.1);margin-top:8px;overflow:hidden}.hud-dagbok-bar i{display:block;height:100%;width:0;background:#c49a6c}
 .hud-hand{position:fixed;right:24%;bottom:150px;z-index:21;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 12px 7px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.82);border-bottom:3px solid rgba(0,0,0,.45);color:#fff}
 .hud-hand[hidden]{display:none}
 .hud-hand b{font:900 20px/1 var(--rubrik);letter-spacing:.03em}
