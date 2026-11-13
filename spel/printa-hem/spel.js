@@ -2733,9 +2733,9 @@ function uppdateraMalPil() {
   if (!p || !ui.igang) { malPil.visible = false; }
   else { const stor = !S.skyltUppe && S.steg <= 1; malPil.scale.setScalar(stor ? 1.3 : 1); malPil.visible = true; malPil.position.copy(p).add(new THREE.Vector3(stor ? 0.65 : 0, (stor ? 0.75 : 0.6) + Math.abs(Math.sin(performance.now() / 300)) * 0.35, 0)); malPil.rotation.y += 0.04; }
   // din egen röst när dagboken är läst: dags att spika skylten
-  if (!S.skyltUppe && S.steg <= 1 && !sagtBygg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas) { sagtBygg = true; setTimeout(() => prata('du', DU_BYGG), 500); }
+  if (!S.skyltUppe && S.steg <= 1 && !sagtBygg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas) { sagtBygg = true; bud(() => { if (!S.skyltUppe) prata('du', DU_BYGG); }); }
   // instruktionen läses först när dagboken är läst och (i ett nytt spel) skylten är uppe
-  if (STEG_TAL[S.steg] && senastTalSteg !== S.steg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas && ui.butiksOverlay.hidden && !spikar && (S.skyltUppe || S.steg > 1)) { senastTalSteg = S.steg; if (S.steg === 7) aliRopar(); else setTimeout(() => prata('berattare', STEG_TAL[S.steg]), 600); }
+  if (STEG_TAL[S.steg] && senastTalSteg !== S.steg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas && ui.butiksOverlay.hidden && !spikar && (S.skyltUppe || S.steg > 1)) { senastTalSteg = S.steg; const st = S.steg; if (st === 7) bud(aliRopar); else bud(() => { if (S.steg === st) prata('berattare', STEG_TAL[st]); }); }
 }
 function uppdateraMalSkylt(dt) {
   malInfo.t -= dt; if (malInfo.t > 0) return; malInfo.t = 0.5;
@@ -3502,9 +3502,12 @@ function sms(fran, text, id) {
   if (!S.mobil) return;
   // sms med svarsalternativ måste besvaras – de öppnas direkt. Övriga kommer som en notis du klickar på för att läsa och höra.
   const maSvara = SMS_POOL.find((x) => x.id === id)?.svar && S.smsSvar?.[id] == null;
-  if (maSvara) { S.sms.push({ fran, text }); S.sms = S.sms.slice(-40); sparaSnart(); medKo.push({ typ: 'sms', fran, text, id }); return; }
+  if (maSvara) { S.sms.push({ fran, text }); S.sms = S.sms.slice(-40); sparaSnart(); bud(() => medKo.push({ typ: 'sms', fran, text, id })); return; }
   // storyn i ordning: har du ett oläst sms från samma person väntar nästa tills du läst det
   if (S.sms.some((m) => m.ny && m.fran === fran)) { S.smsKo = [...(S.smsKo || []), [fran, text, id]]; sparaSnart(); return; }
+  bud(() => smsFram(fran, text, id));
+}
+function smsFram(fran, text, id) {
   S.sms.push({ fran, text, ny: true }); S.sms = S.sms.slice(-40); S.olasta = S.sms.filter((m) => m.ny).length; sparaSnart();
   vibrera(); ljud.plock();
   const namn = AVSANDARE[fran]?.namn || fran;
@@ -4856,7 +4859,7 @@ const hudEl = document.querySelector('.hud-status');
 document.body.insertAdjacentHTML('beforeend', '<div class="hud-hand" hidden><b></b><span><i></i></span></div>');
 const hudHand = document.querySelector('.hud-hand');
 // meddelanden och dagbok: två egna ikonknappar uppe till höger
-document.body.insertAdjacentHTML('beforeend', `<div class="hud-flikar"><button class="hud-flik" data-flik-sms title="Meddelanden (M)">${ik('telefon')}<em hidden></em></button><button class="hud-flik" data-flik-bok title="Dagbok (B)">${ik('bok')}</button></div>`);
+document.body.insertAdjacentHTML('beforeend', `<div class="hud-flikar"><button class="hud-flik" data-flik-sms title="Meddelanden (M)">${ik('telefon')}<em hidden></em><kbd>M</kbd></button><button class="hud-flik" data-flik-bok title="Dagbok (B)">${ik('bok')}<kbd>B</kbd></button></div>`);
 const hudSms = document.querySelector('[data-flik-sms]');
 hudSms.onclick = () => oppnaInkorg();
 document.querySelector('[data-flik-bok]').onclick = () => { dagbokFlik = 'dagbok'; oppnaDagbok(); };
@@ -4954,7 +4957,7 @@ function notis(text, typ = '', o = {}) {
   const k = document.createElement('div');
   k.className = 'ph-notis ' + typ; k.dataset.text = text;
   k.innerHTML = `<div class="rubrik"><span>${ik(RUBRIK_IKON[typ] || 'info')} ${rens(o.titel || RUBRIK[typ] || 'Info')}</span><span>nu</span></div><div class="kropp">${rens(text)}</div>`;
-  if (o.klick) { k.classList.add('klickbar'); k.insertAdjacentHTML('beforeend', '<div class="las">Klicka eller tryck M för att läsa och höra</div>'); k.onclick = (e) => { e.stopPropagation(); taBort(k); o.klick(); }; }
+  if (o.klick) { k.classList.add('klickbar'); k.insertAdjacentHTML('beforeend', '<div class="las"><kbd>M</kbd> läs och lyssna</div>'); k.onclick = (e) => { e.stopPropagation(); taBort(k); o.klick(); }; }
   el.prepend(k);
   requestAnimationFrame(() => k.classList.add('in'));
   const ut = [...el.children].filter((x) => !x.classList.contains('ut'));
@@ -4988,6 +4991,20 @@ function kollaVarningar() {
   const fullKvarn = S.kvarn.tratt >= TRATT_MAX && !S.kvarn.motor;
   varning('tratt', fullKvarn, '🫙 Kvarnens tratt är full – veva så att det blir plats');
 }
+// ---------- Budkön: ett meddelande i taget, med andrum emellan ----------
+// sms, Alis rop, berättaren och dagboken körs aldrig samtidigt: nästa väntar tills ingen pratar,
+// inget meddelande är öppet och det gått en stund sedan förra.
+const BUD_PAUS = 9000, BUD_TYST = 2500;   // ms mellan två bud · ms tystnad innan nästa
+const budKo = []; let budSenast = -1e9, senastPrat = 0;
+function bud(fn) { budKo.push(fn); }
+function korBud() {
+  const nu = performance.now();
+  if (pratarTill > nu || dagbokLas || spikar) senastPrat = nu;
+  if (!budKo.length || !ui.igang || pausad || !medEl2.hidden || medKo.length || dagbokLas) return;
+  if (nu - senastPrat < BUD_TYST || nu - budSenast < BUD_PAUS) return;
+  budSenast = nu; const fn = budKo.shift();
+  try { fn(); } catch (e) { console.warn(e); }
+}
 // ---------- Stoppskyltar: står en maskin still visas VARFÖR och VAD du gör, direkt ovanför maskinen ----------
 const stoppEl = document.createElement('div'); stoppEl.className = 'hud-stopplager'; document.body.appendChild(stoppEl);
 const stoppPool = [], stoppV = new THREE.Vector3(), stoppK = new THREE.Vector3();
@@ -5005,7 +5022,11 @@ function maskinStopp() {
   return L;
 }
 function ritaStopp() {
-  const L = ui.igang ? maskinStopp() : [];
+  // skyltarna trappas ner när du lärt dig: dag 1 allt, dag 2 kortare, dag 3–4 bara röda stopp, sedan inga
+  const dagN = S.dag || 1;
+  let L = ui.igang && dagN <= 4 ? maskinStopp() : [];
+  if (dagN >= 3) L = L.filter((x) => x.typ === 'stopp').map((x) => ({ ...x, rub: '', fix: '' }));
+  else if (dagN === 2) L = L.map((x) => ({ ...x, rub: '' }));
   while (stoppPool.length < L.length) { const d = document.createElement('div'); d.className = 'hud-stopp'; d.innerHTML = '<b></b><span></span><em></em>'; stoppEl.appendChild(d); stoppPool.push(d); }
   stoppPool.forEach((d, i) => {
     const x = L[i]; if (!x) { d.style.display = 'none'; return; }
@@ -5013,7 +5034,7 @@ function ritaStopp() {
     const avst = stoppV.distanceTo(kamera.getWorldPosition(stoppK)); stoppV.project(kamera);
     if (stoppV.z > 1 || avst > 32 || Math.abs(stoppV.x) > 1.1 || Math.abs(stoppV.y) > 1.1) { d.style.display = 'none'; return; }
     d.style.display = ''; d.className = 'hud-stopp ' + x.typ;
-    const t = [x.rub, x.varfor, x.fix]; ['b', 'span', 'em'].forEach((q, j) => { const e = d.querySelector(q); if (e.textContent !== t[j]) e.textContent = t[j]; });
+    const t = [x.rub, x.varfor, x.fix]; ['b', 'span', 'em'].forEach((q, j) => { const e = d.querySelector(q); if (e.textContent !== t[j]) e.textContent = t[j]; e.style.display = t[j] ? '' : 'none'; });
     const sk = Math.max(0.6, Math.min(1, 7 / avst));
     d.style.transform = `translate(${(stoppV.x * 0.5 + 0.5) * innerWidth}px,${(-stoppV.y * 0.5 + 0.5) * innerHeight}px) translate(-50%,-100%) scale(${sk.toFixed(2)})`;
   });
@@ -5046,7 +5067,7 @@ function visaLapp(id) {
   if (/^🧺 Ali/.test(titel)) { if (id === 'salt') S.aliStoryVisad = true; sms('ali', text); sparaSnart(); return; }
   // de stora dagboksögonblicken (dag 1, skylten) visas på pausad skärm och läses upp med din röst – innan någon instruktion
   if (titel.includes('Dagbok') && (id === 'start' || id === 'skylt')) visaDagbokLasning(text);
-  else if (titel.includes('Dagbok')) { notis(text, 'lapp', { titel, tid: 11000 }); ljud.plock(); prata('du', text); }
+  else if (titel.includes('Dagbok')) bud(() => { notis(text, 'lapp', { titel, tid: 11000 }); ljud.plock(); prata('du', text); });
   else medKo.push({ typ: 'lapp', titel, text });
   sparaSnart();
 }
@@ -5500,7 +5521,7 @@ function uppdatera(dt) {
   // matarbandet flyttar skräp från bingen till tratten (drar lite ström)
   if (!STEG[S.steg] && !sover) { const fore = S.dagTid || 0; S.dagTid = Math.min(DAG_LANGD, fore + dt); if (Math.floor(fore / 30) !== Math.floor(S.dagTid / 30)) sparaSnart(); }
   if (harProto('m_fusion')) S.strom = Math.min(stromMax(), S.strom + dt * 0.8);
-  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraBlick(dt); uppdateraMalPil(); ritaStopp(); for (const sk of skrivare) visaSpolar(sk);
+  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraBlick(dt); uppdateraMalPil(); ritaStopp(); korBud(); for (const sk of skrivare) visaSpolar(sk);
   if (S.kvarn.band) {
     const kor = S.kvarn.binge.length > 0 && S.kvarn.tratt < TRATT_MAX && S.strom > 0.5;
     if (kor) {

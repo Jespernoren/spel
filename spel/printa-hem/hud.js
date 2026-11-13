@@ -87,7 +87,7 @@ export const HUD_CSS = `
 .ali-niva.kop .ui-sektion span{color:#ffc2cb}
 .ph-ali-panel .ui-ruta .pris.minus{color:#ffb3bd}
 .hud-stopplager{position:fixed;inset:0;pointer-events:none;z-index:19}
-.hud-stopp{position:absolute;left:0;top:0;transform-origin:50% 100%;min-width:180px;max-width:260px;padding:7px 11px 8px;border-radius:9px;text-align:center;color:#fff;background:${LAGER},var(--lingon);border-bottom:4px solid #7a1222;box-shadow:0 8px 20px rgba(0,0,0,.4);font-family:system-ui}
+.hud-stopp{position:absolute;left:0;top:0;transform-origin:50% 100%;min-width:120px;max-width:260px;padding:7px 11px 8px;border-radius:9px;text-align:center;color:#fff;background:${LAGER},var(--lingon);border-bottom:4px solid #7a1222;box-shadow:0 8px 20px rgba(0,0,0,.4);font-family:system-ui}
 .hud-stopp::after{content:"";position:absolute;left:50%;bottom:-11px;margin-left:-7px;border:7px solid transparent;border-top-color:#7a1222}
 .hud-stopp b{display:block;font:900 12px var(--rubrik);letter-spacing:.06em;text-transform:uppercase;opacity:.9}
 .hud-stopp span{display:block;font:800 15px/1.25 system-ui;margin:2px 0}
@@ -96,6 +96,9 @@ export const HUD_CSS = `
 @keyframes hudStoppPuls{50%{filter:brightness(1.18)}}
 .hud-stopp.klar{background:${LAGER},#2f8a52;border-bottom-color:#1d5a35}.hud-stopp.klar::after{border-top-color:#1d5a35}
 .hud-stopp.hit{background:${LAGER},#e0a82e;color:#2a1c05;border-bottom-color:#8a6510}.hud-stopp.hit::after{border-top-color:#8a6510}.hud-stopp.hit em{background:rgba(255,255,255,.3)}
+.hud-flik kbd{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);font:900 10px system-ui;padding:1px 5px;border-radius:4px;background:#0f1217;border:1px solid #3a4155;color:var(--papper)}
+.ph-notis .las kbd{display:inline-block;font:900 11px system-ui;padding:1px 6px;margin-right:4px;border-radius:4px;background:var(--papper);color:#191c24;border-bottom:2px solid #b9ad94}
+.ph-notis.sms.klickbar{border-left:5px solid var(--fil)!important;animation:hudPuls 1.6s ease-in-out 3}
 .hud-hand{position:fixed;left:24%;bottom:150px;z-index:21;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 12px 7px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.82);border-bottom:3px solid rgba(0,0,0,.45);color:#fff}
 .hud-hand[hidden]{display:none}
 .hud-hand b{font:900 20px/1 var(--rubrik);letter-spacing:.03em}
