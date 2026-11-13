@@ -1410,8 +1410,9 @@ function skapaVara(typ) {
     for (const y of [0.32, 0.22]) g.add(at(cyl(0.025, 0.025, 0.03, mat(0xc0c0c0)), 0.24, y, 0.255).rotateX(Math.PI / 2));
     g.add(at(box(0.04, 0.2, 0.01, mat(0x888888)), 0.05, 0.6, 0).rotateZ(0.5)); g.add(at(box(0.04, 0.2, 0.01, mat(0x888888)), -0.05, 0.6, 0).rotateZ(-0.5));
   } else if (typ === 'r_affisch') {
-    g.add(at(box(0.04, 0.9, 0.04, mat(0x6b4a2b)), 0, 0.45, 0));
-    const sk = skylt('ROLFS ROCKERS 1987', 0.55, 0.75, '#1b1030', '#ff5fa2'); sk.position.set(0, 0.95, 0.03); g.add(sk);
+    // hänger på väggen i skjulet, som tavlorna
+    g.add(at(box(0.58, 0.78, 0.02, mat(0x14081f)), 0, 1.45, 0));
+    const sk = skylt('ROLFS ROCKERS 1987', 0.55, 0.75, '#1b1030', '#ff5fa2'); sk.position.set(0, 1.45, 0.012); g.add(sk);
   } else if (typ === 'r_gardin') {
     g.add(at(box(1.0, 0.03, 0.03, mat(0x8a6a3f)), 0, 1.6, 0));
     for (const x of [-0.3, 0.3]) { const gd = box(0.38, 1.4, 0.03, mat(0xe9a0b8)); gd.position.set(x, 0.9, 0.02); g.add(gd); for (let y = 0.4; y < 1.5; y += 0.25) g.add(at(box(0.38, 0.03, 0.035, mat(0xffffff)), x, y, 0.02)); }
@@ -2027,7 +2028,7 @@ function placera(p, nytt = true) {
     if (!bord) return null;
     bord.mesh.add(mesh); mesh.position.set(0, YTOR[bord.typ] ?? 0.84, 0); mesh.rotation.y = vinkel(p); bord.har = p.id;
   } else {
-    mesh.position.set(p.x, 0, p.z); mesh.rotation.y = vinkel(p); scen.add(mesh);
+    mesh.position.set(p.x, p.hy || 0, p.z); mesh.rotation.y = vinkel(p); scen.add(mesh);
   }
   // fågelholken sitter uppe på en stolpe – fåglarna vill ha det högt
   if (typ === 'fagelholk' && !p.pa) {
@@ -2049,7 +2050,7 @@ function placera(p, nytt = true) {
   uppdateraHinder();
   return p;
 }
-const sparbar = (p) => ({ id: p.id, typ: p.typ, x: p.x, z: p.z, r: p.r, r8: p.r8 ?? null, pa: p.pa || null });
+const sparbar = (p) => ({ id: p.id, typ: p.typ, x: p.x, z: p.z, r: p.r, r8: p.r8 ?? null, pa: p.pa || null, ...(p.hy ? { hy: p.hy } : {}) });
 const vinkel = (p) => (p.r8 != null ? p.r8 * Math.PI / 4 : (p.r || 0) * Math.PI / 2);
 
 function plockaUppPlacerad(p) {
@@ -3265,6 +3266,8 @@ function sov() {
 }
 
 // ---------- Spökbild för att placera saker ----------
+// saker som hänger på väggen: snäpps mot närmaste vägg i skjulet och vänds in mot rummet
+const VAGGSAK = new Set(['r_affisch', 'burk_tavla', 'burk_tavla2', 'burk_tavla3']);
 const spoke = { grupp: null, typ: null, rot: 0, ok: false, x: 0, z: 0, bord: null };
 const spokMatOk = new THREE.MeshBasicMaterial({ color: 0x5cff8a, transparent: true, opacity: 0.45, depthWrite: false });
 const spokMatFel = new THREE.MeshBasicMaterial({ color: 0xff5c5c, transparent: true, opacity: 0.45, depthWrite: false });
@@ -3309,6 +3312,24 @@ function uppdateraSpoke() {
       if (hm) g.position.set(hm.point.x, 0, hm.point.z);
       spoke.ok = false; spoke.bord = null;
     }
+  } else if (VAGGSAK.has(typ)) {
+    // tavlor och affischer: sikta på en innervägg i skjulet
+    const o = markRay.ray.origin, d = markRay.ray.direction, VAGG = 0.07;
+    const w = SKJUL.b / 2 - VAGG - 0.06, dd = SKJUL.d / 2 - VAGG - 0.06;
+    let bast = null;
+    for (const [axel, varde, rot] of [['x', SKJUL.x + w, 6], ['x', SKJUL.x - w, 2], ['z', SKJUL.z + dd, 4], ['z', SKJUL.z - dd, 0]]) {
+      if (Math.abs(d[axel]) < 1e-4) continue;
+      const t = (varde - o[axel]) / d[axel]; if (t <= 0.2 || t > RACKVIDD_BYGG + 1) continue;
+      const pt = o.clone().addScaledVector(d, t);
+      const ok = axel === 'x' ? Math.abs(pt.z - SKJUL.z) < dd - 0.25 : Math.abs(pt.x - SKJUL.x) < w - 0.25;
+      if (ok && pt.y > 0.6 && pt.y < 2.3 && (!bast || t < bast.t)) bast = { t, pt, rot };
+    }
+    const inne = Math.abs(spelare.pos.x - SKJUL.x) < SKJUL.b / 2 && Math.abs(spelare.pos.z - SKJUL.z) < SKJUL.d / 2;
+    if (!bast || !inne) { g.visible = false; spoke.ok = false; spoke.vaggFel = true; return; }
+    spoke.vaggFel = false; spoke.rot = bast.rot;
+    spoke.hy = Math.max(-0.4, Math.min(0.45, bast.pt.y - 1.45));
+    g.visible = true; g.position.set(bast.pt.x, spoke.hy, bast.pt.z); g.rotation.y = spoke.rot * Math.PI / 4;
+    spoke.x = bast.pt.x; spoke.z = bast.pt.z; spoke.bord = null; spoke.ok = true; ruta.visible = false;
   } else {
     // sikta på en ledig yta (pall, bord, kyl) med en småsak → ställ den ovanpå
     if (SMASAK(typ)) {
@@ -3342,6 +3363,7 @@ function uppdateraSpoke() {
       x = SKJUL.x + Math.max(-ix, Math.min(ix, Math.abs(Math.abs(dx) - ix) < 0.25 ? Math.sign(dx) * ix : dx));
       z = SKJUL.z + Math.max(-iz, Math.min(iz, Math.abs(Math.abs(dz) - iz) < 0.25 ? Math.sign(dz) * iz : dz));
     }
+    spoke.vaggFel = false;
     const kp = kistPos();
     const ledigtISkjul = !iSkjul || ((!S.sang || Math.abs(x - SANG_PLATS.x) >= 1.05 + ex || Math.abs(z - SANG_PLATS.z) >= 0.55 + ez) && (Math.abs(x - kp.x) >= 0.3 + ex || Math.abs(z - kp.z) >= 0.5 + ez));
     g.visible = true; g.position.set(x, 0, z); g.rotation.y = v;
@@ -3377,7 +3399,7 @@ function stallNer() {
   }
   if (spoke.kompost) { taBortVald(); kompostera(typ, spoke.x, spoke.z); return true; }
   taBortVald();
-  const p = { id: 'p' + (S.nastaId++), typ, x: spoke.x, z: spoke.z, r: Math.round(spoke.rot / 2) % 4, r8: spoke.rot };
+  const p = { id: 'p' + (S.nastaId++), typ, x: spoke.x, z: spoke.z, r: Math.round(spoke.rot / 2) % 4, r8: spoke.rot, ...(VAGGSAK.has(typ) && spoke.hy ? { hy: spoke.hy } : {}) };
   if (spoke.bord) { p.pa = spoke.bord.id; p.x = spoke.bord.x; p.z = spoke.bord.z; }
   placera(p);
   ljud.placera(); ui.toast(`${info(typ).ikon} ${info(typ).namn} på plats!${info(typ).trivsel ? ` 😊 +trivsel` : ''}`, 'bra');
@@ -3626,7 +3648,7 @@ function visaFynd(lista, efter) {
 }
 function efterBeloning(lista) {
   const nr = S.rolf.i - 1;
-  for (const b of lista) if (b.startsWith('tack:')) { if (!S.rolfNummer) setTimeout(() => sms('rolf', ROLF_TACK[b.slice(5)].text), 1200); S.rolf.presenter = (S.rolf.presenter || 0) + 1; andraRespekt(Math.round(6 + VAROR[b.slice(5)].present / 400), 'Gav Rolf en present'); }
+  for (const b of lista) if (b.startsWith('tack:')) { if (!S.rolfNummer) setTimeout(() => sms('rolf', ROLF_TACK[b.slice(5)].text), 1200); S.rolf.presenter = (S.rolf.presenter || 0) + 1; andraRespekt(Math.round(6 + VAROR[b.slice(5)].present / 400), 'Gav Rolf en present'); setTimeout(() => ui.toast(`Rolf kommer nu oftare med lass – var ${Math.round(sopbilVar())} s och ${SOPBIL_LAST + sopbilExtra()} skräp per lass`, 'guld'), 2500); }
   if (lista.includes('jobb')) andraRespekt(-3, 'Gjorde ett skumt jobb åt Rolf');
   const ovrigt = lista.includes('jobb') || lista.includes('heder') || lista.some((b) => b.startsWith('tack:'));
   if (lista.includes('jobb')) sms('rolf', ROLF_JOBB[S.rolf.jobbTack % ROLF_JOBB.length].tackJa);
@@ -4036,6 +4058,9 @@ const flak = new THREE.Group();
 sopbil.traverse((o) => { if (o.isMesh) o.castShadow = true; });
 sopbil.position.set(-90, 0, VAG_Z); scen.add(sopbil);
 const bil = { fas: 'borta', t: -SOPBIL_FORSTA, fart: 0 };
+// varje present till Rolf: han kommer oftare (−13 % väntan per present, minst 30 s) och tippar lite mer
+const sopbilVar = () => Math.max(30, SOPBIL_VAR / (1 + 0.15 * (S.rolf.presenter || 0)));
+const sopbilExtra = () => Math.min(8, S.rolf.presenter || 0);
 const flygande = [];
 function ton(f, d, vol, typ = 'square', fordrojning = 0) {
   const c = ljudCtx(); if (!c) return;
@@ -4103,7 +4128,7 @@ function tippaLast() {
   if (S.rolf.extra > 0) S.rolf.extra--;
   const plats = MAX_SKRAP - skrapLista.length;
   const bak = new THREE.Vector3(); flak.localToWorld(bak.set(-0.2, 1.4, 0));
-  for (let i = 0; i < Math.min(SOPBIL_LAST * ggr + trimNiva('sopbil') * 3, plats); i++) {
+  for (let i = 0; i < Math.min(SOPBIL_LAST * ggr + trimNiva('sopbil') * 3 + sopbilExtra(), plats); i++) {
     const [x, z] = tippPlats();
     laggSkrap(x, z, slumpVariant(), Math.random() * 6.3);
     const sk = skrapLista[skrapLista.length - 1];
@@ -4158,7 +4183,7 @@ function uppdateraSopbil(dt) {
     bom.userData.arm.rotation.z = Math.max(0, bom.userData.arm.rotation.z - dt * 1.5);
     bil.fart = Math.min(10, 2 + bil.t * 3);
     sopbil.position.x += bil.fart * dt;
-    if (sopbil.position.x > 90) { bil.fas = 'borta'; bil.t = -SOPBIL_VAR; }
+    if (sopbil.position.x > 90) { bil.fas = 'borta'; bil.t = -sopbilVar(); }
   }
   motorLjud();
   if (grind.userData.oppnar && grind.rotation.y > -1.6) grind.rotation.y -= dt * 1.2;
@@ -5824,7 +5849,7 @@ function uppdatera(dt) {
     uppdateraFonsterSpoke();
     interaktor.uppdatera();
     const staplar = spoke.grupp?.visible && spoke.bord && SMASAK(valdTyp());
-    ui.prompt(staplar ? (spoke.ok ? `Ställ ${info(spoke.typ).namn.toLowerCase()} på ${info(spoke.bord.typ).namn.toLowerCase()}n (R vrid)` : `Det står redan något på ${info(spoke.bord.typ).namn.toLowerCase()}n`) : interaktor.text || (spoke.grupp?.visible ? (spoke.bord && !MASKINER[spoke.typ]?.kraverBord ? `Ställ ${info(spoke.typ).namn.toLowerCase()} på ${info(spoke.bord.typ).namn.toLowerCase()}n` : `Ställ ${info(spoke.typ).namn.toLowerCase()} här (R vrid)`) : ''));
+    ui.prompt(staplar ? (spoke.ok ? `Ställ ${info(spoke.typ).namn.toLowerCase()} på ${info(spoke.bord.typ).namn.toLowerCase()}n (R vrid)` : `Det står redan något på ${info(spoke.bord.typ).namn.toLowerCase()}n`) : interaktor.text || (spoke.grupp?.visible ? (spoke.bord && !MASKINER[spoke.typ]?.kraverBord ? `Ställ ${info(spoke.typ).namn.toLowerCase()} på ${info(spoke.bord.typ).namn.toLowerCase()}n` : (VAGGSAK.has(spoke.typ) ? (spoke.vaggFel ? `${info(spoke.typ).namn} hänger man på väggen – gå in i skjulet` : `Häng ${info(spoke.typ).namn.toLowerCase()} på väggen`) : `Ställ ${info(spoke.typ).namn.toLowerCase()} här (R vrid)`)) : ''));
     uppdateraSpoke();
 
     // trampa
@@ -6383,7 +6408,10 @@ raknaOmSteg(); visaPostInne(); uppdateraSkjul(); visaAdressSkylt(); ritaRullstal
 // den som redan klarat kapitel 1 innan kapitel 2 fanns ska inte få firandet igen
 if (S.kapitelKlart && S.steg < STEG.findIndex((x) => x.del === K2)) S.steg = STEG.findIndex((x) => x.del === K2);
 // ---------- Introt: varför bor du vid en soptipp? ----------
-const MAMMA_SVAR_K1 = ['HAHA träplankor?!', 'Vad är det för skit? Du har ju inte ens TAPETER på väggarna.', 'Och var är badrummet?? Du duschar väl??', 'Pappa säger "aha, vad lugnt då". Pappa säger det om allt.', '…men gardinerna i fönstret var fina. Har du gjort dem själv? ❤️'];
+const MAMMA_SVAR_K1 = ['HAHA träplankor?!', 'Vad är det för skit? Du har ju inte ens TAPETER på väggarna.', 'Och var är badrummet?? Du duschar väl??', 'Pappa säger "aha, vad lugnt då". Pappa säger det om allt.'];
+// sista raden: mamma säger något fint om det du faktiskt har
+const MAMMA_K1_SLUT = { gardin: '…men gardinerna i fönstret var fina. Har du gjort dem själv? ❤️', fonster: '…men fönstret var fint. Det kommer in ljus i alla fall. ❤️', annars: '…men du har en säng. Det är en början. Jag är stolt. Säg inte det till pappa. ❤️' };
+const mammaK1Slut = () => harPlacerat('r_gardin') ? MAMMA_K1_SLUT.gardin : (S.hem?.fonster?.length ? MAMMA_K1_SLUT.fonster : MAMMA_K1_SLUT.annars);
 const MAMMA_SVAR_K2 = ['Mamma här. Du skickade en bild på en JACUZZI?!', '…och tapeter. Och en gamingbod med lampor i alla färger.', 'Okej. Jag erkänner. Det är finare än hemma.', 'Kan jag komma och bada på söndag? Pappa tar med korv.'];
 // allt som sägs högt i spelet – används för att förgenerera rösterna (verktyg/roster.py)
 function rostManus() {
@@ -6397,7 +6425,7 @@ function rostManus() {
   SMS_POOL.forEach((m) => { add(m.vem, m.text); (m.svar || []).forEach(([, f]) => add(m.vem, f)); });
   Object.values(FAMILJ).flat().forEach(([v, t]) => add(v, t));
   BROR_IBLAND.forEach((t) => add('bror', t)); MAMMA_IBLAND.forEach((t) => add('mamma', t));
-  MAMMA_SVAR_K1.forEach((t) => add('mamma', t)); MAMMA_SVAR_K2.forEach((t) => add('mamma', t));
+  [...MAMMA_SVAR_K1, ...Object.values(MAMMA_K1_SLUT)].forEach((t) => add('mamma', t)); MAMMA_SVAR_K2.forEach((t) => add('mamma', t));
   [...ALI_HEJ, ...ALI_KLICKAR, ...ALI_BLOMMAR].forEach((t) => add('ali', t)); add('ali', ALI_FORSTA); ALI_STANGT.forEach((t) => add('ali', t)); Object.values(ALI_SPECIAL).forEach((t) => add('ali', t));
   const stolt = [...Object.values(MASKINER).map((m) => m.namn), ...Object.values(VAROR).filter((v) => v.recept).map((v) => v.namn)];
   for (const n of stolt) ALI_STOLT.forEach((f) => add('ali', f(n.toLowerCase())));
@@ -6570,7 +6598,7 @@ function kapitelSlut() {
       <div class="ph-tel-kropp">${bild ? `<img class="ph-tel-bild" src="${bild}" alt="">` : ''}<div class="ph-tel-jag">Kolla här. Jag har det inte helt förjävligt.</div><div class="ph-tel-svar"></div></div>
       <button class="fp-knapp" disabled>…</button></div>`;
     const svar = el.querySelector('.ph-tel-svar'), knapp = el.querySelector('button');
-    const MAMMA_SVAR = ['Mamma skriver…', ...MAMMA_SVAR_K1]; void ['Mamma skriver…', 'HAHA träplankor?!', 'Vad är det för skit? Du har ju inte ens TAPETER på väggarna.', 'Och var är badrummet?? Du duschar väl??', 'Pappa säger "aha, vad lugnt då". Pappa säger det om allt.', '…men gardinerna i fönstret var fina. Har du gjort dem själv? ❤️'];
+    const MAMMA_SVAR = ['Mamma skriver…', ...MAMMA_SVAR_K1, mammaK1Slut()]; void ['Mamma skriver…', 'HAHA träplankor?!', 'Vad är det för skit? Du har ju inte ens TAPETER på väggarna.', 'Och var är badrummet?? Du duschar väl??', 'Pappa säger "aha, vad lugnt då". Pappa säger det om allt.', '…men gardinerna i fönstret var fina. Har du gjort dem själv? ❤️'];
     let i = 0;
     const nasta = () => {
       if (i === 0) { svar.innerHTML = '<div class="ph-tel-mamma"><span class="prickar"><span>.</span><span>.</span><span>.</span></span></div>'; i++; setTimeout(nasta, 1600); return; }
