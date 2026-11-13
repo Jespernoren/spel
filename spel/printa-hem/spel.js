@@ -74,7 +74,7 @@ const FART_UTAN = 5.2, FART_KARRA = 3.2, FART_KARRA_FULL = 2.3;   // gångfart (
 const HOTBAR = 8;                // platser i verktygsraden (plats 1 = verktyget/famnen)
 const KISTA_RACKVIDD = 3.2;
 const KISTA_PLATSER = 18, STACK = 20;   // kistan har 18 platser, max 20 av samma sak per plats      // så nära kistan måste man stå för att flytta saker
-const MATTNAD = 0.85, MATTNAD_GOLV = 0.3;   // varje såld vara samma dag sänker Alis pris 15 % (lägst 30 %) – nollställs på morgonen
+const MATTNAD = 0.8, MATTNAD_GOLV = 0.25;   // varje såld vara samma dag sänker Alis pris 20 % (lägst 25 %) – nollställs på morgonen
 const SALJ_TILLBAKA = 0.1;       // kr per gram när man säljer tillbaka en byggsats till Ali
 const VEV_TID = 0.7;             // sekunder att veva per flaska (0,2 rulle) – större skräp tar längre
 const MOTOR_TID = 1.6;
@@ -170,19 +170,19 @@ const VAROR = {
   tillstand: { namn: 'Parkeringstillstånd för husvagn', ikon: '', gram: 250, tid: 10, pris: 0, gava: true },
   sang: { storlek: 1, namn: 'Säng', ikon: '🛏️', gram: 2000, tid: 40, pris: 0, hem: true },          // 2 rullar. Kräver instruktionen hos Ali. Säljs inte.
   nyckelring: { namn: 'Nyckelring', ikon: '🔑', gram: 100, tid: 8, pris: 15 },      // 10 % rulle = en halv flaska
-  kruka: { namn: 'Blomkruka', ikon: '🪴', gram: 400, tid: 18, pris: 55, trivsel: 5, placerbar: true, radie: 0.3 },
-  pall: { namn: 'Pall', ikon: '🪑', gram: 1000, tid: 32, pris: 140, trivsel: 10, placerbar: true, radie: 0.35 },
+  kruka: { namn: 'Blomkruka', ikon: '🪴', gram: 400, tid: 18, pris: 40, trivsel: 5, placerbar: true, radie: 0.3 },
+  pall: { namn: 'Pall', ikon: '🪑', gram: 1000, tid: 32, pris: 100, trivsel: 10, placerbar: true, radie: 0.35 },
   rulle: { namn: 'Filamentrulle', ikon: '🧵', gram: 1000, tid: 0, pris: 0, rulle: true },   // bärs från extrudern till skrivaren
   // recept: köps hos Ali – dyra, men betalar mer per rulle ju längre man kommer
-  mobilstall: { namn: 'Mobilställ', ikon: '📱', gram: 300, tid: 12, pris: 70, recept: 150, syns: () => S.sang },
+  mobilstall: { namn: 'Mobilställ', ikon: '📱', gram: 300, tid: 12, pris: 45, recept: 150, syns: () => S.sang },
   // receptstegen: nästa recept syns när du köpt det förra – varje steg ger mer per rulle
-  fagelholk: { namn: 'Fågelholk', ikon: '🐦', gram: 800, tid: 26, pris: 200, recept: 350, trivsel: 6, placerbar: true, radie: 0.3, syns: () => S.rolf.i >= 1 || harRecept('mobilstall') },
-  lampskarm: { namn: 'Lampskärm', ikon: '💡', gram: 1200, tid: 34, pris: 360, recept: 700, syns: () => S.rolf.i >= 2 || harRecept('fagelholk') },
-  dronare: { namn: 'Drönarram', ikon: '🛸', gram: 1500, tid: 40, pris: 600, recept: 1200, syns: () => S.rolf.i >= 3 || harRecept('lampskarm') },
-  skateboard: { namn: 'Skateboard', ikon: '🛹', gram: 2000, tid: 50, pris: 1100, recept: 1500, syns: () => harRecept('dronare') },
-  gitarr: { namn: 'Elgitarr', ikon: '🎸', gram: 3000, tid: 64, pris: 2000, recept: 3000, syns: () => harRecept('skateboard') },
-  cykelram: { namn: 'Cykelram', ikon: '🚲', gram: 5000, tid: 80, pris: 4000, recept: 6000, syns: () => harRecept('gitarr') },
-  pkajak: { namn: 'Printad kajak', ikon: '🛶', gram: 12000, tid: 120, pris: 12000, recept: 15000, syns: () => harRecept('cykelram') },
+  fagelholk: { namn: 'Fågelholk', ikon: '🐦', gram: 800, tid: 26, pris: 120, recept: 600, trivsel: 6, placerbar: true, radie: 0.3, syns: () => S.rolf.i >= 1 || harRecept('mobilstall') },
+  lampskarm: { namn: 'Lampskärm', ikon: '💡', gram: 1200, tid: 34, pris: 260, recept: 1200, syns: () => S.dag >= 3 || S.rolf.i >= 2 || harRecept('fagelholk') },
+  dronare: { namn: 'Drönarram', ikon: '🛸', gram: 1500, tid: 40, pris: 450, recept: 2000, syns: () => S.rolf.i >= 3 || harRecept('lampskarm') },
+  skateboard: { namn: 'Skateboard', ikon: '🛹', gram: 2000, tid: 50, pris: 800, recept: 3000, syns: () => harRecept('dronare') },
+  gitarr: { namn: 'Elgitarr', ikon: '🎸', gram: 3000, tid: 64, pris: 1500, recept: 5000, syns: () => harRecept('skateboard') },
+  cykelram: { namn: 'Cykelram', ikon: '🚲', gram: 5000, tid: 80, pris: 3000, recept: 9000, syns: () => harRecept('gitarr') },
+  pkajak: { namn: 'Printad kajak', ikon: '🛶', gram: 12000, tid: 120, pris: 9000, recept: 20000, syns: () => harRecept('cykelram') },
 };
 // dyra saker man köper hos Ali (printas inte) – det är dessa man sparar till
 Object.assign(VAROR, {
