@@ -3540,7 +3540,7 @@ function sms(fran, text, id) {
 function smsFram(fran, text, id) {
   // syns direkt som en bubbla i inkorgen uppe till höger – uppläsningen väntar på sin tur i kön
   const m = { fran, text, ny: true }; S.sms.push(m); S.sms = S.sms.slice(-40); S.olasta = S.sms.filter((x) => x.ny).length; sparaSnart();
-  inkorg({ vem: fran, titel: AVSANDARE[fran]?.namn || fran, text, fore: visaTabTips, klar: () => { m.ny = false; smsLast(fran); } });
+  inkorg({ vem: fran, titel: AVSANDARE[fran]?.namn || fran, text, smsId: id, klar: () => { m.ny = false; smsLast(fran); } });
 }
 function triTon() {
   try { const c = ljudCtx(); if (!c) return; [[1318.5, 0], [1046.5, 0.13], [1568, 0.26]].forEach(([f, d]) => {
@@ -4925,7 +4925,7 @@ addEventListener('keydown', (e) => {
 // träningsdagen: första sms:et lär dig Tab
 function visaTabTips() {
   if (S.tipsTab || document.querySelector('.hud-tabtips')) return;
-  document.body.insertAdjacentHTML('beforeend', `<div class="hud-hjultips hud-tabtips"><kbd class="stor">Tab</kbd><div><b>Du har fått ett sms</b><br><small>Tryck Tab för att öppna meddelandena</small></div></div>`);
+  document.body.insertAdjacentHTML('beforeend', `<div class="hud-hjultips hud-tabtips"><kbd class="stor">Tab</kbd><div><b>Sparat i telefonen</b><br><small>Tryck Tab när du vill läsa dina meddelanden</small></div></div>`);
 }
 hudEl.querySelector('.hud-klocka').onclick = () => oppnaBokmarken();
 hudEl.querySelector('[data-hud="respekt"]').onclick = () => oppnaRespekt();
@@ -5145,7 +5145,7 @@ ui.toast = (text, typ) => notis(text, typ);
 // block = du kan gå och titta men inte använda något förrän den är uppläst (dag 1 och skylten)
 let dagbokLas = false;
 const INKORG_MAX = 3; let inkorgVantar = 0;
-function inkorg({ vem, titel, text, lapp = false, block = false, klar, fore }) {
+function inkorg({ vem, titel, text, lapp = false, block = false, klar, fore, smsId }) {
   const lista = document.querySelector('.hud-inkorg');
   // sms ser ut som en iPhone-notis högst upp i mitten; dagbok och tankar som bubblor till höger
   const ios = !lapp && titel !== 'Tanke';
@@ -5156,7 +5156,8 @@ function inkorg({ vem, titel, text, lapp = false, block = false, klar, fore }) {
   inkorgVantar++;
   const lasUpp = () => {
     inkorgVantar--; fore?.();
-    if (ios) { triTon(); document.querySelectorAll('.hud-ios').forEach((x) => x.remove()); document.body.appendChild(el); } else { ljud.plock(); lista.prepend(el); }
+    if (ios) { medKo.push({ typ: 'smsval', fran: vem, text, id: smsId, klar }); if (medEl2.hidden) visaNastaMeddelande(); return; }
+    ljud.plock(); lista.prepend(el);
     requestAnimationFrame(() => el.classList.add('in'));
     [...lista.children].slice(INKORG_MAX).forEach((x) => { x.classList.add('ut'); setTimeout(() => x.remove(), 500); });
     el.classList.remove('vantar'); el.classList.add('laser'); const em = el.querySelector('em'); if (em) em.textContent = 'läser…';
@@ -5425,6 +5426,25 @@ medEl2.className = 'ph-med'; medEl2.hidden = true;
 document.body.appendChild(medEl2);
 function visaNastaMeddelande() {
   const m = medKo.shift(); if (!m) return;
+  if (m.typ === 'smsval') {
+    // som en notis på telefonen: lyssna nu eller spara till senare (spelet pausar så länge)
+    pausad = true; ui.igang = false; spelare.aktiv = false; anvandNere = false;
+    if (document.pointerLockElement) document.exitPointerLock();
+    triTon();
+    const namn = AVSANDARE[m.fran]?.namn || m.fran;
+    medEl2.innerHTML = `<div class="ph-smsval"><div class="hud-ios in statisk"><div class="app">${IKON.telefon}</div><div class="inne"><div class="topp"><span>MEDDELANDEN</span><span class="nu">nu</span></div><div class="fran">${portratt(vemAvSms(m.fran), 20)}<b>${rens(namn)}</b></div><div class="txt">${rens(m.text)}</div></div></div>
+      <div class="ph-smsval-knappar"><button class="fp-knapp" data-lyssna>Lyssna <kbd>E</kbd></button><button class="fp-knapp sek" data-spara>Spara till senare <kbd>Tab</kbd></button></div></div>`;
+    medEl2.hidden = false;
+    medEl2._lyssna = () => { medEl2._lyssna = medEl2._spara = null; m.klar?.(); medEl2.hidden = true; medKo.unshift({ typ: 'sms', fran: m.fran, text: m.text, id: m.id }); visaNastaMeddelande(); };
+    medEl2._spara = () => {
+      medEl2._lyssna = medEl2._spara = null; medEl2.hidden = true; medEl2.innerHTML = ''; pausad = false; ui.igang = true; visaTabTips();
+      if (medKo.length) { setTimeout(visaNastaMeddelande, 250); return; }
+      spelare.aktiv = true; spelare.lasMus();
+    };
+    medEl2.querySelector('[data-lyssna]').onclick = () => medEl2._lyssna?.();
+    medEl2.querySelector('[data-spara]').onclick = () => medEl2._spara?.();
+    return;
+  }
   pausad = true; ui.igang = false; spelare.aktiv = false; anvandNere = false;
   if (document.pointerLockElement) document.exitPointerLock();
   const sms2 = m.typ === 'sms', a = sms2 ? AVSANDARE[m.fran] : null;
@@ -5473,6 +5493,11 @@ function stangMeddelande() {
 }
 addEventListener('keydown', (e) => {
   if (medEl2.hidden) return;
+  if (medEl2._lyssna) {
+    if (['KeyE', 'Enter', 'Space'].includes(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); medEl2._lyssna(); }
+    else if (['Tab', 'Escape'].includes(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); medEl2._spara(); }
+    return;
+  }
   if (['KeyE', 'Enter', 'Space'].includes(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); stangMeddelande(); }
 }, true);
 

@@ -132,6 +132,9 @@ body.mus-fri .hud-flik{box-shadow:0 0 0 2px var(--fil);animation:hudPuls 1.2s ea
 .hud-ios .fran{display:flex;align-items:center;gap:6px;font:700 14.5px -apple-system,system-ui}.hud-ios .fran .ui-portratt{box-shadow:none}
 .hud-ios .txt{font:400 14.5px/1.35 -apple-system,system-ui;color:rgba(255,255,255,.92);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;margin-top:1px}
 .hud-ios .hud-bubbla-bar{background:rgba(255,255,255,.12);margin-top:8px}.hud-ios .hud-bubbla-bar i{background:#34c759}
+.ph-smsval{display:flex;flex-direction:column;align-items:center;gap:18px}
+.ph-smsval .hud-ios.statisk{position:relative;left:auto;top:auto;transform:none;width:min(420px,90vw)}
+.ph-smsval-knappar{display:flex;gap:12px}.ph-smsval-knappar .fp-knapp{display:inline-flex;align-items:center;gap:8px}.ph-smsval-knappar kbd{font:900 11px system-ui;padding:1px 6px;border-radius:4px;background:rgba(0,0,0,.3)}
 .hud-hand{position:fixed;left:24%;bottom:150px;z-index:21;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 12px 7px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.82);border-bottom:3px solid rgba(0,0,0,.45);color:#fff}
 .hud-hand[hidden]{display:none}
 .hud-hand b{font:900 20px/1 var(--rubrik);letter-spacing:.03em}
