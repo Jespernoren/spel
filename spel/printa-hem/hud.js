@@ -99,6 +99,21 @@ export const HUD_CSS = `
 .hud-flik kbd{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);font:900 10px system-ui;padding:1px 5px;border-radius:4px;background:#0f1217;border:1px solid #3a4155;color:var(--papper)}
 .ph-notis .las kbd{display:inline-block;font:900 11px system-ui;padding:1px 6px;margin-right:4px;border-radius:4px;background:var(--papper);color:#191c24;border-bottom:2px solid #b9ad94}
 .ph-notis.sms.klickbar{border-left:5px solid var(--fil)!important;animation:hudPuls 1.6s ease-in-out 3}
+.hud-inkorg{display:flex;flex-direction:column;gap:8px}
+.hud-bubbla{pointer-events:none;background:${LAGER_SVAG},rgba(25,28,36,.94);color:#fff;border-radius:12px 12px 4px 12px;padding:9px 12px 10px;border:1px solid rgba(255,255,255,.08);border-right:5px solid var(--fil);box-shadow:0 8px 22px rgba(0,0,0,.35);transform:translateX(120%);transition:transform .4s cubic-bezier(.2,.9,.3,1.15),opacity .4s}
+.hud-bubbla.in{transform:none}.hud-bubbla.ut{opacity:0;transform:translateX(40px)}
+.hud-bubbla.lapp{background:#fff8e1;color:#3a2e1a;border-right-color:#c49a6c}
+.hud-bubbla .rub{display:flex;align-items:center;gap:8px;font:800 13px system-ui;margin-bottom:4px}.hud-bubbla .rub em{margin-left:auto;font:700 11px system-ui;font-style:normal;opacity:.65}
+.hud-bubbla .txt{font:500 14px/1.4 system-ui;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.hud-bubbla.lapp .txt{font-family:"Comic Sans MS","Chalkboard SE","Segoe Print",system-ui,sans-serif;font-size:15px}
+.hud-bubbla.vantar{opacity:.72}.hud-bubbla.laser{box-shadow:0 0 0 2px var(--fil),0 8px 22px rgba(0,0,0,.35)}.hud-bubbla.lapp.laser{box-shadow:0 0 0 2px #c49a6c,0 8px 22px rgba(0,0,0,.35)}
+.hud-bubbla-bar{height:3px;border-radius:2px;background:rgba(127,127,127,.2);margin-top:7px;overflow:hidden}.hud-bubbla-bar i{display:block;height:100%;width:0;background:var(--fil)}.hud-bubbla.lapp .hud-bubbla-bar i{background:#c49a6c}
+.hud-hjultips{position:fixed;left:50%;bottom:118px;transform:translateX(-50%);z-index:22;pointer-events:none;display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:12px;background:${LAGER},var(--fil);color:#0d1a22;font:600 14px/1.35 system-ui;box-shadow:0 5px 0 var(--fil-mork),0 12px 28px rgba(0,0,0,.35);animation:hudStuds .5s cubic-bezier(.3,1.6,.5,1)}
+.hud-hjultips b{font:900 15px var(--rubrik);text-transform:uppercase;letter-spacing:.03em}.hud-hjultips small{opacity:.75}
+.hud-hjultips::after{content:"";position:absolute;left:50%;bottom:-10px;margin-left:-8px;border:8px solid transparent;border-top-color:var(--fil-mork)}
+.hud-hjultips .mus{position:relative;width:22px;height:34px;border:3px solid #0d1a22;border-radius:12px;flex:none}
+.hud-hjultips .mus i{position:absolute;left:50%;top:5px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:#0d1a22;animation:hudHjul 1s ease-in-out infinite}
+@keyframes hudHjul{0%{transform:translateY(0);opacity:1}100%{transform:translateY(9px);opacity:0}}
 .hud-hand{position:fixed;left:24%;bottom:150px;z-index:21;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 12px 7px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.82);border-bottom:3px solid rgba(0,0,0,.45);color:#fff}
 .hud-hand[hidden]{display:none}
 .hud-hand b{font:900 20px/1 var(--rubrik);letter-spacing:.03em}
