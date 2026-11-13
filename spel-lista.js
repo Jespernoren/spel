@@ -8,6 +8,17 @@
 // =============================================================
 window.SPEL = [
   {
+    mapp: "radda-barnen",
+    namn: "Rädda Barnen",
+    ikon: "🌈",
+    beskrivning: "Tjuven har tagit mammas tre barn på förskolan! Hitta barnen i regnbågspyjamas, hoppa över lavan och fira med disco hemma med hela familjen. Idé: Charlie.",
+    typ: "3D · Leta · Hoppa",
+    spelare: ["Charlie", "Alla"],
+    farg: ["#ff4d4d", "#9b5cff"],
+    status: "klar",
+    ny: true,
+  },
+  {
     mapp: "strandjakten",
     namn: "Strandjakten",
     ikon: "🏖️",

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<script type="importmap">
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rädda Barnen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rosa:#ff6fae; --text:#3a2a1c; --panel:#fffaf0; --kant:#3a2a1c; --dampad:#7a6450;
+  color-scheme: light; box-sizing:border-box;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --panel:#1d2a33; --text:#fdf3dc; --kant:#0a141a; --dampad:#b9c7cf; color-scheme:dark; }
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;height:100%;overflow:hidden;background:#8fd0f0;font-family:"Fredoka",system-ui,"Segoe UI",sans-serif;color:var(--text)}
+#spel{position:fixed;inset:0}
+#spel canvas{display:block;width:100%;height:100%}
+.dold{display:none!important}
+
+/* HUD: de tre barnen man letar efter */
+#hud{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);display:flex;gap:10px;pointer-events:none;z-index:5;align-items:center}
+#hud .etikett{font-weight:700;font-size:18px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.4);margin-right:4px}
+.barnplats{width:74px;height:84px;border-radius:18px;background:rgba(255,250,240,.75);border:3px solid var(--kant);display:grid;place-items:center;position:relative;transition:transform .3s}
+.barnplats svg{width:60px;height:72px}
+.barnplats .bock{position:absolute;right:-8px;bottom:-8px;width:32px;height:32px;border-radius:50%;background:#3ecf6e;border:3px solid var(--kant);color:#fff;font-weight:700;display:none;place-items:center;font-size:18px}
+.barnplats.raddad{background:#fff;transform:scale(1.06)}
+.barnplats.raddad .bock{display:grid}
+.barnplats.pop{animation:pop .6s}
+@keyframes pop{40%{transform:scale(1.35)}}
+#tid{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:16px;font-weight:700;font-size:20px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.35);z-index:5;pointer-events:none}
+#musTips{position:fixed;top:108px;left:50%;transform:translateX(-50%);background:rgba(58,42,28,.8);color:#fff;font-weight:600;font-size:18px;padding:8px 18px;border-radius:14px;z-index:6;pointer-events:none}
+@media (hover:none),(pointer:coarse){#musTips{display:none!important}}
+#medd{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);transform:translateX(-50%);width:max-content;max-width:min(860px,94vw);background:var(--panel);border:4px solid var(--kant);border-radius:20px;padding:10px 22px;font-size:22px;font-weight:600;text-align:center;box-shadow:0 6px 0 var(--kant);z-index:6;pointer-events:none;transition:opacity .3s}
+#medd.osynlig{opacity:0}
+#banskylt{position:fixed;top:108px;left:50%;transform:translateX(-50%);font-size:26px;font-weight:700;color:#fff;background:#d9480f;border:4px solid var(--kant);border-radius:18px;padding:4px 20px;box-shadow:0 5px 0 var(--kant);z-index:6;pointer-events:none}
+#pekplatta{position:fixed;right:14px;bottom:14px;display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(2,64px);gap:6px;z-index:7}
+#pekplatta button,#hoppKnapp{font:inherit;font-size:28px;font-weight:700;border-radius:16px;border:3px solid var(--kant);background:rgba(255,250,240,.85);color:#3a2a1c;touch-action:none;user-select:none;-webkit-user-select:none}
+#hoppKnapp{position:fixed;left:14px;bottom:14px;width:110px;height:110px;border-radius:50%;font-size:22px;z-index:7}
+#pekplatta button:active,#hoppKnapp:active{background:#ffd23f}
+@media (hover:hover) and (pointer:fine){#pekplatta,#hoppKnapp{display:none!important}}
+#tona{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .45s;z-index:9}
+#tona.svart{opacity:1}
+
+/* Skärmar */
+.skarm{position:fixed;inset:0;display:grid;place-items:center;z-index:10;padding:16px;overflow:auto}
+.skarm.morka{background:rgba(20,30,60,.5)}
+.kort{background:var(--panel);border:5px solid var(--kant);border-radius:32px;box-shadow:0 10px 0 var(--kant);padding:24px 32px;max-width:min(780px,96vw);text-align:center}
+h1{font-size:clamp(50px,8.5vw,90px);line-height:.95;margin:0 0 8px;font-weight:700;
+  background:linear-gradient(180deg,#ff4d4d 0 17%,#ff9f1c 17% 34%,#ffd23f 34% 51%,#3ecf6e 51% 68%,#2f9bff 68% 85%,#9b5cff 85%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:3px var(--kant);paint-order:stroke fill}
+.ingress{font-size:21px;line-height:1.35;margin:4px auto 14px;max-width:34em;font-weight:500}
+.rad{display:flex;justify-content:center;gap:12px;margin:6px 0 16px;flex-wrap:wrap}
+.rad .barnplats{background:#fff}
+.rad .namn{font-size:15px;font-weight:600;margin-top:4px}
+.knapp{font:inherit;font-size:30px;font-weight:700;color:#fff;background:var(--rosa);border:4px solid var(--kant);border-radius:22px;padding:12px 44px;box-shadow:0 7px 0 var(--kant);cursor:pointer}
+.knapp:hover{filter:brightness(1.06)}
+.knapp:active{transform:translateY(5px);box-shadow:0 2px 0 var(--kant)}
+.knapp:focus-visible{outline:4px solid #2f9bff;outline-offset:4px}
+.knapp.bla{background:#2f9bff}
+.styr{display:flex;justify-content:center;gap:22px;margin-top:18px;font-size:17px;color:var(--dampad);flex-wrap:wrap}
+.styr b{display:inline-block;min-width:30px;padding:2px 7px;border:2px solid var(--dampad);border-radius:8px;margin:0 2px;color:var(--text)}
+.liten{margin-top:10px;font-size:16px;color:var(--dampad)}
+</style>
+</head>
+<body>
+<div id="spel"></div>
+<div id="hud" class="dold"><span class="etikett">Hitta:</span></div>
+<div id="tid" class="dold">0:00</div>
+<div id="banskylt" class="dold"></div>
+<div id="musTips" class="dold">Klicka i spelet så styr musen vart ni tittar</div>
+<div id="medd" class="osynlig"></div>
+<div id="tona"></div>
+<div id="pekplatta" class="dold">
+  <span></span><button data-t="KeyW" aria-label="Gå framåt">▲</button><span></span>
+  <button data-t="SvangV" aria-label="Sväng vänster">◀</button><button data-t="KeyS" aria-label="Gå bakåt">▼</button><button data-t="SvangH" aria-label="Sväng höger">▶</button>
+</div>
+<button id="hoppKnapp" class="dold" data-t="Space" aria-label="Hoppa">Hoppa</button>
+
+<div id="start" class="skarm morka">
+  <div class="kort">
+    <h1>Rädda Barnen</h1>
+    <p class="ingress">Tjuven har tagit mammas tre barn på förskolan! Hjälp mamma och storasyster att hitta dem bland alla barnen. Alla tre har <b>regnbågspyjamas</b> och <b>regnbågsskor</b>.</p>
+    <div class="rad" id="startBarn"></div>
+    <button class="knapp" id="spelaKnapp">Spela!</button>
+    <div class="styr">
+      <span>Gå: <b>W</b><b>A</b><b>S</b><b>D</b></span>
+      <span>Titta: musen</span>
+      <span>Hoppa: <b>Mellanslag</b></span>
+      <span>Spring: <b>Shift</b></span>
+    </div>
+    <div class="liten" id="rekordText"></div>
+    <div class="liten">En idé av Charlie</div>
+  </div>
+</div>
+
+<div id="paus" class="skarm morka dold">
+  <div class="kort"><h2 style="font-size:40px;margin:0 0 14px">Paus</h2><button class="knapp bla" id="fortsattKnapp">Fortsätt</button></div>
+</div>
+
+<div id="slut" class="skarm dold" style="place-items:end center;padding-bottom:24px">
+  <div class="kort" style="padding:16px 28px">
+    <h1 style="font-size:clamp(46px,7vw,76px)">Disco!</h1>
+    <p class="ingress" id="slutText"></p>
+    <button class="knapp" id="igenKnapp">Spela igen</button>
+  </div>
+</div>
+
+<script type="module" src="spel.js"></script>
+<script src="../../delat/hem.js"></script>
+</body>
+</html>

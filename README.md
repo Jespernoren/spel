@@ -12,6 +12,7 @@ delat/
   motor.js          ← gemensam kod: scen, kamera, ljus, styrning, meny, rekord
   stil.css          ← gemensam stil: HUD, menyer
   extra.js/.css     ← tillägg: paus-meny (Esc), touch-knappar, ljud och röst (används av Slalom)
+  figurer.js        ← människor i 3D (familjen, barn, tjuven) – används av Rädda Barnen
 spel/
   _mall/            ← mall för nya spel (kopiera denna)
   slalom/           ← ett spel = en mapp med index.html + spel.js
@@ -43,6 +44,16 @@ Pusha till `main` så ligger spelet live efter ungefär en minut.
 | `visaMeny({ titel, text, knapp, onStart })` | Start- eller game over-skärm |
 | `rekord('spelnamn')` | `.hamta()` / `.spara(poang)`, sparas i webbläsaren |
 | `slump(min, max)`, `begransa(v, min, max)` | Små hjälpfunktioner |
+
+## Vad finns i figurer.js?
+
+Människofigurer i Strandjakten-stil. `import { skapaFigur, regnbageMat, REGNBAGE } from '../../delat/figurer.js'`
+
+| Funktion | Gör |
+|---|---|
+| `skapaFigur(THREE, { skala, har, har2, langtHar, kort, kropp, armar, ben, skor, stjarnor, kjol, glasogon, kapp, mossa })` | En figur. Färger är `'#rrggbb'`, `'regnbage'` eller ett material. `har2` ger slingor (blandat hår) |
+| `figur.ga(dt, fart)`, `figur.dansa(t, fas)`, `figur.vinka(t)`, `figur.hoppa()` | Animationer. `figur.bas` = höjden figuren står på |
+| `regnbageMat(THREE)` | Regnbågsrandigt material |
 
 ## Vad finns i extra.js?
 
