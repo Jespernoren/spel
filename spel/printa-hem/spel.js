@@ -100,6 +100,36 @@ const VAROR = {
   flaskoppnare: { namn: 'Flasköppnare med magnet', ikon: '🍾', gram: 200, tid: 8, pris: 0, gava: true },
   grillspade: { namn: 'Grillspade', ikon: '🍖', gram: 600, tid: 16, pris: 0, gava: true },
   tomte: { namn: 'Trädgårdstomte till flaket', ikon: '🎅', gram: 800, tid: 22, pris: 0, gava: true },
+  // Alis prototyper – byggs av Ali själv, en av varje, går inte att printa
+  m_turbo: { namn: 'Prototyp: Turbofläkt till skrivare', ikon: '', gram: 0, tid: 0, pris: 0, proto: { pris: 6000, lar: 4, mod: true }, beskr: 'Monteras på EN skrivare: den printar dubbelt så fort.' },
+  a_holo: { namn: 'Prototyp: Hologramskylt', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 150, unik: true, proto: { pris: 9000, lar: 5 }, beskr: 'En skylt som svävar i luften och byter färg. Trivsel +150.' },
+  m_snal: { namn: 'Prototyp: Kvantmunstycke', ikon: '', gram: 0, tid: 0, pris: 0, proto: { pris: 12000, lar: 6, mod: true }, beskr: 'Monteras på EN skrivare: den drar 35 % mindre filament.' },
+  m_nano: { namn: 'Prototyp: Nanokvarn', ikon: '', gram: 0, tid: 0, pris: 0, proto: { pris: 18000, lar: 8 }, beskr: 'Byggs in i kvarnen direkt: den mal 60 % fortare.' },
+  m_grav: { namn: 'Prototyp: Gravitationsbädd', ikon: '', gram: 0, tid: 0, pris: 0, proto: { pris: 30000, lar: 10, mod: true }, beskr: 'Monteras på EN skrivare: den kan printa en storlek större (S blir M, M blir L).' },
+  m_fusion: { namn: 'Prototyp: Fickfusionsbatteri', ikon: '', gram: 0, tid: 0, pris: 0, proto: { pris: 45000, lar: 12 }, beskr: 'Kopplas in direkt: +600 ström i batteriet och det laddar sig självt.' },
+  a_robot: { namn: 'Prototyp: Alis AI-robot', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 250, unik: true, proto: { pris: 80000, lar: 14 }, beskr: 'Alis dröm. En liten robot som piper och blinkar. Trivsel +250.' },
+  tapet_1: { namn: 'Tapet: grön med guldprickar', ikon: '', gram: 0, tid: 0, pris: 0, tapet: 1 },
+  tapet_2: { namn: 'Tapet: blå ränder', ikon: '', gram: 0, tid: 0, pris: 0, tapet: 2 },
+  tapet_3: { namn: 'Tapet: rosa blommor', ikon: '', gram: 0, tid: 0, pris: 0, tapet: 3 },
+  tapet_4: { namn: 'Tapet: vitt tegel', ikon: '', gram: 0, tid: 0, pris: 0, tapet: 4 },
+  tapet_5: { namn: 'Tapet: gamer, svart med neon', ikon: '', gram: 0, tid: 0, pris: 0, tapet: 5 },
+  tapet_0: { namn: 'Tapet: 70-tal (brun och orange)', ikon: '', gram: 0, tid: 0, pris: 0, tapet: 0 },
+  // presenter du köper hos Ali och lägger i Rolfs postlåda
+  p_sexpack: { namn: 'Sexpack lättöl till Rolf', ikon: '', gram: 0, tid: 0, pris: 0, present: 300 },
+  p_korv: { namn: 'Grillkorv till lördagen', ikon: '', gram: 0, tid: 0, pris: 0, present: 600 },
+  p_kajsa: { namn: 'Kattmat och leksak till Kajsa', ikon: '', gram: 0, tid: 0, pris: 0, present: 1100 },
+  p_fiske: { namn: 'Fiskespö till Rolf', ikon: '', gram: 0, tid: 0, pris: 0, present: 2500 },
+  p_trummor: { namn: 'Nya trumstockar och trumskinn', ikon: '', gram: 0, tid: 0, pris: 0, present: 4500 },
+  p_konsert: { namn: 'Biljetter till dansbandskonsert', ikon: '', gram: 0, tid: 0, pris: 0, present: 8000 },
+  p_resa: { namn: 'Resa till Kanarieöarna', ikon: '', gram: 0, tid: 0, pris: 0, present: 20000 },
+  // Rolfs tacksamhetssaker – kan inte köpas, bara få
+  r_tv: { namn: 'Gammal tjock-TV från ett dödsbo', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 60, unik: true, rolf: true },
+  r_affisch: { namn: 'Affisch: Rolfs Rockers 1987', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 40, unik: true, rolf: true },
+  r_gardin: { namn: 'Birgittas stickade gardiner', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 45, unik: true, rolf: true },
+  r_klocka: { namn: 'Rolfs guldklocka (30 år på jobbet)', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 55, unik: true, rolf: true },
+  r_fatolj: { namn: 'Läderfåtölj från dödsbo', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 80, unik: true, rolf: true },
+  r_discokula: { namn: 'Discokula från 1987', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 70, unik: true, rolf: true },
+  r_jukebox: { namn: 'Jukebox från dödsbo', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 120, unik: true, rolf: true },
   trumstockar: { namn: 'Rolfs trumstockar från 1987', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 40, unik: true },
   nyckelkopia: { namn: 'Kopia av chefens nyckel', ikon: '', gram: 150, tid: 8, pris: 0, gava: true },   // Rolfs skumma jobb
   stangdskylt: { namn: 'Skylt: TIPPEN STÄNGD', ikon: '', gram: 700, tid: 16, pris: 0, gava: true },
@@ -198,6 +228,7 @@ const GEN = { 1: { fart: 1, strom: 4, namn: 'S', storlek: 1, mm: 180 }, 2: { far
 const SKRIVARTYP = { skrivare2: 2, skrivare3: 3 };
 const STORLEK_NAMN = { 1: 'S', 2: 'M', 3: 'L' };
 const storlekFor = (typ) => { const v = VAROR[typ]; if (!v) return 1; if (v.storlek) return v.storlek; return v.gram <= 1200 ? 1 : v.gram <= 5000 ? 2 : 3; };
+ const skrivStorlek = (sk) => Math.min(3, GEN[sk.gen].storlek + (sk.mod === 'm_grav' ? 1 : 0));
 const storlekRuta = (id, maskin) => (maskin ? (MASKINER[id]?.storlek || 1) : storlekFor(id));
 const storstaSkrivare = () => Math.max(1, ...skrivare.map((x) => x.gen));  // strom = ström per sekund när den printar
 const SANG_INSTRUKTION = 120;    // kr – sängen låses upp efter första uppgraderingen
@@ -224,7 +255,8 @@ const trimNiva = (k) => S.trim?.[k] || 0;
 const utlagerKap = (l = trimNiva('utlager')) => [1, 2, 5, 10, 20][l] ?? 20 + (l - 4) * 10;
 const extruderFull = () => S.kvarn.ut >= utlagerKap() * RULLE;
 const trimPris = (k) => Math.round(TRIM[k].bas * TRIM[k].vaxt ** trimNiva(k));
-const stromMax = () => STROM_BAS + placerade.filter((p) => p.typ === 'bank').length * BANK_PLUS + trimNiva('batteri') * 100;
+const harProto = (id) => (S.proto || []).includes(id);
+const stromMax = () => STROM_BAS + placerade.filter((p) => p.typ === 'bank').length * BANK_PLUS + trimNiva('batteri') * 100 + (harProto('m_fusion') ? 600 : 0);
 
 // filament visas som procent av en rulle: 20 %, 1 rulle 40 %, 3 rullar
 const rullar = (g) => {
@@ -1094,6 +1126,49 @@ function skapaVara(typ) {
     g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.035, 10, 8), mat(0x8a5a2b)), 0, 0.14, 0));
   } else if (typ === 'tillstand') {
     g.add(at(box(0.2, 0.13, 0.01, mat(0x2d5cbf)), 0, 0.07, 0)); g.add(at(box(0.16, 0.03, 0.012, mat(0xffffff)), 0, 0.09, 0)); g.add(at(box(0.06, 0.04, 0.012, mat(0xf1c40f)), 0.05, 0.04, 0));
+  } else if (typ.startsWith('tapet_')) {
+    const rl = cyl(0.07, 0.07, 0.5, new THREE.MeshStandardMaterial({ map: tapetTex(+typ.split('_')[1]) })); rl.rotation.z = Math.PI / 2; rl.position.y = 0.08; g.add(rl);
+  } else if (typ === 'a_holo') {
+    g.add(at(cyl(0.2, 0.25, 0.08, mat(0x222831)), 0, 0.04, 0));
+    const h = new THREE.Mesh(new THREE.TorusKnotGeometry(0.18, 0.05, 64, 8), new THREE.MeshBasicMaterial({ color: 0x3de3ff, transparent: true, opacity: 0.7 })); h.position.y = 0.6; h.userData.snurra = true; g.add(h);
+  } else if (typ === 'a_robot') {
+    const v = mat(0xe8eef5), sv = mat(0x222831);
+    g.add(at(box(0.36, 0.42, 0.28, v), 0, 0.35, 0)); g.add(at(box(0.3, 0.24, 0.24, v), 0, 0.7, 0)); g.add(at(box(0.24, 0.14, 0.02, mat(0x3de3ff)), 0, 0.71, 0.125));
+    for (const x of [-0.12, 0.12]) g.add(at(cyl(0.07, 0.07, 0.06, sv), x, 0.07, 0).rotateZ(Math.PI / 2));
+    g.add(at(box(0.02, 0.14, 0.02, sv), 0, 0.89, 0)); g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.03, 8, 6), new THREE.MeshBasicMaterial({ color: 0xff3c3c })), 0, 0.97, 0));
+  } else if (typ.startsWith('m_')) {
+    // prototyp i en glänsande låda med blå glöd
+    g.add(at(box(0.34, 0.22, 0.26, new THREE.MeshStandardMaterial({ color: 0xb8c4d2, metalness: 0.8, roughness: 0.25 })), 0, 0.11, 0));
+    g.add(at(box(0.36, 0.03, 0.28, new THREE.MeshBasicMaterial({ color: 0x3de3ff })), 0, 0.12, 0));
+  } else if (typ.startsWith('p_')) {
+    // inslagen present med rosett
+    const f = [0xd63a2f, 0x2d7fd6, 0x2e8b57, 0xf28c28, 0x8e44ad][Object.keys(ROLF_TACK).indexOf(typ) % 5];
+    g.add(at(box(0.32, 0.24, 0.26, mat(f)), 0, 0.12, 0)); g.add(at(box(0.34, 0.03, 0.06, mat(0xffd43b)), 0, 0.245, 0)); g.add(at(box(0.06, 0.03, 0.28, mat(0xffd43b)), 0, 0.245, 0));
+    for (const x of [-0.05, 0.05]) { const o = new THREE.Mesh(new THREE.TorusGeometry(0.04, 0.012, 6, 12), mat(0xffd43b)); o.position.set(x, 0.28, 0); o.rotation.y = x * 20; g.add(o); }
+  } else if (typ === 'r_tv') {
+    g.add(at(box(0.62, 0.5, 0.5, mat(0x5a4632)), 0, 0.25, 0)); g.add(at(box(0.44, 0.36, 0.02, mat(0x2a3a3a)), -0.05, 0.27, 0.255));
+    for (const y of [0.32, 0.22]) g.add(at(cyl(0.025, 0.025, 0.03, mat(0xc0c0c0)), 0.24, y, 0.255).rotateX(Math.PI / 2));
+    g.add(at(box(0.04, 0.2, 0.01, mat(0x888888)), 0.05, 0.6, 0).rotateZ(0.5)); g.add(at(box(0.04, 0.2, 0.01, mat(0x888888)), -0.05, 0.6, 0).rotateZ(-0.5));
+  } else if (typ === 'r_affisch') {
+    g.add(at(box(0.04, 0.9, 0.04, mat(0x6b4a2b)), 0, 0.45, 0));
+    const sk = skylt('ROLFS ROCKERS 1987', 0.55, 0.75, '#1b1030', '#ff5fa2'); sk.position.set(0, 0.95, 0.03); g.add(sk);
+  } else if (typ === 'r_gardin') {
+    g.add(at(box(1.0, 0.03, 0.03, mat(0x8a6a3f)), 0, 1.6, 0));
+    for (const x of [-0.3, 0.3]) { const gd = box(0.38, 1.4, 0.03, mat(0xe9a0b8)); gd.position.set(x, 0.9, 0.02); g.add(gd); for (let y = 0.4; y < 1.5; y += 0.25) g.add(at(box(0.38, 0.03, 0.035, mat(0xffffff)), x, y, 0.02)); }
+  } else if (typ === 'r_klocka') {
+    g.add(at(box(0.3, 0.06, 0.2, mat(0x3b2a1c)), 0, 0.03, 0));
+    const k = cyl(0.07, 0.07, 0.02, mat(0xd9b44a)); k.rotation.x = Math.PI / 2; k.position.set(0, 0.16, 0); g.add(k);
+    g.add(at(cyl(0.06, 0.06, 0.021, mat(0xfff6dc)), 0, 0.16, 0.002).rotateX(Math.PI / 2)); g.add(at(box(0.02, 0.12, 0.02, mat(0xd9b44a)), 0, 0.07, 0));
+  } else if (typ === 'r_fatolj') {
+    const l = mat(0x6b3a1f); g.add(at(box(0.85, 0.42, 0.8, l), 0, 0.21, 0)); g.add(at(box(0.85, 0.6, 0.2, l), 0, 0.6, -0.3)); for (const x of [-0.37, 0.37]) g.add(at(box(0.14, 0.25, 0.75, l), x, 0.53, 0));
+  } else if (typ === 'r_discokula') {
+    g.add(at(box(0.03, 0.6, 0.03, mat(0x777777)), 0, 1.6, 0));
+    const k = new THREE.Mesh(new THREE.IcosahedronGeometry(0.22, 1), new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 1, roughness: 0.15, flatShading: true })); k.position.y = 1.15; g.add(k);
+    g.add(at(box(0.5, 0.04, 0.5, mat(0x555555)), 0, 0.02, 0)); g.add(at(box(0.04, 1.9, 0.04, mat(0x555555)), 0.23, 0.95, 0)); g.add(at(box(0.25, 0.04, 0.04, mat(0x555555)), 0.11, 1.9, 0));
+  } else if (typ === 'r_jukebox') {
+    g.add(at(box(0.8, 1.2, 0.55, mat(0x8b1e1e)), 0, 0.6, 0));
+    const topp = cyl(0.4, 0.4, 0.55, mat(0xd9b44a), 20, 1, false, 0, Math.PI); topp.rotation.z = Math.PI / 2; topp.rotation.y = Math.PI / 2; topp.position.y = 1.2; g.add(topp);
+    g.add(at(box(0.6, 0.35, 0.02, mat(0xffd98a)), 0, 0.85, 0.28)); for (let i = 0; i < 5; i++) g.add(at(box(0.08, 0.6, 0.02, mat([0xff5fa2, 0x3de3ff, 0x7dffb0, 0xffd43b, 0xc77dff][i])), -0.24 + i * 0.12, 0.35, 0.28));
   } else if (typ === 'trumstockar') {
     for (const x of [-0.03, 0.03]) { const st = cyl(0.012, 0.016, 0.4, mat(0xe0c08a)); st.rotation.z = Math.PI / 2; st.rotation.y = x * 4; st.position.set(0, 0.02, x); g.add(st); }
   } else if (typ === 'nyckelring') {
@@ -1736,7 +1811,7 @@ function visaSpolar(sk) {
 }
 function laggTillSkrivare(id, gen, mesh, sparat) {
   const sk = { id, gen, mesh, jobb: null, prog: 0, klar: null, visning: null, vantar: '', fil: 0 };
-  if (sparat) Object.assign(sk, { jobb: sparat.jobb, prog: sparat.prog || 0, klar: sparat.klar, fil: sparat.fil || 0, spolNiva: sparat.spolNiva || 0, upprepa: sparat.upprepa || null });
+  if (sparat) Object.assign(sk, { jobb: sparat.jobb, prog: sparat.prog || 0, klar: sparat.klar, fil: sparat.fil || 0, spolNiva: sparat.spolNiva || 0, upprepa: sparat.upprepa || null, mod: sparat.mod || null });
   // spolen på skrivarens sida: tjock när den är full, krymper medan den printar
   const spole = new THREE.Group(), B = 0.5 * (mesh.userData.sk || 1);
   const karna = cyl(0.11, 0.11, 0.08, mat(0x3de3ff, { emissive: 0x3de3ff, emissiveIntensity: 0.25 }), 18); karna.rotation.z = Math.PI / 2; spole.add(karna);
@@ -1788,6 +1863,12 @@ function laddaSkrivare(sk) {
 }
 function anvandSkrivare(sk) {
   if (valdTyp() === 'rulle') { laddaSkrivare(sk); return; }
+  if (VAROR[valdTyp()]?.proto?.mod) {
+    const id = valdTyp();
+    if (sk.mod) { ui.toast(`Den här skrivaren har redan ${VAROR[sk.mod].namn.replace('Prototyp: ', '').toLowerCase()} – en prototyp per skrivare`, 'fel'); ljud.fel(); return; }
+    taBortVald(); sk.mod = id; ljud.stor(); konfetti(40);
+    ui.toast(`${VAROR[id].namn.replace('Prototyp: ', '')} monterad på skrivare ${GEN[sk.gen].namn}!`, 'guld'); sparaSkrivare(); return;
+  }
   if (SPOL_NIVA[(valdTyp() || '').split(':')[1]] && valdTyp().startsWith('byggsats:')) {
     const id = valdTyp().split(':')[1], ny = SPOL_NIVA[id], nu = sk.spolNiva || 0;
     if (nu >= ny) { ui.toast('Den här skrivaren har redan den spolhållaren', 'fel'); ljud.fel(); return; }
@@ -1833,7 +1914,7 @@ function startaJobb(sk, val) {
     visaPaBadd(sk, 'byggsats:' + val.maskin, 0);
   } else {
     const v = VAROR[val.typ];
-    if (storlekFor(val.typ) > GEN[sk.gen].storlek) return false;
+    if (storlekFor(val.typ) > skrivStorlek(sk)) return false;
     if (sk.fil < 1) return false;
     sk.jobb = { typ: val.typ };
     visaPaBadd(sk, val.typ, 0);
@@ -1857,8 +1938,8 @@ function uppdateraSkrivare(sk, dt) {
   }
   sk.vantar = '';
   S.strom -= behov;
-  let dp = (dt * g.fart * (1 + trimNiva('skrivare') * 0.2)) / tid;
-  const gram = j.maskin ? MASKINER[j.maskin].gram : VAROR[j.typ].gram, behovFil = gram * Math.min(dp, 1 - sk.prog);
+  let dp = (dt * g.fart * (1 + trimNiva('skrivare') * 0.2) * (sk.mod === 'm_turbo' ? 2 : 1)) / tid;
+  const gram = (j.maskin ? MASKINER[j.maskin].gram : VAROR[j.typ].gram) * (sk.mod === 'm_snal' ? 0.65 : 1), behovFil = gram * Math.min(dp, 1 - sk.prog);
   if (sk.fil < behovFil) {
     if (sk.fil < 0.5) { sk.vantar = 'filamentet tog slut – ladda en rulle'; if (!sk.slutVarnad) { sk.slutVarnad = true; ui.toast(`Skrivare ${g.namn}: filamentet tog slut på ${Math.round(sk.prog * 100)} % – ladda en rulle så fortsätter den`, 'fel'); } S.strom += behov; return false; }
     dp = sk.fil / gram; sk.fil = 0;
@@ -2075,12 +2156,12 @@ function uppdateraAuto(dt) {
   }
   // autoprint: skrivare med Autoprint på startar om när de är tomma
   if (S.auto.lada) for (const sk of skrivare) {
-    if (sk.upprepa && !sk.jobb && !sk.klar && VAROR[sk.upprepa] && sk.fil >= VAROR[sk.upprepa].gram && storlekFor(sk.upprepa) <= GEN[sk.gen].storlek) startaJobb(sk, { typ: sk.upprepa });
+    if (sk.upprepa && !sk.jobb && !sk.klar && VAROR[sk.upprepa] && sk.fil >= VAROR[sk.upprepa].gram && storlekFor(sk.upprepa) <= skrivStorlek(sk)) startaJobb(sk, { typ: sk.upprepa });
   }
   ritaLadSkylt();
 }
 function sparaSkrivare() {
-  for (const sk of skrivare) S.skrivare[sk.id] = { jobb: sk.jobb, prog: sk.prog, klar: sk.klar, fil: sk.fil, spolNiva: sk.spolNiva || 0, upprepa: sk.upprepa || null };
+  for (const sk of skrivare) S.skrivare[sk.id] = { jobb: sk.jobb, prog: sk.prog, klar: sk.klar, fil: sk.fil, spolNiva: sk.spolNiva || 0, upprepa: sk.upprepa || null, mod: sk.mod || null };
   sparaSnart();
 }
 
@@ -2539,21 +2620,42 @@ interaktor.registrera(skjulYta, {
       S.hem = { ...(S.hem || {}), vagg: n, ...(n >= 4 ? { vaggar: true } : {}) }; HEM_DELAR.vaggar.visible = true;
       ljud.stor(); ui.toast(n >= 4 ? '🧱 Fjärde väggen sitter – skjulet är tätt! Ingen kyla läcker in längre.' : `🧱 Vägg ${n} av 4 på plats (${['bakväggen', 'vänster vägg', 'höger vägg'][n - 1]}). ${4 - n} kvar.`, 'guld');
     } else {
-      S.hem = { ...(S.hem || {}), [id]: true }; HEM_DELAR[id].visible = true;
-      ljud.stor(); ui.toast(`🔨 ${MASKINER[id].ikon} ${MASKINER[id].namn} på plats! Trivsel +${MASKINER[id].trivsel}`, 'guld');
+      S.hem = { ...(S.hem || {}), [id]: true }; if (HEM_DELAR[id]) HEM_DELAR[id].visible = true;
+      ljud.stor(); ui.toast(id === 'tapeter' ? 'Tapeterna sitter! Klassisk 70-talstapet … Ali säljer snyggare mönster.' : `${MASKINER[id].namn} på plats! Trivsel +${MASKINER[id].trivsel}`, 'guld');
     }
     uppdateraSkjul(); sparaSnart();
   },
 });
-// tapetmönster (ritas en gång på en canvas)
-const tapetTex = (() => {
-  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
-  g.fillStyle = '#2f5d50'; g.fillRect(0, 0, 128, 128);
-  g.fillStyle = '#3d7565'; for (let x = 0; x < 128; x += 32) g.fillRect(x, 0, 14, 128);
-  g.fillStyle = '#e8c27a'; for (let y = 16; y < 128; y += 32) for (let x = 7; x < 128; x += 32) { g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); }
+// tapetmönster (ritas en gång var på en canvas). 0 = fula 70-talstapeten man får först
+const TAPETER = [
+  { namn: '70-talstapet (brun och orange)', pris: 0, rita: (g) => { g.fillStyle = '#8a5a2b'; g.fillRect(0, 0, 128, 128); for (let y = 0; y < 128; y += 32) for (let x = 0; x < 128; x += 32) { g.fillStyle = '#e07b2a'; g.beginPath(); g.arc(x + 16, y + 16, 12, 0, 7); g.fill(); g.fillStyle = '#f2c14e'; g.beginPath(); g.arc(x + 16, y + 16, 6, 0, 7); g.fill(); } } },
+  { namn: 'Grön med guldprickar', pris: 500, rita: (g) => { g.fillStyle = '#2f5d50'; g.fillRect(0, 0, 128, 128); g.fillStyle = '#3d7565'; for (let x = 0; x < 128; x += 32) g.fillRect(x, 0, 14, 128); g.fillStyle = '#e8c27a'; for (let y = 16; y < 128; y += 32) for (let x = 7; x < 128; x += 32) { g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); } } },
+  { namn: 'Blå ränder', pris: 900, rita: (g) => { g.fillStyle = '#dfe9f5'; g.fillRect(0, 0, 128, 128); g.fillStyle = '#3a6ea5'; for (let x = 0; x < 128; x += 24) g.fillRect(x, 0, 9, 128); } },
+  { namn: 'Rosa blommor', pris: 1500, rita: (g) => { g.fillStyle = '#fbe3ea'; g.fillRect(0, 0, 128, 128); for (let y = 0; y < 128; y += 32) for (let x = (y / 32) % 2 * 16; x < 128; x += 32) { g.fillStyle = '#e66a8d'; for (let k = 0; k < 5; k++) { const a = k * 1.256; g.beginPath(); g.arc(x + 16 + Math.cos(a) * 6, y + 16 + Math.sin(a) * 6, 4, 0, 7); g.fill(); } g.fillStyle = '#f9d65c'; g.beginPath(); g.arc(x + 16, y + 16, 3, 0, 7); g.fill(); } } },
+  { namn: 'Vitt tegel', pris: 3000, rita: (g) => { g.fillStyle = '#f2efe9'; g.fillRect(0, 0, 128, 128); g.strokeStyle = '#c9c3b8'; g.lineWidth = 2; for (let y = 0; y < 128; y += 16) { g.beginPath(); g.moveTo(0, y); g.lineTo(128, y); g.stroke(); for (let x = (y / 16) % 2 * 16; x < 128; x += 32) { g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + 16); g.stroke(); } } } },
+  { namn: 'Gamer: svart med neon', pris: 6000, rita: (g) => { g.fillStyle = '#0e0f1a'; g.fillRect(0, 0, 128, 128); g.strokeStyle = '#3de3ff'; g.lineWidth = 2; for (let x = -128; x < 128; x += 32) { g.beginPath(); g.moveTo(x, 128); g.lineTo(x + 128, 0); g.stroke(); } g.strokeStyle = '#ff3cac'; for (let x = 0; x < 256; x += 32) { g.beginPath(); g.moveTo(x, 128); g.lineTo(x - 128, 0); g.stroke(); } } },
+];
+const tapetCache = {};
+const tapetTex = (i = 0) => tapetCache[i] || (tapetCache[i] = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 128; TAPETER[i].rita(c.getContext('2d'));
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(6, 4); return t;
-})();
-function visaTapeter() { if (S.hem?.tapeter && vaggMatRef.m) { vaggMatRef.m.map = tapetTex; vaggMatRef.m.color.set(0xffffff); vaggMatRef.m.needsUpdate = true; } }
+})());
+const bodVaggRef = {};
+function sattTapet(m, i) { if (!m) return; m.map = tapetTex(i); m.color.set(0xffffff); m.needsUpdate = true; }
+function visaTapeter() {
+  if (S.hem?.tapeter) sattTapet(vaggMatRef.m, S.hem.tapet ?? 0);
+  if (S.bod && S.bodTapet != null) sattTapet(bodVaggRef.m, S.bodTapet);
+}
+// sätt upp ett nytt tapetmönster: där du står – i boden eller i skjulet
+const iBoden = () => { if (!S.bod) return false; const v = bodGrupp.worldToLocal(spelare.pos.clone()); return Math.abs(v.x) < BOD.b / 2 && Math.abs(v.z) < BOD.d / 2; };
+const iSkjulet = () => Math.abs(spelare.pos.x - SKJUL.x) < SKJUL.b / 2 && Math.abs(spelare.pos.z - SKJUL.z) < SKJUL.d / 2;
+function tapetsera(typ) {
+  const i = +typ.split('_')[1];
+  if (iBoden()) { S.bodTapet = i; }
+  else if (iSkjulet()) { if (!S.hem?.tapeter) { ui.toast('Skjulet behöver tapeter först (ritning hos Ali)', 'fel'); ljud.fel(); return; } S.hem = { ...S.hem, tapet: i }; }
+  else { ui.toast('Gå in i skjulet eller gamingboden och klicka där', 'fel'); ljud.fel(); return; }
+  taBortVald(); visaTapeter(); ljud.stor(); konfetti(30); ui.toast(`Ny tapet: ${TAPETER[i].namn.toLowerCase()}!`, 'guld'); sparaSnart();
+}
 function uppdateraSkjul() {
   visaTapeter();
   const n = Object.keys(S.hem || {}).filter((k) => k !== 'vagg').length;
@@ -2573,6 +2675,7 @@ let bodRgb = [];
 function byggBod(grupp, spokeMat) {
   const { b: B, d: D, h: H, dorr } = BOD, m = (c, e = {}) => spokeMat || mat(c, e);
   const vagg = m(0x2b2f3a), golv = m(0x3a3a44), tak = m(0x1d1d22);
+  if (!spokeMat && grupp === bodGrupp) bodVaggRef.m = vagg;
   grupp.add(at(box(B, 0.06, D, golv), 0, 0.03, 0));
   grupp.add(at(box(B, H, 0.1, vagg), 0, H / 2, -D / 2));
   grupp.add(at(box(0.1, H, D, vagg), -B / 2, H / 2, 0));
@@ -2603,14 +2706,22 @@ function bodKlar() {
   b3(-B / 2, -D / 2 - 0.05, B / 2, -D / 2 + 0.05); b3(-B / 2 - 0.05, -D / 2, -B / 2 + 0.05, D / 2); b3(B / 2 - 0.05, -D / 2, B / 2 + 0.05, D / 2);
   b3(-B / 2, D / 2 - 0.05, -dorr / 2, D / 2 + 0.05); b3(dorr / 2, D / 2 - 0.05, B / 2, D / 2 + 0.05);
   skjulHinder.push(...bodHinder); uppdateraHinder();
+  visaTapeter();
 }
 if (S.bod) bodKlar();
 const bodSpoke = new THREE.Group(); bodSpoke.position.copy(bodGrupp.position);
 const bodVal = { ok: false, x: 0, z: 0, r: 0 };
 const bodMatOk = new THREE.MeshBasicMaterial({ color: 0x7dffb0, transparent: true, opacity: 0.25, depthWrite: false }), bodMatFel = new THREE.MeshBasicMaterial({ color: 0xff5c5c, transparent: true, opacity: 0.25, depthWrite: false });
 // spökboden följer siktet – R vrider 90°, grönt = får plats
+// flytta en färdig gamingbod: G nära boden – allt som står inne följer med
+let flyttarBod = null;
+const iBodYta = (p, x0, z0, r0) => { const v = new THREE.Vector3(p.x - x0, 0, p.z - z0).applyAxisAngle(new THREE.Vector3(0, 1, 0), -r0 * Math.PI / 2); return Math.abs(v.x) < BOD.b / 2 && Math.abs(v.z) < BOD.d / 2; };
+function startaBodFlytt() {
+  flyttarBod = { inne: placerade.filter((p) => !p.pa && iBodYta(p, BOD.x, BOD.z, BOD.r)) };
+  spoke.rot = BOD.r * 2; ui.toast('Flytta gamingboden: sikta dit den ska stå, R vrider, klicka för att ställa ner. Esc avbryter.', 'guld');
+}
 function uppdateraBodSpoke() {
-  bodSpoke.visible = !tomhant && valdTyp() === 'byggsats:gamingbod' && !S.bod;
+  bodSpoke.visible = (!tomhant && valdTyp() === 'byggsats:gamingbod' && !S.bod) || !!flyttarBod;
   if (!bodSpoke.visible) return;
   markRay.setFromCamera(new THREE.Vector2(0, 0), kamera);
   const h = markRay.intersectObject(mark)[0];
@@ -2618,9 +2729,10 @@ function uppdateraBodSpoke() {
   const r = Math.floor(spoke.rot / 2) % 4, x = Math.round(h.point.x * 2) / 2, z = Math.round(h.point.z * 2) / 2;
   const hx = (r % 2 ? BOD.d : BOD.b) / 2, hz = (r % 2 ? BOD.b : BOD.d) / 2;
   const inom = Math.abs(x) <= TOMT - hx - 0.3 && Math.abs(z) <= TOMT - hz - 0.3;
+  if (flyttarBod) { bodGrupp.visible = false; }
   const skjulFritt = Math.abs(x - SKJUL.x) >= hx + SKJUL.b / 2 + 0.4 || Math.abs(z - SKJUL.z) >= hz + SKJUL.d / 2 + 0.4;
   const fritt = fasta.every((f) => Math.abs(f.x - x) >= hx + f.radie || Math.abs(f.z - z) >= hz + f.radie)
-    && placerade.every((p) => p.pa || Math.abs(p.x - x) >= hx + 0.3 || Math.abs(p.z - z) >= hz + 0.3)
+    && placerade.every((p) => p.pa || flyttarBod?.inne.includes(p) || Math.abs(p.x - x) >= hx + 0.3 || Math.abs(p.z - z) >= hz + 0.3)
     && (Math.abs(spelare.pos.x - x) >= hx + 0.3 || Math.abs(spelare.pos.z - z) >= hz + 0.3);
   Object.assign(bodVal, { ok: inom && skjulFritt && fritt, x, z, r });
   bodSpoke.position.set(x, 0, z); bodSpoke.rotation.y = r * Math.PI / 2;
@@ -2629,6 +2741,18 @@ function uppdateraBodSpoke() {
 }
 function byggBodHar() {
   if (!bodVal.ok) { ljud.fel(); ui.toast('Gamingboden får inte plats där', 'fel'); return; }
+  if (flyttarBod) {
+    // flytta allt som stod inne med samma förflyttning och vridning
+    const dr = (bodVal.r - BOD.r + 4) % 4, ax = new THREE.Vector3(0, 1, 0);
+    for (const p of flyttarBod.inne) {
+      const v = new THREE.Vector3(p.x - BOD.x, 0, p.z - BOD.z).applyAxisAngle(ax, dr * Math.PI / 2);
+      p.x = Math.round((bodVal.x + v.x) * 100) / 100; p.z = Math.round((bodVal.z + v.z) * 100) / 100;
+      p.r8 = ((p.r8 ?? (p.r || 0) * 2) + dr * 2) % 8; p.r = Math.round(p.r8 / 2) % 4;
+      p.mesh.position.set(p.x, p.mesh.position.y, p.z); p.mesh.rotation.y = vinkel(p); delete fotCache[p.id];
+    }
+    flyttarBod = null; S.bodPos = { x: bodVal.x, z: bodVal.z, r: bodVal.r }; Object.assign(BOD, S.bodPos);
+    bodGrupp.visible = true; bodKlar(); bodSpoke.visible = false; S.placerade = placerade.map(sparbar); ljud.stor(); ui.toast('Gamingboden är flyttad – med allt som stod i den.', 'guld'); sparaSnart(); return;
+  }
   taBortVald(); S.bod = true; S.bodPos = { x: bodVal.x, z: bodVal.z, r: bodVal.r }; Object.assign(BOD, S.bodPos); bodKlar(); bodSpoke.visible = false;
   ljud.stor(); konfetti(60); ui.toast('Gamingboden står klar! Det är ett tomt skal – inred den, flytta in grejerna och bygg ut den.', 'guld'); sparaSnart();
 }
@@ -2847,6 +2971,8 @@ function stallNer() {
 }
 addEventListener('keydown', (e) => {
   if (e.code === 'KeyK' && ui.igang && ui.butiksOverlay.hidden) { oppnaSparplatser(); return; }
+  if (e.code === 'KeyG' && ui.igang && ui.butiksOverlay.hidden && S.bod && !flyttarBod && Math.hypot(spelare.pos.x - BOD.x, spelare.pos.z - BOD.z) < 7) { startaBodFlytt(); return; }
+  if (e.code === 'Escape' && flyttarBod) { flyttarBod = null; bodGrupp.visible = true; bodSpoke.visible = false; ui.toast('Flytten avbruten', ''); return; }
   if (e.code === 'KeyM' && ui.igang && S.mobil) {
     e.preventDefault();
     if (ui.butiksOverlay.hidden) oppnaInkorg(); else ui.stangButik();
@@ -2926,6 +3052,27 @@ const ROLF_JOBB = [
     tackNej: 'Ja ringde kommunen själv. Dom va snälla. Ja får söka på riktigt. Ingen hade frågat förut. Tack. /R' },
 ];
 const jobbNu = () => { const n = S.rolf.jobbNr || 0, j = ROLF_JOBB[n % ROLF_JOBB.length], f = 1 + Math.floor(n / ROLF_JOBB.length) * 0.6; return { ...j, n, ja: Math.round(j.ja * f / 50) * 50, nej: Math.round(j.nej * f / 10) * 10 }; };
+// present → vad Rolf ger tillbaka, och vad han skriver
+const ROLF_TACK = {
+  p_sexpack: { ger: 'r_tv', text: 'Ett sexpack. Till MIG. Ingen har gett mig nåt sen 2009. Ja la en TV i lådan. Från ett dödsbo ja rensade. Den funkar om man slår på den. Hårt. /R' },
+  p_korv: { ger: 'r_affisch', text: 'Korv! Ja grillade, Kajsa åt tre. Här – min gamla affisch från Rolfs Rockers 1987. Ja hade hår då. Ta den. Ja kan inte titta på den. /R' },
+  p_kajsa: { ger: 'r_gardin', text: 'Kajsa spinner som en motor. Ja la Birgittas gardiner i lådan. Hon stickade dom. Sen gick hon. Ja vill inte ha dom. Du får dom. Dom e fina. Fan. /R' },
+  p_fiske: { ger: 'r_klocka', text: 'Ett riktigt fiskespö. Ja … ja vet inte vad ja ska säga. Ta min guldklocka. Fick den efter 30 år på bilen. Ingen har frågat vad klockan e sen dess. /R' },
+  p_trummor: { ger: 'r_fatolj', text: 'Ja spelade i två timmar i går. Grannen ringde polisen. VÄRT DET. Här, fåtöljen från dödsbot på Granvägen. Läder. Bara lite sprucken. /R' },
+  p_konsert: { ger: 'r_discokula', text: 'Ja dansade. Med en tant som heter Gun. Ja e skyldig dig för resten av livet. Ta discokulan från 1987. Den har sett saker. /R' },
+  p_resa: { ger: 'r_jukebox', text: 'KANARIEÖARNA?! Ja har aldrig varit utomlands. Ja grät på flygplatsen. Ta jukeboxen från dödsbot. Den spelar bara dansband. Perfekt. Ja står i skuld till dig för alltid. /R' },
+};
+const aliKunskap = () => (S.aliStolt || []).length;
+const PROTO_SVAR = {
+  m_turbo: 'Turbofläkten. AI:n sa att den var omöjlig. Jag sa: håll tyst. Nu snurrar den.',
+  a_holo: 'Hologrammet. Jag tittade på det i tre timmar i natt. Min fru tror jag har en affär. Med ett hologram.',
+  m_snal: 'Kvantmunstycket. Jag vet inte riktigt hur det fungerar. Det gör inte AI:n heller. Men det fungerar.',
+  m_nano: 'Nanokvarnen. Den maler så fort att den låter som min mamma när hon pratar.',
+  m_grav: 'Gravitationsbädden. Om du ser något sväva i skjulet: det är normalt. Tror jag.',
+  m_fusion: 'Fusionsbatteriet. Håll det borta från Rolf. Och från katter. Och från mig.',
+  a_robot: 'Roboten. Den har mitt ansikte på skärmen. Den säger "öppet till nio". Jag har aldrig varit så stolt.',
+};
+const presentNu = () => Object.keys(ROLF_TACK).find((id) => !(S.rolf.fatt || []).includes(id));
 const CHEFEN = ['Hej. Rolf här – chefen. Någon har druckit min espresso. Rolf säger att det var ”ungen vid tippen”. Böter.', 'Chefen igen. Det har varit en skylt på grinden. Och mina kakor är färre. Jag vet att du är inblandad. Böter.', 'Chefen. Jag har hittat en servett stämplad GODKÄNT. Den var inte godkänd. Böter.'];
 const aktivGava = () => (S.rolf.jobb != null ? jobbNu().vara : S.rolf.aktiv && ROLF[S.rolf.i] ? ROLF[S.rolf.i].vara : null);
 function oppnaJobbVal() {
@@ -2950,8 +3097,9 @@ function oppnaJobbVal() {
 }
 const harGava = (id) => S.post.tillRolf === id || antalInv(id) > 0 || skrivare.some((x) => x.klar === id || x.jobb?.typ === id);
 const harOl = () => S.rolf.i > 0 || harGava('olhallare');
+const beloTextExtra = (b) => (b.startsWith('sak:') ? VAROR[b.slice(4)].namn : b.startsWith('tack:') ? '' : null);
 const BELONING_NAMN = { nyckel: '🔑 nyckel till tippen', karra: '🛒 Rolfs gamla skottkärra', extra: '🚛 dubbel last på tippen nästa gång', heder: 'Rolfs gamla trumstockar från 1987', jobb: 'betalt för jobbet' };
-const beloText = (b) => b.startsWith('mynt:') ? `🪙 ${b.split(':')[1]} kr` : BELONING_NAMN[b];
+const beloText = (b) => b.startsWith('mynt:') ? `${b.split(':')[1]} kr` : beloTextExtra(b) ?? BELONING_NAMN[b];
 
 const postMarkor = (() => {
   const c = document.createElement('canvas'); c.width = c.height = 128;
@@ -2990,6 +3138,7 @@ interaktor.registrera(postlada, {
     if (S.post.tillMig.length) return `Öppna postlådan – Rolf har lämnat: ${S.post.tillMig.map(beloText).join(' + ')}`;
     const v = aktivGava();
     if (S.post.tillRolf) return 'Gåvan ligger i lådan – Rolf hämtar den när sopbilen kommer';
+    if (valdTyp() && ROLF_TACK[valdTyp()]) return `Lägg ${VAROR[valdTyp()].namn.toLowerCase()} i Rolfs postlåda`;
     if (v && antalInv(v)) return valdTyp() === v ? `🎁 Lägg ${VAROR[v].namn.toLowerCase()} i Rolfs postlåda` : (S.hotbar.some((x) => x?.typ === v) ? `Ta fram ${VAROR[v].namn.toLowerCase()} och lägg den i postlådan` : `${VAROR[v].namn} ligger i kistan i skjulet – hämta den`);
     if (v) return `Rolfs postlåda – ${S.rolf.jobb != null ? 'jobbet' : 'han önskar sig'}: ${VAROR[v].namn.toLowerCase()}`;
     return 'Rolfs postlåda (tom)';
@@ -2999,6 +3148,13 @@ interaktor.registrera(postlada, {
     if (S.post.lapp === 'jobb') { S.post.lapp = null; visaPostInne(); ljud.plock(); oppnaJobbVal(); return; }
     if (S.post.lapp) { const l = S.post.lapp; S.post.lapp = null; visaLapp(l); if (l.startsWith('rolf')) S.rolf.aktiv = true; visaPostInne(); ljud.plock(); sparaSnart(); return; }
     if (S.post.tillMig.length) { hamtaBeloning(); return; }
+    const pv = valdTyp(); if (pv && ROLF_TACK[pv] && !S.post.tillRolf) {
+      taBortVald(); flygIn(pv); S.post.tillRolf = pv;
+      setTimeout(() => { visaPostInne(); ljud.placera(); }, 650);
+      ui.toast('Presenten ligger i lådan. Rolf hämtar den när sopbilen kommer.', 'guld');
+      if (bil.fas === 'borta') if (bil.t < -12) bil.t = -12;
+      sparaSnart(); return;
+    }
     const v = aktivGava();
     if (!v || S.post.tillRolf) return;
     if (!antalInv(v)) { ui.toast(`Printa ${VAROR[v].namn.toLowerCase()} först`, 'fel'); ljud.fel(); return; }
@@ -3024,10 +3180,12 @@ function hamtaBeloning() {
     else if (b === 'extra') S.rolf.extra++;
     else if (b.startsWith('mynt:')) S.mynt += Number(b.split(':')[1]);
     else if (b === 'heder') { const i = laggTill('trumstockar'); }
+    else if (b.startsWith('sak:')) laggTill(b.slice(4));
   }
-  ljud.stor(); ui.toast(`Du fick: ${lista.filter((b) => b !== 'jobb').map(beloText).join(' + ')}`, 'guld');
+  ljud.stor(); ui.toast(`Du fick: ${lista.filter((b) => b !== 'jobb' && !b.startsWith('tack:')).map(beloText).join(' + ')}`, 'guld');
   const nr = S.rolf.i - 1;
-  const ovrigt = lista.includes('jobb') || lista.includes('heder');
+  for (const b of lista) if (b.startsWith('tack:')) setTimeout(() => sms('rolf', ROLF_TACK[b.slice(5)].text), 1200);
+  const ovrigt = lista.includes('jobb') || lista.includes('heder') || lista.some((b) => b.startsWith('tack:'));
   if (lista.includes('jobb')) sms('rolf', ROLF_JOBB[S.rolf.jobbTack % ROLF_JOBB.length].tackJa);
   if (lista.includes('heder')) setTimeout(() => sms('mamma', 'Det ringde en Rolf. Han sa att du är den ärligaste människan han känner. VEM ÄR ROLF?? Men… bra. Jag är stolt. Säg inte att jag sa det.'), 6000);
   if (ovrigt) { visaPostInne(); sparaSnart(); return; }
@@ -3175,7 +3333,12 @@ function uppdateraRolf(dt) {
     if (arende.t > 0.9 && !arende.bytt) {
       arende.bytt = true;
       const onskan = ROLF[S.rolf.i];
-      if (S.rolf.jobb != null && S.post.tillRolf === jobbNu().vara) {
+      if (ROLF_TACK[S.post.tillRolf]) {
+        const id = S.post.tillRolf; S.post.tillRolf = null;
+        S.rolf.fatt = [...(S.rolf.fatt || []), id]; S.rolf.tack = (S.rolf.tack || 0) + 1;
+        S.post.tillMig = [...S.post.tillMig, 'sak:' + ROLF_TACK[id].ger, 'tack:' + id];
+        ljud.placera(); sparaSnart();
+      } else if (S.rolf.jobb != null && S.post.tillRolf === jobbNu().vara) {
         const j = jobbNu(); S.post.tillRolf = null; S.post.tillMig = [...S.post.tillMig, `mynt:${j.ja}`, 'jobb'];
         S.rolf.jobb = null; S.rolf.jobbNr = j.n + 1; S.rolf.ja = (S.rolf.ja || 0) + 1; S.rolf.jobbTack = j.n;
         if (S.rolf.ja % 2 === 0) S.rolf.boter = Math.round(j.ja * 0.4 / 50) * 50;    // chefen märker vartannat jobb
@@ -3334,9 +3497,10 @@ let aliTimer = 0;
 
 // ---------- Trivsel ----------
 function trivsel() {
-  const saker = (S.bod ? MASKINER.gamingbod.trivsel : 0) + placerade.reduce((s, p) => s + (info(p.typ).trivsel || 0), 0) + Object.keys(S.hem || {}).reduce((s, id) => s + (id === 'vaggar' ? 0 : id === 'skarm' ? 6 : id === 'fonster' ? fonsterLista().length * MASKINER.fonster.trivsel : MASKINER[id]?.trivsel || 0), 0) + (S.hem?.vagg || 0) * MASKINER.vaggar.trivsel;
+  const antal = {};
+  const saker = (S.bod ? MASKINER.gamingbod.trivsel : 0) + placerade.reduce((s, p) => { const n = antal[p.typ] = (antal[p.typ] || 0) + 1; return s + (info(p.typ).trivsel || 0) * 0.6 ** (n - 1); }, 0) + Object.keys(S.hem || {}).reduce((s, id) => s + (id === 'vaggar' ? 0 : id === 'skarm' ? 6 : id === 'fonster' ? fonsterLista().length * MASKINER.fonster.trivsel : MASKINER[id]?.trivsel || 0), 0) + (S.hem?.vagg || 0) * MASKINER.vaggar.trivsel;
   const ren = Math.max(0, 1 - skrapLista.filter((x) => !paTippen(x.position.x, x.position.z)).length / ANTAL_SKRAP);
-  return Math.round(saker + ren * 30);
+  return Math.round(saker + ren * 30 + (S.bodTapet ? 15 + S.bodTapet * 5 : 0) + (S.hem?.tapet ? S.hem.tapet * 5 : 0));
 }
 
 // ---------- Menyer (använder FpUI:s butiksruta) ----------
@@ -3402,7 +3566,7 @@ function oppnaPrintMeny(sk) {
   const iFlik = saker.filter((x) => x.flik === printFlik);
   const vald = iFlik.find((x) => x.id === printVald) || iFlik[0];
   const behov = (x) => (x.attr.startsWith('data-maskin') ? MASKINER[x.id].gram : x.gram);
-  const forStor = (x) => !x.attr.startsWith('data-maskin') && storlekFor(x.id) > g.storlek;
+  const forStor = (x) => !x.attr.startsWith('data-maskin') && storlekFor(x.id) > skrivStorlek(sk);
   const kanInte = (x) => forStor(x) || sk.fil < 1;
   const kropp = FLIKAR.length ? sektion(FLIKAR.find(([f]) => f === printFlik)[2], printFlik === 'salj' ? 'grön siffra = vad Ali betalar idag' : 'siffran = rullar filament') + grid(iFlik.map((x) => uiRuta({ bild: tumme(x.attr.startsWith('data-maskin') ? 'byggsats:' + x.id : x.id), attr: `data-pval="${x.id}"`, vald: x === vald, dyr: !forStor(x) && kanInte(x), last: forStor(x), storlek: storlekRuta(x.id, x.attr.startsWith('data-maskin')), pris: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? '+' + prisNu(x.id) : rullKort(x.gram), prisTyp: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? 'plus' : 'fil', titel: x.namn })))
     + (antalInv('rulle') ? `<p class="ui-tom">${ik('rulle')} Du bär ${antalInv('rulle')} ${antalInv('rulle') === 1 ? 'rulle' : 'rullar'} – välj den i verktygsraden och klicka på skrivaren för att ladda.</p>` : '')
@@ -3410,7 +3574,7 @@ function oppnaPrintMeny(sk) {
   const fot = vald ? detalj({ bild: tumme(vald.attr.startsWith('data-maskin') ? 'byggsats:' + vald.id : vald.id, 72), titel: vald.namn, text: rens(vald.info).replace(/<br>/g, ' · '),
     faktaLista: [VAROR[vald.id]?.pris && !vald.attr.startsWith('data-maskin') ? ['mynt', `Ali betalar ${prisNu(vald.id)} kr idag${prisNu(vald.id) < saljPris(vald.id) ? ` (vanligt ${saljPris(vald.id)})` : ''}`, 'plus'] : null, VAROR[vald.id]?.pris && !vald.attr.startsWith('data-maskin') ? ['oandlig', `${Math.round(prisNu(vald.id) / (vald.gram / RULLE))} kr per rulle`, 'plus'] : null, sk.fil > 0 && sk.fil < behov(vald) && !forStor(vald) ? ['varning', `Laddat räcker till ${Math.floor(sk.fil / behov(vald) * 100)} % – den pausar sedan tills du laddar mer`, 'varn'] : null, ['klocka', `${Math.round(vald.tid / g.fart)} s`], ['rulle', `${rullar(vald.gram)}${vald.attr.startsWith('data-maskin') ? ` (${rullar(behov(vald))} per del)` : ''}`]],
     knappar: [S.auto?.lada && !vald.attr.startsWith('data-maskin') && VAROR[vald.id]?.pris > 0 ? { text: sk.upprepa === vald.id ? 'Autoprint: PÅ' : 'Autoprint: AV', typ: sk.upprepa === vald.id ? 'plus' : 'neutral', attr: `data-upprepa="${vald.id}"`, ikon: 'oandlig' } : null, { text: forStor(vald) ? `Kräver skrivare ${STORLEK_NAMN[storlekFor(vald.id)]}` : kanInte(vald) ? 'Ladda mer filament' : 'Printa', typ: 'plus', attr: vald.attr + ' data-printa', av: kanInte(vald), ikon: forStor(vald) ? 'las' : 'skrivare' }].filter(Boolean) }) : detalj({});
-  const html = panel({ ikon: 'skrivare', titel: `Skrivare ${g.namn} · byggvolym ${g.mm} mm`, sub: S.strom < 20 ? 'Lite ström – trampa cykeln så att skrivaren orkar' : 'Välj vad du vill printa', resurser: resurs('rulle', `${rullar(sk.fil)} laddat`) + resurs('blixt', Math.floor(S.strom), S.strom < 20 ? 'varn' : ''),
+  const html = panel({ ikon: 'skrivare', titel: `Skrivare ${g.namn} · byggvolym ${g.mm} mm${sk.mod ? ' · ' + VAROR[sk.mod].namn.replace('Prototyp: ', '') : ''}`, sub: S.strom < 20 ? 'Lite ström – trampa cykeln så att skrivaren orkar' : 'Välj vad du vill printa', resurser: resurs('rulle', `${rullar(sk.fil)} laddat`) + resurs('blixt', Math.floor(S.strom), S.strom < 20 ? 'varn' : ''),
     flikar: FLIKAR.map(([f, i, t]) => [f, i, t]), aktivFlik: printFlik, kropp, fot });
   oppnaRuta(html, (el) => {
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { printFlik = k.dataset.flik; printVald = null; ljud.plock(); oppnaPrintMeny(sk); }; });
@@ -3427,7 +3591,7 @@ function oppnaPrintMeny(sk) {
       k.onclick = () => {
         const ok = startaJobb(sk, k.dataset.vara ? { typ: k.dataset.vara } : { maskin: k.dataset.maskin });
         if (ok) { ljud.kop(); ui.stangButik(); ui.toast('Skrivaren surrar igång…', 'bra'); }
-        else { ljud.fel(); ui.toast(k.dataset.vara && storlekFor(k.dataset.vara) > g.storlek ? `För stor – kräver skrivare ${STORLEK_NAMN[storlekFor(k.dataset.vara)]}` : 'För lite filament i skrivaren', 'fel'); }
+        else { ljud.fel(); ui.toast(k.dataset.vara && storlekFor(k.dataset.vara) > skrivStorlek(sk) ? `För stor – kräver skrivare ${STORLEK_NAMN[storlekFor(k.dataset.vara)]}` : 'För lite filament i skrivaren', 'fel'); }
       };
     });
   });
@@ -3479,6 +3643,26 @@ function aliKopLista() {
   });
   if ((forstaUpp() || S.ritningar.includes('sang')) && !S.ritningar.includes('sang') && !harSang())
     add('Bygg ut hemmet', 'sang', tumme('sang'), 'Ritning: Säng', 'En riktig säng till skjulet. Slut på det kalla golvet.', SANG_INSTRUKTION, [['rulle', '2 rullar']], () => { S.ritningar.push('sang'); aliRepl = 'Sov gott, min vän.'; return true; });
+  if (S.hem?.tapeter || S.bod) for (let i = 0; i < TAPETER.length; i++) {
+    const id = 'tapet_' + i, pris = TAPETER[i].pris || 200;
+    add('Tapeter – för skjulet och boden', 't_' + id, tumme(id), TAPETER[i].namn, 'Ställ dig i skjulet eller gamingboden, välj tapetrullen och klicka. Den sitter direkt.', pris,
+      [['hus', 'Funkar i skjulet och boden']], () => { if (!harRumFor(id)) { aliRepl = 'Fickorna är fulla.'; return false; } laggTill(id); aliRepl = i === 0 ? 'Den fula igen? Okej. Smaken är som baken.' : 'Bra tapet. Min fru valde samma. Jag hatar den.'; return true; });
+  }
+  if (S.kapitelKlart) for (const [id, v] of Object.entries(VAROR)) {
+    if (!v.proto || (S.proto || []).includes(id)) continue;
+    const last = aliKunskap() < v.proto.lar;
+    add('Alis prototyper – en av varje', 'pt:' + id, tumme(id), v.namn, last ? `Ali har inte lärt sig bygga den än. Printa fler av hans ritningar (${aliKunskap()}/${v.proto.lar}).` : v.beskr, v.proto.pris,
+      [['stjarna', 'Unik – går inte att printa'], last ? ['las', `Låst: Ali behöver ${v.proto.lar - aliKunskap()} till`, 'varn'] : null].filter(Boolean),
+      () => { if (last) { aliRepl = 'Inte än. Jag lär mig fortfarande. Printa mina ritningar så lär jag mig fortare.'; return false; } if (!harRumFor(id)) { aliRepl = 'Fickorna är fulla.'; return false; }
+        S.proto = [...(S.proto || []), id]; laggTill(id); aliRepl = PROTO_SVAR[id];
+        if (id === 'm_nano' || id === 'm_fusion') { taBortInv(id, 1); ui.toast(id === 'm_nano' ? 'Nanokvarnen sitter i kvarnen – den mal 60 % fortare' : 'Fusionsbatteriet är inkopplat: +600 ström och självladdning', 'guld'); }
+        else if (v.proto.mod) ui.toast('Välj prototypen och klicka på en skrivare för att montera den', 'guld');
+        return true; });
+  }
+  const pr = presentNu();
+  if (pr && S.rolf.i >= ROLF.length && !antalInv(pr) && S.post.tillRolf !== pr) add('Present till Rolf', 'pr:' + pr, tumme(pr), VAROR[pr].namn, 'Rolf blir tacksam – och ger dig något du inte kan köpa. Lägg presenten i hans postlåda.', VAROR[pr].present,
+    [['gava', 'Rolf ger något tillbaka'], ['hjarta', 'Unik inredning']],
+    () => { if (!harRumFor(pr)) { aliRepl = 'Var ska du ha den? Fickorna är fulla.'; return false; } laggTill(pr); aliRepl = ['En present till sopgubben? Du är en konstig människa. Bra. Men konstig.', 'Jag slår in den. Gratis. Säg inte det till nån.', 'Rolf… han köper bara lättöl här. Och kattmat. Ge honom det här.'][Math.floor(Math.random() * 3)]; return true; });
   for (const [id, m] of Object.entries(MASKINER)) {
     if (S.ritningar.includes(id) || !m.syns() || arKlar(id)) continue;
     add(m.hem ? 'Bygg ut hemmet' : 'Maskiner och verktyg', 'm:' + id, tumme('byggsats:' + id), 'Ritning: ' + m.namn, m.beskr, m.ritning,
@@ -3753,7 +3937,7 @@ function oppnaDagbok() {
 const ui = new FpUI({
   titel: 'Printa Hem',
   text: 'Allt du äger är ett gammalt skjul och storebrors 3D-skrivare. Tomten är full av skräp – men skräp är plast, och plast är filament.<br><b>Printa dig ett hem.</b>',
-  hjalp: 'WASD gå · Mus titta · Klick/E använd · Håll E = trampa/veva/gripa · B dagbok & sparplatser<br>Hjulet / 1–8 byt sak · H tomhänt · Shift+Q släpp allt · V röster · I dina saker · B dagbok · M meddelanden · K sparplatser · R vrid · Q släpp skräp · Shift spring',
+  hjalp: 'WASD gå · Mus titta · Klick/E använd · Håll E = trampa/veva/gripa · B dagbok & sparplatser<br>Hjulet / 1–8 byt sak · H tomhänt · Shift+Q släpp allt · V röster · I dina saker · B dagbok · M meddelanden · K sparplatser · G flytta gamingboden · R vrid · Q släpp skräp · Shift spring',
   spelare,
   onAnvand: (nere) => {
     anvandNere = nere;
@@ -3764,6 +3948,7 @@ const ui = new FpUI({
     if (interaktor.hovrad === cykel || interaktor.hovrad === vevYta) return;
     if (niva() === 3 && (!interaktor.hovrad || interaktor.hovrad.userData.typ === 'skrap')) return;
     if (bodSpoke.visible) { byggBodHar(); return; }
+    if (VAROR[valdTyp()]?.tapet != null) { tapetsera(valdTyp()); return; }
     if (interaktor.hovrad && !(spoke.grupp?.visible && spoke.bord && SMASAK(valdTyp()))) { interaktor.aktivera(); return; }
     stallNer();
   },
@@ -4239,7 +4424,7 @@ function samlaOchSpara(direkt = false) {
   S.placerade = placerade.map(sparbar);
   const nyPos = [+spelare.pos.x.toFixed(2), +spelare.pos.z.toFixed(2), +spelare.yaw.toFixed(3), +spelare.pitch.toFixed(3)];
   if (!S.pos || Math.hypot(nyPos[0] - S.pos[0], nyPos[1] - S.pos[1]) > 0.5 || Math.abs(nyPos[2] - S.pos[2]) > 0.3) { S.pos = nyPos; sparaFlagga = true; }
-  for (const sk of skrivare) S.skrivare[sk.id] = { jobb: sk.jobb, prog: sk.prog, klar: sk.klar, fil: sk.fil, spolNiva: sk.spolNiva || 0, upprepa: sk.upprepa || null };
+  for (const sk of skrivare) S.skrivare[sk.id] = { jobb: sk.jobb, prog: sk.prog, klar: sk.klar, fil: sk.fil, spolNiva: sk.spolNiva || 0, upprepa: sk.upprepa || null, mod: sk.mod || null };
   let p = null;
   if (direkt || sparaFlagga || skrivare.some((s) => s.jobb)) p = spar.spara(direkt);
   sparaFlagga = false;
@@ -4317,7 +4502,7 @@ function uppdatera(dt) {
         const steg = mal.sub(s.position); const avst = steg.length();
         if (avst < 1.0) { plockaSkrap(s, true); if (hand.full) break; continue; }
         s.position.addScaledVector(steg.normalize(), Math.min(avst, MAGNET_FART * dt));
-        s.position.y = 0.01 + Math.sin(performance.now() / 80 + len) * 0.05 + 0.15;
+        s.position.y = tippHojd(s.position.x, s.position.z) + 0.16 + Math.sin(performance.now() / 80 + len) * 0.05;   // följer kullen i stället för att sjunka in i den
         s.rotation.y += dt * 6;
         s.userData.skrap[0] = s.position.x; s.userData.skrap[1] = s.position.z;
       }
@@ -4327,7 +4512,7 @@ function uppdatera(dt) {
     const vevar = anvandNere && interaktor.hovrad === vevYta && S.kvarn.tratt > 0 && !extruderFull();
     if (anvandNere && interaktor.hovrad === vevYta && extruderFull() && !fullVarnad) { fullVarnad = true; ui.toast(`Rullhållaren är full (${utlagerKap()} ${utlagerKap() === 1 ? 'rulle' : 'rullar'}) – ta rullarna först. Ali har större rullhållare.`, 'fel'); }
     if (vevar) {
-      S.kvarn.prog += dt * (1 + trimNiva('kvarn') * 0.25) / (VEV_TID * nastaGram() / 200);
+      S.kvarn.prog += dt * (1 + trimNiva('kvarn') * 0.25) * (harProto('m_nano') ? 1.6 : 1) / (VEV_TID * nastaGram() / 200);
       vev.rotation.x += dt * 10; malAnimation = 0.15;
       if (Math.random() < dt * 8) ljud.borsta();
       if (S.kvarn.prog >= 1) flaskaMald();
@@ -4382,12 +4567,13 @@ function uppdatera(dt) {
   if (jetEld.visible) { const f = 0.8 + Math.random() * 0.5; jetEld.scale.set(f, 1, 1); jetDel.userData.ljus.intensity = 2 + Math.random() * 2; if (Math.random() < dt * 10) ljud.borsta(); } else jetDel.userData.ljus.intensity = 0;
   if (motorKor) {
     S.strom -= MOTOR_STROM * motorStrom() * dt;
-    S.kvarn.prog += dt * motorFart() * (1 + trimNiva('kvarn') * 0.25) / (MOTOR_TID * nastaGram() / 200);
+    S.kvarn.prog += dt * motorFart() * (1 + trimNiva('kvarn') * 0.25) * (harProto('m_nano') ? 1.6 : 1) / (MOTOR_TID * nastaGram() / 200);
     flakt.rotation.y += dt * 20; vev.rotation.x += dt * 6; malAnimation = 0.1;
     if (S.kvarn.prog >= 1) flaskaMald();
   }
   // matarbandet flyttar skräp från bingen till tratten (drar lite ström)
   if (!STEG[S.steg] && !sover) { const fore = S.dagTid || 0; S.dagTid = Math.min(DAG_LANGD, fore + dt); if (Math.floor(fore / 30) !== Math.floor(S.dagTid / 30)) sparaSnart(); }
+  if (harProto('m_fusion')) S.strom = Math.min(stromMax(), S.strom + dt * 0.8);
   uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraMalPil(); for (const sk of skrivare) visaSpolar(sk);
   if (S.kvarn.band) {
     const kor = S.kvarn.binge.length > 0 && S.kvarn.tratt < TRATT_MAX && S.strom > 0.5;

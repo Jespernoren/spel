@@ -79,6 +79,13 @@ export class Spelare {
   get musLast() { return document.pointerLockElement === this.dom; }
 
   titta(dx, dy) {
+    // webbläsare (särskilt Chrome med pekarlås) skickar ibland en felaktig jätterörelse – oftast åt motsatt håll –
+    // så att vyn hoppar tillbaka. Sådana spikar hoppas över.
+    const sist = this._sistDx || 0, t = performance.now(), nyss = t - (this._sistT || 0) < 60;
+    this._sistT = t;
+    if (Math.abs(dx) > 120 && Math.abs(dx) > Math.abs(sist) * 4 + 60 && nyss) return;
+    if (Math.abs(dy) > 120 && Math.abs(dx) < 5 && nyss) return;
+    this._sistDx = dx;
     this.yaw -= dx * this.kanslighet;
     this.pitch -= dy * this.kanslighet;
     this.pitch = Math.max(-1.45, Math.min(1.45, this.pitch));
