@@ -705,6 +705,7 @@ magnetStrale.position.set(0.3, -0.27, -0.85); magnetStrale.visible = false; kame
 
 // ---------- Fasta saker i lägret ----------
 const fasta = []; // { x, z, radie, box }
+const husHinder = [];   // väggar, trappa och loft i huset på ängen
 function fast(grupp, x, z, radie, rot = 0) {
   grupp.position.set(x, 0, z); grupp.rotation.y = rot; scen.add(grupp);
   grupp.updateMatrixWorld(true);
@@ -1957,7 +1958,8 @@ function uppdateraKablar() {
 }
 function uppdateraHinder() {
   if (batteriKlart) uppdateraKablar();
-  spelare.hinder = [...fasta.map((f) => f.box), ...tippHinder, ...skjulHinder, ...(S.tippNyckel ? [] : [grindHinder])];
+  spelare.stegHojd = 0.3;   // man kliver upp för trappsteg (huset på ängen)
+  spelare.hinder = [...fasta.map((f) => f.box), ...tippHinder, ...skjulHinder, ...(S.tippNyckel ? [] : [grindHinder]), ...(S.mark?.agt?.includes('huset') ? husHinder : [])];
   for (const p of placerade) {
     if (p.pa || !['bord', 'sol', 'bank'].includes(p.typ)) continue;
     p.mesh.updateMatrixWorld(true);
@@ -4017,7 +4019,7 @@ function trivsel() {
   const antal = {};
   const saker = (S.bod ? MASKINER.gamingbod.trivsel : 0) + placerade.reduce((s, p) => { const n = antal[p.typ] = (antal[p.typ] || 0) + 1; return s + (info(p.typ).trivsel || 0) * 0.6 ** (n - 1); }, 0) + Object.keys(S.hem || {}).reduce((s, id) => s + (id === 'vaggar' ? 0 : id === 'skarm' ? 6 : id === 'fonster' ? fonsterLista().length * MASKINER.fonster.trivsel : MASKINER[id]?.trivsel || 0), 0) + (S.hem?.vagg || 0) * MASKINER.vaggar.trivsel;
   const ren = Math.max(0, 1 - skrapLista.filter((x) => !paTippen(x.position.x, x.position.z)).length / ANTAL_SKRAP);
-  return Math.round(saker + ren * 30 + (S.bodTapet ? 15 + S.bodTapet * 5 : 0) + (S.hem?.tapet ? S.hem.tapet * 5 : 0) + (agerMark('egen') ? 40 : 0) - (S.frusDag === S.dag ? 40 : 0));
+  return Math.round(saker + ren * 30 + (S.bodTapet ? 15 + S.bodTapet * 5 : 0) + (S.hem?.tapet ? S.hem.tapet * 5 : 0) + (agerMark('egen') ? 40 : 0) + (agerMark('huset') ? 150 : 0) - (S.frusDag === S.dag ? 40 : 0));
 }
 
 // ---------- Menyer (använder FpUI:s butiksruta) ----------
@@ -4973,7 +4975,7 @@ function prata(vem, text) {
       if (nr !== pratStopp) return;   // något annat har börjat prata
       const url = URL.createObjectURL(new Blob([buf.slice(fran, fran + langd)], { type: 'audio/mpeg' }));
       rostLjud = new Audio(url); rostLjud.volume = 0.95; rostLjud.onended = () => { URL.revokeObjectURL(url); if (pratarVem === vem) pratarTill = 0; };
-      rostLjud.onloadedmetadata = () => { if (pratarVem === vem && isFinite(rostLjud.duration)) pratarTill = performance.now() + rostLjud.duration * 1000; };
+      { const lj = rostLjud; lj.onloadedmetadata = () => { if (pratarVem === vem && isFinite(lj.duration)) pratarTill = performance.now() + lj.duration * 1000; }; }
       rostLjud.play().catch(() => pratljud(vem, text));
     }).catch(() => pratljud(vem, text));
     return;
@@ -5342,6 +5344,7 @@ const MARK_TOMTER = [
   { id: 'tippkant', namn: 'Marken runt tippen', text: 'Bengt-Åkes sista bit: stenig, skräpig och väster om tippen. Gott om plats för allt som är för fult för gården.', pris: 60000, respekt: 70, kraver: 'egen', rekt: { minX: TIPP.x - TIPP.r - 18, maxX: -TOMT, minZ: -TOMT, maxZ: TOMT } },
   { id: 'tippen', namn: 'Rolfs soptipp', text: 'Kommunen vill bli av med tippen. Rolf får fortsätta köra sopbilen – men nu åt dig. Han säger att det känns "konstigt men bra".', pris: 120000, respekt: 110, kraver: 'tippkant' },
   { id: 'rolfhus', namn: 'Garage och hus åt Rolf', text: 'Ett garage för sopbilen och ett litet hus med veranda åt Rolf och Kajsa. Han har bott i en husvagn på tippen sen 2009.', pris: 80000, respekt: 140, kraver: 'tippen' },
+  { id: 'huset', namn: 'Ett riktigt hus på ängen', text: 'Två rum, kök, soffa och en trappa upp till en sovloft. Med riktiga fönster. Inget skjul längre – ett HUS.', pris: 60000, respekt: 50, kraver: 'oster' },
   { id: 'norr', namn: 'Backen i norr', text: 'Lite skog, lite sten. Gott om plats för allt som inte får plats någon annanstans. 42 × 22 meter.', pris: 35000, respekt: 45, kraver: 'egen', rekt: { minX: -TOMT, maxX: TOMT, minZ: -TOMT - 22, maxZ: -TOMT } },
 ];
 S.mark = { agt: [], tips: false, ...S.mark };
@@ -5361,7 +5364,7 @@ function uppdateraMark() {
   if (tillgang('tippkant')) g.minX = TIPP.x - TIPP.r - 20;
   for (const t of MARK_TOMTER) if (t.rekt && agerMark(t.id)) miljo.rojUt(t.rekt);
   for (const f of FYND) if (f.g) f.g.visible = tillgang(f.mark) && !S.fynd.includes(f.id);
-  rolfHus.visible = agerMark('rolfhus');
+  rolfHus.visible = agerMark('rolfhus'); storHus.visible = agerMark('huset');
   spelare.granser = g;
   miljo.byggStaket(g); oppnadGrans = JSON.stringify(g);
   markTavla.visible = S.mark.tips;
@@ -5401,6 +5404,7 @@ const ROLF_MARK = {
   oster: 'Ängen e din. Bengt-Åke frågade vad du ska ha den till. Ja sa solpaneler. Han trodde ja sa "sol-paella". Han va glad ändå. /R',
   tippkant: 'Marken runt tippen e din. Bengt-Åke sa att han e glad att bli av me den. Han kalla den "stenåkern". Ja kallar den "framtiden". /R',
   tippen: 'Du äger tippen nu. Ja kör fortfarande sopbilen. Men nu e du chefen. De känns konstigt. Men bra. Kajsa bryr sej int. /R',
+  huset: 'Du har byggt ett HUS. Me trappa. Ja har aldrig gått i en trappa i ett hus som ja känner nån som äger. Ja kommer på inflyttningsfest. Ja tar me Kajsa. /R',
   rolfhus: 'Ja vet int va ja ska säja. Ja har bott i husvagnen sen 2009. Nu har ja en VERANDA. Kajsa har redan pinkat i hörnet. De betyder att hon gillar de. Tack. /R',
   norr: 'Backen e din. Bengt-Åke sa att de finns en gammal Volvo begravd där nånstans. Ja sa att du gillar skräp. Han skratta. /R',
 };
@@ -5409,8 +5413,9 @@ function kopMark(id) {
   if (!t || agerMark(id) || S.mynt < t.pris || S.respekt < t.respekt || (t.kraver && !agerMark(t.kraver))) return;
   S.mynt -= t.pris; S.mark.agt.push(id); ljud.stor(); konfetti(80); ui.stangButik();
   uppdateraMark();
-  andraRespekt(id === 'egen' ? 10 : id === 'rolfhus' ? 25 : 5, id === 'egen' ? 'Äger din egen mark' : id === 'rolfhus' ? 'Byggde ett hus åt Rolf' : 'Köpte ' + t.namn.toLowerCase());
-  ui.toast(id === 'rolfhus' ? '🏠 Rolf har ett riktigt hus! Garaget står vid tippen.' : id === 'tippen' ? '🗑️ Tippen är din. Rolf kör åt dig nu.' : id === 'egen' ? '🏡 Du äger marken du bor på! Inte längre en hobo dweller.' : `🌲 ${t.namn} är din! Gärdesgården har flyttats – där får du ställa saker nu.`, 'guld');
+  andraRespekt(id === 'egen' ? 10 : id === 'rolfhus' ? 25 : id === 'huset' ? 15 : 5, id === 'egen' ? 'Äger din egen mark' : id === 'rolfhus' ? 'Byggde ett hus åt Rolf' : 'Köpte ' + t.namn.toLowerCase());
+  if (id === 'huset') { uppdateraHinder(); setTimeout(() => sms('mamma', 'Pappa säger att du har byggt ett HUS. Med TRAPPA. Är det säkert?? Har du räcke?? Jag skickar en brandvarnare. Och sylt.'), 9000); }
+  ui.toast(id === 'huset' ? '🏡 Huset står klart på ängen! Två rum och en trappa upp till sovloftet.' : id === 'rolfhus' ? '🏠 Rolf har ett riktigt hus! Garaget står vid tippen.' : id === 'tippen' ? '🗑️ Tippen är din. Rolf kör åt dig nu.' : id === 'egen' ? '🏡 Du äger marken du bor på! Inte längre en hobo dweller.' : `🌲 ${t.namn} är din! Gärdesgården har flyttats – där får du ställa saker nu.`, 'guld');
   setTimeout(() => sms('rolf', ROLF_MARK[id]), 2500);
   if (id === 'egen') setTimeout(() => sms('mamma', 'Pappa säger att du har KÖPT MARK?! Hur?? Vems?? Har du skrivit på något?? Skicka papperen till mig så läser jag.'), 9000);
   sparaSnart();
@@ -5526,6 +5531,52 @@ function kollaTillgang(dt) {
   markKollTid += dt; if (markKollTid < 2) return; markKollTid = 0;
   const fore = oppnadGrans; uppdateraMark();
   if (fore && fore !== oppnadGrans) ui.toast('🚧 Gärdesgården har flyttats ut! Du får utforska ny mark – men bara ställa saker på mark du äger.', 'guld');
+}
+// ---------- Ett riktigt hus på ängen: två rum, kök, soffa och en trappa upp till en sovloft ----------
+const storHus = new THREE.Group();
+{
+  const HX = TOMT + 11, HZ = -6, W = 8, D = 6, VAN = 2.6, H = 5.0, T = 0.15;
+  const vagg = mat(0xc84a3a), vit = mat(0xf2efe6), golv = mat(0xb08858), tra = mat(0x8a6a3f), tak = mat(0x3a3a3a);
+  const del = (w, h, d, m, x, y, z, hinder = true) => {
+    const b = box(w, h, d, m); b.position.set(x, y, z); storHus.add(b);
+    if (hinder) husHinder.push(new THREE.Box3(new THREE.Vector3(HX + x - w / 2, y - h / 2, HZ + z - d / 2), new THREE.Vector3(HX + x + w / 2, y + h / 2, HZ + z + d / 2)));
+    return b;
+  };
+  // golv (inte hinder – man går på det)
+  del(W, 0.06, D, golv, 0, 0.03, 0, false);
+  // ytterväggar: falurött med vita knutar, dörröppning mot tomten (väster)
+  del(W, H, T, vagg, 0, H / 2, -D / 2); del(W, H, T, vagg, 0, H / 2, D / 2); del(T, H, D, vagg, W / 2, H / 2, 0);
+  del(T, H, (D - 1.2) / 2, vagg, -W / 2, H / 2, -D / 4 - 0.3); del(T, H, (D - 1.2) / 2, vagg, -W / 2, H / 2, D / 4 + 0.3); del(T, H - 2.1, 1.2, vagg, -W / 2, 2.1 + (H - 2.1) / 2, 0);
+  for (const [x, z] of [[-W / 2, -D / 2], [W / 2, -D / 2], [-W / 2, D / 2], [W / 2, D / 2]]) del(0.22, H + 0.1, 0.22, vit, x, (H + 0.1) / 2, z, false);
+  // ljusa innerväggar (panel) så att det inte är knallrött inne
+  const panel = mat(0xefe6d2);
+  del(W - 0.3, H - 0.1, 0.03, panel, 0, H / 2, -D / 2 + 0.09, false); del(W - 0.3, H - 0.1, 0.03, panel, 0, H / 2, D / 2 - 0.09, false); del(0.03, H - 0.1, D - 0.3, panel, W / 2 - 0.09, H / 2, 0, false);
+  del(0.03, H - 0.1, (D - 1.2) / 2 - 0.15, panel, -W / 2 + 0.09, H / 2, -D / 4 - 0.35, false); del(0.03, H - 0.1, (D - 1.2) / 2 - 0.15, panel, -W / 2 + 0.09, H / 2, D / 4 + 0.35, false);
+  // fönster med vita karmar
+  for (const [x, z, ry] of [[-2, D / 2 + 0.08, 0], [2, D / 2 + 0.08, 0], [-2, -D / 2 - 0.08, 0], [2, -D / 2 - 0.08, 0], [2, D / 2 + 0.08, 0], [W / 2 + 0.08, 0, Math.PI / 2]]) for (const y of [1.4, 3.9]) {
+    const f = new THREE.Group(); f.position.set(x, y, z); f.rotation.y = ry; storHus.add(f);
+    f.add(at(box(1.0, 1.1, 0.04, vit), 0, 0, 0), at(box(0.86, 0.96, 0.05, mat(0x9ad0ff, { emissive: 0x1a2a3a })), 0, 0, 0.005), at(box(0.04, 0.96, 0.06, vit), 0, 0, 0.01), at(box(0.86, 0.04, 0.06, vit), 0, 0, 0.01));
+  }
+  // innervägg mellan rummen (öppning vid trappan)
+  del(T, VAN, D - 1.6, vit, 0, VAN / 2, -0.8);
+  // trappa längs södra väggen i östra rummet: tio steg à 0,26 m
+  for (let i = 0; i < 10; i++) { del(0.32, 0.26 * (i + 1), 0.8, tra, 0.6 + i * 0.32, 0.13 * (i + 1), D / 2 - 0.55); husHinder[husHinder.length - 1].trapp = true; }
+  // sovloft över östra rummet
+  del(W / 2 - 0.2, 0.12, D - 1.3, golv, W / 4, VAN, -0.55);
+  del(0.06, 0.9, D - 1.3, tra, 0.12, VAN + 0.5, -0.55, false);           // räcke
+  // tak: sadeltak
+  const t1 = box(W + 0.8, 0.12, D / 2 + 0.7, tak); t1.position.set(0, H + 0.8, -D / 4); t1.rotation.x = -0.48; storHus.add(t1);
+  const t2 = box(W + 0.8, 0.12, D / 2 + 0.7, tak); t2.position.set(0, H + 0.8, D / 4); t2.rotation.x = 0.48; storHus.add(t2);
+  { const tri = new THREE.Shape(); tri.moveTo(-D / 2, 0); tri.lineTo(D / 2, 0); tri.lineTo(0, 1.55); tri.lineTo(-D / 2, 0);
+    for (const x of [-W / 2, W / 2]) { const g = new THREE.Mesh(new THREE.ExtrudeGeometry(tri, { depth: 0.15, bevelEnabled: false }), vagg); g.rotation.y = Math.PI / 2; g.position.set(x - 0.075, H, 0); storHus.add(g); } }
+  // inredning: kök och soffa nere, säng och matta på loftet
+  del(2.2, 0.9, 0.6, vit, -2.6, 0.45, -D / 2 + 0.4); del(2.2, 0.06, 0.62, mat(0x555555), -2.6, 0.93, -D / 2 + 0.4, false);
+  del(1.8, 0.45, 0.8, mat(0x2e6b8a), -2.2, 0.25, 1.6); del(1.8, 0.5, 0.2, mat(0x2e6b8a), -2.2, 0.6, 1.95, false);
+  del(1.9, 0.4, 1.0, mat(0xf0e6d0), 2.6, VAN + 0.26, -1.9, false); del(1.9, 0.5, 0.1, tra, 2.6, VAN + 0.4, -2.45, false);
+  del(1.6, 0.02, 1.2, mat(0xb03a3a), 1.6, VAN + 0.07, -0.4, false);
+  const lampa = new THREE.PointLight(0xffd9a0, 6, 9); lampa.position.set(0, VAN - 0.3, 0); storHus.add(lampa);
+  storHus.position.set(HX, 0, HZ); storHus.visible = false; scen.add(storHus);
+  storHus.traverse((o) => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
 }
 // Rolfs garage och hus vid tippen
 const rolfHus = new THREE.Group();
@@ -5773,6 +5824,6 @@ function kapitelSlut() {
 }
 
 // för automatiska tester
-window.__printahem = { startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });

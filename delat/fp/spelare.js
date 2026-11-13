@@ -12,6 +12,7 @@ export class Spelare {
     this.pos = new THREE.Vector3(...(opt.start || [0, 0, 0]));
     this.hojd = opt.hojd ?? 1.6;         // ögonhöjd (meter)
     this.radie = opt.radie ?? 0.35;      // kroppens radie för krockar
+    this.stegHojd = opt.stegHojd ?? 0.05;  // hur högt man kliver upp automatiskt (t.ex. trappsteg)
     this.fart = opt.fart ?? 4;           // meter/sekund
     this.springFaktor = opt.springFaktor ?? 1.7;
     this.hoppKraft = opt.hopp ?? 5;
@@ -160,7 +161,7 @@ export class Spelare {
     const p = this.pos, r = this.radie * 0.6;
     let h = 0;
     for (const b of this.hinder) {
-      if (b.max.y > h && b.max.y <= p.y + 0.05 &&
+      if (b.max.y > h && b.max.y <= p.y + this.stegHojd &&
           p.x > b.min.x - r && p.x < b.max.x + r && p.z > b.min.z - r && p.z < b.max.z + r) h = b.max.y;
     }
     return h;
@@ -169,9 +170,10 @@ export class Spelare {
   #krock() {
     const p = this.pos, r = this.radie;
     for (const b of this.hinder) {
-      if (p.x > b.min.x - r && p.x < b.max.x + r &&
-          p.z > b.min.z - r && p.z < b.max.z + r &&
-          p.y < b.max.y - 0.3 && p.y + this.hojd > b.min.y) return true;
+      const rr = b.trapp ? 0.05 : r;   // trappsteg krockar bara med mittpunkten, annars fastnar man på nästa steg
+      if (p.x > b.min.x - rr && p.x < b.max.x + rr &&
+          p.z > b.min.z - rr && p.z < b.max.z + rr &&
+          p.y < b.max.y - Math.max(0.3, this.stegHojd) && p.y + this.hojd > b.min.y) return true;
     }
     return false;
   }
