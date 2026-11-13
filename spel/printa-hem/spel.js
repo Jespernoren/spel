@@ -1005,7 +1005,7 @@ function byggRullstall(n) {
   g.add(at(box(0.5, 0.04, 0.3, mork), 0, 0.02, 0));
   for (let i = 0; i < 2; i++) { const ax = cyl(0.015, 0.015, 0.46, mat(0x999999, { metalness: 0.6 }), 6); ax.rotation.z = Math.PI / 2; ax.position.y = 0.3 + i * 0.4; g.add(ax); }
   g.userData.spolar = [];
-  for (let i = 0; i < n; i++) { const sp = cyl(0.11, 0.11, 0.09, mat([0x4cc9f0, 0xf28c28, 0x7fc8f8, 0xb23a2a][i % 4]), 14); sp.rotation.z = Math.PI / 2; sp.position.set(i % 2 ? 0.09 : -0.09, 0.3 + Math.floor(i / 2) * 0.4, 0); sp.visible = false; g.add(sp); g.userData.spolar.push(sp); }
+  for (let i = 0; i < n; i++) { const sp = filamentSpole([0x4cc9f0, 0xf28c28, 0x7fc8f8, 0xb23a2a][i % 4], 0.11, 0.09); sp.rotation.y = Math.PI / 2; sp.position.set(i % 2 ? 0.09 : -0.09, 0.3 + Math.floor(i / 2) * 0.4, 0); sp.visible = false; g.add(sp); g.userData.spolar.push(sp); }
   return g;
 }
 const rullstallar = [];
@@ -1644,6 +1644,12 @@ function skapaRiktig(m) {
     for (let y = 0.06; y < 0.46; y += 0.08) g.add(at(box(0.37, 0.02, 0.23, mork), 0, y, 0));
     for (const x of [-0.1, 0.1]) { const rem = box(0.04, 0.42, 0.02, mat(0x333333)); rem.position.set(x, 0.24, 0.12); g.add(rem); }
     g.add(at(box(0.38, 0.03, 0.24, mork), 0, 0.47, 0));
+  } else if (m === 'vaggar') {
+    // en enda isolerskiva, inte hela huset
+    g = new THREE.Group();
+    g.add(at(box(0.62, 0.9, 0.06, mat(0xe8dcc0, { roughness: 0.95 })), 0, 0.45, 0));
+    for (const y of [0.22, 0.45, 0.68]) g.add(at(box(0.63, 0.012, 0.062, mat(0xcdbf9f)), 0, y, 0));
+    g.add(at(box(0.012, 0.9, 0.062, mat(0xcdbf9f)), 0, 0.45, 0));
   } else if (MASKINER[m]?.hem && HEM_DELAR[m]) { g = new THREE.Group(); const c = HEM_DELAR[m].clone(true); c.visible = true; c.position.set(0, 0, 0); c.rotation.set(0, 0, 0); c.traverse((x) => { x.visible = true; }); g.add(c);
   } else if (m === 'karra' || m === 'bord' || m === 'sol' || m === 'bank' || SKRIVARTYP[m]) g = skapaMaskin(m);
   return g;
@@ -1982,6 +1988,12 @@ function placera(p, nytt = true) {
   } else {
     mesh.position.set(p.x, 0, p.z); mesh.rotation.y = vinkel(p); scen.add(mesh);
   }
+  // fågelholken sitter uppe på en stolpe – fåglarna vill ha det högt
+  if (typ === 'fagelholk' && !p.pa) {
+    mesh.children.forEach((c) => { c.position.y += 1.25; });
+    const st = box(0.07, 1.3, 0.07, mat(0x7a5a3a, { roughness: 0.9 })); st.position.y = 0.65; mesh.add(st);
+    const fot = box(0.22, 0.04, 0.22, mat(0x5a4029)); fot.position.y = 0.02; mesh.add(fot);
+  }
   p.mesh = mesh;
   placerade.push(p);
   if (SKRIVARTYP[typ]) {
@@ -2054,6 +2066,20 @@ function uppdateraHinder() {
 // ---------- Skrivare ----------
 // spolstället bredvid skrivaren: fler spolar ju större hållare
 const SPOL_FARG = [0x3de3ff, 0xff6b6b, 0x7dffb0, 0xffd43b, 0xc77dff];
+// en riktig filamentspole: svarta gavlar, lindat filament i färg (med lindningsränder) och nav med hål
+function filamentSpole(farg, R = 0.09, B = 0.07) {
+  const g = new THREE.Group();
+  for (const z of [-B / 2, B / 2]) { const f = cyl(R, R, 0.008, mat(0x2a2a2e, { roughness: 0.5 }), 20); f.rotation.x = Math.PI / 2; f.position.z = z; g.add(f); }
+  const c = document.createElement('canvas'); c.width = 64; c.height = 64; const x = c.getContext('2d');
+  x.fillStyle = '#' + new THREE.Color(farg).getHexString(); x.fillRect(0, 0, 64, 64);
+  for (let i = 0; i < 64; i += 4) { x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(0, i, 64, 1.5); x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(0, i + 2, 64, 1); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const lind = cyl(R * 0.86, R * 0.86, B - 0.01, new THREE.MeshStandardMaterial({ map: t, roughness: 0.45 }), 20); lind.rotation.x = Math.PI / 2; g.add(lind);
+  const nav = cyl(R * 0.32, R * 0.32, B + 0.004, mat(0xd8d8d8), 12); nav.rotation.x = Math.PI / 2; g.add(nav);
+  const hal = cyl(R * 0.14, R * 0.14, B + 0.01, mat(0x111111), 10); hal.rotation.x = Math.PI / 2; g.add(hal);
+  g.userData.lindning = lind;
+  return g;
+}
 function ritaSpolstall(sk) {
   if (sk.spolstall) sk.mesh.remove(sk.spolstall);
   const platser = SPOL_MAX[sk.spolNiva || 0] / RULLE, perRad = 4, rader = Math.ceil(platser / perRad);
@@ -2065,7 +2091,7 @@ function ritaSpolstall(sk) {
   for (let i = 0; i < platser; i++) {
     const rad = Math.floor(i / perRad), kol = i % perRad, y = 0.2 + rad * 0.21, z = -0.27 + kol * 0.18;
     if (kol === 0) { const ax = cyl(0.012, 0.012, 0.74, mat(0x999999), 6); ax.rotation.x = Math.PI / 2; ax.position.y = y; g.add(ax); }
-    const sp = cyl(0.085, 0.085, 0.07, mat(SPOL_FARG[i % SPOL_FARG.length]), 16); sp.rotation.x = Math.PI / 2; sp.position.set(0, y, z); g.add(sp);
+    const sp = filamentSpole(SPOL_FARG[i % SPOL_FARG.length]); sp.position.set(0, y, z); g.add(sp);
     spolar.push(sp);
   }
   g.userData.spolar = spolar; g.userData.visar = -1;
@@ -2077,7 +2103,7 @@ function visaSpolar(sk) {
   const g = sk.spolstall; if (!g || g.userData.visar === sk.fil) return; g.userData.visar = sk.fil;
   g.userData.spolar.forEach((sp, i) => {
     const kvar = Math.max(0, Math.min(1, sk.fil / RULLE - i));
-    sp.visible = kvar > 0.02; const r = 0.35 + 0.65 * kvar; sp.scale.set(r, 1, r);
+    sp.visible = kvar > 0.02; const r = 0.4 + 0.6 * kvar; sp.userData.lindning.scale.set(r, 1, r);
   });
 }
 function laggTillSkrivare(id, gen, mesh, sparat) {
@@ -3305,7 +3331,7 @@ function stallNer() {
   const p = { id: 'p' + (S.nastaId++), typ, x: spoke.x, z: spoke.z, r: Math.round(spoke.rot / 2) % 4, r8: spoke.rot };
   if (spoke.bord) { p.pa = spoke.bord.id; p.x = spoke.bord.x; p.z = spoke.bord.z; }
   placera(p);
-  ljud.placera(); ui.toast(`${info(typ).ikon} ${info(typ).namn} på plats!`, 'bra');
+  ljud.placera(); ui.toast(`${info(typ).ikon} ${info(typ).namn} på plats!${info(typ).trivsel ? ` 😊 +trivsel` : ''}`, 'bra');
   return true;
 }
 addEventListener('keydown', (e) => {
@@ -5160,6 +5186,44 @@ function maskinStopp() {
   if (L.some((x) => /ström/.test(x.varfor) || /Batteriet/.test(x.varfor))) L.push({ obj: cykel, y: 1.5, typ: 'hit', rub: 'Trampa här!', varfor: `Batteri ${Math.floor(S.strom)}/${stromMax()}`, fix: 'Klicka och håll på cykeln' });
   return L;
 }
+// ---------- Flaskhalsen: vad stoppar oftast? ----------
+// Varje sekund en maskin står still räknas på orsaken. Det som stoppar mest idag visas under uppdragen,
+// med vad du kan bygga för att slippa det – så du vet vad som är värt att fixa härnäst.
+const FLASK_FIX = {
+  'Batteriet är tomt': () => harPlacerat('sol') ? 'Fler solpaneler eller ett större batteri' : 'Bygg en solpanel (ritning hos Ali) – då laddas det själv',
+  'Motorn har ingen ström': () => harPlacerat('sol') ? 'Fler solpaneler eller ett större batteri' : 'Bygg en solpanel (ritning hos Ali) – då laddas det själv',
+  'Slut på filament': () => (S.rullstall || 0) < 3 ? 'Mal mer i förväg – ett rullställ vid extrudern rymmer fler rullar' : 'Större spolhållare på skrivaren, eller mal mer i förväg',
+  'Rullhållaren är full': () => (S.rullstall || 0) < 3 ? 'Bygg ett rullställ vid extrudern (ritning hos Ali)' : 'Hämta rullarna oftare',
+  'Ingen plats för mer skräp': () => S.kvarn.motor ? 'Större tratt hos Ali' : 'Kvarnmotor hos Ali – då mal den själv',
+};
+const FLASK_NAMN = { 'Batteriet är tomt': 'Ström till skrivaren', 'Motorn har ingen ström': 'Ström till kvarnen', 'Slut på filament': 'Filament till skrivaren', 'Rullhållaren är full': 'Fulla rullar vid kvarnen', 'Ingen plats för mer skräp': 'Full tratt' };
+let flaskT = 0, flaskForra = new Set();
+const flaskEl = document.createElement('div'); flaskEl.className = 'hud-flask'; flaskEl.style.display = 'none'; document.body.appendChild(flaskEl);
+function matFlaskhals(dt) {
+  flaskT += dt; if (flaskT < 0.25) return; const steg = flaskT; flaskT = 0;
+  if (!S.flask || S.flask.dag !== S.dag) S.flask = { dag: S.dag, tid: {}, ggr: {} };
+  const L = ui.igang ? maskinStopp().filter((x) => x.typ === 'stopp') : [];
+  const nu = new Set();
+  for (const x of L) {
+    const k = x.varfor; nu.add(x.rub + '|' + k);
+    S.flask.tid[k] = (S.flask.tid[k] || 0) + steg;
+    if (!flaskForra.has(x.rub + '|' + k)) S.flask.ggr[k] = (S.flask.ggr[k] || 0) + 1;
+  }
+  flaskForra = nu;
+  // panel: det som står still just nu + dagens största flaskhals
+  const topp = Object.entries(S.flask.tid).sort((a, b) => b[1] - a[1])[0];
+  const visaTopp = topp && topp[1] >= 20 && (S.dag || 1) >= 2 || topp && topp[1] >= 45;
+  let h = '';
+  if (L.length) h += `<div class="nu"><b>⛔ Står still</b>${L.slice(0, 2).map((x) => `<div>${rens(x.rub.replace(' står still', ''))}: ${rens(x.varfor.toLowerCase())}</div>`).join('')}</div>`;
+  if (visaTopp) {
+    const min = topp[1] / 60, tidT = min >= 1 ? `${Math.round(min)} min` : `${Math.round(topp[1])} s`;
+    h += `<div class="topp"><b>🍾 Flaskhals idag</b><div>${rens(FLASK_NAMN[topp[0]] || topp[0])} · stod still ${tidT} (${S.flask.ggr[topp[0]] || 1} ggr)</div><em>Fixa: ${rens(FLASK_FIX[topp[0]]?.() || '')}</em></div>`;
+  }
+  if (flaskEl.dataset.h !== h) { flaskEl.dataset.h = h; flaskEl.innerHTML = h; }
+  flaskEl.style.display = h ? '' : 'none';
+  const mEl = malText.parentElement, r = mEl.getBoundingClientRect(), topPx = Math.round((r.height ? r.bottom : 200) + 8) + 'px';
+  if (flaskEl.style.top !== topPx) flaskEl.style.top = topPx;
+}
 function ritaStopp() {
   // skyltarna trappas ner när du lärt dig: dag 1 allt, dag 2 kortare, dag 3–4 bara röda stopp, sedan inga
   const dagN = S.dag || 1;
@@ -5745,7 +5809,7 @@ function uppdatera(dt) {
   // matarbandet flyttar skräp från bingen till tratten (drar lite ström)
   if (!STEG[S.steg] && !sover) { const fore = S.dagTid || 0; S.dagTid = Math.min(DAG_LANGD, fore + dt); if (Math.floor(fore / 30) !== Math.floor(S.dagTid / 30)) sparaSnart(); }
   if (harProto('m_fusion')) S.strom = Math.min(stromMax(), S.strom + dt * 0.8);
-  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraBlick(dt); uppdateraMalPil(); ritaStopp(); ritaPlatsLappar(); korBud(); kollaPuffar(dt); visaRullstall(); kollaRaddning(dt); for (const sk of skrivare) visaSpolar(sk);
+  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraBlick(dt); uppdateraMalPil(); ritaStopp(); matFlaskhals(dt); ritaPlatsLappar(); korBud(); kollaPuffar(dt); visaRullstall(); kollaRaddning(dt); for (const sk of skrivare) visaSpolar(sk);
   if (S.kvarn.band) {
     const kor = S.kvarn.binge.length > 0 && S.kvarn.tratt < TRATT_MAX && S.strom > 0.5;
     if (kor) {

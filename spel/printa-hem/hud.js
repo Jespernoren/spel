@@ -86,6 +86,12 @@ export const HUD_CSS = `
 .ali-niva-rub .ui-knapp{min-width:0;padding:7px 12px;font-size:13.5px}
 .ali-niva.kop .ui-sektion span{color:#ffc2cb}
 .ph-ali-panel .ui-ruta .pris.minus{color:#ffb3bd}
+.hud-flask{position:fixed;left:max(12px,env(safe-area-inset-left));z-index:21;width:280px;box-sizing:border-box;pointer-events:none;font:700 13px/1.35 system-ui;color:#fff;display:flex;flex-direction:column;gap:6px}
+.hud-flask>div{padding:8px 12px 9px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.88);border-left:5px solid var(--lingon);box-shadow:0 6px 16px rgba(0,0,0,.3)}
+.hud-flask b{display:block;font:900 11px/1.2 system-ui;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+.hud-flask .nu{border-left-color:var(--lingon);animation:hudStuds .35s cubic-bezier(.3,1.6,.5,1)}.hud-flask .nu b{color:#ff9aa8}
+.hud-flask .topp{border-left-color:#e0a82e}.hud-flask .topp b{color:#ffd37a}
+.hud-flask em{display:block;margin-top:4px;font-style:normal;font-weight:800;color:#9fe8ff}
 .hud-stopplager{position:fixed;inset:0;pointer-events:none;z-index:19}
 .hud-stopp{position:absolute;left:0;top:0;transform-origin:50% 100%;min-width:120px;max-width:260px;padding:7px 11px 8px;border-radius:9px;text-align:center;color:#fff;background:${LAGER},var(--lingon);border-bottom:4px solid #7a1222;box-shadow:0 8px 20px rgba(0,0,0,.4);font-family:system-ui}
 .hud-stopp::after{content:"";position:absolute;left:50%;bottom:-11px;margin-left:-7px;border:7px solid transparent;border-top-color:#7a1222}
