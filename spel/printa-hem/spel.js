@@ -3540,8 +3540,14 @@ function sms(fran, text, id) {
 function smsFram(fran, text, id) {
   // syns direkt som en bubbla i inkorgen uppe till höger – uppläsningen väntar på sin tur i kön
   const m = { fran, text, ny: true }; S.sms.push(m); S.sms = S.sms.slice(-40); S.olasta = S.sms.filter((x) => x.ny).length; sparaSnart();
-  vibrera(); ljud.plock();
-  inkorg({ vem: fran, titel: AVSANDARE[fran]?.namn || fran, text, klar: () => { m.ny = false; smsLast(fran); } });
+  inkorg({ vem: fran, titel: AVSANDARE[fran]?.namn || fran, text, fore: visaTabTips, klar: () => { m.ny = false; smsLast(fran); } });
+}
+function triTon() {
+  try { const c = ljudCtx(); if (!c) return; [[1318.5, 0], [1046.5, 0.13], [1568, 0.26]].forEach(([f, d]) => {
+    const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + d; o.type = 'sine'; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + 0.4); }); } catch {}
+  vibrera();
 }
 function vibrera() {
   const c = lac; if (!c) return;
@@ -4533,7 +4539,8 @@ function oppnaInkorg() {
   const olasta = S.sms.filter((m) => m.ny).length;
   const kropp = S.sms.length ? S.sms.slice().reverse().map((m, i) => rad({ bild: portratt(vemAvSms(m.fran), 40), titel: AVSANDARE[m.fran]?.namn || m.fran, text: m.text, ny: !!m.ny,
     hoger: knapp({ text: 'Läs upp', typ: 'neutral', attr: `data-lasupp="${S.sms.length - 1 - i}"`, ikon: 'pil' }) })).join('') : `<p class="ui-tom">Inga meddelanden än.</p>`;
-  oppnaRuta(panel({ ikon: 'telefon', titel: 'Meddelanden', sub: olasta ? `${olasta} nya – de läses upp en i taget` : 'Allt läst', kropp }), (el) => {
+  oppnaRuta(panel({ ikon: 'telefon', titel: 'Meddelanden', sub: olasta ? `${olasta} nya – de läses upp en i taget` : 'Allt läst', flikar: [['sms', 'telefon', 'Meddelanden'], ['dagbok', 'bok', 'Min dagbok'], ['mal', 'mal', 'Mål'], ['brev', 'brev', 'Brev'], ['spel', 'kugghjul', 'Spelet']], aktivFlik: 'sms', kropp }), (el) => {
+    el.querySelectorAll('[data-flik]').forEach((k) => { if (k.dataset.flik !== 'sms') k.onclick = () => { dagbokFlik = k.dataset.flik; ljud.plock(); oppnaDagbok(); }; });
     el.querySelectorAll('[data-lasupp]').forEach((k) => { k.onclick = () => { const m = S.sms[+k.dataset.lasupp]; if (m) prata(m.fran, m.text); }; });
   });
 }
@@ -4620,7 +4627,8 @@ function oppnaDagbok() {
     kropp = sektion('Spelet') + `<div class="ui-grid" style="gap:10px">${knapp({ text: 'Se introt igen', typ: 'neutral', attr: 'data-intro', ikon: 'film' })}${knapp({ text: 'Sparplatser', typ: 'neutral', attr: 'data-sparplatser', ikon: 'spara' })}${knapp({ text: `Röster: ${{ rost: 'riktiga röster', prat: 'pratljud', tal: 'datorns talsyntes', av: 'av' }[rostLage()]}`, typ: 'neutral', attr: 'data-roster', ikon: 'rost' })}</div>`
       + sektion('Styrning') + `<p class="ui-tom">WASD gå · mus titta · klick/E använd · klicka och håll = veva, trampa, gripa · hjulet/1–8 byt sak · H tomhänt · Shift+Q släpp allt · R vrid · I dina saker · M meddelanden · B dagbok · V röster</p>`;
   }
-  oppnaRuta(panel({ ikon: 'bok', titel: 'Dagbok', sub: `Dag ${S.dag}`, resurser: resurserHtml(), flikar: [['mal', 'mal', 'Mål'], ['dagbok', 'bok', 'Min dagbok'], ['brev', 'brev', 'Brev'], ['spel', 'kugghjul', 'Spelet']], aktivFlik: dagbokFlik, kropp }), (el) => {
+  oppnaRuta(panel({ ikon: 'bok', titel: 'Dagbok', sub: `Dag ${S.dag}`, resurser: resurserHtml(), flikar: [['sms', 'telefon', 'Meddelanden' + (S.olasta ? ` (${S.olasta})` : '')], ['dagbok', 'bok', 'Min dagbok'], ['mal', 'mal', 'Mål'], ['brev', 'brev', 'Brev'], ['spel', 'kugghjul', 'Spelet']], aktivFlik: dagbokFlik, kropp }), (el) => {
+    el.querySelector('[data-flik="sms"]')?.addEventListener('click', (e) => { e.stopImmediatePropagation(); ljud.plock(); oppnaInkorg(); }, true);
     el.querySelectorAll('[data-las]').forEach((k) => { k.onclick = () => prata('du', lappInfo(k.dataset.las)[1]); });
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { dagbokFlik = k.dataset.flik; ljud.plock(); oppnaDagbok(); }; });
     el.querySelector('[data-intro]')?.addEventListener('click', () => { ui.stangButik(); if (document.pointerLockElement) document.exitPointerLock(); visaIntro(); });
@@ -4676,7 +4684,7 @@ function startRuta(titel = ui.o.titel, text = ui.o.text, knappText = 'Starta') {
   ui.overlay.querySelector('[data-sparplatser]').onclick = () => ui.o.onSparplatser?.();
   ui.overlay.querySelector('[data-kontroller]').onclick = () => {
     const pop = document.createElement('div'); pop.className = 'br-bekrafta';
-    const K = [['W A S D', 'Gå'], ['Mus', 'Titta'], ['Klick / E', 'Använd, plocka upp'], ['Klicka och håll', 'Veva, trampa, gripa'], ['Shift', 'Spring'], ['Mellanslag', 'Hoppa'], ['Hjulet / 1–8', 'Byt sak i handen'], ['H', 'Tomhänt'], ['Q', 'Släpp skräp'], ['Shift + Q', 'Släpp allt'], ['R', 'Vrid det du ställer ut'], ['G', 'Flytta gamingboden'], ['I', 'Dina saker'], ['B', 'Dagbok och mål'], ['M', 'Meddelanden'], ['Tab', 'Frigör musen (klicka på knappar)'], ['K', 'Sparplatser'], ['V', 'Byt röster'], ['Esc', 'Paus och den här menyn']];
+    const K = [['W A S D', 'Gå'], ['Mus', 'Titta'], ['Klick / E', 'Använd, plocka upp'], ['Klicka och håll', 'Veva, trampa, gripa'], ['Shift', 'Spring'], ['Mellanslag', 'Hoppa'], ['Hjulet / 1–8', 'Byt sak i handen'], ['H', 'Tomhänt'], ['Q', 'Släpp skräp'], ['Shift + Q', 'Släpp allt'], ['R', 'Vrid det du ställer ut'], ['G', 'Flytta gamingboden'], ['I', 'Dina saker'], ['B', 'Dagbok och mål'], ['M', 'Meddelanden'], ['Tab', 'Öppna meddelanden'], ['K', 'Sparplatser'], ['V', 'Byt röster'], ['Esc', 'Paus och den här menyn']];
     pop.innerHTML = `<div class="br-bekrafta-ruta br-kontroller"><b>Kontroller</b><div class="br-tangenter">${K.map(([t, v]) => `<kbd>${t}</kbd><span>${v}</span>`).join('')}</div><p style="margin-top:10px!important">På mobil och surfplatta: dra för att gå, svep för att titta och tryck på handen för att använda.</p><div class="br-val" style="max-width:200px"><button class="br-valknapp" data-nej>Stäng</button></div></div>`;
     ui.overlay.querySelector('.br-start').appendChild(pop);
     pop.querySelector('[data-nej]').onclick = () => pop.remove(); pop.onclick = (e) => { if (e.target === pop) pop.remove(); };
@@ -4902,22 +4910,23 @@ const hudEl = document.querySelector('.hud-status');
 document.body.insertAdjacentHTML('beforeend', '<div class="hud-hand" hidden><b></b><span><i></i></span></div>');
 const hudHand = document.querySelector('.hud-hand');
 // meddelanden och dagbok: två egna ikonknappar uppe till höger
-document.body.insertAdjacentHTML('beforeend', `<div class="hud-flikar"><button class="hud-flik" data-flik-sms title="Meddelanden (M)">${ik('telefon')}<em hidden></em><kbd>M</kbd></button><button class="hud-flik" data-flik-bok title="Dagbok (B)">${ik('bok')}<kbd>B</kbd></button></div>`);
+document.body.insertAdjacentHTML('beforeend', `<div class="hud-flikar"><button class="hud-flik" data-flik-sms title="Meddelanden (Tab)">${ik('telefon')}<em hidden></em><kbd>Tab</kbd></button><button class="hud-flik" data-flik-bok title="Dagbok (B)">${ik('bok')}<kbd>B</kbd></button></div>`);
 const hudSms = document.querySelector('[data-flik-sms]');
 hudSms.onclick = () => oppnaInkorg();
 document.querySelector('[data-flik-bok]').onclick = () => { dagbokFlik = 'dagbok'; oppnaDagbok(); };
-// Tab frigör musen utan att pausa: då kan du klicka på telefonen, dagboken och notiserna. Klicka i världen för att styra igen.
-let musFri = false;
-{ const _p = ui.pausa.bind(ui); ui.pausa = (...a) => { if (musFri) return; _p(...a); }; }
-document.querySelector('.hud-flikar').insertAdjacentHTML('beforeend', '<div class="hud-musfri"><kbd>Tab</kbd> mus</div>');
+// Tab öppnar meddelandena (samma som M) – listan går att klicka i, Läs upp spelar igen
+document.querySelector('.hud-flikar').insertAdjacentHTML('beforeend', '<div class="hud-musfri"><kbd>Tab</kbd> meddelanden</div>');
 addEventListener('keydown', (e) => {
-  if (e.code === 'Escape' && musFri) { musFri = false; document.body.classList.remove('mus-fri'); }
   if (e.code !== 'Tab' || !ui.igang || pausad) return;
-  e.preventDefault();
-  if (document.pointerLockElement) { musFri = true; document.body.classList.add('mus-fri'); document.exitPointerLock(); ui.toast('Musen är fri – klicka på telefonen eller dagboken. Klicka i världen (eller Tab) för att styra igen.'); }
-  else { musFri = false; document.body.classList.remove('mus-fri'); spelare.lasMus(); }
+  e.preventDefault(); e.stopImmediatePropagation();
+  if (!S.tipsTab) { S.tipsTab = true; document.querySelector('.hud-tabtips')?.remove(); sparaSnart(); }
+  oppnaInkorg();
 }, true);
-document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement) { musFri = false; document.body.classList.remove('mus-fri'); } });
+// träningsdagen: första sms:et lär dig Tab
+function visaTabTips() {
+  if (S.tipsTab || document.querySelector('.hud-tabtips')) return;
+  document.body.insertAdjacentHTML('beforeend', `<div class="hud-hjultips hud-tabtips"><kbd class="stor">Tab</kbd><div><b>Du har fått ett sms</b><br><small>Tryck Tab för att öppna meddelandena</small></div></div>`);
+}
 hudEl.querySelector('.hud-klocka').onclick = () => oppnaBokmarken();
 hudEl.querySelector('[data-hud="respekt"]').onclick = () => oppnaRespekt();
 hudEl.querySelector('[data-hud="trivsel"]').onclick = () => { dagbokFlik = 'mal'; oppnaDagbok(); };
@@ -5012,7 +5021,7 @@ function notis(text, typ = '', o = {}) {
   const k = document.createElement('div');
   k.className = 'ph-notis ' + typ; k.dataset.text = text;
   k.innerHTML = `<div class="rubrik"><span>${ik(RUBRIK_IKON[typ] || 'info')} ${rens(o.titel || RUBRIK[typ] || 'Info')}</span><span>nu</span></div><div class="kropp">${rens(text)}</div>`;
-  if (o.klick) { k.classList.add('klickbar'); k.insertAdjacentHTML('beforeend', '<div class="las"><kbd>M</kbd> läs och lyssna</div>'); k.onclick = (e) => { e.stopPropagation(); taBort(k); o.klick(); }; }
+  if (o.klick) { k.classList.add('klickbar'); k.insertAdjacentHTML('beforeend', '<div class="las"><kbd>Tab</kbd> läs och lyssna</div>'); k.onclick = (e) => { e.stopPropagation(); taBort(k); o.klick(); }; }
   el.prepend(k);
   requestAnimationFrame(() => k.classList.add('in'));
   const ut = [...el.children].filter((x) => !x.classList.contains('ut'));
@@ -5138,14 +5147,19 @@ let dagbokLas = false;
 const INKORG_MAX = 3; let inkorgVantar = 0;
 function inkorg({ vem, titel, text, lapp = false, block = false, klar, fore }) {
   const lista = document.querySelector('.hud-inkorg');
-  const el = document.createElement('div'); el.className = 'hud-bubbla' + (lapp ? ' lapp' : '') + ' vantar';
-  el.innerHTML = `<div class="rub">${portratt(lapp ? "du" : vemAvSms(vem), 28)}<b>${rens(titel)}</b><em>i kö</em></div><div class="txt">${rens(text)}</div><div class="hud-bubbla-bar"><i></i></div>`;
+  // sms ser ut som en iPhone-notis högst upp i mitten; dagbok och tankar som bubblor till höger
+  const ios = !lapp && titel !== 'Tanke';
+  const el = document.createElement('div'); el.className = ios ? 'hud-ios' : 'hud-bubbla' + (lapp ? ' lapp' : '') + ' vantar';
+  el.innerHTML = ios
+    ? `<div class="app">${IKON.telefon}</div><div class="inne"><div class="topp"><span>MEDDELANDEN</span><span class="nu">nu</span></div><div class="fran">${portratt(vemAvSms(vem), 20)}<b>${rens(titel)}</b></div><div class="txt">${rens(text)}</div><div class="hud-bubbla-bar"><i></i></div></div>`
+    : `<div class="rub">${portratt(lapp ? "du" : vemAvSms(vem), 28)}<b>${rens(titel)}</b><em>i kö</em></div><div class="txt">${rens(text)}</div><div class="hud-bubbla-bar"><i></i></div>`;
   inkorgVantar++;
   const lasUpp = () => {
-    inkorgVantar--; ljud.plock(); fore?.();
-    lista.prepend(el); requestAnimationFrame(() => el.classList.add('in'));
+    inkorgVantar--; fore?.();
+    if (ios) { triTon(); document.querySelectorAll('.hud-ios').forEach((x) => x.remove()); document.body.appendChild(el); } else { ljud.plock(); lista.prepend(el); }
+    requestAnimationFrame(() => el.classList.add('in'));
     [...lista.children].slice(INKORG_MAX).forEach((x) => { x.classList.add('ut'); setTimeout(() => x.remove(), 500); });
-    el.classList.remove('vantar'); el.classList.add('laser'); el.querySelector('em').textContent = 'läser…';
+    el.classList.remove('vantar'); el.classList.add('laser'); const em = el.querySelector('em'); if (em) em.textContent = 'läser…';
     if (block) { dagbokLas = true; anvandNere = false; }
     const start = performance.now(); prata(lapp ? 'du' : vem, text);
     const bar = el.querySelector('.hud-bubbla-bar i');
@@ -5154,8 +5168,8 @@ function inkorg({ vem, titel, text, lapp = false, block = false, klar, fore }) {
       bar.style.width = Math.min(100, (nu - start) / Math.max(1, slut - start) * 100) + '%';
       if (nu < slut) { requestAnimationFrame(tick); return; }
       if (block) dagbokLas = false;
-      el.classList.remove('laser'); el.querySelector('em').textContent = ''; klar?.();
-      setTimeout(() => { el.classList.add('ut'); setTimeout(() => el.remove(), 500); }, 14000);
+      el.classList.remove('laser'); const em2 = el.querySelector('em'); if (em2) em2.textContent = ''; klar?.();
+      setTimeout(() => { el.classList.add('ut'); setTimeout(() => el.remove(), 500); }, ios ? 6000 : 14000);
     };
     requestAnimationFrame(tick);
   };
