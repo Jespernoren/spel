@@ -4,6 +4,7 @@ import fs from 'fs';
 const src = fs.readFileSync('/home/claude/jespernoren/spel/spel/printa-hem/spel.js', 'utf8');
 const lit = [];
 for (const m of src.matchAll(/sms\('(\w+)',\s*'((?:[^'\\]|\\.)*)'/g)) lit.push([m[1], m[2].replace(/\\'/g, "'")]);
+for (const m of src.matchAll(/aliSenare\('((?:[^'\\]|\\.)*)'/g)) lit.push(['ali', m[1].replace(/\\'/g, "'")]);
 for (const name of ['MAMMA_BURK_ARG', 'LADAN_SMS']) {
   const i = src.indexOf('const ' + name), j = src.indexOf('];', i);
   for (const m of src.slice(i, j).matchAll(/'((?:[^'\\]|\\.)*)'/g)) lit.push([name === 'LADAN_SMS' ? 'rolf' : 'mamma', m[1]]);

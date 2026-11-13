@@ -1073,19 +1073,21 @@ function uppdateraFigurer(dt) {
 // Ali: säljaren som aldrig är ledig – mustasch, trötta ögonbryn, armarna i kors
 const ali = new THREE.Group();
 {
-  const hud = mat(0xb07a4e), skjorta = mat(0xe8dcc0), forkl = mat(0x2f6b4f), har = mat(0x1a1410);
-  ali.add(at(cyl(0.2, 0.24, 0.8, skjorta), 0, 1.1, 0));                 // kropp
+  const hud = mat(0xb07a4e), skjorta = mat(0xe8dcc0), forkl = mat(0x2f6b4f), har = mat(0x8a8580);   // gråsprängd – snart pension
+  ali.add(at(cyl(0.2, 0.27, 0.8, skjorta), 0, 1.1, 0));                 // kropp (lite mage)
   ali.add(at(box(0.36, 0.62, 0.05, forkl), 0, 1.02, 0.22));             // förkläde
   ali.add(at(box(0.14, 0.05, 0.02, mat(0xffffff)), 0, 1.18, 0.25));     // ficka med penna
   ali.add(at(cyl(0.08, 0.09, 0.1, hud), 0, 1.53, 0));                   // hals
   const huvud = new THREE.Group(); huvud.position.set(0, 1.72, 0); ali.add(huvud);
   huvud.add(new THREE.Mesh(new THREE.SphereGeometry(0.18, 14, 12), hud));
   const harTopp = new THREE.Mesh(new THREE.SphereGeometry(0.185, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.45), har); harTopp.position.y = 0.02; huvud.add(harTopp);
-  ansikte(huvud, 0.0, { bryn: 0.35, brynFarg: 0x1a1410, nasa: 0x9c6640, nasaStor: 0.05, vem: 'ali' });
+  ansikte(huvud, 0.0, { bryn: 0.35, brynFarg: 0x6a6560, nasa: 0x9c6640, nasaStor: 0.05, vem: 'ali' });
   // den stora mustaschen
   for (const x of [-1, 1]) { const m = new THREE.Mesh(new THREE.CapsuleGeometry(0.03, 0.09, 4, 8), har); m.rotation.z = Math.PI / 2 + x * 0.35; m.position.set(x * 0.055, -0.055, 0.155); huvud.add(m); }
 
   for (const x of [-0.18, 0.18]) huvud.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 6), hud), x, 0, 0));  // öron
+  // läsglasögon långt ner på näsan
+  { const gm = mat(0x3a2a1a); for (const x of [-0.055, 0.055]) { const r = new THREE.Mesh(new THREE.TorusGeometry(0.032, 0.006, 6, 16), gm); r.position.set(x, -0.005, 0.172); huvud.add(r); } huvud.add(at(box(0.04, 0.006, 0.006, gm), 0, 0.0, 0.176)); for (const x of [-0.09, 0.09]) huvud.add(at(box(0.006, 0.006, 0.16, gm), x, 0.0, 0.1)); }
   // armarna i kors
   for (const [y, z, rz] of [[1.28, 0.24, 0.15], [1.22, 0.27, -0.15]]) { const a = box(0.5, 0.11, 0.11, skjorta); a.position.set(0, y, z); a.rotation.z = rz; ali.add(a); }
   for (const x of [-0.25, 0.25]) ali.add(at(box(0.11, 0.3, 0.11, skjorta), x, 1.38, 0.08));
@@ -4090,6 +4092,28 @@ function oppnaPrintMeny(sk) {
 
 // Ali såg 3D-skrivare på YouTube och blev nyfiken – men har ingen tid att printa och mecka själv (butiken!).
 // På nätterna låter han en AI generera modeller. Du är den första som printar dem. Han hatar butiken och sparar till en semester han aldrig tar.
+// Ali växer: först bara snack, sedan klickar det (AI + att du inspirerar honom), till sist blommar han ut
+const ALI_KLICKAR = [
+  'Du vet vad? Jag har pratat om att göra något i trettio år. Du bara gör. Det är irriterande. På ett bra sätt.',
+  'Jag visade AI:n din skrivare. Den sa: bygg något eget, Ali. Jag sa: jag är femtioåtta. Den sa: och?',
+  'Jag gick upp en timme tidigare idag. Inte för butiken. För mig. Jag ritade en lampa.',
+  'Min fru säger att jag pratar annorlunda. Snabbare. Hon är orolig. Jag är inte orolig. Jag är vaken.',
+];
+const ALI_BLOMMAR = [
+  'Pension? Glöm det. Jag har en kanal nu. Fyrtiotvå följare. Fyrtiotvå, habibi!',
+  'Jag har sålt min första egna ritning. Till en man i Örebro. Han skrev bra lampa. Jag har ramat in mejlet.',
+  'Förut drev jag butiken. Nu bygger jag något. Det är skillnad. Du lärde mig det. Säg inget. Det blir pinsamt.',
+  'Jag ska lära ut AI på pensionärsföreningen. Tisdagar. De är rädda. Jag var också rädd.',
+];
+const aliSteg = () => aliKunskap() >= 9 ? 3 : aliKunskap() >= 4 ? 2 : 1;
+let aliStegVisat = null;
+function kollaAliSteg() {
+  const st = aliSteg(); if (aliStegVisat === null) { aliStegVisat = S.aliStegSett || st; return; }
+  if (st <= (S.aliStegSett || 1)) return;
+  S.aliStegSett = st; aliStegVisat = st; sparaSnart();
+  if (st === 2) { aliSenare('Ali här. Jag har inte sovit. Inte på grund av AI:n. På grund av dig. Du bygger saker av sopor. Jag har en hel butik och bygger ingenting. Det ska ändras. Kanske. Troligen.'); andraRespekt(5, 'Ali säger att du inspirerar honom'); }
+  if (st === 3) { aliSenare('Ali igen. Jag har sagt till min bror att jag inte går i pension. Jag startar något. Han skrattade. Jag skrattade också. Men jag menar det. Tack. Säg inget.'); andraRespekt(8, 'Ali blommar ut tack vare dig'); }
+}
 const ALI_HEJ = ['Satt med AI:n hela natten igen. Fråga inte vad. Okej, en soffa. Fråga inte.', 'Pappa sa: driv butiken, Ali. Så jag driver butiken. På nätterna promptar jag. Det är mitt riktiga jobb.', 'Jag ser 3D-skrivarvideor på YouTube i lagret. Inte för att jag har tid. Jag har aldrig tid.',
   'Du är den enda här som vet vad en tolerans är. Det värmer. Lite. Inte mycket.', 'Kunder, kunder. Ingen ingenjör. Förutom du kanske.',
   'Semesterkassan: 340 kr. Köp nåt, min vän.', 'Du printar mina ritningar. Ingen har gjort det förut. Jag är inte rörd. Det är dammet.','Jag har stått här sedan sex i morse. Vad vill du?', 'Ledig? Vad är det? Har aldrig hört talas om det.', 'Köp nåt eller gå, min vän. Mina fötter värker.', 'Min fru säger att jag bor här. Hon har rätt.',
@@ -4189,7 +4213,8 @@ function oppnaMarknad() {
   if (!lista.some((x) => x.key === aliVald)) aliVald = lista[0]?.key || null;
   const vald = lista.find((x) => x.key === aliVald);
   if (!S.aliMott) { S.aliMott = true; aliRepl = ALI_FORSTA; sparaSnart(); }
-  const bubbla = aliRepl || ALI_HEJ[Math.floor(Math.random() * ALI_HEJ.length)];
+  const pool = aliSteg() === 3 ? ALI_BLOMMAR : aliSteg() === 2 ? ALI_KLICKAR : ALI_HEJ;
+  const bubbla = aliRepl || pool[Math.floor(Math.random() * pool.length)];
   let kropp = '', fot = '';
   if (aliFlik === 'kop') {
     const sekts = [...new Set(kopL.map((x) => x.sekt))];
@@ -5163,7 +5188,7 @@ function uppdatera(dt) {
   // matarbandet flyttar skräp från bingen till tratten (drar lite ström)
   if (!STEG[S.steg] && !sover) { const fore = S.dagTid || 0; S.dagTid = Math.min(DAG_LANGD, fore + dt); if (Math.floor(fore / 30) !== Math.floor(S.dagTid / 30)) sparaSnart(); }
   if (harProto('m_fusion')) S.strom = Math.min(stromMax(), S.strom + dt * 0.8);
-  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); uppdateraMalPil(); for (const sk of skrivare) visaSpolar(sk);
+  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraMalPil(); for (const sk of skrivare) visaSpolar(sk);
   if (S.kvarn.band) {
     const kor = S.kvarn.binge.length > 0 && S.kvarn.tratt < TRATT_MAX && S.strom > 0.5;
     if (kor) {
@@ -5505,7 +5530,7 @@ function rostManus() {
   Object.values(FAMILJ).flat().forEach(([v, t]) => add(v, t));
   BROR_IBLAND.forEach((t) => add('bror', t)); MAMMA_IBLAND.forEach((t) => add('mamma', t));
   MAMMA_SVAR_K1.forEach((t) => add('mamma', t)); MAMMA_SVAR_K2.forEach((t) => add('mamma', t));
-  ALI_HEJ.forEach((t) => add('ali', t)); add('ali', ALI_FORSTA); ALI_STANGT.forEach((t) => add('ali', t)); Object.values(ALI_SPECIAL).forEach((t) => add('ali', t));
+  [...ALI_HEJ, ...ALI_KLICKAR, ...ALI_BLOMMAR].forEach((t) => add('ali', t)); add('ali', ALI_FORSTA); ALI_STANGT.forEach((t) => add('ali', t)); Object.values(ALI_SPECIAL).forEach((t) => add('ali', t));
   const stolt = [...Object.values(MASKINER).map((m) => m.namn), ...Object.values(VAROR).filter((v) => v.recept).map((v) => v.namn)];
   for (const n of stolt) ALI_STOLT.forEach((f) => add('ali', f(n.toLowerCase())));
   for (const n of [...Object.values(MASKINER).filter((m) => !ALI_SPECIAL[Object.keys(MASKINER).find((k) => MASKINER[k] === m)]).map((m) => m.namn), 'Säng']) {
