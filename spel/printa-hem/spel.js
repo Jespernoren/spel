@@ -4593,11 +4593,18 @@ function startRuta(titel = ui.o.titel, text = ui.o.text, knappText = 'Starta') {
   const t = rens(titel), ar = t.includes('<svg');
   ui.overlay.innerHTML = `<div class="fp-ruta br-start">${ar ? t : `<h1>${t}</h1>`}<div class="br-ingress">${rens(text)}</div>
     <button class="fp-knapp br-starta">${rens(knappText)}</button>
-    <div class="br-val"><button class="br-valknapp" data-sparplatser>${ik('spara')}<span>Sparplatser</span></button><button class="br-valknapp" data-noll>${ik('omstart')}<span>Börja om</span></button></div>
+    <div class="br-val"><button class="br-valknapp" data-sparplatser>${ik('spara')}<span>Sparplatser</span></button><button class="br-valknapp" data-kontroller>${ik('hand')}<span>Kontroller</span></button><button class="br-valknapp" data-noll>${ik('omstart')}<span>Börja om</span></button></div>
     <a class="fp-tillbaka" href="../../index.html">← Alla spel</a></div>`;
   ui.overlay.hidden = false;
   ui.overlay.querySelector('.br-starta').onclick = () => ui.starta();
   ui.overlay.querySelector('[data-sparplatser]').onclick = () => ui.o.onSparplatser?.();
+  ui.overlay.querySelector('[data-kontroller]').onclick = () => {
+    const pop = document.createElement('div'); pop.className = 'br-bekrafta';
+    const K = [['W A S D', 'Gå'], ['Mus', 'Titta'], ['Klick / E', 'Använd, plocka upp'], ['Klicka och håll', 'Veva, trampa, gripa'], ['Shift', 'Spring'], ['Mellanslag', 'Hoppa'], ['Hjulet / 1–8', 'Byt sak i handen'], ['H', 'Tomhänt'], ['Q', 'Släpp skräp'], ['Shift + Q', 'Släpp allt'], ['R', 'Vrid det du ställer ut'], ['G', 'Flytta gamingboden'], ['I', 'Dina saker'], ['B', 'Dagbok och mål'], ['M', 'Meddelanden'], ['K', 'Sparplatser'], ['V', 'Byt röster'], ['Esc', 'Paus och den här menyn']];
+    pop.innerHTML = `<div class="br-bekrafta-ruta br-kontroller"><b>Kontroller</b><div class="br-tangenter">${K.map(([t, v]) => `<kbd>${t}</kbd><span>${v}</span>`).join('')}</div><p style="margin-top:10px!important">På mobil och surfplatta: dra för att gå, svep för att titta och tryck på handen för att använda.</p><div class="br-val" style="max-width:200px"><button class="br-valknapp" data-nej>Stäng</button></div></div>`;
+    ui.overlay.querySelector('.br-start').appendChild(pop);
+    pop.querySelector('[data-nej]').onclick = () => pop.remove(); pop.onclick = (e) => { if (e.target === pop) pop.remove(); };
+  };
   const noll = ui.overlay.querySelector('[data-noll]');
   noll.onclick = () => {
     // bekräftelse som egen popup ovanpå startrutan
@@ -4857,7 +4864,7 @@ function ritaHud() {
   const visa = poster.slice(Math.max(0, nuI - 2), nuI + 3);
   const klara = poster.filter((p) => p.klar).length;
   mEl.querySelector('.hud-antal').textContent = `${klara}/${poster.length}`;
-  lista.innerHTML = visa.filter((p) => !p.nu).length ? visa.filter((p) => !p.nu).map((p) => `<li class="${p.klar ? 'klar' : p.nu ? 'nu' : ''}${p.klar && p.i === S.steg - 1 && hudSenastKlar !== S.steg ? ' precis' : ''}"><span class="b">${p.klar ? '✓' : ''}</span><span>${p.text.length > 52 ? p.text.slice(0, 50) + '…' : p.text}</span></li>`).join('') : '';
+  lista.innerHTML = visa.filter((p) => !p.nu).length ? visa.filter((p) => !p.nu).map((p) => `<li class="${p.klar ? 'klar' : p.nu ? 'nu' : ''}${p.klar && p.i === S.steg - 1 && hudSenastKlar !== S.steg ? ' precis' : ''}"><span class="b">${p.klar ? '✓' : ''}</span><span>${p.text}</span></li>`).join('') : '';
   hudSenastKlar = S.steg;
 }
 respChip.onclick = () => oppnaRespekt();
@@ -6044,4 +6051,4 @@ window.__printahem = { spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, 
 startaLoop(uppdatera, { scen, kamera, renderer });
 
 // formspråket "Printat & skrotigt" läggs sist så att det vinner över äldre stilar
-{ const st = document.createElement('style'); st.textContent = BRAND_CSS + HUD_CSS + '.fp-topp>.fp-chip:first-child,.ph-resp-chip,.ph-dag-chip,.ph-bar-chip{display:none!important}'; document.head.appendChild(st); }
+{ const st = document.createElement('style'); st.textContent = BRAND_CSS + HUD_CSS + '.fp-topp>.fp-chip:first-child,.ph-resp-chip,.ph-dag-chip,.ph-bar-chip,.fp-hjalp{display:none!important}'; document.head.appendChild(st); }

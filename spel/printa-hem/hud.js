@@ -37,8 +37,8 @@ export function hjarta(niva) {
 const LAGER = 'repeating-linear-gradient(0deg,rgba(0,0,0,.13) 0 2px,rgba(255,255,255,.035) 2px 3px,transparent 3px 5px)';
 const LAGER_SVAG = 'repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 4px)';
 export const HUD_CSS = `
-.fp-topp{left:calc(max(12px,env(safe-area-inset-left)) + 262px)!important;transform:none!important;top:max(12px,env(safe-area-inset-top))!important;flex-wrap:wrap;max-width:calc(100vw - 290px)}
-.hud-status{position:fixed;left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top));z-index:22;display:flex;flex-direction:column;gap:6px;width:250px;pointer-events:none;font-family:system-ui,sans-serif;color:#fff}
+.fp-topp{left:calc(max(12px,env(safe-area-inset-left)) + 292px)!important;transform:none!important;top:max(12px,env(safe-area-inset-top))!important;flex-wrap:wrap;max-width:calc(100vw - 320px)}
+.hud-status{position:fixed;left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top));z-index:22;display:flex;flex-direction:column;gap:6px;width:280px;pointer-events:none;font-family:system-ui,sans-serif;color:#fff}
 .hud-klocka{pointer-events:auto;cursor:pointer;display:flex;align-items:baseline;gap:10px;padding:7px 12px 6px;border-radius:10px;background:${LAGER_SVAG},#0f1217;border:2px solid #2b303c;border-bottom:4px solid #07080b;box-shadow:inset 0 0 14px rgba(76,201,240,.08)}
 .hud-klocka .dag{font:900 13px var(--rubrik);letter-spacing:.08em;color:var(--papper)}
 .hud-klocka .tid{font:700 24px/1 "Courier New",ui-monospace,monospace;letter-spacing:.06em;color:#7dffb0;text-shadow:0 0 8px rgba(125,255,176,.45)}
@@ -61,7 +61,7 @@ export const HUD_CSS = `
 .hud-hand b{font:900 20px/1 var(--rubrik);letter-spacing:.03em}
 .hud-hand span{display:block;width:64px;height:6px;border-radius:3px;background:rgba(0,0,0,.45);overflow:hidden}.hud-hand i{display:block;height:100%;width:0;transition:width .2s}
 .hud-hand.full b{color:#ff8a8a}.hud-hand.studs{animation:hudStuds .35s cubic-bezier(.3,1.6,.5,1)}
-.ph-mal.hud-uppdrag{position:fixed;left:max(12px,env(safe-area-inset-left));top:auto;z-index:21;width:250px;max-width:none;padding:9px 12px 10px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.88)!important;border:1px solid rgba(255,255,255,.07);border-left:5px solid var(--falu);border-bottom:3px solid rgba(0,0,0,.45);box-shadow:none}
+.ph-mal.hud-uppdrag{position:fixed;left:max(12px,env(safe-area-inset-left));top:auto;z-index:21;width:280px;max-width:none;padding:9px 12px 10px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.88)!important;border:1px solid rgba(255,255,255,.07);border-left:5px solid var(--falu);border-bottom:3px solid rgba(0,0,0,.45);box-shadow:none}
 .hud-uppdrag .ph-mal-del{display:flex!important;justify-content:space-between;font:900 11px var(--rubrik)!important;letter-spacing:.08em!important;color:var(--papper);opacity:1!important}
 .hud-antal{position:absolute;right:11px;top:9px;font:900 11px var(--rubrik);font-style:normal;color:var(--fil);letter-spacing:.06em}
 .hud-uppdrag .ph-mal-text{display:block;font:700 14px/1.35 system-ui;margin:4px 0 6px}
