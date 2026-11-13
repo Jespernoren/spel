@@ -11,6 +11,7 @@ import { INTRO_BILDER, kalender as kalenderSvg } from './intro-bilder.js';
 import { byggMiljo } from './miljo.js';
 import { IKON, ik, portratt, rens, knapp, ruta as uiRuta, grid, sektion, detalj, resurs, panel, rad, UI_CSS } from './ui-kit.js';
 import { logo, BRAND_CSS, malaSkylt, NAMN, FARG } from './brand.js';
+import { ansikte as hudAnsikte, hjarta as hudHjarta, HUD_CSS, matarFarg } from './hud.js';
 { const st = document.createElement('style'); st.textContent = UI_CSS; document.head.appendChild(st); }
 const SPEL_ID = 'printa-hem';
 const SPEL_TITEL = 'Soptippsvägen 1';   // spelets namn (mappen och sparnyckeln heter fortfarande printa-hem)
@@ -4804,6 +4805,59 @@ const malDel = document.querySelector('.ph-mal-del'), malText = document.querySe
 const smsChip = document.querySelector('.ph-sms-chip'), smsN = document.querySelector('.ph-sms-n');
 smsChip.onclick = () => oppnaInkorg();
 const respChip = document.querySelector('.ph-resp-chip'), respText = document.querySelector('.ph-resp');
+// ---------- Statuspanelen (hud.js): klocka, trivsel-gubbe, respekt-hjärta, uppdragslista ----------
+document.body.insertAdjacentHTML('beforeend', `<div class="hud-status">
+  <div class="hud-klocka" title="Dagen är din nivå – klicka för bokmärken"><span class="dag">DAG 1</span><span class="tid">08:00</span><span class="arstid"></span></div>
+  <div class="hud-matare" data-hud="trivsel" title="Trivsel – hur du har det hemma"><div class="hud-ikon"></div><div class="hud-m"><div class="rad"><span>Trivsel</span><b></b></div><div class="hud-bar"><i></i></div></div></div>
+  <div class="hud-matare" data-hud="respekt" title="Respekt – hur andra ser på dig"><div class="hud-ikon"></div><div class="hud-m"><div class="rad"><span>Respekt</span><b></b></div><div class="hud-bar"><i></i></div></div></div>
+</div>`);
+const hudEl = document.querySelector('.hud-status');
+hudEl.querySelector('.hud-klocka').onclick = () => oppnaBokmarken();
+hudEl.querySelector('[data-hud="respekt"]').onclick = () => oppnaRespekt();
+hudEl.querySelector('[data-hud="trivsel"]').onclick = () => { dagbokFlik = 'mal'; oppnaDagbok(); };
+{ const m = document.querySelector('.ph-mal'); m.classList.add('hud-uppdrag'); m.querySelector('.ph-mal-text').insertAdjacentHTML('afterend', '<ul class="hud-lista"></ul>'); m.insertAdjacentHTML('afterbegin', '<em class="hud-antal"></em>'); }
+const hudCache = {};
+function hudMatare(namn, niva, ikonFn, varde, andel) {
+  const el = hudEl.querySelector(`[data-hud="${namn}"]`), ik2 = el.querySelector('.hud-ikon');
+  if (hudCache[namn] !== niva) { const forr = hudCache[namn]; hudCache[namn] = niva; ik2.innerHTML = ikonFn(niva); ik2.className = `hud-ikon niva${niva}`; if (forr != null) { void ik2.offsetWidth; ik2.classList.add('studs'); } }
+  const b = el.querySelector('b'); if (b.textContent !== String(varde)) b.textContent = varde;
+  const i = el.querySelector('i'); const w = Math.round(Math.max(0.03, Math.min(1, andel)) * 100) + '%';
+  if (i.style.width !== w) { i.style.width = w; i.style.backgroundColor = matarFarg(andel); }
+}
+let hudListaNyckel = '', hudSenastKlar = -1;
+function ritaHud() {
+  // klockan
+  const k = klockan(), tidEl = hudEl.querySelector('.tid');
+  const dagT = `DAG ${S.dag}`, tidT = k == null ? '--:--' : klockText(Math.min(k, 21 * 60)), arT = ARSTID_NAMN[arstid()] || '';
+  if (hudCache.dag !== dagT) { hudCache.dag = dagT; hudEl.querySelector('.dag').textContent = dagT; }
+  if (hudCache.tid !== tidT) { hudCache.tid = tidT; tidEl.textContent = tidT; tidEl.classList.toggle('natt', k != null && k >= 21 * 60); }
+  if (hudCache.ar !== arT) { hudCache.ar = arT; hudEl.querySelector('.arstid').textContent = rens(arT); }
+  // trivsel: gubben följer hur bra du har det, mätaren går mot nästa mål
+  const t = trivsel(), tMal = t < TRIVSEL_MAL ? TRIVSEL_MAL : t < 300 ? 300 : Math.ceil((t + 1) / 100) * 100;
+  hudMatare('trivsel', t < 20 ? 0 : t < 60 ? 1 : t < 120 ? 2 : t < 220 ? 3 : 4, hudAnsikte, t, t / tMal);
+  // respekt: hjärtat mot nästa filamentnivå
+  const r = S.respekt || 0, nasta = RESPEKT_NIVAER.find(([g]) => r < g), forra = [...RESPEKT_NIVAER].reverse().find(([g]) => r >= g);
+  hudMatare('respekt', r < 5 ? 0 : r < 25 ? 1 : r < 60 ? 2 : r < 110 ? 3 : 4, hudHjarta, r, nasta ? (r - (forra?.[0] || 0)) / (nasta[0] - (forra?.[0] || 0)) : 1);
+  // uppdraget hamnar under statuspanelen
+  const mEl = malText.parentElement, topp = Math.round(hudEl.getBoundingClientRect().bottom + 8) + 'px'; if (mEl.style.top !== topp) mEl.style.top = topp;
+  // uppdragslistan: det som är klart (bockat), det du gör nu och vad som kommer
+  const lista = mEl.querySelector('.hud-lista');
+  const iSteg = S.steg < STEG.length && !(S.folkbokMal && !S.folkbokford && S.steg >= STEG.length);
+  const nyckel = `${S.steg}|${S.skyltUppe ? 1 : 0}|${iSteg}`;
+  if (nyckel === hudListaNyckel) return; hudListaNyckel = nyckel;
+  if (!iSteg) { lista.innerHTML = ''; lista.style.display = 'none'; mEl.querySelector('.hud-antal').textContent = ''; return; }
+  lista.style.display = '';
+  const del = STEG[S.steg].del, idx = STEG.map((x, i) => [x, i]).filter(([x]) => x.del === del);
+  const poster = idx.map(([x, i]) => ({ text: rens(typeof x.text === 'function' ? '' : x.text) || rens(stegText(x)), klar: i < S.steg, nu: i === S.steg, i }));
+  if (S.steg <= 1 && del === STEG[0].del) poster.unshift({ text: 'Spika upp adresskylten', klar: !!S.skyltUppe, nu: !S.skyltUppe, i: -1 });
+  if (!S.skyltUppe && S.steg <= 1) poster.forEach((p) => { if (p.i >= 0) p.nu = false; });
+  const nuI = poster.findIndex((p) => p.nu);
+  const visa = poster.slice(Math.max(0, nuI - 2), nuI + 3);
+  const klara = poster.filter((p) => p.klar).length;
+  mEl.querySelector('.hud-antal').textContent = `${klara}/${poster.length}`;
+  lista.innerHTML = visa.filter((p) => !p.nu).length ? visa.filter((p) => !p.nu).map((p) => `<li class="${p.klar ? 'klar' : p.nu ? 'nu' : ''}${p.klar && p.i === S.steg - 1 && hudSenastKlar !== S.steg ? ' precis' : ''}"><span class="b">${p.klar ? '✓' : ''}</span><span>${p.text.length > 52 ? p.text.slice(0, 50) + '…' : p.text}</span></li>`).join('') : '';
+  hudSenastKlar = S.steg;
+}
 respChip.onclick = () => oppnaRespekt();
 document.querySelector('.ph-dag-chip').onclick = () => oppnaBokmarken();
 function oppnaRespekt() {
@@ -5445,6 +5499,7 @@ function uppdatera(dt) {
   }
   ui.framsteg(trivsel() / TRIVSEL_MAL * 100, 'Trivsel');
   respText.textContent = S.respekt;
+  ritaHud();
 }
 
 // ---------- Markköp: från hobo dweller till markägare. Rolf känner markägaren, Bengt-Åke, och medlar. ----------
@@ -5983,4 +6038,4 @@ window.__printahem = { spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, 
 startaLoop(uppdatera, { scen, kamera, renderer });
 
 // formspråket "Printat & skrotigt" läggs sist så att det vinner över äldre stilar
-{ const st = document.createElement('style'); st.textContent = BRAND_CSS; document.head.appendChild(st); }
+{ const st = document.createElement('style'); st.textContent = BRAND_CSS + HUD_CSS + '.fp-topp>.fp-chip:first-child,.ph-resp-chip,.ph-dag-chip{display:none!important}'; document.head.appendChild(st); }
