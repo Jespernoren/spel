@@ -1178,14 +1178,24 @@ function uppdateraFigurer(dt) {
     f.mun.scale.y = pratar ? 0.25 + Math.abs(Math.sin(nu / 70 + Math.sin(nu / 230) * 2)) * 0.9 : 0.25;
     // huvudet vänder sig mot dig när du är nära
     const hp = f.huvud.getWorldPosition(new THREE.Vector3()), d = Math.hypot(spelare.pos.x - hp.x, spelare.pos.z - hp.z);
-    let mal = 0;
+    // andas: kroppen höjs och sänks lite, var och en i egen takt
+    const kropp = f.huvud.parent;
+    if (f.fas == null) { f.fas = Math.random() * 6; f.basY = kropp.scale.y; f.titta = 0; f.tittaT = 2 + Math.random() * 3; }
+    if (kropp.userData.ejAndas !== true) kropp.scale.y = f.basY * (1 + Math.sin(nu / 1000 * 1.7 + f.fas) * 0.012);
+    // står man långt bort tittar de sig omkring ibland
+    f.tittaT -= dt; if (f.tittaT <= 0) { f.tittaT = 2.5 + Math.random() * 4; f.titta = Math.random() < 0.4 ? 0 : (Math.random() - 0.5) * 1.2; }
+    let mal = d < 9 ? 0 : f.titta;
     if (d < 9) {
       const kropp = f.huvud.parent.getWorldQuaternion(new THREE.Quaternion());
       const lokal = new THREE.Vector3(spelare.pos.x - hp.x, 0, spelare.pos.z - hp.z).applyQuaternion(kropp.invert());
       mal = Math.max(-0.9, Math.min(0.9, Math.atan2(lokal.x, lokal.z)));
     }
     f.huvud.rotation.y += (mal - f.huvud.rotation.y) * Math.min(1, dt * 4);
-    f.huvud.rotation.z = pratar ? Math.sin(nu / 300) * 0.06 : f.huvud.rotation.z * 0.9;
+    f.huvud.rotation.z = pratar ? Math.sin(nu / 300) * 0.06 : f.huvud.rotation.z * 0.9 + Math.sin(nu / 2300 + f.fas) * 0.004;
+    // pratar: nickar i takt med orden och gungar lite i kroppen
+    const nick = pratar ? Math.sin(nu / 170) * 0.07 + Math.sin(nu / 410) * 0.04 : Math.sin(nu / 1900 + f.fas) * 0.025;
+    f.huvud.rotation.x += (nick - f.huvud.rotation.x) * Math.min(1, dt * 8);
+    if (pratar) { kropp.rotation.z = Math.sin(nu / 520) * 0.025; f.gungat = true; } else if (f.gungat) { kropp.rotation.z = 0; f.gungat = false; }
   }
 }
 // Ali: säljaren som aldrig är ledig – mustasch, trötta ögonbryn, armarna i kors
