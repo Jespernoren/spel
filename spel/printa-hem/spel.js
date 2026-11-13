@@ -170,19 +170,19 @@ const VAROR = {
   tillstand: { namn: 'Parkeringstillstånd för husvagn', ikon: '', gram: 250, tid: 10, pris: 0, gava: true },
   sang: { storlek: 1, namn: 'Säng', ikon: '🛏️', gram: 2000, tid: 40, pris: 0, hem: true },          // 2 rullar. Kräver instruktionen hos Ali. Säljs inte.
   nyckelring: { namn: 'Nyckelring', ikon: '🔑', gram: 100, tid: 8, pris: 15 },      // 10 % rulle = en halv flaska
-  kruka: { namn: 'Blomkruka', ikon: '🪴', gram: 400, tid: 18, pris: 40, trivsel: 5, placerbar: true, radie: 0.3 },
-  pall: { namn: 'Pall', ikon: '🪑', gram: 1000, tid: 32, pris: 100, trivsel: 10, placerbar: true, radie: 0.35 },
+  kruka: { namn: 'Blomkruka', ikon: '🪴', gram: 400, tid: 18, pris: 30, trivsel: 5, placerbar: true, radie: 0.3 },
+  pall: { namn: 'Pall', ikon: '🪑', gram: 1000, tid: 32, pris: 60, trivsel: 10, placerbar: true, radie: 0.35 },
   rulle: { namn: 'Filamentrulle', ikon: '🧵', gram: 1000, tid: 0, pris: 0, rulle: true },   // bärs från extrudern till skrivaren
   // recept: köps hos Ali – dyra, men betalar mer per rulle ju längre man kommer
-  mobilstall: { namn: 'Mobilställ', ikon: '📱', gram: 300, tid: 12, pris: 45, recept: 150, syns: () => S.sang },
+  mobilstall: { namn: 'Mobilställ', ikon: '📱', gram: 300, tid: 12, pris: 20, recept: 100, syns: () => S.sang },
   // receptstegen: nästa recept syns när du köpt det förra – varje steg ger mer per rulle
-  fagelholk: { namn: 'Fågelholk', ikon: '🐦', gram: 800, tid: 26, pris: 120, recept: 600, trivsel: 6, placerbar: true, radie: 0.3, syns: () => S.rolf.i >= 1 || harRecept('mobilstall') },
-  lampskarm: { namn: 'Lampskärm', ikon: '💡', gram: 1200, tid: 34, pris: 260, recept: 1200, syns: () => S.dag >= 3 || S.rolf.i >= 2 || harRecept('fagelholk') },
-  dronare: { namn: 'Drönarram', ikon: '🛸', gram: 1500, tid: 40, pris: 450, recept: 2000, syns: () => S.rolf.i >= 3 || harRecept('lampskarm') },
-  skateboard: { namn: 'Skateboard', ikon: '🛹', gram: 2000, tid: 50, pris: 800, recept: 3000, syns: () => harRecept('dronare') },
-  gitarr: { namn: 'Elgitarr', ikon: '🎸', gram: 3000, tid: 64, pris: 1500, recept: 5000, syns: () => harRecept('skateboard') },
-  cykelram: { namn: 'Cykelram', ikon: '🚲', gram: 5000, tid: 80, pris: 3000, recept: 9000, syns: () => harRecept('gitarr') },
-  pkajak: { namn: 'Printad kajak', ikon: '🛶', gram: 12000, tid: 120, pris: 9000, recept: 20000, syns: () => harRecept('cykelram') },
+  fagelholk: { namn: 'Fågelholk', ikon: '🐦', gram: 800, tid: 26, pris: 60, recept: 300, trivsel: 6, placerbar: true, radie: 0.3, syns: () => S.rolf.i >= 1 || harRecept('mobilstall') },
+  lampskarm: { namn: 'Lampskärm', ikon: '💡', gram: 1200, tid: 34, pris: 100, recept: 600, syns: () => S.dag >= 3 || S.rolf.i >= 2 || harRecept('fagelholk') },
+  dronare: { namn: 'Drönarram', ikon: '🛸', gram: 1500, tid: 40, pris: 150, recept: 1000, syns: () => S.rolf.i >= 3 || harRecept('lampskarm') },
+  skateboard: { namn: 'Skateboard', ikon: '🛹', gram: 2000, tid: 50, pris: 240, recept: 1500, syns: () => harRecept('dronare') },
+  gitarr: { namn: 'Elgitarr', ikon: '🎸', gram: 3000, tid: 64, pris: 420, recept: 2500, syns: () => harRecept('skateboard') },
+  cykelram: { namn: 'Cykelram', ikon: '🚲', gram: 5000, tid: 80, pris: 800, recept: 4500, syns: () => harRecept('gitarr') },
+  pkajak: { namn: 'Printad kajak', ikon: '🛶', gram: 12000, tid: 120, pris: 2200, recept: 10000, syns: () => harRecept('cykelram') },
 };
 // dyra saker man köper hos Ali (printas inte) – det är dessa man sparar till
 Object.assign(VAROR, {
@@ -257,6 +257,10 @@ const DEL_NAMN = {
   rullband: ['Motorrulle', 'Bandsektioner', 'Ben', 'Styrlåda'], lastarm: ['Fot', 'Vridled', 'Lyftarm', 'Gripklo'], robotarm: ['Bas', 'Axel', 'Underarm', 'Gripklo'], utlada: ['Låda', 'Lock', 'Rutschkana'],
   skrivare3: ['Stålram', 'Stor byggbädd', 'Linjärskenor', 'Dubbelt skrivhuvud', 'Kapsling', 'Styrkort'],
 };
+// Ali betalar runt 60 kr per rulle i början – ritningar och lyxsaker (från 150 kr) är skalade efter det
+const PRIS_SKALA = 0.6;
+for (const v of Object.values(MASKINER)) if (v.ritning >= 150) v.ritning = Math.round(v.ritning * PRIS_SKALA / 10) * 10;
+for (const v of Object.values(VAROR)) if (v.lyx && v.recept >= 150) v.recept = Math.round(v.recept * PRIS_SKALA / 10) * 10;
 Object.assign(DEL_NAMN, { turbomotor: ['Turbin', 'Insugsrör', 'Röda ränder'], jetmotor: ['Kompressor', 'Brännkammare', 'Munstycke', 'Efterbrännare'] });
 Object.assign(DEL_NAMN, { tapeter: ['Tapetrulle 1', 'Tapetrulle 2', 'Tapetrulle 3', 'Tapetrulle 4'], gamingbod: ['Golv', 'Bakvägg', 'Sidvägg', 'Sidvägg', 'Tak', 'Dörr och fönster'] });
 Object.assign(DEL_NAMN, { rullstall: ['Ställning', 'Spolaxlar'], spolhallare: ['Ställning', 'Spolaxlar'], spolhallare2: ['Hög ställning', 'Spolaxlar', 'Kullager'] });
@@ -276,7 +280,7 @@ const SANG_INSTRUKTION = 120;    // kr – sängen låses upp efter första uppg
 const SPOL_MAX = [3000, 7000, 12000, 20000];   // rullar per skrivare: vanlig 3 · stor 7 · XL 12 · torn 20 – varje rulle syns i stället
 const SPOL_NIVA = { spolhallare: 1, spolhallare2: 2, spolhallare3: 3 };
 const maxFil = (sk) => SPOL_MAX[sk.spolNiva || 0];
-const FILAMENT_KOP = { gram: 1000, pris: 200 };  // en hel rulle – dyrare än du får för prints (≈140 kr/rulle)
+const FILAMENT_KOP = { gram: 1000, pris: 150 };  // en hel rulle – dyrare än du får för prints (≈60–180 kr/rulle)
 
 // verktygsnivå för skräp: magnetpistolen gäller bara när den är vald i verktygsraden – annars gripen (ryggkorgen ger mer plats)
 const niva = () => (S.magnet && S.hotbar?.[S.vald]?.typ === 'magnet') ? 3 : S.korg ? 2 : S.grip ? 1 : 0;
