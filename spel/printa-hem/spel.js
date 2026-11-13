@@ -10,9 +10,10 @@ import { Spelare, Interaktor, Hand, Sparning, ljud, FpUI } from '../../delat/fp/
 import { INTRO_BILDER, kalender as kalenderSvg } from './intro-bilder.js';
 import { byggMiljo } from './miljo.js';
 import { IKON, ik, portratt, rens, knapp, ruta as uiRuta, grid, sektion, detalj, resurs, panel, rad, UI_CSS } from './ui-kit.js';
+import { logo, BRAND_CSS, malaSkylt, NAMN, FARG } from './brand.js';
 { const st = document.createElement('style'); st.textContent = UI_CSS; document.head.appendChild(st); }
 const SPEL_ID = 'printa-hem';
-const SPEL_TITEL = 'PRINTA HEM';   // arbetsnamn – byts när vi har bestämt nytt namn
+const SPEL_TITEL = 'Soptippsvägen 1';   // spelets namn (mappen och sparnyckeln heter fortfarande printa-hem)
 let batteriKlart = false;
 
 // ---------- Molnsparning (när spelet körs som artefakt i Claude) ----------
@@ -560,12 +561,7 @@ function skylt(text, w = 1.4, h = 0.4, bg = '#2b2118', fg = '#ffe9b0') {
   text = String(text).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, '').trim();
   const c = document.createElement('canvas'); c.width = 512; c.height = Math.round(512 * h / w);
   const g = c.getContext('2d');
-  g.fillStyle = bg; g.fillRect(0, 0, c.width, c.height);
-  let fs = Math.round(c.height * 0.55);
-  g.font = `800 ${fs}px system-ui,sans-serif`;
-  while (g.measureText(text).width > c.width * 0.92 && fs > 8) { fs -= 2; g.font = `800 ${fs}px system-ui,sans-serif`; }
-  g.fillStyle = fg;
-  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, c.width / 2, c.height / 2 + 4);
+  malaSkylt(g, c.width, c.height, bg, fg, text, { skruvar: w >= 0.5, rost: w >= 0.4 });   // printat & skrotigt (brand.js)
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
   return new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: t }));
 }
@@ -835,6 +831,24 @@ const VAGGAR = {
   }
 }
 const skjulSkylt = skylt('MITT SKJUL', 0.9, 0.22, '#5e5246', '#ffe9b0'); skjulSkylt.position.set(0, 2.2, SKJUL.d / 2 + 0.06); skjulSkylt.rotation.z = -0.06; talt.add(skjulSkylt);
+// adressen: Soptippsvägen 1 – gatuskylt på stolpe + husnummer på väggen (brand.js)
+{
+  const gatSkylt = skylt('SOPTIPPSVÄGEN', 1.1, 0.26, FARG.falu, FARG.papper);
+  const stolpe = new THREE.Group();
+  stolpe.add(at(cyl(0.035, 0.035, 2.3, mat(0x6b6f76), 6), 0, 1.15, 0));
+  gatSkylt.position.set(0.5, 2.05, 0.04); stolpe.add(gatSkylt);
+  const bak = gatSkylt.clone(); bak.rotation.y = Math.PI; bak.position.z = -0.04; stolpe.add(bak);
+  stolpe.position.set(SKJUL.b / 2 + 0.7, 0, SKJUL.d / 2 + 1.0); stolpe.rotation.z = 0.04; talt.add(stolpe);
+  const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+  g.fillStyle = FARG.filMork; g.beginPath(); g.arc(128, 134, 118, 0, 7); g.fill();
+  g.fillStyle = FARG.fil; g.beginPath(); g.arc(128, 124, 118, 0, 7); g.fill();
+  for (let y = 0; y < 256; y += 8) { g.fillStyle = 'rgba(0,0,0,.10)'; g.fillRect(0, y, 256, 3); }
+  g.strokeStyle = FARG.natt; g.lineWidth = 8; g.beginPath(); g.arc(128, 124, 96, 0, 7); g.stroke();
+  g.fillStyle = FARG.natt; g.font = '900 170px "Arial Black",Impact,system-ui'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('1', 128, 136);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const nr = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.3), new THREE.MeshBasicMaterial({ map: t, transparent: true }));
+  nr.position.set(SKJUL.b / 2 - 0.3, 2.15, SKJUL.d / 2 + 0.065); nr.rotation.z = 0.12; talt.add(nr);
+}
 
 // kvarnen (plast → filament)
 const plastFargerTidig = [0x7fc8f8, 0x6ad48a, 0xf5f5f5];
@@ -4479,7 +4493,7 @@ function oppnaDagbok() {
 
 // ---------- UI ----------
 const ui = new FpUI({
-  titel: 'Printa Hem',
+  titel: logo({ bredd: 440 }),
   text: 'Allt du äger är ett gammalt skjul och storebrors 3D-skrivare. Tomten är full av skräp – men skräp är plast, och plast är filament.<br><b>Printa dig ett hem.</b>',
   hjalp: 'WASD gå · Mus titta · Klick/E använd · Håll E = trampa/veva/gripa · B dagbok & sparplatser<br>Hjulet / 1–8 byt sak · H tomhänt · Shift+Q släpp allt · V röster · I dina saker · B dagbok · M meddelanden · K sparplatser · G flytta gamingboden · R vrid · Q släpp skräp · Shift spring',
   spelare,
@@ -5695,7 +5709,7 @@ const INTRO = [
   { scen: '🎒 + 🖨️', text: 'Du packar det viktigaste: en ryggsäck och storebrors gamla 3D-skrivare. Den är långsam, den låter konstigt – men den funkar.' },
   { scen: '🌳🏚️🗑️🚛', text: 'I utkanten av stan ligger soptippen. Bredvid den: ett gammalt, tomt skjul och en gård full av skräp.' },
   { scen: '🧴➡️⚙️➡️🧵➡️🖨️', text: 'Men skräp är plast. Plast kan bli filament. Och med filament kan man printa… allt.' },
-  { scen: '🏚️➡️🏡🎮🛋️', text: 'Plan: bygga ett eget hem. Täta väggar, en riktig dörr, plåttak – och en gamingsetup. En lugn fristad. Utan tjat.', titel: SPEL_TITEL },
+  { scen: '🏚️➡️🏡🎮🛋️', text: 'Plan: bygga ett eget hem. Täta väggar, en riktig dörr, plåttak – och en gamingsetup. En lugn fristad. Utan tjat.', titel: logo({ bredd: 460, under: false }) },
 ];
 INTRO.forEach((p, i) => { p.bild = INTRO_BILDER[i]; });
 const figurBild = (vem, farg) => `<div style="display:grid;place-items:center;width:min(300px,70vw);height:200px;margin:0 auto;border-radius:16px;background:${farg}">${portratt(vem, 170)}</div>`;
@@ -5738,7 +5752,7 @@ function visaIntro(klar) {
   const tangent = (e) => { if (['Space', 'Enter', 'ArrowRight', 'KeyE'].includes(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); nasta(); } else if (e.code === 'Escape') { e.stopImmediatePropagation(); slut(); } };
   function slut() { tystna(); removeEventListener('keydown', tangent, true); el.remove(); S.introSett = true; sparaSnart(); klar?.(); }
   // en startruta först: webbläsaren spelar bara upp ljud efter ett klick
-  el.innerHTML = `<div class="ph-intro-kort"><div class="ph-intro-titel" style="margin:0 0 18px">${SPEL_TITEL}</div><div class="ph-intro-text">Slå på ljudet – berättaren läser upp historien.</div><button class="fp-knapp" style="margin-top:22px">Börja</button></div>`;
+  el.innerHTML = `<div class="ph-intro-kort"><div class="ph-intro-titel" style="margin:0 0 18px">${logo({ bredd: 480 })}</div><div class="ph-intro-text">Slå på ljudet – berättaren läser upp historien.</div><button class="fp-knapp" style="margin-top:22px">Börja</button></div>`;
   const borja = () => { el.onclick = nasta; addEventListener('keydown', tangent, true); try { ljudCtx(); } catch {} visa(); };
   el.onclick = (e) => { e.stopPropagation(); borja(); };
 }
@@ -5827,3 +5841,6 @@ function kapitelSlut() {
 window.__printahem = { storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
+
+// formspråket "Printat & skrotigt" läggs sist så att det vinner över äldre stilar
+{ const st = document.createElement('style'); st.textContent = BRAND_CSS; document.head.appendChild(st); }
