@@ -4684,7 +4684,7 @@ function startRuta(titel = ui.o.titel, text = ui.o.text, knappText = 'Starta') {
   ui.overlay.querySelector('[data-sparplatser]').onclick = () => ui.o.onSparplatser?.();
   ui.overlay.querySelector('[data-kontroller]').onclick = () => {
     const pop = document.createElement('div'); pop.className = 'br-bekrafta';
-    const K = [['W A S D', 'Gå'], ['Mus', 'Titta'], ['Klick / E', 'Använd, plocka upp'], ['Klicka och håll', 'Veva, trampa, gripa'], ['Shift', 'Spring'], ['Mellanslag', 'Hoppa'], ['Hjulet / 1–8', 'Byt sak i handen'], ['H', 'Tomhänt'], ['Q', 'Släpp skräp'], ['Shift + Q', 'Släpp allt'], ['R', 'Vrid det du ställer ut'], ['G', 'Flytta gamingboden'], ['I', 'Dina saker'], ['B', 'Dagbok och mål'], ['M', 'Meddelanden'], ['Tab', 'Öppna meddelanden'], ['K', 'Sparplatser'], ['V', 'Byt röster'], ['Esc', 'Paus och den här menyn']];
+    const K = [['W A S D', 'Gå'], ['Mus', 'Titta'], ['Klick / E', 'Använd, plocka upp'], ['Klicka och håll', 'Veva, trampa, gripa'], ['Shift', 'Spring'], ['Mellanslag', 'Hoppa'], ['Hjulet / 1–8', 'Byt sak i handen'], ['H', 'Tomhänt'], ['Q', 'Släpp skräp'], ['Shift + Q', 'Släpp allt'], ['R', 'Vrid det du ställer ut'], ['G', 'Flytta gamingboden'], ['I', 'Dina saker'], ['B', 'Dagbok och mål'], ['M', 'Alla sms i efterhand'], ['K', 'Sparplatser'], ['V', 'Byt röster'], ['Esc', 'Paus och den här menyn']];
     pop.innerHTML = `<div class="br-bekrafta-ruta br-kontroller"><b>Kontroller</b><div class="br-tangenter">${K.map(([t, v]) => `<kbd>${t}</kbd><span>${v}</span>`).join('')}</div><p style="margin-top:10px!important">På mobil och surfplatta: dra för att gå, svep för att titta och tryck på handen för att använda.</p><div class="br-val" style="max-width:200px"><button class="br-valknapp" data-nej>Stäng</button></div></div>`;
     ui.overlay.querySelector('.br-start').appendChild(pop);
     pop.querySelector('[data-nej]').onclick = () => pop.remove(); pop.onclick = (e) => { if (e.target === pop) pop.remove(); };
@@ -4910,22 +4910,17 @@ const hudEl = document.querySelector('.hud-status');
 document.body.insertAdjacentHTML('beforeend', '<div class="hud-hand" hidden><b></b><span><i></i></span></div>');
 const hudHand = document.querySelector('.hud-hand');
 // meddelanden och dagbok: två egna ikonknappar uppe till höger
-document.body.insertAdjacentHTML('beforeend', `<div class="hud-flikar"><button class="hud-flik" data-flik-sms title="Meddelanden (Tab)">${ik('telefon')}<em hidden></em><kbd>Tab</kbd></button><button class="hud-flik" data-flik-bok title="Dagbok (B)">${ik('bok')}<kbd>B</kbd></button></div>`);
+document.body.insertAdjacentHTML('beforeend', `<div class="hud-flikar"><button class="hud-flik" data-flik-sms title="Meddelanden (M)" style="display:none">${ik('telefon')}<em hidden></em></button><button class="hud-flik" data-flik-bok title="Dagbok (B)">${ik('bok')}<kbd>B</kbd></button></div>`);
 const hudSms = document.querySelector('[data-flik-sms]');
 hudSms.onclick = () => oppnaInkorg();
 document.querySelector('[data-flik-bok]').onclick = () => { dagbokFlik = 'dagbok'; oppnaDagbok(); };
 // Tab öppnar meddelandena (samma som M) – listan går att klicka i, Läs upp spelar igen
-document.querySelector('.hud-flikar').insertAdjacentHTML('beforeend', '<div class="hud-musfri"><kbd>Tab</kbd> meddelanden</div>');
-addEventListener('keydown', (e) => {
-  if (e.code !== 'Tab' || !ui.igang || pausad) return;
-  e.preventDefault(); e.stopImmediatePropagation();
-  if (!S.tipsTab) { S.tipsTab = true; document.querySelector('.hud-tabtips')?.remove(); sparaSnart(); }
-  oppnaInkorg();
-}, true);
+
 // träningsdagen: första sms:et lär dig Tab
 function visaTabTips() {
+  return;
   if (S.tipsTab || document.querySelector('.hud-tabtips')) return;
-  document.body.insertAdjacentHTML('beforeend', `<div class="hud-hjultips hud-tabtips"><kbd class="stor">Tab</kbd><div><b>Sparat i telefonen</b><br><small>Tryck Tab när du vill läsa dina meddelanden</small></div></div>`);
+  document.body.insertAdjacentHTML('beforeend', `<div class="hud-hjultips hud-tabtips"><kbd class="stor">Tab</kbd><div><b>Alla dina sms</b><br><small>Tryck Tab för att läsa dem igen</small></div></div>`);
 }
 hudEl.querySelector('.hud-klocka').onclick = () => oppnaBokmarken();
 hudEl.querySelector('[data-hud="respekt"]').onclick = () => oppnaRespekt();
@@ -5156,8 +5151,8 @@ function inkorg({ vem, titel, text, lapp = false, block = false, klar, fore, sms
   inkorgVantar++;
   const lasUpp = () => {
     inkorgVantar--; fore?.();
-    if (ios) { medKo.push({ typ: 'smsval', fran: vem, text, id: smsId, klar }); if (medEl2.hidden) visaNastaMeddelande(); return; }
-    ljud.plock(); lista.prepend(el);
+    // sms: iPhone-notis högst upp som läses upp direkt – en i taget, i den ordning de kom
+    if (ios) { triTon(); document.querySelectorAll('.hud-ios').forEach((x) => x.remove()); document.body.appendChild(el); } else { ljud.plock(); lista.prepend(el); }
     requestAnimationFrame(() => el.classList.add('in'));
     [...lista.children].slice(INKORG_MAX).forEach((x) => { x.classList.add('ut'); setTimeout(() => x.remove(), 500); });
     el.classList.remove('vantar'); el.classList.add('laser'); const em = el.querySelector('em'); if (em) em.textContent = 'läser…';
@@ -5433,15 +5428,16 @@ function visaNastaMeddelande() {
     triTon();
     const namn = AVSANDARE[m.fran]?.namn || m.fran;
     medEl2.innerHTML = `<div class="ph-smsval"><div class="hud-ios in statisk"><div class="app">${IKON.telefon}</div><div class="inne"><div class="topp"><span>MEDDELANDEN</span><span class="nu">nu</span></div><div class="fran">${portratt(vemAvSms(m.fran), 20)}<b>${rens(namn)}</b></div><div class="txt">${rens(m.text)}</div></div></div>
-      <div class="ph-smsval-knappar"><button class="fp-knapp" data-lyssna>Lyssna <kbd>E</kbd></button><button class="fp-knapp sek" data-spara>Spara till senare <kbd>Tab</kbd></button></div></div>`;
+      <div class="ph-smsval-knappar"><button class="fp-knapp" data-spara>OK <kbd>E</kbd></button></div></div>`;
     medEl2.hidden = false;
-    medEl2._lyssna = () => { medEl2._lyssna = medEl2._spara = null; m.klar?.(); medEl2.hidden = true; medKo.unshift({ typ: 'sms', fran: m.fran, text: m.text, id: m.id }); visaNastaMeddelande(); };
+    // texten syns och läses upp direkt – OK stänger, rösten läser klart medan du spelar vidare
+    m.klar?.(); setTimeout(() => prata(m.fran, m.text), 300);
+    medEl2._lyssna = () => medEl2._spara?.();
     medEl2._spara = () => {
       medEl2._lyssna = medEl2._spara = null; medEl2.hidden = true; medEl2.innerHTML = ''; pausad = false; ui.igang = true; visaTabTips();
       if (medKo.length) { setTimeout(visaNastaMeddelande, 250); return; }
       spelare.aktiv = true; spelare.lasMus();
     };
-    medEl2.querySelector('[data-lyssna]').onclick = () => medEl2._lyssna?.();
     medEl2.querySelector('[data-spara]').onclick = () => medEl2._spara?.();
     return;
   }
