@@ -4985,10 +4985,9 @@ const hudEl = document.querySelector('.hud-status');
 document.body.insertAdjacentHTML('beforeend', '<div class="hud-hand" hidden><b></b><span><i></i></span></div>');
 const hudHand = document.querySelector('.hud-hand');
 // meddelanden och dagbok: två egna ikonknappar uppe till höger
-document.body.insertAdjacentHTML('beforeend', `<div class="hud-flikar"><button class="hud-flik" data-flik-sms title="Meddelanden (M)" style="display:none">${ik('telefon')}<em hidden></em></button><button class="hud-flik" data-flik-bok title="Dagbok (B)">${ik('bok')}<kbd>B</kbd></button></div>`);
+document.body.insertAdjacentHTML('beforeend', `<div class="hud-flikar"><button class="hud-flik" data-flik-sms title="Meddelanden (M)">${ik('telefon')}<kbd>M</kbd><em hidden></em></button></div>`);
 const hudSms = document.querySelector('[data-flik-sms]');
 hudSms.onclick = () => oppnaInkorg();
-document.querySelector('[data-flik-bok]').onclick = () => { dagbokFlik = 'dagbok'; oppnaDagbok(); };
 // Tab öppnar meddelandena (samma som M) – listan går att klicka i, Läs upp spelar igen
 
 // träningsdagen: första sms:et lär dig Tab
