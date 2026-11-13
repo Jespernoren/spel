@@ -14,7 +14,7 @@ ROSTER = {
     # samma recept som Ali: ingen grov tonhöjdsförskjutning (den gav robotklang) – i stället en mjuk formantbevarande
     # förskjutning med rubberband, lite långsammare tempo och mer variation i rytmen
     'rolf':      ('nst',    1.12, 0.75, -2.0, 'bass=g=4:f=140,lowpass=f=6000'),
-    'ali':       ('accent', 1.00, 0.55,  0.0, 'equalizer=f=1300:t=q:w=1.2:g=3,highpass=f=110'),
+    'ali':       ('accent', 1.20, 0.55,  0.0, 'equalizer=f=1300:t=q:w=1.2:g=3,highpass=f=110,atempo=1.18'),
     'pappa':     ('nst',    1.18, 0.55, -3.0, 'lowpass=f=6500'),
     'bror':      ('nst',    1.00, 0.80,  1.5, 'highpass=f=100'),
     'chefen':    ('nst',    1.05, 0.55, -1.0, 'highpass=f=280,lowpass=f=3600,equalizer=f=1800:t=q:w=1:g=3'),

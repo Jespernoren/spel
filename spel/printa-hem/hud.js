@@ -124,8 +124,9 @@ export const HUD_CSS = `
 .hud-musfri{position:absolute;right:0;top:56px;white-space:nowrap;font:700 11px system-ui;color:#c5ccda;background:rgba(25,28,36,.75);padding:2px 7px;border-radius:6px}.hud-musfri kbd{font:900 10px system-ui;padding:0 4px;border-radius:3px;background:var(--papper);color:#191c24;margin-right:3px}
 body.mus-fri .hud-flik{box-shadow:0 0 0 2px var(--fil);animation:hudPuls 1.2s ease-in-out infinite}body.mus-fri .hud-musfri{background:var(--fil);color:#0d1a22}
 .hud-tabtips{bottom:200px}.hud-tabtips kbd.stor{font:900 16px system-ui;padding:6px 12px;border-radius:7px;background:#0d1a22;color:#fff;border-bottom:3px solid #000}
-.hud-ios{position:fixed;left:50%;top:10px;z-index:45;width:min(400px,92vw);display:flex;gap:11px;padding:11px 13px 12px;border-radius:20px;background:rgba(40,40,44,.82);backdrop-filter:blur(18px) saturate(1.6);-webkit-backdrop-filter:blur(18px) saturate(1.6);color:#fff;box-shadow:0 12px 34px rgba(0,0,0,.45);pointer-events:none;font-family:-apple-system,system-ui,sans-serif;transform:translate(-50%,-140%);transition:transform .45s cubic-bezier(.2,.9,.3,1.12),opacity .4s}
-.hud-ios.in{transform:translate(-50%,0)}.hud-ios.ut{transform:translate(-50%,-140%);opacity:0}
+.hud-ios{position:fixed;left:auto;right:max(12px,env(safe-area-inset-right));top:76px;z-index:45;width:min(380px,92vw);display:flex;gap:11px;padding:11px 13px 12px;border-radius:20px;background:rgba(40,40,44,.82);backdrop-filter:blur(18px) saturate(1.6);-webkit-backdrop-filter:blur(18px) saturate(1.6);color:#fff;box-shadow:0 12px 34px rgba(0,0,0,.45);pointer-events:none;font-family:-apple-system,system-ui,sans-serif;transform:translateX(120%);transition:transform .45s cubic-bezier(.2,.9,.3,1.12),opacity .4s}
+.hud-inkorg .hud-ios{position:relative;right:auto;top:auto;width:auto;pointer-events:none}
+.hud-ios.in{transform:none}.hud-ios.ut{transform:translateX(120%);opacity:0}
 .hud-ios .app{flex:none;width:38px;height:38px;border-radius:9px;background:linear-gradient(#5cf777,#0ec32f);display:grid;place-items:center;color:#fff}.hud-ios .app svg{width:22px;height:22px}
 .hud-ios .inne{flex:1;min-width:0}
 .hud-ios .topp{display:flex;justify-content:space-between;font:600 11.5px -apple-system,system-ui;letter-spacing:.04em;color:rgba(255,255,255,.55);margin-bottom:2px}
