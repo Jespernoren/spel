@@ -5,9 +5,6 @@
 import json, os, re, subprocess, sys
 from kokoro_sv import SwedishKokoro
 
-manus_fil, ut = sys.argv[1:3]
-del_nr, delar = (int(sys.argv[3]), int(sys.argv[4])) if len(sys.argv) > 4 else (0, 1)
-os.makedirs(ut, exist_ok=True)
 
 # vem: (Kokoro-röst, tempo, ffmpeg-klang)
 ROSTER = {
@@ -42,24 +39,31 @@ def tal(t):
     t = re.sub(r'\?\?+', '?', t); t = re.sub(r'!!+', '!', t)
     return re.sub(r'\s+', ' ', t).strip()
 
-manus = json.load(open(manus_fil))
-jobb, sett = [], set()
-for vem, text in manus:
-    if vem not in ROSTER: continue
-    k = f'{vem}-{nyckel(text)}'
-    if k in sett or not re.search(r'\w', tal(text)): continue
-    sett.add(k); jobb.append((vem, text, k))
-jobb = [j for i, j in enumerate(jobb) if i % delar == del_nr]
+def main():
+    manus_fil, ut = sys.argv[1:3]
+    del_nr, delar = (int(sys.argv[3]), int(sys.argv[4])) if len(sys.argv) > 4 else (0, 1)
+    os.makedirs(ut, exist_ok=True)
+    manus = json.load(open(manus_fil))
+    jobb, sett = [], set()
+    for vem, text in manus:
+        if vem not in ROSTER: continue
+        k = f'{vem}-{nyckel(text)}'
+        if k in sett or not re.search(r'\w', tal(text)): continue
+        sett.add(k); jobb.append((vem, text, k))
+    jobb = [j for i, j in enumerate(jobb) if i % delar == del_nr]
 
-tts = SwedishKokoro()
-klara = 0
-for vem, text, k in jobb:
-    fil = os.path.join(ut, k + '.mp3')
-    if os.path.exists(fil): continue
-    rost, tempo, klang = ROSTER[vem]
-    wav = os.path.join(ut, f'_tmp{del_nr}.wav')
-    tts.speak(tal(text), voice=rost, out=wav, speed=tempo)
-    subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', wav, '-af', f'{klang},loudnorm=I=-17:TP=-2', '-ac', '1', '-ar', '22050', '-b:a', '32k', fil], check=True)
-    klara += 1
-    if klara % 20 == 0: print(del_nr, klara, '/', len(jobb), flush=True)
-print('klar', del_nr, klara)
+    tts = SwedishKokoro()
+    klara = 0
+    for vem, text, k in jobb:
+        fil = os.path.join(ut, k + '.mp3')
+        if os.path.exists(fil): continue
+        rost, tempo, klang = ROSTER[vem]
+        wav = os.path.join(ut, f'_tmp{del_nr}.wav')
+        tts.speak(tal(text), voice=rost, out=wav, speed=tempo)
+        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', wav, '-af', f'{klang},loudnorm=I=-17:TP=-2', '-ac', '1', '-ar', '22050', '-b:a', '32k', fil], check=True)
+        klara += 1
+        if klara % 20 == 0: print(del_nr, klara, '/', len(jobb), flush=True)
+    print('klar', del_nr, klara)
+
+if __name__ == '__main__':
+    main()
