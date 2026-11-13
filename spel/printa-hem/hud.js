@@ -101,6 +101,10 @@ export const HUD_CSS = `
 .ph-trim-ik{display:block;width:34px;height:34px;margin-top:-8px;color:#ffd37a}.ph-trim-ik svg{width:100%;height:100%}
 .ph-trimbild>i{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);display:block;max-width:66px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:900 9px/1.3 system-ui;font-style:normal;color:#0d1a22;background:#7dffb0;padding:1px 5px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.35)}
 .ph-trimbild>i .ui-ik{width:11px;height:11px}
+.ph-kapkort{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:30;pointer-events:none;text-align:center;padding:18px 34px 20px;border-radius:14px;background:${LAGER_SVAG},rgba(25,28,36,.9);border-bottom:4px solid var(--falu);box-shadow:0 14px 40px rgba(0,0,0,.45);color:#fff;animation:kapIn .7s cubic-bezier(.3,1.5,.5,1);transition:opacity .7s,transform .7s}
+.ph-kapkort small{display:block;font:900 13px system-ui;letter-spacing:.3em;color:#ffd37a}.ph-kapkort b{display:block;margin:6px 0 8px;font:900 34px/1.05 system-ui;letter-spacing:.01em}.ph-kapkort span{display:block;font:700 16px/1.35 system-ui;color:#d7dce6;max-width:440px}
+.ph-kapkort.ut{opacity:0;transform:translateX(-50%) translateY(-14px)}
+@keyframes kapIn{from{opacity:0;transform:translateX(-50%) scale(.8)}}
 .hud-flask{position:fixed;left:max(12px,env(safe-area-inset-left));z-index:21;width:280px;box-sizing:border-box;pointer-events:none;font:700 13px/1.35 system-ui;color:#fff;display:flex;flex-direction:column;gap:6px}
 .hud-flask>div{padding:8px 12px 9px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.88);border-left:5px solid var(--lingon);box-shadow:0 6px 16px rgba(0,0,0,.3)}
 .hud-flask b{display:block;font:900 11px/1.2 system-ui;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}

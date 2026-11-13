@@ -402,7 +402,9 @@ const rolfSteg = (i, del) => {
 };
 const sovSteg = (dag, del) => ({ del, sov: true, text: '🌙 Dagens jobb är klart! Gå in i skjulet och sov i sängen', klar: () => S.dag > dag });
 const K2 = 'Kapitel 2 – Ett riktigt hem';
-const D1 = 'Dag 1 – Kom igång', N1 = 'Dag 2 – Städa gården', N2 = 'Dag 3 – Skottkärran', N3 = 'Dag 4 – Bygg ut fabriken', N4 = 'Dag 5 – Printfarmen';   // en dag = en nivå – du sover dig vidare
+const KAP1_NAMN = 'Ett hem att bo i', KAP1_MAL = 'Bygg ett hem där du inte fryser – och som är lite trevligt.';
+const D1 = 'Dag 1 – Kom igång', N1 = 'Dag 2 – Städa gården', N2 = 'Dag 3 – Skottkärran', N3 = 'Dag 4 – Bygg ut fabriken', N4 = 'Dag 5 – Printfarmen';
+const KAP1_DELAR = [D1, N1, N2, N3, N4];   // en dag = en nivå – du sover dig vidare
 // enkla upplästa instruktioner för dag 1 (för den som inte läser så mycket) – index = steg
 const STEG_TAL = {
   0: 'Plocka upp skräp på gården. Klicka på en flaska.',
@@ -914,6 +916,13 @@ const bradhog = new THREE.Group();
   const skaft = box(0.03, 0.03, 0.32, mat(0x6b4a2a)); skaft.position.set(1.05, 0.2, 0.2); skaft.rotation.y = 0.5; bradhog.add(skaft);
   const huvud = box(0.12, 0.05, 0.05, mat(0x444444)); huvud.position.set(1.12, 0.2, 0.34); huvud.rotation.y = 0.5; bradhog.add(huvud);
   bradhog.position.set(SKYLT_POS[0] - 0.3, 0, SKYLT_POS[1]); talt.add(bradhog);
+}
+// kapitelkort: stor rubrik mitt i bild några sekunder – säger vad kapitlet går ut på, inget mer
+function visaKapitelKort(nr, namn, mal) {
+  document.querySelector('.ph-kapkort')?.remove();
+  const d = document.createElement('div'); d.className = 'ph-kapkort';
+  d.innerHTML = `<small>KAPITEL ${nr}</small><b>${rens(namn)}</b><span>${rens(mal)}</span>`;
+  document.body.appendChild(d); setTimeout(() => d.classList.add('ut'), 5200); setTimeout(() => d.remove(), 6000);
 }
 function visaAdressSkylt() { adressSkylt.visible = !!S.skyltUppe; bradhog.visible = !S.skyltUppe; }
 let spikar = false;
@@ -2869,7 +2878,7 @@ function uppdateraMalPil() {
   if (!p || !ui.igang) { malPil.visible = false; }
   else { const stor = !S.skyltUppe && S.steg <= 1; malPil.scale.setScalar(stor ? 1.3 : 1); malPil.visible = true; malPil.position.copy(p).add(new THREE.Vector3(stor ? 0.65 : 0, (stor ? 0.75 : 0.6) + Math.abs(Math.sin(performance.now() / 300)) * 0.35, 0)); malPil.rotation.y += 0.04; }
   // din egen röst när dagboken är läst: dags att spika skylten
-  if (!S.skyltUppe && S.steg <= 1 && !sagtBygg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas) { sagtBygg = true; bud(() => { if (!S.skyltUppe) prata('du', DU_BYGG); }); }
+  if (!S.skyltUppe && S.steg <= 1 && !sagtBygg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas) { sagtBygg = true; bud(() => { if (!S.skyltUppe) { if (!S.kap1Visad) { S.kap1Visad = true; visaKapitelKort(1, KAP1_NAMN, KAP1_MAL); sparaSnart(); } prata('du', DU_BYGG); } }); }
   // instruktionen läses först när dagboken är läst och (i ett nytt spel) skylten är uppe
   if (STEG_TAL[S.steg] && senastTalSteg !== S.steg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas && ui.butiksOverlay.hidden && !spikar && (S.skyltUppe || S.steg > 1)) { senastTalSteg = S.steg; const st = S.steg; if (st === 7) bud(aliRopar); else bud(() => { if (S.steg === st) prata('berattare', STEG_TAL[st]); }); }
 }
@@ -5995,9 +6004,9 @@ function uppdatera(dt) {
   // efter kapitel 2 tar det aldrig slut: nästa trivselmål ligger alltid 100 bort
   const evigtMal = Math.ceil((trivsel() + 1) / 100) * 100;
   malText.textContent = S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? `Bli folkbokförd: äg all mark och bygg ett hus åt Rolf (${S.mark.agt.length}/${MARK_TOMTER.length}) – tavlan vid vägen` : S.steg < STEG.length ? rens(stegText(STEG[S.steg])) : `Nästa mål: trivsel ${trivsel()}/${evigtMal} · trimma maskinerna hos Ali eller ta Rolfs jobb`;
-  malDel.textContent = (S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? 'Slutmålet' : S.steg < STEG.length ? STEG[S.steg].del : S.folkbokford ? 'Folkbokförd · fritt bygge' : 'Oändligt bygge').toUpperCase();
+  malDel.textContent = (S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? 'Slutmålet' : S.steg < STEG.length ? (KAP1_DELAR.includes(STEG[S.steg].del) ? 'Kapitel 1 · ' + STEG[S.steg].del : STEG[S.steg].del) : S.folkbokford ? 'Folkbokförd · fritt bygge' : 'Oändligt bygge').toUpperCase();
   if (STEG[S.steg]?.sov && !kvallKlar()) { malText.textContent = `Dagens mål är klara! Bygg, printa och sälj fritt – det blir kväll om ${Math.max(1, Math.ceil((MIN_VAKEN - (S.vakenTid || 0)) / 60))} min.`; }
-  if (!S.skyltUppe && S.steg <= 1) { malDel.textContent = 'FÖRST'; malText.textContent = 'Spika ihop en adresskylt av brädhögen framför dig. Det här är MITT.'; }
+  if (!S.skyltUppe && S.steg <= 1) { malDel.textContent = 'KAPITEL 1 · ETT HEM ATT BO I'; malText.textContent = 'Spika ihop en adresskylt av brädhögen framför dig. Det här är MITT.'; }
   if (S.steg >= STEG.length && S.kapitelKlart && !S.kapitel2Klart) { S.kapitel2Klart = true; sparaSnart(); kapitel2Slut(); }
   {
     let r = '';
