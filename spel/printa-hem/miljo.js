@@ -12,7 +12,7 @@ const ANTAL_GRAS = 900;        // grästuvor (instansierade, billiga)
 const ANTAL_BLOMMOR = 260;
 const VIND = 0.025;            // hur mycket träden vajar (radianer)
 
-export function byggMiljo({ scen, TOMT, TIPP, ALI, fri }) {
+export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
   let fro = 11;
   const rnd = () => ((fro = (fro * 9301 + 49297) % 233280) / 233280);
   const mellan = (a, b) => a + rnd() * (b - a);
@@ -28,6 +28,8 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri }) {
   // ledig plats? (inte på vägen, marknaden eller tippen – och inte för nära tomten)
   const ledig = (x, z, marg = 0) => {
     if (Math.abs(x) < TOMT + 1.5 + marg && Math.abs(z) < TOMT + 1.5 + marg) return false;
+    // inget stort växer där spelaren kan gå – skogen börjar precis utanför (Rolf öppnar mer senare)
+    if (grans && marg >= 0 && x > grans.minX - 1.5 && x < grans.maxX + 1.5 && z > grans.minZ - 1.5 && z < grans.maxZ + 1.5) return false;
     if (z > TOMT - 0.5 && z < TOMT + 7) return false;
     if (Math.abs(x - ALI.x) < 9 && z > TOMT && z < TOMT + 13) return false;
     if (Math.hypot(x - TIPP.x, z - TIPP.z) < TIPP.r + 4) return false;
@@ -35,6 +37,7 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri }) {
   };
   const plats = (rMin, rMax, marg) => { for (let f = 0; f < 30; f++) { const a = rnd() * Math.PI * 2, r = rMin + rnd() * (rMax - rMin), x = Math.cos(a) * r, z = Math.sin(a) * r; if (ledig(x, z, marg)) return [x, z]; } return null; };
 
+  let mark = null;   // marken – spelet siktar mot den när man ställer ut saker
   // ---------- Marken: fläckigt gräs, mörkare och ljusare partier, lite jord ----------
   {
     const geo = new THREE.PlaneGeometry(160, 160, 96, 96); geo.rotateX(-Math.PI / 2);
@@ -50,7 +53,7 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri }) {
     }
     geo.setAttribute('color', new THREE.Float32BufferAttribute(farg, 3));
     const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 }));
-    m.receiveShadow = true; scen.add(m);
+    m.receiveShadow = true; scen.add(m); mark = m;
   }
 
   const trad = [];
@@ -183,10 +186,49 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri }) {
     im.count = n; scen.add(im);
   }
 
+  // ---------- Gärdesgård runt området man får vara i – Rolf öppnar mer senare ----------
+  const staket = new THREE.Group();
+  if (grans) {
+    const tra = mat(0x7a5a3a), bomMat = mat(0xd03030), vitMat = mat(0xf2f2f2);
+    const g = { x1: grans.minX - 0.6, x2: grans.maxX + 0.6, z1: grans.minZ - 0.6, z2: grans.maxZ + 0.6 };
+    const vagZ = TOMT + 3, vagB = 2.8;
+    const sida = (xa, za, xb, zb) => {
+      const l = Math.hypot(xb - xa, zb - za), n = Math.max(1, Math.round(l / 2.2)), vinkel = -Math.atan2(zb - za, xb - xa);
+      for (let i = 0; i < n; i++) {
+        const t0 = i / n, t1 = (i + 1) / n, x0 = xa + (xb - xa) * t0, z0 = za + (zb - za) * t0, x1 = xa + (xb - xa) * t1, z1 = za + (zb - za) * t1;
+        const mx = (x0 + x1) / 2, mz = (z0 + z1) / 2;
+        if (Math.abs(mz - vagZ) < vagB && Math.abs(xb - xa) < 0.01) continue;   // vägen: bom i stället (nedan)
+        const s1 = skugga(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 1.2, 5), tra)); s1.position.set(x0, 0.6, z0); s1.rotation.z = mellan(-0.05, 0.05); staket.add(s1);
+        // gärdesgård: snedställda slanor mellan stolparna
+        for (let k = 0; k < 4; k++) {
+          const sl = new THREE.Mesh(new THREE.BoxGeometry(l / n * 1.05, 0.05, 0.05), tra);
+          const u = (k + 0.5) / 4; sl.position.set(x0 + (x1 - x0) * u, 0.55, z0 + (z1 - z0) * u);
+          sl.rotation.set(0, vinkel, 0.55); sl.scale.x = 0.3; staket.add(sl);
+        }
+        const rail = new THREE.Mesh(new THREE.BoxGeometry(l / n, 0.06, 0.06), tra); rail.position.set(mx, 0.95, mz); rail.rotation.y = vinkel; staket.add(rail);
+      }
+    };
+    sida(g.x1, g.z1, g.x2, g.z1); sida(g.x1, g.z2, g.x2, g.z2); sida(g.x1, g.z1, g.x1, g.z2); sida(g.x2, g.z1, g.x2, g.z2);
+    // röd-vita bommar där vägen går ut
+    for (const x of [g.x1, g.x2]) {
+      const bom = new THREE.Group(); bom.position.set(x, 0, vagZ);
+      for (const dz of [-vagB - 0.3, vagB + 0.3]) { const st = skugga(new THREE.Mesh(new THREE.BoxGeometry(0.16, 1.1, 0.16), vitMat)); st.position.set(0, 0.55, dz); bom.add(st); }
+      for (let k = 0; k < 8; k++) { const d = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, (vagB * 2 + 0.6) / 8), k % 2 ? vitMat : bomMat); d.position.set(0, 0.95, -vagB - 0.3 + (k + 0.5) * (vagB * 2 + 0.6) / 8); bom.add(d); }
+      staket.add(bom);
+    }
+    const skylt = document.createElement('canvas'); skylt.width = 256; skylt.height = 96; const c = skylt.getContext('2d');
+    c.fillStyle = '#f4ecd8'; c.fillRect(0, 0, 256, 96); c.fillStyle = '#7a2020'; c.font = 'bold 30px sans-serif'; c.textAlign = 'center'; c.fillText('PRIVAT MARK', 128, 42); c.font = '20px sans-serif'; c.fillText('Tillträde förbjudet', 128, 74);
+    const tx = new THREE.CanvasTexture(skylt); tx.colorSpace = THREE.SRGBColorSpace;
+    for (const [x, z, r] of [[g.x2, 0, -Math.PI / 2], [g.x2 - 15, g.z1, 0], [g.x1, 5, Math.PI / 2], [-10, g.z2, Math.PI]]) {
+      const sk = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.34), new THREE.MeshStandardMaterial({ map: tx, side: THREE.DoubleSide })); sk.position.set(x, 1.25, z); sk.rotation.y = r; staket.add(sk);
+    }
+  }
+  scen.add(staket);
+
   // vinden: träden vajar lite, i otakt
   function uppdatera(tid) {
     const v = VIND * (0.7 + Math.sin(tid * 0.13) * 0.3);
     for (const t of trad) { const f = t.userData.fas; t.rotation.z = t.userData.lut + Math.sin(tid * 0.9 + f) * v; t.rotation.x = Math.sin(tid * 0.7 + f * 1.3) * v * 0.6; }
   }
-  return { uppdatera, trad };
+  return { uppdatera, trad, mark, staket };
 }

@@ -129,6 +129,13 @@ const VAROR = {
   burk_lingon: { namn: 'Burk lingonsylt från mamma', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 0, radie: 0.2, burk: true },
   burk_saft: { namn: 'Flaska hemgjord rabarbersaft', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 0, radie: 0.2, burk: true },
   burk_vante: { namn: 'Virkade grytvantar (lila)', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 0, radie: 0.2, burk: true },
+  burk_sill: { namn: 'Burk inlagd sill från mamma', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 0, radie: 0.2, burk: true },
+  burk_sockor: { namn: 'Stickade raggsockor (för små)', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 0, radie: 0.2, burk: true },
+  burk_duk: { namn: 'Virkad duk från mamma', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 0, radie: 0.25, burk: true },
+  burk_toarulle: { namn: 'Virkat toarullsskydd (en dam i krinolin)', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 0, radie: 0.2, burk: true },
+  burk_porslin: { namn: 'Porslinshund från mormors dödsbo', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 0, radie: 0.2, burk: true },
+  burk_tavla: { namn: 'Broderad tavla: Borta bra men hemma bäst', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 0, radie: 0.25, burk: true },
+  burk_blomma: { namn: 'Plastblommor i vas', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 0, radie: 0.2, burk: true },
   r_tv: { namn: 'Gammal tjock-TV från ett dödsbo', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 60, unik: true, rolf: true },
   r_affisch: { namn: 'Affisch: Rolfs Rockers 1987', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 40, unik: true, rolf: true },
   r_gardin: { namn: 'Birgittas stickade gardiner', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 45, unik: true, rolf: true },
@@ -458,7 +465,8 @@ const vag = new THREE.Mesh(new THREE.PlaneGeometry(160, 5), mat(0x55585e));
 vag.rotation.x = -Math.PI / 2; vag.position.set(0, 0.02, TOMT + 3); vag.receiveShadow = true; scen.add(vag);
 
 // skogen och marken runt tomten (miljo.js): flera trädsorter, buskar, stenar, gräs och blommor
-const miljo = byggMiljo({ scen, TOMT, TIPP, ALI });
+const miljo = byggMiljo({ scen, TOMT, TIPP, ALI, grans: { minX: TIPP.x - TIPP.r - 3, maxX: TOMT + 2, minZ: -TOMT - 2, maxZ: TOMT + 10 } });   // samma gränser som spelaren
+const mark = miljo.mark;
 
 // soptippen: en låg kulle av grus och sopor
 const tippHojd = (x, z) => { const d = Math.hypot(x - TIPP.x, z - TIPP.z) / TIPP.r; return d < 1 ? 0.45 * (1 - d * d) : 0; };
@@ -1163,6 +1171,30 @@ function skapaVara(typ) {
     const f = [0xd63a2f, 0x2d7fd6, 0x2e8b57, 0xf28c28, 0x8e44ad][Object.keys(ROLF_TACK).indexOf(typ) % 5];
     g.add(at(box(0.32, 0.24, 0.26, mat(f)), 0, 0.12, 0)); g.add(at(box(0.34, 0.03, 0.06, mat(0xffd43b)), 0, 0.245, 0)); g.add(at(box(0.06, 0.03, 0.28, mat(0xffd43b)), 0, 0.245, 0));
     for (const x of [-0.05, 0.05]) { const o = new THREE.Mesh(new THREE.TorusGeometry(0.04, 0.012, 6, 12), mat(0xffd43b)); o.position.set(x, 0.28, 0); o.rotation.y = x * 20; g.add(o); }
+  } else if (typ === 'burk_sill') {
+    g.add(at(cyl(0.1, 0.1, 0.2, new THREE.MeshStandardMaterial({ color: 0xe8e0c0, transparent: true, opacity: 0.6, roughness: 0.1 })), 0, 0.1, 0));
+    for (let i = 0; i < 4; i++) g.add(at(box(0.03, 0.14, 0.01, mat(0xc0c8d0)), -0.05 + i * 0.033, 0.1, 0).rotateZ(0.2 * (i % 2 ? 1 : -1)));
+    g.add(at(cyl(0.105, 0.105, 0.04, mat(0xc8a030)), 0, 0.22, 0));
+  } else if (typ === 'burk_sockor') {
+    for (const x of [-0.07, 0.07]) { g.add(at(box(0.09, 0.05, 0.26, mat(0xb03030)), x, 0.025 + (x > 0 ? 0.05 : 0), 0)); g.add(at(box(0.095, 0.052, 0.04, mat(0xf0f0f0)), x, 0.025 + (x > 0 ? 0.05 : 0), -0.06)); }
+  } else if (typ === 'burk_duk') {
+    g.add(at(cyl(0.28, 0.28, 0.01, mat(0xf8f4ea), 18), 0, 0.006, 0));
+    for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; g.add(at(cyl(0.025, 0.025, 0.012, mat(0xf8f4ea), 6), Math.cos(a) * 0.29, 0.006, Math.sin(a) * 0.29)); }
+  } else if (typ === 'burk_toarulle') {
+    g.add(at(new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.22, 12), mat(0xf28cb8)), 0, 0.11, 0));
+    g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), mat(0xf3d6b8)), 0, 0.26, 0));
+    g.add(at(cyl(0.07, 0.07, 0.02, mat(0xf28cb8)), 0, 0.3, 0));
+  } else if (typ === 'burk_porslin') {
+    g.add(at(box(0.08, 0.14, 0.1, mat(0xf4f4f0, { roughness: 0.2 })), 0, 0.07, 0));
+    g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), mat(0xf4f4f0, { roughness: 0.2 })), 0, 0.17, 0.03));
+    for (const x of [-0.035, 0.035]) g.add(at(box(0.02, 0.06, 0.03, mat(0x8a5a30)), x, 0.2, 0.01));
+    g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.012, 6, 4), mat(0x111111)), 0, 0.17, 0.08));
+  } else if (typ === 'burk_tavla') {
+    g.add(at(box(0.36, 0.28, 0.03, mat(0x8a6a3f)), 0, 0.14, 0).rotateX(-0.25));
+    const sk = skylt('BORTA BRA MEN HEMMA BÄST', 0.3, 0.2, '#f6eedc', '#b03050'); sk.position.set(0, 0.145, 0.02); sk.rotation.x = -0.25; g.add(sk);
+  } else if (typ === 'burk_blomma') {
+    g.add(at(cyl(0.06, 0.05, 0.16, mat(0x3a7ab0, { roughness: 0.2 })), 0, 0.08, 0));
+    for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; g.add(at(cyl(0.006, 0.006, 0.2, mat(0x3a8a3a), 4), Math.cos(a) * 0.03, 0.24, Math.sin(a) * 0.03)); g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 4), mat([0xff4fa0, 0xffe040, 0xff7030][i % 3])), Math.cos(a) * 0.04, 0.35, Math.sin(a) * 0.04)); }
   } else if (typ === 'burk_saft') {
     g.add(at(cyl(0.08, 0.09, 0.32, new THREE.MeshStandardMaterial({ color: 0xd65a6a, transparent: true, opacity: 0.85, roughness: 0.15 })), 0, 0.16, 0));
     g.add(at(cyl(0.03, 0.06, 0.08, new THREE.MeshStandardMaterial({ color: 0xd65a6a, transparent: true, opacity: 0.85 })), 0, 0.36, 0));
@@ -2372,7 +2404,7 @@ interaktor.registrera(kvarn, {
     if (bandTyp()) return '🗑️ Montera skräpcontainern bakom kvarnen';
     if (valdTyp() === 'byggsats:turbomotor') return S.kvarn.motor ? '🔥 Skruva fast turbon på motorn' : 'Kvarnen behöver en vanlig motor först';
     if (valdTyp() === 'byggsats:jetmotor') return S.kvarn.turbo ? '🚀 Montera JETMOTORN' : 'Jetmotorn kräver turbon först';
-    if (valdTyp()?.startsWith('burk_')) return `Mal ${VAROR[valdTyp()].namn.toLowerCase()} till filament (mamma blir ledsen · respekt −${BURK_RESPEKT})`;
+    if (valdTyp()?.startsWith('burk_')) return `Mal ${VAROR[valdTyp()].namn.toLowerCase()} till filament (pappa avråder starkt · respekt −${BURK_RESPEKT})`;
     if (valdKarra() && S.karraLast.length) return `Töm kärran i tratten (${S.karraLast.length} st ≈ ${rullar(S.karraLast.reduce((a, v) => a + SKRAP_SORTER[skrapSort(v)].gram, 0))})`;
     const n = hand.saker.filter((s) => s.userData.typ === 'skrap').length;
     if (n) return `Lägg i tratten (${n} st ≈ ${rullar(hand.saker.reduce((a, x) => a + (x.userData.gram || 0), 0))})`;
@@ -3371,7 +3403,7 @@ const PAPPA_SCEN = [
   ['pappa', 'Oj oj oj. Vilken kärra. Låter som en dröm.'], ['rolf', 'Den lurar på.'], ['pappa', 'Såg du hockeyn igår? Tradigt värre.'], ['rolf', 'Ja knoppa i andra perioden.'],
   ['pappa', 'Smart. Man ska lurva när man kan.'], ['pappa', 'Tjenare! Vilket ställe du har!', 'du'], ['du', 'Pappa … jag bor på en soptipp.'],
   ['pappa', 'Aha, vad lugnt då!', 'du'], ['du', 'Mamma är jätteorolig.'], ['pappa', 'Aha, vad lugnt då. Hon har alltid nåt.', 'du'],
-  ['pappa', 'Mamma skicka med lite grejer.', 'burkar'], ['pappa', 'Ja gör bara som hon säger. Då blir de lugnt hemma.'], ['pappa', 'Fint jobbat!', 'du'], ['pappa', 'Nä, nu ska ja blada. Ska tjacka vurre på macken.'], ['pappa', 'Mamma hälsar!', 'du'],
+  ['pappa', 'Mamma skicka med lite grejer.', 'burkar'], ['pappa', 'Ja gör bara som hon säger. Då blir de lugnt hemma.'], ['pappa', 'Och va du än gör: mal dom inte. Då tror hon att du ätit upp allt. Då gör hon mer.', 'du'], ['pappa', 'Fint jobbat!', 'du'], ['pappa', 'Nä, nu ska ja blada. Ska tjacka vurre på macken.'], ['pappa', 'Mamma hälsar!', 'du'],
 ];
 // senare besök: pappa kommer ensam, kuckelurar lite, ställer ner burkar och bladar
 const PAPPA_KORT = [
@@ -3388,24 +3420,26 @@ const PAPPA_KORT = [
 ];
 // när man malt mammas saker: mamma tjatar hemma och pappa mår sämre. Han blir dryg.
 const PAPPA_DRYG = [
-  [['pappa', 'Tjena.', 'du'], ['pappa', 'Mamma har tjatat i tre dagar. Om sylten.'], ['du', 'Förlåt, pappa.'], ['pappa', 'Aha. Vad lugnt då. För dig.', 'du']],
+  [['pappa', 'Tjena.', 'du'], ['pappa', 'Mamma har kokat sylt i tre dagar. Hon tror att du äter upp allt.'], ['du', 'Förlåt, pappa.'], ['pappa', 'Ja SA ju de. Mal dom inte. Aha, vad lugnt då. För dig.', 'du']],
   [['pappa', 'Jaha. Här står du.', 'du'], ['pappa', 'Ja har inte sett hockeyn på en vecka. Mamma pratar över den.'], ['pappa', 'Om grytvantar.']],
   [['pappa', 'Tjena.', 'du'], ['pappa', 'Ja knoppar i garaget nu. De e lugnare där.'], ['du', 'Är det så illa?'], ['pappa', 'Aha, vad lugnt då. Säger du. Som maler sylt.', 'du']],
-  [['pappa', 'Hej.', 'du'], ['pappa', 'Fint ställe. Synd att du inte kan ta emot en burk honung bara.'], ['pappa', 'Men vad vet ja. Ja e bara pappa.']],
+  [['pappa', 'Hej.', 'du'], ['pappa', 'Hon har köpt en egen frys. Till sylten.'], ['pappa', 'Ja varnade dig. Men vad vet ja. Ja e bara pappa.']],
 ];
 const PAPPA_DRYG_SLUT = [['pappa', 'Mamma skicka med lite grejer. MAL INTE dom.', 'burkar'], ['pappa', 'Ja ska blada nu.'], ['pappa', 'Mamma hälsar. Typ.', 'du']];
-const PAPPA_SLUT = [['pappa', 'Mamma skicka med lite grejer.', 'burkar'], ['pappa', 'Ja gör bara som hon säger. Då blir de lugnt hemma.'], ['pappa', 'Fint jobbat!', 'du'], ['pappa', 'Nä, nu ska ja blada.'], ['pappa', 'Mamma hälsar!', 'du']];
+const PAPPA_SLUT = [['pappa', 'Mamma skicka med lite grejer.', 'burkar'], ['pappa', 'Ja gör bara som hon säger. Då blir de lugnt hemma.'], ['pappa', 'Och va du än gör: mal dom inte. Då tror hon att du ätit upp allt. Då gör hon mer.', 'du'], ['pappa', 'Fint jobbat!', 'du'], ['pappa', 'Nä, nu ska ja blada.'], ['pappa', 'Mamma hälsar!', 'du']];
 const pappaBesok = { aktiv: false, t: 0, steg: 0, fas: '', scen: PAPPA_SCEN, medRolf: true };
 // pappa ställer ner 2–4 burkar vid skjulet. De tar plats. Ali vill inte ha dem. Tacka mamma.
+// mammas skit: mest burkar och saft, men också sånt man ALDRIG bett om
+const MAMMA_SAKER = ['burk_lingon', 'burk_lingon', 'burk_honung', 'burk_saft', 'burk_saft', 'burk_sill', 'burk_vante', 'burk_sockor', 'burk_duk', 'burk_toarulle', 'burk_porslin', 'burk_tavla', 'burk_blomma'];
 function stallBurkar() {
-  const n = 2 + Math.floor(Math.random() * 5);   // 2–6 st
+  const n = 2 + Math.floor(Math.random() * 5) + Math.min(6, Math.floor((S.burkMalda || 0) / 3));   // 2–6 st – fler ju mer du maler (mamma tror att du äter upp allt)
   for (let i = 0; i < n; i++) {
     const a = Math.random() * Math.PI * 2, r = 0.6 + Math.random() * 1.1;
     const x = pappaGubbe.position.x + Math.cos(a) * r, z = pappaGubbe.position.z + Math.sin(a) * r;
-    placera({ id: 'p' + (S.nastaId++), typ: ['burk_honung', 'burk_lingon', 'burk_lingon', 'burk_saft', 'burk_saft', 'burk_vante'][Math.floor(Math.random() * 6)], x, z, r: 0, r8: Math.floor(Math.random() * 8) });
+    placera({ id: 'p' + (S.nastaId++), typ: MAMMA_SAKER[Math.floor(Math.random() * MAMMA_SAKER.length)], x, z, r: 0, r8: Math.floor(Math.random() * 8) });
   }
   S.burkar = (S.burkar || 0) + n;
-  ui.toast(`🍯 Pappa ställde ner ${n} saker från mamma. Burkar, saft, grytvantar … Totalt ${S.burkar}.`, '');
+  ui.toast(`🍯 Pappa ställde ner ${n} saker från mamma. Totalt ${S.burkar}. Ingen av dem behövs.`, '');
 }
 function startaPappaBesok(kort = !!S.pappaBesok) {
   pappaBesok.medRolf = !kort;
@@ -3667,13 +3701,14 @@ function andraRespekt(d, varfor) {
   sparaSnart();
 }
 // Mal mammas saker till filament. Det funkar. Men mamma får veta.
+// mamma tar inte hintsen: hon tror att man har ätit upp allt och skickar MER
 const MAMMA_BURK_ARG = [
-  'Pappa sa att han såg min lingonsylt i någon slags MASKIN?!?! Säg att det inte är sant.',
-  'JAG STOD I KÖKET I TRE DAGAR. Tre dagar!! Och du gör PLAST av det??',
-  'Jag ringde Gunnar och bad om ursäkt för honungen. Han förstod inte heller.',
-  'Mina grytvantar. Jag virkade dem medan vi såg på Bingolotto. Hela säsongen.',
-  'Okej. Jag skickar inga fler burkar. … Pappa tar med fyra på torsdag. Det är de sista. Kanske.',
-  'Jag har pratat med prästen.',
+  'Pappa säger att lingonsylten är slut redan?! Vad bra att du äter ordentligt!! Jag kokar mer ikväll ❤️',
+  'Har du ätit upp HONUNGEN också?? Jag ringde Gunnar. Han har tre kilo till. Pappa kör dit på lördag.',
+  'Du gillar verkligen mina grytvantar! Jag har börjat virka i dubbel takt. Lila och orange den här gången.',
+  'Jag har köpt 40 kilo socker. Kassörskan frågade om jag driver ett bageri. Jag sa: Nej. Jag har ett barn som ÄTER.',
+  'Pappa säger att jag ska sluta. Men du har ju ätit upp allt! Det betyder att du tycker om det. Så enkelt är det.',
+  'Jag har gjort en lista: 30 burkar lingon, 20 honung, 15 saft, 12 par grytvantar. Pappa får köra två vändor.',
 ];
 function malBurk() {
   const t = valdTyp();
@@ -3687,7 +3722,7 @@ function malBurk() {
   andraRespekt(-BURK_RESPEKT, 'Malde mammas ' + VAROR[t].namn.replace(/ från mamma| \(lila\)/, '').toLowerCase());
   const n = S.burkMalda;
   if (n === 1 || n === 3 || n === 6 || n === 10 || n === 15 || n === 22) setTimeout(() => sms('mamma', MAMMA_BURK_ARG[[1, 3, 6, 10, 15, 22].indexOf(n)]), 6000 + Math.random() * 8000);
-  if (n === 4) setTimeout(() => sms('bror', 'Mamma grät i telefon. Hon säger att du gör plast av hennes sylt. Jag sa att det är återvinning. Det hjälpte inte.'), 15000);
+  if (n === 4) setTimeout(() => sms('bror', 'Mamma tror att du äter upp allt. Hon har kokat sylt i tre dygn. Pappa vet vad du gör. Pappa säger inget. Han suckar bara.'), 15000);
   if (n === 8) setTimeout(() => sms('rolf', 'Hörde att du mal din mammas sylt. Även ja har gränser. /R'), 12000);
 }
 
@@ -4468,7 +4503,7 @@ const SMS_POOL = [
   { id: 'r_burk', vem: 'rolf', nar: () => (S.burkar || 0) >= 10, text: 'Såg alla burkar vid ditt skjul. Försökte ge Kajsa honung. Hon vill inte heller ha den. /R' },
   { id: 'b_pappa_dryg1', vem: 'bror', nar: () => (S.burkMalda || 0) >= 2, text: 'Mamma pratar bara om sylten. Pappa har slutat säga "aha, vad lugnt då". Han säger bara "mm". Det är värre.' },
   { id: 'b_pappa_dryg2', vem: 'bror', nar: () => (S.burkMalda || 0) >= 5, text: 'Pappa sover i garaget. Han säger att det är för att lyssna på motorn. Bilen är avstängd.', svar: [['Säg att jag är ledsen.', 'Jag sa det. Han sa "aha". Sen gick han ut i garaget igen.'], ['Det är inte mitt fel.', 'Okej. Säg det till mamma då. Lycka till.']] },
-  { id: 'm_pappa_dryg', vem: 'mamma', nar: () => (S.burkMalda || 0) >= 3, text: 'Pappa är inte sig själv. Han tittade inte ens på Formel 1. Han satt och tittade på en tom syltburk. Är du nöjd nu?' },
+  { id: 'm_pappa_dryg', vem: 'mamma', nar: () => (S.burkMalda || 0) >= 3, text: 'Pappa är så trött. Han säger att han inte orkar köra fler burkar. Men du har ju ätit upp allt! Han får skärpa sig.' },
   { id: 'r_pappa', vem: 'rolf', nar: () => !!S.pappaBesok, text: 'Din farsa e en bra karl. Vi snacka Scania o hockey. Han säger "blada" istället för gå. Ja ska börja me det. /R' },
   // mamma och brorsan efter pappas besök
   { id: 'm_pappa_besok', vem: 'mamma', nar: () => !!S.pappaBesok, text: 'Var pappa DÄR?! Han sa att han skulle köpa mjölk! Han kom hem och sa "aha, vad lugnt dom har det". LUGNT?!' },
@@ -5148,6 +5183,6 @@ function kapitelSlut() {
 }
 
 // för automatiska tester
-window.__printahem = { uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
