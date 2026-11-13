@@ -4784,7 +4784,7 @@ function visaHotbarNamn() {
 }
 topp.insertAdjacentHTML('beforeend', `<div class="fp-chip ph-resp-chip" title="Respekt – hur andra ser på dig" style="pointer-events:auto;cursor:pointer">${ik('hjarta')}<span class="ph-resp">0</span></div><div class="fp-chip">${ik('rulle')}<span class="ph-fil">0</span></div>
   <div class="fp-chip ph-dag-chip" title="Dagen är din nivå – klicka för bokmärken" style="pointer-events:auto;cursor:pointer">${ik('klocka')}<span class="ph-klocka"></span></div>
-  <div class="fp-chip">${ik('kista')}<span class="ph-forrad">0</span></div>
+  <div class="fp-chip" title="Saker i ditt förråd (kistan vid skjulet)">${ik('kista')}<span style="opacity:.7;font-weight:700">Förråd</span><span class="ph-forrad">0</span></div>
   <div class="fp-chip ph-sms-chip" style="display:none;pointer-events:auto;cursor:pointer">${ik('telefon')}<span class="ph-sms-n">0</span></div>
   <div class="fp-chip ph-bar-chip"><span class="ph-grip-ikon">${ik('hand')}</span><span class="ph-bar-namn">Bär</span><span class="ph-lastbar"><i></i></span><span class="ph-bar">0/2</span></div>
   <div class="fp-chip ph-strom-chip">${ik('blixt')}<div class="ph-strom"><i></i></div></div>`);
@@ -4812,6 +4812,8 @@ document.body.insertAdjacentHTML('beforeend', `<div class="hud-status">
   <div class="hud-matare" data-hud="respekt" title="Respekt – hur andra ser på dig"><div class="hud-ikon"></div><div class="hud-m"><div class="rad"><span>Respekt</span><b></b></div><div class="hud-bar"><i></i></div></div></div>
 </div>`);
 const hudEl = document.querySelector('.hud-status');
+document.body.insertAdjacentHTML('beforeend', '<div class="hud-hand" hidden><b></b><span><i></i></span></div>');
+const hudHand = document.querySelector('.hud-hand');
 hudEl.querySelector('.hud-klocka').onclick = () => oppnaBokmarken();
 hudEl.querySelector('[data-hud="respekt"]').onclick = () => oppnaRespekt();
 hudEl.querySelector('[data-hud="trivsel"]').onclick = () => { dagbokFlik = 'mal'; oppnaDagbok(); };
@@ -5454,6 +5456,10 @@ function uppdatera(dt) {
     let namn, andel, txt;
     if (valdKarra()) { namn = 'Kärran'; andel = karraGram() / KARRA_KAP; txt = `${(karraGram() / RULLE).toLocaleString('sv-SE', { maximumFractionDigits: 1 })}/${KARRA_KAP / RULLE} rullar`; }
     else { namn = ['Händerna', 'Gripen', 'Gripen + korg', 'Magneten'][niva()]; andel = nSkrap / BARA_SKRAP[niva()]; txt = `${nSkrap}/${BARA_SKRAP[niva()]} st` + (barGram ? ` · ${(barGram / RULLE).toLocaleString('sv-SE', { maximumFractionDigits: 1 })} rulle` : ''); }
+    // kapaciteten visas vid handen, bara när du faktiskt bär något
+    { const bar = valdKarra() ? karraGram() > 0 : nSkrap > 0, kort = valdKarra() ? txt : `${nSkrap}/${BARA_SKRAP[niva()]}`;
+      if (hudHand.hidden === bar) hudHand.hidden = !bar;
+      if (bar && hudHand.dataset.t !== kort) { hudHand.dataset.t = kort; hudHand.querySelector('b').textContent = kort; const i = hudHand.querySelector('i'); i.style.width = Math.min(100, andel * 100) + '%'; i.style.background = andel >= 1 ? '#ff6b6b' : andel > 0.7 ? '#ffb84d' : '#7dffb0'; hudHand.classList.toggle('full', andel >= 1); hudHand.classList.remove('studs'); void hudHand.offsetWidth; hudHand.classList.add('studs'); } }
     if (barText.textContent !== txt) { barText.textContent = txt; lastNamn.textContent = namn; lastBar.style.width = Math.min(100, andel * 100) + '%'; lastBar.style.background = andel >= 1 ? '#ff6b6b' : andel > 0.7 ? '#ffb84d' : '#7dffb0'; }
   }
 
@@ -6038,4 +6044,4 @@ window.__printahem = { spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, 
 startaLoop(uppdatera, { scen, kamera, renderer });
 
 // formspråket "Printat & skrotigt" läggs sist så att det vinner över äldre stilar
-{ const st = document.createElement('style'); st.textContent = BRAND_CSS + HUD_CSS + '.fp-topp>.fp-chip:first-child,.ph-resp-chip,.ph-dag-chip{display:none!important}'; document.head.appendChild(st); }
+{ const st = document.createElement('style'); st.textContent = BRAND_CSS + HUD_CSS + '.fp-topp>.fp-chip:first-child,.ph-resp-chip,.ph-dag-chip,.ph-bar-chip{display:none!important}'; document.head.appendChild(st); }

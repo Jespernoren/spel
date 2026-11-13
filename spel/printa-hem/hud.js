@@ -56,6 +56,11 @@ export const HUD_CSS = `
 .hud-m .rad span{color:#c5ccda;text-transform:uppercase}.hud-m .rad b{font-weight:900}
 .hud-bar{height:10px;border-radius:3px;background:rgba(0,0,0,.45);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.5)}
 .hud-bar i{display:block;height:100%;width:0;border-radius:3px;transition:width .6s cubic-bezier(.2,.9,.3,1),background .6s;background-image:${LAGER}}
+.hud-hand{position:fixed;right:24%;bottom:150px;z-index:21;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 12px 7px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.82);border-bottom:3px solid rgba(0,0,0,.45);color:#fff}
+.hud-hand[hidden]{display:none}
+.hud-hand b{font:900 20px/1 var(--rubrik);letter-spacing:.03em}
+.hud-hand span{display:block;width:64px;height:6px;border-radius:3px;background:rgba(0,0,0,.45);overflow:hidden}.hud-hand i{display:block;height:100%;width:0;transition:width .2s}
+.hud-hand.full b{color:#ff8a8a}.hud-hand.studs{animation:hudStuds .35s cubic-bezier(.3,1.6,.5,1)}
 .ph-mal.hud-uppdrag{position:fixed;left:max(12px,env(safe-area-inset-left));top:auto;z-index:21;width:250px;max-width:none;padding:9px 12px 10px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.88)!important;border:1px solid rgba(255,255,255,.07);border-left:5px solid var(--falu);border-bottom:3px solid rgba(0,0,0,.45);box-shadow:none}
 .hud-uppdrag .ph-mal-del{display:flex!important;justify-content:space-between;font:900 11px var(--rubrik)!important;letter-spacing:.08em!important;color:var(--papper);opacity:1!important}
 .hud-antal{position:absolute;right:11px;top:9px;font:900 11px var(--rubrik);font-style:normal;color:var(--fil);letter-spacing:.06em}
