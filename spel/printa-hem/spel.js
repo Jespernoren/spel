@@ -4377,7 +4377,11 @@ function oppnaMarknad() {
   // KÖP
   kropp += `<div class="ali-niva kop"><div class="ali-niva-rub"><span>${ik('kop')} Köp av Ali</span><small>det kostar pengar</small></div>`;
   {
-    const sekts = [...new Set(kopL.map((x) => x.sekt))];
+    // unika fynd: finns bara en gång och försvinner när du köpt dem – egen guldram överst
+    const UNIKA = ['Rolfs önskan', 'Present till Rolf', 'Alis prototyper – en av varje'];
+    const alla = [...new Set(kopL.map((x) => x.sekt))], unika = alla.filter((x) => UNIKA.includes(x)), sekts = alla.filter((x) => !UNIKA.includes(x));
+    const rutaK = (x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', titel: x.namn, storlek: x.storlek, etikett: true });
+    if (unika.length) kropp += `<div class="ali-unik"><div class="ali-unik-rub"><span>★ Unika fynd</span><small>finns bara en gång – sen är de borta</small></div>${unika.map((sk) => `<div class="ali-unik-grupp"><b>${sk.replace(' – en av varje', '')}</b>${grid(kopL.filter((x) => x.sekt === sk).map(rutaK))}</div>`).join('')}</div>`;
     kropp += sekts.map((sk) => sektion(sk) + grid(kopL.filter((x) => x.sekt === sk).map((x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', titel: x.namn, storlek: x.storlek, etikett: true })))).join('')
       + (Object.values(MASKINER).some((m) => !m.syns()) ? `<p class="ui-tom">${ik('las')} Fler ritningar dyker upp när du kommer vidare – Ali sitter uppe med AI:n varje natt.</p>` : '');
   }
@@ -4672,7 +4676,7 @@ function startRuta(titel = ui.o.titel, text = ui.o.text, knappText = 'Starta') {
   ui.overlay.querySelector('[data-sparplatser]').onclick = () => ui.o.onSparplatser?.();
   ui.overlay.querySelector('[data-kontroller]').onclick = () => {
     const pop = document.createElement('div'); pop.className = 'br-bekrafta';
-    const K = [['W A S D', 'Gå'], ['Mus', 'Titta'], ['Klick / E', 'Använd, plocka upp'], ['Klicka och håll', 'Veva, trampa, gripa'], ['Shift', 'Spring'], ['Mellanslag', 'Hoppa'], ['Hjulet / 1–8', 'Byt sak i handen'], ['H', 'Tomhänt'], ['Q', 'Släpp skräp'], ['Shift + Q', 'Släpp allt'], ['R', 'Vrid det du ställer ut'], ['G', 'Flytta gamingboden'], ['I', 'Dina saker'], ['B', 'Dagbok och mål'], ['M', 'Meddelanden'], ['K', 'Sparplatser'], ['V', 'Byt röster'], ['Esc', 'Paus och den här menyn']];
+    const K = [['W A S D', 'Gå'], ['Mus', 'Titta'], ['Klick / E', 'Använd, plocka upp'], ['Klicka och håll', 'Veva, trampa, gripa'], ['Shift', 'Spring'], ['Mellanslag', 'Hoppa'], ['Hjulet / 1–8', 'Byt sak i handen'], ['H', 'Tomhänt'], ['Q', 'Släpp skräp'], ['Shift + Q', 'Släpp allt'], ['R', 'Vrid det du ställer ut'], ['G', 'Flytta gamingboden'], ['I', 'Dina saker'], ['B', 'Dagbok och mål'], ['M', 'Meddelanden'], ['Tab', 'Frigör musen (klicka på knappar)'], ['K', 'Sparplatser'], ['V', 'Byt röster'], ['Esc', 'Paus och den här menyn']];
     pop.innerHTML = `<div class="br-bekrafta-ruta br-kontroller"><b>Kontroller</b><div class="br-tangenter">${K.map(([t, v]) => `<kbd>${t}</kbd><span>${v}</span>`).join('')}</div><p style="margin-top:10px!important">På mobil och surfplatta: dra för att gå, svep för att titta och tryck på handen för att använda.</p><div class="br-val" style="max-width:200px"><button class="br-valknapp" data-nej>Stäng</button></div></div>`;
     ui.overlay.querySelector('.br-start').appendChild(pop);
     pop.querySelector('[data-nej]').onclick = () => pop.remove(); pop.onclick = (e) => { if (e.target === pop) pop.remove(); };
@@ -4902,6 +4906,18 @@ document.body.insertAdjacentHTML('beforeend', `<div class="hud-flikar"><button c
 const hudSms = document.querySelector('[data-flik-sms]');
 hudSms.onclick = () => oppnaInkorg();
 document.querySelector('[data-flik-bok]').onclick = () => { dagbokFlik = 'dagbok'; oppnaDagbok(); };
+// Tab frigör musen utan att pausa: då kan du klicka på telefonen, dagboken och notiserna. Klicka i världen för att styra igen.
+let musFri = false;
+{ const _p = ui.pausa.bind(ui); ui.pausa = (...a) => { if (musFri) return; _p(...a); }; }
+document.querySelector('.hud-flikar').insertAdjacentHTML('beforeend', '<div class="hud-musfri"><kbd>Tab</kbd> mus</div>');
+addEventListener('keydown', (e) => {
+  if (e.code === 'Escape' && musFri) { musFri = false; document.body.classList.remove('mus-fri'); }
+  if (e.code !== 'Tab' || !ui.igang || pausad) return;
+  e.preventDefault();
+  if (document.pointerLockElement) { musFri = true; document.body.classList.add('mus-fri'); document.exitPointerLock(); ui.toast('Musen är fri – klicka på telefonen eller dagboken. Klicka i världen (eller Tab) för att styra igen.'); }
+  else { musFri = false; document.body.classList.remove('mus-fri'); spelare.lasMus(); }
+}, true);
+document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement) { musFri = false; document.body.classList.remove('mus-fri'); } });
 hudEl.querySelector('.hud-klocka').onclick = () => oppnaBokmarken();
 hudEl.querySelector('[data-hud="respekt"]').onclick = () => oppnaRespekt();
 hudEl.querySelector('[data-hud="trivsel"]').onclick = () => { dagbokFlik = 'mal'; oppnaDagbok(); };

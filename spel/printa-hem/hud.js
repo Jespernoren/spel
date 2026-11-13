@@ -115,6 +115,14 @@ export const HUD_CSS = `
 .hud-hjultips .mus i{position:absolute;left:50%;top:5px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:#0d1a22;animation:hudHjul 1s ease-in-out infinite}
 @keyframes hudHjul{0%{transform:translateY(0);opacity:1}100%{transform:translateY(9px);opacity:0}}
 .ali-tips{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:rgba(76,201,240,.12);border:2px dashed rgba(76,201,240,.55);font:500 13.5px/1.45 system-ui;color:#d9eef7}.ali-tips .ui-ik{color:var(--fil);margin-top:2px}
+.ali-unik{position:relative;margin:2px 0 14px;padding:10px 12px 12px;border-radius:10px;background:linear-gradient(135deg,rgba(255,196,57,.16),rgba(178,58,42,.10));border:2px solid #e0a82e;box-shadow:0 0 18px rgba(255,196,57,.18) inset}
+.ali-unik-rub{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}.ali-unik-rub span{font:900 15px var(--rubrik);color:#ffd166;letter-spacing:.05em;text-transform:uppercase;text-shadow:0 0 10px rgba(255,209,102,.4)}.ali-unik-rub small{color:#d9c79a;font-size:12.5px}
+.ali-unik-grupp{margin-top:6px}.ali-unik-grupp>b{display:block;font:800 11px system-ui;letter-spacing:.08em;text-transform:uppercase;color:#f3d9a0;margin-bottom:5px}
+.ali-unik .ui-ruta{border-color:#c9921f #ffe3a1 #ffe3a1 #c9921f;background:#b9a27a;box-shadow:0 0 0 1px rgba(255,209,102,.4),0 0 12px rgba(255,209,102,.35)}
+.ali-unik .ui-ruta.dyr{background:#5a4a3a}
+.ali-unik .ui-ruta::before{content:"★";position:absolute;right:3px;bottom:1px;font-size:12px;color:#ffd166;text-shadow:0 1px 2px #000}
+.hud-musfri{position:absolute;right:0;top:56px;white-space:nowrap;font:700 11px system-ui;color:#c5ccda;background:rgba(25,28,36,.75);padding:2px 7px;border-radius:6px}.hud-musfri kbd{font:900 10px system-ui;padding:0 4px;border-radius:3px;background:var(--papper);color:#191c24;margin-right:3px}
+body.mus-fri .hud-flik{box-shadow:0 0 0 2px var(--fil);animation:hudPuls 1.2s ease-in-out infinite}body.mus-fri .hud-musfri{background:var(--fil);color:#0d1a22}
 .hud-hand{position:fixed;left:24%;bottom:150px;z-index:21;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 12px 7px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.82);border-bottom:3px solid rgba(0,0,0,.45);color:#fff}
 .hud-hand[hidden]{display:none}
 .hud-hand b{font:900 20px/1 var(--rubrik);letter-spacing:.03em}
