@@ -141,6 +141,7 @@ body.mus-fri .hud-flik{box-shadow:0 0 0 2px var(--fil);animation:hudPuls 1.2s ea
 .hud-plats.fel{background:${LAGER},var(--lingon);border-bottom-color:#7a1222}.hud-plats.fel::after{border-top-color:var(--lingon)}
 .hud-plats.bra{background:${LAGER},#2f8a52;border-bottom-color:#1d5a35}.hud-plats.bra::after{border-top-color:#2f8a52}
 .hud-plats.guld{background:${LAGER},#e0a82e;color:#2a1c05;border-bottom-color:#8a6510}.hud-plats.guld::after{border-top-color:#e0a82e}
+.hud-kors-lapp{left:50%;top:calc(50% - 26px);transform:translate(-50%,-100%);transition:opacity .45s;animation:hudStuds .35s cubic-bezier(.3,1.6,.5,1)}
 .hud-hand{position:fixed;left:24%;bottom:150px;z-index:21;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 12px 7px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.82);border-bottom:3px solid rgba(0,0,0,.45);color:#fff}
 .hud-hand[hidden]{display:none}
 .hud-hand b{font:900 20px/1 var(--rubrik);letter-spacing:.03em}

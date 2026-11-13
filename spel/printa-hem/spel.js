@@ -5169,7 +5169,14 @@ function ritaStopp() {
 }
 function taBort(k) { if (k.classList.contains('ut')) return; k.classList.add('ut'); setTimeout(() => k.remove(), 400); }
 // meddelanden som hör till något du just gjorde visas där du gjorde det – vid saken du klickade på, inte i hörnet
-let aktionObj = null, aktionTid = 0;
+let aktionObj = null, aktionTid = 0, klickTid = -1e9;
+addEventListener('mousedown', () => { if (ui.igang) klickTid = performance.now(); }, true);
+addEventListener('keydown', (e) => { if (e.code === 'KeyE' && ui.igang) klickTid = performance.now(); }, true);
+function korsToast(text, typ = '') {
+  document.querySelector('.hud-kors-lapp')?.remove();
+  const d = document.createElement('div'); d.className = 'hud-plats hud-kors-lapp ' + typ; d.textContent = rens(text);
+  document.body.appendChild(d); setTimeout(() => { d.style.opacity = '0'; }, 2000); setTimeout(() => d.remove(), 2500);
+}
 { const _a = interaktor.aktivera.bind(interaktor); interaktor.aktivera = (...x) => { aktionObj = interaktor.hovrad; aktionTid = performance.now(); try { return _a(...x); } finally { setTimeout(() => { if (performance.now() - aktionTid > 40) aktionObj = null; }, 60); } }; }
 const platsLappar = [], platsV = new THREE.Vector3(), platsK = new THREE.Vector3();
 function platsToast(text, obj, typ = '') {
@@ -5193,6 +5200,8 @@ function ritaPlatsLappar() {
 ui.toast = (text, typ) => {
   // under en handling (klick på en sak) och saken finns kvar: visa vid saken
   if (aktionObj && performance.now() - aktionTid < 400 && aktionObj.parent) { platsToast(text, aktionObj, typ); return; }
+  // fel och svar på det du nyss gjorde (klick, grip): mitt framför siktet
+  if (typ === 'fel' || performance.now() - klickTid < 400) { korsToast(text, typ); return; }
   notis(text, typ);
 };
 // ---------- Inkorgen uppe till höger: sms och dagbok syns direkt, läses upp en i taget ----------
