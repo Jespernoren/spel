@@ -70,8 +70,9 @@ export function knapp({ text, typ = 'neutral', attr = '', av = false, ikon = '' 
   return `<button class="ui-knapp ${typ}" ${attr} ${av ? 'disabled' : ''}>${ikon ? ik(ikon) : ''}<span>${text}</span></button>`;
 }
 // 1×1-ruta: miniatyr, pris uppe till vänster, antal nere till höger
-export function ruta({ bild = '', attr = '', vald = false, last = false, dyr = false, tom = false, antal = '', pris = '', prisTyp = '', titel = '', liten = false, storlek = 0 }) {
+export function ruta({ bild = '', attr = '', vald = false, last = false, dyr = false, tom = false, antal = '', pris = '', prisTyp = '', titel = '', liten = false, storlek = 0, etikett = false }) {
   if (tom) return `<div class="ui-ruta tom ${liten ? 'liten' : ''}" ${attr}></div>`;
+  if (etikett) return `<div class="ui-ruta-med">${ruta({ bild, attr, vald, last, dyr, antal, pris, prisTyp, titel, liten, storlek })}<span class="ui-ruta-namn ${dyr || last ? 'dim' : ''}">${esc(String(titel).replace(/^(Ritning|Recept|Prototyp): /, ''))}</span></div>`;
   return `<button class="ui-ruta ${vald ? 'vald' : ''} ${last ? 'last' : ''} ${dyr ? 'dyr' : ''} ${liten ? 'liten' : ''}" ${attr} title="${esc(titel)}">
     <span class="bild">${bild}</span>${pris !== '' ? `<span class="pris ${prisTyp}">${pris}</span>` : ''}${antal !== '' && antal !== 1 ? `<span class="antal">${antal}</span>` : ''}${last ? `<span class="lasikon">${IKON.las}</span>` : ''}${storlek ? `<span class="stl s${storlek}">${'SML'[storlek - 1]}</span>` : ''}</button>`;
 }
@@ -124,6 +125,8 @@ export const UI_CSS = `
 .ui-ruta:hover{background:#a5a5a5}.ui-ruta:active{transform:scale(.96)}
 .ui-ruta.vald{background:#ffd98a;border-color:#b07a00 #fff2c8 #fff2c8 #b07a00;box-shadow:0 0 0 2px #ffb84d}
 .ui-ruta.dyr{background:#5a4a4a;border-color:#3a2a2a #7a6262 #7a6262 #3a2a2a}.ui-ruta.dyr .bild{opacity:.3;filter:grayscale(1)}.ui-ruta.dyr .pris{color:#ff8a85!important;font-size:12px}.ui-ruta.last{background:#6d6d6d}.ui-ruta.last .bild{opacity:.35;filter:grayscale(1)}
+.ui-ruta-med{display:flex;flex-direction:column;align-items:center;gap:4px;width:84px}.ui-ruta-namn{font:700 11.5px/1.2 system-ui;color:#d9d4c7;text-align:center;max-width:84px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.ui-ruta-namn.dim{color:#7d869a}
+.ui-grid:has(.ui-ruta-med){gap:10px 6px}
 .ui-ruta.tom{background:#2a2f3c;border:2px dashed #3d4456;cursor:default}
 .ui-ruta.liten{width:58px;height:58px}
 .ui-ruta .bild{display:grid;place-items:center;width:100%;height:100%}.ui-ruta .bild img{width:54px;height:54px}.ui-ruta.liten .bild img{width:44px;height:44px}

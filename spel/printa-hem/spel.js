@@ -361,7 +361,8 @@ const rolfSteg = (i, del) => {
   const v = () => ROLF[i].vara, nm = () => VAROR[v()].namn.toLowerCase();
   return [
     { del, text: '✉️ Det ligger ett brev i Rolfs postlåda vid soptippens grind – gå och läs det!', klar: () => S.rolf.i > i || (S.rolf.i === i && (S.rolf.aktiv || S.post.tillRolf === v())), startPost: 'rolf:' + i },
-    { del, text: () => `Rolf vill ha: ${VAROR[v()].ikon} ${nm()} – printa den på skrivaren`, klar: () => S.rolf.i > i || harGava(v()) },
+    { del, text: () => `Rolf vill ha: ${VAROR[v()].ikon} ${nm()} – köp ritningen hos Ali (billig)`, klar: () => S.rolf.i > i || harGava(v()) || S.ritningar.includes('gava:' + v()) },
+    { del, text: () => `Printa ${nm()} på skrivaren – den ligger under Gåvor`, klar: () => S.rolf.i > i || harGava(v()) },
     { del, text: () => `Lägg ${nm()} i Rolfs postlåda`, klar: () => S.rolf.i > i || S.post.tillRolf === v() },
     { del, text: 'Vänta på sopbilen – Rolf kommer och hämtar gåvan', klar: () => S.rolf.i > i },
     { del, text: '📬 Rolf har lämnat något i postlådan – hämta det!', klar: () => S.rolf.i > i + 1 || (S.rolf.i > i && !S.post.tillMig.length) },
@@ -3380,6 +3381,7 @@ const PROTO_SVAR = {
 };
 const presentNu = () => Object.keys(ROLF_TACK).find((id) => !(S.rolf.fatt || []).includes(id));
 const CHEFEN = ['Hej. Rolf här – chefen. Någon har druckit min espresso. Rolf säger att det var ”ungen vid tippen”. Böter.', 'Chefen igen. Det har varit en skylt på grinden. Och mina kakor är färre. Jag vet att du är inblandad. Böter.', 'Chefen. Jag har hittat en servett stämplad GODKÄNT. Den var inte godkänd. Böter.'];
+const gavaRitningPris = (id) => Math.max(20, Math.min(S.mynt, Math.round((VAROR[id]?.gram || 300) / 10)));   // aldrig dyrare än du har
 const aktivGava = () => (S.rolf.jobb != null ? jobbNu().vara : S.rolf.aktiv && ROLF[S.rolf.i] ? ROLF[S.rolf.i].vara : null);
 function oppnaJobbVal() {
   const j = jobbNu();
@@ -4188,7 +4190,7 @@ function oppnaPrintMeny(sk) {
       `🪙 ${prisNu(id)} kr hos Ali idag${prisNu(id) < v.pris ? ` (fullpris ${v.pris} – marknaden är mättad)` : ` · ${Math.round(v.pris / v.gram * RULLE)} kr per rulle`}${v.trivsel ? ' · kan också ställas ut' : ''}`, prisNu(id));
     else if (v.lyx && harRecept(id)) lagg('hem', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, `✨ Trivsel +${v.trivsel} · ställ den i din fristad`);
     else if (id === 'sang' && S.ritningar.includes('sang') && !harSang()) lagg('hem', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, '🛏️ En riktig säng till skjulet');
-    else if (v.gava && id === aktivGava() && !harGava(id)) lagg('gava', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, `🎁 Rolfs önskan – lägg den i hans postlåda`);
+    else if (v.gava && id === aktivGava() && !harGava(id) && S.ritningar.includes('gava:' + id)) lagg('gava', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, `🎁 Rolfs önskan – lägg den i hans postlåda`);
   }
   const klarMaskin = (m) => arKlar(m);
   const _gammal = (m) => (m === 'grip' && S.grip) || (m === 'magnet' && S.magnet) || (m === 'korg' && S.korg) || (m === 'karra' && S.karra) || (m === 'kvarnmotor' && S.kvarn.motor) || (m === 'stortratt' && S.kvarn.stor) || (m === 'matarband' && S.kvarn.band) || (m === 'turbomotor' && S.kvarn.turbo) || (m === 'gamingbod' && S.bod) || (m === 'spolhallare' && skrivare.every((x) => (x.spolNiva || 0) >= 1)) || (m === 'spolhallare2' && skrivare.every((x) => (x.spolNiva || 0) >= 2)) || (m === 'spolhallare3' && skrivare.every((x) => (x.spolNiva || 0) >= 3)) || (m === 'jetmotor' && S.kvarn.jet) || (MASKINER[m].hem && m !== 'fonster' && S.hem?.[m]) || (m === 'fonster' && fonsterLista().length + antalInv('byggsats:fonster') >= FONSTER.max) || (m === 'vaggar' && (S.hem?.vagg || 0) + antalInv('byggsats:vaggar') >= 4);
@@ -4197,13 +4199,13 @@ function oppnaPrintMeny(sk) {
     lagg(x.hem || x.flik === 'hem' ? 'hem' : 'maskin', m, `data-maskin="${m}"`, ikonHtml('byggsats:' + m, 54), x.namn, x.gram * x.delar, x.tid * x.delar,
       `${x.beskr}<br>Printas i ${x.delar} delar: ${(DEL_NAMN[m] || []).join(', ').toLowerCase()} (${rullar(x.gram)} per del)`);
   }
-  const FLIKAR = [['maskin', 'kugghjul', 'Maskiner'], ['hem', 'hus', 'Hemmet'], ['salj', 'salj', 'Att sälja'], ['gava', 'gava', 'Gåvor']].filter(([f]) => saker.some((x) => x.flik === f));
+  const FLIKAR = [['maskin', 'kugghjul', 'Maskiner'], ['hem', 'hus', 'Hemmet'], ['salj', 'salj', 'Att sälja'], ['gava', 'gava', 'Gåvor – Rolfs önskan']].filter(([f]) => saker.some((x) => x.flik === f));
   // allt på en sida: maskiner, hemmet, att sälja och gåvor under varandra – ingen flik döljer något
   const vald = saker.find((x) => x.id === printVald) || saker[0];
   const behov = (x) => (x.attr.startsWith('data-maskin') ? MASKINER[x.id].gram : x.gram);
   const forStor = (x) => !x.attr.startsWith('data-maskin') && storlekFor(x.id) > skrivStorlek(sk);
   const kanInte = (x) => forStor(x) || sk.fil < 1;
-  const kropp = FLIKAR.length ? FLIKAR.map(([fl, , namn]) => sektion(namn, fl === 'salj' ? 'grön siffra = vad Ali betalar idag' : 'siffran = rullar filament') + grid(saker.filter((x) => x.flik === fl).map((x) => uiRuta({ bild: tumme(x.attr.startsWith('data-maskin') ? 'byggsats:' + x.id : x.id), attr: `data-pval="${x.id}"`, vald: x === vald, dyr: !forStor(x) && kanInte(x), last: forStor(x), storlek: storlekRuta(x.id, x.attr.startsWith('data-maskin')), pris: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? '+' + prisNu(x.id) : rullKort(x.gram), prisTyp: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? 'plus' : 'fil', titel: x.namn })))).join('')
+  const kropp = FLIKAR.length ? FLIKAR.map(([fl, , namn]) => sektion(namn, fl === 'salj' ? 'grön siffra = vad Ali betalar idag' : 'siffran = rullar filament') + grid(saker.filter((x) => x.flik === fl).map((x) => uiRuta({ bild: tumme(x.attr.startsWith('data-maskin') ? 'byggsats:' + x.id : x.id), attr: `data-pval="${x.id}"`, vald: x === vald, dyr: !forStor(x) && kanInte(x), last: forStor(x), storlek: storlekRuta(x.id, x.attr.startsWith('data-maskin')), pris: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? '+' + prisNu(x.id) : rullKort(x.gram), prisTyp: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? 'plus' : 'fil', titel: x.namn, etikett: true })))).join('')
     + (antalInv('rulle') ? `<p class="ui-tom">${ik('rulle')} Du bär ${antalInv('rulle')} ${antalInv('rulle') === 1 ? 'rulle' : 'rullar'} – välj den i verktygsraden och klicka på skrivaren för att ladda.</p>` : '')
     : `<p class="ui-tom">Inget att printa just nu – köp ritningar och recept hos Ali.</p>`;
   const fot = vald ? detalj({ bild: tumme(vald.attr.startsWith('data-maskin') ? 'byggsats:' + vald.id : vald.id, 72), titel: vald.namn, text: rens(vald.info).replace(/<br>/g, ' · '),
@@ -4299,6 +4301,11 @@ function aliKopLista() {
     if (!harRumFor('rulle')) { aliRepl = 'Var ska du bära den? Fickorna är fulla.'; return false; }
     laggTill('rulle'); aliRepl = 'En rulle. Nyspolad. Ta den.'; return true;
   });
+  // Rolfs önskan: Ali har ritningen (billig – det ska aldrig vara pengarna som stoppar dig)
+  { const gv = aktivGava(); if (gv && !harGava(gv) && !S.ritningar.includes('gava:' + gv)) {
+    const v = VAROR[gv], pris = gavaRitningPris(gv);
+    add('Rolfs önskan', 'g:' + gv, tumme(gv), 'Ritning: ' + v.namn, `Det Rolf bad om. Printa den och lägg den i hans brevlåda vid grinden.`, pris, [['rulle', rullar(v.gram)]], () => { S.ritningar.push('gava:' + gv); aliRepl = gv === 'olhallare' ? 'Ölhållare? Till sopgubben? Ja ja. Den är bra. Kylklampen var min idé.' : 'Till Rolf igen? Han borde betala mig direkt.'; return true; });
+  } }
   if ((forstaUpp() || S.ritningar.includes('sang')) && !S.ritningar.includes('sang') && !harSang())
     add('Bygg ut hemmet', 'sang', tumme('sang'), 'Ritning: Säng', 'En riktig säng till skjulet. Slut på det kalla golvet.', SANG_INSTRUKTION, [['rulle', '2 rullar']], () => { S.ritningar.push('sang'); aliRepl = 'Sov gott, min vän.'; return true; });
   if (S.hem?.tapeter || S.bod) for (let i = 0; i < TAPETER.length; i++) {
@@ -4363,13 +4370,15 @@ function oppnaMarknad() {
   // SÄLJ
   const allt = saljL.reduce((a, x) => a + summaFor(x.typ, x.n), 0);
   kropp += `<div class="ali-niva salj"><div class="ali-niva-rub"><span>${ik('salj')} Sälj till Ali</span><small>du får pengar</small>${saljL.length ? knapp({ text: `Sälj allt  +${allt.toLocaleString('sv-SE')} kr`, typ: 'plus', attr: 'data-saljallt' }) : ''}</div>`
-    + (saljL.length ? grid(saljL.map((x) => uiRuta({ bild: tumme(x.typ), attr: `data-val="s:${x.key}"`, vald: 's:' + x.key === aliVald, antal: x.n, pris: '+' + x.pris, prisTyp: 'plus', titel: namnFor(x.typ) })))
+    + (saljL.length ? grid(saljL.map((x) => uiRuta({ bild: tumme(x.typ), attr: `data-val="s:${x.key}"`, vald: 's:' + x.key === aliVald, antal: x.n, pris: '+' + x.pris, prisTyp: 'plus', titel: namnFor(x.typ), etikett: true })))
       : '<p class="ui-tom">Du har inget att sälja. Printa saker på skrivaren – de hamnar i din verktygsrad.</p>') + '</div>';
+  // Rolfs önskan finns inte hos Ali – den printar du själv
+  { const gv = aktivGava(); if (gv && !harGava(gv)) kropp += `<div class="ali-tips">${ik('gava')} <span><b>Rolfs önskan: ${VAROR[gv]?.namn || gv}</b> – ${S.ritningar.includes('gava:' + gv) ? 'du har ritningen. Printa den på skrivaren under <b>Gåvor</b>' : 'köp ritningen här nere under <b>Rolfs önskan</b>, printa den på skrivaren'} och lägg den i Rolfs brevlåda vid grinden.</span></div>`; }
   // KÖP
   kropp += `<div class="ali-niva kop"><div class="ali-niva-rub"><span>${ik('kop')} Köp av Ali</span><small>det kostar pengar</small></div>`;
   {
     const sekts = [...new Set(kopL.map((x) => x.sekt))];
-    kropp += sekts.map((sk) => sektion(sk) + grid(kopL.filter((x) => x.sekt === sk).map((x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', titel: x.namn, storlek: x.storlek })))).join('')
+    kropp += sekts.map((sk) => sektion(sk) + grid(kopL.filter((x) => x.sekt === sk).map((x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', titel: x.namn, storlek: x.storlek, etikett: true })))).join('')
       + (Object.values(MASKINER).some((m) => !m.syns()) ? `<p class="ui-tom">${ik('las')} Fler ritningar dyker upp när du kommer vidare – Ali sitter uppe med AI:n varje natt.</p>` : '');
   }
   kropp += '</div>';
@@ -4516,13 +4525,13 @@ function smsLast(fran) {
   setTimeout(() => sms(f, t, id), 4000);
 }
 function oppnaInkorg() {
-  // olästa sms: öppna det äldsta olästa i telefonen (läses upp), ett i taget
-  const olast = S.sms.find((m) => m.ny);
-  if (olast) { olast.ny = false; smsLast(olast.fran); document.querySelectorAll('.ph-notis.klickbar').forEach((k) => { if (k.dataset.text === olast.text) taBort(k); }); medKo.unshift({ typ: 'sms', fran: olast.fran, text: olast.text }); if (medEl2.hidden) visaNastaMeddelande(); return; }
+  // alla meddelanden på en sida, nyast först – klicka Läs upp för att höra ett igen
   const olasta = S.sms.filter((m) => m.ny).length;
-  S.sms.forEach((m) => { if (m.ny) { m.ny = false; smsLast(m.fran); } }); S.olasta = 0; sparaSnart();
-  const kropp = S.sms.length ? S.sms.slice().reverse().map((m, i) => rad({ bild: portratt(vemAvSms(m.fran), 40), titel: AVSANDARE[m.fran]?.namn || m.fran, text: m.text, ny: i < olasta })).join('') : `<p class="ui-tom">Inga meddelanden än.</p>`;
-  oppnaRuta(panel({ ikon: 'telefon', titel: 'Meddelanden', sub: olasta ? `${olasta} nya` : 'Allt läst', kropp }));
+  const kropp = S.sms.length ? S.sms.slice().reverse().map((m, i) => rad({ bild: portratt(vemAvSms(m.fran), 40), titel: AVSANDARE[m.fran]?.namn || m.fran, text: m.text, ny: !!m.ny,
+    hoger: knapp({ text: 'Läs upp', typ: 'neutral', attr: `data-lasupp="${S.sms.length - 1 - i}"`, ikon: 'pil' }) })).join('') : `<p class="ui-tom">Inga meddelanden än.</p>`;
+  oppnaRuta(panel({ ikon: 'telefon', titel: 'Meddelanden', sub: olasta ? `${olasta} nya – de läses upp en i taget` : 'Allt läst', kropp }), (el) => {
+    el.querySelectorAll('[data-lasupp]').forEach((k) => { k.onclick = () => { const m = S.sms[+k.dataset.lasupp]; if (m) prata(m.fran, m.text); }; });
+  });
 }
 
 // ---------- Sparplatser: spara läget, börja om, ladda tillbaka ----------
@@ -5039,6 +5048,21 @@ function kollaPuffar(dt) {
     puffSenast[p.id] = nu; puffTid[p.id] = 0;
     inkorg({ vem: 'du', titel: 'Tanke', text: p.text, fore: () => { const o = p.mal(); if (o) { o.getWorldPosition(puffV); tittaMot(puffV.x, puffV.z, 1.4); } } });
   }
+}
+// ---------- Räddningsnät: du ska aldrig kunna fastna utan plast och utan pengar ----------
+// räcker inte allt du har (rullar, filament i skrivarna, kvarnen, skräp du når) till nästa sak och du inte har råd
+// med en rulle, tippar sopbilen lite plast innanför staketet.
+let raddTid = 0, raddSenast = -1e9;
+function kollaRaddning(dt) {
+  raddTid += dt; if (raddTid < 10 || !ui.igang) return; raddTid = 0;
+  if (S.mynt >= FILAMENT_KOP.pris || performance.now() - raddSenast < 240000) return;
+  const behov = (VAROR[aktivGava()]?.gram || 200) * 1.3;
+  const nar = skrapLista.filter((x) => !x.userData.tung && (S.tippNyckel || !paTippen(x.position.x, x.position.z))).reduce((a, x) => a + (x.userData.gram ?? 200), 0);
+  const har = antalInv('rulle') * RULLE + skrivare.reduce((a, x) => a + (x.fil || 0), 0) + (S.kvarn.ut || 0) + (S.kvarn.trattGram || 0) + nar;
+  if (har >= behov) return;
+  raddSenast = performance.now();
+  for (let i = 0; i < 8; i++) laggSkrap(TS.x2 + 2 + Math.random() * 3, TIPP.z + (Math.random() - 0.5) * 6, slumpVariant(), Math.random() * 6.3);
+  ui.toast('Sopbilen tippade lite extra plast innanför staketet vid grinden', 'guld');
 }
 // ---------- Budkön: ett meddelande i taget, med andrum emellan ----------
 // sms, Alis rop, berättaren och dagboken körs aldrig samtidigt: nästa väntar tills ingen pratar,
@@ -5581,7 +5605,7 @@ function uppdatera(dt) {
   // matarbandet flyttar skräp från bingen till tratten (drar lite ström)
   if (!STEG[S.steg] && !sover) { const fore = S.dagTid || 0; S.dagTid = Math.min(DAG_LANGD, fore + dt); if (Math.floor(fore / 30) !== Math.floor(S.dagTid / 30)) sparaSnart(); }
   if (harProto('m_fusion')) S.strom = Math.min(stromMax(), S.strom + dt * 0.8);
-  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraBlick(dt); uppdateraMalPil(); ritaStopp(); korBud(); kollaPuffar(dt); visaRullstall(); for (const sk of skrivare) visaSpolar(sk);
+  uppdateraAuto(dt); uppdateraMalSkylt(dt); uppdateraFigurer(dt); uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraBlick(dt); uppdateraMalPil(); ritaStopp(); korBud(); kollaPuffar(dt); visaRullstall(); kollaRaddning(dt); for (const sk of skrivare) visaSpolar(sk);
   if (S.kvarn.band) {
     const kor = S.kvarn.binge.length > 0 && S.kvarn.tratt < TRATT_MAX && S.strom > 0.5;
     if (kor) {

@@ -114,6 +114,7 @@ export const HUD_CSS = `
 .hud-hjultips .mus{position:relative;width:22px;height:34px;border:3px solid #0d1a22;border-radius:12px;flex:none}
 .hud-hjultips .mus i{position:absolute;left:50%;top:5px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:#0d1a22;animation:hudHjul 1s ease-in-out infinite}
 @keyframes hudHjul{0%{transform:translateY(0);opacity:1}100%{transform:translateY(9px);opacity:0}}
+.ali-tips{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:rgba(76,201,240,.12);border:2px dashed rgba(76,201,240,.55);font:500 13.5px/1.45 system-ui;color:#d9eef7}.ali-tips .ui-ik{color:var(--fil);margin-top:2px}
 .hud-hand{position:fixed;left:24%;bottom:150px;z-index:21;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 12px 7px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.82);border-bottom:3px solid rgba(0,0,0,.45);color:#fff}
 .hud-hand[hidden]{display:none}
 .hud-hand b{font:900 20px/1 var(--rubrik);letter-spacing:.03em}
