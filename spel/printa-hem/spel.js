@@ -2065,7 +2065,6 @@ function ritaSpolstall(sk) {
   for (let i = 0; i < platser; i++) {
     const rad = Math.floor(i / perRad), kol = i % perRad, y = 0.2 + rad * 0.21, z = -0.27 + kol * 0.18;
     if (kol === 0) { const ax = cyl(0.012, 0.012, 0.74, mat(0x999999), 6); ax.rotation.x = Math.PI / 2; ax.position.y = y; g.add(ax); }
-    const nav = cyl(0.03, 0.03, 0.08, mat(0x222222), 10); nav.rotation.x = Math.PI / 2; nav.position.set(0, y, z); g.add(nav);   // tom hylsa
     const sp = cyl(0.085, 0.085, 0.07, mat(SPOL_FARG[i % SPOL_FARG.length]), 16); sp.rotation.x = Math.PI / 2; sp.position.set(0, y, z); g.add(sp);
     spolar.push(sp);
   }
@@ -2086,7 +2085,7 @@ function laggTillSkrivare(id, gen, mesh, sparat) {
   if (sparat) Object.assign(sk, { jobb: sparat.jobb, prog: sparat.prog || 0, klar: sparat.klar, fil: sparat.fil || 0, spolNiva: sparat.spolNiva || 0, upprepa: sparat.upprepa || null, mod: sparat.mod || null });
   // spolen på skrivarens sida: tjock när den är full, krymper medan den printar
   const spole = new THREE.Group(), B = 0.5 * (mesh.userData.sk || 1);
-  const karna = cyl(0.11, 0.11, 0.08, mat(0x3de3ff, { emissive: 0x3de3ff, emissiveIntensity: 0.25 }), 18); karna.rotation.z = Math.PI / 2; spole.add(karna);
+  const karna = cyl(0.11, 0.11, 0.08, mat(0x4cc9f0, { roughness: 0.6 }), 18);   // en vanlig filamentspole, samma som i rullstället karna.rotation.z = Math.PI / 2; spole.add(karna);
   for (const x of [-0.05, 0.05]) { const f = cyl(0.13, 0.13, 0.012, mat(0x222222), 18); f.rotation.z = Math.PI / 2; f.position.x = x; spole.add(f); }
   spole.position.set(B / 2 + 0.09, 0.45 * (mesh.userData.sk || 1), -B / 4); mesh.add(spole); sk.spole = spole; sk.spoleKarna = karna;
   ritaSpolstall(sk);
@@ -4245,9 +4244,11 @@ function oppnaPrintMeny(sk) {
   const behov = (x) => (x.attr.startsWith('data-maskin') ? MASKINER[x.id].gram : x.gram);
   const forStor = (x) => !x.attr.startsWith('data-maskin') && storlekFor(x.id) > skrivStorlek(sk);
   const kanInte = (x) => forStor(x) || sk.fil < 1;
-  const kropp = FLIKAR.length ? FLIKAR.map(([fl, , namn]) => sektion(namn, fl === 'salj' ? 'grön siffra = vad Ali betalar idag' : 'siffran = rullar filament') + grid(saker.filter((x) => x.flik === fl).sort((a, b) => (forStor(a) || kanInte(a)) - (forStor(b) || kanInte(b))).map((x) => uiRuta({ bild: tumme(x.attr.startsWith('data-maskin') ? 'byggsats:' + x.id : x.id), attr: `data-pval="${x.id}"`, vald: x === vald, dyr: !forStor(x) && kanInte(x), last: forStor(x), storlek: storlekRuta(x.id, x.attr.startsWith('data-maskin')), pris: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? '+' + prisNu(x.id) : rullKort(x.gram), prisTyp: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? 'plus' : 'fil', titel: x.namn, etikett: true })))).join('')
+  const helaISkrivare = Math.floor((sk.fil || 0) / RULLE);
+  const taAv = helaISkrivare >= 1 && !sk.jobb ? `<div class="ph-saljallt">${knapp({ text: `Ta av en rulle (${helaISkrivare} hel${helaISkrivare > 1 ? 'a' : ''} i skrivaren)`, typ: 'neutral', attr: 'data-taav', ikon: 'rulle' })}<span>Hamnar i verktygsraden – bra om du vill flytta filament till en annan skrivare</span></div>` : '';
+  const kropp = taAv + (FLIKAR.length ? FLIKAR.map(([fl, , namn]) => sektion(namn, fl === 'salj' ? 'grön siffra = vad Ali betalar idag' : 'siffran = rullar filament') + grid(saker.filter((x) => x.flik === fl).sort((a, b) => (forStor(a) || kanInte(a)) - (forStor(b) || kanInte(b))).map((x) => uiRuta({ bild: tumme(x.attr.startsWith('data-maskin') ? 'byggsats:' + x.id : x.id), attr: `data-pval="${x.id}"`, vald: x === vald, dyr: !forStor(x) && kanInte(x), last: forStor(x), storlek: storlekRuta(x.id, x.attr.startsWith('data-maskin')), pris: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? '+' + prisNu(x.id) : rullKort(x.gram), prisTyp: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? 'plus' : 'fil', titel: x.namn, etikett: true })))).join('')
     + (antalInv('rulle') ? `<p class="ui-tom">${ik('rulle')} Du bär ${antalInv('rulle')} ${antalInv('rulle') === 1 ? 'rulle' : 'rullar'} – välj den i verktygsraden och klicka på skrivaren för att ladda.</p>` : '')
-    : `<p class="ui-tom">Inget att printa just nu – köp ritningar och recept hos Ali.</p>`;
+    : `<p class="ui-tom">Inget att printa just nu – köp ritningar och recept hos Ali.</p>`);
   const fot = vald ? detalj({ bild: tumme(vald.attr.startsWith('data-maskin') ? 'byggsats:' + vald.id : vald.id, 72), titel: vald.namn, text: rens(vald.info).replace(/<br>/g, ' · '),
     faktaLista: [VAROR[vald.id]?.pris && !vald.attr.startsWith('data-maskin') ? ['mynt', `Ali betalar ${prisNu(vald.id)} kr idag${prisNu(vald.id) < saljPris(vald.id) ? ` (vanligt ${saljPris(vald.id)})` : ''}`, 'plus'] : null, VAROR[vald.id]?.pris && !vald.attr.startsWith('data-maskin') ? ['oandlig', `${Math.round(prisNu(vald.id) / (vald.gram / RULLE))} kr per rulle`, 'plus'] : null, sk.fil > 0 && sk.fil < behov(vald) && !forStor(vald) ? ['varning', `Laddat räcker till ${Math.floor(sk.fil / behov(vald) * 100)} % – den pausar sedan tills du laddar mer`, 'varn'] : null, ['klocka', `${Math.round(vald.tid / g.fart)} s`], ['rulle', `${rullar(vald.gram)}${vald.attr.startsWith('data-maskin') ? ` (${rullar(behov(vald))} per del)` : ''}`]],
     knappar: [S.auto?.lada && !vald.attr.startsWith('data-maskin') && VAROR[vald.id]?.pris > 0 ? { text: sk.upprepa === vald.id ? 'Autoprint: PÅ' : 'Autoprint: AV', typ: sk.upprepa === vald.id ? 'plus' : 'neutral', attr: `data-upprepa="${vald.id}"`, ikon: 'oandlig' } : null, { text: forStor(vald) ? `Kräver skrivare ${STORLEK_NAMN[storlekFor(vald.id)]}` : kanInte(vald) ? 'Ladda mer filament' : 'Printa', typ: 'plus', attr: vald.attr + ' data-printa', av: kanInte(vald), ikon: forStor(vald) ? 'las' : 'skrivare' }].filter(Boolean) }) : detalj({});
@@ -4255,6 +4256,11 @@ function oppnaPrintMeny(sk) {
     kropp, fot });
   oppnaRuta(html, (el) => {
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { printFlik = k.dataset.flik; printVald = null; ljud.plock(); oppnaPrintMeny(sk); }; });
+    el.querySelector('[data-taav]')?.addEventListener('click', () => {
+      if ((sk.fil || 0) < RULLE || sk.jobb) return;
+      if (!harRumFor('rulle')) { ui.toast('Ingen plats i verktygsraden eller kistan', 'fel'); ljud.fel(); return; }
+      sk.fil -= RULLE; laggTill('rulle'); sk.spolstall && (sk.spolstall.userData.visar = -1); visaSpolar(sk); sparaSkrivare(); ljud.plock(); oppnaPrintMeny(sk);
+    });
     el.querySelectorAll('[data-pval]').forEach((k) => {
       k.onclick = () => { printVald = k.dataset.pval; ljud.plock(); oppnaPrintMeny(sk); };
       k.ondblclick = () => el.querySelector('[data-printa]')?.click();
