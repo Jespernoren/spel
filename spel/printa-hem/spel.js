@@ -63,8 +63,8 @@ const SKRAP_SORTER = {
   pase: { namn: 'Plastpåse', gram: 100, andel: 17 },
   dunk: { namn: 'Plastdunk', gram: 500, andel: 13 },
   back: { namn: 'Ölback', gram: 1000, andel: 5 },   // sällsynt fynd – en hel rulle!
-  tunna: { namn: 'Regntunna', gram: 2500, andel: 3, tung: true },   // tungt – kräver skottkärra
-  kajak: { namn: 'Plastkajak', gram: 5000, andel: 2, tung: true },
+  tunna: { namn: 'Regntunna', gram: 1500, andel: 3, tung: true },   // tungt – kräver skottkärra
+  kajak: { namn: 'Plastkajak', gram: 2500, andel: 2, tung: true },
 };
 const TRATT_MAX = 12;
 const BINGE_MAX = 60;            // matarbandets binge rymmer så här många skräp
@@ -219,13 +219,13 @@ const MASKINER = {
   bank: { namn: 'Batteribank', ikon: '🔋', syns: () => harPlacerat('sol'), ritning: 120, delar: 2, gram: 600, tid: 12, beskr: `Lagrar ${BANK_PLUS} ström till – första banken fördubblar batteriet. Bygg flera när solen inte räcker`, trivsel: 2, radie: 0.45 },
   korg: { namn: 'Ryggkorg', ikon: '🎒', syns: () => S.grip && S.sang, ritning: 90, delar: 2, gram: 500, tid: 12, beskr: `Bär ${BARA_SKRAP[2]} skräp på ryggen i stället för ${BARA_SKRAP[1]}`, verktyg: true },
   karra: { namn: 'Skottkärra', ikon: '🛒', syns: () => false, ritning: 200, delar: 3, gram: 900, tid: 16, beskr: 'Lyft tungt skräp: regntunnor och kajaker – värda flera rullar', verktyg: true },
-  magnet: { namn: 'Magnetpistol', ikon: '🧲', syns: () => S.korg && S.karra, ritning: 300, delar: 3, gram: 1000, tid: 16, beskr: `Klicka och håll, sikta – suger till sig skräp. Bär ${BARA_SKRAP[3]}`, verktyg: true },
-  turbomotor: { namn: 'Turbomotor', ikon: '🔥', syns: () => S.kvarn.motor && S.rolf.i >= 1, ritning: 400, delar: 3, gram: 800, tid: 14, monteras: true, beskr: 'Kvarnen mal 2,5× snabbare. Drar lite mer ström. Röda ränder ingår' },
+  magnet: { namn: 'Magnetpistol', ikon: '🧲', syns: () => S.korg && S.karra && S.dag >= 4, ritning: 300, delar: 3, gram: 1000, tid: 16, beskr: `Klicka och håll, sikta – suger till sig skräp. Bär ${BARA_SKRAP[3]}`, verktyg: true },
+  turbomotor: { namn: 'Turbomotor', ikon: '🔥', syns: () => S.kvarn.motor && S.rolf.i >= 1 && S.dag >= 4, ritning: 400, delar: 3, gram: 800, tid: 14, monteras: true, beskr: 'Kvarnen mal 2,5× snabbare. Drar lite mer ström. Röda ränder ingår' },
   jetmotor: { namn: 'Jetmotor med efterbrännare', ikon: '🚀', syns: () => S.kvarn.turbo && S.rolf.i >= 3, ritning: 1500, delar: 4, gram: 1200, tid: 18, monteras: true, beskr: 'Kvarnen mal 6× snabbare. Med ELD. Drar mycket ström' },
   spolhallare: { namn: 'Stor spolhållare', ikon: '', syns: () => (S.stat.laddat || 0) >= 3 || S.rolf.i >= 1, ritning: 120, delar: 2, gram: 400, tid: 10, monteras: true, beskr: 'Monteras på en skrivare – rymmer 7 rullar i stället för 3. Välj den och klicka på skrivaren' },
   spolhallare2: { namn: 'Spolhållare XL', ikon: '', syns: () => skrivare.some((x) => (x.spolNiva || 0) >= 1), ritning: 400, delar: 3, gram: 700, tid: 12, monteras: true, beskr: 'Bygger på den stora spolhållaren: 12 rullar' },
   spolhallare3: { namn: 'Spoltorn', ikon: '', syns: () => skrivare.some((x) => (x.spolNiva || 0) >= 2), ritning: 1500, delar: 4, gram: 900, tid: 14, monteras: true, beskr: 'Ett torn med 20 rullar – behövs för riktigt stora prints som biljardbord och jacuzzi' },
-  matarband: { namn: 'Skräpcontainer – extra kapacitet', ikon: '🗑️', syns: () => S.kvarn.motor && S.rolf.i >= 1, ritning: 220, delar: 3, gram: 700, tid: 14, beskr: `En container som står BAKOM kvarnen. Töm allt skräp i den (60 st) – ett litet band matar kvarnens tratt automatiskt. Montera: välj den och klicka på kvarnen`, monteras: true },
+  matarband: { namn: 'Skräpcontainer – extra kapacitet', ikon: '🗑️', syns: () => S.kvarn.motor && S.rolf.i >= 1 && S.dag >= 4, ritning: 220, delar: 3, gram: 700, tid: 14, beskr: `En container som står BAKOM kvarnen. Töm allt skräp i den (60 st) – ett litet band matar kvarnens tratt automatiskt. Montera: välj den och klicka på kvarnen`, monteras: true },
   rullstall: { namn: 'Rullställ vid extrudern', ikon: '', syns: () => (S.stat.hamtat || 0) >= 3 || S.rolf.i >= 1, ritning: 180, delar: 2, gram: 500, tid: 12, beskr: 'Ställs bredvid extrudern och lagrar 4 rullar till – kvarnen kan mala längre utan att stanna. Upp till tre ställ.', monteras: true },
   stortratt: { namn: 'Stor kvarntratt', ikon: '🪣', syns: () => S.karra, ritning: 150, delar: 2, gram: 600, tid: 12, beskr: 'Bred tratt med kross – nu får regntunnor och kajaker plats i kvarnen', monteras: true },
   // bygg ut skjulet till ett riktigt hem – printa delarna, välj dem och klicka på skjulet för att montera
