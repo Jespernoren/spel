@@ -371,7 +371,7 @@ function rolfDialekt(t, skrivfel) {
   if (!t || t.includes('\u200b')) return t;          // redan omskriven
   const h = hashTal(t);
   let u = t.replace(/[A-Za-zÅÄÖåäö]+/g, (w) => { const l = w.toLowerCase(), r = ROLF_ORD[l]; if (!r) return w; if (w.length > 1 && w === w.toUpperCase()) return r.toUpperCase(); return w[0] === w[0].toUpperCase() && w[0] !== w[0].toLowerCase() ? r[0].toUpperCase() + r.slice(1) : r; });
-  if (!/^(ÖJ|Hörru|Rolf|Jo|Tjo|Nämen)/.test(u)) u = ROLF_IN[h % ROLF_IN.length] + u;
+  if (!/^(ÖJ|Hörru|Rolf|Jo|Tjo|Nämen|NÄMEN|VA|Va )/.test(u)) u = ROLF_IN[h % ROLF_IN.length] + u;
   if (skrivfel) {
     const ord = u.split(' '), kand = ord.map((w, i) => [w, i]).filter(([w]) => /^[a-zåäö]{6,}$/.test(w));
     if (kand.length && h % 3 === 0) {            // två bokstäver byter plats … och han rättar sig
@@ -3616,7 +3616,7 @@ function visaFynd(lista, efter) {
 }
 function efterBeloning(lista) {
   const nr = S.rolf.i - 1;
-  for (const b of lista) if (b.startsWith('tack:')) { setTimeout(() => sms('rolf', ROLF_TACK[b.slice(5)].text), 1200); S.rolf.presenter = (S.rolf.presenter || 0) + 1; andraRespekt(Math.round(6 + VAROR[b.slice(5)].present / 400), 'Gav Rolf en present'); }
+  for (const b of lista) if (b.startsWith('tack:')) { if (!S.rolfNummer) setTimeout(() => sms('rolf', ROLF_TACK[b.slice(5)].text), 1200); S.rolf.presenter = (S.rolf.presenter || 0) + 1; andraRespekt(Math.round(6 + VAROR[b.slice(5)].present / 400), 'Gav Rolf en present'); }
   if (lista.includes('jobb')) andraRespekt(-3, 'Gjorde ett skumt jobb åt Rolf');
   const ovrigt = lista.includes('jobb') || lista.includes('heder') || lista.some((b) => b.startsWith('tack:'));
   if (lista.includes('jobb')) sms('rolf', ROLF_JOBB[S.rolf.jobbTack % ROLF_JOBB.length].tackJa);
@@ -3983,7 +3983,9 @@ function uppdateraRolf(dt) {
         const id = S.post.tillRolf; S.post.tillRolf = null;
         S.rolf.fatt = [...(S.rolf.fatt || []), id]; S.rolf.tack = (S.rolf.tack || 0) + 1;
         S.post.tillMig = [...S.post.tillMig, 'sak:' + ROLF_TACK[id].ger, 'tack:' + id];
-        ljud.placera(); sparaSnart(); rolfLadeILadan();
+        ljud.placera(); sparaSnart();
+        // först blir han överraskad och rörd – sen berättar han vad han lagt i lådan
+        if (S.rolfNummer) setTimeout(() => sms('rolf', ['VA?! ', 'NÄMEN?! ', 'Va i hela… '][S.rolf.tack % 3] + ROLF_TACK[id].text), 3000);
       } else if (S.rolf.jobb != null && S.post.tillRolf === jobbNu().vara) {
         const j = jobbNu(); S.post.tillRolf = null; S.post.tillMig = [...S.post.tillMig, `mynt:${j.ja}`, 'jobb'];
         S.rolf.jobb = null; S.rolf.jobbNr = j.n + 1; S.rolf.ja = (S.rolf.ja || 0) + 1; S.rolf.jobbTack = j.n; rolfLadeILadan();
