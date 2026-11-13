@@ -87,7 +87,12 @@ export const BRAND_CSS = `
 .br-val{display:flex;gap:10px;justify-content:center;margin:16px auto 0;max-width:300px}
 .br-valknapp{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 10px;border-radius:10px;border:2px solid var(--kant);background:${LAGER_SVAG},transparent;color:#d9d4c7;font:700 13.5px system-ui;cursor:pointer}
 .br-valknapp:hover{border-color:#4a5268;color:#fff}.br-valknapp .ui-ik{width:16px;height:16px}
-.br-valknapp.varning{border-color:var(--lingon);color:#ffb3bd}
+.br-valknapp.farlig{background:${LAGER},var(--lingon);border-color:var(--lingon);color:#fff;box-shadow:0 3px 0 #7a1222}
+.br-bekrafta{position:absolute;inset:0;z-index:2;display:grid;place-items:center;background:rgba(10,12,18,.82);border-radius:12px;animation:uiIn .15s}
+.br-bekrafta-ruta{width:min(420px,92%);background:${LAGER_SVAG},var(--natt2);border:2px solid var(--kant);border-top:6px solid var(--lingon);border-radius:12px;padding:22px 22px 18px;box-shadow:0 5px 0 #0d0f14,0 18px 40px rgba(0,0,0,.5)}
+.br-bekrafta-ruta b{display:block;font:900 20px var(--rubrik);color:var(--papper);margin-bottom:8px}
+.br-bekrafta-ruta p{font-size:14.5px;color:#c9c3b4;margin:0 0 4px!important;line-height:1.5}
+.br-bekrafta-ik{width:46px;height:46px;margin:0 auto 10px;border-radius:50%;background:var(--lingon);color:#fff;display:grid;place-items:center}.br-bekrafta-ik .ui-ik{width:26px;height:26px}
 .br-start .fp-tillbaka{margin-top:20px;font-size:13px;opacity:.8}
 
 /* --- knappar: tjocka, printade --- */

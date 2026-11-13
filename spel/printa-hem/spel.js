@@ -4571,13 +4571,23 @@ function startRuta(titel = ui.o.titel, text = ui.o.text, knappText = 'Starta') {
   const t = rens(titel), ar = t.includes('<svg');
   ui.overlay.innerHTML = `<div class="fp-ruta br-start">${ar ? t : `<h1>${t}</h1>`}<div class="br-ingress">${rens(text)}</div>
     <button class="fp-knapp br-starta">${rens(knappText)}</button>
-    <div class="br-val"><button class="br-valknapp" data-sparplatser>${ik('spara')}<span>Sparplatser</span></button><button class="br-valknapp" data-noll>${ik('pil')}<span>Börja om</span></button></div>
+    <div class="br-val"><button class="br-valknapp" data-sparplatser>${ik('spara')}<span>Sparplatser</span></button><button class="br-valknapp" data-noll>${ik('omstart')}<span>Börja om</span></button></div>
     <a class="fp-tillbaka" href="../../index.html">← Alla spel</a></div>`;
   ui.overlay.hidden = false;
   ui.overlay.querySelector('.br-starta').onclick = () => ui.starta();
   ui.overlay.querySelector('[data-sparplatser]').onclick = () => ui.o.onSparplatser?.();
   const noll = ui.overlay.querySelector('[data-noll]');
-  noll.onclick = () => { if (noll.dataset.saker) ui.o.onNollstall?.(); else { noll.dataset.saker = 1; noll.querySelector('span').textContent = 'Säker? Tryck igen'; noll.classList.add('varning'); } };
+  noll.onclick = () => {
+    // bekräftelse som egen popup ovanpå startrutan
+    const ruta = ui.overlay.querySelector('.br-start');
+    const pop = document.createElement('div'); pop.className = 'br-bekrafta';
+    pop.innerHTML = `<div class="br-bekrafta-ruta"><div class="br-bekrafta-ik">${ik('omstart')}</div><b>Börja om från början?</b><p>Du börjar om på dag 1 med tomt skjul och skräp på gården.<br>Ditt nuvarande spel sparas först på en ledig sparplats, så du kan ladda det igen.</p>
+      <div class="br-val" style="max-width:360px"><button class="br-valknapp" data-nej>Nej, fortsätt spela</button><button class="br-valknapp farlig" data-ja>${ik('omstart')}<span>Ja, börja om</span></button></div></div>`;
+    ruta.appendChild(pop);
+    pop.querySelector('[data-nej]').onclick = () => pop.remove();
+    pop.querySelector('[data-ja]').onclick = () => ui.o.onNollstall?.();
+    pop.onclick = (e) => { if (e.target === pop) pop.remove(); };
+  };
 }
 // egna HUD-delar: filament, ström, mål-guide, lapp
 const css = document.createElement('style');
