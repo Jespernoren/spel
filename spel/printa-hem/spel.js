@@ -4039,7 +4039,7 @@ function uppdateraSopbil(dt) {
     if (bil.t > 0.8) {
       bil.fart = -2.5;
       sopbil.position.z = Math.max(inne, sopbil.position.z - 2.5 * dt);
-      backPip += dt; if (backPip > 0.55) { backPip = 0; ton(1050, 0.22, 0.02 + 0.06 * bilVolym()); }
+      backPip += dt; if (backPip > 0.55) { backPip = 0; if (bilVolym() > 0.4) ton(1050, 0.18, 0.012 + 0.03 * bilVolym()); }
       if (sopbil.position.z <= inne) { bil.fas = 'tippar'; bil.t = 0; bil.tippat = false; bil.fart = 0; }
     }
   } else if (bil.fas === 'tippar') {
@@ -5470,15 +5470,15 @@ function prata(vem, text) {
   if (rostLage() === 'rost') {
     tystna();
     const klipp = rostKlipp(vem, text);
-    if (!klipp) { pratljud(vem, text); return; }   // repliker med siffror o.d. – då babblar figuren i stället
+    if (!klipp) return;   // ingen inspelad replik: tyst (texten syns ändå) – inget pip-babbel
     const nr = pratStopp, [pk, fran, langd] = klipp;
     hamtaPack(pk).then((buf) => {
       if (nr !== pratStopp) return;   // något annat har börjat prata
       const url = URL.createObjectURL(new Blob([buf.slice(fran, fran + langd)], { type: 'audio/mpeg' }));
       rostLjud = new Audio(url); rostLjud.volume = 0.95; rostLjud.onended = () => { URL.revokeObjectURL(url); if (pratarVem === vem) pratarTill = 0; };
       { const lj = rostLjud; lj.onloadedmetadata = () => { if (pratarVem === vem && isFinite(lj.duration)) pratarTill = performance.now() + lj.duration * 1000; }; }
-      rostLjud.play().catch(() => pratljud(vem, text));
-    }).catch(() => pratljud(vem, text));
+      rostLjud.play().catch(() => {});
+    }).catch(() => {});
     return;
   }
   if (rostLage() === 'prat') { tystna(); pratljud(vem, text); return; }
