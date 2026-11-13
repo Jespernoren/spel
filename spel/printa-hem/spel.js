@@ -5176,8 +5176,15 @@ function ritaStopp() {
 function taBort(k) { if (k.classList.contains('ut')) return; k.classList.add('ut'); setTimeout(() => k.remove(), 400); }
 // meddelanden som hör till något du just gjorde visas där du gjorde det – vid saken du klickade på, inte i hörnet
 let aktionObj = null, aktionTid = 0, klickTid = -1e9;
-addEventListener('mousedown', () => { if (ui.igang) klickTid = performance.now(); }, true);
-addEventListener('keydown', (e) => { if (e.code === 'KeyE' && ui.igang) klickTid = performance.now(); }, true);
+addEventListener('mousedown', () => { klickTid = performance.now(); }, true);
+addEventListener('mouseup', () => { klickTid = performance.now(); }, true);
+addEventListener('keydown', () => { klickTid = performance.now(); }, true);
+// inga "random" pling: korta ljudeffekter spelas bara som svar på något du själv gör (klick, tangent, hålla in).
+// Saker som händer av sig själva visas i stället med skylt eller pil vid saken.
+for (const namn of ['klar', 'plock', 'fel', 'stor', 'mynt', 'kop', 'placera', 'borsta']) {
+  const orig = ljud[namn]?.bind(ljud); if (!orig) continue;
+  ljud[namn] = (...a) => { if (performance.now() - klickTid < 1500 || anvandNere) return orig(...a); };
+}
 function korsToast(text, typ = '') {
   document.querySelector('.hud-kors-lapp')?.remove();
   const d = document.createElement('div'); d.className = 'hud-plats hud-kors-lapp ' + typ; d.textContent = rens(text);
