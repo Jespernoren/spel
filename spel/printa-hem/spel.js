@@ -133,7 +133,7 @@ const VAROR = {
   fynd3: { namn: 'Kolfiberrester (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 3, beskr: 'Råmaterial. Kräver härdade kvarnknivar – blir en rulle kolfiber, nivå 3.' },
   fynd4: { namn: 'Guldglittrig plastdunk (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 4, beskr: 'Råmaterial. Kräver diamantkvarn – blir en rulle guldkomposit, nivå 4.' },
   fynd5: { namn: 'Titanspån i en hink (från Rolf)', ikon: '', gram: 0, tid: 0, pris: 0, malTill: 5, beskr: 'Råmaterial. Kräver diamantkvarn – blir en rulle titanblandning, nivå 5.' },
-  rulle3: { namn: 'Filament nivå 3 – kolfiber', ikon: '', gram: 0, tid: 0, pris: 0, fil: 3 },
+  rulle3: { namn: 'Filament nivå 3 – grön kolfiber', ikon: '', gram: 0, tid: 0, pris: 0, fil: 3 },
   rulle4: { namn: 'Filament nivå 4 – guldkomposit', ikon: '', gram: 0, tid: 0, pris: 0, fil: 4 },
   rulle5: { namn: 'Filament nivå 5 – titanblandning', ikon: '', gram: 0, tid: 0, pris: 0, fil: 5 },
   n2_neon: { namn: 'Neonskylt i blå PETG', ikon: '', gram: 1500, tid: 40, pris: 1800, trivsel: 50, placerbar: true, radie: 0.35, niva: 2 },
@@ -534,6 +534,7 @@ scen.add(kamera);
 sol.position.set(14, 24, 8);
 Object.assign(sol.shadow.camera, { left: -28, right: 28, top: 28, bottom: -28 }); sol.shadow.camera.updateProjectionMatrix();
 
+const FIL1 = 0x2f86ff;   // filament nivå 1: blå (nivå 2 röd, 3 grön, 4 guld, 5 titan)
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 const box = (w, h, d, m) => { const x = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); x.castShadow = x.receiveShadow = true; return x; };
 const cyl = (rt, rb, h, m, seg = 16) => { const x = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), m); x.castShadow = x.receiveShadow = true; return x; };
@@ -953,18 +954,14 @@ for (let i = 0; i < 6; i++) {
 // utlopp + bricka där filamentrullen hamnar
 const utlopp = box(0.16, 0.12, 0.2, mat(0x4a5562)); utlopp.position.set(-0.18, 0.3, 0.42); kvarn.add(utlopp);
 const bricka = box(0.42, 0.04, 0.36, mat(0x4a5562)); bricka.position.set(-0.18, 0.02, 0.62); kvarn.add(bricka);
-const rulle = new THREE.Group();
-const rulleMat = mat(0x3de3ff, { emissive: 0x3de3ff, emissiveIntensity: 0.35 });
-const rulleKarna = cyl(0.13, 0.13, 0.1, rulleMat, 20); rulleKarna.rotation.x = Math.PI / 2; rulle.add(rulleKarna);
-for (const z of [-0.06, 0.06]) { const k = cyl(0.16, 0.16, 0.015, mat(0x222222), 20); k.rotation.x = Math.PI / 2; k.position.z = z; rulle.add(k); }
+const rulle = filamentSpole(FIL1, 0.15, 0.12, { emissive: FIL1, emissiveIntensity: 0.35 });
+const rulleMat = rulle.userData.lindning.material, rulleKarna = rulle.userData.lindning;
 rulle.position.set(-0.18, 0.2, 0.62); kvarn.add(rulle);
 // extra färdiga rullar staplas bredvid
 const extraRullar = [];
 for (let i = 0; i < 3; i++) {
-  const r = new THREE.Group();
-  const k = cyl(0.13, 0.13, 0.1, rulleMat, 20); k.rotation.x = Math.PI / 2; r.add(k);
-  for (const z of [-0.06, 0.06]) { const f = cyl(0.16, 0.16, 0.015, mat(0x222222), 20); f.rotation.x = Math.PI / 2; f.position.z = z; r.add(f); }
-  r.scale.setScalar(1.2); r.position.set(-0.55 - i * 0.05, 0.2 + i * 0.4 * 0, 0.62 + i * 0.0); r.visible = false; kvarn.add(r); extraRullar.push(r);
+  const r = filamentSpole(FIL1, 0.15, 0.12); r.userData.lindning.material = rulleMat;
+  r.scale.setScalar(1.2); r.visible = false; kvarn.add(r); extraRullar.push(r);
 }
 extraRullar.forEach((r, i) => r.position.set(-0.55, 0.2 + i * 0.36, 0.62));
 traffYta(rulle, 0.4, 0.4, 0.4, 0, 0, 0);
@@ -1037,7 +1034,7 @@ function byggRullstall(n) {
   g.add(at(box(0.5, 0.04, 0.3, mork), 0, 0.02, 0));
   for (let i = 0; i < 2; i++) { const ax = cyl(0.015, 0.015, 0.46, mat(0x999999, { metalness: 0.6 }), 6); ax.rotation.z = Math.PI / 2; ax.position.y = 0.3 + i * 0.4; g.add(ax); }
   g.userData.spolar = [];
-  for (let i = 0; i < n; i++) { const sp = filamentSpole([0x4cc9f0, 0xf28c28, 0x7fc8f8, 0xb23a2a][i % 4], 0.11, 0.09); sp.rotation.y = Math.PI / 2; sp.position.set(i % 2 ? 0.09 : -0.09, 0.3 + Math.floor(i / 2) * 0.4, 0); sp.visible = false; g.add(sp); g.userData.spolar.push(sp); }
+  for (let i = 0; i < n; i++) { const sp = filamentSpole(FIL1, 0.11, 0.09); sp.rotation.y = Math.PI / 2; sp.position.set(i % 2 ? 0.09 : -0.09, 0.3 + Math.floor(i / 2) * 0.4, 0); sp.visible = false; g.add(sp); g.userData.spolar.push(sp); }
   return g;
 }
 const rullstallar = [];
@@ -1514,7 +1511,7 @@ function skapaVara(typ) {
     for (const [x, z] of [[-0.2, -0.15], [0.2, -0.15], [-0.2, 0.15], [0.2, 0.15]]) g.add(at(box(0.07, 0.25, 0.07, ti), x, 0.12, z));
     g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 4), mat(0xff3030, { emissive: 0xff3030 })), 0.57, 0.75, 0.07));
   } else if (typ === 'rulle') {
-    const sp = filamentSpole(0x3de3ff, 0.16, 0.12); sp.position.y = 0.16; sp.rotation.y = 0.5; g.add(sp);
+    const sp = filamentSpole(FIL1, 0.16, 0.12); sp.position.y = 0.16; sp.rotation.y = 0.5; g.add(sp);
   } else if (typ === 'mobilstall') {
     const m = mat(0x2ecc71);
     g.add(at(box(0.14, 0.02, 0.1, m), 0, 0.01, 0));
@@ -2099,16 +2096,16 @@ function uppdateraHinder() {
 
 // ---------- Skrivare ----------
 // spolstället bredvid skrivaren: fler spolar ju större hållare
-const SPOL_FARG = [0x3de3ff, 0xff6b6b, 0x7dffb0, 0xffd43b, 0xc77dff];
+const SPOL_FARG = [FIL1];
 // en riktig filamentspole: svarta gavlar, lindat filament i färg (med lindningsränder) och nav med hål
-function filamentSpole(farg, R = 0.09, B = 0.07) {
+function filamentSpole(farg, R = 0.09, B = 0.07, extra = {}) {
   const g = new THREE.Group();
   for (const z of [-B / 2, B / 2]) { const f = cyl(R, R, 0.008, mat(0x2a2a2e, { roughness: 0.5 }), 20); f.rotation.x = Math.PI / 2; f.position.z = z; g.add(f); }
   const c = document.createElement('canvas'); c.width = 64; c.height = 64; const x = c.getContext('2d');
   x.fillStyle = '#' + new THREE.Color(farg).getHexString(); x.fillRect(0, 0, 64, 64);
   for (let i = 0; i < 64; i += 4) { x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(0, i, 64, 1.5); x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(0, i + 2, 64, 1); }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-  const lind = cyl(R * 0.86, R * 0.86, B - 0.01, new THREE.MeshStandardMaterial({ map: t, roughness: 0.45 }), 20); lind.rotation.x = Math.PI / 2; g.add(lind);
+  const lind = cyl(R * 0.86, R * 0.86, B - 0.01, new THREE.MeshStandardMaterial({ map: t, roughness: 0.45, ...extra }), 20); lind.rotation.x = Math.PI / 2; g.add(lind);
   const nav = cyl(R * 0.32, R * 0.32, B + 0.004, mat(0xd8d8d8), 12); nav.rotation.x = Math.PI / 2; g.add(nav);
   const hal = cyl(R * 0.14, R * 0.14, B + 0.01, mat(0x111111), 10); hal.rotation.x = Math.PI / 2; g.add(hal);
   g.userData.lindning = lind;
@@ -2145,8 +2142,8 @@ function laggTillSkrivare(id, gen, mesh, sparat) {
   if (sparat) Object.assign(sk, { jobb: sparat.jobb, prog: sparat.prog || 0, klar: sparat.klar, fil: sparat.fil || 0, spolNiva: sparat.spolNiva || 0, upprepa: sparat.upprepa || null, mod: sparat.mod || null });
   // spolen på skrivarens sida: tjock när den är full, krymper medan den printar
   const spole = new THREE.Group(), B = 0.5 * (mesh.userData.sk || 1);
-  const karna = cyl(0.11, 0.11, 0.08, mat(0x4cc9f0, { roughness: 0.6 }), 18);   // en vanlig filamentspole, samma som i rullstället karna.rotation.z = Math.PI / 2; spole.add(karna);
-  for (const x of [-0.05, 0.05]) { const f = cyl(0.13, 0.13, 0.012, mat(0x222222), 18); f.rotation.z = Math.PI / 2; f.position.x = x; spole.add(f); }
+  const helSpole = filamentSpole(FIL1, 0.13, 0.1); helSpole.rotation.y = Math.PI / 2; spole.add(helSpole);
+  const karna = helSpole.userData.lindning;
   spole.position.set(B / 2 + 0.09, 0.45 * (mesh.userData.sk || 1), -B / 4); mesh.add(spole); sk.spole = spole; sk.spoleKarna = karna;
   ritaSpolstall(sk);
   skrivare.push(sk);
@@ -4190,8 +4187,8 @@ function uppdateraArstid() {
 
 // ---------- Respekt ----------
 const BURK_RESPEKT = 4;
-const RESPEKT_NIVAER = [[25, 'Filament nivå 2 – röd PETG'], [60, 'Filament nivå 3 – kolfiber'], [110, 'Filament nivå 4 – guldkomposit'], [180, 'Filament nivå 5 – titanblandning']];
-const FIL_FARG = { 2: 0xd63a2f, 3: 0x2a2a2a, 4: 0xd4a017, 5: 0x9a8ab8 };
+const RESPEKT_NIVAER = [[25, 'Filament nivå 2 – röd PETG'], [60, 'Filament nivå 3 – grön kolfiber'], [110, 'Filament nivå 4 – guldkomposit'], [180, 'Filament nivå 5 – titanblandning']];
+const FIL_FARG = { 1: FIL1, 2: 0xd63a2f, 3: 0x2fbf5a, 4: 0xd4a017, 5: 0x9a8ab8 };
 const nivaUpplast = (n) => n <= 1 || S.respekt >= RESPEKT_NIVAER[n - 2][0];
 const hogstaNiva = () => [5, 4, 3, 2].find((n) => nivaUpplast(n)) || 1;
 // tungt skräp (tunnor, kajaker) kan ge filament av högre nivå när kvarnen mal det
@@ -5774,7 +5771,7 @@ function uppdatera(dt) {
   // skrivarna jobbar även när menyn är öppen
   for (const sk of skrivare) {
     skrivarLjud(sk, uppdateraSkrivare(sk, dt), dt);
-    const a = Math.min(1, sk.fil / RULLE); sk.spole.visible = sk.fil > 0; sk.spoleKarna.scale.set(1, 0.25 + a * 0.75, 0.25 + a * 0.75);
+    const a = Math.min(1, sk.fil / RULLE); sk.spole.visible = sk.fil > 0; sk.spoleKarna.scale.set(0.3 + a * 0.7, 1, 0.3 + a * 0.7);
     if (sk.jobb && !sk.vantar) sk.spole.rotation.x += dt * 2;
   }
   // solpaneler
