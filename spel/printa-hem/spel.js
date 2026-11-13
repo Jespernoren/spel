@@ -3386,6 +3386,14 @@ const PAPPA_KORT = [
   [['pappa', 'Tjena! Ska du bo här i vinter oxå?', 'du'], ['du', 'Jag vet inte, pappa.'], ['pappa', 'Aha, vad lugnt då. Långrör, de e grejen. Mamma köper.', 'du']],
   [['pappa', 'Tjenare! Fila nötterna gör du va?', 'du'], ['du', 'Ibland.'], ['pappa', 'Aha, vad lugnt då!', 'du'], ['pappa', 'Kolla smulan. Ny. AIK-färger. Fast ja e för Djurgår\'n.']],
 ];
+// när man malt mammas saker: mamma tjatar hemma och pappa mår sämre. Han blir dryg.
+const PAPPA_DRYG = [
+  [['pappa', 'Tjena.', 'du'], ['pappa', 'Mamma har tjatat i tre dagar. Om sylten.'], ['du', 'Förlåt, pappa.'], ['pappa', 'Aha. Vad lugnt då. För dig.', 'du']],
+  [['pappa', 'Jaha. Här står du.', 'du'], ['pappa', 'Ja har inte sett hockeyn på en vecka. Mamma pratar över den.'], ['pappa', 'Om grytvantar.']],
+  [['pappa', 'Tjena.', 'du'], ['pappa', 'Ja knoppar i garaget nu. De e lugnare där.'], ['du', 'Är det så illa?'], ['pappa', 'Aha, vad lugnt då. Säger du. Som maler sylt.', 'du']],
+  [['pappa', 'Hej.', 'du'], ['pappa', 'Fint ställe. Synd att du inte kan ta emot en burk honung bara.'], ['pappa', 'Men vad vet ja. Ja e bara pappa.']],
+];
+const PAPPA_DRYG_SLUT = [['pappa', 'Mamma skicka med lite grejer. MAL INTE dom.', 'burkar'], ['pappa', 'Ja ska blada nu.'], ['pappa', 'Mamma hälsar. Typ.', 'du']];
 const PAPPA_SLUT = [['pappa', 'Mamma skicka med lite grejer.', 'burkar'], ['pappa', 'Ja gör bara som hon säger. Då blir de lugnt hemma.'], ['pappa', 'Fint jobbat!', 'du'], ['pappa', 'Nä, nu ska ja blada.'], ['pappa', 'Mamma hälsar!', 'du']];
 const pappaBesok = { aktiv: false, t: 0, steg: 0, fas: '', scen: PAPPA_SCEN, medRolf: true };
 // pappa ställer ner 2–4 burkar vid skjulet. De tar plats. Ali vill inte ha dem. Tacka mamma.
@@ -3401,7 +3409,8 @@ function stallBurkar() {
 }
 function startaPappaBesok(kort = !!S.pappaBesok) {
   pappaBesok.medRolf = !kort;
-  pappaBesok.scen = kort ? [...PAPPA_KORT[(S.pappaGang || 0) % PAPPA_KORT.length], ...PAPPA_SLUT] : PAPPA_SCEN;
+  const dryg = (S.burkMalda || 0) >= 2;
+  pappaBesok.scen = !kort ? PAPPA_SCEN : dryg ? [...PAPPA_DRYG[(S.pappaGang || 0) % PAPPA_DRYG.length], ...PAPPA_DRYG_SLUT] : [...PAPPA_KORT[(S.pappaGang || 0) % PAPPA_KORT.length], ...PAPPA_SLUT];
   S.pappaGang = (S.pappaGang || 0) + (kort ? 1 : 0);
   const P = new THREE.Vector3(SKJUL.x + 3.2, 0, SKJUL.z + 4.2);
   Object.assign(pappaBesok, { aktiv: true, t: 0, steg: 0, fas: 'kommer', P, start: new THREE.Vector3(P.x + 1, 0, TOMT + 2), rolfStart: new THREE.Vector3(TIPP.x + 6, 0, TIPP.z - 4) });
@@ -3436,7 +3445,7 @@ function uppdateraPappa(dt) {
       if (vem === 'du') { vand(pappaGubbe, spelare.pos); ui.toast('Du: ' + text, ''); prata('du', text); b.t = 1.4 + text.length * 0.06; return; }
       const g = vem === 'pappa' ? pappaGubbe : rolfBesok;
       pappaGubbe.userData.arm.rotation.x = 0;
-      if (till === 'du') { vand(pappaGubbe, spelare.pos); if (text.startsWith('Fint')) { pappaGubbe.userData.arm.rotation.x = -2.6; andraRespekt(2, 'Pappa sa "fint jobbat"'); } }
+      if (till === 'du') { vand(pappaGubbe, spelare.pos); if (text.startsWith('Fint jobbat')) { pappaGubbe.userData.arm.rotation.x = -2.6; andraRespekt(2, 'Pappa sa "fint jobbat"'); } }
       if (till === 'burkar') stallBurkar();
       bubbla(g, text); if (text !== '…') prata(vem, text);
       b.t = text === '…' ? 2.2 : 1.6 + text.length * 0.06;
@@ -4457,6 +4466,9 @@ const SMS_POOL = [
   { id: 'm_burk2', vem: 'mamma', nar: () => (S.burkar || 0) >= 8, text: 'Har du ätit upp honungen? Pappa säger att han såg den på golvet. Den ska stå SVALT.' },
   { id: 'b_burk', vem: 'bror', nar: () => (S.burkar || 0) >= 6, text: 'Mamma har gjort lingonsylt i tre dagar. Hela köket är rött. Hon säger att det är till dig. Lycka till.' },
   { id: 'r_burk', vem: 'rolf', nar: () => (S.burkar || 0) >= 10, text: 'Såg alla burkar vid ditt skjul. Försökte ge Kajsa honung. Hon vill inte heller ha den. /R' },
+  { id: 'b_pappa_dryg1', vem: 'bror', nar: () => (S.burkMalda || 0) >= 2, text: 'Mamma pratar bara om sylten. Pappa har slutat säga "aha, vad lugnt då". Han säger bara "mm". Det är värre.' },
+  { id: 'b_pappa_dryg2', vem: 'bror', nar: () => (S.burkMalda || 0) >= 5, text: 'Pappa sover i garaget. Han säger att det är för att lyssna på motorn. Bilen är avstängd.', svar: [['Säg att jag är ledsen.', 'Jag sa det. Han sa "aha". Sen gick han ut i garaget igen.'], ['Det är inte mitt fel.', 'Okej. Säg det till mamma då. Lycka till.']] },
+  { id: 'm_pappa_dryg', vem: 'mamma', nar: () => (S.burkMalda || 0) >= 3, text: 'Pappa är inte sig själv. Han tittade inte ens på Formel 1. Han satt och tittade på en tom syltburk. Är du nöjd nu?' },
   { id: 'r_pappa', vem: 'rolf', nar: () => !!S.pappaBesok, text: 'Din farsa e en bra karl. Vi snacka Scania o hockey. Han säger "blada" istället för gå. Ja ska börja me det. /R' },
   // mamma och brorsan efter pappas besök
   { id: 'm_pappa_besok', vem: 'mamma', nar: () => !!S.pappaBesok, text: 'Var pappa DÄR?! Han sa att han skulle köpa mjölk! Han kom hem och sa "aha, vad lugnt dom har det". LUGNT?!' },
@@ -4979,7 +4991,7 @@ function rostManus() {
   ROLF_IBLAND.forEach((t) => add('rolf', t));
   ROLF_JOBB.forEach((x) => { add('rolf', x.brev); add('rolf', x.tackJa); add('rolf', x.tackNej); });
   CHEFEN.forEach((t) => add('chefen', t));
-  [PAPPA_SCEN, ...PAPPA_KORT, PAPPA_SLUT].flat().forEach(([v, t]) => { if (t !== '…') add(v, t); });
+  [PAPPA_SCEN, ...PAPPA_KORT, PAPPA_SLUT, ...PAPPA_DRYG, PAPPA_DRYG_SLUT].flat().forEach(([v, t]) => { if (t !== '…') add(v, t); });
   SMS_POOL.forEach((m) => { add(m.vem, m.text); (m.svar || []).forEach(([, f]) => add(m.vem, f)); });
   Object.values(FAMILJ).flat().forEach(([v, t]) => add(v, t));
   BROR_IBLAND.forEach((t) => add('bror', t)); MAMMA_IBLAND.forEach((t) => add('mamma', t));
