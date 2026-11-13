@@ -23,7 +23,9 @@ const SVANG_FART = 2.0;        // pekknapparna
 const ANDRA_BARN = 16;         // hur många andra barn som leker på förskolegården
 const LEDLJUS_EFTER = 40;      // sekunder utan fynd innan ett ljus visar närmaste barn
 const HJARTA_AVSTAND = 9;      // hur nära man ska vara för att mammas barn ropar och visar ett hjärta
-const HJALP_EFTER_FALL = 4;    // efter så många fall går bron och flotten lite långsammare
+const HJALP_EFTER_FALL = 4;
+const KAMERA_AVSTAND = 5.6;    // hur långt bakom gruppen kameran är på gården
+const KAMERA_HOJD = 4.6;    // efter så många fall går bron och flotten lite långsammare
 const SPEL_ID = 'radda-barnen';
 
 // Mammas tre barn: alla har regnbågspyjamas och regnbågsskor
@@ -229,6 +231,7 @@ function krock(p, r) {
   p.z = Math.max(GARD.minZ + r, Math.min(GARD.maxZ - r, p.z));
 }
 const gardGrupp = new THREE.Group(); scen.add(gardGrupp);
+const kameraHinder = []; // saker kameran inte ska hamna bakom (hus, lekstuga, träd ...)
 (() => {
   const grasTex = canvasTex(256, 256, (g, w, h) => { g.fillStyle = '#7cc45a'; g.fillRect(0, 0, w, h); for (let i = 0; i < 2500; i++) { g.fillStyle = valj(['#6db84c', '#8fd06a', '#76be55', '#9bd977']); g.fillRect(Math.random() * w, Math.random() * h, 2, 3); } }, [30, 30]);
   const gras = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ map: grasTex, roughness: 1 }));
@@ -252,7 +255,7 @@ const gardGrupp = new THREE.Group(); scen.add(gardGrupp);
   const skylt = new THREE.Mesh(new THREE.PlaneGeometry(8, 1.2), new THREE.MeshBasicMaterial({ map: canvasTex(512, 76, (g, w, h) => { g.fillStyle = '#fffaf0'; g.fillRect(0, 0, w, h); g.fillStyle = '#3a2a1c'; g.font = 'bold 50px Fredoka, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('FÖRSKOLAN', w / 2, h / 2 + 3); }) }));
   skylt.position.set(0, 4.3, 5.06); hus.add(skylt);
   REGNBAGE.forEach((c, i) => { const b = new THREE.Mesh(new THREE.TorusGeometry(1.4 - i * 0.12, 0.06, 6, 24, Math.PI), new THREE.MeshBasicMaterial({ color: c })); b.position.set(0, 3.3, 5.05); hus.add(b); });
-  gardGrupp.add(skugga(hus)); rektanglar.push({ minX: -13, maxX: 13, minZ: -22, maxZ: -12 });
+  gardGrupp.add(skugga(hus)); kameraHinder.push(hus); rektanglar.push({ minX: -13, maxX: 13, minZ: -22, maxZ: -12 });
   gomstallen.push({ x: 3, z: -10, namn: 'vid dörren till förskolan' });
   // sandlåda
   const sl = new THREE.Group(); sl.position.set(11, 0, 7);
@@ -266,30 +269,30 @@ const gardGrupp = new THREE.Group(); scen.add(gardGrupp);
   for (const x of [-2.5, 2.5]) for (const z of [-0.9, 0.9]) { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 3.2), ram); b.position.set(x, 1.5, z * 0.6); b.rotation.x = z > 0 ? -0.3 : 0.3; gu.add(b); cirklar.push({ x: -13 + x, z: 4, r: 0.3 }); }
   const topp = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 5.2), ram); topp.rotation.z = Math.PI / 2; topp.position.y = 3; gu.add(topp);
   for (const x of [-1.2, 1.2]) { for (const s of [-0.25, 0.25]) { const k = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 2.3), m(0x666666)); k.position.set(x + s, 1.85, 0); gu.add(k); } const sits = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.08, 0.35), m(0xff6fae)); sits.position.set(x, 0.7, 0); gu.add(sits); }
-  gardGrupp.add(skugga(gu)); gomstallen.push({ x: -13, z: 6.6, namn: 'vid gungorna' });
+  gardGrupp.add(skugga(gu)); kameraHinder.push(gu); gomstallen.push({ x: -13, z: 6.6, namn: 'vid gungorna' });
   // klätterställning med rutschkana
   const kl = new THREE.Group(); kl.position.set(-1, 0, -3);
   for (const [x, z] of [[-1.2, -1.2], [1.2, -1.2], [-1.2, 1.2], [1.2, 1.2]]) { const s = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 3.2), m(0xffd23f)); s.position.set(x, 1.6, z); kl.add(s); cirklar.push({ x: -1 + x, z: -3 + z, r: 0.25 }); }
   const plan = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.15, 2.6), m(0x9b6b3d)); plan.position.y = 1.8; kl.add(plan);
   const takk = new THREE.Mesh(new THREE.ConeGeometry(2, 1.2, 4), m(0x3ecf6e)); takk.rotation.y = Math.PI / 4; takk.position.y = 3.8; kl.add(takk);
   const ruts = new THREE.Mesh(new THREE.BoxGeometry(1, 0.1, 4), m(0xff4d4d)); ruts.position.set(0, 0.95, 3.1); ruts.rotation.x = 0.45; kl.add(ruts);
-  gardGrupp.add(skugga(kl)); gomstallen.push({ x: 1.6, z: 1.8, namn: 'vid rutschkanan' });
+  gardGrupp.add(skugga(kl)); kameraHinder.push(kl); gomstallen.push({ x: 1.6, z: 1.8, namn: 'vid rutschkanan' });
   // lekstuga
   const ls = new THREE.Group(); ls.position.set(19, 0, -6);
   const lk = new THREE.Mesh(new THREE.BoxGeometry(3, 2.2, 3), m(0xffe0a8)); lk.position.y = 1.1; ls.add(lk);
   const lt = new THREE.Mesh(new THREE.ConeGeometry(2.4, 1.4, 4), m(0x2f9bff)); lt.rotation.y = Math.PI / 4; lt.position.y = 2.9; ls.add(lt);
   const ld = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.5, 0.08), m(0xff6fae)); ld.position.set(0, 0.75, 1.52); ls.add(ld);
-  gardGrupp.add(skugga(ls)); rektanglar.push({ minX: 17.5, maxX: 20.5, minZ: -7.5, maxZ: -4.5 });
+  gardGrupp.add(skugga(ls)); kameraHinder.push(ls); rektanglar.push({ minX: 17.5, maxX: 20.5, minZ: -7.5, maxZ: -4.5 });
   gomstallen.push({ x: 19, z: -3.3, namn: 'vid lekstugan' });
   // förråd
-  const fr = new THREE.Mesh(new THREE.BoxGeometry(4, 2.6, 3), m(0x8a6a4a)); fr.position.set(-21, 1.3, -6); gardGrupp.add(skugga(fr)); rektanglar.push({ minX: -23, maxX: -19, minZ: -7.5, maxZ: -4.5 });
+  const fr = new THREE.Mesh(new THREE.BoxGeometry(4, 2.6, 3), m(0x8a6a4a)); fr.position.set(-21, 1.3, -6); gardGrupp.add(skugga(fr)); kameraHinder.push(fr); rektanglar.push({ minX: -23, maxX: -19, minZ: -7.5, maxZ: -4.5 });
   gomstallen.push({ x: -17.8, z: -6, namn: 'vid förrådet' });
   // träd och buskar
   const trad = (x, z, s = 1) => {
     const g = new THREE.Group(); g.position.set(x, 0, z);
     const st = new THREE.Mesh(new THREE.CylinderGeometry(0.25 * s, 0.32 * s, 2.4 * s, 8), m(0x7a5230)); st.position.y = 1.2 * s; g.add(st);
     for (const [dx, dy, dz, r] of [[0, 3.2, 0, 1.6], [0.8, 2.8, 0.4, 1.1], [-0.7, 2.9, -0.3, 1.2]]) { const k = new THREE.Mesh(new THREE.SphereGeometry(r * s, 12, 10), m(0x3f9b3a)); k.position.set(dx * s, dy * s, dz * s); g.add(k); }
-    gardGrupp.add(skugga(g)); cirklar.push({ x, z, r: 0.45 * s });
+    gardGrupp.add(skugga(g)); kameraHinder.push(g); cirklar.push({ x, z, r: 0.45 * s });
   };
   trad(22, 15); trad(-24, 18, 1.2); trad(-25, 8); trad(24, 3, 0.9);
   gomstallen.push({ x: 20.6, z: 16, namn: 'under ett träd' });
@@ -661,7 +664,8 @@ function startaDisco3D() {
 
 // ================= LOOP =================
 const klocka = new THREE.Clock();
-let t = 0, kameraMal = null, discoTid = 0;
+let t = 0, kameraMal = null, discoTid = 0, kameraAvst = 7;
+const stralen = new THREE.Raycaster();
 const tmp = new THREE.Vector3(), tmp2 = new THREE.Vector3();
 function rorMot(f, mal, fart, dt, stopp = 0.3) {
   const p = f.g.position, dx = mal.x - p.x, dz = mal.z - p.z, d = Math.hypot(dx, dz);
@@ -684,10 +688,20 @@ function loop() {
   }
   if (lage === 'gard' || lage === 'tagen' || lage === 'paus' && fortsattLage === 'gard') {
     const fx = Math.sin(spelare.yaw), fz = Math.cos(spelare.yaw);
-    tmp.set(spelare.pos.x - fx * 5.6, 4.6, spelare.pos.z - fz * 5.6);
-    if (!kameraMal) { kameraMal = new THREE.Vector3(); kamera.position.copy(tmp); }
-    kamera.position.lerp(tmp, Math.min(1, dt * 8));
-    kameraMal.set(spelare.pos.x + fx * 3.5, 0.6, spelare.pos.z + fz * 3.5); kamera.lookAt(kameraMal);
+    // står något mellan gruppen och kameran? Då glider kameran närmare.
+    tmp2.set(spelare.pos.x, 1.6, spelare.pos.z);
+    tmp.set(-fx * KAMERA_AVSTAND, KAMERA_HOJD - 1.6, -fz * KAMERA_AVSTAND);
+    const langd = tmp.length(); tmp.normalize();
+    stralen.set(tmp2, tmp); stralen.far = langd;
+    const traff = stralen.intersectObjects(kameraHinder, true)[0];
+    const malAvst = traff ? Math.max(2.2, traff.distance - 0.4) : langd;
+    kameraAvst += (malAvst - kameraAvst) * Math.min(1, dt * (malAvst < kameraAvst ? 14 : 3));
+    tmp.multiplyScalar(kameraAvst).add(tmp2);
+    tmp.y += (langd - kameraAvst) * 0.4; // närmare = högre upp, så man ser över huvudena
+    if (!kameraMal) { kameraMal = new THREE.Vector3(); kameraAvst = langd; tmp.set(-fx, (KAMERA_HOJD - 1.6) / KAMERA_AVSTAND, -fz).normalize().multiplyScalar(langd).add(tmp2); kamera.position.copy(tmp); }
+    kamera.position.lerp(tmp, Math.min(1, dt * 10));
+    const fram = 3.5 * kameraAvst / langd; // nära kamera = titta på gruppen, inte långt fram
+    kameraMal.set(spelare.pos.x + fx * fram, 0.6, spelare.pos.z + fz * fram); kamera.lookAt(kameraMal);
   }
   renderer.render(scen, kamera);
 }
