@@ -3119,7 +3119,9 @@ interaktor.registrera(sangSpoke, {
   },
 });
 const sangKvall = () => !S.sang && STEG[S.steg] && S.steg >= 10 && STEG[S.steg].del === STEG[0].del && (skrivare.some((x) => x.jobb?.typ === 'sang' || x.klar === 'sang') || antalInv('sang') > 0);
-const sovDags = () => !!STEG[S.steg]?.sov || (!STEG[S.steg] && (S.dagTid || 0) >= DAG_LANGD);
+const MIN_VAKEN = 210;   // sekunder du måste ha varit vaken innan kvällen kommer (dag 2+)
+const kvallKlar = () => (S.vakenTid || 0) >= MIN_VAKEN;
+const sovDags = () => (!!STEG[S.steg]?.sov && kvallKlar()) || (!STEG[S.steg] && (S.dagTid || 0) >= DAG_LANGD);
 interaktor.registrera(tältSäng, {
   text: () => sovDags() ? '🌙 Sov till nästa dag' : 'Din säng – det är inte kväll än. Gör klart dagens jobb först',
   kanAktivera: () => !!S.sang,
@@ -3172,7 +3174,7 @@ function sov() {
   requestAnimationFrame(() => { sl.style.opacity = '1'; });
   satLjus(KVALL);
   setTimeout(() => {
-    kollaKyla(); S.dag = natt + 1; S.saltIdag = {}; S.dagTid = 0; aliHamtarLadan(); sparaSnart(); setTimeout(familjSms, 4000); kollaMarkTips(); kollaPolett(); ruttnaOverNatten(); uppdateraArstid(); kollaResa(); if (S.dag === 5 && !(S.filGava || []).includes(0)) { S.filGava = [...(S.filGava || []), 0]; S.post.tillMig = [...S.post.tillMig, 'sak:rulle2']; visaPostInne(); setTimeout(() => sms('rolf', 'La en blå rulle i lådan. Hitta den i en tunna. Bättre grejer än vanlig plast. Tunnor o kajaker ger mer sånt när folk börjar respektera dej. /R'), 8000); } setTimeout(sparaDagBokmarke, 1500);
+    kollaKyla(); S.dag = natt + 1; S.saltIdag = {}; S.dagTid = 0; S.vakenTid = 0; aliHamtarLadan(); sparaSnart(); setTimeout(familjSms, 4000); kollaMarkTips(); kollaPolett(); ruttnaOverNatten(); uppdateraArstid(); kollaResa(); if (S.dag === 5 && !(S.filGava || []).includes(0)) { S.filGava = [...(S.filGava || []), 0]; S.post.tillMig = [...S.post.tillMig, 'sak:rulle2']; visaPostInne(); setTimeout(() => sms('rolf', 'La en blå rulle i lådan. Hitta den i en tunna. Bättre grejer än vanlig plast. Tunnor o kajaker ger mer sånt när folk börjar respektera dej. /R'), 8000); } setTimeout(sparaDagBokmarke, 1500);
     skymning = 0; sover = false; sol.position.set(14, 24, 8); if (hemiLjus) hemiLjus.intensity = 1.4; if (skjulLampa) skjulLampa.intensity = skjulLampa.userData.bas || 4;
     satLjus(DAG); sl.innerHTML = `<div><svg viewBox="0 0 160 120" style="width:min(340px,70vw);display:block;margin:0 auto 10px">${kalenderSvg('DAG ' + S.dag, 40, 14, 'DAG ' + natt)}</svg>☀️ ${['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag'][(S.dag - 1) % 7]}</div>`; ljud.plock(); setTimeout(() => ljud.stor(), 900);
   }, 2600);
@@ -3622,7 +3624,7 @@ function kollaAliKo() {
 function kollaSmsKo() {
   const f = S.smsKo?.[0]; if (!f || S.speltid < f.nar) return;
   if (S.dag <= 1 && S.steg < 9) return;   // dag 1 är en träningsrunda: inga sms från familjen förrän du sålt hos Ali
-  if (pausad || !ui.butiksOverlay.hidden || !medEl2.hidden || medKo.length || performance.now() - senasteSms < 45000) return;
+  if (pausad || !ui.butiksOverlay.hidden || !medEl2.hidden || medKo.length || performance.now() - senasteSms < 25000) return;
   S.smsKo.shift(); sms(f.vem, f.text, f.id); sparaSnart();
 }
 setInterval(() => { kollaAliKo(); kollaSmsKo(); }, 3000);
@@ -4082,7 +4084,7 @@ function uppdateraSopbil(dt) {
     if (k >= 1) { scen.remove(f.m); flygTillLada.splice(i, 1); }
   }
   // Rolfs nästa önskan kommer som sms en stund efter förra
-  S.speltid += dt;
+  S.speltid += dt; if (ui.igang) S.vakenTid = (S.vakenTid || 0) + dt;
   aliTimer += dt; if (aliTimer > 0.5) { aliTimer = 0; kollaAli(); kollaVarningar(); }
 }
 let aliTimer = 0;
@@ -4316,7 +4318,7 @@ const DAG_LANGD = 480;
 function klockan() {
   const st = STEG[S.steg];
   if (!st) return Math.min(21 * 60, Math.round((8 * 60 + (S.dagTid || 0) / DAG_LANGD * 13 * 60) / 15) * 15);
-  if (st.sov) return 21 * 60;
+  if (st.sov) return kvallKlar() ? 21 * 60 : Math.round((14 * 60 + (S.vakenTid || 0) / MIN_VAKEN * 7 * 60) / 15) * 15;
   if (sangKvall()) return 20 * 60;
   const forsta = STEG.findIndex((x) => x.del === st.del), sista = STEG.length - 1 - [...STEG].reverse().findIndex((x) => x.del === st.del);
   const andel = Math.max(0, Math.min(1, (S.steg - forsta) / Math.max(1, sista - forsta)));
@@ -5215,7 +5217,7 @@ ui.toast = (text, typ) => {
   if (aktionObj && performance.now() - aktionTid < 400 && aktionObj.parent) { platsToast(text, aktionObj, typ); return; }
   // fel och svar på det du nyss gjorde (klick, grip): mitt framför siktet
   if (typ === 'fel' || performance.now() - klickTid < 400) { korsToast(text, typ); return; }
-  notis(text, typ);
+  if (typ === 'guld') notis(text, typ);   // övrigt brus i hörnet stryks – skyltar och pilar vid sakerna visar resten
 };
 // ---------- Inkorgen uppe till höger: sms och dagbok syns direkt, läses upp en i taget ----------
 // block = du kan gå och titta men inte använda något förrän den är uppläst (dag 1 och skylten)
@@ -5373,7 +5375,7 @@ function familjSms() {
   }
   // första dagen: vänta tills man har kommit igång; sedan glest och oregelbundet (2–5 min mellan)
   let t = S.speltid + (d === 1 ? 240 : 60) + Math.random() * 120;
-  for (const [vem, text, id] of lista) { S.smsKo.push({ vem, text, id, nar: t }); t += 120 + Math.random() * 180; }
+  for (const [vem, text, id] of lista) { S.smsKo.push({ vem, text, id, nar: t }); t += 50 + Math.random() * 70; }
   sparaSnart();
 }
 
@@ -5779,6 +5781,7 @@ function uppdatera(dt) {
   const evigtMal = Math.ceil((trivsel() + 1) / 100) * 100;
   malText.textContent = S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? `Bli folkbokförd: äg all mark och bygg ett hus åt Rolf (${S.mark.agt.length}/${MARK_TOMTER.length}) – tavlan vid vägen` : S.steg < STEG.length ? rens(stegText(STEG[S.steg])) : `Nästa mål: trivsel ${trivsel()}/${evigtMal} · trimma maskinerna hos Ali eller ta Rolfs jobb`;
   malDel.textContent = (S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? 'Slutmålet' : S.steg < STEG.length ? STEG[S.steg].del : S.folkbokford ? 'Folkbokförd · fritt bygge' : 'Oändligt bygge').toUpperCase();
+  if (STEG[S.steg]?.sov && !kvallKlar()) { malText.textContent = `Dagens mål är klara! Bygg, printa och sälj fritt – det blir kväll om ${Math.max(1, Math.ceil((MIN_VAKEN - (S.vakenTid || 0)) / 60))} min.`; }
   if (!S.skyltUppe && S.steg <= 1) { malDel.textContent = 'FÖRST'; malText.textContent = 'Spika ihop en adresskylt av brädhögen framför dig. Det här är MITT.'; }
   if (S.steg >= STEG.length && S.kapitelKlart && !S.kapitel2Klart) { S.kapitel2Klart = true; sparaSnart(); kapitel2Slut(); }
   {
@@ -5851,6 +5854,9 @@ function uppdatera(dt) {
     const visa = ui.igang && ui.butiksOverlay.hidden && nara && (S.kvarn.tratt > 0 || S.kvarn.ut > 0 || [kvarn, vevYta, rulle].includes(interaktor.hovrad));
     vevEl.classList.toggle('syns', visa);
     if (visa) {
+      { const v = kvarnPunkt(0, 1.45, 0.3).clone(); v.project(kamera); const ok = v.z < 1;
+        vevEl.style.left = ((v.x * 0.5 + 0.5) * innerWidth) + 'px'; vevEl.style.top = ((-v.y * 0.5 + 0.5) * innerHeight) + 'px';
+        vevEl.style.transform = 'translate(-50%,-100%)'; vevEl.style.visibility = ok ? '' : 'hidden'; }
       const pagar = S.kvarn.tratt > 0 ? nastaGram() * Math.min(1, S.kvarn.prog) : 0;
       const hela = helaRullar();
       const blixt = performance.now() < rullKlarTid;     // en rulle blev nyss klar – visa 100 % en kort stund
@@ -6398,7 +6404,7 @@ function kapitelSlut() {
 }
 
 // för automatiska tester
-window.__printahem = { maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 
