@@ -8,6 +8,17 @@
 // =============================================================
 window.SPEL = [
   {
+    mapp: "charlies-kalas",
+    namn: "Charlies Kalas",
+    ikon: "🎂",
+    beskrivning: "Charlie fyller 7 år, men Beppe och tårtan är borta! Fråga grupperna, hoppa uppför regnbågstrappan, blås såpbubblor på tjuven och bjud kungen på kalaset. Hitta alla presenter för en hemlig överraskning! Idé: Charlie.",
+    typ: "3D · Leta · Hoppa",
+    spelare: ["Charlie", "Alla"],
+    farg: ["#ff6fae", "#ffd23f"],
+    status: "klar",
+    ny: true,
+  },
+  {
     mapp: "radda-barnen",
     namn: "Rädda Barnen",
     ikon: "🌈",
