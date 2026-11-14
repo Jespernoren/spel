@@ -235,9 +235,9 @@ const MASKINER = {
   diamantkniv: { namn: 'Diamantkvarn', ikon: '', syns: () => (S.kvarn.kniv || 0) >= 1 && (S.respekt >= 110 || ['fynd4', 'fynd5'].some((f) => antalInv(f))), ritning: 1500, delar: 3, gram: 1000, tid: 16, monteras: true, beskr: 'Diamantbelagda knivar. Klarar guldkomposit och titanspån – filament nivå 4 och 5.' },
   stortratt: { namn: 'Stor kvarntratt', ikon: '🪣', syns: () => S.karra, ritning: 150, delar: 2, gram: 600, tid: 12, beskr: 'Bred tratt med kross – nu får regntunnor och kajaker plats i kvarnen', monteras: true },
   // bygg ut skjulet till ett riktigt hem – printa delarna, välj dem och klicka på skjulet för att montera
-  dorr: { namn: 'Dörr', ikon: '🚪', hem: true, monteras: true, syns: () => S.sang, ritning: 120, delar: 2, gram: 800, tid: 14, trivsel: 8, beskr: 'En riktig dörr – slut på drag och nyfikna katter' },
+  dorr: { namn: 'Dörr', ikon: '🚪', hem: true, monteras: true, syns: () => S.sang, ritning: 120, delar: 2, gram: 500, tid: 14, trivsel: 8, beskr: 'En riktig dörr – slut på drag och nyfikna katter' },
   vaggar: { namn: 'Isolerskiva (vägg)', ikon: '🧱', hem: true, monteras: true, syns: () => S.sang, ritning: 220, delar: 1, gram: 700, tid: 16, trivsel: 4, beskr: 'En vägg i taget – fyra skivor behövs (bak, vänster, höger, fram). Sen läcker kylan inte in längre' },
-  tak: { namn: 'Plåttak', ikon: '🏠', hem: true, monteras: true, syns: () => S.rolf.i >= 1, ritning: 260, delar: 3, gram: 800, tid: 16, trivsel: 12, beskr: 'Korrugerade takplåtar över hålet – inget mer regn på kudden' },
+  tak: { namn: 'Plåttak', ikon: '🏠', hem: true, monteras: true, syns: () => S.rolf.i >= 1, ritning: 260, delar: 3, gram: 400, tid: 16, trivsel: 12, beskr: 'Korrugerade takplåtar över hålet – inget mer regn på kudden' },
   fonster: { namn: 'Fönster', ikon: '🪟', hem: true, monteras: true, syns: () => S.rolf.i >= 1, ritning: 150, delar: 2, gram: 700, tid: 14, trivsel: 8, beskr: 'Ljus in i skjulet. Sätt det var du vill på en plan vägg – du kan ha flera (max 4)' },
   golv: { namn: 'Trägolv', ikon: '🪵', hem: true, monteras: true, syns: () => S.rolf.i >= 2, ritning: 140, delar: 3, gram: 800, tid: 14, trivsel: 8, beskr: 'Varma golvplankor i stället för kall jord' },
   taklampa: { namn: 'Taklampa', ikon: '💡', hem: true, monteras: true, syns: () => S.rolf.i >= 2, ritning: 90, delar: 1, gram: 400, tid: 10, trivsel: 6, beskr: 'Mysigt gult ljus om kvällarna' },
@@ -2273,6 +2273,7 @@ function anvandSkrivare(sk) {
 }
 
 function startaJobb(sk, val) {
+  if (sk.jobb || sk.klar) return 'upptagen';   // en utskrift i taget – annars försvinner det som redan printats
   if (val.maskin) {
     const m = MASKINER[val.maskin];
     if (sk.fil < 1) return false;
@@ -4534,7 +4535,7 @@ function oppnaPrintMeny(sk) {
     : `<p class="ui-tom">Inget att printa just nu – köp ritningar och recept hos Ali.</p>`);
   const fot = vald ? detalj({ bild: tumme(vald.attr.startsWith('data-maskin') ? 'byggsats:' + vald.id : vald.id, 72), titel: vald.namn, text: rens(vald.info).replace(/<br>/g, ' · '),
     faktaLista: [VAROR[vald.id]?.pris && !vald.attr.startsWith('data-maskin') ? ['mynt', `Ali betalar ${prisNu(vald.id)} kr idag${prisNu(vald.id) < saljPris(vald.id) ? ` (vanligt ${saljPris(vald.id)})` : ''}`, 'plus'] : null, VAROR[vald.id]?.pris && !vald.attr.startsWith('data-maskin') ? ['oandlig', `${Math.round(prisNu(vald.id) / (vald.gram / RULLE))} kr per rulle`, 'plus'] : null, sk.fil > 0 && sk.fil < behov(vald) && !forStor(vald) ? ['varning', `Laddat räcker till ${Math.floor(sk.fil / behov(vald) * 100)} % – den pausar sedan tills du laddar mer`, 'varn'] : null, ['klocka', `${Math.round(vald.tid / g.fart)} s`], ['rulle', `${rullar(vald.gram)}${vald.attr.startsWith('data-maskin') ? ` (${rullar(behov(vald))} per del)` : ''}`]],
-    knappar: [S.auto?.lada && !vald.attr.startsWith('data-maskin') && VAROR[vald.id]?.pris > 0 ? { text: sk.upprepa === vald.id ? 'Autoprint: PÅ' : 'Autoprint: AV', typ: sk.upprepa === vald.id ? 'plus' : 'neutral', attr: `data-upprepa="${vald.id}"`, ikon: 'oandlig' } : null, { text: forStor(vald) ? `Kräver skrivare ${STORLEK_NAMN[storlekFor(vald.id)]}` : kanInte(vald) ? 'Ladda mer filament' : 'Printa', typ: 'plus', attr: vald.attr + ' data-printa', av: kanInte(vald), ikon: forStor(vald) ? 'las' : 'skrivare' }].filter(Boolean) }) : detalj({});
+    knappar: [S.auto?.lada && !vald.attr.startsWith('data-maskin') && VAROR[vald.id]?.pris > 0 ? { text: sk.upprepa === vald.id ? 'Autoprint: PÅ' : 'Autoprint: AV', typ: sk.upprepa === vald.id ? 'plus' : 'neutral', attr: `data-upprepa="${vald.id}"`, ikon: 'oandlig' } : null, { text: sk.klar ? 'Ta ut det klara först' : sk.jobb ? 'Printar redan…' : forStor(vald) ? `Kräver skrivare ${STORLEK_NAMN[storlekFor(vald.id)]}` : kanInte(vald) ? 'Ladda mer filament' : 'Printa', typ: 'plus', attr: vald.attr + ' data-printa', av: kanInte(vald) || !!sk.jobb || !!sk.klar, ikon: forStor(vald) ? 'las' : 'skrivare' }].filter(Boolean) }) : detalj({});
   const html = panel({ ikon: 'skrivare', titel: `Skrivare ${g.namn} · byggvolym ${g.mm} mm${sk.mod ? ' · ' + VAROR[sk.mod].namn.replace('Prototyp: ', '') : ''}`, sub: S.strom < 20 ? 'Lite ström – trampa cykeln så att skrivaren orkar' : 'Välj vad du vill printa', resurser: resurs('rulle', `${rullar(sk.fil)} laddat`) + resurs('blixt', Math.floor(S.strom), S.strom < 20 ? 'varn' : ''),
     kropp, fot });
   oppnaRuta(html, (el) => {
@@ -4558,6 +4559,7 @@ function oppnaPrintMeny(sk) {
     el.querySelectorAll('[data-printa]').forEach((k) => {
       k.onclick = () => {
         const ok = startaJobb(sk, k.dataset.vara ? { typ: k.dataset.vara } : { maskin: k.dataset.maskin });
+        if (ok === 'upptagen') { ljud.fel(); ui.toast(sk.klar ? 'Ta ut det som är klart först' : 'Skrivaren printar redan – vänta tills den är klar', 'fel'); return; }
         if (ok) { ljud.kop(); ui.stangButik(); ui.toast('Skrivaren surrar igång…', 'bra'); }
         else { ljud.fel(); ui.toast(k.dataset.vara && storlekFor(k.dataset.vara) > skrivStorlek(sk) ? `För stor – kräver skrivare ${STORLEK_NAMN[storlekFor(k.dataset.vara)]}` : 'För lite filament i skrivaren', 'fel'); }
       };
@@ -4734,8 +4736,8 @@ function oppnaMarknad() {
   } else if (vald) {
     if (vald) {
       const bygg = vald.typ.startsWith('byggsats:') || !!VAROR[vald.typ]?.lyx, mattad = !bygg && vald.pris < vald.bas;
-      fot = detalj({ bild: tumme(vald.typ), titel: `${namnFor(vald.typ)} × ${vald.n}`, text: bygg ? 'Ali köper tillbaka den till begagnat pris.' : mattad ? `Ali har redan köpt ${saltIdag(vald.typ)} st idag – priset är ${Math.round(vald.pris / vald.bas * 100)} % av det vanliga. Imorgon är det fullpris igen.` : 'Ali säljer den vidare i butiken.',
-        faktaLista: [['mynt', `${vald.pris} kr styck`, 'plus'], mattad ? ['varning', 'Marknaden är mättad', 'varn'] : null],
+      fot = detalj({ bild: tumme(vald.typ), titel: `${namnFor(vald.typ)} × ${vald.n}`, text: bygg ? 'Ali köper tillbaka den till begagnat pris.' : mattad ? `Ali har redan köpt ${saltIdag(vald.typ)} st idag – priset är ${Math.round(vald.pris / vald.bas * 100)} % av det vanliga. Imorgon är det fullpris igen.` : vald.n > 1 && summaFor(vald.typ, vald.n) < vald.pris * vald.n ? 'Ali betalar lite mindre för varje du säljer samma dag. Imorgon är det fullpris igen.' : 'Ali säljer den vidare i butiken.',
+        faktaLista: [['mynt', vald.n > 1 && summaFor(vald.typ, vald.n) < vald.pris * vald.n ? `första ${vald.pris} kr – sen lite mindre` : `${vald.pris} kr styck`, 'plus'], mattad ? ['varning', 'Marknaden är mättad', 'varn'] : null],
         knappar: [{ text: `Sälj 1  +${vald.pris} kr`, typ: 'plus', attr: 'data-salj1', ikon: 'salj' }, vald.n > 1 ? { text: `Sälj alla  +${summaFor(vald.typ, vald.n).toLocaleString('sv-SE')} kr`, typ: 'plus', attr: 'data-saljalla' } : null].filter(Boolean) });
     }
   } else fot = detalj({ tom: 'Välj något att sälja eller köpa.' });
@@ -5010,7 +5012,6 @@ const ui = new FpUI({
   hjalp: 'WASD gå · Mus titta · Klick/E använd · Klicka och håll = veva/trampa/gripa · B dagbok & sparplatser<br>Hjulet / 1–8 byt sak · H tomhänt · Shift+Q släpp allt · V röster · I dina saker · B dagbok · M meddelanden · K sparplatser · G flytta gamingboden · R vrid · Q släpp skräp · Shift spring',
   spelare,
   onAnvand: (nere) => {
-    if (dagbokLas) { if (nere) dagbokHoppa = true; anvandNere = false; return; }   // klick = hoppa över dagboken (barn klickar direkt)
     anvandNere = nere;
     if (gripVerktyg.visible && !nere && gripHaller) gripSlapp();
     gripHaller = nere && gripVerktyg.visible;
@@ -5860,7 +5861,7 @@ ui.toast = (text, typ) => {
 };
 // ---------- Inkorgen uppe till höger: sms och dagbok syns direkt, läses upp en i taget ----------
 // block = du kan gå och titta men inte använda något förrän den är uppläst (dag 1 och skylten)
-let dagbokLas = false, dagbokHoppa = false;   // klick under uppläsningen hoppar över den
+let dagbokLas = false, dagbokPrat = false;   // dagboken läses alltid klart – du kan spela under tiden, men inget annat pratar eller dyker upp
 const INKORG_MAX = 3; let inkorgVantar = 0;
 function inkorg({ vem, titel, text, lapp = false, block = false, klar, fore, smsId }) {
   const lista = document.querySelector('.hud-inkorg');
@@ -5878,15 +5879,16 @@ function inkorg({ vem, titel, text, lapp = false, block = false, klar, fore, sms
     lista.prepend(el);   // sms och dagbok i samma hörn uppe till höger
     requestAnimationFrame(() => el.classList.add('in'));
     [...lista.children].slice(INKORG_MAX).forEach((x) => { x.classList.add('ut'); setTimeout(() => x.remove(), 500); });
-    el.classList.remove('vantar'); el.classList.add('laser'); const em = el.querySelector('em'); if (em) em.textContent = block ? 'klicka = hoppa' : 'läser…';
-    if (block) { dagbokLas = true; dagbokHoppa = false; anvandNere = false; }
-    const start = performance.now(); prata(lapp ? 'du' : vem, text);
+    el.classList.remove('vantar'); el.classList.add('laser'); const em = el.querySelector('em'); if (em) em.textContent = 'läser…';
+    const skydda = lapp || block;   // dagboken får aldrig avbrytas
+    if (skydda) dagbokLas = true;
+    const start = performance.now(); dagbokPrat = skydda; prata(lapp ? 'du' : vem, text); dagbokPrat = false;
     const bar = el.querySelector('.hud-bubbla-bar i');
     const tick = () => {
       const nu = performance.now(), slut = Math.max(start + 2500, pratarTill || 0);
       bar.style.width = Math.min(100, (nu - start) / Math.max(1, slut - start) * 100) + '%';
-      if (nu < slut && !(block && dagbokHoppa)) { requestAnimationFrame(tick); return; }
-      if (block) { if (dagbokHoppa) { tystna(); pratarTill = 0; } dagbokLas = false; dagbokHoppa = false; }
+      if (nu < slut) { requestAnimationFrame(tick); return; }
+      if (skydda) dagbokLas = false;
       el.classList.remove('laser'); const em2 = el.querySelector('em'); if (em2) em2.textContent = ''; klar?.();
       setTimeout(() => { el.classList.add('ut'); setTimeout(() => el.remove(), 500); }, ios ? 6000 : 14000);
     };
@@ -6101,6 +6103,7 @@ function rostKlipp(vem, text) {
   return rostIndex[k] || null;
 }
 function prata(vem, text) {
+  if (dagbokLas && !dagbokPrat) return;   // dagboken läses – ingen annan avbryter (texten syns ändå)
   pratarVem = vem; pratarTill = performance.now() + Math.min(9000, 600 + String(text).length * 62);
   if (rostLage() === 'av' || !text || !/[\p{L}]/u.test(rens(text))) return;
   if (rostLage() === 'rost') {
@@ -6253,7 +6256,7 @@ document.addEventListener('click', (e) => {
 let bandTid = 0;
 let anvandNere = false, skrapTimer = 0, trampTid = 0, fullVarnad = false;
 function uppdatera(dt) {
-  if (!pausad && medKo.length && ui.igang && ui.butiksOverlay.hidden && ui.overlay.hidden) visaNastaMeddelande();
+  if (!pausad && !dagbokLas && medKo.length && ui.igang && ui.butiksOverlay.hidden && ui.overlay.hidden) visaNastaMeddelande();
   if (pausad) return;
   spelare.uppdatera(dt);
   hand.uppdatera(dt, spelare.rorelse);
@@ -7050,7 +7053,7 @@ function kapitelSlut() {
 }
 
 // för automatiska tester
-window.__printahem = { bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 
