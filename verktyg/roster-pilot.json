@@ -92,29 +92,29 @@
  {
   "id": "rolf-tackhallaren",
   "figur": "rolf",
-  "visad": "TACK för hållarn!! Ölen e iskall. Lite stålar i lådan.\n\nEn sak. Mina fingrar e stela – artros. Doktorn säjer att ja ska skriva mindre för hand. Lägg en lapp me ditt telefonnummer i lådan så sms:ar ja istället. Sms:a int efter tio. /Rolf",
+  "visad": "TACK för hållarn!! Ölen ä iskall.. Lite pengar i lådan.\n\nEn sak. Mina fingrar ä stela – artros. Doktorn säjer att ja ska skriva mindre för hand. Lägg en lapp mä ditt telefonnummer i lådan så sms:ar ja istället. Sms:a int efter tio. /Rolf",
   "nycklar": [
-   "rolf-dce79992"
+   "rolf-f2494b7b",
+   "rolf-f2494b7b"
   ],
-  "el": "[very old, tired, thick Värmland accent, slow] [happily] TACK för hållaren! [chuckles] Ölen är iskall. Lite stålar i lådan. [sighs] En sak… [softly] Mina fingrar är stela. Artros. [pause] Doktorn säjer att ja ska skriva mindre för hand. Lägg en lapp med ditt telefonnummer i lådan, så sms:ar ja istället. [tired] Sms:a inte efter tio."
+  "el": "[very old, tired, thick Värmland accent, slow] [happily] TACK för hållaren! [chuckles] Ölen är iskall. Lite pengar i lådan. [sighs] En sak… [softly] Mina fingrar är stela. Artros. [pause] Doktorn säjer att ja ska skriva mindre för hand. Lägg en lapp med ditt telefonnummer i lådan, så sms:ar ja istället. [tired] Sms:a inte efter tio."
  },
  {
   "id": "rolf-oppnare",
   "figur": "rolf",
-  "visad": "Nämen.. PERFEKT öppnare!!! Lite stålar i lådan. Hoppas kärran gör nytta. /Rolf",
+  "visad": "PERFEKT öppnare!!! Lite pengar i lådan. Hoppas kärran gör nytta. /Rolf",
   "nycklar": [
-   "rolf-fce4442d",
-   "rolf-fce4442d"
+   "rolf-4dd9730f"
   ],
-  "el": "[very old, tired, thick Värmland accent, slow] [surprised] Nämen… PERFEKT öppnare! [chuckles] Lite stålar i lådan. [softly] Hoppas kärran gör nytta."
+  "el": "[very old, tired, thick Värmland accent, slow] [surprised] Nämen… PERFEKT öppnare! [chuckles] Lite pengar i lådan. [softly] Hoppas kärran gör nytta."
  },
  {
   "id": "rolf-grillspade",
   "figur": "rolf",
-  "visad": "Hörru. Ska grilla på lördag. Ensam som vanligt, Kajsa äter int korv. Ingen grillspade. Min gamla smälte. Lång historia. Ritningen ligger i lådan. Fixar du? 250 spänn o ja tpipar dubbelt nästa gång. /Rolf 🍖\n*tippar",
+  "visad": "Hörru. Ska grilla på lördag. Ensam som vanligt, Kajsa äter int kôrv. Ingen grillspade. Min gamla smälte. Lång historia. Ritningen ligger i lådan. Fixar du? 250 spänn o ja tpipar dubbelt nästa gång. /Rolf 🍖\n*tippar",
   "nycklar": [
-   "rolf-f1c81a4f",
-   "rolf-529ac9e5"
+   "rolf-40bf346a",
+   "rolf-01419b9c"
   ],
   "el": "[very old, tired, thick Värmland accent, slow] [sighs] Hörru… Ska grilla på lördag. [sorrowful] Ensam, som vanligt. Kajsa äter inte korv. [pause] Ingen grillspade. Min gamla smälte. [chuckles] Lång historia. Ritningen ligger i lådan. Fixar du? [cheeky] Tvåhundrafemtio spänn, och ja tippar dubbelt nästa gång."
  },
@@ -131,10 +131,10 @@
  {
   "id": "rolf-affischen",
   "figur": "rolf",
-  "visad": "Korv! Ja grillade, Kajsa åt tre.. Hä – min gamla affisch från Rolfs Rockers 1987. Ja hade hår då. Ta den. Ja kan int titta på den. /R",
+  "visad": "Kôrv! Ja grillade, Kajsa åt tre.. Hä – min gamla affisch från Rolfs Rockers 1987. Ja hade hår då. Ta den. Ja kan int titta på den. /R",
   "nycklar": [
-   "rolf-fae01748",
-   "rolf-fae01748"
+   "rolf-6434722d",
+   "rolf-6434722d"
   ],
   "el": "[very old, tired, thick Värmland accent, slow] [happily] Korv! Ja grillade, och Kajsa åt tre. [pause] Här… min gamla affisch från Rolfs Rockers, nittonhundraåttiosju. [chuckles] Ja hade hår då. [sighs] Ta den. [softly] Ja kan inte titta på den."
  }

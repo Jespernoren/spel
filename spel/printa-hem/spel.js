@@ -415,7 +415,7 @@ const LAPPAR = {
 // ROLF definieras längre ner – läs den försiktigt så att tidig migrering inte kraschar
 const rolfText = (n, falt) => { try { return rolfDialekt(ROLF?.[n]?.[falt] || '', false); } catch { return ''; } };
 // Rolf kommer från bonnvischan – det ska synas och höras. På sms skriver han med ett finger, så det blir lite fel.
-const ROLF_ORD = { inte: 'int', här: 'hä', där: 'dä', mig: 'mej', dig: 'dej', sig: 'sej', också: 'oxå', något: 'nåt', någon: 'nån', några: 'nåra', sådan: 'sån', sådana: 'såna', säga: 'säja', det: 'de', jag: 'ja', är: 'e', med: 'me', mycket: 'mycke', ingenting: 'inget', kommer: 'kömmer', vad: 'va', nu: 'nu', väl: 'väl', titta: 'titta', pojke: 'pôjk', flicka: 'jänta', sedan: 'sen', säger: 'säjer', vet: 'vet' };
+const ROLF_ORD = { inte: 'int', här: 'hä', där: 'dä', mig: 'mej', dig: 'dej', sig: 'sej', också: 'oxå', något: 'nåt', någon: 'nån', några: 'nåra', sådan: 'sån', sådana: 'såna', säga: 'säja', det: 'dä', de: 'dä', jag: 'ja', är: 'ä', e: 'ä', med: 'mä', me: 'mä', dom: 'dôm', dem: 'dôm', folk: 'fôlk', korv: 'kôrv', noga: 'nôga', fin: 'grann', fina: 'granna', pengar: 'pengar', någonting: 'nånting', mycket: 'mycke', ingenting: 'inget', kommer: 'kömmer', vad: 'va', nu: 'nu', väl: 'väl', titta: 'titta', pojke: 'pôjk', flicka: 'jänta', sedan: 'sen', säger: 'säjer', vet: 'vet' };
 const ROLF_IN = ['ÖJ! ', 'Hörru. ', 'Jo jo. ', 'Nämen. ', '', '', '', 'Tjo. '];
 const hashTal = (t) => { let h = 2166136261; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 16777619); return h >>> 0; };
 function rolfDialekt(t, skrivfel) {
@@ -4050,10 +4050,10 @@ addEventListener('keydown', (e) => {
 const ROLF = [
   { vara: 'olhallare', forskott: ['nyckel'],
     brev: 'ÖJ! Ja såg att du börja städa gården. Respekt. Ingen städar här. Är de du som printar grejer oxå?? Ja önskar mig en ölhållare me kylklamp. Ritningen ligger i lådan. Nyckeln till tippen oxå – ta så mycket plast du vill. Lägg hållarn i lådan när den e klar. Kall öl e viktigt. /Rolf (sopbilen)',
-    tack: 'TACK för hållarn!! Ölen e iskall. Lite stålar i lådan.\n\nEn sak. Mina fingrar e stela – artros. Doktorn säger att ja ska skriva mindre för hand. Lägg en lapp me ditt telefonnummer i lådan så sms:ar ja istället. Sms:a inte efter tio. /Rolf' },
+    tack: 'TACK för hållarn!! Ölen e iskall. Lite pengar i lådan.\n\nEn sak. Mina fingrar e stela – artros. Doktorn säger att ja ska skriva mindre för hand. Lägg en lapp me ditt telefonnummer i lådan så sms:ar ja istället. Sms:a inte efter tio. /Rolf' },
   { vara: 'flaskoppnare', forskott: ['karra'],
     brev: 'Gomorron! Rolf här. Kajsa (katten) knuffa ner min flasköppnare i tippen 😩 Printar du en ny? Me magnet så den sitter på flaket. Ritningen ligger i lådan. Ja ställde min gamla skottkärra bredvid – den e din redan nu. Me kärran bär du åtta gånger mer skräp per vända. Tunnorna o kajakerna e för tunga för din kvarn. Än. /Rolf',
-    tack: 'PERFEKT öppnare!!! Lite stålar i lådan. Hoppas kärran gör nytta. /Rolf' },
+    tack: 'PERFEKT öppnare!!! Lite pengar i lådan. Hoppas kärran gör nytta. /Rolf' },
   { vara: 'grillspade',
     brev: 'Ska grilla på lördag. Ensam som vanligt, Kajsa äter inte korv. Ingen grillspade. Min gamla smälte. Lång historia. Ritningen ligger i lådan. Fixar du? 250 spänn o ja tippar dubbelt nästa gång. /Rolf 🍖',
     tack: 'Grillspaden e ju KONST. Pengar i lådan. Ses på lördag. Eller inte. Vi får se. /Rolf' },
@@ -4081,7 +4081,7 @@ const ROLF_JOBB = [
     tackJa: 'Lönnfacket funkar. Kakorna har mandel. Livet e gott. Pengar i lådan. /R',
     tackNej: 'Okej, okej. Ja köper egna kakor. Dom e sämre. Du e en bra människa. Här. /R' },
   { vara: 'stampel',
-    brev: 'Chefens stämpel: GODKÄNT. Me en kopia kan ja godkänna min egen övertid. 31 år utan övertidsersättning – de e inte stöld, de e rättvisa. Typ. 3 500. /R',
+    brev: 'Chefens stämpel: GODKÄNT. Me en kopia kan ja godkänna min egen övertid. 31 år utan övertidsersättning – de e inte stöld, de e rättvisa. Nästan. 3 500. /R',
     tackJa: 'GODKÄNT. GODKÄNT. GODKÄNT. Ja stämplade en servett också. Pengar i lådan. /R',
     tackNej: 'Du har rätt. Ja ska prata me facket istället. Har vi ett fack? Ja kollar. Här, ta lite. /R' },
   { vara: 'tillstand',
@@ -4109,7 +4109,7 @@ const ROLF_RIK = 'Ja vet att du ä rik nu. Hä ä lite spänn. Å nåt ja hitta 
 const ROLF_TACK = {
   p_sexpack: { ger: 'r_tv', text: 'Ett sexpack. Till MIG. Ingen har gett mig nåt sen 2009. Ja la en TV i lådan. Från ett dödsbo ja rensade. Den funkar om man slår på den. Hårt. /R' },
   p_korv: { ger: 'r_affisch', text: 'Korv! Ja grillade, Kajsa åt tre. Här – min gamla affisch från Rolfs Rockers 1987. Ja hade hår då. Ta den. Ja kan inte titta på den. /R' },
-  p_kajsa: { ger: 'r_gardin', text: 'Kajsa spinner som en motor. Ja la Birgittas gardiner i lådan. Hon stickade dom. Sen gick hon. Ja vill inte ha dom. Du får dom. Dom e fina. Fan. /R' },
+  p_kajsa: { ger: 'r_gardin', text: 'Kajsa spinner som en motor. Ja la Birgittas gardiner i lådan. Hon stickade dom i husvagnen. Ja har inte kunnat titta på dom sen hon dog. Du får dom. Dom e fina. Fan. /R' },
   p_fiske: { ger: 'r_klocka', text: 'Ett riktigt fiskespö. Ja … ja vet inte vad ja ska säga. Ta min guldklocka. Fick den efter 30 år på bilen. Ingen har frågat vad klockan e sen dess. /R' },
   p_trummor: { ger: 'r_fatolj', text: 'Ja spelade i två timmar i går. Grannen ringde polisen. VÄRT DET. Här, fåtöljen från dödsbot på Granvägen. Läder. Bara lite sprucken. /R' },
   p_konsert: { ger: 'r_discokula', text: 'Ja dansade. Med en tant som heter Gun. Ja e skyldig dig för resten av livet. Ta discokulan från 1987. Den har sett saker. /R' },
@@ -4486,36 +4486,37 @@ function bubbla(grupp, text) {
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false })); sp.scale.set(1.6, 0.4, 1); sp.position.y = 2.35; sp.renderOrder = 6; grupp.add(sp); grupp.userData.bubbla = sp;
 }
-// Pappa: alltid glad, obrydd, stockholmsslang. Bryr sig om motorer och sport. Allt känslosamt = "Aha, vad lugnt då."
+// Pappa: glad, taktlös, Stockholmstalspråk med högst ett slangord per replik. Byter ämne till Scania, Djurgården, F1, rea.
+// "Aha, vad lugnt då!" bara när någon just sagt något känslosamt – högst en gång per besök (se claude/soptippsvagen-pappa-repliker.md).
 const PAPPA_SCEN = [
-  ['pappa', 'Nämen tjenare! Tjena Rolf!'], ['rolf', 'Tjena.'], ['pappa', 'Scania va? Vilken årsmodell?'], ['rolf', 'Nittioåtta. V8.'],
-  ['pappa', 'Oj oj oj. Vilken kärra. Låter som en dröm.'], ['rolf', 'Den lurar på.'], ['pappa', 'Såg du hockeyn igår? Tradigt värre.'], ['rolf', 'Ja knoppa i andra perioden.'],
-  ['pappa', 'Smart. Man ska lurva när man kan.'], ['pappa', 'Tjenare! Vilket ställe du har!', 'du'], ['du', 'Pappa … jag bor på en soptipp.'],
-  ['pappa', 'Aha, vad lugnt då!', 'du'], ['du', 'Mamma är jätteorolig.'], ['pappa', 'Aha, vad lugnt då. Hon har alltid nåt.', 'du'],
-  ['pappa', 'Mamma skicka med lite grejer.', 'burkar'], ['pappa', 'Ja gör bara som hon säger. Då blir de lugnt hemma.'], ['pappa', 'Och va du än gör: mal dom inte. Då tror hon att du ätit upp allt. Då gör hon mer.', 'du'], ['pappa', 'Fint jobbat!', 'du'], ['pappa', 'Nä, nu ska ja blada. Ska tjacka vurre på macken.'], ['pappa', 'Mamma hälsar!', 'du'],
+  ['pappa', 'Nämen tjenare, Rolf!'], ['rolf', 'Goddag … ja.'], ['pappa', 'Scania va? Vilken årsmodell?'], ['rolf', 'Nittioåtta. V8.'],
+  ['pappa', 'Oj oj oj. Vilken kärra. Låter som en dröm.'], ['rolf', 'Hon går som en klocka.'], ['pappa', 'Såg du hockeyn igår? Värsta sömnpillret.'], ['rolf', 'Ja somna i andra perioden. Som vanlit.'],
+  ['pappa', 'Ha ha! Smart karl.'], ['pappa', 'Tjenare! Vilket ställe du har!', 'du'], ['du', 'Pappa … jag bor på en soptipp.'],
+  ['pappa', 'Aha, vad lugnt då!', 'du'], ['du', 'Mamma är jätteorolig.'], ['pappa', 'Jaha. Hon har alltid nåt.', 'du'],
+  ['pappa', 'Mamma skicka med lite grejer.', 'burkar'], ['pappa', 'Ja gör bara som hon säger. Då blir de lugnt hemma.'], ['pappa', 'Och va du än gör: mal dom inte. Då tror hon att du ätit upp allt. Då gör hon mer.', 'du'], ['pappa', 'Fint jobbat!', 'du'], ['pappa', 'Nä, nu drar ja. Ska käka korv på macken.'], ['pappa', 'Mamma hälsar!', 'du'],
 ];
 // senare besök: pappa kommer ensam, kuckelurar lite, ställer ner burkar och bladar
 const PAPPA_KORT = [
-  [['pappa', 'Tjenare! Bara åkte förbi.', 'du'], ['pappa', 'Hört att Djurgår\'n tjacka en ny back. Bra grej.'], ['du', 'Jag har inte sovit på två dagar.'], ['pappa', 'Aha, vad lugnt då!', 'du']],
-  [['pappa', 'Tjena tjena! Nya doser, kolla.', 'du'], ['pappa', 'Fick dom på rea. Sköna som tofflor. Riktiga pjuck.'], ['du', 'Jag saknar er ibland.'], ['pappa', 'Aha, vad lugnt då!', 'du']],
-  [['pappa', 'Hallå där! Ja kör runt med nya jonnen idag.', 'du'], ['pappa', 'Ingen motor. Tradigt. Men nyttigt säger mamma.'], ['du', 'Jag är lite ledsen idag.'], ['pappa', 'Aha, vad lugnt då. Ät en vurre.', 'du']],
-  [['pappa', 'Tjenare! Mamma sa att ja skulle kolla läget.', 'du'], ['pappa', 'Läget e bra. Nu har ja kollat.'], ['du', 'Har du saknat mig?'], ['pappa', 'Aha, vad lugnt då! Bra snöre hit förresten.', 'du']],
-  [['pappa', 'Tjena! Såg Formel 1 i natt. Vilket race!', 'du'], ['pappa', 'Verstappen var en räv bakom örat.'], ['du', 'Jag har ingen säng, pappa.'], ['pappa', 'Aha, vad lugnt då! Kvarta på golvet, de e bra för ryggen.', 'du']],
-  [['pappa', 'Hallå! Plurret e varmt idag, ja har badat.', 'du'], ['du', 'Mamma grät i telefon.'], ['pappa', 'Aha, vad lugnt då. Hon gråter på Bingolotto oxå.', 'du']],
-  [['pappa', 'Tjenare! Bara åkte förbi.', 'du'], ['pappa', 'Du, en sak. Varför har du inte kommit längre?'], ['du', 'Va? Jag har byggt allt det här själv.'], ['pappa', 'Aha, vad lugnt då. Grannens grabb har två lägenheter.', 'du']],
+  [['pappa', 'Tjenare! Bara åkte förbi.', 'du'], ['pappa', 'Hört att Djurgår\'n köpt en ny back. Bra grej.'], ['du', 'Jag har inte sovit på två dagar.'], ['pappa', 'Oj oj oj. Ta en tupplur, de gör ja.', 'du']],
+  [['pappa', 'Tjena tjena! Nya dojor, kolla.', 'du'], ['pappa', 'Fick dom på rea. Sköna som tofflor.'], ['du', 'Jag saknar er ibland.'], ['pappa', 'Jaha! Mamma har ditt foto på kylen.', 'du']],
+  [['pappa', 'Hallå där! Ja har cyklat hit. Mamma tycker ja ska röra på mej.', 'du'], ['pappa', 'Ingen motor. Trist. Men nyttigt, säger hon.'], ['du', 'Jag är lite ledsen idag.'], ['pappa', 'Aha, vad lugnt då. Käka en korv, så går de över.', 'du']],
+  [['pappa', 'Tjenare! Mamma sa att ja skulle kolla läget.', 'du'], ['pappa', 'Läget e bra. Nu har ja kollat.'], ['du', 'Har du saknat mig?'], ['pappa', 'Aha, vad lugnt då! Fin väg hit förresten. Nyasfalterad.', 'du']],
+  [['pappa', 'Tjena! Såg Formel 1 i natt. Vilket race!', 'du'], ['pappa', 'Verstappen var en räv bakom örat.'], ['du', 'Jag har ingen säng, pappa.'], ['pappa', 'Jaha! Golvet e bra för ryggen. Ja sov på golvet i lumpen.', 'du']],
+  [['pappa', 'Hallå! Ja har tagit ett dopp i sjön. Iskallt. Fantastiskt!', 'du'], ['du', 'Mamma grät i telefon.'], ['pappa', 'Aha, vad lugnt då. Hon gråter på Bingolotto också.', 'du']],
+  [['pappa', 'Tjenare! Bara åkte förbi.', 'du'], ['pappa', 'Du, en sak. Varför har du inte kommit längre?'], ['du', 'Va? Jag har byggt allt det här själv.'], ['pappa', 'Ha ha! Grannens grabb har två lägenheter.', 'du']],
   [['pappa', 'Hallå! Skjulet lutar lite va?', 'du'], ['pappa', 'Hade du inte tänkt ha ett riktigt hus vid det här laget?'], ['du', 'Jag gör så gott jag kan.'], ['pappa', 'Aha, vad lugnt då! Ja hade körkort och Volvo när ja var i din ålder.', 'du']],
-  [['pappa', 'Tjena! Ska du bo här i vinter oxå?', 'du'], ['du', 'Jag vet inte, pappa.'], ['pappa', 'Aha, vad lugnt då. Långrör, de e grejen. Mamma köper.', 'du']],
-  [['pappa', 'Tjenare! Fila nötterna gör du va?', 'du'], ['du', 'Ibland.'], ['pappa', 'Aha, vad lugnt då!', 'du'], ['pappa', 'Kolla smulan. Ny. AIK-färger. Fast ja e för Djurgår\'n.']],
+  [['pappa', 'Tjena! Ska du bo här i vinter också?', 'du'], ['du', 'Jag vet inte, pappa.'], ['pappa', 'Oj oj oj. Långkalsonger, de e grejen. Mamma köper.', 'du']],
+  [['pappa', 'Tjenare! Tar du de lugnt idag, eller?', 'du'], ['du', 'Ibland.'], ['pappa', 'Kanon!', 'du'], ['pappa', 'Kolla mössan. Ny. AIK-färger, fast ja e Djurgårdare. Den var på rea.']],
 ];
 // när man malt mammas saker: mamma tjatar hemma och pappa mår sämre. Han blir dryg.
 const PAPPA_DRYG = [
-  [['pappa', 'Tjena.', 'du'], ['pappa', 'Mamma har kokat sylt i tre dagar. Hon tror att du äter upp allt.'], ['du', 'Förlåt, pappa.'], ['pappa', 'Ja SA ju de. Mal dom inte. Aha, vad lugnt då. För dig.', 'du']],
+  [['pappa', 'Tjena.', 'du'], ['pappa', 'Mamma har kokat sylt i tre dagar. Hon tror att du äter upp allt.'], ['du', 'Förlåt, pappa.'], ['pappa', 'Ja sa ju de. Mal dom inte. Aha, vad lugnt då. För dig.', 'du']],
   [['pappa', 'Jaha. Här står du.', 'du'], ['pappa', 'Ja har inte sett hockeyn på en vecka. Mamma pratar över den.'], ['pappa', 'Om grytvantar.']],
-  [['pappa', 'Tjena.', 'du'], ['pappa', 'Ja knoppar i garaget nu. De e lugnare där.'], ['du', 'Är det så illa?'], ['pappa', 'Aha, vad lugnt då. Säger du. Som maler sylt.', 'du']],
+  [['pappa', 'Tjena.', 'du'], ['pappa', 'Ja sover i garaget nu. De e lugnare där.'], ['du', 'Är det så illa?'], ['pappa', 'Jaha. Säger du. Som maler sylt.', 'du']],
   [['pappa', 'Hej.', 'du'], ['pappa', 'Hon har köpt en egen frys. Till sylten.'], ['pappa', 'Ja varnade dig. Men vad vet ja. Ja e bara pappa.']],
 ];
-const PAPPA_DRYG_SLUT = [['pappa', 'Mamma skicka med lite grejer. MAL INTE dom.', 'burkar'], ['pappa', 'Ja ska blada nu.'], ['pappa', 'Mamma hälsar. Typ.', 'du']];
-const PAPPA_SLUT = [['pappa', 'Mamma skicka med lite grejer.', 'burkar'], ['pappa', 'Ja gör bara som hon säger. Då blir de lugnt hemma.'], ['pappa', 'Och va du än gör: mal dom inte. Då tror hon att du ätit upp allt. Då gör hon mer.', 'du'], ['pappa', 'Fint jobbat!', 'du'], ['pappa', 'Nä, nu ska ja blada.'], ['pappa', 'Mamma hälsar!', 'du']];
+const PAPPA_DRYG_SLUT = [['pappa', 'Mamma skicka med lite grejer. Mal inte dom.', 'burkar'], ['pappa', 'Nä, ja drar nu.'], ['pappa', 'Mamma hälsar. Typ.', 'du']];
+const PAPPA_SLUT = [['pappa', 'Mamma skicka med lite grejer.', 'burkar'], ['pappa', 'Ja gör bara som hon säger. Då blir de lugnt hemma.'], ['pappa', 'Och va du än gör: mal dom inte. Då tror hon att du ätit upp allt. Då gör hon mer.', 'du'], ['pappa', 'Fint jobbat!', 'du'], ['pappa', 'Nä, ja drar nu.'], ['pappa', 'Mamma hälsar!', 'du']];
 const pappaBesok = { aktiv: false, t: 0, steg: 0, fas: '', scen: PAPPA_SCEN, medRolf: true };
 // pappa ställer ner 2–4 burkar vid skjulet. De tar plats. Ali vill inte ha dem. Tacka mamma.
 // mögel och stank: gröna tussar och lukt som stiger
@@ -4626,7 +4627,8 @@ function uppdateraPappa(dt) {
       pappaGubbe.userData.arm.rotation.x = 0;
       if (till === 'du') { vand(pappaGubbe, spelare.pos); if (text.startsWith('Fint jobbat')) { pappaGubbe.userData.arm.rotation.x = -2.6; andraRespekt(2, 'Pappa sa "fint jobbat"'); } }
       if (till === 'burkar') stallBurkar();
-      bubbla(g, text); if (text !== '…') prata(vem, text);
+      const sagt = vem === 'rolf' ? rolfDialekt(text, false).replace('\u200b', '') : text;   // Rolf pratar värmländska även i scener
+      bubbla(g, sagt); if (text !== '…') prata(vem, sagt);
       b.t = text === '…' ? 2.2 : 1.6 + text.length * 0.06;
     }
   } else if (b.fas === 'gar') {
@@ -6916,6 +6918,13 @@ const FAMILJ = {
 // och på en del kan du svara – svaret styr vad som händer sen ----------
 const SMS_POOL = [
   // mamma: panik i alla former
+  // pappa: kan inte riktigt mobilen. Skriver sällan, och nästan bara för att mamma säger åt honom
+  { id: 'p_lever', vem: 'pappa', nar: () => S.dag >= 6, text: 'Mamma undrar om du lever. Ja sa ja. Stämmer de?' },
+  { id: 'p_skrivit', vem: 'pappa', nar: () => S.dag >= 9, text: 'Mamma sa att ja skulle skriva. Nu har ja skrivit.' },
+  { id: 'p_ok', vem: 'pappa', nar: () => S.dag >= 11, text: 'OK.' },
+  { id: 'p_aa', vem: 'pappa', nar: () => S.dag >= 13, text: 'Hur skriver man å på denna' },
+  { id: 'p_tumme', vem: 'pappa', nar: () => S.dag >= 16, text: '👍' },
+  { id: 'p_langre', vem: 'pappa', nar: () => S.dag >= 18, text: 'Varför har du inte kommit längre? /mamma sa att ja inte fick skriva så. Sorry.' },
   { id: 'm_mack', vem: 'mamma', nar: () => S.dag >= 3, text: 'Jag har städat ditt rum. Det tog TRE DAGAR. Jag hittade en macka från i somras. EN MACKA.' },
   { id: 'm_strumpor', vem: 'mamma', nar: () => S.dag >= 3, text: 'Har du VARMA STRUMPOR?? Det ska bli kallt!!', svar: [['Ja mamma.', 'Bra. Vilka då? De bruna? De bruna har hål. Jag VET att de har hål.'], ['Nej.', 'Jag skickar ett paket. Med strumpor. Och en mössa. Och sju mackor.']] },
   { id: 'm_masar', vem: 'mamma', nar: () => S.dag >= 4, text: 'Jag läste om en man som bodde på en soptipp. Han blev attackerad av måsar. Finns det MÅSAR där??', svar: [['Bara en katt.', 'En KATT?! Är den vaccinerad? Rör den inte. Eller jo. Ge den en macka.'], ['Massor av måsar.', 'JAG KOMMER OCH HÄMTAR DIG. … Pappa vill inte köra. Pappa säger att måsar är ok.']] },
@@ -6965,7 +6974,7 @@ const SMS_POOL = [
   { id: 'r_bengt2', vem: 'rolf', nar: () => S.dag >= 5 && S.rolfNummer && (S.bengtSkrik || 0) >= 1, text: 'Bengt-Åke ringde mej. Han sa att nån "smyger vid staketet". Ja sa att de va en grävling. Han sa att han skjuter grävlingar oxå. Håll dej borta från kanten ett tag. /R' },
   { id: 'r_bengt3', vem: 'rolf', nar: () => S.dag >= 6 && S.rolfNummer && S.respekt >= 15, text: 'Bengt-Åke frågade om dej. Ja sa att du e en bra unge som städar. Han sa "HMPF". De e bra. Förra gången sa han nåt mycke värre. Ja jobbar på honom. /R' },
   { id: 'b_bengt', vem: 'bror', nar: () => (S.bengtSkrik || 0) >= 2, text: 'Mamma såg på Facebook att en gubbe vid soptippen jagat bort en hemtjänstbil med en kratta. Säg att det inte är din granne.', svar: [['Det är min granne.', 'Okej. Mamma har bokat ett pepparsprej på nätet. Till dig.'], ['Ingen aning.', 'Bra. Jag säger till mamma att det var en annan soptipp.']] },
-  { id: 'r_pappa', vem: 'rolf', nar: () => !!S.pappaBesok, text: 'Din farsa e en bra karl. Vi snacka Scania o hockey. Han säger "blada" istället för gå. Ja ska börja me det. /R' },
+  { id: 'r_pappa', vem: 'rolf', nar: () => !!S.pappaBesok, text: 'Din farsa e en bra karl. Vi prata Scania o hockey. Han säger "drar" istället för går. Ja ska börja me det. /R' },
   // mamma och brorsan efter pappas besök
   { id: 'm_pappa_besok', vem: 'mamma', nar: () => !!S.pappaBesok, text: 'Var pappa DÄR?! Han sa att han skulle köpa mjölk! Han kom hem och sa "aha, vad lugnt dom har det". LUGNT?!' },
   { id: 'b_pappa_besok', vem: 'bror', nar: () => !!S.pappaBesok, text: 'Pappa kom hem och sa att Rolf var "en riktig räv bakom örat". Sen satte han på hockeyn. Det var allt.' },
@@ -6981,12 +6990,12 @@ function svaraSms(id, i) {
 const BROR_IBLAND = ['Allt lugnt? Bara undrar. Inte för att jag bryr mig.', 'Mamma gråter inte längre när hon går förbi ditt rum. Framsteg.', 'Om du behöver nåt så… ja. Du vet.', 'Kolla mig, jag skriver till dig. Känn dig speciell.'];
 const MAMMA_IBLAND = ['Äter du ordentligt?? Inte bara nudlar!!', 'Jag ringde tre gånger. TRE. Svara!', 'Pappa saknar dig. Han säger det inte men jag vet.', 'Har du borstat tänderna idag? Ljug inte.'];
 // Rolf, 58: kört sopbilen i 31 år, bor i en husvagn bakom tippen med katten Kajsa. Trummis i dansbandet
-// ”Rolfs Rockers” 1987. Ensam sedan Birgitta flyttade. Samlar ”skatter” ur lassen. Älskar att grilla – men har ingen att grilla med.
+// ”Rolfs Rockers” 1987. Ensam sedan Birgitta dog för sju år sedan (bodde i husvagnen med honom sedan 2009). Samlar ”skatter” ur lassen. Älskar att grilla – men har ingen att grilla med.
 const ROLF_IBLAND = [
   'Rolf här. Kajsa (katten) fångade en råtta i husvagnen. Hon e bättre på sitt jobb än ja. /R',
   'Hittade ett trumset i lasset idag. Spela lite på rasten. Rolfs Rockers 1987. Vi va STORA i Hudiksvall. /R',
   '31 år i sopbilen idag. Ingen tårta. Köpte en själv. Den va god. /R',
-  'Birgitta ringde. Fel nummer sa hon. Kan va så. /R',
+  'Drömde om Birgitta i natt. Hon skällde på mej för att ja inte klippt gräset. De va skönt. /R',
   'Ja har en låda med skatter i husvagnen. Mest skruvar. En tand. Inte min. /R',
   'ÖJ. Rolf här. Hittade en hel soffa i lasset idag. Ingen plast i den tyvärr. Satt i den på rasten. /R',
   'Tippar extra plast i eftermiddag. Säg inte till chefen. Han heter också Rolf. Förvirrande. /R',
@@ -7673,7 +7682,7 @@ const RESA = [
   { titel: 'Morgonkontoret', sub: 'Macken vid riksvägen, 06:40', rad: 'Hä sitter vi varje morron. Lasse, Gunnar o ja. Lasse har kört buss i 38 år. Gunnar har aldrig sagt varför han e hä. Vi frågar int. Ta en bulle, ja bjuder.',
     val: [['Kanelbulle', 'Lasse nickar. "Rätt val, unge." Gunnar säger ingenting, men han flyttar på sig så du får sitta.', 2], ['Vaniljbulle', 'Gunnar tittar upp för första gången. "Vanilj." Han nickar långsamt. Rolf viskar: "Han gillar dej. De har aldrig hänt."', 4], ['Köp bullar åt alla', 'Det blir tyst vid bordet. Sen klappar Lasse dig på axeln. "Den här e bra, Rolf." Rolf rodnar.', 6]] },
   { titel: 'Konditoriet', sub: 'Brunnsgatan, efter lunch', rad: 'Ja tar alltid en bit prinsesstårta hä. Birgitta o ja gick hit. Varje fredag. I tjugo år.',
-    val: [['Fråga om Birgitta', 'Rolf tittar ut genom fönstret länge. "Hon dog för sju år sen. Hon skulle ha gillat dej. Hon gillade folk som fixar saker." Han skjuter över halva tårtbiten till dig.', 6], ['Säg att tårtan är god', '"Den e bäst i länet," säger Rolf. "Birgitta tyckte de oxå." Han ler lite. Sen tar han en bit till.', 2]] },
+    val: [['Fråga om Birgitta', 'Rolf tittar ut genom fönstret länge. "Vi sålde huset 2009. Hon behövde vård. Ja behövde int ett hus. Ja behövde henne." Han är tyst en stund. "Hon dog för sju år sen. Hon hade gillat dej. Hon gillade fôlk som fixar saker." Han skjuter över halva tårtbiten till dig.', 6], ['Säg att tårtan är god', '"Den e bäst i länet," säger Rolf. "Birgitta tyckte de oxå." Han ler lite. Sen tar han en bit till.', 2]] },
   { titel: 'Det hemliga stället', sub: 'Gamla grustaget bakom kraftledningen', rad: 'Hä har ja samlat grejer i trettio år. Folk slänger de finaste sakerna. Välj tre till flaket. O ta kolfibern, ja har tolv rullar ja aldrig använt.', fynd: true },
 ];
 function startaResa() {
@@ -7730,7 +7739,7 @@ let oppnadGrans = '';
 const FYND = [
   { id: 'volvo', mark: 'norr', x: 4, z: -TOMT - 14, namn: 'En gammal Volvo 240, halvt begravd', ger: () => { S.mynt += 2500; laggTill('rulle3', 2); }, text: 'I bakluckan: 2 500 kr i en kaffeburk och två rullar kolfiber. Bengt-Åke hade rätt!', sms: ['rolf', 'Hitta du VOLVON?? Bengt-Åke har letat i trettio år. Säj int nåt till honom. /R'] },
   { id: 'kallare', mark: 'oster', x: TOMT + 15, z: 9, namn: 'En övervuxen jordkällare', ger: () => { laggTill('r_radio'); S.mynt += 900; }, text: 'Inne i källaren: en gammal rörradio som fortfarande spelar dansband, och 900 kr i en syltburk.', sms: ['mamma', 'Pappa säger att du hittat en RADIO i en källare. Är den smittad?? Torka av den!'] },
-  { id: 'husvagn', mark: 'tippkant', x: TIPP.x - TIPP.r - 12, z: 2, namn: 'En rostig husvagn från -78', ger: () => { laggTill('rulle2', 3); S.mynt += 1200; }, text: 'Någon har bott här. I skåpet: tre rullar röd PETG och 1 200 kr. Och en lapp: "Hej då. /B".', sms: ['rolf', 'Husvagnen? Ja bodde dä innan ja flytta till tippen. Den lappen e från Birgitta. Behåll pengarna. /R'] },
+  { id: 'husvagn', mark: 'tippkant', x: TIPP.x - TIPP.r - 12, z: 2, namn: 'En rostig husvagn från -78', ger: () => { laggTill('rulle2', 3); S.mynt += 1200; }, text: 'Någon har bott här. I skåpet: tre rullar röd PETG, 1 200 kr och en stickad gardin.', sms: ['rolf', 'Husvagnen? De va vår första. Birgitta o ja bodde där när vi kom hit 2009. Gardinen stickade hon. Behåll pengarna. Gardinen me. /R'] },
 ];
 function byggFynd(f) {
   const g = new THREE.Group();
@@ -7919,31 +7928,34 @@ const mammaK1Slut = () => harPlacerat('r_gardin') ? MAMMA_K1_SLUT.gardin : (S.he
 const MAMMA_SVAR_K2 = ['Mamma här. Du skickade en bild på en JACUZZI?!', '…och tapeter. Och en gamingbod med lampor i alla färger.', 'Okej. Jag erkänner. Det är finare än hemma.', 'Kan jag komma och bada på söndag? Pappa tar med korv.'];
 // allt som sägs högt i spelet – används för att förgenerera rösterna (verktyg/roster.py)
 function rostManus() {
-  const L = [], add = (vem, t) => { if (!t || typeof t !== 'string') return; if (vem === 'rolf') { L.push([vem, rolfDialekt(t, true).replace('\u200b', '')], [vem, rolfDialekt(t, false).replace('\u200b', '')]); } else L.push([vem, t]); };
-  ROLF.forEach((x) => { add('rolf', x.brev); add('rolf', x.tack); });
-  ROLF_IBLAND.forEach((t) => add('rolf', t));
-  ROLF_JOBB.forEach((x) => { add('rolf', x.brev); add('rolf', x.tackJa); add('rolf', x.tackNej); });
-  CHEFEN.forEach((t) => add('chefen', t));
-  RESA.forEach((x) => add('rolf', x.rad));
-  Object.values(ROLF_TACK).forEach((x) => add('rolf', x.text)); ROLF_JOBBLAPP.forEach((t) => add('rolf', t)); [2, 3, 4, 5].forEach((n) => add('rolf', rolfFyndSms(n)));
-  Object.values(ROLF_MARK).forEach((t) => add('rolf', t)); LADAN_SMS.forEach((t) => add('rolf', t));
-  [PAPPA_SCEN, ...PAPPA_KORT, PAPPA_SLUT, ...PAPPA_DRYG, PAPPA_DRYG_SLUT].flat().forEach(([v, t]) => { if (t !== '…') add(v, t); });
-  SMS_POOL.forEach((m) => { add(m.vem, m.text); (m.svar || []).forEach(([, f]) => add(m.vem, f)); });
-  Object.values(FAMILJ).flat().forEach(([v, t]) => add(v, t));
-  Object.values(SAMTAL).forEach((sm) => sm.rader.forEach(([v, t]) => add(v, t)));
-  LIV_ROST.forEach(([v, t]) => add(v, t)); Object.values(ALI_NEJ).forEach((t) => add('ali', t));
-  BROR_IBLAND.forEach((t) => add('bror', t)); MAMMA_IBLAND.forEach((t) => add('mamma', t));
-  [...MAMMA_SVAR_K1, ...Object.values(MAMMA_K1_SLUT)].forEach((t) => add('mamma', t)); MAMMA_SVAR_K2.forEach((t) => add('mamma', t));
-  [...ALI_HEJ, ...ALI_KLICKAR, ...ALI_BLOMMAR].forEach((t) => add('ali', t)); add('ali', ALI_FORSTA); ALI_STANGT.forEach((t) => add('ali', t)); Object.values(ALI_SPECIAL).forEach((t) => add('ali', t));
+  const L = [], D = [], vid = (v) => { var_ = v; }; let var_ = '';
+  // D: [figur, visad text, källtext (före rolfDialekt), var den hörs] – för verktyg/roster-manus.json
+  const add = (vem, t) => { if (!t || typeof t !== 'string') return; if (vem === 'rolf') { for (const sf of [true, false]) { const v = rolfDialekt(t, sf).replace('\u200b', ''); L.push([vem, v]); D.push([vem, v, t, var_]); } } else { L.push([vem, t]); D.push([vem, t, t, var_]); } };
+  vid('Rolfs brev och tack i postlådan (kapitel 1)'); ROLF.forEach((x) => { add('rolf', x.brev); add('rolf', x.tack); });
+  vid('Rolfs sms ibland'); ROLF_IBLAND.forEach((t) => add('rolf', t));
+  vid('Rolfs skumma jobb: brev och tack'); ROLF_JOBB.forEach((x) => { add('rolf', x.brev); add('rolf', x.tackJa); add('rolf', x.tackNej); });
+  vid('Chefen (också Rolf): böter'); CHEFEN.forEach((t) => add('chefen', t));
+  vid('Sopbilsresan med Rolf'); RESA.forEach((x) => add('rolf', x.rad));
+  vid('Rolfs tack för presenter, jobblappar och fynd'); Object.values(ROLF_TACK).forEach((x) => add('rolf', x.text)); ROLF_JOBBLAPP.forEach((t) => add('rolf', t)); [2, 3, 4, 5].forEach((n) => add('rolf', rolfFyndSms(n)));
+  vid('Rolfs sms om marken och säljlådan'); Object.values(ROLF_MARK).forEach((t) => add('rolf', t)); LADAN_SMS.forEach((t) => add('rolf', t));
+  vid('Pappas besök (med Rolf första gången)'); [PAPPA_SCEN, ...PAPPA_KORT, PAPPA_SLUT, ...PAPPA_DRYG, PAPPA_DRYG_SLUT].flat().forEach(([v, t]) => { if (t !== '…') add(v, t); });
+  vid('Sms med svarsalternativ och småprat'); SMS_POOL.forEach((m) => { add(m.vem, m.text); (m.svar || []).forEach(([, f]) => add(m.vem, f)); });
+  vid('Familjens sms dag för dag'); Object.values(FAMILJ).flat().forEach(([v, t]) => add(v, t));
+  vid('Telefonsamtal'); Object.values(SAMTAL).forEach((sm) => sm.rader.forEach(([v, t]) => add(v, t)));
+  vid('Repliker ute i världen och när Ali säger nej'); LIV_ROST.forEach(([v, t]) => add(v, t)); Object.values(ALI_NEJ).forEach((t) => add('ali', t));
+  vid('Sms ibland (storebror och mamma)'); BROR_IBLAND.forEach((t) => add('bror', t)); MAMMA_IBLAND.forEach((t) => add('mamma', t));
+  vid('Mammas svar om burkarna'); [...MAMMA_SVAR_K1, ...Object.values(MAMMA_K1_SLUT)].forEach((t) => add('mamma', t)); MAMMA_SVAR_K2.forEach((t) => add('mamma', t));
+  vid('Ali i butiken'); [...ALI_HEJ, ...ALI_KLICKAR, ...ALI_BLOMMAR].forEach((t) => add('ali', t)); add('ali', ALI_FORSTA); ALI_STANGT.forEach((t) => add('ali', t)); Object.values(ALI_SPECIAL).forEach((t) => add('ali', t));
   const stolt = [...Object.values(MASKINER).map((m) => m.namn), ...Object.values(VAROR).filter((v) => v.recept).map((v) => v.namn)];
-  for (const n of stolt) ALI_STOLT.forEach((f) => add('ali', f(n.toLowerCase())));
-  for (const n of [...Object.values(MASKINER).filter((m) => !ALI_SPECIAL[Object.keys(MASKINER).find((k) => MASKINER[k] === m)]).map((m) => m.namn), 'Säng']) {
+  vid('Ali när du printat hans modell'); for (const n of stolt) ALI_STOLT.forEach((f) => add('ali', f(n.toLowerCase())));
+  vid('Alis sms om nya 3D-modeller'); for (const n of [...Object.values(MASKINER).filter((m) => !ALI_SPECIAL[Object.keys(MASKINER).find((k) => MASKINER[k] === m)]).map((m) => m.namn), 'Säng']) {
     for (const t of [`Ali här. Satt uppe med AI:n hela natten. ${n} är klar. Kom innan nio, då stänger jag och promptar nästa.`, `Ali här. Ny instruktion inne: ${n}. Kom innan nio. Jag stänger nio. Inte en minut senare.`, `${n} har kommit. Jag bar in lådan själv. Ingen hjälpte mig. Som vanligt.`, `Ny grej: ${n}. Köp den så jag slipper titta på den.`]) add('ali', t);
   }
-  Object.entries(LAPPAR).forEach(([id, [titel, t]]) => add(vemAvTitel(titel), t));
-  INTRO.forEach((x) => add(x.talare || (x.bubbla ? (x.du ? 'du' : 'mamma') : 'berattare'), x.bubbla || x.text));
-  Object.values(STEG_TAL).forEach((t) => add('berattare', t));
-  add('du', DU_BYGG); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); add('du', DU_SANG); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
+  vid('Lappar, brev och dagbok'); Object.entries(LAPPAR).forEach(([id, [titel, t]]) => add(vemAvTitel(titel), t));
+  vid('Introt'); INTRO.forEach((x) => add(x.talare || (x.bubbla ? (x.du ? 'du' : 'mamma') : 'berattare'), x.bubbla || x.text));
+  vid('Berättaren läser målen'); Object.values(STEG_TAL).forEach((t) => add('berattare', t));
+  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); add('du', DU_SANG); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
+  rostManus.detalj = D;
   return L;
 }
 const INTRO = [
@@ -8083,7 +8095,7 @@ function kapitelBorjar(k) {
     S.post.tillMig = [...S.post.tillMig, ...(antalInv('r_jukebox') || harPlacerat('r_jukebox') ? [] : ['sak:r_jukebox']), 'mynt:3000']; visaPostInne();
     konfetti(140); fanfar(); ljud.stor();
     ui.toast('🏆 KAPITEL 2 KLART! Röda fabriken går – och skjulet klarar hösten.', 'guld');
-    setTimeout(() => sms('rolf', 'Hösten e här o du fryser int. Respekt. Ja la jukeboxen från dödsbot i lådan. O lite stålar. Den spelar bara dansband. /R'), 3000);
+    setTimeout(() => sms('rolf', 'Hösten e här o du fryser int. Respekt. Ja la jukeboxen från dödsbot i lådan. O lite pengar. Den spelar bara dansband. /R'), 3000);
   }
   if (k === 4) {   // kapitel 3 klart: flipperspelet + pengar, och marken öppnas
     S.post.tillMig = [...S.post.tillMig, ...(antalInv('ra_flipper') || harPlacerat('ra_flipper') ? [] : ['sak:ra_flipper']), 'mynt:6000']; visaPostInne();
@@ -8119,6 +8131,7 @@ function julEnkel() {
     konfetti(260); fanfar(); ljud.stor();
     visaFirande('Jul på Soptippsvägen 1', 'God jul!', 'Hela familjen, Rolf, Kajsa, Ali och Bengt-Åke vid ditt bord. Folkbokförd. Hemma.', true);
     S.julFirad = true; julPagar = false; sparaSnart();
+    setTimeout(() => sms('pappa', '👍 ❤️'), 20000);   // första gången pappa använder ett hjärta
     setTimeout(() => visaLapp('mammajul'), 5000);
     setTimeout(() => sms('bror', 'Pappa grät lite vid julbordet. Han sa att det var pepparroten. Det fanns ingen pepparrot. God jul brorsan.'), 8000);
     setTimeout(() => ui.toast('🎄 Spelet är klart! Bygg fritt – och testa Tippen på tid under Dagbok → Spelet.', 'guld'), 12000);
@@ -8284,7 +8297,7 @@ function uppdateraLiv(dt) {
   if (bengt.visible && nu > bengtSynsTill) bengt.visible = false;
 }
 S.upprepaVald = true;   // issue #18: gamla sparfiler fick upprepa AV en gång (i skrivarnas laddning ovan)
-window.__printahem = { avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 
