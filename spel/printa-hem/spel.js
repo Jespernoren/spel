@@ -2206,7 +2206,7 @@ function laggTillSkrivare(id, gen, mesh, sparat) {
   if (sk.klar) visaPaBadd(sk, sk.klar, 1);
   else if (sk.jobb) visaPaBadd(sk, sk.jobb.maskin ? 'del' : sk.jobb.typ, sk.prog);
   interaktor.registrera(mesh, {
-    text: () => SPOL_NIVA[(valdTyp() || '').replace('byggsats:', '')] ? `🧵 Montera ${namnFor(valdTyp()).toLowerCase()} på skrivaren (${(sk.spolNiva || 0) >= (valdTyp().endsWith('2') ? 2 : 1) ? 'har redan' : 'nu ' + maxFil(sk) / RULLE + ' rullar'})` : valdTyp() === 'rulle' && !sk.klar && maxFil(sk) - sk.fil >= RULLE ? `🧵 Ladda ${Math.min(S.hotbar[S.vald].n, Math.floor((maxFil(sk) - sk.fil) / RULLE)) > 1 ? Math.min(S.hotbar[S.vald].n, Math.floor((maxFil(sk) - sk.fil) / RULLE)) + ' rullar' : 'rullen'} i skrivaren` : skrivarText(sk),
+    text: () => SPOL_NIVA[(valdTyp() || '').replace('byggsats:', '')] ? `🧵 Montera ${namnFor(valdTyp()).toLowerCase()} på skrivaren (${(sk.spolNiva || 0) >= (valdTyp().endsWith('2') ? 2 : 1) ? 'har redan' : 'nu ' + maxFil(sk) / RULLE + ' rullar'})` : valdTyp() === 'rulle' && !sk.klar ? (rullPlatsI(sk) ? `🧵 Ladda ${Math.min(S.hotbar[S.vald].n, rullPlatsI(sk)) > 1 ? Math.min(S.hotbar[S.vald].n, rullPlatsI(sk)) + ' rullar' : 'rullen'} i skrivaren` : '🧵 Rullhållaren är full – printa något först') : skrivarText(sk),
     aktivera: () => anvandSkrivare(sk),
   });
   return sk;
@@ -2238,10 +2238,12 @@ function skrivarText(sk) {
 }
 const namnPa = (typ) => typ.startsWith('byggsats:') ? MASKINER[typ.split(':')[1]].namn.toLowerCase() : VAROR[typ].namn.toLowerCase();
 
+// så många rullar som får plats – en påbörjad rulle får alltid plats om det finns lite utrymme kvar
+const rullPlatsI = (sk) => { const fri = maxFil(sk) - sk.fil; return fri < 50 ? 0 : Math.max(1, Math.floor(fri / RULLE)); };
 function laddaSkrivare(sk) {
-  const har = S.hotbar[S.vald]?.n || 0, plats = Math.max(0, Math.floor((maxFil(sk) - sk.fil) / RULLE));
-  const n = Math.min(har, plats);
-  if (!n) { oppnaPrintMeny(sk); return; }   // full spolhållare: öppna menyn så du kan printa i stället
+  // rulle i handen + klick på skrivaren (eller rullhållaren) = ladda. Menyn öppnas aldrig här.
+  const har = S.hotbar[S.vald]?.n || 0, n = Math.min(har, rullPlatsI(sk));
+  if (!n) { ljud.fel(); ui.toast('Rullhållaren är full – printa något först', 'fel'); return; }
   taBortInv('rulle', n); sk.fil += n * RULLE; S.stat.laddat = (S.stat.laddat || 0) + n;
   ljud.stor(); ui.toast(`${n > 1 ? n + ' rullar' : 'En rulle'} laddad – skrivare ${GEN[sk.gen].namn} har ${rullar(sk.fil)}`, 'guld'); sparaSkrivare();
 }
