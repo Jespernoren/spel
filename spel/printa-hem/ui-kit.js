@@ -129,7 +129,7 @@ export function knapp({ text, typ = 'neutral', attr = '', av = false, ikon = '' 
 // 1×1-ruta: miniatyr, pris uppe till vänster, antal nere till höger
 export function ruta({ bild = '', attr = '', vald = false, last = false, dyr = false, tom = false, antal = '', pris = '', prisTyp = '', titel = '', liten = false, storlek = 0, etikett = false }) {
   if (tom) return `<div class="ui-ruta tom ${liten ? 'liten' : ''}" ${attr}></div>`;
-  if (etikett) return `<div class="ui-ruta-med">${ruta({ bild, attr, vald, last, dyr, antal, pris, prisTyp, titel, liten, storlek })}<span class="ui-ruta-namn ${dyr || last ? 'dim' : ''}">${esc(String(titel).replace(/^(Ritning|Recept|Prototyp): /, ''))}</span>${pris !== '' ? `<span class="ui-ruta-pris ${prisTyp} ${dyr || last ? 'dim' : ''}">${String(pris).replace('.', ',')} kr</span>` : ''}</div>`;
+  if (etikett) return `<div class="ui-ruta-med">${ruta({ bild, attr, vald, last, dyr, antal, pris, prisTyp, titel, liten, storlek })}<span class="ui-ruta-namn ${dyr || last ? 'dim' : ''}">${esc(String(titel).replace(/^(Ritning|CAD-fil|Recept|Prototyp): /, ''))}</span>${pris !== '' ? `<span class="ui-ruta-pris ${prisTyp} ${dyr || last ? 'dim' : ''}">${String(pris).replace('.', ',')} kr</span>` : ''}</div>`;
   return `<button class="ui-ruta ${vald ? 'vald' : ''} ${last ? 'last' : ''} ${dyr ? 'dyr' : ''} ${liten ? 'liten' : ''}" ${attr} title="${esc(titel)}">
     <span class="bild">${bild}</span>${pris !== '' ? `<span class="pris ${prisTyp}">${pris}</span>` : ''}${antal !== '' && antal !== 1 ? `<span class="antal">${antal}</span>` : ''}${last ? `<span class="lasikon">${IKON.las}</span>` : ''}${storlek ? `<span class="stl s${storlek}">${'SML'[storlek - 1]}</span>` : ''}</button>`;
 }
