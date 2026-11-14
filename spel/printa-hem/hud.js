@@ -120,6 +120,11 @@ export const HUD_CSS = `
 .hud-pop.stor{top:36%;font-size:40px;color:#ffd37a;animation-duration:1.8s}
 @keyframes hudPop{from{opacity:0;transform:translate(-50%,10px) scale(.7)}20%{opacity:1;transform:translate(-50%,0) scale(1.15)}to{opacity:0;transform:translate(-50%,-40px) scale(1)}}
 .hud-mynt{position:fixed;z-index:60;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff4b0,#f5b70a 55%,#a86d00);box-shadow:0 0 6px rgba(255,200,40,.7);pointer-events:none}
+.hud-loop{display:flex;align-items:center;justify-content:space-between;gap:1px;margin:2px 0 8px;padding:6px 6px;border-radius:9px;background:rgba(0,0,0,.28)}
+.hud-loop span{display:flex;flex-direction:column;align-items:center;gap:2px;opacity:.38;transition:opacity .3s,transform .3s}.hud-loop span .ui-ik,.hud-loop span svg{width:20px;height:20px}
+.hud-loop em{font:800 9px system-ui;font-style:normal;letter-spacing:.02em;color:#c5ccda}
+.hud-loop span.nu{opacity:1;transform:scale(1.18)}.hud-loop span.nu em{color:#7dffb0}.hud-loop span.nu .ui-ik,.hud-loop span.nu svg{filter:drop-shadow(0 0 5px rgba(125,255,176,.8))}
+.hud-loop i{font-style:normal;font-weight:900;color:#5a6274;font-size:12px}
 .hud-flask{position:fixed;left:max(12px,env(safe-area-inset-left));z-index:21;width:280px;box-sizing:border-box;pointer-events:none;font:700 13px/1.35 system-ui;color:#fff;display:flex;flex-direction:column;gap:6px}
 .hud-flask>div{padding:8px 12px 9px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.88);border-left:5px solid var(--lingon);box-shadow:0 6px 16px rgba(0,0,0,.3)}
 .hud-flask b{display:block;font:900 11px/1.2 system-ui;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
