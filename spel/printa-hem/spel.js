@@ -215,6 +215,9 @@ Object.assign(VAROR, {
   dator: { namn: 'Gamingdator med RGB', ikon: '💻', recept: 3500, pris: 0, gram: 2500, tid: 60, trivsel: 20, placerbar: true, radie: 0.25, syns: () => S.rolf.i >= 2, lyx: 'Chassit printar du – Ali har en låda med begagnade datordelar.' },
 });
 const GAMER = ['gamingstol', 'gamingbord', 'dator', 'hogtalare', 'ledpinne', 'akustik', 'neonskylt', 'figurhylla', 'projektor', 'arkad', 'simrig', 'biljard', 'soffa', 'kyl'];
+// nästa gamer-sak att jobba på: den du redan håller på med, annars den billigaste du kan printa
+const nastaGamer = () => { const ej = GAMER.filter((g) => !placerade.some((p) => p.typ === g) && VAROR[g]); return ej.find((g) => antalInv(g) || skrivare.some((x) => x.klar === g || x.jobb?.typ === g) || harRecept(g)) || ej.filter((g) => storlekFor(g) <= 2).sort((a, b) => (VAROR[a].recept || 0) - (VAROR[b].recept || 0))[0] || null; };
+const nastaInred = () => { const ej = Object.keys(VAROR).filter((g) => VAROR[g].lyx && VAROR[g].syns?.() !== false && !placerade.some((p) => p.typ === g)); return ej.find((g) => antalInv(g) || skrivare.some((x) => x.klar === g || x.jobb?.typ === g) || harRecept(g)) || ej.filter((g) => storlekFor(g) <= storstaSkrivare()).sort((a, b) => (VAROR[a].recept || 0) - (VAROR[b].recept || 0))[0] || null; };
 const gamerSaker = () => placerade.filter((p) => GAMER.includes(p.typ)).length;
 const harRecept = (id) => !VAROR[id]?.recept || S.ritningar.includes('recept:' + id);
 // Maskiner: köp ritningen hos Ali, printa delarna, bygg ihop
@@ -463,13 +466,13 @@ const STEG = [
   sovSteg(4, N3),
   ...rolfSteg(3, N4),
   { del: N4, bild: 'byggsats:skrivare2', text: 'Bygg Skrivare M på bordet', klar: () => harPlacerat('skrivare2'), lapp: 'skrivare2' },
-  { del: N4, text: () => `Gör det mysigt · trivsel ${trivsel()}/${TRIVSEL_MAL}`, klar: () => trivsel() >= TRIVSEL_MAL, lapp: 'klart' },
-  { del: K2, text: 'Tapetsera skjulet', klar: () => !!S.hem?.tapeter },
-  { del: K2, text: 'Bygg en gamingbod', klar: () => !!S.bod },
-  { del: K2, text: () => `Inred boden · ${Math.min(3, gamerSaker())}/3 gamer-saker`, klar: () => gamerSaker() >= 3 },
-  { del: K2, text: 'Bygg Skrivare L', klar: () => harPlacerat('skrivare3') || harPlacerat('jacuzzi') },
-  { del: K2, text: 'Printa och ställ ut en jacuzzi', klar: () => harPlacerat('jacuzzi') },
-  { del: K2, text: () => `Världens bästa fristad · ${trivsel()}/300`, klar: () => trivsel() >= 300 },
+  { del: N4, bild: () => nastaInred(), text: () => `Gör det mysigt · trivsel ${trivsel()}/${TRIVSEL_MAL}`, klar: () => trivsel() >= TRIVSEL_MAL, lapp: 'klart' },
+  { del: K2, bild: 'byggsats:tapeter', text: 'Tapetsera skjulet', klar: () => !!S.hem?.tapeter },
+  { del: K2, bild: 'byggsats:gamingbod', text: 'Bygg en gamingbod', klar: () => !!S.bod },
+  { del: K2, bild: () => nastaGamer(), text: () => `Inred boden · ${Math.min(3, gamerSaker())}/3 gamer-saker`, klar: () => gamerSaker() >= 3 },
+  { del: K2, bild: 'byggsats:skrivare3', text: 'Bygg Skrivare L', klar: () => harPlacerat('skrivare3') || harPlacerat('jacuzzi') },
+  { del: K2, bild: 'jacuzzi', text: 'Printa och ställ ut en jacuzzi', klar: () => harPlacerat('jacuzzi') },
+  { del: K2, bild: () => nastaInred(), text: () => `Världens bästa fristad · ${trivsel()}/300`, klar: () => trivsel() >= 300 },
 ];
 // gården räknas som städad när skräpet är borta – tunga saker räknas först när du har kärran, och högen vid kvarnen (när den är full) är ditt lager
 const gardSkrap = () => {
@@ -5589,7 +5592,16 @@ function ritaLoop(mEl) {
 // Står något i vägen (slut på filament, rullen sitter kvar i kvarnen ...) visas det i stället för uppdraget.
 function nastaAtgard(text) {
   const st = STEG[S.steg];
-  if (!st?.sov && skrivare.some((x) => x.klar)) return ['bock', 'Ta ut det som är klart ur skrivaren'];
+  // konkret nästa steg mot målet (köp → printa → ta ut → ställ ut). "Ta ut ur skrivaren" visas bara när det gäller målets sak.
+  const konkret = stegKonkret(st);
+  if (konkret) {
+    if (konkret[2] && !skrivare.some((x) => x.fil >= 100 || x.jobb)) {
+      if (antalInv('rulle')) return ['rulle', 'Ladda en rulle i skrivaren'];
+      if (helaRullar() > 0) return ['rulle', 'Ta rullen vid kvarnen och ladda skrivaren'];
+      return ['kvarn', 'Mal skräp till filament – skrivaren är tom'];
+    }
+    return [konkret[0], konkret[1]];
+  }
   const vilPrinta = /^(Printa|Gör det mysigt|Inred|Isolera|Bygg|Lägg plåttak|Tapetsera)/i.test(text) || /^Printa/.test(text);
   const harFil = skrivare.some((x) => x.fil >= 100 || x.jobb);
   if (vilPrinta && !harFil) {
@@ -5614,6 +5626,23 @@ function stegBild(text) {
   return t && ikonBild(t) ? t : null;
 }
 let malRaw = '';
+// vad du konkret ska göra härnäst för dagens mål: [ikon, text, behöver filament]
+const HYLLA_FOR = (id) => MASKINER[id]?.hem || MASKINER[id]?.flik === 'hem' || VAROR[id]?.lyx ? 'Hemmet' : 'Fabriken';
+function stegKonkret(st) {
+  if (!st || st.sov) return null;
+  let t = typeof st.bild === 'function' ? st.bild() : st.bild;
+  if (!t) { const g = aktivGava?.(); if (g && /ölhållare|flasköppnare|grillspade|tomte|Rolf/i.test(stegText(st))) t = g; }
+  if (!t) return null;
+  const ar = t.startsWith('byggsats:'), id = ar ? t.slice(9) : t, fullt = (ar ? MASKINER[id]?.namn : VAROR[id]?.namn) || '', namn = (/^Skrivare/.test(fullt) ? fullt : fullt.toLowerCase()).replace(/ \(.*\)$/, '');
+  if (!namn) return null;
+  if (antalInv(t)) return ['hand', id === 'gamingbod' ? 'Välj boden i verktygsraden och ställ den bredvid skjulet' : MASKINER[id]?.hem ? `Välj ${namn} i verktygsraden och klicka på skjulet` : VAROR[id]?.gava ? `Lägg ${namn} i Rolfs postlåda vid grinden` : `Välj ${namn} i verktygsraden och ställ ut den`];
+  if (skrivare.some((x) => x.klar === t)) return ['bock', `${namn[0].toUpperCase() + namn.slice(1)} är klar – ta ut den ur skrivaren`];
+  if (skrivare.some((x) => (ar ? x.jobb?.maskin === id : x.jobb?.typ === id))) return ['klocka', `Skrivaren printar ${namn} – trampa om strömmen tar slut`];
+  const harModell = ar ? S.ritningar.includes(id) : VAROR[id]?.gava ? S.ritningar.includes('gava:' + id) || harGava(id) : harRecept(id);
+  if (harModell) return ['skrivare', `Printa ${namn} på skrivaren`, true];
+  const pris = ar ? MASKINER[id]?.ritning : VAROR[id]?.gava ? null : VAROR[id]?.recept;
+  return ['kop', `Köp 3D-modellen till ${namn} hos Ali (${VAROR[id]?.gava ? 'Unika fynd' : HYLLA_FOR(id)}${pris ? ' · ' + pris.toLocaleString('sv-SE') + ' kr' : ''})`];
+}
 // när nästa handling är själva målet: en kort förklaring av hur man gör (vem/var)
 function nuTips(t) {
   if (/Köp/.test(t)) return 'Gå till Ali över vägen';
