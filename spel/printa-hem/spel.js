@@ -1077,6 +1077,7 @@ const bradhog = new THREE.Group();
 }
 // kapitelkort: stor rubrik mitt i bild några sekunder – säger vad kapitlet går ut på, inget mer
 function visaKapitelKort(nr, namn, mal) {
+  spelaLjud('kapitel');
   document.querySelector('.ph-kapkort')?.remove();
   const d = document.createElement('div'); d.className = 'ph-kapkort';
   d.innerHTML = `<small>KAPITEL ${nr}</small><b>${rens(namn)}</b><span>${rens(mal)}</span>`;
@@ -3162,7 +3163,7 @@ function uppdateraPetg(dt) {
 }
 function iTratten(gram, tung) {
   if (tung && petgKvarn()) return petgIn(gram) ? 'petg' : false;   // gamla sparningar: tungt på bandet går vidare till PETG-kvarnen
-  if (S.kvarn.tratt < TRATT_MAX) { S.kvarn.tratt++; S.kvarn.trattGram += gram; if (tung) S.stat.tungMalt = (S.stat.tungMalt || 0) + 1; return 'tratt'; }
+  if (S.kvarn.tratt < TRATT_MAX) { spelaLjud('tratt'); S.kvarn.tratt++; S.kvarn.trattGram += gram; if (tung) S.stat.tungMalt = (S.stat.tungMalt || 0) + 1; return 'tratt'; }
   if (S.kvarn.band && S.kvarn.binge.length < BINGE_MAX) { S.kvarn.binge.push(tung ? -gram : gram); return 'binge'; }
   return false;
 }
@@ -3404,7 +3405,7 @@ function flaskaMald() {
   S.kvarn.ut += g; S.stat.malt++; malLogg.push([performance.now() / 1000, g]);
   ljud.placera();
   const nu = Math.floor(S.kvarn.ut / RULLE);
-  if (nu > forut) { rullKlarTid = performance.now() + 900; ljud.klar(); }
+  if (nu > forut) { rullKlarTid = performance.now() + 900; if (!spelaLjud('rulle-klar')) ljud.klar(); }
   sparaSnart();
 }
 interaktor.registrera(cykel, { text: () => S.strom >= stromMax() - 0.5 ? `🔋 Batteriet är fullt (${stromMax()}) – bygg en batteribank för att lagra mer` : `✋ Klicka och håll – trampa · ⚡ ${Math.floor(S.strom)}/${stromMax()}`, aktivera: () => {} });
@@ -3743,6 +3744,7 @@ function uppdateraSkymning(dt) {
   if (mal < 1) skymningSagd = false;
 }
 function sov() {
+  spelaLjud('sov');
   sover = true;
   spelare.aktiv = false;
   if (document.pointerLockElement) document.exitPointerLock();
@@ -4202,6 +4204,7 @@ interaktor.registrera(postlada, {
     return 'Rolfs postlåda (tom)';
   },
   aktivera: () => {
+    spelaLjud('postlada');
     postLuckaMal = 1; luckaStangTid = performance.now() + 1500;
     if (S.post.lapp === 'jobb') { S.post.lapp = null; visaPostInne(); ljud.plock(); oppnaJobbVal(); return; }
     if (S.post.lapp) {
@@ -5085,7 +5088,7 @@ let menyOppnad = 0;
 function oppnaRuta(html, bind, klass = '') {
   if (!invRitar && (invHand || invSalj)) invAvsluta();   // en annan meny öppnas: inventoryt städas först
   spelare.aktiv = false; kistaOppen = false;
-  if (ui.butiksOverlay.hidden) menyOppnad = performance.now();
+  if (ui.butiksOverlay.hidden) { menyOppnad = performance.now(); spelaLjud('meny-oppna'); }
   ui.butiksOverlay.hidden = false;
   if (document.pointerLockElement) document.exitPointerLock();
   const scroll = ui.butiksOverlay.querySelector('.ui-kropp')?.scrollTop || 0;
@@ -5702,6 +5705,7 @@ function invAvsluta() {
   document.querySelector('.inv-hand')?.remove(); invFixa(); sparaSnart();
 }
 function oppnaInv({ salj = false } = {}) {
+  if (ui.butiksOverlay.hidden) spelaLjud('ryggsack');
   if (salj && !invSalj) invSalj = Array(9).fill(null);
   const nara = naraKista();
   const ritStatus = (id) => ['grip', 'magnet', 'korg', 'karra'].includes(id) ? (S[id] ? 'Klar och används' : 'Köpt – printa den')
@@ -5921,7 +5925,7 @@ const ui = new FpUI({
     if (S.lappar.includes('salt') && !S.aliStoryVisad) { S.aliStoryVisad = true; setTimeout(() => sms('ali', lappInfo('salt')[1]), 9000); } if (!S.lappar.includes('start')) visaLapp('start'); else { const st = STEG[S.steg]; if (st?.startLapp && !S.lappar.includes(st.startLapp)) visaLapp(st.startLapp); } },
 });
 // inventoryt städar efter sig när en meny stängs (musens hög tillbaka, säljlådan säljs)
-{ const _stang = ui.stangButik.bind(ui); ui.stangButik = () => { invAvsluta(); _stang(); }; }
+{ const _stang = ui.stangButik.bind(ui); ui.stangButik = () => { if (!ui.butiksOverlay.hidden) spelaLjud('meny-stang'); invAvsluta(); _stang(); }; }
 
 { const _p = ui.prompt.bind(ui); ui.prompt = (t) => _p(rens(t)); ui.visaStart = startRuta; if (!ui.igang && !ui.overlay.hidden) startRuta(); }
 // startrutan: logga, luftig ingress, STARTA först – sparplatser och börja om bredvid varandra under, alla spel längst ner
@@ -6224,6 +6228,7 @@ function hudMatare(namn, niva, ikonFn, varde, andel) {
 let tipsTill = 0, hudListaNyckel = '', hudSenastKlar = -1, hudForraText = '', hudForraSteg = S.steg, hudForraSkylt = !!S.skyltUppe;
 // klarat uppdrag: grönt, bock, konfetti – sedan stryks det och glider bort
 function firaUppdrag(text) {
+  spelaLjud('nytt-mal');
   const mEl = malText.parentElement;
   const k = document.createElement('div'); k.className = 'hud-klarad';
   k.innerHTML = `<span class="b">✓</span><span class="t">${rens(text)}</span>`;
@@ -6695,7 +6700,7 @@ function visaFirande(kicker, titel, rad, stor = false) {
   const d = document.createElement('div'); d.className = 'ph-prest' + (stor ? ' stor' : '');
   d.innerHTML = `<small>${rens(kicker)}</small><b>${rens(titel)}</b><span>${rens(rad)}</span>`;
   document.body.appendChild(d); try { konfetti(stor ? 120 : 50); } catch {}
-  ljud.klar?.(); setTimeout(() => d.classList.add('ut'), stor ? 5200 : 3800); setTimeout(() => d.remove(), stor ? 6000 : 4600);
+  if (!(stor && spelaLjud('kapitel'))) ljud.klar?.(); setTimeout(() => d.classList.add('ut'), stor ? 5200 : 3800); setTimeout(() => d.remove(), stor ? 6000 : 4600);
 }
 const firaKo = []; let firarTill = 0;
 function kollaPrestationer() {
@@ -6832,6 +6837,26 @@ let aktionObj = null, aktionTid = 0, klickTid = -1e9;
 addEventListener('mousedown', () => { klickTid = performance.now(); }, true);
 addEventListener('mouseup', () => { klickTid = performance.now(); }, true);
 addEventListener('keydown', () => { klickTid = performance.now(); }, true);
+// ---------- Punkt X: riktiga ljudeffekter från Kenney (CC0, se ljud/licenser) ----------
+// Laddas i bakgrunden. Saknas ett ljud (eller laddas det inte) spelas den gamla syntetiska tonen.
+const LJUDFILER = { plock: 0.5, placera: 0.45, fel: 0.5, mynt: 0.45, klar: 0.5, stor: 0.45, kop: 0.5, 'meny-oppna': 0.3, 'meny-stang': 0.3, ryggsack: 0.45, postlada: 0.55, sov: 0.45, 'nytt-mal': 0.4, kapitel: 0.45, 'rulle-klar': 0.5, tratt: 0.35 };
+const ljudBuf = {};
+function laddaLjud() {
+  const c = ljud.vakna(); if (!c || laddaLjud.gjort) return; laddaLjud.gjort = true;
+  for (const n of Object.keys(LJUDFILER)) fetch(`ljud/${n}.mp3`).then((x) => (x.ok ? x.arrayBuffer() : null)).then((a) => a && c.decodeAudioData(a)).then((b) => { if (b) ljudBuf[n] = b; }).catch(() => {});
+}
+addEventListener('pointerdown', laddaLjud, { once: true, capture: true }); addEventListener('keydown', laddaLjud, { once: true, capture: true });
+const senastLjud = {};
+function spelaLjud(n, vol = 1) {
+  const c = ljud.vakna(), b = ljudBuf[n]; if (!c || !b || !ljud.pa) return false;
+  const nu = performance.now(); if (nu - (senastLjud[n] || 0) < 60) return true; senastLjud[n] = nu;   // inte samma ljud flera gånger samma ögonblick
+  const k = c.createBufferSource(), g = c.createGain(); k.buffer = b; g.gain.value = LJUDFILER[n] * vol; k.playbackRate.value = 0.96 + Math.random() * 0.08;
+  k.connect(g); g.connect(c.destination); k.start(); return true;
+}
+for (const namn of ['plock', 'placera', 'fel', 'mynt', 'klar', 'stor', 'kop']) {
+  const syntet = ljud[namn]?.bind(ljud); if (!syntet) continue;
+  ljud[namn] = (...a) => { if (!spelaLjud(namn)) syntet(...a); };
+}
 // inga "random" pling: korta ljudeffekter spelas bara som svar på något du själv gör (klick, tangent, hålla in).
 // Saker som händer av sig själva visas i stället med skylt eller pil vid saken.
 for (const namn of ['klar', 'plock', 'fel', 'stor', 'mynt', 'kop', 'placera', 'borsta']) {
