@@ -147,7 +147,9 @@ body.touch #hudNere{bottom:calc(env(safe-area-inset-bottom,0px) + 180px);}
 /* ===== Justerbara värden ===== */
 const C = {
   GRAV: 22, HOPP: 8.2, FART: 5.2, SPRING: 7.6, MUS: 0.0023, DRAG: 0.006,
-  VAGG_R: 13.5, PLATT_TID: 9, PLATT_TID_JATTE: 16, MANA_MAX: 3, MANA_LADD: 1.8,
+  VAGG_R: 13.5, PLATT_TID: 15, PLATT_TID_JATTE: 25, MANA_MAX: 3, MANA_LADD: 1.0,
+  LUCKA_AVSTAND: 9,   // så nära ett glapp man ska vara för att plattan hoppar dit av sig själv
+  LUCKA_HOJD: 3.5,    // hur mycket högre/lägre glappet får ligga än där man står
   SKOTT_FART: 24, SKOTT_FART_BLIXT: 36, BOSS_HP: 9, BOSS_SKOTT_TRON: 3.0, BOSS_SKOTT_JAGA: 2.4,
   BOSS_FART: 4.6, BOSS_JAGA_MAX: 15, SKATT: 100, FANGST: 3.5, FLYG_BRANSLE: 2.6
 };
@@ -346,7 +348,11 @@ for (let i=0;i<NIVAER.length-1;i++){
       const [gx,gz]=polar(a,RS);
       laggKristall(gx, y+0.6, gz);
       const skylt = textSprite('✨ Trolla en platta! ✨', '#ffe38a'); skylt.position.set(gx, y+2.6, gz); scene.add(skylt);
-      luckor.push({x:gx, y, z:gz, visad:false, skylt});
+      const spoke = new THREE.Mesh(platGeo, new THREE.MeshBasicMaterial({color:0xc79bff, transparent:true, opacity:0.22, depthWrite:false}));
+      spoke.position.set(gx, y-0.225, gz); spoke.rotation.y = a+Math.PI/2; scene.add(spoke);
+      const kant = new THREE.LineSegments(new THREE.EdgesGeometry(platGeo), new THREE.LineBasicMaterial({color:0xffe38a}));
+      spoke.add(kant);
+      luckor.push({x:gx, y, z:gz, rot:a+Math.PI/2, visad:false, skylt, spoke, fylld:null});
       continue;
     }
     laggPlatta(a, y, mat);
@@ -422,21 +428,46 @@ const skott = [], bossSkott = [], magiPlattor = [];
 
 /* ===== Trolla platta ===== */
 const tmpV = new THREE.Vector3();
+function narmasteLucka(){
+  let bast=null, bastD=1e9;
+  for (const l of luckor){
+    if (l.fylld) continue;
+    if (Math.abs(l.y-pl.y) > C.LUCKA_HOJD) continue;
+    const d = Math.hypot(l.x-pl.x, l.z-pl.z);
+    if (d < C.LUCKA_AVSTAND && d < bastD){ bast=l; bastD=d; }
+  }
+  return bast;
+}
 function trollaPlatta(){
   if (lage!=='spel') return;
-  if (mana < 1){ toast('Trollkraften laddar… ✨', 1.4); return; }
+  // Nära ett glapp: plattan hamnar alltid rätt i glappet och stannar kvar
+  const lucka = narmasteLucka();
+  if (lucka){
+    const mat = new THREE.MeshLambertMaterial({color:0xb894ff, emissive:0x4a1f9a});
+    const m = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.45, 3.0), mat);
+    m.position.set(lucka.x, lucka.y-0.225, lucka.z); m.rotation.y = lucka.rot; m.scale.setScalar(0.05); scene.add(m);
+    const yta = {typ:'box', x:lucka.x, z:lucka.z, y:lucka.y, hx:1.7, hz:1.5, rot:lucka.rot, magi:true};
+    ytor.push(yta);
+    magiPlattor.push({m, yta, liv:Infinity, ny:0, lucka});
+    lucka.fylld = true; lucka.visad = true; lucka.spoke.visible = false; lucka.skylt.visible = false;
+    gnistor(lucka.x, lucka.y, lucka.z, 'rgba(255,220,120,0.95)', 30, 6, 0.9, 0.5);
+    ljud.platta(); toast('✨ Plattan sitter fast! Hoppa upp på den!', 2.4);
+    return;
+  }
+  if (mana < 1){ toast('Trollkraften laddar… ✨', 1.2); return; }
   mana -= 1;
+  // Annars: en platta precis framför fötterna, i samma höjd, så man kan gå rakt ut på den
   camera.getWorldDirection(tmpV);
   const h = Math.hypot(tmpV.x, tmpV.z) || 1;
-  const fx = tmpV.x/h, fz = tmpV.z/h, dist = 3.0;
+  const fx = tmpV.x/h, fz = tmpV.z/h, stor = har('jatte') ? 1.6 : 1, studs = har('studs');
+  const dist = 1.6 + 1.2*stor;
   let x = pl.x + fx*dist, z = pl.z + fz*dist;
   const r = Math.hypot(x,z); if (r>12.9){ x*=12.9/r; z*=12.9/r; }
-  const y = clamp(pl.y + 0.9 + tmpV.y*3, pl.y-3, pl.y+1.25);
-  const stor = har('jatte') ? 1.6 : 1, studs = har('studs');
+  const y = pl.y + (tmpV.y > 0.35 ? 0.9 : 0);
   const mat = new THREE.MeshLambertMaterial({color: studs?0xff8ad8:0xb894ff, emissive: studs?0x9a2a7a:0x4a1f9a, transparent:true, opacity:0.92});
-  const m = new THREE.Mesh(new THREE.BoxGeometry(2.4*stor, 0.35, 2.4*stor), mat);
+  const m = new THREE.Mesh(new THREE.BoxGeometry(2.8*stor, 0.35, 2.8*stor), mat);
   m.position.set(x, y-0.175, z); m.rotation.y = pl.yaw; m.scale.setScalar(0.05); scene.add(m);
-  const yta = {typ:'box', x, z, y, hx:1.2*stor, hz:1.2*stor, rot:pl.yaw, studs, magi:true};
+  const yta = {typ:'box', x, z, y, hx:1.4*stor, hz:1.4*stor, rot:pl.yaw, studs, magi:true};
   ytor.push(yta);
   magiPlattor.push({m, yta, liv: har('jatte')?C.PLATT_TID_JATTE:C.PLATT_TID, ny:0});
   gnistor(x,y,z, studs?'rgba(255,130,220,0.9)':'rgba(190,140,255,0.9)', 22, 5, 0.8, 0.45);
@@ -444,6 +475,7 @@ function trollaPlatta(){
 }
 function taBortPlatta(i){
   const p = magiPlattor[i];
+  if (p.lucka){ p.lucka.fylld = null; p.lucka.spoke.visible = true; }
   scene.remove(p.m); p.m.geometry.dispose(); p.m.material.dispose();
   const j = ytor.indexOf(p.yta); if (j>=0) ytor.splice(j,1);
   gnistor(p.yta.x, p.yta.y, p.yta.z, 'rgba(190,140,255,0.7)', 10, 3, 0.6, 0.35);
@@ -494,7 +526,7 @@ function placeraPa(niva){
 function nyRunda(){
   cp = 0; placeraPa(0); mana = C.MANA_MAX; speltid = 0; sammlat = 0; pl.bransle = C.FLYG_BRANSLE;
   for (const k of kristaller){ k.tagen=false; k.m.visible=true; }
-  for (const l of luckor) l.visad=false;
+  for (const l of luckor){ l.visad=false; l.fylld=null; l.spoke.visible=true; }
   while (magiPlattor.length) taBortPlatta(magiPlattor.length-1);
   for (const b of bossSkott) scene.remove(b.s); bossSkott.length=0;
   for (const s of skott) scene.remove(s.s); skott.length=0;
@@ -591,13 +623,13 @@ function uppdatera(dt){
     if (Math.abs(l.y-pl.y) < 4 && dx*dx+dz*dz < 60){
       l.visad = true;
       const t1 = arTouch ? 'Tryck på ✨ så trollar du fram en platta!' : 'Tryck E så trollar du fram en platta!';
-      toast('För långt att hoppa! '+t1, 4); saga('Det är för långt att hoppa. Trolla fram en platta och hoppa upp på den!');
+      toast('För långt att hoppa! '+t1, 4); saga('Det är för långt att hoppa. Tryck E, så trollar du fram en platta i hålet. Sen hoppar du upp!');
     }
   }
 
   // magiska plattor
   for (let i=magiPlattor.length-1;i>=0;i--){
-    const p = magiPlattor[i]; p.liv -= dt; p.ny = Math.min(1, p.ny + dt*6);
+    const p = magiPlattor[i]; if (!(pl.mark && pl.underlag === p.yta)) p.liv -= dt; p.ny = Math.min(1, p.ny + dt*6);
     p.m.scale.setScalar(0.05+0.95*p.ny);
     p.m.material.opacity = p.liv < 1.6 ? (Math.sin(p.liv*18)>0 ? 0.9 : 0.3) : 0.92;
     if (p.liv <= 0) taBortPlatta(i);
@@ -938,7 +970,7 @@ function loop(nu){
   if (lage==='seger' && kista) uppdateraKista(dt);
   // gemensamma animationer
   for (const k of kristaller) if (!k.tagen){ k.m.rotation.y += dt*2; k.m.position.y = k.y + Math.sin(t*3+k.x)*0.12; }
-  for (const l of luckor){ l.skylt.position.y = l.y + 2.6 + Math.sin(t*2.5)*0.15; l.skylt.visible = !l.visad || Math.abs(pl.y-l.y) < 12; }
+  for (const l of luckor){ l.skylt.position.y = l.y + 2.6 + Math.sin(t*2.5)*0.15; l.skylt.visible = !l.fylld && (!l.visad || Math.abs(pl.y-l.y) < 12); l.spoke.material.opacity = 0.18 + Math.sin(t*4)*0.08; }
   for (let i=partiklar.length-1;i>=0;i--){
     const p = partiklar[i]; p.liv -= dt;
     if (p.liv<=0){ scene.remove(p.s); partiklar.splice(i,1); continue; }
