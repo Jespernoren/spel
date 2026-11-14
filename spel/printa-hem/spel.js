@@ -4505,6 +4505,7 @@ function oppnaPrintMeny(sk) {
   const html = panel({ ikon: 'skrivare', titel: `Skrivare ${g.namn} · byggvolym ${g.mm} mm${sk.mod ? ' · ' + VAROR[sk.mod].namn.replace('Prototyp: ', '') : ''}`, sub: S.strom < 20 ? 'Lite ström – trampa cykeln så att skrivaren orkar' : 'Välj vad du vill printa', resurser: resurs('rulle', `${rullar(sk.fil)} laddat`) + resurs('blixt', Math.floor(S.strom), S.strom < 20 ? 'varn' : ''),
     kropp, fot });
   oppnaRuta(html, (el) => {
+    coachLapp(el, 'print');
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { printFlik = k.dataset.flik; printVald = null; ljud.plock(); oppnaPrintMeny(sk); }; });
     el.querySelector('[data-taav]')?.addEventListener('click', () => {
       if ((sk.fil || 0) < RULLE || sk.jobb) return;
@@ -4708,6 +4709,7 @@ function oppnaMarknad() {
   aliSagt = bubbla;
   aliRepl = '';
   oppnaRuta(html, (el) => {
+    coachLapp(el, 'ali');
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { aliFlik = k.dataset.flik; aliVald = null; aliRepl = aliFlik === 'salj' ? 'Visa vad du har. Snabbt.' : 'Titta gärna. Rör inte.'; ljud.plock(); oppnaMarknad(); }; });
     el.querySelectorAll('[data-val]').forEach((k) => {
       // sälj-rutor: ett klick säljer allt av den saken direkt (inget bekräfta)
@@ -5313,6 +5315,39 @@ function ritaNasta() {
   const text = malRaw; const [ikon, t] = nastaAtgard(text);
   const h = `<span class="nasta-ik">${ik(ikon)}</span><span class="nasta-t">${rens(t)}</span>`;
   if (malText.dataset.h !== h || !malText.firstElementChild) { malText.dataset.h = h; malText.innerHTML = h; malText.classList.add('nasta'); }
+}
+// ---------- Första gången: kort genomgång av varje nytt moment ----------
+// Blicken vänds dit, din röst säger vad du ska göra – en gång. Menyer får en liten pulserande hjälplapp första gången.
+const FORSTA = {
+  gava: { rost: 'Klart! Nu lägger jag den i Rolfs brevlåda vid grinden.', titta: () => postlada.position, nar: () => { const g = aktivGava(); return g && antalInv(g) > 0 && !S.post.tillRolf; } },
+  post: { rost: 'Rolf har lagt något i brevlådan. Jag går och hämtar det.', titta: () => postlada.position, nar: () => S.post.tillMig.length > 0 },
+  karra: { rost: 'En skottkärra! Jag väljer den med hjulet och kör fram till en tunna.', nar: () => !!S.karra && antalInv('karra') > 0 },
+};
+function kollaForsta() {
+  if (!ui.igang || sover || !ui.butiksOverlay.hidden) return;
+  S.forsta = S.forsta || [];
+  for (const [id, f] of Object.entries(FORSTA)) {
+    if (S.forsta.includes(id)) continue;
+    let ok = false; try { ok = f.nar(); } catch {}
+    if (!ok) continue;
+    S.forsta.push(id); sparaSnart();
+    bud(() => { const p = f.titta?.(); if (p) tittaMot(p.x, p.z, 1.6); setTimeout(() => prata('du', f.rost), p ? 600 : 0); });
+    return;
+  }
+}
+setInterval(kollaForsta, 1000);
+// hjälplapp i en meny första gången den öppnas
+const COACH = { ali: 'Klicka på en sak för att sälja den. Klicka i Köp för att köpa.', print: 'Välj vad du vill printa och klicka på det.' };
+function coachLapp(el, id) {
+  S.forsta = S.forsta || [];
+  if (S.forsta.includes('meny:' + id)) return;
+  S.forsta.push('meny:' + id); sparaSnart();
+  const kropp = el.querySelector('.ui-panel-kropp, .ui-kropp') || el.querySelector('.ui-panel') || el;
+  const d = document.createElement('div'); d.className = 'ph-coach'; d.innerHTML = `${ik('hand')}<span>${COACH[id]}</span>`;
+  kropp.prepend(d);
+  // vänta tills Ali (eller någon annan) pratat klart, och bara om menyn fortfarande är öppen
+  const sag = () => { if (ui.butiksOverlay.hidden) return; if (performance.now() < pratarTill) { setTimeout(sag, 300); return; } prata('du', COACH[id]); };
+  setTimeout(sag, 600);
 }
 function ritaHud() {
   // klockan
@@ -6751,7 +6786,7 @@ function rostManus() {
   Object.entries(LAPPAR).forEach(([id, [titel, t]]) => add(vemAvTitel(titel), t));
   INTRO.forEach((x) => add(x.talare || (x.bubbla ? (x.du ? 'du' : 'mamma') : 'berattare'), x.bubbla || x.text));
   Object.values(STEG_TAL).forEach((t) => add('berattare', t));
-  add('du', DU_BYGG); add('du', DU_SANG); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
+  add('du', DU_BYGG); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); add('du', DU_SANG); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
   return L;
 }
 const INTRO = [

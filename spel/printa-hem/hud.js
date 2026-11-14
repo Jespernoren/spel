@@ -130,6 +130,9 @@ export const HUD_CSS = `
 .ph-mal-text.nasta .nasta-ik{flex:0 0 40px;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:rgba(125,255,176,.14);color:#7dffb0;box-shadow:inset 0 0 0 2px rgba(125,255,176,.35)}
 .ph-mal-text.nasta .nasta-ik .ui-ik,.ph-mal-text.nasta .nasta-ik svg{width:26px;height:26px}
 .hud-uppdrag .hud-lista{display:none!important}
+.ph-coach{display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:10px 14px;border-radius:10px;background:rgba(125,255,176,.13);border:2px dashed rgba(125,255,176,.55);color:#e9fff1;font:800 14px/1.3 system-ui;animation:coachPuls 1.4s ease-in-out infinite}
+.ph-coach .ui-ik{width:24px;height:24px;color:#7dffb0;flex:0 0 24px}
+@keyframes coachPuls{50%{border-color:rgba(125,255,176,.95);box-shadow:0 0 14px rgba(125,255,176,.35)}}
 .hud-flask{position:fixed;left:max(12px,env(safe-area-inset-left));z-index:21;width:280px;box-sizing:border-box;pointer-events:none;font:700 13px/1.35 system-ui;color:#fff;display:flex;flex-direction:column;gap:6px}
 .hud-flask>div{padding:8px 12px 9px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.88);border-left:5px solid var(--lingon);box-shadow:0 6px 16px rgba(0,0,0,.3)}
 .hud-flask b{display:block;font:900 11px/1.2 system-ui;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
