@@ -4501,7 +4501,7 @@ const prisNu = (t, extra = 0) => { const b = saljPris(t); return t.startsWith('b
 const summaFor = (t, n) => { let s2 = 0; for (let i = 0; i < n; i++) s2 += prisNu(t, i); return s2; };
 let aliRepl = '', aliFlik = 'kop';
 let aliVald = null;
-const ALI_FORSTA = 'Hej. Jag är Ali. Det här är min butik. Min pappas egentligen. Jag tog över när han dog, för tjugofem år sedan. Jag köper det du printar och säljer filament. Öppet till nio. Inte en minut senare.';
+const ALI_FORSTA = 'Hej. Jag är Ali. Pappas butik – min sedan tjugofem år. Jag köper det du printar.';
 function aliKopLista() {
   const L = [];
   const add = (sekt, key, bild, namn, text, pris, faktaLista, kop) => L.push({ sekt, key, bild, namn, text, pris, faktaLista, kop, storlek: key.startsWith('m:') ? storlekRuta(key.slice(2), true) : key.startsWith('r:') ? storlekFor(key.slice(2)) : key === 'sang' ? 1 : 0 });
@@ -5392,7 +5392,7 @@ function kollaPrestationer() {
   }
   const r = rangNu();
   if (r > (S.rang || 0)) { S.rang = r; const x = RANGER[r]; firaKo.push(() => visaFirande('Ny rang', x.namn, `(${x.under})`, true)); }
-  if (firaKo.length && performance.now() > firarTill) { firarTill = performance.now() + 5200; firaKo.shift()(); sparaSnart(); }
+  if (firaKo.length && performance.now() > firarTill && ui.butiksOverlay.hidden) { firarTill = performance.now() + 5200; firaKo.shift()(); sparaSnart(); }
   ritaRang();
 }
 const rangEl = document.createElement('div'); rangEl.className = 'hud-rang'; rangEl.title = 'Din rang – nästa steg låser upp sig när du kommer längre';
