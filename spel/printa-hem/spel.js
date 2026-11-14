@@ -52,7 +52,7 @@ const TIPP_START = 55;           // skräp på tippen från start
 const MAX_SKRAP = 170;           // mer än så ligger aldrig ute samtidigt
 const SOPBIL_FORSTA = 45;        // sekunder tills första sopbilen kommer
 const SOPBIL_VAR = 80;           // sekunder mellan sopbilarna
-const SOPBIL_LAST = 12;          // skräp per last
+const SOPBIL_LAST = 15;          // skräp per last
 const RULLE = 1000;              // 1 filamentrulle = 1000 g. Allt visas i rullar.
 // Skräp ger olika mycket: påse 15 g, flaska 25 g, en stor dunk (sällsynt) 100 g
 // Grundenhet: 5 flaskor = 1 rulle → en flaska = 20 % av en rulle. Allt räknas i hela 10 %.
@@ -236,8 +236,8 @@ const MASKINER = {
   stortratt: { namn: 'Stor kvarntratt', ikon: '🪣', syns: () => S.karra, ritning: 150, delar: 2, gram: 600, tid: 12, beskr: 'Bred tratt med kross – nu får regntunnor och kajaker plats i kvarnen', monteras: true },
   // bygg ut skjulet till ett riktigt hem – printa delarna, välj dem och klicka på skjulet för att montera
   dorr: { namn: 'Dörr', ikon: '🚪', hem: true, monteras: true, syns: () => S.sang, ritning: 120, delar: 2, gram: 800, tid: 14, trivsel: 8, beskr: 'En riktig dörr – slut på drag och nyfikna katter' },
-  vaggar: { namn: 'Isolerskiva (vägg)', ikon: '🧱', hem: true, monteras: true, syns: () => S.sang, ritning: 220, delar: 1, gram: 1000, tid: 16, trivsel: 4, beskr: 'En vägg i taget – fyra skivor behövs (bak, vänster, höger, fram). Sen läcker kylan inte in längre' },
-  tak: { namn: 'Plåttak', ikon: '🏠', hem: true, monteras: true, syns: () => S.rolf.i >= 1, ritning: 260, delar: 3, gram: 1000, tid: 16, trivsel: 12, beskr: 'Korrugerade takplåtar över hålet – inget mer regn på kudden' },
+  vaggar: { namn: 'Isolerskiva (vägg)', ikon: '🧱', hem: true, monteras: true, syns: () => S.sang, ritning: 220, delar: 1, gram: 700, tid: 16, trivsel: 4, beskr: 'En vägg i taget – fyra skivor behövs (bak, vänster, höger, fram). Sen läcker kylan inte in längre' },
+  tak: { namn: 'Plåttak', ikon: '🏠', hem: true, monteras: true, syns: () => S.rolf.i >= 1, ritning: 260, delar: 3, gram: 800, tid: 16, trivsel: 12, beskr: 'Korrugerade takplåtar över hålet – inget mer regn på kudden' },
   fonster: { namn: 'Fönster', ikon: '🪟', hem: true, monteras: true, syns: () => S.rolf.i >= 1, ritning: 150, delar: 2, gram: 700, tid: 14, trivsel: 8, beskr: 'Ljus in i skjulet. Sätt det var du vill på en plan vägg – du kan ha flera (max 4)' },
   golv: { namn: 'Trägolv', ikon: '🪵', hem: true, monteras: true, syns: () => S.rolf.i >= 2, ritning: 140, delar: 3, gram: 800, tid: 14, trivsel: 8, beskr: 'Varma golvplankor i stället för kall jord' },
   taklampa: { namn: 'Taklampa', ikon: '💡', hem: true, monteras: true, syns: () => S.rolf.i >= 2, ritning: 90, delar: 1, gram: 400, tid: 10, trivsel: 6, beskr: 'Mysigt gult ljus om kvällarna' },
@@ -251,7 +251,7 @@ const MASKINER = {
   robotarm: { namn: 'Rulladdare (robotarm)', ikon: '', syns: () => !!S.auto?.lastarm, ritning: 2000, delar: 4, gram: 1000, tid: 18, monteras: true, beskr: 'Står vid extrudern. Tar varje färdig rulle och laddar den skrivare som har minst filament.' },
   utlada: { namn: 'Leveranslåda + autoprint', ikon: '', syns: () => !!S.auto?.arm, ritning: 2500, delar: 3, gram: 800, tid: 16, monteras: true, beskr: 'Skrivarna kan printa samma sak om och om igen. Allt hamnar i lådan, och Ali hämtar den varje morgon och betalar.' },
   skrivare3: { namn: 'Skrivare L', ikon: '', syns: () => S.kapitelKlart && harPlacerat('skrivare2'), ritning: 3000, delar: 6, gram: 1200, tid: 20, beskr: 'Stor byggvolym: soffa, kajak, arkadmaskin, jacuzzi. 4× snabbare än S. Står på golvet.', trivsel: 25 },
-  skrivare2: { namn: 'Skrivare M', ikon: '🖨️', syns: () => harPlacerat('bord'), ritning: 500, delar: 5, gram: 1500, tid: 18, beskr: 'Dubbelt så stor byggvolym och 2,5× snabbare. Printar drönare, gitarr och gamingstol. Måste stå på ett arbetsbord.', trivsel: 15, kraverBord: true },
+  skrivare2: { namn: 'Skrivare M', ikon: '🖨️', syns: () => harPlacerat('bord'), ritning: 500, delar: 5, gram: 900, tid: 18, beskr: 'Dubbelt så stor byggvolym och 2,5× snabbare. Printar drönare, gitarr och gamingstol. Måste stå på ett arbetsbord.', trivsel: 15, kraverBord: true },
 };
 // vad varje del heter – det är de här som printas en i taget
 const DEL_NAMN = {
