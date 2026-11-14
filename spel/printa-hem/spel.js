@@ -4675,7 +4675,7 @@ function oppnaMarknad() {
   // SÄLJ
   const allt = saljL.reduce((a, x) => a + summaFor(x.typ, x.n), 0);
   kropp += `<div class="ali-niva salj"><div class="ali-niva-rub"><span>${ik('salj')} Sälj till Ali</span><small>du får pengar</small>${saljL.length ? knapp({ text: `Sälj allt  +${allt.toLocaleString('sv-SE')} kr`, typ: 'plus', attr: 'data-saljallt' }) : ''}</div>`
-    + (saljL.length ? grid(saljL.map((x) => uiRuta({ bild: tumme(x.typ), attr: `data-val="s:${x.key}"`, vald: 's:' + x.key === aliVald, antal: x.n, pris: '+' + x.pris, prisTyp: 'plus', titel: namnFor(x.typ), etikett: true })))
+    + (saljL.length ? grid(saljL.map((x) => uiRuta({ bild: tumme(x.typ), attr: `data-val="s:${x.key}"`, vald: 's:' + x.key === aliVald, antal: x.n, pris: 'Sälj +' + summaFor(x.typ, x.n), prisTyp: 'plus', titel: namnFor(x.typ), etikett: true })))
       : '<p class="ui-tom">Du har inget att sälja. Printa saker på skrivaren – de hamnar i din verktygsrad.</p>') + '</div>';
   // Rolfs önskan finns inte hos Ali – den printar du själv
   { const gv = aktivGava(); if (gv && !harGava(gv)) kropp += `<div class="ali-tips">${ik('gava')} <span><b>Rolfs önskan: ${VAROR[gv]?.namn || gv}</b> – ${S.ritningar.includes('gava:' + gv) ? 'du har CAD-filen. Printa den på skrivaren under <b>Gåvor</b>' : 'köp CAD-filen här nere under <b>Rolfs önskan</b>, printa den på skrivaren'} och lägg den i Rolfs brevlåda vid grinden.</span></div>`; }
@@ -4710,7 +4710,8 @@ function oppnaMarknad() {
   oppnaRuta(html, (el) => {
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { aliFlik = k.dataset.flik; aliVald = null; aliRepl = aliFlik === 'salj' ? 'Visa vad du har. Snabbt.' : 'Titta gärna. Rör inte.'; ljud.plock(); oppnaMarknad(); }; });
     el.querySelectorAll('[data-val]').forEach((k) => {
-      k.onclick = () => { aliVald = k.dataset.val; aliRepl = bubbla; ljud.plock(); oppnaMarknad(); };
+      // sälj-rutor: ett klick säljer allt av den saken direkt (inget bekräfta)
+      k.onclick = () => { aliVald = k.dataset.val; if (aliVald.startsWith('s:')) { salj1(Infinity); return; } aliRepl = bubbla; ljud.plock(); oppnaMarknad(); };
       k.ondblclick = () => el.querySelector('[data-kop],[data-salj1]')?.click();
     });
     const kb = el.querySelector('[data-kop]');
@@ -5422,8 +5423,8 @@ const budKo = []; let budSenast = -1e9, senastPrat = 0;
 function bud(fn) { budKo.push(fn); }
 function korBud() {
   const nu = performance.now();
-  if (pratarTill > nu || dagbokLas || spikar) senastPrat = nu;
-  if (!budKo.length || !ui.igang || pausad || !medEl2.hidden || medKo.length || dagbokLas) return;
+  if (pratarTill > nu || dagbokLas || spikar || !ui.butiksOverlay.hidden) senastPrat = nu;   // i en meny: vänta, och ge lite andrum efteråt
+  if (!budKo.length || !ui.igang || pausad || !medEl2.hidden || medKo.length || dagbokLas || !ui.butiksOverlay.hidden) return;
   const paus = S.dag <= 1 ? BUD_PAUS * 1.6 : BUD_PAUS;   // dag 1: en sak i taget, gott om andrum
   if (nu - senastPrat < BUD_TYST || nu - budSenast < paus) return;
   budSenast = nu; const fn = budKo.shift();
