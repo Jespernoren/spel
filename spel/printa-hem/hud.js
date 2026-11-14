@@ -78,6 +78,8 @@ export const HUD_CSS = `
 .hud-dagbok-bar{height:4px;border-radius:2px;background:rgba(0,0,0,.1);margin-top:8px;overflow:hidden}.hud-dagbok-bar i{display:block;height:100%;width:0;background:#c49a6c}
 .ali-niva{border-radius:10px;padding:10px 12px 12px;margin-bottom:12px;border:2px solid}
 .ali-niva.salj{background:rgba(47,138,82,.12);border-color:rgba(47,138,82,.55)}
+.ali-markwrap{display:block;position:relative}.ali-mark{position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:7px;border:2px solid rgba(255,255,255,.55);background:rgba(13,15,20,.75);color:#0d0f14;cursor:pointer;z-index:2;padding:2px;display:grid;place-items:center}.ali-mark svg{width:16px;height:16px;stroke:#0d0f14;stroke-width:3.5}
+.ali-markwrap.pa .ali-mark{background:#7dffb0;border-color:#7dffb0}.ali-markwrap:not(.pa)>*:first-child{opacity:.6}
 .ali-niva.kop{background:rgba(200,33,58,.10);border-color:rgba(200,33,58,.5)}
 .ali-niva-rub{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .ali-niva-rub>span{display:inline-flex;align-items:center;gap:7px;font:900 15px var(--rubrik);letter-spacing:.04em;text-transform:uppercase}
@@ -102,7 +104,7 @@ export const HUD_CSS = `
 .ali-butik .ali-niva.salj .ui-ruta-med .ui-ruta{width:52px!important;height:52px!important;grid-row:1/3}.ali-butik .ali-niva.salj .ui-ruta-med .ui-ruta .bild img{width:44px!important;height:44px!important}
 .ali-butik .ali-niva.salj .ui-ruta-med .ui-ruta-namn{min-height:0;max-width:130px;text-align:left}
 .ali-butik .ali-niva.salj .ali-grupp.ej{margin-top:8px;padding:6px 8px}.ali-butik .ali-niva.salj .ali-grupp>b{margin:2px 0 4px}
-.ali-hylla.h-recept{--h:#f5c542}.ali-hylla.h-hem{--h:#c98a4b}.ali-hylla.h-upp{--h:#4c9cf0}.ali-hylla.h-inred{--h:#b07cf0}.ali-hylla.h-tapet{--h:#2fc4b2}.ali-hylla.h-mat{--h:#8fa3b8}.ali-hylla.h-trim{--h:#3de3ff}
+.ali-hylla.h-recept{--h:#f5c542}.ali-hylla.h-petg{--h:#e0503f}.ali-hylla.h-hem{--h:#c98a4b}.ali-hylla.h-upp{--h:#4c9cf0}.ali-hylla.h-inred{--h:#b07cf0}.ali-hylla.h-tapet{--h:#2fc4b2}.ali-hylla.h-mat{--h:#8fa3b8}.ali-hylla.h-trim{--h:#3de3ff}
 
 .ph-ali-panel .ui-kropp{padding:0!important;overflow:hidden!important;display:flex;min-height:0}
 .ali-split{display:flex;flex:1;min-height:0;width:100%}
