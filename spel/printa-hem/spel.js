@@ -2327,6 +2327,7 @@ function uppdateraSkrivare(sk, dt) {
   if (j.vantarFilament) { j.vantarFilament = false; }   // gamla sparningar: filamentet dras nu medan den printar
   const behov = g.strom * dt * (S.dag === 1 ? 0.4 : 1);   // dag 1: lite trampande räcker långt
   if (S.strom < behov) {
+    if (sk.vantar !== 'ingen ström!' && performance.now() > (sk.stromNotis || 0)) { sk.stromNotis = performance.now() + 60000; skrivarNotis(sk, 'Ingen ström – trampa cykeln', 'fel'); }
     sk.vantar = 'ingen ström!';
     return false;
   }
@@ -2335,7 +2336,7 @@ function uppdateraSkrivare(sk, dt) {
   let dp = (dt * g.fart * (1 + trimNiva('skrivare') * 0.2) * (sk.mod === 'm_turbo' ? 2 : 1)) / tid;
   const gram = (j.maskin ? MASKINER[j.maskin].gram : VAROR[j.typ].gram) * (sk.mod === 'm_snal' ? 0.65 : 1), behovFil = gram * Math.min(dp, 1 - sk.prog);
   if (sk.fil < behovFil) {
-    if (sk.fil < 0.5) { sk.vantar = 'filamentet tog slut – ladda en rulle'; if (!sk.slutVarnad) { sk.slutVarnad = true; ui.toast(`Skrivare ${g.namn}: filamentet tog slut på ${Math.round(sk.prog * 100)} % – ladda en rulle så fortsätter den`, 'fel'); } S.strom += behov; return false; }
+    if (sk.fil < 0.5) { sk.vantar = 'filamentet tog slut – ladda en rulle'; if (!sk.slutVarnad) { sk.slutVarnad = true; skrivarNotis(sk, `Filamentet tog slut på ${Math.round(sk.prog * 100)} % – ladda en rulle`, 'fel', true); } S.strom += behov; return false; }
     dp = sk.fil / gram; sk.fil = 0;
   } else sk.fil -= behovFil;
   sk.slutVarnad = false;
@@ -2352,13 +2353,13 @@ function uppdateraSkrivare(sk, dt) {
       const m = MASKINER[j.maskin];
       if (j.del < m.delar) {
         /* del klar: syns på skrivaren */
-        j.del++; ljud.placera();
+        j.del++; ljud.placera(); skrivarNotis(sk, `Del ${j.del - 1} av ${m.delar} klar`, 'bra');
       } else {
         sk.jobb = null; sk.klar = 'byggsats:' + j.maskin;
         // ritningen är förbrukad – vill du ha en till får du köpa den igen (väggskivor och fönster räknas upp till max)
         if (!['vaggar', 'fonster'].includes(j.maskin) || arKlar(j.maskin, 1)) S.ritningar = S.ritningar.filter((x) => x !== j.maskin);
         aliStolt(j.maskin, m.namn, true);
-        visaPaBadd(sk, sk.klar, 1); ljud.klar();
+        visaPaBadd(sk, sk.klar, 1); ljud.klar(); skrivarNotis(sk, `${m.namn} är klar – ta ut den`, 'guld', true);
         
       }
     } else if (S.auto?.lada && sk.upprepa === j.typ && VAROR[j.typ]?.pris > 0) {
@@ -2366,7 +2367,7 @@ function uppdateraSkrivare(sk, dt) {
       S.auto.innehall = { ...(S.auto.innehall || {}), [j.typ]: (S.auto.innehall?.[j.typ] || 0) + 1 };
       ladaPaket(sk, j.typ); ljud.placera();
     } else {
-      sk.jobb = null; sk.klar = j.typ; ljud.klar();
+      sk.jobb = null; sk.klar = j.typ; ljud.klar(); skrivarNotis(sk, `${VAROR[j.typ]?.namn || 'Utskriften'} är klar – ta ut den`, 'guld', true);
       if (VAROR[j.typ]?.lyx) S.ritningar = S.ritningar.filter((x) => x !== 'recept:' + j.typ);   // Alis fina ritningar räcker till en
       aliStolt(j.typ, VAROR[j.typ]?.namn, !!VAROR[j.typ]?.recept);
       S.stat.printat++;
@@ -4649,7 +4650,7 @@ function oppnaPrintMeny(sk) {
       k.onclick = () => {
         const ok = startaJobb(sk, k.dataset.vara ? { typ: k.dataset.vara } : { maskin: k.dataset.maskin });
         if (ok === 'upptagen') { ljud.fel(); ui.toast(sk.klar ? 'Ta ut det som är klart först' : 'Skrivaren printar redan – vänta tills den är klar', 'fel'); return; }
-        if (ok) { ljud.kop(); ui.stangButik(); ui.toast('Skrivaren surrar igång…', 'bra'); }
+        if (ok) { ljud.kop(); ui.stangButik(); const j = sk.jobb; skrivarNotis(sk, `Printar ${(j?.maskin ? MASKINER[j.maskin].namn : VAROR[j?.typ]?.namn || '').toLowerCase()}…`, 'bra'); }
         else { ljud.fel(); ui.toast(k.dataset.vara && storlekFor(k.dataset.vara) > skrivStorlek(sk) ? `För stor – kräver skrivare ${STORLEK_NAMN[storlekFor(k.dataset.vara)]}` : 'För lite filament i skrivaren', 'fel'); }
       };
     });
@@ -5990,6 +5991,15 @@ function korsToast(text, typ = '') {
 }
 { const _a = interaktor.aktivera.bind(interaktor); interaktor.aktivera = (...x) => { aktionObj = interaktor.hovrad; aktionTid = performance.now(); try { return _a(...x); } finally { setTimeout(() => { if (performance.now() - aktionTid > 40) aktionObj = null; }, 60); } }; }
 const platsLappar = [], platsV = new THREE.Vector3(), platsK = new THREE.Vector3();
+// skrivarens händelser: en lapp vid skrivaren, och en notis i hörnet om skrivaren inte syns just nu (eller om det är viktigt)
+function skrivarNotis(sk, text, typ = '', viktig = false) {
+  try {
+    const v = sk.mesh.getWorldPosition(new THREE.Vector3()), avst = v.distanceTo(kamera.position); v.project(kamera);
+    const syns = v.z < 1 && Math.abs(v.x) < 0.9 && Math.abs(v.y) < 0.9 && avst < 12;
+    platsToast(text, sk.mesh, typ);
+    if (!syns || viktig) notis(`Skrivare ${GEN[sk.gen].namn}: ${text}`, typ || 'guld', { tid: 5000 });
+  } catch { /* skrivaren finns inte längre */ }
+}
 function platsToast(text, obj, typ = '') {
   platsLappar.forEach((l) => { if (l.obj === obj) l.slut = 0; });
   const d = document.createElement('div'); d.className = 'hud-plats ' + typ; d.textContent = rens(text);
