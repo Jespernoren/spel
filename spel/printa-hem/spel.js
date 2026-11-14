@@ -5614,12 +5614,27 @@ function stegBild(text) {
   return t && ikonBild(t) ? t : null;
 }
 let malRaw = '';
+// när nästa handling är själva målet: en kort förklaring av hur man gör (vem/var)
+function nuTips(t) {
+  if (/Köp/.test(t)) return 'Gå till Ali över vägen';
+  if (/Printa/.test(t)) return 'Gå till skrivaren och välj den';
+  if (/Rolf|postlåd|brev/i.test(t)) return 'Rolfs postlåda står vid tippens grind';
+  if (/Bygg|Lägg|Isolera|Tapetsera|dörr/i.test(t)) return 'Köp 3D-modellen hos Ali, printa och montera';
+  if (/sov|Sov|kväll/.test(t)) return 'Gå till sängen i skjulet';
+  if (/Städa|Plocka|skräp/i.test(t)) return 'Plocka och lägg i kvarnen';
+  if (/trivsel|mysigt|Inred/i.test(t)) return 'Inredning hos Ali ger trivsel';
+  if (/Sälj|Tjäna/.test(t)) return 'Printa saker och sälj hos Ali';
+  return 'Följ pilen';
+}
 function ritaNasta() {
   const text = malRaw; const [ikon, t] = nastaAtgard(text);
   const bild = t === text ? stegBild(text) : null;
   // storylinen syns alltid: är nästa handling något annat (ta ut, ladda …) står kapitelmålet under
-  const malRad = t !== text && text ? `<small class="nasta-mal">${ik('mal')} Mål: ${rens(text)}</small>` : '';
-  const h = `<span class="nasta-ik${bild ? ' bild' : ''}">${bild ? ikonHtml(bild, 36) : ik(ikon)}</span><span class="nasta-t">${rens(t)}${malRad}</span>`;
+  // tre nivåer: kapitel/dag (rubriken ovanför) → dagens mål (stor rad) → nästa sak att göra nu (med ikon)
+  const ikonHtml2 = `<span class="nasta-ik${bild ? ' bild' : ''}">${bild ? ikonHtml(bild, 36) : ik(ikon)}</span>`;
+  const h = t !== text && text
+    ? `<span class="nasta-rubrik">${rens(text)}</span><span class="nasta-rad">${ikonHtml2}<span class="nasta-t"><small>Nu:</small> ${rens(t)}</span></span>`
+    : `<span class="nasta-rubrik">${rens(t)}</span><span class="nasta-rad">${ikonHtml2}<span class="nasta-t">${rens(nuTips(t))}</span></span>`;
   if (malText.dataset.h !== h || !malText.firstElementChild) { malText.dataset.h = h; malText.innerHTML = h; malText.classList.add('nasta'); }
 }
 // ---------- Första gången: kort genomgång av varje nytt moment ----------

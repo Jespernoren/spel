@@ -167,7 +167,10 @@ export const HUD_CSS = `
 .ph-mal-text.nasta .nasta-ik{flex:0 0 40px;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:rgba(125,255,176,.14);color:#7dffb0;box-shadow:inset 0 0 0 2px rgba(125,255,176,.35)}
 .ph-mal-text.nasta .nasta-ik .ui-ik,.ph-mal-text.nasta .nasta-ik svg{width:26px;height:26px}
 .hud-uppdrag .hud-lista{display:none!important}
-.nasta-t{display:flex;flex-direction:column}.nasta-mal{display:flex;align-items:center;gap:5px;margin-top:3px;font:700 12.5px/1.3 system-ui;color:#ffd37a}.nasta-mal .ui-ik{width:14px;height:14px;flex:none}
+.ph-mal-text.nasta{flex-direction:column!important;align-items:stretch!important;gap:6px!important}
+.nasta-rubrik{display:block;font:900 19px/1.2 system-ui;color:#fff}
+.nasta-rad{display:flex;align-items:center;gap:10px}.nasta-t{font:700 14px/1.3 system-ui;color:#c5ccda}.nasta-t small{display:inline!important;opacity:1!important;font:900 11px system-ui!important;letter-spacing:.06em;text-transform:uppercase;color:#7dffb0;margin-right:3px}
+.ph-mal-text.nasta .nasta-rad .nasta-ik{flex:0 0 32px;width:32px;height:32px}.ph-mal-text.nasta .nasta-rad .nasta-ik .ui-ik,.ph-mal-text.nasta .nasta-rad .nasta-ik svg{width:20px;height:20px}.ph-mal-text.nasta .nasta-ik.bild img{width:30px!important;height:30px!important}
 .ph-coach{display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:10px 14px;border-radius:10px;background:rgba(125,255,176,.13);border:2px dashed rgba(125,255,176,.55);color:#e9fff1;font:800 14px/1.3 system-ui;animation:coachPuls 1.4s ease-in-out infinite}
 .ph-coach .ui-ik{width:24px;height:24px;color:#7dffb0;flex:0 0 24px}
 @keyframes coachPuls{50%{border-color:rgba(125,255,176,.95);box-shadow:0 0 14px rgba(125,255,176,.35)}}
