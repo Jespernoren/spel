@@ -4296,11 +4296,12 @@ function flytSiffra(matare, text) {
 // plocka: "+20 %" poppar vid siktet, snabba plock i rad ger kombo med stigande ton
 let komboN = 0, komboT = 0, aliBonus = false;
 // Ali ger lite extra ibland: alltid första gången, sen slumpvis upp till tre gånger dag 1 – en liten kick
-const ALI_BONUS_RAD = ['Du ser hungrig ut. {kr} kr extra.', 'Bra jobbat. Säg inget till min fru. {kr} kr extra.', 'Pappa hade gillat dig. Här, {kr} kr till.', 'Kvalitet. Nästan. {kr} kr extra.'];
+const ALI_BONUS_FORSTA = 'Du får bonus! Första kunden som printar själv på 25 år. 40 kr extra.';
+const ALI_BONUS_RAD = [[10, 'Du får bonus! 10 kr extra. Du ser hungrig ut.'], [15, 'Du får bonus! 15 kr extra. Pappa hade gillat dig.'], [20, 'Du får bonus! 20 kr extra. Säg inget till min fru.'], [25, 'Du får bonus! 25 kr extra. Kvalitet. Nästan.']];
 function giAliBonus() {
   let kr = 0, rad = '';
-  if (!S.valkomst) { S.valkomst = true; kr = 40; rad = 'Första kunden som printar själv på 25 år. Här – 40 kr extra.'; }
-  else if (S.dag === 1 && (S.aliBonusDag1 || 0) < 3 && Math.random() < 0.4) { S.aliBonusDag1 = (S.aliBonusDag1 || 0) + 1; kr = 10 + Math.floor(Math.random() * 4) * 5; rad = ALI_BONUS_RAD[Math.floor(Math.random() * ALI_BONUS_RAD.length)].replace('{kr}', kr); }
+  if (!S.valkomst) { S.valkomst = true; kr = 40; rad = ALI_BONUS_FORSTA; }
+  else if (S.dag === 1 && (S.aliBonusDag1 || 0) < 3 && Math.random() < 0.4) { S.aliBonusDag1 = (S.aliBonusDag1 || 0) + 1; [kr, rad] = ALI_BONUS_RAD[Math.floor(Math.random() * ALI_BONUS_RAD.length)]; }
   if (!kr) return;
   S.mynt += kr; setTimeout(() => myntRegn(kr), 700); aliBonus = rad;
 }
@@ -6591,7 +6592,7 @@ function rostManus() {
   Object.entries(LAPPAR).forEach(([id, [titel, t]]) => add(vemAvTitel(titel), t));
   INTRO.forEach((x) => add(x.talare || (x.bubbla ? (x.du ? 'du' : 'mamma') : 'berattare'), x.bubbla || x.text));
   Object.values(STEG_TAL).forEach((t) => add('berattare', t));
-  add('du', DU_BYGG); add('ali', ALI_ROP); PUFFAR.forEach((p) => add('du', p.text));
+  add('du', DU_BYGG); add('ali', ALI_ROP); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
   return L;
 }
 const INTRO = [
