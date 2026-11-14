@@ -2295,7 +2295,7 @@ function uppdateraSkrivare(sk, dt) {
   const tid = j.maskin ? MASKINER[j.maskin].tid : VAROR[j.typ].tid;
   // väntar på filament till nästa del?
   if (j.vantarFilament) { j.vantarFilament = false; }   // gamla sparningar: filamentet dras nu medan den printar
-  const behov = g.strom * dt;
+  const behov = g.strom * dt * (S.dag === 1 ? 0.4 : 1);   // dag 1: lite trampande räcker långt
   if (S.strom < behov) {
     sk.vantar = 'ingen ström!';
     return false;
@@ -2804,11 +2804,15 @@ interaktor.registrera(vevYta, {
 });
 // rullen vid kvarnen fylls bit för bit – den går bara att ta när den är hel
 const helaRullar = () => Math.floor(S.kvarn.ut / RULLE);
+// hur många rullar du kan bära: 1 i början – resten får ligga i kvarnens rullhållare och skrivaren. Det driver dig att printa.
+const rulleMax = () => 1 + (S.korg ? 2 : 0) + (S.dag >= 4 ? 2 : 0) + (S.karra ? 1 : 0);
+const rullePlats = () => Math.max(0, rulleMax() - antalInv('rulle'));
 interaktor.registrera(rulle, {
   text: () => helaRullar() ? (helaRullar() === 1 ? 'Ta filamentrullen (1 rulle klar)' : `Ta filamentrullarna (${helaRullar()} rullar klara)`) : `Filamentrullen fylls: ${Math.round(S.kvarn.ut / RULLE * 100)} % – mala mer skräp`,
   aktivera: () => {
-    const n = helaRullar();
-    if (!n) { ui.toast(`Rullen är ${Math.round(S.kvarn.ut / RULLE * 100)} % full – den måste vara hel`, ''); return; }
+    const n = Math.min(helaRullar(), rullePlats());
+    if (!helaRullar()) { ui.toast(`Rullen är ${Math.round(S.kvarn.ut / RULLE * 100)} % full – den måste vara hel`, ''); return; }
+    if (!n) { varna('barRulle'); return; }
     if (!harRumFor('rulle', n)) { ui.toast('📦 Ingen plats för rullarna – töm verktygsraden eller kistan', 'fel'); ljud.fel(); return; }
     const vart = laggTill('rulle', n); S.kvarn.ut -= n * RULLE;
     if (typeof vart === 'number' && !valdTyp()) byt(vart);
@@ -3486,7 +3490,7 @@ const ROLF = [
     brev: 'ÖJ! Ja såg att du städa HELA gården. Respekt. Ingen städar här. Är de du som printar grejer oxå?? Ja önskar mig en ölhållare me kylklamp. Lägg den i min postlåda så får du nyckeln till tippen. Kall öl e viktigt. /Rolf (sopbilen)',
     tack: 'TACK för hållarn!! Ölen e iskall. Nyckeln till tippen ligger i lådan. Ta så mycket plast du vill.\n\nEn sak. Mina fingrar e stela – artros. Doktorn säger att ja ska skriva mindre för hand. Lägg en lapp me ditt telefonnummer i lådan så sms:ar ja istället. Sms:a inte efter tio. /Rolf' },
   { vara: 'flaskoppnare', belo: ['karra', 'mynt:120'],
-    brev: 'Gomorron! Rolf här. Kajsa (katten) knuffa ner min flasköppnare i tippen 😩 Printar du en ny? Me magnet så den sitter på flaket. Ja har en gammal skottkärra som bara står o skräpar – den e din om du fixar öppnarn. /Rolf',
+    brev: 'Gomorron! Rolf här. Kajsa (katten) knuffa ner min flasköppnare i tippen 😩 Printar du en ny? Me magnet så den sitter på flaket. Ja har en gammal skottkärra som bara står o skräpar – den e din om du fixar öppnarn. Me kärran kan du bära dom TUNGA grejerna i tippen, tunnor o kajaker. Massor me plast i dom! /Rolf',
     tack: 'PERFEKT öppnare!!! Kärran e din, o lite stålar. Nu kan du lyfta tunnorna o kajakerna i tippen – de e MYCKET plast i dom! /Rolf' },
   { vara: 'grillspade', belo: ['mynt:250', 'extra'],
     brev: 'Ska grilla på lördag. Ensam som vanligt, Kajsa äter inte korv. Ingen grillspade. Min gamla smälte. Lång historia. Fixar du? 250 spänn o ja tippar dubbelt nästa gång. /Rolf 🍖',
@@ -4349,6 +4353,8 @@ const VARN = {
   rulle: 'Rullen är full. Ta den först.',
   litenTratt: 'Får inte plats. Jag behöver en större tratt.',
   skrivFull: 'Skrivaren är full. Printa något först.',
+  barRulle: 'Jag orkar bara bära en rulle. Ladda skrivaren först.',
+  allaFullt: 'Allt är fullt. Dags att printa och sälja!',
 };
 const varnadTid = {};
 function varna(id) {
@@ -4509,6 +4515,7 @@ function oppnaPrintMeny(sk) {
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { printFlik = k.dataset.flik; printVald = null; ljud.plock(); oppnaPrintMeny(sk); }; });
     el.querySelector('[data-taav]')?.addEventListener('click', () => {
       if ((sk.fil || 0) < RULLE || sk.jobb) return;
+      if (!rullePlats()) { varna('barRulle'); return; }
       if (!harRumFor('rulle')) { ui.toast('Ingen plats i verktygsraden eller kistan', 'fel'); ljud.fel(); return; }
       sk.fil -= RULLE; laggTill('rulle'); sk.spolstall && (sk.spolstall.userData.visar = -1); visaSpolar(sk); sparaSkrivare(); ljud.plock(); oppnaPrintMeny(sk);
     });
@@ -4596,6 +4603,7 @@ function aliKopLista() {
   const add = (sekt, key, bild, namn, text, pris, faktaLista, kop) => L.push({ sekt, key, bild, namn, text, pris, faktaLista, kop, storlek: key.startsWith('m:') ? storlekRuta(key.slice(2), true) : key.startsWith('r:') ? storlekFor(key.slice(2)) : key === 'sang' ? 1 : 0 });
   add('Material', 'filament', tumme('rulle'), 'Filamentrulle', 'En hel rulle. Dyrare än att mala skräp – men du slipper vänta.', FILAMENT_KOP.pris, [['rulle', '1 rulle']], () => {
     if (!harRumFor('rulle')) { aliRepl = 'Var ska du bära den? Fickorna är fulla.'; return false; }
+    if (!rullePlats()) { aliRepl = 'Du bär redan så många du orkar. Printa först.'; return false; }
     laggTill('rulle'); aliRepl = 'En rulle. Nyspolad. Ta den.'; return true;
   });
   // Rolfs önskan: Ali har ritningen (billig – det ska aldrig vara pengarna som stoppar dig)
@@ -4845,7 +4853,7 @@ function smsLast(fran) {
   S.olasta = S.sms.filter((m) => m.ny).length;
   const i = (S.smsVantar || []).findIndex(([f]) => f === fran); if (i < 0) return;
   const [f, t, id] = S.smsVantar.splice(i, 1)[0]; sparaSnart();
-  setTimeout(() => sms(f, t, id), 4000);
+  setTimeout(() => sms(f, t, id), 14000);   // nästa från samma person: lite andrum först
 }
 function oppnaInkorg() {
   // alla meddelanden på en sida, nyast först – klicka Läs upp för att höra ett igen
@@ -5337,6 +5345,14 @@ function kollaForsta() {
   }
 }
 setInterval(kollaForsta, 1000);
+let fullPuffT = -1e9;
+setInterval(() => {
+  if (!ui.igang || sover || !ui.butiksOverlay.hidden || S.dag > 3) return;
+  const fullt = extruderFull() && (hand.saker.length > 0 || S.kvarn.tratt >= 2) && antalInv('rulle') >= rulleMax();
+  if (!fullt || performance.now() - fullPuffT < 180000) return;
+  fullPuffT = performance.now();
+  bud(() => { const sk = skrivare[0]; if (sk) { const v = sk.mesh.getWorldPosition(new THREE.Vector3()); tittaMot(v.x, v.z, 1.6); } setTimeout(() => prata('du', VARN.allaFullt), 600); });
+}, 2000);
 // hjälplapp i en meny första gången den öppnas
 const COACH = { ali: 'Klicka på en sak för att sälja den. Klicka i Köp för att köpa.', print: 'Välj vad du vill printa och klicka på det.' };
 function coachLapp(el, id) {
@@ -5491,7 +5507,7 @@ function korBud() {
   const nu = performance.now();
   if (pratarTill > nu || dagbokLas || spikar || !ui.butiksOverlay.hidden) senastPrat = nu;   // i en meny: vänta, och ge lite andrum efteråt
   if (!budKo.length || !ui.igang || pausad || !medEl2.hidden || medKo.length || dagbokLas || !ui.butiksOverlay.hidden) return;
-  const paus = S.dag <= 1 ? BUD_PAUS * 1.6 : BUD_PAUS;   // dag 1: en sak i taget, gott om andrum
+  const paus = S.dag <= 3 ? BUD_PAUS * 1.6 : BUD_PAUS;   // de första dagarna: en sak i taget, gott om andrum   // dag 1: en sak i taget, gott om andrum
   if (nu - senastPrat < BUD_TYST || nu - budSenast < paus) return;
   budSenast = nu; const fn = budKo.shift();
   try { fn(); } catch (e) { console.warn(e); }
