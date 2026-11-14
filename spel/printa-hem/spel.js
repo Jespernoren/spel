@@ -3288,7 +3288,8 @@ function sov() {
     if (nasta?.startPost && !S.lappar.includes(nasta.startPost)) { S.post.lapp = nasta.startPost; visaPostInne(); }
     const del = nasta?.del || 'Fritt bygge';
     const ig = S.igar, rapport = ig ? `<span class="br-rapport">Igår: ${ig.printat} printat · ${ig.salt} sålt${ig.flask ? `<br>Flaskhals: ${ig.flask}${ig.fix ? ` → ${ig.fix}` : ''}` : ''}</span>` : '';
-    ui.visaStart(`☀️ Dag ${S.dag}`, `<b>${del.replace(/^Dag \d+ – /, '')}</b>${nasta?.startPost ? '<br>✉️ Brev i Rolfs postlåda' : ''}${rapport}`, 'Börja dagen');
+    ui.visaStart(`☀️ Dag ${S.dag}`, `<b>${del.replace(/^Dag \d+ – /, '')}</b>${nasta?.startPost ? '<br>✉️ Brev i Rolfs postlåda' : ''}${rapport}${[2, 4].includes(S.dag) && !(S.betygDag || []).includes(natt) ? snabbBetygHtml(natt) : ''}`, 'Börja dagen');
+    kopplaSnabbBetyg(natt);
     const vanta = setInterval(() => { if (!ui.igang) return; clearInterval(vanta); const f = morgonKo; morgonKo = null; if (f) setTimeout(f, 2500); }, 300);
   }, 5500);
 }
@@ -4952,10 +4953,12 @@ function startRuta(titel = ui.o.titel, text = ui.o.text, knappText = 'Starta') {
   ui.overlay.innerHTML = `<div class="fp-ruta br-start">${ar ? t : `<h1>${t}</h1>`}${resa || `<div class="br-ingress">${rens(text)}</div>`}${resa ? prestHtml() : ''}
     <button class="fp-knapp br-starta">${rens(knappText)}</button>
     <div class="br-val"><button class="br-valknapp" data-sparplatser>${ik('spara')}<span>Sparplatser</span></button><button class="br-valknapp" data-kontroller>${ik('hand')}<span>Kontroller</span></button><button class="br-valknapp" data-noll>${ik('omstart')}<span>Börja om</span></button></div>
+    <button class="br-tyck" data-tyck>${ik('brev')} Tyck till om spelet</button>
     <a class="fp-tillbaka" href="../../index.html">← Alla spel</a></div>`;
   ui.overlay.hidden = false;
   ui.overlay.querySelector('.br-starta').onclick = () => ui.starta();
   ui.overlay.querySelector('[data-sparplatser]').onclick = () => ui.o.onSparplatser?.();
+  { const ty = ui.overlay.querySelector('[data-tyck]'); if (ty) ty.onclick = () => oppnaTyckTill(ui.overlay.querySelector('.br-start')); }
   ui.overlay.querySelector('[data-kontroller]').onclick = () => {
     const pop = document.createElement('div'); pop.className = 'br-bekrafta';
     const K = [['W A S D', 'Gå'], ['Mus', 'Titta'], ['Klick / E', 'Använd, plocka upp'], ['Klicka och håll', 'Veva, trampa, gripa'], ['Shift', 'Spring'], ['Mellanslag', 'Hoppa'], ['Hjulet / 1–8', 'Byt sak i handen'], ['H', 'Tomhänt'], ['Q', 'Släpp skräp'], ['Shift + Q', 'Släpp allt'], ['R', 'Vrid det du ställer ut'], ['G', 'Flytta gamingboden'], ['I', 'Dina saker'], ['B', 'Dagbok och mål'], ['M', 'Alla sms i efterhand'], ['K', 'Sparplatser'], ['V', 'Byt röster'], ['Esc', 'Paus och den här menyn']];
@@ -5387,6 +5390,64 @@ function maskinStopp() {
   else if (!S.kvarn.motor && S.kvarn.tratt >= TRATT_MAX) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Tratten är full', varfor: 'Ingen plats för mer skräp', fix: 'Veva kvarnen – klicka och håll på veven' });
   if (L.some((x) => /ström/.test(x.varfor) || /Batteriet/.test(x.varfor))) L.push({ obj: cykel, y: 1.5, typ: 'hit', rub: 'Trampa här!', varfor: `Batteri ${Math.floor(S.strom)}/${stromMax()}`, fix: 'Klicka och håll på cykeln' });
   return L;
+}
+// ---------- Mätning och spelarfeedback ----------
+// Allt är anonymt: ett slumpat spelar-id, var i spelet man är och hur länge man spelat.
+// Skickas till artifactens databas (när spelet körs som artifact) och till ett Google-formulär om FEEDBACK_FORM är satt.
+// Google-formulär: två stycke-fält ("typ" och "data"). Fyll i formResponse-adressen och fältens entry-id här.
+const FEEDBACK_FORM = null;   // t.ex. { url: 'https://docs.google.com/forms/d/e/XXX/formResponse', typ: 'entry.111', data: 'entry.222' }
+const spelarId = (() => { try { let v = localStorage.getItem('printa-hem:spelare'); if (!v) { v = Math.random().toString(36).slice(2, 10); localStorage.setItem('printa-hem:spelare', v); } return v; } catch { return 'okand'; } })();
+const sessionId = spelarId + '_' + Date.now().toString(36);
+const sessionStart = Date.now();
+let dbP = null;
+const hamtaDb = () => dbP || (dbP = (async () => { try { return window.claude?.use ? await window.claude.use('db') : null; } catch { return null; } })());
+async function skickaData(typ, data, id) {
+  const rad = { ...data, spelare: spelarId, tid: new Date().toISOString(), version: 'v' + (document.querySelector('script[src*="spel.js"]')?.src.split('v=')[1] || 'artifact') };
+  try { const db = await hamtaDb(); if (db) await db.collection(typ).doc(id || (spelarId + '_' + Date.now().toString(36))).set(rad); } catch {}
+  try { if (FEEDBACK_FORM) { const f = new FormData(); f.append(FEEDBACK_FORM.typ, typ); f.append(FEEDBACK_FORM.data, JSON.stringify(rad)); fetch(FEEDBACK_FORM.url, { method: 'POST', mode: 'no-cors', body: f }).catch(() => {}); } } catch {}
+}
+// mätning: var spelaren är, uppdateras när ett steg klaras och när fliken stängs (högst var 20:e sekund)
+let senastMatt = 0, senastSteg = -1;
+function matning(tvinga = false) {
+  if (!tvinga && (S.steg === senastSteg || Date.now() - senastMatt < 20000)) return;
+  senastSteg = S.steg; senastMatt = Date.now();
+  skickaData('matning', { steg: S.steg, stegText: S.steg < STEG.length ? String(stegText(STEG[S.steg])).slice(0, 60) : 'klar', dag: S.dag, minuter: Math.round((Date.now() - sessionStart) / 60000), totalMin: Math.round((S.speltid || 0) / 60), rang: RANGER[S.rang || 0]?.namn, prestationer: (S.prest || []).length, mynt: S.mynt, skarm: innerWidth + 'x' + innerHeight, mobil: matchMedia('(pointer:coarse)').matches }, sessionId);
+}
+setInterval(() => { if (ui.igang) matning(); }, 5000);
+addEventListener('pagehide', () => matning(true));
+document.addEventListener('visibilitychange', () => { if (document.hidden) matning(true); });
+// snabbbetyg på morgonen: ett klick
+const BETYG = [[hudAnsikte(0), 'Tråkigt'], [hudAnsikte(2), 'Okej'], [hudAnsikte(3), 'Kul'], [hudAnsikte(4), 'Superkul']];
+const snabbBetygHtml = (natt) => `<div class="br-betyg" data-betyg-natt="${natt}"><span>Hur var dag ${natt}?</span>${BETYG.map(([e, t], i) => `<button data-betyg="${i}" title="${t}">${e}</button>`).join('')}</div>`;
+function kopplaSnabbBetyg(natt) {
+  ui.overlay.querySelectorAll('[data-betyg]').forEach((b) => b.onclick = (e) => {
+    e.stopPropagation(); S.betygDag = [...(S.betygDag || []), natt]; sparaSnart();
+    skickaData('feedback', { sort: 'snabb', dag: natt, betyg: +b.dataset.betyg, betygText: BETYG[+b.dataset.betyg][1], steg: S.steg });
+    const r = ui.overlay.querySelector('.br-betyg'); if (r) r.innerHTML = '<span>Tack!</span>';
+  });
+}
+// tyck till: tre korta frågor
+function oppnaTyckTill(foralder) {
+  const pop = document.createElement('div'); pop.className = 'br-bekrafta';
+  pop.innerHTML = `<div class="br-bekrafta-ruta br-tyckruta"><b>Tyck till</b>
+    <div class="br-betyg">${BETYG.map(([e, t], i) => `<button data-v="${i}" title="${t}">${e}</button>`).join('')}</div>
+    <label>Vad var kul?<textarea data-f="kul" rows="2" maxlength="400"></textarea></label>
+    <label>Vad var tråkigt eller krångligt?<textarea data-f="trakigt" rows="2" maxlength="400"></textarea></label>
+    <label>Något annat?<textarea data-f="annat" rows="2" maxlength="400"></textarea></label>
+    <div class="br-val" style="max-width:360px"><button class="br-valknapp" data-nej>Avbryt</button><button class="br-valknapp" data-skicka>${ik('brev')}<span>Skicka</span></button></div></div>`;
+  (foralder || document.body).appendChild(pop);
+  let betyg = null;
+  pop.querySelectorAll('[data-v]').forEach((b) => b.onclick = () => { betyg = +b.dataset.v; pop.querySelectorAll('[data-v]').forEach((x) => x.classList.toggle('vald', x === b)); });
+  pop.querySelector('[data-nej]').onclick = () => pop.remove();
+  pop.querySelector('[data-skicka]').onclick = () => {
+    const f = Object.fromEntries([...pop.querySelectorAll('[data-f]')].map((t) => [t.dataset.f, t.value.trim()]));
+    if (betyg == null && !f.kul && !f.trakigt && !f.annat) { pop.remove(); return; }
+    skickaData('feedback', { sort: 'formular', betyg, betygText: betyg == null ? null : BETYG[betyg][1], ...f, steg: S.steg, dag: S.dag, minuter: Math.round((Date.now() - sessionStart) / 60000) });
+    pop.querySelector('.br-bekrafta-ruta').innerHTML = '<b>Tack!</b><p>Jesper läser allt.</p>';
+    setTimeout(() => pop.remove(), 1600);
+  };
+  pop.onclick = (e) => { if (e.target === pop) pop.remove(); };
+  pop.addEventListener('keydown', (e) => e.stopPropagation());
 }
 // ---------- Rangstege och prestationer (se claude/printa-hem-rangstege.md) ----------
 var RANGER_KLAR = false;

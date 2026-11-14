@@ -66,6 +66,10 @@ const SKRUV = (x, y) => `radial-gradient(circle at ${x} ${y},#c9bda4 0 3px,#5b46
 const SKRUVAR = [SKRUV('10px', '10px'), SKRUV('calc(100% - 10px)', '10px'), SKRUV('10px', 'calc(100% - 10px)'), SKRUV('calc(100% - 10px)', 'calc(100% - 10px)')].join(',');
 
 export const BRAND_CSS = `
+.br-tyck{display:block;margin:12px auto 0;background:none;border:0;color:#9fe8ff;font:700 14px system-ui;cursor:pointer;display:flex;align-items:center;gap:6px}.br-tyck .ui-ik{width:16px;height:16px}
+.br-betyg{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px}.br-betyg span{font:700 14px system-ui;color:#c5ccda;margin-right:4px}.br-betyg button{width:44px;height:44px;line-height:0;padding:5px;border-radius:10px;border:2px solid transparent;background:rgba(255,255,255,.06);cursor:pointer;transition:transform .1s}.br-betyg button:hover{transform:scale(1.15)}.br-betyg button svg{width:100%;height:100%}.br-betyg button.vald{border-color:#7dffb0;background:rgba(125,255,176,.15)}
+.br-tyckruta label{display:block;text-align:left;margin-top:10px;font:700 13px system-ui;color:#c5ccda}.br-tyckruta textarea{display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:8px;border-radius:8px;border:1px solid #343a4a;background:#0f1217;color:#fff;font:500 14px system-ui;resize:vertical}
+
 :root{--falu:${FARG.falu};--falu-mork:${FARG.faluMork};--fil:${FARG.fil};--fil-mork:${FARG.filMork};--rost:${FARG.rost};--lingon:${FARG.lingon};--planka:${FARG.planka};--papper:${FARG.papper};--natt:${FARG.natt};--natt2:${FARG.natt2};--kant:${FARG.kant};--rubrik:${RUBRIK_FONT}}
 .br-logo{display:block;max-width:100%;height:auto;margin:0 auto;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
 
