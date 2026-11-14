@@ -230,6 +230,27 @@ body.mus-fri .hud-flik{box-shadow:0 0 0 2px var(--fil);animation:hudPuls 1.2s ea
 .hud-lista li.precis .b{animation:hudStuds .6s cubic-bezier(.3,1.6,.5,1)}
 .hud-el-ik{display:grid;place-items:center;color:#ffd43b}.hud-el-ik .ui-ik{width:26px;height:26px}.hud-el.larm{animation:hudPuls 1.2s ease-in-out infinite}.hud-el.larm .hud-el-ik{color:#ff5c5c}
 .ph-strom-chip{display:none!important}
+.ph-vbubbla{position:fixed;left:0;top:0;z-index:20;transform:translate(-50%,-100%);pointer-events:none;max-width:240px;padding:7px 12px;border-radius:12px;background:#fff;color:#1a1d24;font:800 14px/1.3 system-ui;box-shadow:0 6px 16px rgba(0,0,0,.35);text-align:center;animation:vbIn .25s cubic-bezier(.3,1.6,.5,1)}
+.ph-vbubbla::after{content:"";position:absolute;left:50%;bottom:-8px;margin-left:-8px;border:8px solid transparent;border-bottom:0;border-top-color:#fff}
+.ph-vbubbla.arg{background:#ffdede;color:#7a1222}.ph-vbubbla.arg::after{border-top-color:#ffdede}
+@keyframes vbIn{from{transform:translate(-50%,-80%) scale(.6);opacity:0}}
+.br-dagmal{list-style:none;margin:12px auto 4px;padding:0;display:flex;flex-direction:column;gap:6px;max-width:380px;text-align:left}
+.br-dagmal li{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.07);font:700 14.5px/1.3 system-ui}
+.br-dagmal li .ui-ik{width:22px;height:22px;flex:none;color:#7dffb0}
+.ph-mal-text.nasta .nasta-ik.bild{background:rgba(255,255,255,.9);overflow:hidden}.ph-mal-text.nasta .nasta-ik.bild img{width:36px;height:36px;object-fit:contain}
+.ph-humor-ram{position:relative;display:inline-block;flex:none}.ph-humor-ram .ui-portratt{width:100%!important;height:100%!important}
+.ph-humor{position:absolute;right:-5px;top:-5px;width:45%;height:45%;min-width:14px;min-height:14px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));animation:humorStuds 1.2s ease-in-out infinite}.ph-humor svg{width:100%;height:100%;display:block}
+@keyframes humorStuds{50%{transform:translateY(-2px) scale(1.08)}}
+.hud-ios .app.app-portratt{background:none;overflow:visible}
+.ph-samtal{display:flex;justify-content:center;align-items:center;height:100%}
+.ph-samtal-kort{width:min(420px,92vw);display:flex;flex-direction:column;align-items:center;gap:8px;padding:26px 22px 20px;border-radius:28px;background:linear-gradient(180deg,#2b3140,#151922);box-shadow:0 24px 60px rgba(0,0,0,.6);color:#fff;text-align:center}
+.ph-samtal-bild{border-radius:50%;box-shadow:0 0 0 4px rgba(52,199,89,.5);animation:samtalRing 1.4s ease-in-out infinite}.ph-samtal-bild.pratar{animation:aliPrat .32s ease-in-out infinite alternate}
+@keyframes samtalRing{50%{box-shadow:0 0 0 12px rgba(52,199,89,.15)}}
+.ph-samtal-kort>b{font:900 24px system-ui}.ph-samtal-status{font:600 14px system-ui;color:#9aa3b5}
+.ph-samtal-rad{width:100%;box-sizing:border-box;margin-top:8px;padding:12px 14px;border-radius:16px;background:#fff;color:#1a1d24;text-align:left}.ph-samtal-rad.du{background:#34c759;color:#fff;text-align:right}
+.ph-samtal-rad em{display:block;font:900 11px system-ui;font-style:normal;letter-spacing:.08em;text-transform:uppercase;opacity:.6}.ph-samtal-rad p{margin:3px 0 0;font:600 16px/1.4 system-ui}
+.ph-samtal-knappar{margin-top:10px;display:flex;gap:10px}.ph-samtal-knappar .fp-knapp{display:inline-flex;align-items:center;gap:8px}.ph-svara{background:#34c759!important}
+.ph-samtal-knappar kbd{font:900 11px system-ui;padding:1px 6px;border-radius:4px;background:rgba(0,0,0,.3)}
 .fp-topp{left:auto!important;right:80px;transform:none!important;max-width:none!important;flex-wrap:nowrap!important;justify-content:flex-end}
 .hud-sms-knapp{width:auto!important;display:flex!important;align-items:center;gap:8px;padding:0 14px 0 12px;font:800 14px system-ui}.hud-sms-knapp .sms-txt{white-space:nowrap}.hud-sms-knapp .ui-ik,.hud-sms-knapp svg{flex:none;width:24px;height:24px}
 .hud-sms-knapp kbd{position:static!important;transform:none!important;margin-left:2px}
