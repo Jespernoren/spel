@@ -4749,6 +4749,12 @@ function kedjaLas(id) {
 }
 // Ali visar lagom mycket: det du behöver nu, nästa recept i kedjan och några få val per hylla. Resten bakom "Visa allt".
 let aliVisaAllt = false, aliDolda = 0;
+const HYLLOR = [
+  { klass: 'h-unik', ikon: 'stjarna', namn: 'Unika fynd', sub: 'finns bara en gång', grupper: [['Rolfs önskan', 'Rolfs önskan'], ['Present till Rolf', 'Present till Rolf'], ['Alis prototyper – en av varje', 'Alis prototyper']] },
+  { klass: 'h-recept', ikon: 'recept', namn: 'Tjäna pengar', sub: 'recept – printa och sälj', grupper: [['Recept att sälja', 'Nästa recept']] },
+  { klass: 'h-hem', ikon: 'hus', namn: 'Hemmet', sub: 'bygg, tapetsera och inred', grupper: [['Bygg ut hemmet', 'Bygga'], ['Tapeter – för skjulet och boden', 'Tapeter'], ['Inredning', 'Inredning']] },
+  { klass: 'h-upp', ikon: 'kugghjul', namn: 'Fabriken', sub: 'nya maskiner och förbättringar', grupper: [['Material', 'Filament'], ['Uppgraderingar – bär mer, gör snabbare', 'Nya maskiner'], ['Trimning – tar aldrig slut', 'Trimma (nivåer)']] },
+];
 // varje hylla har sin färg: recept guld, hemmet trä, uppgraderingar blå, inredning lila, tapeter turkos, material grå, trimning cyan
 const hyllKlass = (sk) => /^Recept/.test(sk) ? 'h-recept' : /hemmet/.test(sk) ? 'h-hem' : /^Uppgrad/.test(sk) ? 'h-upp' : /^Inredning/.test(sk) ? 'h-inred' : /^Tapeter/.test(sk) ? 'h-tapet' : /^Material/.test(sk) ? 'h-mat' : /^Trimning/.test(sk) ? 'h-trim' : 'h-ovrigt';
 const HYLL_IKON = { 'h-recept': 'recept', 'h-hem': 'hus', 'h-upp': 'kugghjul', 'h-inred': 'soffa', 'h-tapet': 'hus', 'h-mat': 'rulle', 'h-trim': 'trim' };
@@ -4807,7 +4813,7 @@ function aliKopLista() {
     () => { if (!harRumFor(pr)) { aliRepl = 'Var ska du ha den? Fickorna är fulla.'; return false; } laggTill(pr); aliRepl = ['En present till sopgubben? Du är en konstig människa. Bra. Men konstig.', 'Jag slår in den. Gratis. Säg inte det till nån.', 'Rolf… han köper bara lättöl här. Och kattmat. Ge honom det här.'][Math.floor(Math.random() * 3)]; return true; });
   for (const [id, m] of Object.entries(MASKINER)) {
     if (S.ritningar.includes(id) || !m.syns() || arKlar(id)) continue;
-    add(m.hem ? 'Bygg ut hemmet' : 'Uppgraderingar – bär mer, gör snabbare', 'm:' + id, tumme('byggsats:' + id), '3D-modell: ' + m.namn, m.beskr, m.ritning,
+    add(m.hem || m.flik === 'hem' ? 'Bygg ut hemmet' : 'Uppgraderingar – bär mer, gör snabbare', 'm:' + id, tumme('byggsats:' + id), '3D-modell: ' + m.namn, m.beskr, m.ritning,
       [['rulle', `${rullKort(m.gram * m.delar)} rullar totalt`], ['kugghjul', `${m.delar} delar: ${(DEL_NAMN[id] || []).join(', ').toLowerCase()}`]],
       () => { S.ritningar.push(id); aliRepl = 'Bra val. 3D-modellen är din. Den räcker till en.'; ui.toast(`3D-modell köpt – printa ${m.namn.toLowerCase()} på skrivaren`, 'guld'); return true; });
   }
@@ -4907,29 +4913,23 @@ function oppnaMarknad() {
   let kropp = '', fot = '';
   // SÄLJ
   const allt = saljL.reduce((a, x) => a + summaFor(x.typ, x.n), 0);
-  kropp += `<div class="ali-niva salj"><div class="ali-niva-rub"><span>${ik('salj')} Sälj till Ali</span><small>du får pengar</small>${saljL.length ? knapp({ text: `Sälj allt  +${allt.toLocaleString('sv-SE')} kr`, typ: 'plus', attr: 'data-saljallt' }) : ''}</div>`
-    + (saljL.length ? '<div class="ali-grupper">' + SALJ_GRUPPER.filter((gr) => saljL.some((x) => x.grupp === gr)).map((gr) => `<div class="ali-grupp"><b>${gr}</b>${grid(saljL.filter((x) => x.grupp === gr).map((x) => uiRuta({ bild: tumme(x.typ), attr: `data-val="s:${x.key}"`, vald: 's:' + x.key === aliVald, niva: nivaFor(x.typ), antal: x.n, pris: 'Sälj +' + summaFor(x.typ, x.n), prisTyp: 'plus', titel: namnFor(x.typ), etikett: true })))}</div>`).join('') + '</div>'
+  let saljHtml = `<div class="ali-niva salj"><div class="ali-niva-rub"><span>${ik('salj')} Sälj till Ali</span><small>du får pengar</small>${saljL.length ? knapp({ text: `Sälj allt  +${allt.toLocaleString('sv-SE')} kr`, typ: 'plus', attr: 'data-saljallt' }) : ''}</div>`
+    + (saljL.length ? '<div class="ali-grupper">' + SALJ_GRUPPER.filter((gr) => saljL.some((x) => x.grupp === gr)).map((gr) => `<div class="ali-grupp"><b>${gr}</b>${grid(saljL.filter((x) => x.grupp === gr).map((x) => uiRuta({ liten: true, bild: tumme(x.typ), attr: `data-val="s:${x.key}"`, vald: 's:' + x.key === aliVald, niva: nivaFor(x.typ), antal: x.n, pris: 'Sälj +' + summaFor(x.typ, x.n), prisTyp: 'plus', titel: namnFor(x.typ), etikett: true })))}</div>`).join('') + '</div>'
       : '<p class="ui-tom">Du har inget att sälja. Printa saker på skrivaren – de hamnar i din verktygsrad.</p>')
-    + (ejL.length ? `<div class="ali-grupp ej"><b>${ik('las')} Ali köper inte</b>${grid(ejL.map((x) => uiRuta({ bild: tumme(x.typ), attr: `data-ej="${x.typ}"`, niva: nivaFor(x.typ), antal: x.n, pris: x.typ === aktivGava() ? 'Till Rolf' : x.typ === 'rulle' ? 'Från dag 3' : 'Säljs inte', prisTyp: 'minus', titel: namnFor(x.typ), etikett: true })))}</div>` : '') + '</div>';
+    + (ejL.length ? `<div class="ali-grupp ej"><b>${ik('las')} Ali köper inte</b>${grid(ejL.map((x) => uiRuta({ liten: true, bild: tumme(x.typ), attr: `data-ej="${x.typ}"`, niva: nivaFor(x.typ), antal: x.n, pris: x.typ === aktivGava() ? 'Till Rolf' : x.typ === 'rulle' ? 'Från dag 3' : 'Säljs inte', prisTyp: 'minus', titel: namnFor(x.typ), etikett: true })))}</div>` : '') + '</div>';
   // Rolfs önskan finns inte hos Ali – den printar du själv
   { const gv = aktivGava(); if (gv && !harGava(gv)) kropp += `<div class="ali-tips">${ik('gava')} <span><b>Rolfs önskan: ${VAROR[gv]?.namn || gv}</b> – ${S.ritningar.includes('gava:' + gv) ? 'du har 3D-modellen. Printa den på skrivaren under <b>Gåvor</b>' : 'köp 3D-modellen här nere under <b>Rolfs önskan</b>, printa den på skrivaren'} och lägg den i Rolfs brevlåda vid grinden.</span></div>`; }
   // KÖP
   kropp += `<div class="ali-niva kop"><div class="ali-niva-rub"><span>${ik('kop')} Köp av Ali</span><small>det kostar pengar</small></div>`;
   {
-    // unika fynd: finns bara en gång och försvinner när du köpt dem – egen guldram överst
-    const UNIKA = ['Rolfs önskan', 'Present till Rolf', 'Alis prototyper – en av varje'];
-    const alla = [...new Set(kopL.map((x) => x.sekt))], unika = alla.filter((x) => UNIKA.includes(x)), sekts = alla.filter((x) => !UNIKA.includes(x));
+    // hyllorna sorteras efter vad sakerna är till för: Rolf · tjäna pengar · hemmet · fabriken
     const rutaK = (x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, last: !!x.las, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', prisIkon: 'kop', titel: x.namn, storlek: x.storlek, etikett: true });
-    const unikHtml = (lista) => lista.length ? `<div class="ali-unik"><div class="ali-unik-rub"><span>★ Unika fynd</span><small>finns bara en gång – sen är de borta</small></div>${lista.map((sk) => `<div class="ali-unik-grupp"><b>${sk.replace(' – en av varje', '')}</b>${grid(kopL.filter((x) => x.sekt === sk).sort((a, b) => (S.mynt < a.pris) - (S.mynt < b.pris)).map(rutaK))}</div>`).join('')}</div>` : '';
-    const forst = unika.filter((x) => x === 'Rolfs önskan'), sist = unika.filter((x) => x !== 'Rolfs önskan');
-    sekts.sort((a, b) => (b === 'Recept att sälja') - (a === 'Recept att sälja') || (b === 'Bygg ut hemmet') - (a === 'Bygg ut hemmet'));   // det viktigaste först: nästa recept och hemmet
-    kropp += unikHtml(forst);
-    kropp += '<div class="ali-hyllor">' + sekts.map((sk) => `<div class="ali-hylla ${hyllKlass(sk)}"><div class="ali-hylla-rub">${ik(HYLL_IKON[hyllKlass(sk)] || 'kop')}<b>${sk.replace(/ – .*$/, '')}</b><small>${sk.includes(' – ') ? sk.split(' – ')[1] : HYLL_SUB[hyllKlass(sk)] || ''}</small></div>` + grid(kopL.filter((x) => x.sekt === sk).sort((a, b) => (S.mynt < a.pris) - (S.mynt < b.pris)).map((x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, last: !!x.las, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', prisIkon: 'kop', titel: x.namn, storlek: x.storlek, etikett: true }))) + '</div>').join('') + '</div>'
+    const hyllor = HYLLOR.map((h) => ({ ...h, grupper: h.grupper.map(([sekt, namn]) => ({ namn, saker: kopL.filter((x) => x.sekt === sekt).sort((a, b) => (S.mynt < a.pris) - (S.mynt < b.pris)) })).filter((g) => g.saker.length) })).filter((h) => h.grupper.length);
+    kropp += '<div class="ali-hyllor">' + hyllor.map((h) => `<div class="ali-hylla ${h.klass}"><div class="ali-hylla-rub">${ik(h.ikon)}<b>${h.namn}</b><small>${h.sub}</small></div><div class="ali-hylla-grupper">${h.grupper.map((g) => `<div class="ali-hylla-grupp">${h.grupper.length > 1 || g.namn !== h.namn ? `<em>${g.namn}</em>` : ''}${grid(g.saker.map(rutaK))}</div>`).join('')}</div></div>`).join('') + '</div>'
       + (aliDolda || aliVisaAllt ? `<div class="ali-visaallt">${knapp({ text: aliVisaAllt ? 'Visa färre' : `Visa allt (${aliDolda} till)`, typ: 'neutral', attr: 'data-visaallt' })}</div>` : '')
       + (Object.values(MASKINER).some((m) => !m.syns()) ? `<p class="ui-tom">${ik('las')} Fler 3D-modeller dyker upp när du kommer vidare – Ali sitter uppe med AI:n varje natt.</p>` : '');
-    kropp += unikHtml(sist);
   }
-  kropp += '</div>';
+  kropp += '</div>' + saljHtml;
   if (vald && iKop) {
     fot = vald ? detalj({ bild: vald.bild, titel: vald.namn, text: vald.text, faktaLista: vald.faktaLista,
       knappar: [{ text: S.mynt >= vald.pris ? `Köp för ${vald.pris.toLocaleString('sv-SE')} kr` : `Saknar ${(vald.pris - S.mynt).toLocaleString('sv-SE')} kr`, typ: S.mynt >= vald.pris ? 'plus' : 'minus', attr: 'data-kop', av: S.mynt < vald.pris, ikon: 'kop' }] }) : detalj({});

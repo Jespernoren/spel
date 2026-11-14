@@ -88,11 +88,19 @@ export const HUD_CSS = `
 .ph-ali-panel .ui-ruta .pris.minus{color:#ffb3bd}
 .ui-panel.ph-ali-panel{width:min(1500px,97vw);max-height:94vh}
 .ph-ali-panel .ali-sida{flex-basis:200px}.ph-ali-panel .ali-huvud,.ph-ali-panel .ali-huvud .ui-portratt{width:130px!important;height:130px!important}
-.ali-hyllor{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;align-items:stretch}.ali-hylla{flex:1 1 auto;min-width:150px}
+.ali-hyllor{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;align-items:stretch}.ali-hylla{flex:0 1 auto;min-width:150px}
 .ali-hylla{--h:#7d869a;border-radius:12px;padding:10px 12px 12px;background:linear-gradient(180deg,color-mix(in srgb,var(--h) 22%,#1b1f28),#1b1f28 70%);border:2px solid color-mix(in srgb,var(--h) 60%,transparent)}
 .ali-hylla .ui-grid{display:flex!important;flex-wrap:wrap;gap:8px}
 .ali-hylla-rub{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}.ali-hylla-rub .ui-ik{width:18px;height:18px;color:var(--h);align-self:center}
 .ali-hylla-rub b{font:900 13px system-ui;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--h) 70%,#fff)}.ali-hylla-rub small{font:600 12px system-ui;color:#9aa3b5}
+.ali-hylla.h-rolf{--h:#ff6fa5}.ali-hylla.h-unik{--h:#ffc93c}.ali-hylla-grupper{display:flex;flex-wrap:wrap;gap:6px 18px}.ali-hylla-grupp>em{display:block;font:800 10.5px system-ui;font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:#c5ccda;opacity:.75;margin:0 0 5px}
+.ali-butik .ali-niva.kop{margin-bottom:0}
+.ali-butik .ali-niva.salj{position:sticky;bottom:-16px;z-index:3;margin:14px -16px -16px;border-radius:14px 14px 0 0;border-width:2px 0 0;background:linear-gradient(180deg,#183324,#121f18);box-shadow:0 -12px 26px rgba(0,0,0,.5);display:flex;flex-wrap:wrap;align-items:flex-start;column-gap:22px;padding:8px 16px 12px}
+.ali-butik .ali-niva.salj>.ali-niva-rub{flex:1 0 100%;margin-bottom:2px}
+.ali-butik .ali-niva.salj .ali-grupper{flex-wrap:nowrap;overflow-x:auto;max-width:100%}.ali-butik .ali-niva.salj .ui-ruta-med{display:grid;grid-template-columns:52px auto;grid-template-rows:auto auto;width:auto;column-gap:8px;row-gap:3px;align-items:center;justify-items:start;padding:5px 10px 5px 5px}
+.ali-butik .ali-niva.salj .ui-ruta-med .ui-ruta{width:52px!important;height:52px!important;grid-row:1/3}.ali-butik .ali-niva.salj .ui-ruta-med .ui-ruta .bild img{width:44px!important;height:44px!important}
+.ali-butik .ali-niva.salj .ui-ruta-med .ui-ruta-namn{min-height:0;max-width:130px;text-align:left}
+.ali-butik .ali-niva.salj .ali-grupp.ej{margin-top:8px;padding:6px 8px}.ali-butik .ali-niva.salj .ali-grupp>b{margin:2px 0 4px}
 .ali-hylla.h-recept{--h:#f5c542}.ali-hylla.h-hem{--h:#c98a4b}.ali-hylla.h-upp{--h:#4c9cf0}.ali-hylla.h-inred{--h:#b07cf0}.ali-hylla.h-tapet{--h:#2fc4b2}.ali-hylla.h-mat{--h:#8fa3b8}.ali-hylla.h-trim{--h:#3de3ff}
 
 .ph-ali-panel .ui-kropp{padding:0!important;overflow:hidden!important;display:flex;min-height:0}
