@@ -86,7 +86,15 @@ export const HUD_CSS = `
 .ali-niva-rub .ui-knapp{min-width:0;padding:7px 12px;font-size:13.5px}
 .ali-niva.kop .ui-sektion span{color:#ffc2cb}
 .ph-ali-panel .ui-ruta .pris.minus{color:#ffb3bd}
-.ui-panel.ph-ali-panel{width:min(1060px,96vw)}
+.ui-panel.ph-ali-panel{width:min(1500px,97vw);max-height:94vh}
+.ph-ali-panel .ali-sida{flex-basis:200px}.ph-ali-panel .ali-huvud,.ph-ali-panel .ali-huvud .ui-portratt{width:130px!important;height:130px!important}
+.ali-hyllor{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;align-items:stretch}.ali-hylla{flex:1 1 auto;min-width:150px}
+.ali-hylla{--h:#7d869a;border-radius:12px;padding:10px 12px 12px;background:linear-gradient(180deg,color-mix(in srgb,var(--h) 22%,#1b1f28),#1b1f28 70%);border:2px solid color-mix(in srgb,var(--h) 60%,transparent)}
+.ali-hylla .ui-grid{display:flex!important;flex-wrap:wrap;gap:8px}
+.ali-hylla-rub{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}.ali-hylla-rub .ui-ik{width:18px;height:18px;color:var(--h);align-self:center}
+.ali-hylla-rub b{font:900 13px system-ui;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--h) 70%,#fff)}.ali-hylla-rub small{font:600 12px system-ui;color:#9aa3b5}
+.ali-hylla.h-recept{--h:#f5c542}.ali-hylla.h-hem{--h:#c98a4b}.ali-hylla.h-upp{--h:#4c9cf0}.ali-hylla.h-inred{--h:#b07cf0}.ali-hylla.h-tapet{--h:#2fc4b2}.ali-hylla.h-mat{--h:#8fa3b8}.ali-hylla.h-trim{--h:#3de3ff}
+
 .ph-ali-panel .ui-kropp{padding:0!important;overflow:hidden!important;display:flex;min-height:0}
 .ali-split{display:flex;flex:1;min-height:0;width:100%}
 .ali-sida{flex:0 0 230px;display:flex;flex-direction:column;align-items:center;gap:14px;padding:22px 16px;background:linear-gradient(180deg,#232a36,#1b2029);border-right:1px solid #343a4a;overflow:auto}

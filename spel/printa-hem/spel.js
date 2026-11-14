@@ -4749,6 +4749,10 @@ function kedjaLas(id) {
 }
 // Ali visar lagom mycket: det du behöver nu, nästa recept i kedjan och några få val per hylla. Resten bakom "Visa allt".
 let aliVisaAllt = false, aliDolda = 0;
+// varje hylla har sin färg: recept guld, hemmet trä, uppgraderingar blå, inredning lila, tapeter turkos, material grå, trimning cyan
+const hyllKlass = (sk) => /^Recept/.test(sk) ? 'h-recept' : /hemmet/.test(sk) ? 'h-hem' : /^Uppgrad/.test(sk) ? 'h-upp' : /^Inredning/.test(sk) ? 'h-inred' : /^Tapeter/.test(sk) ? 'h-tapet' : /^Material/.test(sk) ? 'h-mat' : /^Trimning/.test(sk) ? 'h-trim' : 'h-ovrigt';
+const HYLL_IKON = { 'h-recept': 'recept', 'h-hem': 'hus', 'h-upp': 'kugghjul', 'h-inred': 'soffa', 'h-tapet': 'hus', 'h-mat': 'rulle', 'h-trim': 'trim' };
+const HYLL_SUB = { 'h-recept': 'printa och sälj – tjäna pengar', 'h-hem': 'bygg ditt hem', 'h-inred': 'mysigt – ger trivsel', 'h-mat': 'filament att printa med' };
 const ALI_MAX = { 'Inredning': 3, 'Uppgraderingar – bär mer, gör snabbare': 3, 'Tapeter – för skjulet och boden': 2, 'Alis prototyper – en av varje': 2, 'Trimning – tar aldrig slut': 3 };
 function aliSalla(L) {
   const recept = L.filter((x) => x.sekt === 'Recept att sälja');
@@ -4920,7 +4924,7 @@ function oppnaMarknad() {
     const forst = unika.filter((x) => x === 'Rolfs önskan'), sist = unika.filter((x) => x !== 'Rolfs önskan');
     sekts.sort((a, b) => (b === 'Recept att sälja') - (a === 'Recept att sälja') || (b === 'Bygg ut hemmet') - (a === 'Bygg ut hemmet'));   // det viktigaste först: nästa recept och hemmet
     kropp += unikHtml(forst);
-    kropp += sekts.map((sk) => sektion(sk) + grid(kopL.filter((x) => x.sekt === sk).sort((a, b) => (S.mynt < a.pris) - (S.mynt < b.pris)).map((x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, last: !!x.las, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', prisIkon: 'kop', titel: x.namn, storlek: x.storlek, etikett: true })))).join('')
+    kropp += '<div class="ali-hyllor">' + sekts.map((sk) => `<div class="ali-hylla ${hyllKlass(sk)}"><div class="ali-hylla-rub">${ik(HYLL_IKON[hyllKlass(sk)] || 'kop')}<b>${sk.replace(/ – .*$/, '')}</b><small>${sk.includes(' – ') ? sk.split(' – ')[1] : HYLL_SUB[hyllKlass(sk)] || ''}</small></div>` + grid(kopL.filter((x) => x.sekt === sk).sort((a, b) => (S.mynt < a.pris) - (S.mynt < b.pris)).map((x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, last: !!x.las, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', prisIkon: 'kop', titel: x.namn, storlek: x.storlek, etikett: true }))) + '</div>').join('') + '</div>'
       + (aliDolda || aliVisaAllt ? `<div class="ali-visaallt">${knapp({ text: aliVisaAllt ? 'Visa färre' : `Visa allt (${aliDolda} till)`, typ: 'neutral', attr: 'data-visaallt' })}</div>` : '')
       + (Object.values(MASKINER).some((m) => !m.syns()) ? `<p class="ui-tom">${ik('las')} Fler 3D-modeller dyker upp när du kommer vidare – Ali sitter uppe med AI:n varje natt.</p>` : '');
     kropp += unikHtml(sist);
@@ -5619,7 +5623,7 @@ function coachLapp(el, id) {
   S.forsta = S.forsta || [];
   if (S.forsta.includes('meny:' + id)) return;
   S.forsta.push('meny:' + id); sparaSnart();
-  const kropp = el.querySelector('.ali-butik, .ui-panel-kropp, .ui-kropp') || el.querySelector('.ui-panel') || el;
+  const kropp = el.querySelector('.ali-butik') || el.querySelector('.ui-panel-kropp, .ui-kropp') || el.querySelector('.ui-panel') || el;
   const d = document.createElement('div'); d.className = 'ph-coach'; d.innerHTML = `${ik('hand')}<span>${COACH[id]}</span>`;
   kropp.prepend(d);
   // vänta tills Ali (eller någon annan) pratat klart, och bara om menyn fortfarande är öppen
