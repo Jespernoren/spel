@@ -5277,6 +5277,7 @@ const hudHand = document.querySelector('.hud-hand');
 document.body.insertAdjacentHTML('beforeend', `<div class="hud-flikar"><button class="hud-flik hud-sms-knapp" data-flik-sms title="Meddelanden (M)">${ik("brev")}<span class="sms-txt">Meddelanden</span><kbd>M</kbd><em hidden></em></button></div>`);
 const hudSms = document.querySelector('[data-flik-sms]');
 // pengar och rullar uppe till höger, bredvid meddelandeknappen
+let mittTid = 0;
 function placeraTopp() { const tp = document.querySelector('.fp-topp'), fl = document.querySelector('.hud-flikar'); if (tp && fl) tp.style.right = (innerWidth - fl.getBoundingClientRect().left + 8) + 'px'; }
 addEventListener('resize', placeraTopp); setTimeout(placeraTopp, 0); setTimeout(placeraTopp, 1500);
 hudSms.onclick = () => oppnaInkorg();
@@ -5424,8 +5425,14 @@ function ritaHud() {
   hudMatare('respekt', r < 5 ? 0 : r < 25 ? 1 : r < 60 ? 2 : r < 110 ? 3 : 4, hudHjarta, r, nasta ? (r - (forra?.[0] || 0)) / (nasta[0] - (forra?.[0] || 0)) : 1);
   // uppdraget hamnar under statuspanelen
   // uppdraget sitter högst upp i mitten – på smala skärmar under statuspanelen
-  const mEl = malText.parentElement, smal = innerWidth < 1100, topp = smal ? Math.round(hudEl.getBoundingClientRect().bottom + 8) + 'px' : '';
+  const mEl = malText.parentElement, smal = innerWidth < 900, topp = smal ? Math.round(hudEl.getBoundingClientRect().bottom + 8) + 'px' : '';
   if (mEl.style.top !== topp) mEl.style.top = topp; mEl.classList.toggle('smal', smal);
+  if (!smal && performance.now() > mittTid) {   // mittenkortet ryms mellan statuspanelen och pengarna uppe till höger
+    mittTid = performance.now() + 400;
+    const tp = document.querySelector('.fp-topp')?.getBoundingClientRect(), L = hudEl.getBoundingClientRect().right + 12, R = (tp?.width ? tp.left : innerWidth - 300) - 12;
+    const b = Math.max(260, Math.min(440, R - L)), x = Math.round(Math.max(L, (L + R) / 2 - b / 2)) + 'px';
+    if (mEl.style.left !== x) { mEl.style.left = x; mEl.style.width = b + 'px'; }
+  } else if (smal && mEl.style.width) { mEl.style.left = ''; mEl.style.width = ''; }
   ritaLoop(mEl);
   // uppdragslistan: det som är klart (bockat), det du gör nu och vad som kommer
   const lista = mEl.querySelector('.hud-lista');
@@ -5754,7 +5761,7 @@ function matFlaskhals(dt) {
   }
   if (flaskEl.dataset.h !== h) { flaskEl.dataset.h = h; flaskEl.innerHTML = h; }
   flaskEl.style.display = h ? '' : 'none';
-  const mEl = innerWidth < 1100 ? malText.parentElement : hudEl, r = mEl.getBoundingClientRect(), topPx = Math.round((r.height ? r.bottom : 200) + 8) + 'px';
+  const mEl = innerWidth < 900 ? malText.parentElement : hudEl, r = mEl.getBoundingClientRect(), topPx = Math.round((r.height ? r.bottom : 200) + 8) + 'px';
   if (flaskEl.style.top !== topPx) flaskEl.style.top = topPx;
 }
 // ---------- Progress över varje skrivare: bara vad den printar och hur långt den kommit ----------
@@ -6486,7 +6493,7 @@ function uppdatera(dt) {
     vevEl.classList.toggle('syns', visa);
     if (visa) {
       { const v = kvarnPunkt(0, 1.45, 0.3).clone(); v.project(kamera); const ok = v.z < 1;
-        const hb = (vevEl.offsetWidth || 200) / 2 + 12; vevEl.style.left = Math.max(hb, Math.min(innerWidth - hb, (v.x * 0.5 + 0.5) * innerWidth)) + 'px'; vevEl.style.top = Math.max(innerWidth < 1100 ? 120 : 210, Math.min(innerHeight - 110, (-v.y * 0.5 + 0.5) * innerHeight)) + 'px';
+        const hb = (vevEl.offsetWidth || 200) / 2 + 12; vevEl.style.left = Math.max(hb, Math.min(innerWidth - hb, (v.x * 0.5 + 0.5) * innerWidth)) + 'px'; vevEl.style.top = Math.max(innerWidth < 900 ? 120 : 210, Math.min(innerHeight - 110, (-v.y * 0.5 + 0.5) * innerHeight)) + 'px';
         vevEl.style.transform = 'translate(-50%,-100%)'; vevEl.style.visibility = ok ? '' : 'hidden'; }
       const pagar = S.kvarn.tratt > 0 ? nastaGram() * Math.min(1, S.kvarn.prog) : 0;
       const hela = helaRullar();

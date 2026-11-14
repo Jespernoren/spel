@@ -219,7 +219,7 @@ body.mus-fri .hud-flik{box-shadow:0 0 0 2px var(--fil);animation:hudPuls 1.2s ea
 .hud-sms-knapp{width:auto!important;display:flex!important;align-items:center;gap:8px;padding:0 14px 0 12px;font:800 14px system-ui}.hud-sms-knapp .sms-txt{white-space:nowrap}.hud-sms-knapp .ui-ik,.hud-sms-knapp svg{flex:none;width:24px;height:24px}
 .hud-sms-knapp kbd{position:static!important;transform:none!important;margin-left:2px}
 @media (max-width:1250px){.hud-sms-knapp .sms-txt{display:none}}
-.ph-mal.hud-uppdrag:not(.smal){left:50%!important;top:max(12px,env(safe-area-inset-top))!important;transform:translateX(-50%);width:min(420px,calc(100vw - 680px));min-width:300px;text-align:left}
+.ph-mal.hud-uppdrag:not(.smal){top:max(12px,env(safe-area-inset-top))!important;text-align:left}
 .ph-prest{top:150px!important}.ph-kapkort{top:24%!important}
 .ph-vrid{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);z-index:23;display:flex;align-items:center;gap:10px;padding:8px 16px 8px 10px;border:0;border-radius:12px;background:${LAGER},var(--fil);color:#0d1a22;font:900 16px var(--rubrik);text-transform:uppercase;letter-spacing:.04em;box-shadow:0 8px 20px rgba(0,0,0,.35);cursor:pointer;animation:vridPuls 1.4s ease-in-out infinite}
 @keyframes vridPuls{50%{box-shadow:0 0 0 4px rgba(76,201,240,.5),0 8px 20px rgba(0,0,0,.35)}}
