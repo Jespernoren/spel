@@ -4294,13 +4294,21 @@ function flytSiffra(matare, text) {
 }
 // ---------- Små belöningar hela tiden ----------
 // plocka: "+20 %" poppar vid siktet, snabba plock i rad ger kombo med stigande ton
-let komboN = 0, komboT = 0;
+let komboN = 0, komboT = 0, aliBonus = false;
+// Ali ger lite extra ibland: alltid första gången, sen slumpvis upp till tre gånger dag 1 – en liten kick
+const ALI_BONUS_RAD = ['Du ser hungrig ut. {kr} kr extra.', 'Bra jobbat. Säg inget till min fru. {kr} kr extra.', 'Pappa hade gillat dig. Här, {kr} kr till.', 'Kvalitet. Nästan. {kr} kr extra.'];
+function giAliBonus() {
+  let kr = 0, rad = '';
+  if (!S.valkomst) { S.valkomst = true; kr = 40; rad = 'Första kunden som printar själv på 25 år. Här – 40 kr extra.'; }
+  else if (S.dag === 1 && (S.aliBonusDag1 || 0) < 3 && Math.random() < 0.4) { S.aliBonusDag1 = (S.aliBonusDag1 || 0) + 1; kr = 10 + Math.floor(Math.random() * 4) * 5; rad = ALI_BONUS_RAD[Math.floor(Math.random() * ALI_BONUS_RAD.length)].replace('{kr}', kr); }
+  if (!kr) return;
+  S.mynt += kr; setTimeout(() => myntRegn(kr), 700); aliBonus = rad;
+}
 function plockPop(gram = 200) {
   const nu = performance.now(); komboN = nu - komboT < 2500 ? komboN + 1 : 1; komboT = nu;
   const e = document.createElement('i'); e.className = 'hud-pop';
-  e.textContent = `+${Math.round(gram / RULLE * 100)} %` + (komboN >= 3 ? ` · kombo ×${komboN}` : '');
+  e.textContent = `+${Math.round(gram / RULLE * 100)} %`;
   document.body.appendChild(e); setTimeout(() => e.remove(), 1100);
-  try { const ac = ljud.ctx?.() || window.__ac || (window.__ac = new AudioContext()); const o = ac.createOscillator(), g = ac.createGain(); o.type = 'triangle'; o.frequency.value = 520 * Math.pow(1.06, Math.min(12, komboN)); g.gain.setValueAtTime(0.05, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.18); o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.2); } catch {}
 }
 // sälja: mynt flyger upp mot plånboken och siffran räknas upp
 function myntRegn(summa) {
@@ -4675,9 +4683,10 @@ function oppnaMarknad() {
       const summa = summaFor(t, n); taBortInv(t, n);
       if (!t.startsWith('byggsats:') && !VAROR[t]?.lyx) S.saltIdag = { ...(S.saltIdag || {}), [t]: saltIdag(t) + n };
       S.mynt += summa; S.stat.salt += n; ljud.mynt(); myntRegn(summa);
-      if (!S.valkomst && t === 'nyckelring') { S.valkomst = true; S.mynt += 40; setTimeout(() => { myntRegn(40); ui.toast('Ali: Första kunden som printar själv på 25 år. +40 kr extra.', 'guld'); }, 700); }
+      giAliBonus();
       const nm = namnFor(t).toLowerCase();
       aliRepl = saltIdag(t) >= 4 ? `${saltIdag(t)} ${nm} idag?! Vem ska köpa alla? Här, ${summa} kr. Gör nåt annat imorgon.` : n > 1 ? `${n} st. Okej. ${summa} kr. Säljer de inte är det ditt fel.` : `${nm[0].toUpperCase() + nm.slice(1)}. Okej. ${summa} kr.`;
+      if (aliBonus) { aliRepl = aliBonus; aliBonus = false; }
       sparaSnart(); oppnaMarknad();
     };
     const s1 = el.querySelector('[data-salj1]'); if (s1) s1.onclick = () => salj1(1);
@@ -4685,8 +4694,9 @@ function oppnaMarknad() {
       let summa = 0, antal = 0;
       for (const x of saljL) { const n = antalInv(x.typ); if (!n) continue; const su = summaFor(x.typ, n); taBortInv(x.typ, n); if (!x.typ.startsWith('byggsats:') && !VAROR[x.typ]?.lyx) S.saltIdag = { ...(S.saltIdag || {}), [x.typ]: saltIdag(x.typ) + n }; summa += su; antal += n; }
       S.mynt += summa; S.stat.salt += antal; ljud.mynt(); myntRegn(summa);
-      if (!S.valkomst) { S.valkomst = true; S.mynt += 40; setTimeout(() => { myntRegn(40); ui.toast('Ali: Första kunden som printar själv på 25 år. +40 kr extra.', 'guld'); }, 700); }
-      aliRepl = `Allt?! ${antal} saker. Jag behöver ett större lager. Här: ${summa.toLocaleString('sv-SE')} kr.`;
+      giAliBonus();
+      aliRepl = antal === 1 ? `Okej. ${summa} kr.` : `Allt?! ${antal} saker. Jag behöver ett större lager. Här: ${summa.toLocaleString('sv-SE')} kr.`;
+      if (aliBonus) { aliRepl = aliBonus; aliBonus = false; }
       ritaHotbar(); ritaHand(); sparaSnart(); oppnaMarknad();
     };
     const sa = el.querySelector('[data-saljalla]'); if (sa) sa.onclick = () => salj1(999);
@@ -5432,7 +5442,7 @@ function kollaPrestationer() {
   }
   const r = rangNu();
   if (r > (S.rang || 0)) { S.rang = r; const x = RANGER[r]; firaKo.push(() => visaFirande('Ny rang', x.namn, `(${x.under})`, true)); }
-  if (firaKo.length && performance.now() > firarTill && ui.butiksOverlay.hidden) { firarTill = performance.now() + 5200; firaKo.shift()(); sparaSnart(); }
+  if (firaKo.length && performance.now() > firarTill && ui.butiksOverlay.hidden && (forstaUpp() || S.dag > 1)) { firarTill = performance.now() + 5200; firaKo.shift()(); sparaSnart(); }
   ritaRang();
 }
 const rangEl = document.createElement('div'); rangEl.className = 'hud-rang'; rangEl.title = 'Din rang – nästa steg låser upp sig när du kommer längre';
