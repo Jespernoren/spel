@@ -213,6 +213,17 @@ body.mus-fri .hud-flik{box-shadow:0 0 0 2px var(--fil);animation:hudPuls 1.2s ea
 .hud-lista li.klar .b{background:#2f8a52;border-color:#2f8a52;color:#fff}
 .hud-lista li.nu{color:#fff}.hud-lista li.nu .b{border-color:var(--fil);box-shadow:0 0 0 2px rgba(76,201,240,.25)}
 .hud-lista li.precis .b{animation:hudStuds .6s cubic-bezier(.3,1.6,.5,1)}
+.hud-el-ik{display:grid;place-items:center;color:#ffd43b}.hud-el-ik .ui-ik{width:26px;height:26px}.hud-el.larm{animation:hudPuls 1.2s ease-in-out infinite}.hud-el.larm .hud-el-ik{color:#ff5c5c}
+.ph-strom-chip{display:none!important}
+.fp-topp{left:auto!important;right:80px;transform:none!important;max-width:none!important;flex-wrap:nowrap!important;justify-content:flex-end}
+.hud-sms-knapp{width:auto!important;display:flex!important;align-items:center;gap:8px;padding:0 14px 0 12px;font:800 14px system-ui}.hud-sms-knapp .sms-txt{white-space:nowrap}.hud-sms-knapp .ui-ik,.hud-sms-knapp svg{flex:none;width:24px;height:24px}
+.hud-sms-knapp kbd{position:static!important;transform:none!important;margin-left:2px}
+@media (max-width:1250px){.hud-sms-knapp .sms-txt{display:none}}
+.ph-mal.hud-uppdrag:not(.smal){left:50%!important;top:max(12px,env(safe-area-inset-top))!important;transform:translateX(-50%);width:min(420px,calc(100vw - 680px));min-width:300px;text-align:left}
+.ph-prest{top:150px!important}.ph-kapkort{top:24%!important}
+.ph-vrid{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);z-index:23;display:flex;align-items:center;gap:10px;padding:8px 16px 8px 10px;border:0;border-radius:12px;background:${LAGER},var(--fil);color:#0d1a22;font:900 16px var(--rubrik);text-transform:uppercase;letter-spacing:.04em;box-shadow:0 8px 20px rgba(0,0,0,.35);cursor:pointer;animation:vridPuls 1.4s ease-in-out infinite}
+@keyframes vridPuls{50%{box-shadow:0 0 0 4px rgba(76,201,240,.5),0 8px 20px rgba(0,0,0,.35)}}
+.ph-vrid[hidden]{display:none}.ph-vrid kbd{font:900 22px system-ui;padding:4px 12px;border-radius:7px;background:#0d1a22;color:#fff;border-bottom:3px solid #000}
 `;
 
 // mätarfärg: rött → gult → grönt

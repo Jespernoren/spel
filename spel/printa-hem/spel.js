@@ -3155,7 +3155,7 @@ let flyttarBod = null;
 const iBodYta = (p, x0, z0, r0) => { const v = new THREE.Vector3(p.x - x0, 0, p.z - z0).applyAxisAngle(new THREE.Vector3(0, 1, 0), -r0 * Math.PI / 2); return Math.abs(v.x) < BOD.b / 2 && Math.abs(v.z) < BOD.d / 2; };
 function startaBodFlytt() {
   flyttarBod = { inne: placerade.filter((p) => !p.pa && iBodYta(p, BOD.x, BOD.z, BOD.r)) };
-  spoke.rot = BOD.r * 2; ui.toast('Flytta gamingboden: sikta dit den ska stå, R vrider, klicka för att ställa ner. Esc avbryter.', 'guld');
+  spoke.rot = BOD.r * 2; ui.toast('Sikta dit boden ska stå · R vrider · klicka för att ställa ner', 'guld');
 }
 function uppdateraBodSpoke() {
   bodSpoke.visible = (!tomhant && valdTyp() === 'byggsats:gamingbod' && !S.bod) || !!flyttarBod;
@@ -3200,6 +3200,13 @@ interaktor.registrera(bodYta, {
   kanAktivera: () => false,
   text: () => '',
   aktivera: () => byggBodHar(),
+});
+// gamingboden kan flyttas: stå utanför med tom hand och klicka på väggen (eller G)
+const utanforBod = () => !iBodYta(spelare.pos, BOD.x, BOD.z, BOD.r);
+interaktor.registrera(bodGrupp, {
+  kanAktivera: () => S.bod && !flyttarBod && !valdTyp() && utanforBod(),
+  text: () => S.bod && !flyttarBod && utanforBod() ? (valdTyp() ? 'Gamingboden · ta tom hand (H) för att flytta den' : 'Flytta gamingboden · klicka (R vrider)') : '',
+  aktivera: () => startaBodFlytt(),
 });
 // sängplatsen inne i skjulet: en genomskinlig säng + markering på golvet visar var den ska stå
 const SANG_PLATS = { x: SKJUL.x - 0.55, z: SKJUL.z - 0.95, rot: Math.PI / 2 };
@@ -3328,6 +3335,19 @@ function byggSpoke(typ) {
   spoke.hx = Math.max(0.05, sz.x / 2); spoke.hz = Math.max(0.05, sz.z / 2);
 }
 const markRay = new THREE.Raycaster();
+// R vrider: stor tangent ovanför verktygsraden när du håller något att ställa ut – tills du vridit några gånger (klickbar på touch)
+const VRID_LARA = 3;
+const vridTips = document.createElement('button'); vridTips.className = 'ph-vrid'; vridTips.hidden = true;
+vridTips.innerHTML = '<kbd>R</kbd><span>vrid</span>';
+vridTips.onclick = (e) => { e.stopPropagation(); spoke.rot = (spoke.rot + (bodSpoke.visible ? 2 : 1)) % 8; S.vridit = (S.vridit || 0) + 1; };
+document.body.appendChild(vridTips);
+function ritaVridTips() {
+  const placerar = !!(spoke.grupp?.visible || bodSpoke.visible);
+  const visa = placerar && ((S.vridit || 0) < VRID_LARA || matchMedia('(pointer: coarse)').matches);
+  if (vridTips.hidden === !visa) return;
+  vridTips.hidden = !visa;
+  if (visa && !(S.forsta || []).includes('vrid')) { S.forsta = [...(S.forsta || []), 'vrid']; sparaSnart(); bud(() => prata('du', VARN.vrid)); }
+}
 function uppdateraSpoke() {
   const t = tomhant ? null : valdTyp();
   const hovYta = interaktor.hovrad && placerade.some((q) => q.mesh === interaktor.hovrad && YTOR[q.typ] !== undefined);
@@ -3463,7 +3483,8 @@ addEventListener('keydown', (e) => {
   }
   if (!ui.igang || !ui.butiksOverlay.hidden || pausad) return;
   if (/^Digit[1-8]$/.test(e.code)) { byt(Number(e.code.slice(5)) - 1); return; }
-  if (e.code === 'KeyR') spoke.rot = (spoke.rot + (e.shiftKey ? 7 : 1)) % 8;   // 45° per tryck, Shift+R åt andra hållet
+  if (e.code === 'KeyR') { spoke.rot = (spoke.rot + (bodSpoke.visible ? (e.shiftKey ? 6 : 2) : (e.shiftKey ? 7 : 1))) % 8;   // boden vrids 90°, annat 45°
+    if ((spoke.grupp?.visible || bodSpoke.visible) && (S.vridit || 0) < VRID_LARA) { S.vridit = (S.vridit || 0) + 1; sparaSnart(); } }   // 45° per tryck, Shift+R åt andra hållet
   if (e.code === 'KeyQ' && valdKarra() && S.karraLast.length) {
     const v = S.karraLast.pop(); ritaKarraLast();
     const fram = spelare.riktning(new THREE.Vector3()); fram.y = 0; fram.normalize();
@@ -4351,7 +4372,7 @@ function myntRegn(summa) {
   }
 }
 // ---------- Korta varningar – visas vid siktet och läses upp med din egen röst ----------
-const VARN = {
+const VARN = { vrid: 'Tryck R för att vrida.',
   full: 'Fullt i händerna.',
   tung: 'För tungt. Jag behöver en skottkärra.',
   karra: 'Kärran är full.',
@@ -5247,13 +5268,17 @@ document.body.insertAdjacentHTML('beforeend', `<div class="hud-status">
   <div class="hud-klocka" title="Dagen är din nivå – klicka för bokmärken"><span class="dag">DAG 1</span><span class="tid">08:00</span><span class="arstid"></span></div>
   <div class="hud-matare" data-hud="trivsel" title="Trivsel – hur du har det hemma"><div class="hud-ikon"></div><div class="hud-m"><div class="rad"><span>Trivsel</span><b></b></div><div class="hud-bar"><i></i></div></div></div>
   <div class="hud-matare" data-hud="respekt" title="Respekt – hur andra ser på dig"><div class="hud-ikon"></div><div class="hud-m"><div class="rad"><span>Respekt</span><b></b></div><div class="hud-bar"><i></i></div></div></div>
+  <div class="hud-matare hud-el" data-hud="el" title="El – trampa cykeln för att ladda"><div class="hud-ikon hud-el-ik">${ik('blixt')}</div><div class="hud-m"><div class="rad"><span>El</span><b></b></div><div class="hud-bar"><i></i></div></div></div>
 </div>`);
 const hudEl = document.querySelector('.hud-status');
 document.body.insertAdjacentHTML('beforeend', '<div class="hud-hand" hidden><b></b><span><i></i></span></div>');
 const hudHand = document.querySelector('.hud-hand');
 // meddelanden och dagbok: två egna ikonknappar uppe till höger
-document.body.insertAdjacentHTML('beforeend', `<div class="hud-flikar"><button class="hud-flik" data-flik-sms title="Meddelanden (M)">${ik('telefon')}<kbd>M</kbd><em hidden></em></button></div>`);
+document.body.insertAdjacentHTML('beforeend', `<div class="hud-flikar"><button class="hud-flik hud-sms-knapp" data-flik-sms title="Meddelanden (M)">${ik("brev")}<span class="sms-txt">Meddelanden</span><kbd>M</kbd><em hidden></em></button></div>`);
 const hudSms = document.querySelector('[data-flik-sms]');
+// pengar och rullar uppe till höger, bredvid meddelandeknappen
+function placeraTopp() { const tp = document.querySelector('.fp-topp'), fl = document.querySelector('.hud-flikar'); if (tp && fl) tp.style.right = (innerWidth - fl.getBoundingClientRect().left + 8) + 'px'; }
+addEventListener('resize', placeraTopp); setTimeout(placeraTopp, 0); setTimeout(placeraTopp, 1500);
 hudSms.onclick = () => oppnaInkorg();
 // Tab öppnar meddelandena (samma som M) – listan går att klicka i, Läs upp spelar igen
 
@@ -5398,7 +5423,9 @@ function ritaHud() {
   const r = S.respekt || 0, nasta = RESPEKT_NIVAER.find(([g]) => r < g), forra = [...RESPEKT_NIVAER].reverse().find(([g]) => r >= g);
   hudMatare('respekt', r < 5 ? 0 : r < 25 ? 1 : r < 60 ? 2 : r < 110 ? 3 : 4, hudHjarta, r, nasta ? (r - (forra?.[0] || 0)) / (nasta[0] - (forra?.[0] || 0)) : 1);
   // uppdraget hamnar under statuspanelen
-  const mEl = malText.parentElement, topp = Math.round(hudEl.getBoundingClientRect().bottom + 8) + 'px'; if (mEl.style.top !== topp) mEl.style.top = topp;
+  // uppdraget sitter högst upp i mitten – på smala skärmar under statuspanelen
+  const mEl = malText.parentElement, smal = innerWidth < 1100, topp = smal ? Math.round(hudEl.getBoundingClientRect().bottom + 8) + 'px' : '';
+  if (mEl.style.top !== topp) mEl.style.top = topp; mEl.classList.toggle('smal', smal);
   ritaLoop(mEl);
   // uppdragslistan: det som är klart (bockat), det du gör nu och vad som kommer
   const lista = mEl.querySelector('.hud-lista');
@@ -5727,7 +5754,7 @@ function matFlaskhals(dt) {
   }
   if (flaskEl.dataset.h !== h) { flaskEl.dataset.h = h; flaskEl.innerHTML = h; }
   flaskEl.style.display = h ? '' : 'none';
-  const mEl = malText.parentElement, r = mEl.getBoundingClientRect(), topPx = Math.round((r.height ? r.bottom : 200) + 8) + 'px';
+  const mEl = innerWidth < 1100 ? malText.parentElement : hudEl, r = mEl.getBoundingClientRect(), topPx = Math.round((r.height ? r.bottom : 200) + 8) + 'px';
   if (flaskEl.style.top !== topPx) flaskEl.style.top = topPx;
 }
 // ---------- Progress över varje skrivare: bara vad den printar och hur långt den kommit ----------
@@ -6235,7 +6262,7 @@ function uppdatera(dt) {
     interaktor.uppdatera();
     const staplar = spoke.grupp?.visible && spoke.bord && SMASAK(valdTyp());
     ui.prompt(staplar ? (spoke.ok ? `Ställ ${info(spoke.typ).namn.toLowerCase()} på ${info(spoke.bord.typ).namn.toLowerCase()}n (R vrid)` : `Det står redan något på ${info(spoke.bord.typ).namn.toLowerCase()}n`) : interaktor.text || (spoke.grupp?.visible ? (spoke.bord && !MASKINER[spoke.typ]?.kraverBord ? `Ställ ${info(spoke.typ).namn.toLowerCase()} på ${info(spoke.bord.typ).namn.toLowerCase()}n` : (VAGGSAK.has(spoke.typ) ? (spoke.vaggFel ? `${info(spoke.typ).namn} hänger man på väggen – gå in i skjulet` : `Häng ${info(spoke.typ).namn.toLowerCase()} på väggen`) : `Ställ ${info(spoke.typ).namn.toLowerCase()} här (R vrid)`)) : ''));
-    uppdateraSpoke();
+    uppdateraSpoke(); ritaVridTips();
 
     // trampa
     const trampar = anvandNere && interaktor.hovrad === cykel;
@@ -6446,6 +6473,9 @@ function uppdatera(dt) {
   stromBar.style.width = (S.strom / stromMax() * 100) + '%';
   const stromSlut = skrivare.some((x) => x.jobb && x.vantar === 'ingen ström!');
   stromChip.classList.toggle('ph-larm', stromSlut || S.strom < 5);
+  { const el = hudEl.querySelector('[data-hud="el"]'), andel = S.strom / stromMax(), w = Math.round(Math.max(0.02, Math.min(1, andel)) * 100) + '%', i = el.querySelector('i'), b = el.querySelector('b'), t = Math.round(andel * 100) + ' %';
+    if (i.style.width !== w) { i.style.width = w; i.style.backgroundColor = andel < 0.15 ? '#ff5c5c' : '#ffd43b'; }
+    if (b.textContent !== t) b.textContent = t; el.classList.toggle('larm', stromSlut || S.strom < 5); }
   battFyll.scale.y = Math.max(0.02, S.strom / stromMax());
   battFyll.material.color.set(S.strom < 15 ? 0xff5c5c : 0x7dffb0); battFyll.material.emissive.set(S.strom < 15 ? 0xff5c5c : 0x7dffb0);
   ui.mynt(S.mynt);
@@ -6456,7 +6486,7 @@ function uppdatera(dt) {
     vevEl.classList.toggle('syns', visa);
     if (visa) {
       { const v = kvarnPunkt(0, 1.45, 0.3).clone(); v.project(kamera); const ok = v.z < 1;
-        const hb = (vevEl.offsetWidth || 200) / 2 + 12; vevEl.style.left = Math.max(hb, Math.min(innerWidth - hb, (v.x * 0.5 + 0.5) * innerWidth)) + 'px'; vevEl.style.top = Math.max(120, Math.min(innerHeight - 110, (-v.y * 0.5 + 0.5) * innerHeight)) + 'px';
+        const hb = (vevEl.offsetWidth || 200) / 2 + 12; vevEl.style.left = Math.max(hb, Math.min(innerWidth - hb, (v.x * 0.5 + 0.5) * innerWidth)) + 'px'; vevEl.style.top = Math.max(innerWidth < 1100 ? 120 : 210, Math.min(innerHeight - 110, (-v.y * 0.5 + 0.5) * innerHeight)) + 'px';
         vevEl.style.transform = 'translate(-50%,-100%)'; vevEl.style.visibility = ok ? '' : 'hidden'; }
       const pagar = S.kvarn.tratt > 0 ? nastaGram() * Math.min(1, S.kvarn.prog) : 0;
       const hela = helaRullar();
@@ -7008,7 +7038,7 @@ function kapitelSlut() {
 }
 
 // för automatiska tester
-window.__printahem = { dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 
