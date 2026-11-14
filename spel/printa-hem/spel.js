@@ -4627,7 +4627,7 @@ function aliKopLista() {
     () => { if (!harRumFor(pr)) { aliRepl = 'Var ska du ha den? Fickorna är fulla.'; return false; } laggTill(pr); aliRepl = ['En present till sopgubben? Du är en konstig människa. Bra. Men konstig.', 'Jag slår in den. Gratis. Säg inte det till nån.', 'Rolf… han köper bara lättöl här. Och kattmat. Ge honom det här.'][Math.floor(Math.random() * 3)]; return true; });
   for (const [id, m] of Object.entries(MASKINER)) {
     if (S.ritningar.includes(id) || !m.syns() || arKlar(id)) continue;
-    add(m.hem ? 'Bygg ut hemmet' : 'Maskiner och verktyg', 'm:' + id, tumme('byggsats:' + id), '3D-modell: ' + m.namn, m.beskr, m.ritning,
+    add(m.hem ? 'Bygg ut hemmet' : 'Uppgraderingar – bär mer, gör snabbare', 'm:' + id, tumme('byggsats:' + id), '3D-modell: ' + m.namn, m.beskr, m.ritning,
       [['rulle', `${rullKort(m.gram * m.delar)} rullar totalt`], ['kugghjul', `${m.delar} delar: ${(DEL_NAMN[id] || []).join(', ').toLowerCase()}`]],
       () => { S.ritningar.push(id); aliRepl = 'Bra val. 3D-modellen är din. Den räcker till en.'; ui.toast(`3D-modell köpt – printa ${m.namn.toLowerCase()} på skrivaren`, 'guld'); return true; });
   }
@@ -5321,6 +5321,7 @@ function ritaNasta() {
 const FORSTA = {
   gava: { rost: 'Klart! Nu lägger jag den i Rolfs brevlåda vid grinden.', titta: () => postlada.position, nar: () => { const g = aktivGava(); return g && antalInv(g) > 0 && !S.post.tillRolf; } },
   post: { rost: 'Rolf har lagt något i brevlådan. Jag går och hämtar det.', titta: () => postlada.position, nar: () => S.post.tillMig.length > 0 },
+  uppgradera: { rost: 'Jag har pengar nu. Hos Ali kan jag köpa uppgraderingar – bära mer eller printa snabbare.', titta: () => ALI, nar: () => S.dag >= 3 && S.mynt >= 90 && Object.entries(MASKINER).some(([id, m]) => !m.hem && m.syns?.() !== false && m.ritning <= S.mynt && !S.ritningar.includes(id)) },
   karra: { rost: 'En skottkärra! Jag väljer den med hjulet och kör fram till en tunna.', nar: () => !!S.karra && antalInv('karra') > 0 },
 };
 function kollaForsta() {
