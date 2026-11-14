@@ -5328,6 +5328,7 @@ function maskinStopp() {
   return L;
 }
 // ---------- Rangstege och prestationer (se claude/printa-hem-rangstege.md) ----------
+var RANGER_KLAR = false;
 // Rangen följer storyn med fasta krav. Prestationerna är hemliga ("???") tills du klarar dem och ger lite respekt.
 const RANGER = [
   { namn: 'Utslängd', under: 'av mamma, med ryggsäck', krav: () => true },
@@ -5400,9 +5401,10 @@ function ritaRang() {
   const x = RANGER[S.rang || 0], t = `<b>${rens(x.namn)}</b><span>(${rens(x.under)})</span>`;
   if (rangEl.dataset.t !== t) { rangEl.dataset.t = t; rangEl.innerHTML = t; }
 }
-setInterval(kollaPrestationer, 1500);
+setInterval(kollaPrestationer, 1500); RANGER_KLAR = true;
 // prestationslistan i menyn: klarade med namn, oklarade hemliga
 function prestHtml() {
+  if (!RANGER_KLAR) return '';   // startskärmen kan ritas innan listorna finns
   const klara = S.prest || [];
   return `<div class="br-prest"><div class="br-resa-topp"><b>Rang: ${rens(RANGER[S.rang || 0].namn)}</b><span>Prestationer ${klara.length}/${PRESTATIONER.length}</span></div><div class="br-prest-lista">${PRESTATIONER.map((p) => klara.includes(p.id) ? `<span class="ok" title="${rens(p.rad)}">${rens(p.namn)}</span>` : '<span>???</span>').join('')}</div></div>`;
 }
