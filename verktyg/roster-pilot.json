@@ -1,0 +1,141 @@
+[
+ {
+  "id": "mamma-strumpor",
+  "figur": "mamma",
+  "visad": "Har du VARMA STRUMPOR?? Det ska bli kallt!!",
+  "nycklar": [
+   "mamma-595b4ab1"
+  ],
+  "el": "[thick Småland accent, fast, shrill, worried] [panicking] Har du VARMA STRUMPOR?! [rushed] [worried] Det ska bli kallt!!"
+ },
+ {
+  "id": "mamma-burkarna",
+  "figur": "mamma",
+  "visad": "Fick du burkarna?? Honungen är från Gunnars bigårdar och lingonen plockade jag SJÄLV. Ät upp allt!",
+  "nycklar": [
+   "mamma-34a48680"
+  ],
+  "el": "[thick Småland accent, fast, shrill, worried] [rushed] Fick du burkarna?? [excited] Honungen är från Gunnars bigårdar, och lingonen plockade ja SJÄLV! [upset] Ät upp ALLT!"
+ },
+ {
+  "id": "mamma-socker",
+  "figur": "mamma",
+  "visad": "Jag har köpt 40 kilo socker. Kassörskan frågade om jag driver ett bageri. Jag sa: Nej. Jag har ett barn som ÄTER.",
+  "nycklar": [
+   "mamma-aab2fb29"
+  ],
+  "el": "[thick Småland accent, fast, shrill, worried] [annoyed] Ja har köpt fyrtio kilo socker. [rushed] Kassörskan frågade om ja driver ett bageri. [pause] Ja sa: Nej. [upset] Ja har ett barn som ÄTER."
+ },
+ {
+  "id": "mamma-jul",
+  "figur": "mamma",
+  "visad": "Kommer du hem på jul? Pappa har redan köpt skinkan. I augusti. Den ligger i frysen och tittar på mig.",
+  "nycklar": [
+   "mamma-a9acb8a8"
+  ],
+  "el": "[thick Småland accent, fast, shrill, worried] [worried] Kommer du hem på jul? [rushed] Pappa har redan köpt skinkan. I AUGUSTI. [sighs] Den ligger i frysen och tittar på mej."
+ },
+ {
+  "id": "mamma-lingon",
+  "figur": "mamma",
+  "visad": "Pappa säger att lingonsylten är slut redan?! Vad bra att du äter ordentligt!! Jag kokar mer ikväll ❤️",
+  "nycklar": [
+   "mamma-f26f5410"
+  ],
+  "el": "[thick Småland accent, fast, shrill, worried] [surprised] Pappa säjer att lingonsylten är slut redan?! [excited] Vad bra att du äter ordentligt!! [softly] Ja kokar mer ikväll."
+ },
+ {
+  "id": "pappa-stalle",
+  "figur": "pappa",
+  "visad": "Tjenare! Vilket ställe du har!",
+  "nycklar": [
+   "pappa-aede0e6f"
+  ],
+  "el": "[thick old Stockholm accent, fast, cheerful] [excited] Tjenare! [laughs] Vilket STÄLLE du har!"
+ },
+ {
+  "id": "pappa-grejer",
+  "figur": "pappa",
+  "visad": "Mamma skicka med lite grejer.",
+  "nycklar": [
+   "pappa-189d5211"
+  ],
+  "el": "[thick old Stockholm accent, fast, cheerful] [clears throat] Mamma skickade med lite grejer. [laughs]"
+ },
+ {
+  "id": "pappa-maldominte",
+  "figur": "pappa",
+  "visad": "Och va du än gör: mal dom inte. Då tror hon att du ätit upp allt. Då gör hon mer.",
+  "nycklar": [
+   "pappa-22588f3f"
+  ],
+  "el": "[thick old Stockholm accent, fast, cheerful] [cautiously] Och vad du än gör: mal dom inte. [interrupting] Då tror hon att du ätit upp allt. [laughs] Då gör hon MER."
+ },
+ {
+  "id": "pappa-formel1",
+  "figur": "pappa",
+  "visad": "Tjena! Såg Formel 1 i natt. Vilket race!",
+  "nycklar": [
+   "pappa-e4ba85b0"
+  ],
+  "el": "[thick old Stockholm accent, fast, cheerful] [excited] Tjena! Såg Formel 1 i natt. [big laugh] Vilket race!"
+ },
+ {
+  "id": "pappa-sylt",
+  "figur": "pappa",
+  "visad": "Mamma har kokat sylt i tre dagar. Hon tror att du äter upp allt.",
+  "nycklar": [
+   "pappa-5154d70f"
+  ],
+  "el": "[thick old Stockholm accent, fast, cheerful] [sighs] Mamma har kokat sylt i tre dagar. [laughs] Hon tror att du äter upp allt."
+ },
+ {
+  "id": "rolf-tackhallaren",
+  "figur": "rolf",
+  "visad": "TACK för hållarn!! Ölen e iskall. Lite stålar i lådan.\n\nEn sak. Mina fingrar e stela – artros. Doktorn säjer att ja ska skriva mindre för hand. Lägg en lapp me ditt telefonnummer i lådan så sms:ar ja istället. Sms:a int efter tio. /Rolf",
+  "nycklar": [
+   "rolf-dce79992"
+  ],
+  "el": "[very old, tired, thick Värmland accent, slow] [happily] TACK för hållaren! [chuckles] Ölen är iskall. Lite stålar i lådan. [sighs] En sak… [softly] Mina fingrar är stela. Artros. [pause] Doktorn säjer att ja ska skriva mindre för hand. Lägg en lapp med ditt telefonnummer i lådan, så sms:ar ja istället. [tired] Sms:a inte efter tio."
+ },
+ {
+  "id": "rolf-oppnare",
+  "figur": "rolf",
+  "visad": "Nämen.. PERFEKT öppnare!!! Lite stålar i lådan. Hoppas kärran gör nytta. /Rolf",
+  "nycklar": [
+   "rolf-fce4442d",
+   "rolf-fce4442d"
+  ],
+  "el": "[very old, tired, thick Värmland accent, slow] [surprised] Nämen… PERFEKT öppnare! [chuckles] Lite stålar i lådan. [softly] Hoppas kärran gör nytta."
+ },
+ {
+  "id": "rolf-grillspade",
+  "figur": "rolf",
+  "visad": "Hörru. Ska grilla på lördag. Ensam som vanligt, Kajsa äter int korv. Ingen grillspade. Min gamla smälte. Lång historia. Ritningen ligger i lådan. Fixar du? 250 spänn o ja tpipar dubbelt nästa gång. /Rolf 🍖\n*tippar",
+  "nycklar": [
+   "rolf-f1c81a4f",
+   "rolf-529ac9e5"
+  ],
+  "el": "[very old, tired, thick Värmland accent, slow] [sighs] Hörru… Ska grilla på lördag. [sorrowful] Ensam, som vanligt. Kajsa äter inte korv. [pause] Ingen grillspade. Min gamla smälte. [chuckles] Lång historia. Ritningen ligger i lådan. Fixar du? [cheeky] Tvåhundrafemtio spänn, och ja tippar dubbelt nästa gång."
+ },
+ {
+  "id": "rolf-tomten",
+  "figur": "rolf",
+  "visad": "Tjo.. Tomten sitter på flaket nu. Vi vinkar åt alla. ALLA. Pengar + dubbel last. MVH ROLF",
+  "nycklar": [
+   "rolf-a6512177",
+   "rolf-542ec044"
+  ],
+  "el": "[very old, tired, thick Värmland accent, slow] [chuckles] Tjo… Tomten sitter på flaket nu. [happily] Vi vinkar åt alla. ALLA. [laughs] Pengar, och dubbel last."
+ },
+ {
+  "id": "rolf-affischen",
+  "figur": "rolf",
+  "visad": "Korv! Ja grillade, Kajsa åt tre.. Hä – min gamla affisch från Rolfs Rockers 1987. Ja hade hår då. Ta den. Ja kan int titta på den. /R",
+  "nycklar": [
+   "rolf-fae01748",
+   "rolf-fae01748"
+  ],
+  "el": "[very old, tired, thick Värmland accent, slow] [happily] Korv! Ja grillade, och Kajsa åt tre. [pause] Här… min gamla affisch från Rolfs Rockers, nittonhundraåttiosju. [chuckles] Ja hade hår då. [sighs] Ta den. [softly] Ja kan inte titta på den."
+ }
+]

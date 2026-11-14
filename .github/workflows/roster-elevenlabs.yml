@@ -1,0 +1,39 @@
+# Soptippsvägen 1 – röster från ElevenLabs (punkt Y).
+# Körs för hand (Actions → "Röster ElevenLabs" → Run workflow). Nyckeln ligger som secret ELEVENLABS_API_KEY
+# och skrivs aldrig ut. Bara ljudfilerna och roster-el/index.json checkas in.
+name: Röster ElevenLabs
+on:
+  workflow_dispatch:
+    inputs:
+      fil:
+        description: 'Listan med repliker (JSON)'
+        default: 'verktyg/roster-pilot.json'
+        required: true
+      lage:
+        description: 'nya = bara klipp som saknas, alla = gör om allt i listan'
+        default: 'nya'
+        required: true
+permissions:
+  contents: write
+concurrency: roster-elevenlabs
+jobs:
+  generera:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generera klipp
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: node verktyg/roster_eleven.mjs "${{ inputs.fil }}" "${{ inputs.lage }}"
+      - name: Checka in ljudfilerna
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898+github-actions[bot]@users.noreply.github.com"
+          git add spel/printa-hem/roster-el
+          if git diff --cached --quiet; then echo "Inget nytt"; exit 0; fi
+          git commit -m "Röster: ElevenLabs-klipp från ${{ inputs.fil }}"
+          git pull --rebase
+          git push
