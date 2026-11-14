@@ -8,7 +8,7 @@ const S = (inre) => `<svg viewBox="0 0 320 200" class="ph-intro-svg" xmlns="http
 <g clip-path="url(#iklipp)"><rect width="320" height="200" fill="${FARG.natt2}"/>${inre}<rect width="320" height="200" fill="url(#ilager)"/><ellipse cx="312" cy="196" rx="46" ry="26" fill="url(#irost)"/><rect width="320" height="6" fill="${FARG.falu}"/></g>
 <rect x="1.5" y="1.5" width="317" height="197" rx="10" fill="none" stroke="${FARG.kant}" stroke-width="3"/>${SKRUV(12, 16)}${SKRUV(308, 16)}${SKRUV(12, 188)}${SKRUV(308, 188)}</svg>`;
 // en porträttfigur inbäddad i scenen
-const fig = (vem, x, y, st) => `<g transform="translate(${x} ${y}) scale(${st / 40})">${PORTRATT[vem].replace(/^<svg[^>]*>|<\/svg>$/g, '')}</g>`;
+const fig = (vem, x, y, st) => `<g transform="translate(${x} ${y}) scale(${st / 100})">${PORTRATT[vem].replace(/^<svg[^>]*>|<\/svg>$/g, '')}</g>`;
 const golv = (f = FARG.planka) => `<rect x="0" y="150" width="320" height="50" fill="${f}"/><rect y="150" width="320" height="3" fill="rgba(0,0,0,.3)"/>${[60, 150, 230, 300].map((x, i) => `<path d="M${x} ${153 + (i % 2) * 24}v${24 - (i % 2) * 0}" stroke="rgba(0,0,0,.25)" stroke-width="2"/>`).join('')}<path d="M0 176h320" stroke="rgba(0,0,0,.22)" stroke-width="2"/>`;
 const pizza = (x, y, r = 0) => `<g transform="translate(${x} ${y}) rotate(${r})"><rect width="46" height="10" rx="2" fill="#c89b5c"/><rect y="-3" width="46" height="4" rx="1.5" fill="#d9ad6c"/><text x="23" y="8" font-size="6" font-weight="800" fill="#8a3a20" text-anchor="middle">PIZZA</text></g>`;
 const strumpa = (x, y, r = 0) => `<g transform="translate(${x} ${y}) rotate(${r})"><path d="M0 0h9v16c0 3 2 4 6 4h4v7H6c-4 0-6-3-6-6z" fill="#e8eef5"/><rect y="2" width="9" height="3" fill="#e05a5a"/></g>`;
