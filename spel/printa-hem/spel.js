@@ -11,7 +11,7 @@ import { INTRO_BILDER, kalender as kalenderSvg } from './intro-bilder.js';
 import { byggMiljo } from './miljo.js';
 import { IKON, ik, portratt, rens, knapp, ruta as uiRuta, grid, sektion, detalj, resurs, panel, rad, fakta, UI_CSS } from './ui-kit.js';
 import * as B from './balans.js';   // alla siffror som styr progressionen
-const { PRIS_SKALA, MATTNAD, MATTNAD_GOLV, ALI_VILL_BONUS, GROSSIST, SALJ_TILLBAKA, FILAMENT_KOP, SLAPP_PER_DAG, KAP1_BELONING, TRIVSEL_MAL, RESPEKT_NIVAER, JOBB_VARV, JOBB_ANDEL, FYND_ANDEL, SMS_MELLAN, STROM_BAS, BANK_PLUS, TRAMP_PER_S, SOL_PER_S, SOLPARK_PER_S, MOTOR_STROM, BARA_SKRAP, HOTBAR, KISTA_PLATSER, STACK, RYGG_BAS, RYGG_STOR, UT_MAX, LASTARM_TID, LASTARM_MAX, TRIVSEL_PER_PROCENT, TRIVSEL_MAX_BONUS } = B;
+const { PRIS_SKALA, MATTNAD, MATTNAD_GOLV, ALI_VILL_BONUS, GROSSIST, SALJ_TILLBAKA, FILAMENT_KOP, SLAPP_PER_DAG, KAP1_BELONING, TRIVSEL_MAL, RESPEKT_NIVAER, JOBB_VARV, JOBB_ANDEL, FYND_ANDEL, SMS_MELLAN, STROM_BAS, BANK_PLUS, TRAMP_PER_S, SOL_PER_S, SOLPARK_PER_S, MOTOR_STROM, BARA_SKRAP, HOTBAR, KISTA_PLATSER, STACK, RYGG_BAS, RYGG_STOR, UT_MAX, LASTARM_TID, LASTARM_MAX, BAND_BAS, TRIVSEL_PER_PROCENT, TRIVSEL_MAX_BONUS } = B;
 import { logo, BRAND_CSS, malaSkylt, NAMN, FARG } from './brand.js';
 import { ansikte as hudAnsikte, hjarta as hudHjarta, HUD_CSS, matarFarg } from './hud.js';
 { const st = document.createElement('style'); st.textContent = UI_CSS; document.head.appendChild(st); }
@@ -557,6 +557,7 @@ const STEG = [
   sovSteg(13, F13),
   { del: F14, bild: 'byggsats:utlada', text: 'Bygg leveranslådan', klar: () => !!S.auto?.lada },
   { del: F14, bild: () => S.kvarn.turbo ? 'byggsats:jetmotor' : 'byggsats:turbomotor', text: 'Montera jetmotorn på kvarnen', klar: () => !!S.kvarn.jet },
+  { del: F14, bild: 'byggsats:rullband', text: 'Trimma sopbilen hos Ali (Mutor till Rolf)', klar: () => trimNiva('sopbil') >= 1 },
   sovSteg(14, F14),
   { del: F15, bild: () => nastaGamer(), text: () => `Inred boden · ${Math.min(3, gamerSaker())}/3 gamersaker`, klar: () => gamerSaker() >= 3 },
   { del: F15, bild: 'jacuzzi', text: 'Printa och ställ ut en jacuzzi', klar: () => harPlacerat('jacuzzi') },
@@ -2467,7 +2468,7 @@ function visaSpolar(sk) {
   });
 }
 function laggTillSkrivare(id, gen, mesh, sparat) {
-  const sk = { id, gen, mesh, jobb: null, prog: 0, klar: null, visning: null, vantar: '', fil: 0 };
+  const sk = { id, gen, mesh, jobb: null, prog: 0, klar: null, visning: null, vantar: '', fil: 0, upprepaPa: !!S.auto?.lada && gen !== PETG_GEN };   // byggd efter leveranslådan: autoprint direkt
   if (sparat) Object.assign(sk, { jobb: sparat.jobb, prog: sparat.prog || 0, klar: sparat.klar, fil: sparat.fil || 0, spolNiva: sparat.spolNiva || 0, upprepa: S.upprepaVald ? sparat.upprepa || null : null, upprepaPa: S.upprepaVald ? !!sparat.upprepaPa : false, klarL: sparat.klarL || null, ko: sparat.ko || null, mod: sparat.mod || null });
   // spolen på skrivarens sida: tjock när den är full, krymper medan den printar
   const spole = new THREE.Group(), B = 0.5 * (mesh.userData.sk || 1);
@@ -2713,7 +2714,7 @@ function uppdateraSkrivare(sk, dt) {
 // ---------- Automation: rullband från tippen → container → kvarn → robotarm laddar skrivare → autoprint → leveranslåda → Ali ----------
 S.auto = { band: false, lastarm: false, arm: false, lada: false, innehall: {}, ko: [], ...S.auto };
 // Kedjan och dess flaskhalsar: lastarm (lyftkraft, tempo) → band (fart, platser) → container → kvarn → rulladdare → skrivare → låda
-const BAND_BAS = 5, KO_MAX = 16, BAND_LUCKA = 0.7;
+const KO_MAX = 16, BAND_LUCKA = 0.7;
 const bandFart = () => 0.7 * 1.25 ** trimNiva('band');
 const bandPlatser = () => BAND_BAS + trimNiva('band') * 3;
 const armMax = (l = trimNiva('arm')) => Math.round(LASTARM_MAX * 1.7 ** l);
@@ -2721,6 +2722,10 @@ const armTid = () => LASTARM_TID * 0.85 ** trimNiva('arm');
 const AUTO = { armTid: 2.5 };
 const auto = { byggd: false, band: null, paket: [], bandT: 0, arm: null, armT: 0, armAnim: 0, lastarm: null, lastT: 0, lastAnim: 0, lada: null, skylt: null, flode: { arm: [], band: [] }, vantarPaTung: false };
 function monteraAuto(id) {
+  if (id === 'utlada') {   // leveranslådan slår på upprepa för alla skrivare med autoprint (går att stänga av per skrivare)
+    for (const sk of skrivare) if (sk.gen !== PETG_GEN) { sk.upprepaPa = true; if (sk.jobb?.typ && upprepbar(sk.jobb.typ)) sk.upprepa = sk.jobb.typ; }
+    sparaSkrivare(); setTimeout(() => ui.toast('Leveranslådan är på – skrivarna printar vidare av sig själva.', 'guld'), 2600);
+  }
   S.auto[{ rullband: 'band', lastarm: 'lastarm', robotarm: 'arm', utlada: 'lada' }[id]] = true; byggAuto(); ljud.stor(); sparaSnart();
   ui.toast({ rullband: 'Rullbandet står klart! Bär skräp till inmatningen vid tippen – bandet tar det till containern.', lastarm: 'Lastarmen sitter vid tippen och lägger skräp på bandet åt dig. Den orkar bara lätta saker – trimma den hos Ali.', robotarm: 'Robotarmen sitter vid extrudern – färdiga rullar laddas in i skrivarna automatiskt.', utlada: 'Leveranslådan står vid skrivaren. Välj en sak på skrivaren och slå på Autoprint – Ali hämtar lådan varje morgon.' }[id], 'guld');
 }
@@ -5382,8 +5387,9 @@ function aliDuFar(x) {
   else if (x.key === 'filament') far.push('En hel rulle direkt');
   return { far, bricka };
 }
-function aliKopInfo(vald) {
-  return `<div class="ali-info"><b>${rens(vald.namn)}</b>${vald.far?.length ? `<div class="ali-far"><small>Du får</small>${vald.far.map((t) => `<span>${rens(t)}</span>`).join('')}</div>` : ''}<p>${rens(vald.text || '')}</p>${fakta([['kop', vald.las ? 'Låst' : S.mynt >= vald.pris ? `Kostar ${vald.pris.toLocaleString('sv-SE')} kr` : `Saknar ${(vald.pris - S.mynt).toLocaleString('sv-SE')} kr`, vald.las || S.mynt < vald.pris ? 'minus' : 'plus'], ...(vald.faktaLista || [])])}</div>`;
+const arTouchSkarm = () => matchMedia('(pointer:coarse)').matches || !!spelare.arTouch;
+function aliKopInfo(vald, medKnapp = false) {
+  return `<div class="ali-info"><b>${rens(vald.namn)}</b>${vald.far?.length ? `<div class="ali-far"><small>Du får</small>${vald.far.map((t) => `<span>${rens(t)}</span>`).join('')}</div>` : ''}<p>${rens(vald.text || '')}</p>${fakta([['kop', vald.las ? 'Låst' : S.mynt >= vald.pris ? `Kostar ${vald.pris.toLocaleString('sv-SE')} kr` : `Saknar ${(vald.pris - S.mynt).toLocaleString('sv-SE')} kr`, vald.las || S.mynt < vald.pris ? 'minus' : 'plus'], ...(vald.faktaLista || [])])}${medKnapp && !vald.las ? knapp({ text: `Köp · ${vald.pris.toLocaleString('sv-SE')} kr`, typ: S.mynt >= vald.pris ? 'plus' : 'neutral', attr: `data-kop${S.mynt >= vald.pris ? '' : ' disabled'}`, ikon: 'kop' }) : ''}</div>`;
 }
 function aliKopLista() {
   const L = [];
@@ -5549,7 +5555,7 @@ function oppnaMarknad() {
   kropp += '</div>' + saljHtml;
   // ett klick på en sak = köp eller sälj direkt. Info om den senast valda visas under Ali (inga knappar längst ner).
   let info = '';
-  if (vald && iKop) info = aliKopInfo(vald);
+  if (vald && iKop) info = aliKopInfo(vald, arTouchSkarm());
   else if (vald) {
     const bygg = vald.typ.startsWith('byggsats:') || !!VAROR[vald.typ]?.lyx, mattad = !bygg && vald.pris < vald.bas;
     info = `<div class="ali-info"><b>${rens(namnFor(vald.typ))} × ${vald.n}</b><p>${bygg ? 'Ali köper tillbaka den till begagnat pris.' : mattad ? `Ali har redan köpt ${saltIdag(vald.typ)} st idag – imorgon är det fullpris igen.` : 'Ali betalar lite mindre för varje du säljer samma dag.'}</p>${fakta([['mynt', `${vald.pris} kr styck`, 'plus']])}</div>`;
@@ -5568,7 +5574,8 @@ function oppnaMarknad() {
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { aliFlik = k.dataset.flik; aliVald = null; aliRepl = aliFlik === 'salj' ? 'Visa vad du har. Snabbt.' : 'Titta gärna. Rör inte.'; ljud.plock(); oppnaMarknad(); }; });
     el.querySelectorAll('[data-val]').forEach((k) => {
       // sälj-rutor: ett klick säljer allt av den saken direkt (inget bekräfta)
-      k.onclick = () => { aliVald = k.dataset.val; if (aliVald.startsWith('s:')) { salj1(Infinity); return; } if (aliVald.startsWith('k:')) { const x = kopL.find((y) => 'k:' + y.key === aliVald); if (x?.las) { aliRepl = x.las; ljud.fel(); oppnaMarknad(); return; } if (x && S.mynt >= x.pris) { kopDirekt(x); return; } if (x) { aliRepl = `Den kostar ${x.pris} kr. Du har ${S.mynt}. Printa och sälj mer.`; ljud.fel(); oppnaMarknad(); return; } } aliRepl = bubbla; ljud.plock(); oppnaMarknad(); };
+      k.onclick = () => { const forra = aliVald; aliVald = k.dataset.val; if (aliVald.startsWith('s:')) { salj1(Infinity); return; } if (aliVald.startsWith('k:')) { const x = kopL.find((y) => 'k:' + y.key === aliVald); if (x?.las) { aliRepl = x.las; ljud.fel(); oppnaMarknad(); return; } if (x && arTouchSkarm() && forra !== aliVald) { ljud.plock(); oppnaMarknad(); return; }   // touch: första trycket visar kortet (Du får + Köp-knapp)
+        if (x && S.mynt >= x.pris) { kopDirekt(x); return; } if (x) { aliRepl = `Den kostar ${x.pris} kr. Du har ${S.mynt}. Printa och sälj mer.`; ljud.fel(); oppnaMarknad(); return; } } aliRepl = bubbla; ljud.plock(); oppnaMarknad(); };
       k.ondblclick = () => el.querySelector('[data-kop],[data-salj1]')?.click();
       // håll musen över en köp-ruta: "Du får" syns i rutan till vänster innan du köper
       if (k.dataset.val.startsWith('k:')) k.onpointerenter = () => { const x = kopL.find((y) => 'k:' + y.key === k.dataset.val); if (!x) return; const box = el.querySelector('.ali-info'); const ny = aliKopInfo(x); if (box) box.outerHTML = ny; else el.querySelector('.ali-sida')?.insertAdjacentHTML('beforeend', ny); };

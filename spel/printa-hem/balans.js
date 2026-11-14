@@ -57,6 +57,7 @@ export const UT_MAX = 12;   // så många färdiga saker som får stå på skriv
 
 // ---------- Automation ----------
 export const LASTARM_TID = 2.5;   // sekunder per plock för lastarmen vid tippen (×0,85 per armtrim)
+export const BAND_BAS = 9;        // platser på rullbandet från tippen utan trim (+3 per bandtrim)
 export const LASTARM_MAX = 700;   // gram lastarmen orkar lyfta utan trim – tar dunkar men inte tunnor (×1,7 per armtrim)
 
 // ---------- Marken (Bengt-Åke) ----------
