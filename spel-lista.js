@@ -8,6 +8,17 @@
 // =============================================================
 window.SPEL = [
   {
+    mapp: "trollskattornet",
+    namn: "Trollskattornet",
+    ikon: "🏰",
+    beskrivning: "Du är en trollkarl! Trolla fram plattor och klättra upp i det höga tornet. Lura ner den elaka trollkarlen från trollcirkeln, skjut trollformler och ta skatten. Köp magiska trollstavar i butiken. Idé: Beppe.",
+    typ: "3D · Förstaperson · Parkour",
+    spelare: ["Beppe", "Alla"],
+    farg: ["#3a1a78", "#ffc83d"],
+    status: "klar",
+    ny: true,
+  },
+  {
     mapp: "charlies-kalas",
     namn: "Charlies Kalas",
     ikon: "🎂",

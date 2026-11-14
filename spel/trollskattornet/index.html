@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Trollskattornet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --panel:#fff3d9; --text:#2a1650; --muted:#6c5a8f; --accent:#7a3cff;
+  --gold:#ffc83d; --goldEdge:#c98a00; --hud:rgba(22,10,48,.62); --hudText:#fff6e0;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){ --panel:#24124a; --text:#fff3d6; --muted:#c9b8ef; --accent:#b893ff; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --panel:#24124a; --text:#fff3d6; --muted:#c9b8ef; --accent:#b893ff; color-scheme:dark; }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;height:100%;overflow:hidden;background:#120a24;font-family:'Fredoka','Trebuchet MS','Comic Sans MS',sans-serif;user-select:none;-webkit-user-select:none;}
+#spel{position:fixed;inset:0;}
+#spel canvas{display:block;width:100%;height:100%;touch-action:none;}
+
+.hud{position:fixed;z-index:5;color:var(--hudText);background:var(--hud);border-radius:16px;padding:6px 14px;font-weight:700;font-size:1.25rem;pointer-events:none;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+#hudVanster{top:calc(env(safe-area-inset-top,0px) + 10px);left:12px;display:flex;gap:14px;}
+#hudMitt{top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);text-align:center;min-width:210px;}
+#hojdBar{height:8px;border-radius:5px;background:rgba(255,255,255,.18);margin-top:4px;overflow:hidden;}
+#hojdFyll{height:100%;width:0;background:linear-gradient(90deg,#8fe3ff,#c79bff,#ffd34d);}
+#bossRuta{display:none;margin-top:6px;font-size:1rem;}
+#bossBar{height:12px;border-radius:6px;background:rgba(255,255,255,.18);overflow:hidden;margin-top:3px;}
+#bossFyll{height:100%;width:100%;background:linear-gradient(90deg,#ff4d8d,#a24dff);transition:width .25s;}
+#hudHoger{top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;display:flex;gap:8px;background:none;padding:0;pointer-events:auto;}
+.ikonknapp{font:inherit;font-size:1.4rem;width:48px;height:48px;border-radius:14px;border:none;background:var(--hud);color:#fff;cursor:pointer;}
+#hudNere{bottom:calc(env(safe-area-inset-bottom,0px) + 14px);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;}
+#mana span{font-size:1.6rem;transition:opacity .2s,filter .2s;}
+#mana span.tom{opacity:.25;filter:grayscale(1);}
+#bransleRuta{display:none;width:90px;height:10px;border-radius:5px;background:rgba(255,255,255,.2);overflow:hidden;}
+#bransle{height:100%;width:100%;background:#8fe3ff;}
+#sikte{position:fixed;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;z-index:4;pointer-events:none;color:#fff;font-size:20px;line-height:22px;text-align:center;text-shadow:0 0 6px #b893ff,0 0 2px #000;opacity:.85;}
+#toast{position:fixed;left:50%;top:24%;transform:translateX(-50%);z-index:6;background:rgba(40,15,80,.85);color:#fff6e0;padding:12px 22px;border-radius:18px;font-size:1.35rem;font-weight:700;text-align:center;max-width:min(92vw,620px);opacity:0;transition:opacity .25s;pointer-events:none;border:2px solid rgba(255,211,77,.6);}
+#toast.syns{opacity:1;}
+#blixt{position:fixed;inset:0;z-index:3;pointer-events:none;background:radial-gradient(circle,rgba(255,80,140,0) 40%,rgba(255,60,120,.5));opacity:0;transition:opacity .3s;}
+
+.skarm{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(12,4,32,.55);padding:calc(env(safe-area-inset-top,0px) + 12px) 12px calc(env(safe-area-inset-bottom,0px) + 12px);}
+.skarm.syns{display:flex;}
+.kort{background:var(--panel);color:var(--text);border-radius:30px;padding:26px 26px 22px;max-width:600px;width:100%;max-height:100%;overflow:auto;text-align:center;border:5px solid var(--gold);box-shadow:0 10px 0 rgba(0,0,0,.3),0 0 70px rgba(167,123,255,.55);}
+.titel{font-size:clamp(2.3rem,7vw,3.6rem);line-height:1;margin:4px 0 6px;font-weight:700;letter-spacing:.5px;
+  background:linear-gradient(180deg,#ffe58a 0%,#ffb84d 45%,#b46cff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 3px 0 #3a1a78);}
+.av{color:var(--muted);font-size:1.15rem;margin-bottom:10px;}
+.kort p{font-size:1.15rem;line-height:1.45;margin:8px auto;max-width:34em;}
+.knappar{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:14px;}
+.knapp{font:inherit;font-size:1.35rem;font-weight:700;padding:14px 24px;border-radius:20px;border:none;cursor:pointer;
+  background:linear-gradient(#ffe383,#ffc83d);color:#3a2000;box-shadow:0 6px 0 var(--goldEdge);}
+.knapp:active{transform:translateY(4px);box-shadow:0 2px 0 var(--goldEdge);}
+.knapp.lila{background:linear-gradient(#cfaeff,#9461ff);color:#fff;box-shadow:0 6px 0 #5b2fb0;}
+.knapp:focus-visible,.ikonknapp:focus-visible{outline:4px solid #8fe3ff;outline-offset:3px;}
+.styrning{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;text-align:left;font-size:1.02rem;margin:12px auto 0;max-width:420px;color:var(--muted);}
+.styrning b{color:var(--text);}
+.guldrad{font-size:1.4rem;font-weight:700;margin:6px 0;}
+.butiklista{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:12px;}
+.vara{border-radius:20px;padding:12px;background:rgba(122,60,255,.10);border:3px solid rgba(122,60,255,.35);display:flex;flex-direction:column;align-items:center;gap:4px;}
+.vara.agd{border-color:#4cc38a;background:rgba(76,195,138,.12);}
+.vara .ik{font-size:2.6rem;line-height:1.1;}
+.vara .nm{font-weight:700;font-size:1.15rem;}
+.vara .tx{font-size:.95rem;color:var(--muted);flex:1;}
+.vara .knapp{font-size:1.05rem;padding:9px 14px;margin-top:6px;}
+.vara .knapp[disabled]{opacity:.45;cursor:default;}
+
+#touch{display:none;}
+body.touch #touch{display:block;}
+#joy{position:fixed;left:calc(env(safe-area-inset-left,0px) + 64px);bottom:calc(env(safe-area-inset-bottom,0px) + 26px);width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.12);border:3px solid rgba(255,255,255,.3);z-index:7;}
+#knopp{position:absolute;left:50%;top:50%;width:62px;height:62px;margin:-31px 0 0 -31px;border-radius:50%;background:rgba(255,220,120,.8);}
+.tknapp{position:fixed;z-index:7;border:none;border-radius:50%;color:#fff;font:inherit;font-weight:700;font-size:1rem;line-height:1.1;touch-action:none;}
+#tHopp{right:calc(env(safe-area-inset-right,0px) + 24px);bottom:calc(env(safe-area-inset-bottom,0px) + 24px);width:104px;height:104px;background:rgba(80,170,255,.75);font-size:1.15rem;}
+#tPlatta{right:calc(env(safe-area-inset-right,0px) + 140px);bottom:calc(env(safe-area-inset-bottom,0px) + 30px);width:86px;height:86px;background:rgba(170,100,255,.8);}
+#tSkjut{right:calc(env(safe-area-inset-right,0px) + 36px);bottom:calc(env(safe-area-inset-bottom,0px) + 142px);width:86px;height:86px;background:rgba(255,170,40,.85);}
+body.touch #hudNere{bottom:calc(env(safe-area-inset-bottom,0px) + 180px);}
+@media (prefers-reduced-motion:reduce){ #toast{transition:none;} }
+</style>
+</head>
+<body>
+<div id="spel"></div>
+
+<div id="hudVanster" class="hud"><span>💎 <span id="guld">0</span></span><span>⏱ <span id="tid">0:00</span></span></div>
+<div id="hudMitt" class="hud"><div>🏰 <span id="hojd">Bottenvåningen</span></div><div id="hojdBar"><div id="hojdFyll"></div></div>
+  <div id="bossRuta">🧙 Elaka trollkarlen<div id="bossBar"><div id="bossFyll"></div></div></div></div>
+<div id="hudHoger" class="hud"><button class="ikonknapp" id="ljudKnapp" aria-label="Ljud av eller på">🔊</button><button class="ikonknapp" id="pausKnapp" aria-label="Paus">⏸</button></div>
+<div id="hudNere" class="hud"><span id="mana"></span><div id="bransleRuta" title="Flygkraft"><div id="bransle"></div></div></div>
+<div id="sikte">✦</div>
+<div id="toast"></div>
+<div id="blixt"></div>
+
+<div id="touch">
+  <div id="joy"><div id="knopp"></div></div>
+  <button class="tknapp" id="tHopp">⬆️<br>Hoppa</button>
+  <button class="tknapp" id="tPlatta">✨<br>Platta</button>
+  <button class="tknapp" id="tSkjut">⚡<br>Trolla</button>
+</div>
+
+<div class="skarm syns" id="startSkarm"><div class="kort">
+  <div class="titel">Trollskattornet</div>
+  <div class="av">Ett spel av Beppe 🪄</div>
+  <p>Du är en trollkarl! Klättra upp genom det höga tornet. Är det för långt att hoppa trollar du fram en egen platta. Högst upp väntar skatten och den elaka trollkarlen.</p>
+  <div class="guldrad">💎 <span class="guldVisa">0</span> kristaller</div>
+  <div class="knappar"><button class="knapp" id="spelaKnapp">▶ Spela</button><button class="knapp lila" data-butik>🛒 Magiska butiken</button></div>
+  <div class="styrning" id="styrDator">
+    <b>Mus</b><span>titta runt (klicka i spelet först)</span>
+    <b>W A S D</b><span>gå (pilarna fungerar också)</span>
+    <b>Mellanslag</b><span>hoppa</span>
+    <b>E eller högerklick</b><span>trolla fram en platta ✨</span>
+    <b>F eller klick</b><span>skjut en trollformel ⚡</span>
+    <b>Shift</b><span>spring</span>
+  </div>
+  <div class="styrning" id="styrTouch" style="display:none">
+    <b>Vänster cirkel</b><span>gå</span>
+    <b>Dra med fingret</b><span>titta runt</span>
+    <b>⬆️ ✨ ⚡</b><span>hoppa, platta, trollformel</span>
+  </div>
+</div></div>
+
+<div class="skarm" id="pausSkarm"><div class="kort">
+  <div class="titel" style="font-size:2.4rem">Paus</div>
+  <div class="knappar"><button class="knapp" id="fortsattKnapp">▶ Fortsätt</button><button class="knapp lila" id="tillStartKnapp">🏠 Till start</button></div>
+</div></div>
+
+<div class="skarm" id="segerSkarm"><div class="kort">
+  <div class="titel">Du vann!</div>
+  <p id="segerText"></p>
+  <div class="guldrad">💎 <span class="guldVisa">0</span> kristaller</div>
+  <div class="knappar"><button class="knapp lila" data-butik>🛒 Magiska butiken</button><button class="knapp" id="igenKnapp">🔁 Spela igen</button></div>
+</div></div>
+
+<div class="skarm" id="butikSkarm"><div class="kort">
+  <div class="titel" style="font-size:2.5rem">Magiska butiken</div>
+  <p>Köp magiska trollstavar för dina kristaller. Alla stavar du köper följer med dig upp i tornet.</p>
+  <div class="guldrad">💎 <span class="guldVisa">0</span> kristaller</div>
+  <div class="butiklista" id="butiklista"></div>
+  <div class="knappar"><button class="knapp" id="butikSpela">▶ Spela</button><button class="knapp lila" id="butikTillbaka">🏠 Till start</button></div>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ===== Justerbara värden ===== */
+const C = {
+  GRAV: 22, HOPP: 8.2, FART: 5.2, SPRING: 7.6, MUS: 0.0023, DRAG: 0.006,
+  VAGG_R: 13.5, PLATT_TID: 9, PLATT_TID_JATTE: 16, MANA_MAX: 3, MANA_LADD: 1.8,
+  SKOTT_FART: 24, SKOTT_FART_BLIXT: 36, BOSS_HP: 9, BOSS_SKOTT_TRON: 3.0, BOSS_SKOTT_JAGA: 2.4,
+  BOSS_FART: 4.6, BOSS_JAGA_MAX: 15, SKATT: 100, FANGST: 3.5, FLYG_BRANSLE: 2.6
+};
+const STAVAR = [
+  {id:'fjader', namn:'Fjäderstaven', ikon:'🪶', pris:30, text:'Hoppa en gång till mitt uppe i luften!'},
+  {id:'jatte',  namn:'Jättestaven',  ikon:'🍄', pris:25, text:'Dina plattor blir jättestora och stannar längre.'},
+  {id:'blixt',  namn:'Blixtstaven',  ikon:'⚡', pris:45, text:'Trollformlerna blir snabbare och dubbelt så starka.'},
+  {id:'studs',  namn:'Studsstaven',  ikon:'🌈', pris:60, text:'Plattorna blir regnbågsstudsmattor. Boing!'},
+  {id:'flyg',   namn:'Flygstaven',   ikon:'🦅', pris:100, text:'Håll inne hoppa i luften så flyger du!'}
+];
+const NIVAER = [0, 15, 30, 45, 54, 60];
+const NIVANAMN = ['Bottenvåningen','Våning 1','Våning 2','Våning 3','Bosstrappan','Toppen'];
+const TOPP = 60;
+
+/* ===== Sparning ===== */
+const SPAR = 'trollskattornet:spar', REKORD = 'rekord:trollskattornet', TIDNYCKEL = 'tid:trollskattornet';
+let spar = {guld:0, agda:[], av:[], vinster:0};
+try { const s = JSON.parse(localStorage.getItem(SPAR)); if (s) spar = Object.assign(spar, s); } catch(e){}
+let rekord = 0; try { rekord = +localStorage.getItem(TIDNYCKEL) || 0; } catch(e){}
+function spara(){ try { localStorage.setItem(SPAR, JSON.stringify(spar)); } catch(e){} }
+const ager = id => spar.agda.includes(id);
+const har = id => ager(id) && !spar.av.includes(id);
+
+/* ===== Hjälp ===== */
+const TAU = Math.PI*2;
+const polar = (a,r) => [r*Math.cos(a), -r*Math.sin(a)];
+const vinkelAv = (x,z) => Math.atan2(-z, x);
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const $ = id => document.getElementById(id);
+const arTouch = ('ontouchstart' in window) || (window.matchMedia && matchMedia('(pointer:coarse)').matches);
+if (arTouch) { document.body.classList.add('touch'); $('styrDator').style.display='none'; $('styrTouch').style.display='grid'; }
+
+/* ===== Ljud & röst ===== */
+let ljudPa = true, ac = null, svRost = null;
+function ljudStart(){
+  if (!ac) { try { ac = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} }
+  if (ac && ac.state === 'suspended') ac.resume();
+}
+function ton(f, dur, typ, vol, glid, delay){
+  if (!ac || !ljudPa) return;
+  const t = ac.currentTime + (delay||0);
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = typ||'sine'; o.frequency.setValueAtTime(f, t);
+  if (glid) o.frequency.exponentialRampToValueAtTime(Math.max(20, glid), t+dur);
+  g.gain.setValueAtTime(vol||0.12, t); g.gain.exponentialRampToValueAtTime(0.001, t+dur);
+  o.connect(g).connect(ac.destination); o.start(t); o.stop(t+dur+0.03);
+}
+const ljud = {
+  hopp: () => ton(330,0.14,'square',0.05,620),
+  landa: () => ton(140,0.08,'sine',0.08,70),
+  platta: () => [523,659,784,1047].forEach((f,i)=>ton(f,0.2,'triangle',0.09,0,i*0.05)),
+  skott: () => ton(1100,0.22,'sawtooth',0.05,240),
+  kristall: () => { ton(1319,0.12,'sine',0.1); ton(1760,0.2,'sine',0.09,0,0.07); },
+  traff: () => { ton(220,0.3,'square',0.1,70); ton(660,0.15,'triangle',0.08,0,0.05); },
+  skold: () => ton(1500,0.18,'triangle',0.07,900),
+  aj: () => ton(260,0.3,'sawtooth',0.08,110),
+  skratt: () => { for (let i=0;i<5;i++) ton(150-i*7,0.11,'sawtooth',0.08,115,i*0.13); },
+  seger: () => [523,659,784,1047,784,1047,1319].forEach((f,i)=>ton(f,0.28,'triangle',0.11,0,i*0.13)),
+  checkpoint: () => [659,880,1175].forEach((f,i)=>ton(f,0.22,'sine',0.1,0,i*0.08)),
+  studs: () => ton(220,0.35,'sine',0.13,760),
+  fangst: () => [1200,900,700,900,1200].forEach((f,i)=>ton(f,0.12,'sine',0.07,0,i*0.06)),
+  kop: () => [784,988,1319].forEach((f,i)=>ton(f,0.16,'square',0.06,0,i*0.07))
+};
+function hittaRost(){ try { const v = speechSynthesis.getVoices(); svRost = v.find(x=>x.lang && x.lang.toLowerCase().startsWith('sv')) || null; } catch(e){} }
+if ('speechSynthesis' in window) { hittaRost(); speechSynthesis.onvoiceschanged = hittaRost; }
+function saga(text){
+  if (!ljudPa || !('speechSynthesis' in window)) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang='sv-SE'; if (svRost) u.voice=svRost; u.rate=1; u.pitch=1.1; speechSynthesis.speak(u); } catch(e){}
+}
+let toastT = 0;
+function toast(text, sek){ const t=$('toast'); t.textContent=text; t.classList.add('syns'); toastT = sek||2.6; }
+
+/* ===== Three.js-scen ===== */
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+$('spel').appendChild(renderer.domElement);
+const canvas = renderer.domElement;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1b0f36);
+scene.fog = new THREE.Fog(0x1b0f36, 16, 58);
+const camera = new THREE.PerspectiveCamera(72, 1, 0.05, 220);
+camera.rotation.order = 'YXZ';
+scene.add(camera);
+scene.add(new THREE.HemisphereLight(0xc4b3ff, 0x2a1840, 0.9));
+const sol = new THREE.DirectionalLight(0xffe2b0, 0.55); sol.position.set(6,90,4); scene.add(sol);
+
+function stenTextur(bas, ljus){
+  const c = document.createElement('canvas'); c.width=c.height=256; const g=c.getContext('2d');
+  g.fillStyle=bas; g.fillRect(0,0,256,256);
+  for (let r=0;r<8;r++){ const off=(r%2)*32; for (let x=-64;x<256;x+=64){
+    g.fillStyle=`hsl(${255+Math.random()*25},${14+Math.random()*10}%,${ljus+Math.random()*10}%)`;
+    g.fillRect(x+off+2, r*32+2, 60, 28);
+  }}
+  const t = new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; return t;
+}
+function glowTextur(farg){
+  const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d');
+  const gr=g.createRadialGradient(32,32,0,32,32,32);
+  gr.addColorStop(0,'rgba(255,255,255,1)'); gr.addColorStop(0.28,farg); gr.addColorStop(1,'rgba(0,0,0,0)');
+  g.fillStyle=gr; g.fillRect(0,0,64,64); return new THREE.CanvasTexture(c);
+}
+const glowCache = {};
+function glow(farg){ if(!glowCache[farg]) glowCache[farg]=new THREE.SpriteMaterial({map:glowTextur(farg),blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}); return glowCache[farg]; }
+function textSprite(text, farg){
+  const c=document.createElement('canvas'); c.width=512; c.height=128; const g=c.getContext('2d');
+  g.font='bold 58px Fredoka, Trebuchet MS, sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+  g.lineWidth=10; g.strokeStyle='rgba(40,10,80,.9)'; g.strokeText(text,256,64); g.fillStyle=farg; g.fillText(text,256,64);
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false}));
+  s.scale.set(4,1,1); return s;
+}
+
+/* Tornets vägg */
+const vaggTex = stenTextur('#2a2140', 22); vaggTex.repeat.set(12,14);
+const vagg = new THREE.Mesh(new THREE.CylinderGeometry(14.6,14.6,84,48,1,true), new THREE.MeshLambertMaterial({map:vaggTex, side:THREE.BackSide}));
+vagg.position.y = 38; scene.add(vagg);
+const golvTex = stenTextur('#3a3058', 30); golvTex.repeat.set(0.14,0.14);
+const golvMat = new THREE.MeshLambertMaterial({map:golvTex, color:0xcfc2ff});
+
+/* Fönster med stjärnhimmel */
+function fonsterTextur(){
+  const c=document.createElement('canvas'); c.width=64; c.height=128; const g=c.getContext('2d');
+  g.fillStyle='#0b1440'; g.beginPath(); g.moveTo(4,128); g.lineTo(4,32); g.arc(32,32,28,Math.PI,0); g.lineTo(60,128); g.fill();
+  for (let i=0;i<14;i++){ g.fillStyle='rgba(255,255,220,'+(0.5+Math.random()*0.5)+')'; g.fillRect(8+Math.random()*48, 10+Math.random()*110, 2, 2); }
+  g.strokeStyle='#5a4a20'; g.lineWidth=4; g.beginPath(); g.moveTo(32,6); g.lineTo(32,128); g.moveTo(4,70); g.lineTo(60,70); g.stroke();
+  return new THREE.CanvasTexture(c);
+}
+const fonsterMat = new THREE.MeshBasicMaterial({map:fonsterTextur(), transparent:true});
+for (let y=4; y<76; y+=7.5) for (let i=0;i<5;i++){
+  const a = i*TAU/5 + y*0.37; const [x,z]=polar(a,14.5);
+  const f = new THREE.Mesh(new THREE.PlaneGeometry(1.6,3.2), fonsterMat); f.position.set(x,y,z); f.lookAt(0,y,0); scene.add(f);
+}
+/* Facklor */
+const facklor = [];
+for (let y=2.5; y<74; y+=6) for (let i=0;i<3;i++){
+  const a = i*TAU/3 + y*0.61 + 0.5; const [x,z]=polar(a,14.2);
+  const s = new THREE.Sprite(glow('rgba(255,150,40,0.9)')); s.position.set(x,y,z); s.scale.setScalar(1.6); scene.add(s);
+  const pinne = new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.1,0.7,6), new THREE.MeshLambertMaterial({color:0x5b3a1a}));
+  pinne.position.set(x,y-0.5,z); scene.add(pinne); facklor.push(s);
+}
+const fackelljus = [];
+for (let i=0;i<4;i++){ const l=new THREE.PointLight(0xffa040,1.1,22,1.6); scene.add(l); fackelljus.push(l); }
+/* Stjärnor ovanför tornet */
+{ const g=new THREE.BufferGeometry(), p=[];
+  for (let i=0;i<500;i++){ const a=Math.random()*TAU, h=Math.random()*0.9+0.1, r=120;
+    p.push(Math.cos(a)*r*Math.sqrt(1-h*h), 80+h*r, Math.sin(a)*r*Math.sqrt(1-h*h)); }
+  g.setAttribute('position', new THREE.Float32BufferAttribute(p,3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({color:0xfff6d0,size:0.8,fog:false}))); }
+/* Svävande magiskt damm i mitten */
+const dammGeo = new THREE.BufferGeometry(); const dammPos = [];
+for (let i=0;i<160;i++){ const a=Math.random()*TAU, r=Math.random()*8; dammPos.push(Math.cos(a)*r, Math.random()*70, Math.sin(a)*r); }
+dammGeo.setAttribute('position', new THREE.Float32BufferAttribute(dammPos,3));
+const damm = new THREE.Points(dammGeo, new THREE.PointsMaterial({color:0xc9a6ff,size:0.18,transparent:true,opacity:0.8}));
+scene.add(damm);
+
+/* ===== Banan: ytor man kan stå på ===== */
+const ytor = [], kristaller = [], luckor = [], spawn = [];
+const SEKTIONSFARG = [0x9d8fd0, 0x7fa3e6, 0x79c9a6, 0xe3c46e, 0xe08592];
+const RS = 11.4, STEG = 0.36;
+const platGeo = new THREE.BoxGeometry(2.8, 0.45, 2.5);
+
+function laggRing(y, rIn, rOut, a0, a1, niva){
+  const s = new THREE.Shape();
+  s.moveTo(rOut*Math.cos(a0), rOut*Math.sin(a0));
+  s.absarc(0,0,rOut,a0,a1,false);
+  if (rIn>0) s.absarc(0,0,rIn,a1,a0,true); else s.lineTo(0,0);
+  const geo = new THREE.ExtrudeGeometry(s, {depth:0.6, bevelEnabled:false, curveSegments:72});
+  geo.rotateX(-Math.PI/2);
+  const m = new THREE.Mesh(geo, golvMat); m.position.y = y-0.6; scene.add(m);
+  ytor.push({typ:'ring', y, rIn, rOut, a0, a1, niva});
+}
+function laggPlatta(a, y, mat){
+  const [x,z] = polar(a, RS);
+  const m = new THREE.Mesh(platGeo, mat); m.position.set(x, y-0.225, z); m.rotation.y = a+Math.PI/2; scene.add(m);
+  ytor.push({typ:'box', x, z, y, hx:1.4, hz:1.25, rot:a+Math.PI/2});
+}
+const kristallGeo = new THREE.OctahedronGeometry(0.3);
+const kristallMat = new THREE.MeshLambertMaterial({color:0x8fe3ff, emissive:0x2a7fb0});
+function laggKristall(x, y, z){
+  const m = new THREE.Mesh(kristallGeo, kristallMat); m.position.set(x,y,z);
+  const g = new THREE.Sprite(glow('rgba(120,220,255,0.7)')); g.scale.setScalar(1.2); m.add(g);
+  scene.add(m); kristaller.push({m, x, y, z, tagen:false});
+}
+
+let vinkel = 0.4;
+const golv = new THREE.Mesh(new THREE.CylinderGeometry(14.6,14.6,1,48), golvMat); golv.position.y=-0.5; scene.add(golv);
+ytor.push({typ:'ring', y:0, rIn:0, rOut:14.7, a0:0, a1:TAU, niva:0});
+spawn[0] = {a:vinkel-0.5, y:0};
+for (let i=0;i<NIVAER.length-1;i++){
+  const y0=NIVAER[i], y1=NIVAER[i+1];
+  const n = Math.round((y1-y0)/0.95), rise=(y1-y0)/n;
+  const m = n>=12 ? Math.floor(n/2) : -99;
+  const mat = new THREE.MeshLambertMaterial({color:SEKTIONSFARG[i], map:golvTex});
+  for (let k=1;k<n;k++){
+    const a = vinkel+k*STEG, y = y0+k*rise;
+    if (k===m){
+      const [gx,gz]=polar(a,RS);
+      laggKristall(gx, y+0.6, gz);
+      const skylt = textSprite('✨ Trolla en platta! ✨', '#ffe38a'); skylt.position.set(gx, y+2.6, gz); scene.add(skylt);
+      luckor.push({x:gx, y, z:gz, visad:false, skylt});
+      continue;
+    }
+    laggPlatta(a, y, mat);
+    if (k%2===1){ const [x,z]=polar(a,RS); laggKristall(x, y+0.9, z); }
+  }
+  const an = vinkel+n*STEG, a0 = an-0.2, gap = 4*STEG+0.12;
+  const sista = (i+1 === NIVAER.length-1);
+  laggRing(y1, sista?0:(y1===54?4.5:8.5), 14.7, a0, a0+TAU-gap, sista?5:i+1);
+  spawn[i+1] = {a:a0+0.55, y:y1};
+  vinkel = an;
+}
+/* Trollcirkeln (tronen) */
+const tron = new THREE.Mesh(new THREE.CylinderGeometry(3.2,3.6,1.2,32), new THREE.MeshLambertMaterial({color:0x4b2a7a, map:golvTex}));
+tron.position.y = TOPP+0.6; scene.add(tron);
+ytor.push({typ:'ring', y:TOPP+1.2, rIn:0, rOut:3.3, a0:0, a1:TAU, niva:null});
+const cirkel = new THREE.Mesh(new THREE.TorusGeometry(2.9,0.12,8,48), new THREE.MeshBasicMaterial({color:0xd06bff}));
+cirkel.rotation.x = Math.PI/2; cirkel.position.y = TOPP+1.25; scene.add(cirkel);
+const cirkelGlow = new THREE.Sprite(glow('rgba(200,90,255,0.5)')); cirkelGlow.position.y=TOPP+1.6; cirkelGlow.scale.set(9,3,1); scene.add(cirkelGlow);
+
+/* ===== Spelaren ===== */
+const pl = {x:0,y:0,z:0, vy:0, mark:false, varMark:false, yaw:0, pitch:0, coyote:0, buffer:0, extraHopp:0, bransle:0, kx:0, kz:0, underlag:null};
+let cp = 0, mana = C.MANA_MAX, skottCd = 0, hoppHall = false, hoppTryck = false;
+let lage = 'meny', speltid = 0, t = 0, sammlat = 0;
+
+/* Trollstav i handen */
+const hand = new THREE.Group(); camera.add(hand); hand.position.set(0.32,-0.3,-0.55); hand.rotation.x = -1.05;
+const skaftMat = new THREE.MeshLambertMaterial({color:0x6b4423});
+const skaft = new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.028,0.6,8), skaftMat); hand.add(skaft);
+const spets = new THREE.Sprite(glow('rgba(190,130,255,0.9)')); spets.position.y = 0.33; spets.scale.setScalar(0.22); hand.add(spets);
+function uppdateraStav(){
+  let farg='rgba(190,130,255,0.9)', skaftF=0x6b4423;
+  if (har('blixt')) { farg='rgba(255,220,80,0.95)'; skaftF=0x2b3a7a; }
+  if (har('studs')) { farg='rgba(255,120,210,0.95)'; skaftF=0xe8e0ff; }
+  if (har('flyg'))  { farg='rgba(120,230,255,0.95)'; skaftF=0xd9a520; }
+  spets.material = glow(farg); skaftMat.color.setHex(skaftF);
+}
+
+/* ===== Elaka trollkarlen ===== */
+const boss = {g:new THREE.Group(), hp:C.BOSS_HP, lage:'tron', x:0, y:TOPP+1.2, z:0, skottT:2, jagaT:0, runda:0, tid:0, flash:0, introSagd:false, tipsT:0, tipsAntal:0, skadad:false, skoldTipsT:0};
+{
+  const robe = new THREE.Mesh(new THREE.ConeGeometry(0.95,2.3,12), new THREE.MeshLambertMaterial({color:0x3a1466})); robe.position.y=1.15;
+  const huvud = new THREE.Mesh(new THREE.SphereGeometry(0.4,14,10), new THREE.MeshLambertMaterial({color:0xb7d39a})); huvud.position.y=2.45;
+  const skagg = new THREE.Mesh(new THREE.ConeGeometry(0.34,0.9,10), new THREE.MeshLambertMaterial({color:0x2b2b2b})); skagg.rotation.x=Math.PI; skagg.position.set(0,2.05,0.2);
+  const brätte = new THREE.Mesh(new THREE.CylinderGeometry(0.75,0.75,0.08,16), new THREE.MeshLambertMaterial({color:0x1d0838})); brätte.position.y=2.75;
+  const hatt = new THREE.Mesh(new THREE.ConeGeometry(0.5,1.5,14), new THREE.MeshLambertMaterial({color:0x1d0838})); hatt.position.y=3.5; hatt.rotation.z=0.15;
+  const stjarna = new THREE.Mesh(new THREE.OctahedronGeometry(0.12), new THREE.MeshBasicMaterial({color:0x7dff6a})); stjarna.position.set(0.05,3.3,0.42);
+  const ogaMat = new THREE.MeshBasicMaterial({color:0xff3355});
+  const oga1 = new THREE.Mesh(new THREE.SphereGeometry(0.07,8,6), ogaMat); oga1.position.set(-0.14,2.5,0.36);
+  const oga2 = oga1.clone(); oga2.position.x = 0.14;
+  const stav = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.06,2.6,8), new THREE.MeshLambertMaterial({color:0x2b1a0a})); stav.position.set(0.95,1.6,0.2);
+  const stavGlow = new THREE.Sprite(glow('rgba(110,255,90,0.9)')); stavGlow.position.set(0.95,2.95,0.2); stavGlow.scale.setScalar(0.8);
+  boss.g.add(robe, huvud, skagg, brätte, hatt, stjarna, oga1, oga2, stav, stavGlow);
+  boss.skold = new THREE.Mesh(new THREE.SphereGeometry(2.2,24,16), new THREE.MeshBasicMaterial({color:0xb35cff, transparent:true, opacity:0.28, blending:THREE.AdditiveBlending, depthWrite:false}));
+  boss.skold.position.y = 1.7; boss.g.add(boss.skold);
+  boss.robeMat = robe.material;
+  scene.add(boss.g);
+}
+let kista = null;
+const flygandeStavar = [];
+
+/* ===== Partiklar, skott ===== */
+const partiklar = [];
+function gnistor(x,y,z,farg,antal,fart,liv,storlek){
+  antal=antal||14; fart=fart||4; liv=liv||0.7; storlek=storlek||0.35;
+  for (let i=0;i<antal;i++){
+    if (partiklar.length>380){ const p=partiklar.shift(); scene.remove(p.s); }
+    const s=new THREE.Sprite(glow(farg)); s.position.set(x,y,z); s.scale.setScalar(storlek); scene.add(s);
+    const v=new THREE.Vector3(Math.random()-0.5, Math.random()-0.25, Math.random()-0.5).normalize().multiplyScalar(fart*(0.35+Math.random()*0.65));
+    partiklar.push({s, v, liv:liv*(0.6+Math.random()*0.4), max:liv, st:storlek});
+  }
+}
+const skott = [], bossSkott = [], magiPlattor = [];
+
+/* ===== Trolla platta ===== */
+const tmpV = new THREE.Vector3();
+function trollaPlatta(){
+  if (lage!=='spel') return;
+  if (mana < 1){ toast('Trollkraften laddar… ✨', 1.4); return; }
+  mana -= 1;
+  camera.getWorldDirection(tmpV);
+  const h = Math.hypot(tmpV.x, tmpV.z) || 1;
+  const fx = tmpV.x/h, fz = tmpV.z/h, dist = 3.0;
+  let x = pl.x + fx*dist, z = pl.z + fz*dist;
+  const r = Math.hypot(x,z); if (r>12.9){ x*=12.9/r; z*=12.9/r; }
+  const y = clamp(pl.y + 0.9 + tmpV.y*3, pl.y-3, pl.y+1.25);
+  const stor = har('jatte') ? 1.6 : 1, studs = har('studs');
+  const mat = new THREE.MeshLambertMaterial({color: studs?0xff8ad8:0xb894ff, emissive: studs?0x9a2a7a:0x4a1f9a, transparent:true, opacity:0.92});
+  const m = new THREE.Mesh(new THREE.BoxGeometry(2.4*stor, 0.35, 2.4*stor), mat);
+  m.position.set(x, y-0.175, z); m.rotation.y = pl.yaw; m.scale.setScalar(0.05); scene.add(m);
+  const yta = {typ:'box', x, z, y, hx:1.2*stor, hz:1.2*stor, rot:pl.yaw, studs, magi:true};
+  ytor.push(yta);
+  magiPlattor.push({m, yta, liv: har('jatte')?C.PLATT_TID_JATTE:C.PLATT_TID, ny:0});
+  gnistor(x,y,z, studs?'rgba(255,130,220,0.9)':'rgba(190,140,255,0.9)', 22, 5, 0.8, 0.45);
+  ljud.platta();
+}
+function taBortPlatta(i){
+  const p = magiPlattor[i];
+  scene.remove(p.m); p.m.geometry.dispose(); p.m.material.dispose();
+  const j = ytor.indexOf(p.yta); if (j>=0) ytor.splice(j,1);
+  gnistor(p.yta.x, p.yta.y, p.yta.z, 'rgba(190,140,255,0.7)', 10, 3, 0.6, 0.35);
+  magiPlattor.splice(i,1);
+}
+
+/* ===== Skjuta trollformel ===== */
+function skjut(){
+  if (lage!=='spel' || skottCd>0) return;
+  skottCd = har('blixt') ? 0.2 : 0.3;
+  const start = new THREE.Vector3(); spets.getWorldPosition(start);
+  camera.getWorldDirection(tmpV);
+  const fart = har('blixt') ? C.SKOTT_FART_BLIXT : C.SKOTT_FART;
+  const s = new THREE.Sprite(glow(har('blixt')?'rgba(255,230,90,0.95)':'rgba(200,150,255,0.95)')); s.scale.setScalar(0.7);
+  s.position.copy(start); scene.add(s);
+  skott.push({s, v:tmpV.clone().multiplyScalar(fart), liv:1.6});
+  hand.position.z = -0.45; ljud.skott();
+}
+
+/* ===== Kollision ===== */
+function pa(s, x, z){
+  if (s.typ==='ring'){
+    const r = Math.hypot(x,z);
+    if (r < s.rIn-0.25 || r > s.rOut+0.3) return false;
+    if (s.a1-s.a0 >= TAU-1e-6) return true;
+    let a = vinkelAv(x,z)-s.a0; a = ((a%TAU)+TAU)%TAU;
+    return a <= s.a1-s.a0+0.03;
+  }
+  const dx=x-s.x, dz=z-s.z, c=Math.cos(s.rot), sn=Math.sin(s.rot);
+  const lx = dx*c - dz*sn, lz = dx*sn + dz*c;
+  return Math.abs(lx) <= s.hx+0.3 && Math.abs(lz) <= s.hz+0.3;
+}
+function golvUnder(x, z, yFran, yTill){
+  let bast = null;
+  for (const s of ytor){
+    if (s.y > yFran+0.001 || s.y < yTill-0.001) continue;
+    if (!pa(s,x,z)) continue;
+    if (!bast || s.y > bast.y) bast = s;
+  }
+  return bast;
+}
+
+/* ===== Start / återställ ===== */
+function placeraPa(niva){
+  const sp = spawn[niva]; const [x,z] = polar(sp.a, RS);
+  pl.x=x; pl.z=z; pl.y=sp.y; pl.vy=0; pl.kx=pl.kz=0; pl.mark=true; pl.yaw = sp.a; pl.pitch = 0.05;
+}
+function nyRunda(){
+  cp = 0; placeraPa(0); mana = C.MANA_MAX; speltid = 0; sammlat = 0; pl.bransle = C.FLYG_BRANSLE;
+  for (const k of kristaller){ k.tagen=false; k.m.visible=true; }
+  for (const l of luckor) l.visad=false;
+  while (magiPlattor.length) taBortPlatta(magiPlattor.length-1);
+  for (const b of bossSkott) scene.remove(b.s); bossSkott.length=0;
+  for (const s of skott) scene.remove(s.s); skott.length=0;
+  boss.hp=C.BOSS_HP; boss.lage='tron'; boss.x=0; boss.z=0; boss.y=TOPP+1.2; boss.g.visible=true; boss.g.scale.setScalar(1); boss.g.rotation.set(0,0,0);
+  boss.introSagd=false; boss.tipsAntal=0; boss.tipsT=0; boss.skadad=false; boss.runda=0;
+  if (kista){ scene.remove(kista.g); kista=null; }
+  for (const f of flygandeStavar) scene.remove(f.m); flygandeStavar.length=0;
+  $('bossFyll').style.width='100%';
+  uppdateraStav(); uppdateraHud();
+}
+function starta(){
+  ljudStart(); stangSkarmar(); nyRunda(); lage='spel';
+  $('bransleRuta').style.display = har('flyg') ? 'block' : 'none';
+  lasMus();
+  saga('Välkommen till Trollskattornet! Hoppa uppåt på plattorna och klättra till toppen.');
+  toast('Klättra upp till toppen! ⬆️', 3);
+}
+
+/* ===== Uppdatera spelet ===== */
+function uppdatera(dt){
+  speltid += dt;
+  skottCd = Math.max(0, skottCd-dt);
+  mana = Math.min(C.MANA_MAX, mana + dt/C.MANA_LADD);
+
+  // titta med pilar
+  const sv = (keys.ArrowLeft?1:0) - (keys.ArrowRight?1:0);
+  pl.yaw += sv*2.3*dt;
+  // gå
+  let fram = (keys.KeyW||keys.ArrowUp?1:0) - (keys.KeyS||keys.ArrowDown?1:0) + joy.y;
+  let sida = (keys.KeyD?1:0) - (keys.KeyA?1:0) + joy.x;
+  const len = Math.hypot(fram, sida); if (len>1){ fram/=len; sida/=len; }
+  const fart = (keys.ShiftLeft||keys.ShiftRight||joy.spring) ? C.SPRING : C.FART;
+  const fx = -Math.sin(pl.yaw), fz = -Math.cos(pl.yaw), rx = Math.cos(pl.yaw), rz = -Math.sin(pl.yaw);
+  let vx = (fx*fram + rx*sida)*fart + pl.kx, vz = (fz*fram + rz*sida)*fart + pl.kz;
+  pl.kx *= Math.max(0, 1-4*dt); pl.kz *= Math.max(0, 1-4*dt);
+  pl.x += vx*dt; pl.z += vz*dt;
+  const r = Math.hypot(pl.x, pl.z); if (r > C.VAGG_R){ pl.x *= C.VAGG_R/r; pl.z *= C.VAGG_R/r; }
+
+  // hopp
+  if (hoppTryck){ pl.buffer = 0.14; hoppTryck = false; }
+  pl.buffer -= dt; pl.coyote -= dt;
+  if (pl.buffer > 0){
+    if (pl.mark || pl.coyote > 0){ pl.vy = C.HOPP; pl.mark=false; pl.coyote=0; pl.buffer=0; pl.extraHopp = har('fjader')?1:0; ljud.hopp(); }
+    else if (pl.extraHopp > 0){ pl.vy = C.HOPP*0.95; pl.extraHopp--; pl.buffer=0; ljud.hopp(); gnistor(pl.x,pl.y,pl.z,'rgba(255,255,255,0.8)',12,3,0.5,0.3); }
+  }
+  // flyga
+  if (!pl.mark && har('flyg') && hoppHall && pl.vy < 1 && pl.bransle > 0){
+    pl.vy = Math.min(4.5, pl.vy + 46*dt); pl.bransle -= dt;
+    if (Math.random()<0.5) gnistor(pl.x, pl.y-0.2, pl.z, 'rgba(120,230,255,0.8)', 1, 2, 0.5, 0.3);
+  }
+  // gravitation och landning
+  pl.vy = Math.max(-30, pl.vy - C.GRAV*dt);
+  const forraY = pl.y, forraVy = pl.vy;
+  pl.y += pl.vy*dt;
+  pl.varMark = pl.mark; pl.mark = false;
+  if (pl.vy <= 0){
+    const s = golvUnder(pl.x, pl.z, forraY, pl.y);
+    if (s){
+      pl.y = s.y;
+      if (s.studs){ pl.vy = 13.5; ljud.studs(); gnistor(pl.x,pl.y,pl.z,'rgba(255,140,220,0.9)',14,4,0.6,0.4); }
+      else {
+        if (!pl.varMark && forraVy < -7) ljud.landa();
+        pl.vy = 0; pl.mark = true; pl.underlag = s; pl.extraHopp = har('fjader')?1:0;
+        pl.bransle = Math.min(C.FLYG_BRANSLE, pl.bransle + dt*2);
+        if (s.niva != null){
+          const nv = Math.min(s.niva, 4);
+          if (nv > cp){ cp = nv; ljud.checkpoint(); toast('🏁 '+NIVANAMN[s.niva]+'!', 2.2); if (nv===4) saga('Bosstrappan! Den elaka trollkarlen bor alldeles ovanför.'); }
+        }
+      }
+    }
+  }
+  if (pl.varMark && !pl.mark && pl.vy <= 0) pl.coyote = 0.12;
+
+  // trollmoln fångar den som ramlar långt
+  if (pl.y < NIVAER[cp] - C.FANGST){
+    placeraPa(cp); ljud.fangst();
+    gnistor(pl.x, pl.y+0.5, pl.z, 'rgba(255,255,255,0.9)', 24, 4, 0.9, 0.6);
+    toast('☁️ Ett trollmoln fångade dig!', 2);
+  }
+
+  // kristaller
+  for (const k of kristaller){
+    if (k.tagen) continue;
+    const dx=k.x-pl.x, dy=k.y-(pl.y+0.9), dz=k.z-pl.z;
+    if (dx*dx+dy*dy+dz*dz < 1.8){
+      k.tagen=true; k.m.visible=false; spar.guld++; sammlat++; spara(); ljud.kristall();
+      gnistor(k.x,k.y,k.z,'rgba(120,220,255,0.9)',12,3,0.5,0.3);
+    }
+  }
+  // tips vid luckor
+  for (const l of luckor){
+    if (l.visad) continue;
+    const dx=l.x-pl.x, dz=l.z-pl.z;
+    if (Math.abs(l.y-pl.y) < 4 && dx*dx+dz*dz < 60){
+      l.visad = true;
+      const t1 = arTouch ? 'Tryck på ✨ så trollar du fram en platta!' : 'Tryck E så trollar du fram en platta!';
+      toast('För långt att hoppa! '+t1, 4); saga('Det är för långt att hoppa. Trolla fram en platta och hoppa upp på den!');
+    }
+  }
+
+  // magiska plattor
+  for (let i=magiPlattor.length-1;i>=0;i--){
+    const p = magiPlattor[i]; p.liv -= dt; p.ny = Math.min(1, p.ny + dt*6);
+    p.m.scale.setScalar(0.05+0.95*p.ny);
+    p.m.material.opacity = p.liv < 1.6 ? (Math.sin(p.liv*18)>0 ? 0.9 : 0.3) : 0.92;
+    if (p.liv <= 0) taBortPlatta(i);
+  }
+
+  // spelarens skott
+  for (let i=skott.length-1;i>=0;i--){
+    const s = skott[i]; s.liv -= dt; s.s.position.addScaledVector(s.v, dt);
+    const p = s.s.position;
+    if (Math.random()<0.6) gnistor(p.x,p.y,p.z, har('blixt')?'rgba(255,230,90,0.7)':'rgba(200,150,255,0.7)', 1, 0.5, 0.3, 0.25);
+    let bort = s.liv<=0 || Math.hypot(p.x,p.z)>14.4;
+    if (!bort && boss.g.visible && boss.lage!=='besegrad'){
+      const dx=p.x-boss.x, dy=p.y-(boss.y+1.7), dz=p.z-boss.z;
+      const rad = (boss.lage==='tron'||boss.lage==='hem') ? 2.2 : 1.4;
+      if (dx*dx+dy*dy+dz*dz < rad*rad){ bort = true; traffaBoss(p); }
+    }
+    if (bort){ scene.remove(s.s); skott.splice(i,1); }
+  }
+
+  uppdateraBoss(dt);
+
+  // bossens skott
+  for (let i=bossSkott.length-1;i>=0;i--){
+    const b = bossSkott[i]; b.liv -= dt; b.s.position.addScaledVector(b.v, dt);
+    b.s.material.rotation += dt*4;
+    const p = b.s.position;
+    const dx=p.x-pl.x, dy=p.y-(pl.y+1.0), dz=p.z-pl.z;
+    if (dx*dx+dy*dy+dz*dz < 1.0){
+      const h = Math.hypot(b.v.x,b.v.z)||1;
+      pl.kx = b.v.x/h*8; pl.kz = b.v.z/h*8; pl.vy = Math.max(pl.vy, 5); pl.mark=false;
+      ljud.aj(); toast('Aj! 💥', 1); $('blixt').style.opacity=1; setTimeout(()=>$('blixt').style.opacity=0, 200);
+      gnistor(p.x,p.y,p.z,'rgba(190,80,255,0.9)',16,4,0.6,0.4);
+      scene.remove(b.s); bossSkott.splice(i,1); continue;
+    }
+    if (b.liv<=0 || Math.hypot(p.x,p.z)>14.4){ scene.remove(b.s); bossSkott.splice(i,1); }
+  }
+
+  if (kista) uppdateraKista(dt);
+  uppdateraHud();
+}
+
+/* ===== Bossens hjärna ===== */
+function bossSkjut(){
+  const s = new THREE.Sprite(glow('rgba(180,60,255,0.95)')); s.scale.setScalar(1.1);
+  s.position.set(boss.x+0.9, boss.y+2.9, boss.z+0.2); scene.add(s);
+  const mal = new THREE.Vector3(pl.x, pl.y+1.0, pl.z).sub(s.position).normalize().multiplyScalar(7.5);
+  bossSkott.push({s, v:mal, liv:6});
+  ljud.skratt();
+}
+function traffaBoss(p){
+  if (boss.lage==='jagar'){
+    const skada = har('blixt') ? 2 : 1;
+    boss.hp = Math.max(0, boss.hp - skada); boss.runda += skada; boss.flash = 0.25; boss.skadad = true;
+    ljud.traff(); gnistor(p.x,p.y,p.z,'rgba(255,230,120,0.95)',20,5,0.6,0.45);
+    $('bossFyll').style.width = (100*boss.hp/C.BOSS_HP)+'%';
+    if (boss.hp<=0){ bossBesegrad(); return; }
+    if (boss.runda >= 3){ boss.lage='hem'; saga('Aj aj aj! Jag flyger hem till min trollcirkel!'); toast('Han flyger hem! Lura ner honom igen! 😄', 3); }
+    else toast(['Träff! ⚡','Pang! ⭐','Bra skjutet! ✨'][Math.floor(Math.random()*3)], 1);
+  } else {
+    ljud.skold(); gnistor(p.x,p.y,p.z,'rgba(200,120,255,0.9)',10,4,0.4,0.35);
+    if (t - boss.skoldTipsT > 6){ boss.skoldTipsT = t; toast('Skölden skyddar honom! Lura ner honom från trollcirkeln!', 3.5); }
+  }
+}
+function bossBesegrad(){
+  boss.lage='besegrad'; boss.tid=0; for (const b of bossSkott) scene.remove(b.s); bossSkott.length=0;
+  saga('Neeej! Du besegrade mig!'); toast('Du besegrade den elaka trollkarlen! 🎉', 3);
+}
+function uppdateraBoss(dt){
+  const iZon = pl.y > 50;
+  $('bossRuta').style.display = (iZon && boss.lage!=='besegrad' && !kista) ? 'block' : 'none';
+  boss.flash = Math.max(0, boss.flash-dt);
+  boss.robeMat.emissive.setHex(boss.flash>0 ? 0xff3366 : 0x000000);
+  const flyt = Math.sin(t*2)*0.2;
+
+  if (boss.lage==='besegrad'){
+    boss.tid += dt; boss.g.rotation.y += dt*12; boss.g.scale.setScalar(Math.max(0.01, 1-boss.tid/1.3));
+    if (boss.tid > 1.3 && boss.g.visible){
+      boss.g.visible=false; gnistor(boss.x, boss.y+1.5, boss.z, 'rgba(200,120,255,0.95)', 60, 7, 1.2, 0.6);
+      skapaKista();
+    }
+    return;
+  }
+  // ansikte mot spelaren
+  boss.g.position.set(boss.x, boss.y+flyt, boss.z);
+  boss.g.lookAt(pl.x, boss.y+flyt, pl.z);
+  const skold = boss.lage==='tron' || boss.lage==='hem';
+  boss.skold.visible = skold; boss.skold.material.opacity = 0.22 + Math.sin(t*5)*0.06;
+
+  if (iZon && !boss.introSagd && pl.y > 55){
+    boss.introSagd = true; boss.tipsT = 0;
+    saga('Mohahaha! Jag är den elaka trollkarlen! På min trollcirkel kan ingen träffa mig!');
+    ljud.skratt();
+  }
+  if (boss.lage==='tron'){
+    boss.x += (0-boss.x)*Math.min(1,dt*3); boss.z += (0-boss.z)*Math.min(1,dt*3); boss.y += (TOPP+1.2-boss.y)*Math.min(1,dt*3);
+    const paArena = pl.y >= TOPP-0.5;
+    if (paArena){
+      boss.skottT -= dt; if (boss.skottT<=0){ boss.skottT = C.BOSS_SKOTT_TRON; bossSkjut(); }
+      boss.tipsT += dt;
+      if (!boss.skadad && boss.tipsAntal < 3 && boss.tipsT > (boss.tipsAntal===0?7:20)){
+        boss.tipsT = 0; boss.tipsAntal++;
+        toast('Tips: hoppa ner i hålet i golvet! Då jagar han dig och skölden försvinner.', 5);
+        saga('Tips! Hoppa ner i hålet i golvet. Då jagar han dig och tappar sin sköld. Sen skjuter du!');
+      }
+    }
+    if (iZon && pl.y < TOPP-2.5 && boss.introSagd){
+      boss.lage='jagar'; boss.jagaT=0; boss.runda=0; boss.skottT=1.6;
+      saga('Hah! Du kan inte gömma dig! Jag tar dig!');
+      toast('Han lämnade trollcirkeln! Skölden är borta. Skjut! ⚡', 3);
+    }
+  } else if (boss.lage==='jagar'){
+    boss.jagaT += dt;
+    let dx = boss.x-pl.x, dz = boss.z-pl.z; const h = Math.hypot(dx,dz)||1; dx/=h; dz/=h;
+    let mx = pl.x+dx*4.5, mz = pl.z+dz*4.5; const mr = Math.hypot(mx,mz); if (mr>12.3){ mx*=12.3/mr; mz*=12.3/mr; }
+    const my = pl.y+1.2;
+    const ex=mx-boss.x, ey=my-boss.y, ez=mz-boss.z, ed=Math.hypot(ex,ey,ez);
+    if (ed > 0.3){ const s = Math.min(ed, C.BOSS_FART*dt)/ed; boss.x+=ex*s; boss.y+=ey*s; boss.z+=ez*s; }
+    boss.skottT -= dt; if (boss.skottT<=0){ boss.skottT = C.BOSS_SKOTT_JAGA; bossSkjut(); }
+    if (boss.jagaT > C.BOSS_JAGA_MAX || !iZon){ boss.lage='hem'; }
+  } else if (boss.lage==='hem'){
+    const ex=-boss.x, ey=TOPP+1.2-boss.y, ez=-boss.z, ed=Math.hypot(ex,ey,ez);
+    if (ed < 0.4){ boss.lage='tron'; boss.skottT=2.5; }
+    else { const s = Math.min(ed, 10*dt)/ed; boss.x+=ex*s; boss.y+=ey*s; boss.z+=ez*s; }
+  }
+}
+
+/* ===== Skattkistan ===== */
+function skapaKista(){
+  const g = new THREE.Group();
+  const tra = new THREE.MeshLambertMaterial({color:0x7a4a1e}), guldM = new THREE.MeshLambertMaterial({color:0xffc83d, emissive:0x553300});
+  const kropp = new THREE.Mesh(new THREE.BoxGeometry(1.8,1,1.1), tra); kropp.position.y=0.5;
+  const band = new THREE.Mesh(new THREE.BoxGeometry(1.85,0.15,1.15), guldM); band.position.y=0.85;
+  const lockG = new THREE.Group(); lockG.position.set(0,1,-0.55);
+  const lock = new THREE.Mesh(new THREE.BoxGeometry(1.8,0.35,1.1), tra); lock.position.set(0,0.17,0.55);
+  const lockBand = new THREE.Mesh(new THREE.BoxGeometry(1.85,0.1,1.15), guldM); lockBand.position.set(0,0.3,0.55);
+  lockG.add(lock, lockBand);
+  const ljusS = new THREE.Sprite(glow('rgba(255,210,90,0.9)')); ljusS.position.y=1.1; ljusS.scale.setScalar(0.1);
+  g.add(kropp, band, lockG, ljusS);
+  g.position.set(0, TOPP+1.2, 0); g.lookAt(pl.x, TOPP+1.2, pl.z);
+  scene.add(g);
+  kista = {g, lockG, ljusS, tid:0, oppnad:false, klar:false};
+  ljud.checkpoint();
+}
+function uppdateraKista(dt){
+  kista.tid += dt;
+  if (kista.tid > 0.8){
+    kista.lockG.rotation.x = -Math.min(1.9, (kista.tid-0.8)*3);
+    kista.ljusS.scale.setScalar(Math.min(3.5, (kista.tid-0.8)*4));
+  }
+  if (!kista.oppnad && kista.tid > 1.0){
+    kista.oppnad = true;
+    const farger = [0xff7ad9, 0x8fe3ff, 0xffd34d, 0x9bff7a, 0xc79bff, 0xff9a4d, 0x7a9bff];
+    for (let i=0;i<14;i++){
+      const m = new THREE.Group();
+      const sk = new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.05,0.9,6), new THREE.MeshLambertMaterial({color:farger[i%farger.length]}));
+      const gl = new THREE.Sprite(glow('rgba(255,240,180,0.9)')); gl.position.y=0.48; gl.scale.setScalar(0.4);
+      m.add(sk, gl); m.position.set(0, TOPP+2.4, 0); scene.add(m);
+      const a = Math.random()*TAU;
+      flygandeStavar.push({m, v:new THREE.Vector3(Math.cos(a)*(1.5+Math.random()*3), 6+Math.random()*5, Math.sin(a)*(1.5+Math.random()*3)), rot:new THREE.Vector3(Math.random()*6,Math.random()*6,Math.random()*6)});
+    }
+    gnistor(0, TOPP+2.2, 0, 'rgba(255,210,90,0.95)', 60, 7, 1.4, 0.5);
+    spar.guld += C.SKATT; spar.vinster++; spara(); ljud.seger();
+    saga('Skatten! Massor av magiska trollstavar! Du fick hundra kristaller att handla för.');
+    toast('💎 +'+C.SKATT+' kristaller!', 3);
+  }
+  for (const f of flygandeStavar){
+    f.v.y -= 9*dt; f.m.position.addScaledVector(f.v, dt);
+    f.m.rotation.x += f.rot.x*dt; f.m.rotation.y += f.rot.y*dt; f.m.rotation.z += f.rot.z*dt;
+    if (f.m.position.y < TOPP+0.4){ f.m.position.y = TOPP+0.4; f.v.set(0,0,0); f.rot.set(0,0,0); }
+  }
+  if (!kista.klar && kista.tid > 4.2){ kista.klar = true; visaSeger(); }
+}
+
+/* ===== HUD ===== */
+let manaSist = -1;
+function uppdateraHud(){
+  $('guld').textContent = spar.guld;
+  const s = Math.floor(speltid); $('tid').textContent = Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+  let namn = NIVANAMN[0]; for (let i=0;i<NIVAER.length;i++) if (pl.y >= NIVAER[i]-0.2) namn = NIVANAMN[i];
+  $('hojd').textContent = namn+' · '+Math.max(0,Math.round(pl.y))+' m';
+  $('hojdFyll').style.width = clamp(pl.y/TOPP*100,0,100)+'%';
+  const m = Math.floor(mana);
+  if (m !== manaSist){ manaSist = m; let h=''; for (let i=0;i<C.MANA_MAX;i++) h += '<span class="'+(i<m?'':'tom')+'">✨</span>'; $('mana').innerHTML = h; }
+  if (har('flyg')) $('bransle').style.width = (100*pl.bransle/C.FLYG_BRANSLE)+'%';
+}
+
+/* ===== Skärmar ===== */
+function stangSkarmar(){ document.querySelectorAll('.skarm').forEach(e=>e.classList.remove('syns')); }
+function visaSkarm(id){ stangSkarmar(); document.querySelectorAll('.guldVisa').forEach(e=>e.textContent=spar.guld); $(id).classList.add('syns'); }
+let avsiktligt = false;
+function slappMus(){ if (document.pointerLockElement){ avsiktligt = true; document.exitPointerLock(); } }
+function pausa(){ if (lage!=='spel') return; lage='paus'; slappMus(); visaSkarm('pausSkarm'); }
+function fortsatt(){ ljudStart(); stangSkarmar(); lage='spel'; lasMus(); }
+function visaSeger(){
+  lage='seger'; slappMus();
+  const tid = Math.round(speltid);
+  let nytt = false; if (!rekord || tid < rekord){ rekord = tid; nytt = true; try { localStorage.setItem(TIDNYCKEL, String(tid)); } catch(e){} }
+  try { localStorage.setItem(REKORD, String(spar.vinster)); } catch(e){}
+  const fmt = s => Math.floor(s/60)+' min '+(s%60)+' s';
+  $('segerText').textContent = 'Du klättrade upp, lurade den elaka trollkarlen och tog skatten! Tid: '+fmt(tid)+(nytt?' 🏆 Nytt rekord!':' (rekord '+fmt(rekord)+')')+'. Kristaller du plockade: '+sammlat+' + skatten '+C.SKATT+'.';
+  visaSkarm('segerSkarm');
+}
+function visaButik(){
+  lage = 'meny'; slappMus();
+  const lista = $('butiklista'); lista.innerHTML='';
+  for (const st of STAVAR){
+    const d = document.createElement('div'); d.className = 'vara'+(ager(st.id)?' agd':'');
+    const knapp = document.createElement('button'); knapp.className='knapp';
+    if (ager(st.id)){
+      const pa = !spar.av.includes(st.id);
+      knapp.textContent = pa ? '✅ På' : '⬜ Av';
+      knapp.onclick = () => { if (pa) spar.av.push(st.id); else spar.av = spar.av.filter(x=>x!==st.id); spara(); uppdateraStav(); visaButik(); };
+    } else {
+      knapp.textContent = 'Köp 💎 '+st.pris;
+      if (spar.guld < st.pris) knapp.disabled = true;
+      knapp.onclick = () => { if (spar.guld < st.pris) return; spar.guld -= st.pris; spar.agda.push(st.id); spara(); ljudStart(); ljud.kop(); saga('Du köpte '+st.namn+'!'); uppdateraStav(); visaButik(); };
+    }
+    d.innerHTML = '<div class="ik">'+st.ikon+'</div><div class="nm">'+st.namn+'</div><div class="tx">'+st.text+'</div>';
+    d.appendChild(knapp); lista.appendChild(d);
+  }
+  visaSkarm('butikSkarm');
+}
+
+/* ===== Styrning: tangentbord och mus ===== */
+const keys = {};
+const joy = {x:0, y:0, spring:false};
+let musNekad = false, drag = null;
+function lasMus(){
+  if (arTouch || musNekad || lage!=='spel') return;
+  try { const r = canvas.requestPointerLock(); if (r && r.catch) r.catch(()=>{ musNekad = true; }); } catch(e){ musNekad = true; }
+}
+document.addEventListener('pointerlockerror', () => { musNekad = true; if (lage==='spel') toast('Håll nere musknappen och dra för att titta runt', 3); });
+document.addEventListener('pointerlockchange', () => {
+  if (!document.pointerLockElement && lage==='spel' && !avsiktligt) pausa();
+  avsiktligt = false;
+});
+window.addEventListener('keydown', e => {
+  if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code) && lage==='spel') e.preventDefault();
+  keys[e.code] = true;
+  if (lage==='spel'){
+    if (e.code==='Space'){ hoppHall = true; if (!e.repeat) hoppTryck = true; }
+    if ((e.code==='KeyE'||e.code==='KeyQ') && !e.repeat) trollaPlatta();
+    if (e.code==='KeyF' && !e.repeat) skjut();
+    if (e.code==='Escape'||e.code==='KeyP') pausa();
+  } else if (lage==='paus' && (e.code==='Escape'||e.code==='KeyP')) fortsatt();
+});
+window.addEventListener('keyup', e => { keys[e.code] = false; if (e.code==='Space') hoppHall = false; });
+window.addEventListener('blur', () => { for (const k in keys) keys[k]=false; hoppHall=false; });
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+canvas.addEventListener('mousedown', e => {
+  if (lage!=='spel' || arTouch) return;
+  ljudStart();
+  if (document.pointerLockElement === canvas){ if (e.button===0) skjut(); else if (e.button===2) trollaPlatta(); return; }
+  if (!musNekad) lasMus();
+  drag = {x:e.clientX, y:e.clientY, b:e.button, flytt:0};
+});
+window.addEventListener('mousemove', e => {
+  if (lage!=='spel') return;
+  if (document.pointerLockElement === canvas){
+    pl.yaw -= e.movementX*C.MUS; pl.pitch = clamp(pl.pitch - e.movementY*C.MUS, -1.45, 1.45);
+  } else if (drag){
+    const dx = e.clientX-drag.x, dy = e.clientY-drag.y; drag.x=e.clientX; drag.y=e.clientY; drag.flytt += Math.abs(dx)+Math.abs(dy);
+    pl.yaw -= dx*C.DRAG; pl.pitch = clamp(pl.pitch - dy*C.DRAG, -1.45, 1.45);
+  }
+});
+window.addEventListener('mouseup', e => {
+  if (drag && lage==='spel' && document.pointerLockElement !== canvas && drag.flytt < 6){ if (drag.b===2) trollaPlatta(); else skjut(); }
+  drag = null;
+});
+
+/* ===== Styrning: pekskärm ===== */
+let joyId = null, joyStart = null, lookId = null, lookSist = null;
+function knappTouch(id, ner, upp){
+  const el = $(id);
+  el.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); ljudStart(); ner(); }, {passive:false});
+  el.addEventListener('touchend', e => { e.preventDefault(); e.stopPropagation(); if (upp) upp(); }, {passive:false});
+  el.addEventListener('touchcancel', e => { if (upp) upp(); });
+}
+knappTouch('tHopp', () => { if (lage==='spel'){ hoppHall=true; hoppTryck=true; } }, () => { hoppHall=false; });
+knappTouch('tPlatta', trollaPlatta);
+knappTouch('tSkjut', skjut);
+canvas.addEventListener('touchstart', e => {
+  if (lage!=='spel') return; e.preventDefault(); ljudStart();
+  for (const tc of e.changedTouches){
+    if (joyId===null && tc.clientX < innerWidth*0.42 && tc.clientY > innerHeight*0.35){ joyId = tc.identifier; joyStart = {x:tc.clientX, y:tc.clientY}; }
+    else if (lookId===null){ lookId = tc.identifier; lookSist = {x:tc.clientX, y:tc.clientY}; }
+  }
+}, {passive:false});
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  for (const tc of e.changedTouches){
+    if (tc.identifier===joyId){
+      let dx = (tc.clientX-joyStart.x)/55, dy = (tc.clientY-joyStart.y)/55; const l = Math.hypot(dx,dy);
+      joy.spring = l > 1.25; if (l>1){ dx/=l; dy/=l; }
+      joy.x = dx; joy.y = -dy;
+      $('knopp').style.transform = 'translate('+(dx*40)+'px,'+(dy*40)+'px)';
+    } else if (tc.identifier===lookId){
+      pl.yaw -= (tc.clientX-lookSist.x)*0.0065; pl.pitch = clamp(pl.pitch-(tc.clientY-lookSist.y)*0.0065, -1.45, 1.45);
+      lookSist = {x:tc.clientX, y:tc.clientY};
+    }
+  }
+}, {passive:false});
+function touchSlut(e){
+  for (const tc of e.changedTouches){
+    if (tc.identifier===joyId){ joyId=null; joy.x=joy.y=0; joy.spring=false; $('knopp').style.transform=''; }
+    if (tc.identifier===lookId) lookId=null;
+  }
+}
+canvas.addEventListener('touchend', touchSlut); canvas.addEventListener('touchcancel', touchSlut);
+
+/* ===== Knappar ===== */
+$('spelaKnapp').onclick = starta;
+$('igenKnapp').onclick = starta;
+$('butikSpela').onclick = starta;
+$('fortsattKnapp').onclick = fortsatt;
+$('tillStartKnapp').onclick = () => { lage='meny'; visaSkarm('startSkarm'); };
+$('butikTillbaka').onclick = () => { lage='meny'; visaSkarm('startSkarm'); };
+document.querySelectorAll('[data-butik]').forEach(b => b.onclick = () => { ljudStart(); visaButik(); });
+$('pausKnapp').onclick = () => { if (lage==='spel') pausa(); else if (lage==='paus') fortsatt(); };
+$('ljudKnapp').onclick = () => { ljudPa = !ljudPa; $('ljudKnapp').textContent = ljudPa?'🔊':'🔇'; if (!ljudPa && 'speechSynthesis' in window) speechSynthesis.cancel(); };
+
+/* ===== Storlek och huvudloop ===== */
+function storlek(){ const w=innerWidth, h=innerHeight; renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+window.addEventListener('resize', storlek); storlek();
+visaSkarm('startSkarm'); uppdateraStav(); placeraPa(0);
+
+let sist = performance.now();
+function loop(nu){
+  requestAnimationFrame(loop);
+  const dt = Math.min(0.05, (nu-sist)/1000); sist = nu; t += dt;
+  if (lage==='spel') uppdatera(dt);
+  else if (lage==='meny'){
+    // visningsläge: kameran svävar runt i tornet
+    pl.x = Math.cos(t*0.12)*4; pl.z = Math.sin(t*0.12)*4; pl.y = 22 + Math.sin(t*0.08)*18;
+    pl.yaw = -t*0.12 + Math.PI; pl.pitch = 0.35;
+    boss.g.position.set(0, TOPP+1.2+Math.sin(t*2)*0.2, 0); boss.g.rotation.y += dt*0.5;
+  }
+  if (lage==='seger' && kista) uppdateraKista(dt);
+  // gemensamma animationer
+  for (const k of kristaller) if (!k.tagen){ k.m.rotation.y += dt*2; k.m.position.y = k.y + Math.sin(t*3+k.x)*0.12; }
+  for (const l of luckor){ l.skylt.position.y = l.y + 2.6 + Math.sin(t*2.5)*0.15; l.skylt.visible = !l.visad || Math.abs(pl.y-l.y) < 12; }
+  for (let i=partiklar.length-1;i>=0;i--){
+    const p = partiklar[i]; p.liv -= dt;
+    if (p.liv<=0){ scene.remove(p.s); partiklar.splice(i,1); continue; }
+    p.s.position.addScaledVector(p.v, dt); p.v.multiplyScalar(Math.max(0,1-1.8*dt)); p.v.y -= 1.2*dt;
+    p.s.scale.setScalar(p.st*Math.max(0.05,p.liv/p.max));
+  }
+  for (let i=0;i<facklor.length;i++) facklor[i].scale.setScalar(1.5+Math.sin(t*9+i*1.7)*0.15+Math.sin(t*23+i)*0.07);
+  // flytta fackelljusen till närmaste höjd
+  for (let i=0;i<fackelljus.length;i++){ const a=t*0.05+i*TAU/4; const [x,z]=polar(a,12); fackelljus[i].position.set(x, pl.y+1+(i%2?6:-4), z); fackelljus[i].intensity = 1.0+Math.sin(t*7+i)*0.15; }
+  const dp = dammGeo.attributes.position; for (let i=0;i<dp.count;i++){ let y = dp.getY(i)+dt*0.6; if (y>72) y=0; dp.setY(i,y); } dp.needsUpdate = true;
+  cirkel.material.color.setHSL(0.8+Math.sin(t*2)*0.05, 1, 0.6+Math.sin(t*4)*0.1);
+  cirkelGlow.visible = boss.lage==='tron' && boss.g.visible;
+  // stav som gungar
+  const gar = (lage==='spel' && pl.mark && (Math.abs(joy.x)+Math.abs(joy.y)>0.1 || keys.KeyW||keys.KeyS||keys.KeyA||keys.KeyD||keys.ArrowUp||keys.ArrowDown));
+  hand.position.y = -0.3 + (gar ? Math.sin(t*10)*0.02 : 0);
+  hand.position.z += (-0.55-hand.position.z)*Math.min(1,dt*10);
+  spets.scale.setScalar(0.2 + Math.sin(t*6)*0.03 + (mana>=1?0.04:0));
+  hand.visible = lage==='spel';
+  $('sikte').style.display = lage==='spel' ? 'block' : 'none';
+  if (toastT>0){ toastT -= dt; if (toastT<=0) $('toast').classList.remove('syns'); }
+  // kamera
+  camera.position.set(pl.x, pl.y+1.55, pl.z);
+  camera.rotation.y = pl.yaw; camera.rotation.x = pl.pitch;
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(loop);
+
+/* Testkrokar */
+window.__trollskattornet = { scene, camera, pl, boss, spar, starta, trollaPlatta, skjut, ytor, get lage(){return lage;}, set lage(v){lage=v;}, placeraPa, get cp(){return cp;}, set cp(v){cp=v;}, steg:(n,dt)=>{ for(let i=0;i<n;i++) uppdatera(dt||1/60); } };
+})();
+</script>
+<script src="../../delat/hem.js"></script>
+</body>
+</html>
