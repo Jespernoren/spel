@@ -4884,7 +4884,7 @@ function startRuta(titel = ui.o.titel, text = ui.o.text, knappText = 'Starta') {
   const totPct = Math.round(Math.min(S.steg, STEG.length) / STEG.length * 100);
   const resa = ar && S.steg > 0 ? `<div class="br-resa"><div class="br-resa-topp"><b>Din resa</b><span>Dag ${S.dag} · ${totPct} % av storyn</span></div><div class="br-resa-bar"><i style="width:${totPct}%"></i></div>
     <div class="br-delar">${delar.map((d) => { const klar = d.klara === d.tot, nu = !klar && d.klara > 0 || (!klar && delar.find((y) => y.klara < y.tot) === d); return `<div class="br-del ${klar ? 'klar' : nu ? 'nu' : 'last'}"><span class="b">${klar ? '✓' : nu ? '▶' : ''}</span><span class="n">${rens(d.namn)}</span><span class="r">${klar ? 'Klart' : nu ? `${d.klara}/${d.tot}` : ''}</span></div>`; }).join('')}</div></div>` : '';
-  ui.overlay.innerHTML = `<div class="fp-ruta br-start">${ar ? t : `<h1>${t}</h1>`}${resa || `<div class="br-ingress">${rens(text)}</div>`}
+  ui.overlay.innerHTML = `<div class="fp-ruta br-start">${ar ? t : `<h1>${t}</h1>`}${resa || `<div class="br-ingress">${rens(text)}</div>`}${resa ? prestHtml() : ''}
     <button class="fp-knapp br-starta">${rens(knappText)}</button>
     <div class="br-val"><button class="br-valknapp" data-sparplatser>${ik('spara')}<span>Sparplatser</span></button><button class="br-valknapp" data-kontroller>${ik('hand')}<span>Kontroller</span></button><button class="br-valknapp" data-noll>${ik('omstart')}<span>Börja om</span></button></div>
     <a class="fp-tillbaka" href="../../index.html">← Alla spel</a></div>`;
@@ -5322,6 +5322,85 @@ function maskinStopp() {
   else if (!S.kvarn.motor && S.kvarn.tratt >= TRATT_MAX) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Tratten är full', varfor: 'Ingen plats för mer skräp', fix: 'Veva kvarnen – klicka och håll på veven' });
   if (L.some((x) => /ström/.test(x.varfor) || /Batteriet/.test(x.varfor))) L.push({ obj: cykel, y: 1.5, typ: 'hit', rub: 'Trampa här!', varfor: `Batteri ${Math.floor(S.strom)}/${stromMax()}`, fix: 'Klicka och håll på cykeln' });
   return L;
+}
+// ---------- Rangstege och prestationer (se claude/printa-hem-rangstege.md) ----------
+// Rangen följer storyn med fasta krav. Prestationerna är hemliga ("???") tills du klarar dem och ger lite respekt.
+const RANGER = [
+  { namn: 'Utslängd', under: 'av mamma, med ryggsäck', krav: () => true },
+  { namn: 'Skjulbo', under: 'med säng!', krav: () => S.lappar.includes('sang') },
+  { namn: 'Nyckelringsmagnat', under: 'lokalt känd hos Ali', krav: () => S.stat.salt >= 10 },
+  { namn: 'Kvarnkapitalist', under: 'produktionsmedlen är dina', krav: () => S.kvarn.motor && skrivare.length >= 2 },
+  { namn: 'Lagfaren', under: 'Bengt-Åke sålde. Motvilligt.', krav: () => S.mark.agt.length >= 1 },
+  { namn: 'Mantalsskriven', under: 'posten hittar hit nu', krav: () => !!S.folkbokford },
+  { namn: 'Tippgodsägare', under: 'all mark, alla stubbar', krav: () => S.mark.agt.length >= MARK_TOMTER.length },
+  { namn: 'Sopbaron', under: 'respekterad i tre postnummer', krav: () => S.respekt >= 180 },
+  { namn: 'Brukspatron', under: 'på Soptippsvägen', krav: () => trivsel() >= 500 && (S.kvarn.kniv || 0) >= 2 },
+  { namn: 'Hedersmedborgare', under: 'motvilligt', krav: () => S.respekt >= 250 && trivsel() >= 600 },
+];
+const PRESTATIONER = [
+  { id: 'mitt', namn: 'MITT!', rad: 'Inte mycket för världen.', test: () => S.skyltUppe },
+  { id: 'lever', namn: 'Den lever!', rad: 'Storebror gav upp efter två veckor.', test: () => S.stat.printat >= 1 },
+  { id: 'forstaSalj', namn: 'Affärsman', rad: 'Ali betalade. Kontant. Med en suck.', test: () => S.stat.salt >= 1 },
+  { id: 'nycklar', namn: 'Ingen behöver så många nycklar', rad: 'Sälj 50 saker hos Ali.', test: () => S.stat.salt >= 50 },
+  { id: 'sang', namn: 'Det luktar frihet', rad: 'Första natten i skjulet.', test: () => S.lappar.includes('sang') },
+  { id: 'present', namn: 'Kall öl är viktigt', rad: 'Första presenten till Rolf.', test: () => (S.rolf.presenter || 0) >= 1 },
+  { id: 'rolfVan', namn: 'Rolfs enda vän', rad: 'Fem presenter till Rolf.', test: () => (S.rolf.presenter || 0) >= 5 },
+  { id: 'trampa', namn: 'Trampat till Hudiksvall', rad: 'Rolfs Rockers spelade där 1987.', test: () => S.stat.trampat >= 3000 },
+  { id: 'stada', namn: 'Städtokig', rad: 'Plocka 500 skräp.', test: () => S.stat.plockat >= 500 },
+  { id: 'kajak', namn: 'Kajakmalaren', rad: 'Mal 10 tunga fynd.', test: () => (S.stat.tungMalt || 0) >= 10 },
+  { id: 'jet', namn: 'Efterbrännare på en kvarn', rad: 'Ring inte brandkåren.', test: () => !!S.kvarn.jet },
+  { id: 'rod', namn: 'Röd tråd', rad: 'Mal Rolfs PETG till röd filament.', test: () => !!S.fyndForklarat },
+  { id: 'garage', namn: 'Pappa sover i garaget', rad: 'Mal 10 av mammas saker.', test: () => (S.burkMalda || 0) >= 10 },
+  { id: 'kalrot', namn: 'Kålrot frivilligt', rad: 'Kompostera 10 av mammas matlådor.', test: () => (S.komposterat || 0) >= 10 },
+  { id: 'arlig', namn: 'Ärlig som fan', rad: 'Säg nej till Rolfs fiffel tre gånger.', test: () => (S.rolf.heder || 0) >= 3 },
+  { id: 'fiffel', namn: 'Fiffelkungen', rad: 'Chefen (också Rolf) vet.', test: () => (S.rolf.ja || 0) >= 3 },
+  { id: 'holk', namn: 'Fåglarna flyttar in', rad: 'Sätt upp en fågelholk.', test: () => harPlacerat('fagelholk') },
+  { id: 'rocker', namn: 'Rock på väggen', rad: 'Häng upp Rolfs Rockers-affischen.', test: () => harPlacerat('r_affisch') },
+  { id: 'tomt', namn: 'HMPF', rad: 'Bengt-Åke säljer sin första tomt.', test: () => S.mark.agt.length >= 1 },
+  { id: 'folkbok', namn: 'Posten hittar hit', rad: 'Folkbokförd på Soptippsvägen 1.', test: () => !!S.folkbokford },
+  { id: 'frusen', namn: 'Frusen pinne', rad: 'Frys en natt.', test: () => !!S.frusit },
+  { id: 'kap1', namn: 'Ett hem att bo i', rad: 'Klara kapitel 1.', test: () => !!S.kapitelKlart },
+  { id: 'trivsel', namn: 'Mysigt värre', rad: 'Trivsel 300.', test: () => trivsel() >= 300 },
+  { id: 'rik', namn: 'Tusenlappen', rad: 'Ha 1 000 kr på fickan.', test: () => S.mynt >= 1000 },
+  { id: 'tjat', namn: 'Inget mer tjat', rad: 'Spela 30 dagar.', test: () => S.dag >= 30 },
+];
+const PREST_RESPEKT = 5;
+const rangNu = () => { let r = 0; RANGER.forEach((x, i) => { if (i === r + 1 && x.krav()) r = i; }); return Math.max(r, S.rang || 0); };
+function visaFirande(kicker, titel, rad, stor = false) {
+  const d = document.createElement('div'); d.className = 'ph-prest' + (stor ? ' stor' : '');
+  d.innerHTML = `<small>${rens(kicker)}</small><b>${rens(titel)}</b><span>${rens(rad)}</span>`;
+  document.body.appendChild(d); try { konfetti(stor ? 120 : 50); } catch {}
+  ljud.klar?.(); setTimeout(() => d.classList.add('ut'), stor ? 5200 : 3800); setTimeout(() => d.remove(), stor ? 6000 : 4600);
+}
+const firaKo = []; let firarTill = 0;
+function kollaPrestationer() {
+  if (!ui.igang || sover) return;
+  // äldre sparning: det du redan klarat räknas tyst (ingen flod av popups eller gratis respekt)
+  if (!S.prest && S.steg > 1) { S.prest = PRESTATIONER.filter((p) => { try { return p.test(); } catch { return false; } }).map((p) => p.id); S.rang = rangNu(); sparaSnart(); }
+  S.prest = S.prest || [];
+  for (const p of PRESTATIONER) {
+    if (S.prest.includes(p.id)) continue;
+    let ok = false; try { ok = p.test(); } catch {}
+    if (!ok) continue;
+    S.prest.push(p.id); andraRespekt(PREST_RESPEKT, 'Prestation: ' + p.namn);
+    firaKo.push(() => visaFirande(`Prestation · +${PREST_RESPEKT} respekt`, p.namn, p.rad));
+  }
+  const r = rangNu();
+  if (r > (S.rang || 0)) { S.rang = r; const x = RANGER[r]; firaKo.push(() => visaFirande('Ny rang', x.namn, `(${x.under})`, true)); }
+  if (firaKo.length && performance.now() > firarTill) { firarTill = performance.now() + 5200; firaKo.shift()(); sparaSnart(); }
+  ritaRang();
+}
+const rangEl = document.createElement('div'); rangEl.className = 'hud-rang'; rangEl.title = 'Din rang – nästa steg låser upp sig när du kommer längre';
+function ritaRang() {
+  if (!rangEl.parentNode) { const h = document.querySelector('.hud-status'); if (h) h.appendChild(rangEl); }
+  const x = RANGER[S.rang || 0], t = `<b>${rens(x.namn)}</b><span>(${rens(x.under)})</span>`;
+  if (rangEl.dataset.t !== t) { rangEl.dataset.t = t; rangEl.innerHTML = t; }
+}
+setInterval(kollaPrestationer, 1500);
+// prestationslistan i menyn: klarade med namn, oklarade hemliga
+function prestHtml() {
+  const klara = S.prest || [];
+  return `<div class="br-prest"><div class="br-resa-topp"><b>Rang: ${rens(RANGER[S.rang || 0].namn)}</b><span>Prestationer ${klara.length}/${PRESTATIONER.length}</span></div><div class="br-prest-lista">${PRESTATIONER.map((p) => klara.includes(p.id) ? `<span class="ok" title="${rens(p.rad)}">${rens(p.namn)}</span>` : '<span>???</span>').join('')}</div></div>`;
 }
 // ---------- Flaskhalsen: vad stoppar oftast? ----------
 // Varje sekund en maskin står still räknas på orsaken. Det som stoppar mest idag visas under uppdragen,

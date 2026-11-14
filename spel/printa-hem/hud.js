@@ -105,6 +105,12 @@ export const HUD_CSS = `
 .ph-kapkort small{display:block;font:900 13px system-ui;letter-spacing:.3em;color:#ffd37a}.ph-kapkort b{display:block;margin:6px 0 8px;font:900 34px/1.05 system-ui;letter-spacing:.01em}.ph-kapkort span{display:block;font:700 16px/1.35 system-ui;color:#d7dce6;max-width:440px}
 .ph-kapkort.ut{opacity:0;transform:translateX(-50%) translateY(-14px)}
 @keyframes kapIn{from{opacity:0;transform:translateX(-50%) scale(.8)}}
+.hud-rang{display:flex;align-items:baseline;gap:6px;padding:5px 12px 6px;border-radius:9px;background:${LAGER_SVAG},rgba(15,18,23,.82);border:1px solid #2b303c;font:800 12.5px system-ui;color:#ffd37a;pointer-events:none}.hud-rang span{font:600 11px system-ui;color:#9aa3b5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ph-prest{position:fixed;left:50%;top:84px;transform:translateX(-50%);z-index:31;pointer-events:none;text-align:center;padding:12px 26px 14px;border-radius:14px;background:${LAGER_SVAG},rgba(25,28,36,.92);border-bottom:4px solid #ffd37a;box-shadow:0 12px 30px rgba(0,0,0,.45);color:#fff;animation:kapIn .6s cubic-bezier(.3,1.5,.5,1);transition:opacity .6s,transform .6s}
+.ph-prest small{display:block;font:900 11px system-ui;letter-spacing:.22em;text-transform:uppercase;color:#7dffb0}.ph-prest b{display:block;margin:4px 0 4px;font:900 24px/1.1 system-ui}.ph-prest span{display:block;font:italic 600 14px/1.3 system-ui;color:#d7dce6}
+.ph-prest.stor{top:16%;padding:18px 36px 20px}.ph-prest.stor small{color:#ffd37a;font-size:13px}.ph-prest.stor b{font-size:36px}
+.ph-prest.ut{opacity:0;transform:translateX(-50%) translateY(-12px)}
+.br-prest{margin:10px 0 4px;text-align:left}.br-prest-lista{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.br-prest-lista span{font:700 11.5px system-ui;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.07);color:#8a92a3}.br-prest-lista span.ok{background:rgba(125,255,176,.16);color:#7dffb0}
 .hud-flask{position:fixed;left:max(12px,env(safe-area-inset-left));z-index:21;width:280px;box-sizing:border-box;pointer-events:none;font:700 13px/1.35 system-ui;color:#fff;display:flex;flex-direction:column;gap:6px}
 .hud-flask>div{padding:8px 12px 9px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.88);border-left:5px solid var(--lingon);box-shadow:0 6px 16px rgba(0,0,0,.3)}
 .hud-flask b{display:block;font:900 11px/1.2 system-ui;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
