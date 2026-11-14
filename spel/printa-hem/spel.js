@@ -5416,6 +5416,12 @@ function ritaRang() {
   if (rangEl.dataset.t !== t) { rangEl.dataset.t = t; rangEl.innerHTML = t; }
 }
 setInterval(kollaPrestationer, 1500); RANGER_KLAR = true;
+// kapitel 2 får också sitt kort när det börjar
+setInterval(() => {
+  if (S.kap2Visad || !ui.igang || !ui.butiksOverlay.hidden || sover) return;
+  if (STEG[S.steg]?.del !== K2) return;
+  S.kap2Visad = true; visaKapitelKort(2, 'Ett riktigt hem', 'Gör stället till något du vill visa mamma.'); sparaSnart();
+}, 2000);
 // prestationslistan i menyn: klarade med namn, oklarade hemliga
 function prestHtml() {
   if (!RANGER_KLAR) return '';   // startskärmen kan ritas innan listorna finns
