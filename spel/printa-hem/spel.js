@@ -3258,6 +3258,10 @@ function sov() {
   requestAnimationFrame(() => { sl.style.opacity = '1'; });
   satLjus(KVALL);
   setTimeout(() => {
+    // gårdagens rapport (visas på morgonrutan): sålt, printat och dagens flaskhals
+    const fl = S.flask && S.flask.dag === natt ? Object.entries(S.flask.tid).sort((x, y) => y[1] - x[1])[0] : null;
+    S.igar = { salt: Object.values(S.saltIdag || {}).reduce((x, y) => x + y, 0), printat: S.stat.printat - (S.dagPrintat ?? S.stat.printat), flask: fl && fl[1] >= 20 ? (FLASK_NAMN[fl[0]] || fl[0]) : null, fix: fl && fl[1] >= 20 ? FLASK_FIX[fl[0]]?.() : null };
+    S.dagPrintat = S.stat.printat;
     kollaKyla(); S.dag = natt + 1; S.saltIdag = {}; S.dagTid = 0; S.vakenTid = 0; aliHamtarLadan(); sparaSnart(); ruttnaOverNatten(); uppdateraArstid();
     // morgonens meddelanden väntar tills du klickat "Börja dagen" – sen kommer de ett i taget
     morgonKo = () => { familjSms(); kollaMarkTips(); kollaPolett(); kollaResa(); morgonRolf(); };
@@ -3273,7 +3277,8 @@ function sov() {
     const nasta = STEG[S.steg];
     if (nasta?.startPost && !S.lappar.includes(nasta.startPost)) { S.post.lapp = nasta.startPost; visaPostInne(); }
     const del = nasta?.del || 'Fritt bygge';
-    ui.visaStart(`☀️ Dag ${S.dag}`, `<b>${del}</b><br>${nasta?.startPost ? '✉️ Flaggan på Rolfs postlåda är uppe – det har kommit ett brev!' : ''}`, 'Börja dagen');
+    const ig = S.igar, rapport = ig ? `<span class="br-rapport">Igår: ${ig.printat} printat · ${ig.salt} sålt${ig.flask ? `<br>Flaskhals: ${ig.flask}${ig.fix ? ` → ${ig.fix}` : ''}` : ''}</span>` : '';
+    ui.visaStart(`☀️ Dag ${S.dag}`, `<b>${del.replace(/^Dag \d+ – /, '')}</b>${nasta?.startPost ? '<br>✉️ Brev i Rolfs postlåda' : ''}${rapport}`, 'Börja dagen');
     const vanta = setInterval(() => { if (!ui.igang) return; clearInterval(vanta); const f = morgonKo; morgonKo = null; if (f) setTimeout(f, 2500); }, 300);
   }, 5500);
 }
@@ -5412,11 +5417,11 @@ function prestHtml() {
 // Varje sekund en maskin står still räknas på orsaken. Det som stoppar mest idag visas under uppdragen,
 // med vad du kan bygga för att slippa det – så du vet vad som är värt att fixa härnäst.
 const FLASK_FIX = {
-  'Batteriet är tomt': () => harPlacerat('sol') ? 'Fler solpaneler eller ett större batteri' : 'Bygg en solpanel (ritning hos Ali) – då laddas det själv',
-  'Motorn har ingen ström': () => harPlacerat('sol') ? 'Fler solpaneler eller ett större batteri' : 'Bygg en solpanel (ritning hos Ali) – då laddas det själv',
-  'Slut på filament': () => (S.rullstall || 0) < 3 ? 'Mal mer i förväg – ett rullställ vid extrudern rymmer fler rullar' : 'Större spolhållare på skrivaren, eller mal mer i förväg',
-  'Rullhållaren är full': () => (S.rullstall || 0) < 3 ? 'Bygg ett rullställ vid extrudern (ritning hos Ali)' : 'Hämta rullarna oftare',
-  'Ingen plats för mer skräp': () => S.kvarn.motor ? 'Större tratt hos Ali' : 'Kvarnmotor hos Ali – då mal den själv',
+  'Batteriet är tomt': () => harPlacerat('sol') ? 'Fler solpaneler' : 'Bygg en solpanel',
+  'Motorn har ingen ström': () => harPlacerat('sol') ? 'Fler solpaneler' : 'Bygg en solpanel',
+  'Slut på filament': () => (S.rullstall || 0) < 3 ? 'Bygg ett rullställ' : 'Mal mer i förväg',
+  'Rullhållaren är full': () => (S.rullstall || 0) < 3 ? 'Bygg ett rullställ' : 'Hämta rullarna oftare',
+  'Ingen plats för mer skräp': () => S.kvarn.motor ? 'Större tratt (Ali)' : 'Kvarnmotor (Ali)',
 };
 const FLASK_NAMN = { 'Batteriet är tomt': 'Ström till skrivaren', 'Motorn har ingen ström': 'Ström till kvarnen', 'Slut på filament': 'Filament till skrivaren', 'Rullhållaren är full': 'Fulla rullar vid kvarnen', 'Ingen plats för mer skräp': 'Full tratt' };
 let flaskT = 0, flaskForra = new Set();
@@ -6170,7 +6175,7 @@ function uppdatera(dt) {
     vevEl.classList.toggle('syns', visa);
     if (visa) {
       { const v = kvarnPunkt(0, 1.45, 0.3).clone(); v.project(kamera); const ok = v.z < 1;
-        vevEl.style.left = ((v.x * 0.5 + 0.5) * innerWidth) + 'px'; vevEl.style.top = ((-v.y * 0.5 + 0.5) * innerHeight) + 'px';
+        const hb = (vevEl.offsetWidth || 200) / 2 + 12; vevEl.style.left = Math.max(hb, Math.min(innerWidth - hb, (v.x * 0.5 + 0.5) * innerWidth)) + 'px'; vevEl.style.top = Math.max(120, Math.min(innerHeight - 110, (-v.y * 0.5 + 0.5) * innerHeight)) + 'px';
         vevEl.style.transform = 'translate(-50%,-100%)'; vevEl.style.visibility = ok ? '' : 'hidden'; }
       const pagar = S.kvarn.tratt > 0 ? nastaGram() * Math.min(1, S.kvarn.prog) : 0;
       const hela = helaRullar();
