@@ -371,6 +371,7 @@ const LAPPAR = {
   start: ['📔 Dagbok', 'Dag 1. Inget mer tjat. Här står jag, vid soptippen, med storebrors gamla 3D-skrivare och ett skjul som luktar mus. Men skräp är plast – och plast är filament. Plan: 1) en säng. 2) städa gården. 3) bygga om skjulet till en riktig fristad – med gamingsetup.'],
   sang: ['📔 Dagbok', 'Första natten i en riktig säng. Jag printade den själv.'],
   mammaslut: ['💌 Brev från mamma – det första som kommit hit', 'Kära du!\n\nGrattis till nya huset!! Pappa och jag åkte förbi i söndags. Oj vad STÄDAT och fint det är. Jag är imponerad. Jag grät lite i bilen. Pappa sa "aha, vad lugnt då" – och han log.\n\nNu kan jag äntligen skicka post till dig. Det första kommer på tisdag: fyra burkar lingonsylt.\n\nKram, mamma ❤️\n\nPS. Rolf vinkade från sopbilen. Han hade en tomte på flaket.'],
+  mammajul: ['✉️ Brev från Mamma', 'Grattis till nya huset. Oj vad städat och fint det är. Imponerad. Pappa också, han säger det bara inte. Kram, Mamma'],
   polett: ['📔 Dagbok', 'Dag 14. Mammas paket kom tillbaka: "Okänd mottagare". Jag bor ju här. Det här är mitt hem nu. Men på pappret finns jag inte här. Jag måste bli folkbokförd – och då måste jag äga tomten jag bor på och ha ett riktigt hus.'],
   hem: ['📔 Dagbok', 'Fabriken har kommit igång. Nu vill jag sova i en riktig säng i skjulet i stället för på det kalla golvet.'],
   sopbil: ['📔 Dagbok', 'Sopbilen tippade en ny last. All den plasten – och grinden är låst.'],
@@ -7868,6 +7869,7 @@ function julEnkel() {
     konfetti(260); fanfar(); ljud.stor();
     visaFirande('Jul på Soptippsvägen 1', 'God jul!', 'Hela familjen, Rolf, Kajsa, Ali och Bengt-Åke vid ditt bord. Folkbokförd. Hemma.', true);
     S.julFirad = true; julPagar = false; sparaSnart();
+    setTimeout(() => visaLapp('mammajul'), 5000);
     setTimeout(() => sms('bror', 'Pappa grät lite vid julbordet. Han sa att det var pepparroten. Det fanns ingen pepparrot. God jul brorsan.'), 8000);
     setTimeout(() => ui.toast('🎄 Spelet är klart! Bygg fritt – och testa Tippen på tid under Dagbok → Spelet.', 'guld'), 12000);
   }, 26000);
