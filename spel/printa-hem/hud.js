@@ -125,6 +125,7 @@ export const HUD_CSS = `
 .hud-loop em{font:800 9px system-ui;font-style:normal;letter-spacing:.02em;color:#c5ccda}
 .hud-loop span.nu{opacity:1;transform:scale(1.18)}.hud-loop span.nu em{color:#7dffb0}.hud-loop span.nu .ui-ik,.hud-loop span.nu svg{filter:drop-shadow(0 0 5px rgba(125,255,176,.8))}
 .hud-loop i{font-style:normal;font-weight:900;color:#5a6274;font-size:12px}
+.hud-stopp .stopp-ik{display:block;margin:0 auto 2px;width:30px;height:30px;font-style:normal;color:#fff}.hud-stopp .stopp-ik:empty{display:none}.hud-stopp .stopp-ik svg,.hud-stopp .stopp-ik .ui-ik{width:30px;height:30px}
 .hud-flask{position:fixed;left:max(12px,env(safe-area-inset-left));z-index:21;width:280px;box-sizing:border-box;pointer-events:none;font:700 13px/1.35 system-ui;color:#fff;display:flex;flex-direction:column;gap:6px}
 .hud-flask>div{padding:8px 12px 9px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.88);border-left:5px solid var(--lingon);box-shadow:0 6px 16px rgba(0,0,0,.3)}
 .hud-flask b{display:block;font:900 11px/1.2 system-ui;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
