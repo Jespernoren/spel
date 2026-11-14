@@ -5435,14 +5435,14 @@ function maskinStopp() {
   const L = [];
   for (const sk of skrivare) {
     const namn = 'Skrivare ' + GEN[sk.gen].namn;
-    if (sk.jobb && sk.vantar === 'ingen ström!') L.push({ obj: sk.mesh, y: 1.0, typ: 'stopp', rub: `${namn} står still`, varfor: 'Batteriet är tomt', fix: 'Trampa cykeln för att ladda' });
-    else if (sk.jobb && /filament/.test(sk.vantar || '')) L.push({ obj: sk.mesh, y: 1.0, typ: 'stopp', rub: `${namn} står still`, varfor: 'Slut på filament', fix: antalInv('rulle') ? 'Klicka på skrivaren med en rulle i handen' : 'Mal skräp till en rulle – eller köp en hos Ali' });
-    else if (sk.klar) L.push({ obj: sk.mesh, y: 1.0, typ: 'klar', rub: `${namn} är klar`, varfor: namnFor(sk.klar), fix: 'Klicka på skrivaren och ta den' });
+    if (sk.jobb && sk.vantar === 'ingen ström!') L.push({ obj: sk.mesh, y: 1.0, typ: 'stopp', rub: `${namn} står still`, varfor: 'Batteriet är tomt', fix: 'Trampa cykeln för att ladda', kort: 'Trampa cykeln' });
+    else if (sk.jobb && /filament/.test(sk.vantar || '')) L.push({ obj: sk.mesh, y: 1.0, typ: 'stopp', rub: `${namn} står still`, varfor: 'Slut på filament', fix: antalInv('rulle') ? 'Klicka på skrivaren med en rulle i handen' : 'Mal skräp till en rulle – eller köp en hos Ali', kort: antalInv('rulle') ? 'Ladda en rulle' : 'Slut – mal en rulle' });
+    else if (sk.klar) L.push({ obj: sk.mesh, y: 1.0, typ: 'klar', rub: `${namn} är klar`, varfor: namnFor(sk.klar), fix: 'Klicka på skrivaren och ta den', kort: 'Klar – ta ut' });
   }
-  if (S.kvarn.motor && S.kvarn.tratt > 0 && S.strom < 1) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Kvarnen står still', varfor: 'Motorn har ingen ström', fix: 'Trampa cykeln för att ladda batteriet' });
-  else if (S.kvarn.tratt > 0 && extruderFull()) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Kvarnen står still', varfor: 'Rullhållaren är full', fix: 'Ta rullarna vid extrudern' });
-  else if (!S.kvarn.motor && S.kvarn.tratt >= TRATT_MAX) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Tratten är full', varfor: 'Ingen plats för mer skräp', fix: 'Veva kvarnen – klicka och håll på veven' });
-  if (L.some((x) => /ström/.test(x.varfor) || /Batteriet/.test(x.varfor))) L.push({ obj: cykel, y: 1.5, typ: 'hit', rub: 'Trampa här!', varfor: `Batteri ${Math.floor(S.strom)}/${stromMax()}`, fix: 'Klicka och håll på cykeln' });
+  if (S.kvarn.motor && S.kvarn.tratt > 0 && S.strom < 1) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Kvarnen står still', varfor: 'Motorn har ingen ström', fix: 'Trampa cykeln för att ladda batteriet', kort: 'Trampa cykeln' });
+  else if (S.kvarn.tratt > 0 && extruderFull()) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Kvarnen står still', varfor: 'Rullhållaren är full', fix: 'Ta rullarna vid extrudern', kort: 'Ta rullen' });
+  else if (!S.kvarn.motor && S.kvarn.tratt >= TRATT_MAX) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Tratten är full', varfor: 'Ingen plats för mer skräp', fix: 'Veva kvarnen – klicka och håll på veven', kort: 'Veva kvarnen' });
+  if (L.some((x) => /ström/.test(x.varfor) || /Batteriet/.test(x.varfor))) L.push({ obj: cykel, y: 1.5, typ: 'hit', rub: 'Trampa här!', varfor: `Batteri ${Math.floor(S.strom)}/${stromMax()}`, fix: 'Klicka och håll på cykeln', kort: 'Trampa här!' });
   return L;
 }
 // ---------- Mätning och spelarfeedback ----------
@@ -5667,7 +5667,7 @@ function ritaStopp() {
     const avst = stoppV.distanceTo(kamera.getWorldPosition(stoppK)); stoppV.project(kamera);
     if (stoppV.z > 1 || avst > 32 || Math.abs(stoppV.x) > 1.1 || Math.abs(stoppV.y) > 1.1) { d.style.display = 'none'; return; }
     d.style.display = ''; d.className = 'hud-stopp ' + x.typ;
-    const t = [x.rub, x.varfor, x.fix]; ['b', 'span', 'em'].forEach((q, j) => { const e = d.querySelector(q); if (e.textContent !== t[j]) e.textContent = t[j]; e.style.display = t[j] ? '' : 'none'; });
+    const t = [x.kort || x.rub, '', ''];   // en rad: bara vad du ska göra ['b', 'span', 'em'].forEach((q, j) => { const e = d.querySelector(q); if (e.textContent !== t[j]) e.textContent = t[j]; e.style.display = t[j] ? '' : 'none'; });
     const sk = Math.max(0.6, Math.min(1, 7 / avst));
     d.style.transform = `translate(${(stoppV.x * 0.5 + 0.5) * innerWidth}px,${(-stoppV.y * 0.5 + 0.5) * innerHeight}px) translate(-50%,-100%) scale(${sk.toFixed(2)})`;
   });
