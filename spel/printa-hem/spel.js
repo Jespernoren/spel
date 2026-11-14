@@ -172,8 +172,8 @@ const VAROR = {
   termoslock: { namn: 'Termoslock med lönnfack', ikon: '', gram: 400, tid: 12, pris: 0, gava: true },
   stampel: { namn: 'Kopia av chefens stämpel', ikon: '', gram: 350, tid: 12, pris: 0, gava: true },
   tillstand: { namn: 'Parkeringstillstånd för husvagn', ikon: '', gram: 250, tid: 10, pris: 0, gava: true },
-  sang: { storlek: 1, namn: 'Säng', ikon: '🛏️', gram: 2000, tid: 40, pris: 0, hem: true },          // 2 rullar. Kräver instruktionen hos Ali. Säljs inte.
-  nyckelring: { namn: 'Nyckelring', ikon: '🔑', gram: 100, tid: 8, pris: 15 },      // 10 % rulle = en halv flaska
+  sang: { storlek: 1, namn: 'Säng', ikon: '🛏️', gram: 1200, tid: 20, pris: 0, hem: true },          // 2 rullar. Kräver instruktionen hos Ali. Säljs inte.
+  nyckelring: { namn: 'Nyckelring', ikon: '🔑', gram: 100, tid: 4, pris: 15 },      // 10 % rulle = en halv flaska
   kruka: { namn: 'Blomkruka', ikon: '🪴', gram: 400, tid: 18, pris: 30, trivsel: 5, placerbar: true, radie: 0.3 },
   pall: { namn: 'Pall', ikon: '🪑', gram: 1000, tid: 32, pris: 60, trivsel: 10, placerbar: true, radie: 0.35 },
   rulle: { namn: 'Filamentrulle', ikon: '🧵', gram: 1000, tid: 0, pris: 0, rulle: true },   // bärs från extrudern till skrivaren
@@ -304,7 +304,7 @@ const storlekFor = (typ) => { const v = VAROR[typ]; if (!v) return 1; if (v.stor
  const skrivStorlek = (sk) => Math.min(3, GEN[sk.gen].storlek + (sk.mod === 'm_grav' ? 1 : 0));
 const storlekRuta = (id, maskin) => (maskin ? (MASKINER[id]?.storlek || 1) : storlekFor(id));
 const storstaSkrivare = () => Math.max(1, ...skrivare.map((x) => x.gen));  // strom = ström per sekund när den printar
-const SANG_INSTRUKTION = 120;    // kr – sängen låses upp efter första uppgraderingen
+const SANG_INSTRUKTION = 60;    // kr – sängen låses upp efter första uppgraderingen
 const SPOL_MAX = [3000, 7000, 12000, 20000];   // rullar per skrivare: vanlig 3 · stor 7 · XL 12 · torn 20 – varje rulle syns i stället
 const SPOL_NIVA = { spolhallare: 1, spolhallare2: 2, spolhallare3: 3 };
 const maxFil = (sk) => SPOL_MAX[sk.spolNiva || 0];
@@ -427,13 +427,13 @@ const STEG = [
   { del: D1, text: () => `Veva kvarnen · ${Math.round(Math.min(S.kvarn.ut, RULLE) / RULLE * 100)} %`, klar: () => S.kvarn.ut >= RULLE || S.stat.hamtat >= 1 },
   { del: D1, text: 'Ta rullen vid extrudern', klar: () => S.stat.hamtat >= 1, lapp: 'malt' },
   { del: D1, text: 'Ladda rullen i skrivaren', klar: () => (S.stat.laddat || 0) >= 1 || S.stat.printat >= 1 },
-  { del: D1, text: 'Trampa cykeln för ström', klar: () => S.stat.trampat >= 40 || S.stat.printat >= 1 },
+  { del: D1, text: 'Trampa cykeln för ström', klar: () => S.stat.trampat >= 20 || S.stat.printat >= 1 },
   { del: D1, text: 'Printa en nyckelring', klar: () => S.stat.printat >= 1, lapp: 'printat' },
   { del: D1, text: 'Sälj den hos Ali, över vägen', klar: () => S.stat.salt >= 1, lapp: 'salt' },
   { del: D1, text: () => `Tjäna 50 kr (${Math.min(S.mynt, 50)}/50) · köp grip eller motor`, klar: () => S.ritningar.includes('grip') || S.ritningar.includes('kvarnmotor') || forstaUpp(), lapp: 'ritning' },
   { del: D1, text: () => `Printa din ${S.ritningar.includes('grip') && !S.grip ? 'skräpgrip' : 'kvarnmotor'}`, klar: () => forstaUpp() },
   { del: D1, text: `Köp sängritningen (${SANG_INSTRUKTION} kr)`, klar: () => S.ritningar.includes('sang') || S.sang, startLapp: 'hem' },
-  { del: D1, text: 'Printa sängen (2 rullar)', klar: () => antalInv('sang') > 0 || S.sang },
+  { del: D1, text: 'Printa sängen', klar: () => antalInv('sang') > 0 || S.sang },
   { del: D1, text: 'Ställ sängen i skjulet och sov', klar: () => S.sang && S.dag >= 2, lapp: 'sang',
     sms: ['mamma', 'Har du sovit nåt? Du har väl tandborste?? Och äter du?? Svara inte, jag vet att du är arg. ❤️ /Mamma'] },
   { del: N1, text: () => `Städa gården · ${gardSkrap()} kvar`, klar: () => gardSkrap() <= GARD_KVAR || S.rolf.i >= 1 || S.post.tillRolf, lapp: 'gard',
@@ -471,7 +471,7 @@ const stegText = (st) => typeof st.text === 'function' ? st.text() : st.text;
 // Ny funktion = lägg till ett standardvärde här och/eller en rad i migrera() nedan.
 const SPAR_VERSION = 7;
 const spar = new Sparning(SPEL_ID, {
-  kvarn: { tratt: 0, trattGram: 0, prog: 0, ut: 0, motor: false }, forrad: {},
+  kvarn: { tratt: 0, trattGram: 0, prog: 0, ut: 600, motor: false }, forrad: {},
   mynt: 0, filament: 0, strom: 0, ritningar: [], grip: false, steg: 0,
   stat: { plockat: 0, malt: 0, trampat: 0, printat: 0, salt: 0 },
   lappar: [], placerade: [], skrap: null, hand: [], skrivare: {}, nastaId: 1, kapitelKlart: false,
@@ -1868,7 +1868,7 @@ function plockaSkrap(s, tyst = false) {
   if (paTippen(s.position.x, s.position.z)) S.stat.tipp++;
   if (s.userData.tung) S.stat.tunga = (S.stat.tunga || 0) + 1;
   hand.plocka(s); ljud.plock();
-  S.stat.plockat++; sparaSnart();
+  S.stat.plockat++; sparaSnart(); plockPop(s.userData.gram);
 }
 
 // ---------- Förrådet (inventory) ----------
@@ -4292,6 +4292,29 @@ function flytSiffra(matare, text) {
   const e = document.createElement('i'); e.className = 'hud-flyt' + (String(text).startsWith('-') ? ' ner' : ''); e.textContent = text; m.appendChild(e);
   setTimeout(() => e.remove(), 1500);
 }
+// ---------- Små belöningar hela tiden ----------
+// plocka: "+20 %" poppar vid siktet, snabba plock i rad ger kombo med stigande ton
+let komboN = 0, komboT = 0;
+function plockPop(gram = 200) {
+  const nu = performance.now(); komboN = nu - komboT < 2500 ? komboN + 1 : 1; komboT = nu;
+  const e = document.createElement('i'); e.className = 'hud-pop';
+  e.textContent = `+${Math.round(gram / RULLE * 100)} %` + (komboN >= 3 ? ` · kombo ×${komboN}` : '');
+  document.body.appendChild(e); setTimeout(() => e.remove(), 1100);
+  try { const ac = ljud.ctx?.() || window.__ac || (window.__ac = new AudioContext()); const o = ac.createOscillator(), g = ac.createGain(); o.type = 'triangle'; o.frequency.value = 520 * Math.pow(1.06, Math.min(12, komboN)); g.gain.setValueAtTime(0.05, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.18); o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime + 0.2); } catch {}
+}
+// sälja: mynt flyger upp mot plånboken och siffran räknas upp
+function myntRegn(summa) {
+  const mal = document.querySelector('.ph-klocka')?.parentElement || document.querySelector('.fp-chip');
+  const r = mal?.getBoundingClientRect() || { left: 330, top: 20, width: 80, height: 30 };
+  const n = Math.min(14, 3 + Math.floor(summa / 15));
+  for (let i = 0; i < n; i++) {
+    const m = document.createElement('i'); m.className = 'hud-mynt';
+    m.style.left = (innerWidth / 2 + (Math.random() - 0.5) * 160) + 'px'; m.style.top = (innerHeight / 2 + (Math.random() - 0.5) * 80) + 'px';
+    document.body.appendChild(m);
+    const dx = r.left + r.width / 2 - parseFloat(m.style.left), dy = r.top + r.height / 2 - parseFloat(m.style.top);
+    m.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${dx * 0.4}px,${dy * 0.2 - 60}px) scale(1.2)`, opacity: 1, offset: 0.35 }, { transform: `translate(${dx}px,${dy}px) scale(.6)`, opacity: 0.9 }], { duration: 650 + i * 45, easing: 'cubic-bezier(.5,0,.6,1)' }).onfinish = () => m.remove();
+  }
+}
 function andraRespekt(d, varfor) {
   const fore = S.respekt; S.respekt = Math.max(0, S.respekt + d);
   S.respektLogg = [[d, varfor, S.dag], ...(S.respektLogg || [])].slice(0, 12);
@@ -4651,7 +4674,8 @@ function oppnaMarknad() {
       const t = x.typ; n = Math.min(n, antalInv(t)); if (!n) return;
       const summa = summaFor(t, n); taBortInv(t, n);
       if (!t.startsWith('byggsats:') && !VAROR[t]?.lyx) S.saltIdag = { ...(S.saltIdag || {}), [t]: saltIdag(t) + n };
-      S.mynt += summa; S.stat.salt += n; ljud.mynt();
+      S.mynt += summa; S.stat.salt += n; ljud.mynt(); myntRegn(summa);
+      if (!S.valkomst && t === 'nyckelring') { S.valkomst = true; S.mynt += 40; setTimeout(() => { myntRegn(40); ui.toast('Ali: Första kunden som printar själv på 25 år. +40 kr extra.', 'guld'); }, 700); }
       const nm = namnFor(t).toLowerCase();
       aliRepl = saltIdag(t) >= 4 ? `${saltIdag(t)} ${nm} idag?! Vem ska köpa alla? Här, ${summa} kr. Gör nåt annat imorgon.` : n > 1 ? `${n} st. Okej. ${summa} kr. Säljer de inte är det ditt fel.` : `${nm[0].toUpperCase() + nm.slice(1)}. Okej. ${summa} kr.`;
       sparaSnart(); oppnaMarknad();
@@ -4660,7 +4684,9 @@ function oppnaMarknad() {
     const sx = el.querySelector('[data-saljallt]'); if (sx) sx.onclick = () => {
       let summa = 0, antal = 0;
       for (const x of saljL) { const n = antalInv(x.typ); if (!n) continue; const su = summaFor(x.typ, n); taBortInv(x.typ, n); if (!x.typ.startsWith('byggsats:') && !VAROR[x.typ]?.lyx) S.saltIdag = { ...(S.saltIdag || {}), [x.typ]: saltIdag(x.typ) + n }; summa += su; antal += n; }
-      S.mynt += summa; S.stat.salt += antal; ljud.mynt(); aliRepl = `Allt?! ${antal} saker. Jag behöver ett större lager. Här: ${summa.toLocaleString('sv-SE')} kr.`;
+      S.mynt += summa; S.stat.salt += antal; ljud.mynt(); myntRegn(summa);
+      if (!S.valkomst) { S.valkomst = true; S.mynt += 40; setTimeout(() => { myntRegn(40); ui.toast('Ali: Första kunden som printar själv på 25 år. +40 kr extra.', 'guld'); }, 700); }
+      aliRepl = `Allt?! ${antal} saker. Jag behöver ett större lager. Här: ${summa.toLocaleString('sv-SE')} kr.`;
       ritaHotbar(); ritaHand(); sparaSnart(); oppnaMarknad();
     };
     const sa = el.querySelector('[data-saljalla]'); if (sa) sa.onclick = () => salj1(999);
