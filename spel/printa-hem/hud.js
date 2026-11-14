@@ -99,6 +99,10 @@ export const HUD_CSS = `
 .ali-tal b{display:block;font:900 12px system-ui;letter-spacing:.1em;text-transform:uppercase;color:#2f8a52;margin-bottom:4px}
 .ali-tal p{margin:0;font:600 15px/1.45 system-ui}
 .ali-butik{flex:1;min-width:0;overflow:auto;padding:16px}
+.ali-grupper{display:flex;flex-wrap:wrap;gap:2px 22px}.ali-grupper .ui-grid{display:flex!important;flex-wrap:wrap;gap:8px}
+.ali-grupp{margin-top:8px}.ali-grupp>b{display:flex;align-items:center;gap:6px;font:800 11px system-ui;letter-spacing:.08em;text-transform:uppercase;color:#a6f3c1;margin:4px 0 6px}
+.ali-grupp.ej{margin-top:14px;padding:10px;border-radius:10px;background:rgba(0,0,0,.25);border:1px dashed rgba(255,255,255,.18)}.ali-grupp.ej>b{color:#c5ccda}.ali-grupp.ej .ui-ruta{filter:grayscale(.85) brightness(.8);cursor:pointer}
+
 @media (max-width:760px){.ali-split{flex-direction:column}.ali-sida{flex:none;flex-direction:row;padding:10px 12px;border-right:0;border-bottom:1px solid #343a4a}.ali-huvud,.ali-huvud .ui-portratt{width:70px!important;height:70px!important}.ali-tal::before{left:-10px;top:50%;margin:-10px 0 0;border:10px solid transparent;border-left:0;border-right-color:#fff}}
 
 .hud-skrivbar{position:absolute;left:0;top:0;transform-origin:50% 100%;width:190px;padding:6px 10px 8px;border-radius:9px;background:${LAGER_SVAG},rgba(25,28,36,.88);color:#fff;font:800 13px/1.2 system-ui;box-shadow:0 6px 14px rgba(0,0,0,.3)}

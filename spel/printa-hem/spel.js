@@ -4700,6 +4700,11 @@ const klockText = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${Strin
 const saljPris = (typ) => {
   if (VAROR[typ]?.pris > 0) return Math.round(VAROR[typ].pris * (1 + trimNiva('pris') * 0.1));
   if (VAROR[typ]?.lyx) return Math.round(VAROR[typ].gram * 0.1);
+  if (typ.startsWith('tapet_')) return Math.round((TAPETER[Number(typ.split('_')[1])]?.pris || 200) * 0.5);   // köpt hos Ali – tillbaka för halva priset
+  if (VAROR[typ]?.present) return Math.round(VAROR[typ].present * 0.5);
+  if (VAROR[typ]?.proto) return Math.round(VAROR[typ].proto.pris * 0.4);
+  if (/^rulle[2-5]$/.test(typ)) return 60 * Number(typ.slice(5));
+  if (/^fynd[2-5]$/.test(typ)) return 40 * Number(typ.slice(4));
   if (typ === 'rulle') return S.dag >= 3 ? 40 : 0;   // från dag 3 printar Ali själv och vill köpa rullar                                    // Ali köper rullar billigt (och säljer för 150) – printa hellre
   const m = typ.startsWith('byggsats:') && MASKINER[typ.split(':')[1]];
   if (m) return Math.max(20, Math.round(m.gram * m.delar * SALJ_TILLBAKA));
@@ -4783,7 +4788,42 @@ function aliSaljLista() {
   const ager = {};
   for (const p of S.hotbar) if (p) ager[p.typ] = (ager[p.typ] || 0) + p.n;
   for (const [t, n] of Object.entries(S.forrad)) ager[t] = (ager[t] || 0) + n;
-  return Object.entries(ager).filter(([t, n]) => n > 0 && saljPris(t)).map(([t, n]) => ({ key: 's:' + t, typ: t, n, pris: prisNu(t), bas: saljPris(t) }));
+  const gv = aktivGava();
+  return Object.entries(ager).filter(([t, n]) => n > 0 && saljPris(t) && t !== gv).map(([t, n]) => ({ key: 's:' + t, typ: t, n, pris: prisNu(t), bas: saljPris(t), grupp: saljGrupp(t) }));
+}
+// det Ali inte köper: mammas burkar, Rolfs presenter till dig, sällsynta fynd – och gåvan Rolf väntar på
+function aliEjLista() {
+  const ager = {};
+  for (const p of S.hotbar) if (p) ager[p.typ] = (ager[p.typ] || 0) + p.n;
+  for (const [t, n] of Object.entries(S.forrad)) ager[t] = (ager[t] || 0) + n;
+  const gv = aktivGava();
+  return Object.entries(ager).filter(([t, n]) => n > 0 && (t === gv || !saljPris(t)) && (VAROR[t] || t.startsWith('byggsats:'))).map(([t, n]) => ({ typ: t, n }));
+}
+const SALJ_GRUPPER = ['Dina printar', 'Gåvor du printat', 'Material', 'Byggsatser och maskiner', 'Köpt hos Ali'];
+function saljGrupp(t) {
+  if (t.startsWith('byggsats:')) return 'Byggsatser och maskiner';
+  if (t === 'rulle' || /^(rulle|fynd)[2-5]$/.test(t)) return 'Material';
+  if (t.startsWith('tapet_') || VAROR[t]?.present || VAROR[t]?.proto) return 'Köpt hos Ali';
+  if (ROLF.some((x) => x.vara === t) || VAROR[t]?.gava) return 'Gåvor du printat';
+  return 'Dina printar';
+}
+const ALI_NEJ = {
+  burk: 'Mammas sylt? Sån skit köper jag inte. Ät upp den.',
+  mogel: 'Den där har mögel. Ut ur min butik med den.',
+  rolf: 'Det där fick du av Rolf. Sånt säljer man inte. Har du inget hjärta?',
+  sallsynt: 'Det där är sällsynt. Behåll det. Jag har inte råd ändå.',
+  trumstockar: 'Rolfs trumstockar? Aldrig. Han skulle gråta.',
+  rulle: 'Rullar köper jag inte än. Printa nåt av den i stället.',
+  gava: 'Den där är till Rolf. Lägg den i hans brevlåda vid grinden.',
+};
+function aliNejFor(t) {
+  if (t === aktivGava()) return ALI_NEJ.gava;
+  if (t === 'rulle') return ALI_NEJ.rulle;
+  if (t === 'trumstockar') return ALI_NEJ.trumstockar;
+  if (t.startsWith('burk_mogel')) return ALI_NEJ.mogel;
+  if (t.startsWith('burk_')) return ALI_NEJ.burk;
+  if (t.startsWith('r_')) return ALI_NEJ.rolf;
+  return ALI_NEJ.sallsynt;
 }
 let aliSagt = '';
 let aliMunTimer = 0;
@@ -4804,7 +4844,7 @@ function aliMinns() {
 }
 function oppnaMarknad() {
   // en vy, två nivåer som alltid syns: SÄLJ (grönt – du får pengar) överst, KÖP (rött – det kostar) under
-  const kopL = aliKopLista(), saljL = aliSaljLista();
+  const kopL = aliKopLista(), saljL = aliSaljLista(), ejL = aliEjLista();
   const hitta = (k) => k?.startsWith('s:') ? saljL.find((x) => 's:' + x.key === k) : k?.startsWith('k:') ? kopL.find((x) => 'k:' + x.key === k) : null;
   if (!hitta(aliVald)) aliVald = saljL[0] ? 's:' + saljL[0].key : kopL[0] ? 'k:' + kopL[0].key : null;
   const vald = hitta(aliVald), iKop = aliVald?.startsWith('k:');
@@ -4815,8 +4855,9 @@ function oppnaMarknad() {
   // SÄLJ
   const allt = saljL.reduce((a, x) => a + summaFor(x.typ, x.n), 0);
   kropp += `<div class="ali-niva salj"><div class="ali-niva-rub"><span>${ik('salj')} Sälj till Ali</span><small>du får pengar</small>${saljL.length ? knapp({ text: `Sälj allt  +${allt.toLocaleString('sv-SE')} kr`, typ: 'plus', attr: 'data-saljallt' }) : ''}</div>`
-    + (saljL.length ? grid(saljL.map((x) => uiRuta({ bild: tumme(x.typ), attr: `data-val="s:${x.key}"`, vald: 's:' + x.key === aliVald, antal: x.n, pris: 'Sälj +' + summaFor(x.typ, x.n), prisTyp: 'plus', titel: namnFor(x.typ), etikett: true })))
-      : '<p class="ui-tom">Du har inget att sälja. Printa saker på skrivaren – de hamnar i din verktygsrad.</p>') + '</div>';
+    + (saljL.length ? '<div class="ali-grupper">' + SALJ_GRUPPER.filter((gr) => saljL.some((x) => x.grupp === gr)).map((gr) => `<div class="ali-grupp"><b>${gr}</b>${grid(saljL.filter((x) => x.grupp === gr).map((x) => uiRuta({ bild: tumme(x.typ), attr: `data-val="s:${x.key}"`, vald: 's:' + x.key === aliVald, antal: x.n, pris: 'Sälj +' + summaFor(x.typ, x.n), prisTyp: 'plus', titel: namnFor(x.typ), etikett: true })))}</div>`).join('') + '</div>'
+      : '<p class="ui-tom">Du har inget att sälja. Printa saker på skrivaren – de hamnar i din verktygsrad.</p>')
+    + (ejL.length ? `<div class="ali-grupp ej"><b>${ik('las')} Ali köper inte</b>${grid(ejL.map((x) => uiRuta({ bild: tumme(x.typ), attr: `data-ej="${x.typ}"`, antal: x.n, pris: x.typ === aktivGava() ? 'Till Rolf' : x.typ === 'rulle' ? 'Från dag 3' : 'Säljs inte', prisTyp: 'minus', titel: namnFor(x.typ), etikett: true })))}</div>` : '') + '</div>';
   // Rolfs önskan finns inte hos Ali – den printar du själv
   { const gv = aktivGava(); if (gv && !harGava(gv)) kropp += `<div class="ali-tips">${ik('gava')} <span><b>Rolfs önskan: ${VAROR[gv]?.namn || gv}</b> – ${S.ritningar.includes('gava:' + gv) ? 'du har 3D-modellen. Printa den på skrivaren under <b>Gåvor</b>' : 'köp 3D-modellen här nere under <b>Rolfs önskan</b>, printa den på skrivaren'} och lägg den i Rolfs brevlåda vid grinden.</span></div>`; }
   // KÖP
@@ -4884,6 +4925,7 @@ function oppnaMarknad() {
       sparaSnart(); oppnaMarknad();
     };
     const s1 = el.querySelector('[data-salj1]'); if (s1) s1.onclick = () => salj1(1);
+    el.querySelectorAll('[data-ej]').forEach((k) => { k.onclick = () => { aliRepl = aliNejFor(k.dataset.ej); ljud.fel(); oppnaMarknad(); }; });
     const sx = el.querySelector('[data-saljallt]'); if (sx) sx.onclick = () => {
       let summa = 0, antal = 0;
       for (const x of saljL) { const n = antalInv(x.typ); if (!n) continue; const su = summaFor(x.typ, n); taBortInv(x.typ, n); if (!x.typ.startsWith('byggsats:') && !VAROR[x.typ]?.lyx) S.saltIdag = { ...(S.saltIdag || {}), [x.typ]: saltIdag(x.typ) + n }; summa += su; antal += n; }
@@ -6970,7 +7012,7 @@ function rostManus() {
   SMS_POOL.forEach((m) => { add(m.vem, m.text); (m.svar || []).forEach(([, f]) => add(m.vem, f)); });
   Object.values(FAMILJ).flat().forEach(([v, t]) => add(v, t));
   Object.values(SAMTAL).forEach((sm) => sm.rader.forEach(([v, t]) => add(v, t)));
-  LIV_ROST.forEach(([v, t]) => add(v, t));
+  LIV_ROST.forEach(([v, t]) => add(v, t)); Object.values(ALI_NEJ).forEach((t) => add('ali', t));
   BROR_IBLAND.forEach((t) => add('bror', t)); MAMMA_IBLAND.forEach((t) => add('mamma', t));
   [...MAMMA_SVAR_K1, ...Object.values(MAMMA_K1_SLUT)].forEach((t) => add('mamma', t)); MAMMA_SVAR_K2.forEach((t) => add('mamma', t));
   [...ALI_HEJ, ...ALI_KLICKAR, ...ALI_BLOMMAR].forEach((t) => add('ali', t)); add('ali', ALI_FORSTA); ALI_STANGT.forEach((t) => add('ali', t)); Object.values(ALI_SPECIAL).forEach((t) => add('ali', t));
@@ -7274,7 +7316,7 @@ function uppdateraLiv(dt) {
   if (Math.hypot(p.x - katt.x, p.z - katt.z) < 2.5 && nu > katt.nastaMjau) { katt.nastaMjau = nu + 30000; varldsBubbla(kajsa, 'Mjau.', 2.2, 0.75); ton(880, 0.12, 0.03, 'triangle'); ton(660, 0.18, 0.03, 'triangle', 0.12); }
   if (bengt.visible && nu > bengtSynsTill) bengt.visible = false;
 }
-window.__printahem = { kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, aliHamtarLadan, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, jobbNu, oppnaPrintMeny, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, oppnaMarknad, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 
