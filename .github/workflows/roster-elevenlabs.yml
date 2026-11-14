@@ -7,12 +7,16 @@ on:
     inputs:
       fil:
         description: 'Listan med repliker (JSON)'
-        default: 'verktyg/roster-pilot.json'
+        default: 'verktyg/roster-taggar.json'
         required: true
       lage:
         description: 'nya = bara klipp som saknas, alla = gör om allt i listan'
         default: 'nya'
         required: true
+      figurer:
+        description: 'Bara dessa röster, t.ex. rolf,mamma,pappa (tomt = alla som har röst-id)'
+        default: ''
+        required: false
 permissions:
   contents: write
 concurrency: roster-elevenlabs
@@ -27,7 +31,7 @@ jobs:
       - name: Generera klipp
         env:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
-        run: node verktyg/roster_eleven.mjs "${{ inputs.fil }}" "${{ inputs.lage }}"
+        run: node verktyg/roster_eleven.mjs "${{ inputs.fil }}" "${{ inputs.lage }}" "${{ inputs.figurer }}"
       - name: Checka in ljudfilerna
         run: |
           git config user.name "github-actions[bot]"
@@ -37,3 +41,4 @@ jobs:
           git commit -m "Röster: ElevenLabs-klipp från ${{ inputs.fil }}"
           git pull --rebase
           git push
+    timeout-minutes: 120

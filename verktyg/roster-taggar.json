@@ -459,6 +459,33 @@
   "hand": false
  },
  {
+  "id": "rolf-4ec572bb",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Sopbilsresan: konditoriet",
+  "visad": "Vi sålde huset 2009. Hon behövde vård. Ja behövde int ett hus. Ja behövde henne.",
+  "skickas": "[old, tired, thick Värmland accent, calm] Vi sålde huset tvåtusennio. [short pause] Hon behövde vård. Ja behövde inte ett hus. Ja behövde henne. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-d4339ee5",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Sopbilsresan: konditoriet",
+  "visad": "Hon dog för sju år sen. Hon hade gillat dej. Hon gillade fôlk som fixar saker.",
+  "skickas": "[old, tired, thick Värmland accent, calm] [sighs] Hon dog för sju år sen. Hon hade gillat dej. [sorrowful] Hon gillade folk som fixar saker.",
+  "hand": false
+ },
+ {
+  "id": "rolf-0f90b95d",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Sopbilsresan: konditoriet",
+  "visad": "Den e bäst i länet. Birgitta tyckte de oxå.",
+  "skickas": "[old, tired, thick Värmland accent, calm] [sighs] Den är bäst i länet. [sorrowful] [softly] Birgitta tyckte det också.",
+  "hand": false
+ },
+ {
   "id": "rolf-b13a79c0",
   "figur": "rolf",
   "rost": "rolf",
@@ -756,12 +783,12 @@
   "hand": false
  },
  {
-  "id": "pappa-6fd7d6b3",
+  "id": "pappa-821cb187",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Nämen tjenare, Rolf!",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Nämen tjenare, Rolf.",
+  "visad": "Tjenare. Tjena, Rolf.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Tjenare. Tjena, Rolf.",
   "hand": false
  },
  {
@@ -792,12 +819,12 @@
   "hand": false
  },
  {
-  "id": "pappa-41dd7cd0",
+  "id": "pappa-6d5e82c2",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Oj oj oj. Vilken kärra. Låter som en dröm.",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Oj oj oj. Vilken kärra. Låter som en dröm.",
+  "visad": "Mm. Fin kärra.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Mm. Fin kärra.",
   "hand": false
  },
  {
@@ -828,21 +855,21 @@
   "hand": false
  },
  {
-  "id": "pappa-c3596370",
+  "id": "pappa-f44a7328",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Ha ha! Smart karl.",
+  "visad": "Smart karl.",
   "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Smart karl.",
   "hand": false
  },
  {
-  "id": "pappa-aede0e6f",
+  "id": "pappa-e7117567",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Tjenare! Vilket ställe du har!",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Tjenare. Vilket ställe du har.",
+  "visad": "Tjenare. Jaha. Här bor du alltså.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Tjenare. Jaha. Här bor du alltså.",
   "hand": false
  },
  {
@@ -859,7 +886,7 @@
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Aha, vad lugnt då!",
+  "visad": "Aha, vad lugnt då.",
   "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [dismissive] Aha, vad lugnt då.",
   "hand": false
  },
@@ -913,7 +940,7 @@
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Fint jobbat!",
+  "visad": "Fint jobbat.",
   "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Fint jobbat.",
   "hand": false
  },
@@ -931,7 +958,7 @@
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Mamma hälsar!",
+  "visad": "Mamma hälsar.",
   "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Mamma hälsar.",
   "hand": false
  },
@@ -940,7 +967,7 @@
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Tjenare! Bara åkte förbi.",
+  "visad": "Tjenare. Bara åkte förbi.",
   "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Tjenare. Bara åkte förbi.",
   "hand": false
  },
@@ -963,21 +990,21 @@
   "hand": false
  },
  {
-  "id": "pappa-1d480973",
+  "id": "pappa-343a9470",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Oj oj oj. Ta en tupplur, de gör ja.",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Oj oj oj. Ta en tupplur, det gör ja.",
+  "visad": "Jaha. Ta en tupplur. De gör ja.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Jaha. Ta en tupplur. Det gör ja.",
   "hand": false
  },
  {
-  "id": "pappa-c3c99296",
+  "id": "pappa-eba26e07",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Tjena tjena! Nya dojor, kolla.",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Tjena tjena. Nya dojor, kolla.",
+  "visad": "Tjena. Nya dojor.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Tjena. Nya dojor.",
   "hand": false
  },
  {
@@ -999,21 +1026,21 @@
   "hand": false
  },
  {
-  "id": "pappa-1ae63b6a",
+  "id": "pappa-5601f9aa",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Jaha! Mamma har ditt foto på kylen.",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [clears throat] Jaha. [sighs] Mamma har ditt foto på kylen.",
+  "visad": "Mm. Mamma har ditt foto på kylen.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] Mm. [sighs] Mamma har ditt foto på kylen.",
   "hand": false
  },
  {
-  "id": "pappa-e87fdeb3",
+  "id": "pappa-470c97a3",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Hallå där! Ja har cyklat hit. Mamma tycker ja ska röra på mej.",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [clears throat] Hallå där. Ja har cyklat hit. [sighs] Mamma tycker ja ska röra på mej.",
+  "visad": "Ja har cyklat hit. Mamma tycker ja ska röra på mej.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] Ja har cyklat hit. [sighs] Mamma tycker ja ska röra på mej.",
   "hand": false
  },
  {
@@ -1048,7 +1075,7 @@
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Tjenare! Mamma sa att ja skulle kolla läget.",
+  "visad": "Tjenare. Mamma sa att ja skulle kolla läget.",
   "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [clears throat] Tjenare. [sighs] Mamma sa att ja skulle kolla läget.",
   "hand": false
  },
@@ -1075,26 +1102,26 @@
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Aha, vad lugnt då! Fin väg hit förresten. Nyasfalterad.",
+  "visad": "Aha, vad lugnt då. Fin väg hit förresten. Nyasfalterad.",
   "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [dismissive] Aha, vad lugnt då. Fin väg hit förresten. Nyasfalterad.",
   "hand": false
  },
  {
-  "id": "pappa-e4ba85b0",
+  "id": "pappa-533deaa1",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Tjena! Såg Formel 1 i natt. Vilket race!",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Tjena. Såg Formel ett i natt. Vilket race.",
+  "visad": "Tjena. Såg Formel 1 i natt. Långt race.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Tjena. Såg Formel ett i natt. Långt race.",
   "hand": false
  },
  {
-  "id": "pappa-359d5d00",
+  "id": "pappa-e5f4fe79",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Verstappen var en räv bakom örat.",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] Verstappen var en räv bakom örat. [chuckles]",
+  "visad": "Verstappen vann. Igen.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] Verstappen vann. [chuckles] Igen.",
   "hand": false
  },
  {
@@ -1111,17 +1138,17 @@
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Jaha! Golvet e bra för ryggen. Ja sov på golvet i lumpen.",
+  "visad": "Jaha. Golvet e bra för ryggen. Ja sov på golvet i lumpen.",
   "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Jaha. Golvet är bra för ryggen. Ja sov på golvet i lumpen.",
   "hand": false
  },
  {
-  "id": "pappa-f5fb0332",
+  "id": "pappa-7ecb49f5",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Hallå! Ja har tagit ett dopp i sjön. Iskallt. Fantastiskt!",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Hallå. Ja har tagit ett dopp i sjön. Iskallt. Fantastiskt.",
+  "visad": "Ja har badat i sjön. Kallt.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Ja har badat i sjön. Kallt.",
   "hand": false
  },
  {
@@ -1161,21 +1188,21 @@
   "hand": false
  },
  {
-  "id": "pappa-37be90cf",
+  "id": "pappa-500770e8",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Ha ha! Grannens grabb har två lägenheter.",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Grannens grabb har två lägenheter.",
+  "visad": "Jaså. Grannens grabb har två lägenheter.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Jaså. Grannens grabb har två lägenheter.",
   "hand": false
  },
  {
-  "id": "pappa-a3653442",
+  "id": "pappa-4be23f12",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Hallå! Skjulet lutar lite va?",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [clears throat] Hallå. [quietly] Skjulet lutar lite va?",
+  "visad": "Skjulet lutar lite, va.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Skjulet lutar lite, va.",
   "hand": false
  },
  {
@@ -1201,7 +1228,7 @@
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Aha, vad lugnt då! Ja hade körkort och Volvo när ja var i din ålder.",
+  "visad": "Aha, vad lugnt då. Ja hade körkort och Volvo när ja var i din ålder.",
   "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [dismissive] Aha, vad lugnt då. Ja hade körkort och Volvo när ja var i din ålder.",
   "hand": false
  },
@@ -1210,7 +1237,7 @@
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Tjena! Ska du bo här i vinter också?",
+  "visad": "Tjena. Ska du bo här i vinter också?",
   "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [clears throat] Tjena. [quietly] Ska du bo här i vinter också?",
   "hand": false
  },
@@ -1224,21 +1251,21 @@
   "hand": false
  },
  {
-  "id": "pappa-c6561cbc",
+  "id": "pappa-3d6c51bd",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Oj oj oj. Långkalsonger, de e grejen. Mamma köper.",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] Oj oj oj. Långkalsonger, det är grejen. [sighs] Mamma köper.",
+  "visad": "Långkalsonger. De e grejen. Mamma köper.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] Långkalsonger. Det är grejen. [sighs] Mamma köper.",
   "hand": false
  },
  {
-  "id": "pappa-5ae49f28",
+  "id": "pappa-6a3f59e3",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Tjenare! Tar du de lugnt idag, eller?",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [clears throat] Tjenare. [quietly] Tar du det lugnt idag, eller?",
+  "visad": "Tjena. Tar du de lugnt idag, eller.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Tjena. Tar du det lugnt idag, eller.",
   "hand": false
  },
  {
@@ -1251,21 +1278,21 @@
   "hand": false
  },
  {
-  "id": "pappa-4c98d198",
+  "id": "pappa-cf947efc",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Kanon!",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Kanon.",
+  "visad": "Okej.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Okej.",
   "hand": false
  },
  {
-  "id": "pappa-1634d724",
+  "id": "pappa-262b9955",
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Kolla mössan. Ny. AIK-färger, fast ja e Djurgårdare. Den var på rea.",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Kolla mössan. Ny. AIK-färger, fast ja är Djurgårdare. [chuckles] Den var på rea. [chuckles]",
+  "visad": "Ny mössa. AIK-färger, fast ja e Djurgårdare. Den var på rea.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Ny mössa. AIK-färger, fast ja är Djurgårdare. [chuckles] Den var på rea. [chuckles]",
   "hand": false
  },
  {
@@ -1273,8 +1300,8 @@
   "figur": "pappa",
   "rost": "pappa",
   "var": "Pappas besök (med Rolf första gången)",
-  "visad": "Nä, ja drar nu.",
-  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Nä, ja drar nu.",
+  "visad": "Nä. Ja drar nu.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Nä. Ja drar nu.",
   "hand": false
  },
  {
