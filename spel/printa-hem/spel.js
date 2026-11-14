@@ -2881,7 +2881,8 @@ function uppdateraBlick(dt) {
   spelare.yaw += d * Math.min(1, dt * 3.5); spelare.pitch += (0.02 - spelare.pitch) * Math.min(1, dt * 3);
   blickMal.kvar -= dt; if (blickMal.kvar <= 0) blickMal = null;
 }
-function aliRopar() { tittaMot(ALI.x, ALI.z, 1.6); setTimeout(() => { prata('ali', ALI_ROP); ui.toast('Ali ropar från andra sidan vägen', 'guld'); }, 500); }
+let aliHarRopat = false;
+function aliRopar() { if (aliHarRopat) return; aliHarRopat = true; tittaMot(ALI.x, ALI.z, 1.6); setTimeout(() => prata('ali', ALI_ROP), 500); }
 const DU_BYGG = 'Okej. Låt oss bygga. Först en skylt, så att alla vet vem som bor här.';
 function uppdateraMalPil() {
   const p = malPunkt();
@@ -4175,6 +4176,7 @@ function uppdateraSopbil(dt) {
   bil.t += dt;
   if (bil.fas === 'borta') {
     bil.fart = 0;
+    if (S.dag < 2 && bil.t > -SOPBIL_FORSTA) bil.t = -SOPBIL_FORSTA;   // sopbilen börjar komma dag 2 – dag 1 handlar om skrivaren och Ali
     if (bil.t >= 0) { bil.fas = 'in'; bil.t = 0; sopbil.position.set(-90, 0, VAG_Z); sopbil.rotation.y = 0; tuta(); }
   } else if (bil.fas === 'in') {
     const kvar = TIPP.x - sopbil.position.x;
@@ -4315,6 +4317,8 @@ function forstaPrintWow(sk) {
   studs();
   const e = document.createElement('i'); e.className = 'hud-pop stor'; e.textContent = 'Din första print!';
   document.body.appendChild(e); setTimeout(() => e.remove(), 1900);
+  // sen vänds blicken mot Ali – där säljer man
+  if (S.dag === 1) setTimeout(aliRopar, 2600);
 }
 function plockPop(gram = 200) {
   const nu = performance.now(); komboN = nu - komboT < 2500 ? komboN + 1 : 1; komboT = nu;
