@@ -271,7 +271,7 @@ for (const v of Object.values(VAROR)) if (v.lyx && v.recept >= 150) v.recept = M
 // Saker som behövs för dagens uppdrag släpps alltid direkt (annars kan man fastna).
 // Övrigt (uppgraderingar, recept, lyx) släpps billigast först, två om dagen – en naturlig progression.
 const SLAPP_PER_DAG = 2;
-const SLAPP_FRI = new Set(['grip', 'kvarnmotor', 'sang', 'dorr', 'vaggar', 'tak', 'fonster', 'golv', 'taklampa', 'tapeter', 'stortratt', 'bord', 'sol', 'skrivare2', 'gamingbod', 'karra', 'hardkniv', 'diamantkniv', 'mobilstall', 'skrivare3', 'jacuzzi', 'gamingstol', 'hogtalare', 'ledpinne']);
+const SLAPP_FRI = new Set(['fagelholk', 'lampskarm', 'dronare', 'skateboard', 'gitarr', 'cykelram', 'pkajak', 'grip', 'kvarnmotor', 'sang', 'dorr', 'vaggar', 'tak', 'fonster', 'golv', 'taklampa', 'tapeter', 'stortratt', 'bord', 'sol', 'skrivare2', 'gamingbod', 'karra', 'hardkniv', 'diamantkniv', 'mobilstall', 'skrivare3', 'jacuzzi', 'gamingstol', 'hogtalare', 'ledpinne']);
 const SLAPP_ORIG = {};
 const slappPris = (id) => MASKINER[id]?.ritning ?? VAROR[id]?.recept ?? 0;
 for (const [id, v] of [...Object.entries(MASKINER), ...Object.entries(VAROR)]) {
@@ -2494,7 +2494,7 @@ function aliHamtarLadan() {
   const inn = S.auto?.innehall || {}, typer = Object.keys(inn).filter((t) => inn[t] > 0);
   if (!typer.length) return;
   let summa = 0, antal = 0;
-  for (const t of typer) { summa += summaFor(t, inn[t]); S.saltIdag[t] = (S.saltIdag[t] || 0) + inn[t]; antal += inn[t]; }
+  for (const t of typer) { summa += summaFor(t, inn[t]); S.saltIdag[t] = (S.saltIdag[t] || 0) + inn[t]; S.saltTot = { ...(S.saltTot || {}), [t]: (S.saltTot?.[t] || 0) + inn[t] }; antal += inn[t]; }
   S.mynt += summa; S.stat.salt += antal; S.auto.innehall = {};
   setTimeout(() => sms('ali', `Ali här. Hämtade lådan klockan sex. ${antal} saker. ${summa.toLocaleString('sv-SE')} kr på ditt konto. Jag bar den själv. Den var tung.`), 2500);
 }
@@ -4602,7 +4602,7 @@ function oppnaPrintMeny(sk) {
   const lagg = (flik, id, attr, ikon, namn, gram, tid, info, pris) => saker.push({ flik, id, attr, ikon, namn, gram, tid, info, pris });
   for (const [id, v] of Object.entries(VAROR)) {
     if (v.kop) continue;
-    if (v.pris > 0 && harRecept(id) && (!v.niva || nivaUpplast(v.niva))) lagg('salj', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid,
+    if (v.pris > 0 && harRecept(id) && (!v.niva || (nivaUpplast(v.niva) && (antalInv('rulle' + v.niva) || antalInv('fynd' + v.niva))))) lagg('salj', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid,
       `🪙 ${prisNu(id)} kr hos Ali idag${prisNu(id) < v.pris ? ` (fullpris ${v.pris} – marknaden är mättad)` : ` · ${Math.round(v.pris / v.gram * RULLE)} kr per rulle`}${v.trivsel ? ' · kan också ställas ut' : ''}`, prisNu(id));
     else if (v.lyx && harRecept(id)) lagg('hem', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, `✨ Trivsel +${v.trivsel} · ställ den i din fristad`);
     else if (id === 'sang' && S.ritningar.includes('sang') && !harSang()) lagg('hem', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, '🛏️ En riktig säng till skjulet');
@@ -4726,6 +4726,35 @@ const summaFor = (t, n) => { let s2 = 0; for (let i = 0; i < n; i++) s2 += prisN
 let aliRepl = '', aliFlik = 'kop';
 let aliVald = null;
 const ALI_FORSTA = 'Hej. Jag är Ali. Pappas butik – min sedan tjugofem år. Jag köper det du printar.';
+// ---------- En logisk kedja: printa och sälj det du har – då får du råd med och låser upp nästa recept ----------
+const SALJ_KEDJA = ['nyckelring', 'kruka', 'pall', 'mobilstall', 'fagelholk', 'lampskarm', 'dronare', 'skateboard', 'gitarr', 'cykelram', 'pkajak'];
+const KEDJA_KRAV = 3;   // sälj så här många av förra receptet innan Ali tar fram nästa
+const harKedja = (id) => !VAROR[id]?.recept || harRecept(id);
+function kedjaLas(id) {
+  const i = SALJ_KEDJA.indexOf(id); if (i <= 0) return '';
+  const forra = SALJ_KEDJA[i - 1]; if (!harKedja(forra)) return `Först ${VAROR[forra].namn.toLowerCase()}. Ett recept i taget.`;
+  const salt = S.saltTot?.[forra] || 0; if (salt >= KEDJA_KRAV) return '';
+  return `Sälj ${KEDJA_KRAV} ${VAROR[forra].namn.toLowerCase()} först (${salt}/${KEDJA_KRAV}).`;
+}
+// Ali visar lagom mycket: det du behöver nu, nästa recept i kedjan och några få val per hylla. Resten bakom "Visa allt".
+let aliVisaAllt = false, aliDolda = 0;
+const ALI_MAX = { 'Inredning': 3, 'Uppgraderingar – bär mer, gör snabbare': 3, 'Tapeter – för skjulet och boden': 2, 'Alis prototyper – en av varje': 2, 'Trimning – tar aldrig slut': 3 };
+function aliSalla(L) {
+  const recept = L.filter((x) => x.sekt === 'Recept att sälja');
+  const kedjaNasta = SALJ_KEDJA.find((id) => !harKedja(id));
+  let ut = L.filter((x) => x.sekt !== 'Recept att sälja');
+  const nasta = recept.find((x) => x.key === 'r:' + kedjaNasta) || recept.filter((x) => !SALJ_KEDJA.includes(x.key.slice(2)))[0];
+  if (nasta) { const las = kedjaLas(nasta.key.slice(2)); if (las) { nasta.las = las; nasta.faktaLista = [['las', las, 'varn'], ...nasta.faktaLista]; } ut.push(nasta); }
+  if (aliVisaAllt) return { lista: ut.concat(recept.filter((x) => x !== nasta)), dolda: 0 };
+  let dolda = recept.length - (nasta ? 1 : 0);
+  for (const [sekt, max] of Object.entries(ALI_MAX)) {
+    const i = ut.filter((x) => x.sekt === sekt);
+    if (i.length <= max) continue;
+    const behall = i.slice().sort((a, b) => (SLAPP_FRI.has(a.key.slice(2)) ? 0 : 1) - (SLAPP_FRI.has(b.key.slice(2)) ? 0 : 1) || a.pris - b.pris).slice(0, max);
+    ut = ut.filter((x) => x.sekt !== sekt || behall.includes(x)); dolda += i.length - max;
+  }
+  return { lista: ut, dolda };
+}
 function aliKopLista() {
   const L = [];
   const add = (sekt, key, bild, namn, text, pris, faktaLista, kop) => L.push({ sekt, key, bild, namn, text, pris, faktaLista, kop, storlek: key.startsWith('m:') ? storlekRuta(key.slice(2), true) : key.startsWith('r:') ? storlekFor(key.slice(2)) : key === 'sang' ? 1 : 0 });
@@ -4774,7 +4803,7 @@ function aliKopLista() {
       () => { S.ritningar.push('recept:' + id); aliRepl = `Min ${v.namn.toLowerCase()}… AI:n och jag gjorde den i natt. Printa den. Snälla.`; return true; });
     else add('Recept att sälja', 'r:' + id, tumme(id), 'Recept: ' + v.namn, 'Printa hur många du vill och sälj till Ali. Säljer du många samma dag sjunker priset.', v.recept,
       [['mynt', `Ali betalar ${v.pris} kr`, 'plus'], ['rulle', `${Math.round(v.pris / v.gram * RULLE)} kr per rulle`], ['skrivare', `Skrivare ${STORLEK_NAMN[storlekFor(id)]}`, storlekFor(id) > storstaSkrivare() ? 'varn' : '']],
-      () => { S.ritningar.push('recept:' + id); aliRepl = `${v.namn}? Bra val. Folk köper sånt. Jag vet inte varför.`; return true; });
+      () => { if (kedjaLas(id)) { aliRepl = kedjaLas(id); return false; } S.ritningar.push('recept:' + id); aliRepl = `${v.namn}? Bra val. Folk köper sånt. Jag vet inte varför.`; return true; });
   }
   for (const [k, t] of Object.entries(TRIM)) {
     if (!t.tidig && !(S.kapitelKlart || S.rolf.i >= 3)) continue;
@@ -4782,7 +4811,8 @@ function aliKopLista() {
     add('Trimning – tar aldrig slut', 't:' + k, trimBild(k), `${t.namn} nivå ${trimNiva(k) + 1}`, t.beskr(trimNiva(k) + 1) + (trimNiva(k) ? ` (nu: ${t.beskr(trimNiva(k)).toLowerCase()})` : ''), trimPris(k), [['oandlig', `Nivå ${trimNiva(k)} → ${trimNiva(k) + 1}`]],
       () => { S.trim = { ...(S.trim || {}), [k]: trimNiva(k) + 1 }; aliRepl = ['AI:n och jag optimerade hela natten. Ingen sömn. Värt det.', 'Trimmad. Snabbare än min pappa någonsin var.', 'Nästa nivå kostar mer. Så funkar teknik. Och mitt liv.'][Math.floor(Math.random() * 3)]; ui.toast(`${t.namn} nivå ${trimNiva(k)}: ${t.beskr(trimNiva(k))}`, 'guld'); return true; });
   }
-  return L;
+  const { lista, dolda } = aliSalla(L); aliDolda = dolda;
+  return lista;
 }
 // trimningens bild: saken som blir bättre + en bricka med vad som händer
 const TRIM_BILD = { kvarn: [null, '+25 % fart', 'kvarn'], skrivare: ['skrivare2', '+20 % fart'], pris: [null, '+10 % kr', 'mynt'], sopbil: [null, '+3 skräp', 'lastbil'], batteri: ['bank', '+100 ström'], utlager: ['rulle', 'fler rullar'], band: ['matarband', 'snabbare band'], arm: ['lastarm', 'lyfter mer'] };
@@ -4874,10 +4904,15 @@ function oppnaMarknad() {
     // unika fynd: finns bara en gång och försvinner när du köpt dem – egen guldram överst
     const UNIKA = ['Rolfs önskan', 'Present till Rolf', 'Alis prototyper – en av varje'];
     const alla = [...new Set(kopL.map((x) => x.sekt))], unika = alla.filter((x) => UNIKA.includes(x)), sekts = alla.filter((x) => !UNIKA.includes(x));
-    const rutaK = (x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', prisIkon: 'kop', titel: x.namn, storlek: x.storlek, etikett: true });
-    if (unika.length) kropp += `<div class="ali-unik"><div class="ali-unik-rub"><span>★ Unika fynd</span><small>finns bara en gång – sen är de borta</small></div>${unika.map((sk) => `<div class="ali-unik-grupp"><b>${sk.replace(' – en av varje', '')}</b>${grid(kopL.filter((x) => x.sekt === sk).sort((a, b) => (S.mynt < a.pris) - (S.mynt < b.pris)).map(rutaK))}</div>`).join('')}</div>`;
-    kropp += sekts.map((sk) => sektion(sk) + grid(kopL.filter((x) => x.sekt === sk).sort((a, b) => (S.mynt < a.pris) - (S.mynt < b.pris)).map((x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', prisIkon: 'kop', titel: x.namn, storlek: x.storlek, etikett: true })))).join('')
+    const rutaK = (x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, last: !!x.las, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', prisIkon: 'kop', titel: x.namn, storlek: x.storlek, etikett: true });
+    const unikHtml = (lista) => lista.length ? `<div class="ali-unik"><div class="ali-unik-rub"><span>★ Unika fynd</span><small>finns bara en gång – sen är de borta</small></div>${lista.map((sk) => `<div class="ali-unik-grupp"><b>${sk.replace(' – en av varje', '')}</b>${grid(kopL.filter((x) => x.sekt === sk).sort((a, b) => (S.mynt < a.pris) - (S.mynt < b.pris)).map(rutaK))}</div>`).join('')}</div>` : '';
+    const forst = unika.filter((x) => x === 'Rolfs önskan'), sist = unika.filter((x) => x !== 'Rolfs önskan');
+    sekts.sort((a, b) => (b === 'Recept att sälja') - (a === 'Recept att sälja') || (b === 'Bygg ut hemmet') - (a === 'Bygg ut hemmet'));   // det viktigaste först: nästa recept och hemmet
+    kropp += unikHtml(forst);
+    kropp += sekts.map((sk) => sektion(sk) + grid(kopL.filter((x) => x.sekt === sk).sort((a, b) => (S.mynt < a.pris) - (S.mynt < b.pris)).map((x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, last: !!x.las, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', prisIkon: 'kop', titel: x.namn, storlek: x.storlek, etikett: true })))).join('')
+      + (aliDolda || aliVisaAllt ? `<div class="ali-visaallt">${knapp({ text: aliVisaAllt ? 'Visa färre' : `Visa allt (${aliDolda} till)`, typ: 'neutral', attr: 'data-visaallt' })}</div>` : '')
       + (Object.values(MASKINER).some((m) => !m.syns()) ? `<p class="ui-tom">${ik('las')} Fler 3D-modeller dyker upp när du kommer vidare – Ali sitter uppe med AI:n varje natt.</p>` : '');
+    kropp += unikHtml(sist);
   }
   kropp += '</div>';
   if (vald && iKop) {
@@ -4905,7 +4940,7 @@ function oppnaMarknad() {
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { aliFlik = k.dataset.flik; aliVald = null; aliRepl = aliFlik === 'salj' ? 'Visa vad du har. Snabbt.' : 'Titta gärna. Rör inte.'; ljud.plock(); oppnaMarknad(); }; });
     el.querySelectorAll('[data-val]').forEach((k) => {
       // sälj-rutor: ett klick säljer allt av den saken direkt (inget bekräfta)
-      k.onclick = () => { aliVald = k.dataset.val; if (aliVald.startsWith('s:')) { salj1(Infinity); return; } if (aliVald.startsWith('k:')) { const x = kopL.find((y) => 'k:' + y.key === aliVald); if (x && S.mynt >= x.pris) { kopDirekt(x); return; } if (x) { aliRepl = `Den kostar ${x.pris} kr. Du har ${S.mynt}. Printa och sälj mer.`; ljud.fel(); oppnaMarknad(); return; } } aliRepl = bubbla; ljud.plock(); oppnaMarknad(); };
+      k.onclick = () => { aliVald = k.dataset.val; if (aliVald.startsWith('s:')) { salj1(Infinity); return; } if (aliVald.startsWith('k:')) { const x = kopL.find((y) => 'k:' + y.key === aliVald); if (x?.las) { aliRepl = x.las; ljud.fel(); oppnaMarknad(); return; } if (x && S.mynt >= x.pris) { kopDirekt(x); return; } if (x) { aliRepl = `Den kostar ${x.pris} kr. Du har ${S.mynt}. Printa och sälj mer.`; ljud.fel(); oppnaMarknad(); return; } } aliRepl = bubbla; ljud.plock(); oppnaMarknad(); };
       k.ondblclick = () => el.querySelector('[data-kop],[data-salj1]')?.click();
     });
     function kopDirekt(x) {
@@ -4933,10 +4968,11 @@ function oppnaMarknad() {
       sparaSnart(); oppnaMarknad();
     };
     const s1 = el.querySelector('[data-salj1]'); if (s1) s1.onclick = () => salj1(1);
+    { const va = el.querySelector('[data-visaallt]'); if (va) va.onclick = () => { aliVisaAllt = !aliVisaAllt; oppnaMarknad(); }; }
     el.querySelectorAll('[data-ej]').forEach((k) => { k.onclick = () => { aliRepl = aliNejFor(k.dataset.ej); ljud.fel(); oppnaMarknad(); }; });
     const sx = el.querySelector('[data-saljallt]'); if (sx) sx.onclick = () => {
       let summa = 0, antal = 0;
-      for (const x of saljL) { const n = antalInv(x.typ); if (!n) continue; const su = summaFor(x.typ, n); taBortInv(x.typ, n); if (!x.typ.startsWith('byggsats:') && !VAROR[x.typ]?.lyx) S.saltIdag = { ...(S.saltIdag || {}), [x.typ]: saltIdag(x.typ) + n }; summa += su; antal += n; }
+      for (const x of saljL) { const n = antalInv(x.typ); if (!n) continue; const su = summaFor(x.typ, n); taBortInv(x.typ, n); if (!x.typ.startsWith('byggsats:') && !VAROR[x.typ]?.lyx) { S.saltIdag = { ...(S.saltIdag || {}), [x.typ]: saltIdag(x.typ) + n }; S.saltTot = { ...(S.saltTot || {}), [x.typ]: (S.saltTot?.[x.typ] || 0) + n }; } summa += su; antal += n; }
       S.mynt += summa; S.stat.salt += antal; ljud.mynt(); myntRegn(summa);
       giAliBonus();
       aliRepl = antal === 1 ? `Okej. ${summa} kr.` : `Allt?! ${antal} saker. Jag behöver ett större lager. Här: ${summa.toLocaleString('sv-SE')} kr.`;
