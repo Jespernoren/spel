@@ -127,11 +127,11 @@ export function knapp({ text, typ = 'neutral', attr = '', av = false, ikon = '' 
   return `<button class="ui-knapp ${typ}" ${attr} ${av ? 'disabled' : ''}>${ikon ? ik(ikon) : ''}<span>${text}</span></button>`;
 }
 // 1×1-ruta: miniatyr, pris uppe till vänster, antal nere till höger
-export function ruta({ bild = '', attr = '', vald = false, last = false, dyr = false, tom = false, antal = '', pris = '', prisTyp = '', titel = '', liten = false, storlek = 0, etikett = false, prisIkon = '' }) {
+export function ruta({ bild = '', attr = '', vald = false, last = false, dyr = false, tom = false, antal = '', pris = '', prisTyp = '', titel = '', liten = false, storlek = 0, niva = 0, etikett = false, prisIkon = '' }) {
   if (tom) return `<div class="ui-ruta tom ${liten ? 'liten' : ''}" ${attr}></div>`;
-  if (etikett) return `<div class="ui-ruta-med">${ruta({ bild, attr, vald, last, dyr, antal, pris, prisTyp, titel, liten, storlek })}<span class="ui-ruta-namn ${dyr || last ? 'dim' : ''}">${esc(String(titel).replace(/^(Ritning|3D-modell|Recept|Prototyp): /, ''))}</span>${pris !== '' ? `<span class="ui-ruta-pris ${prisTyp} ${dyr || last ? 'dim' : ''}">${prisIkon ? IKON[prisIkon] || '' : ''}${String(pris).replace('.', ',')} kr</span>` : ''}</div>`;
+  if (etikett) return `<div class="ui-ruta-med">${ruta({ bild, attr, vald, last, dyr, antal, pris, prisTyp, titel, liten, storlek, niva })}<span class="ui-ruta-namn ${dyr || last ? 'dim' : ''}">${esc(String(titel).replace(/^(Ritning|3D-modell|Recept|Prototyp): /, ''))}</span>${pris !== '' ? `<span class="ui-ruta-pris ${prisTyp} ${dyr || last ? 'dim' : ''}">${prisIkon ? IKON[prisIkon] || '' : ''}${String(pris).replace('.', ',')} kr</span>` : ''}</div>`;
   return `<button class="ui-ruta ${vald ? 'vald' : ''} ${last ? 'last' : ''} ${dyr ? 'dyr' : ''} ${liten ? 'liten' : ''}" ${attr} title="${esc(titel)}">
-    <span class="bild">${bild}</span>${pris !== '' ? `<span class="pris ${prisTyp}">${pris}</span>` : ''}${antal !== '' && antal !== 1 ? `<span class="antal">${antal}</span>` : ''}${last ? `<span class="lasikon">${IKON.las}</span>` : ''}${storlek ? `<span class="stl s${storlek}">${'SML'[storlek - 1]}</span>` : ''}</button>`;
+    <span class="bild">${bild}</span>${pris !== '' ? `<span class="pris ${prisTyp}">${pris}</span>` : ''}${antal !== '' && antal !== 1 ? `<span class="antal">${antal}</span>` : ''}${last ? `<span class="lasikon">${IKON.las}</span>` : ''}${storlek ? `<span class="stl s${storlek}">${'SML'[storlek - 1]}</span>` : ''}${niva ? `<span class="niva n${niva}" title="Nivå ${niva}">N${niva}</span>` : ''}</button>`;
 }
 export const grid = (rutor) => `<div class="ui-grid">${rutor.join('')}</div>`;
 export const sektion = (titel, hjalp = '') => `<div class="ui-sektion"><span>${titel}</span>${hjalp ? `<small>${hjalp}</small>` : ''}</div>`;
@@ -197,6 +197,7 @@ export const UI_CSS = `
 .ui-ruta .antal{position:absolute;right:3px;bottom:1px;font:800 14px system-ui;color:#fff;text-shadow:0 1px 2px #000,0 0 3px #000}
 .ui-ruta .pris{position:absolute;left:2px;top:1px;font:900 12px system-ui;color:#fff;text-shadow:0 1px 2px #000,0 0 2px #000}
 .ui-ruta .stl{position:absolute;right:2px;top:2px;width:15px;height:15px;border-radius:4px;font:900 10px/15px system-ui;color:#fff;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.5)}.ui-ruta .stl.s1{background:#2d7fd6}.ui-ruta .stl.s2{background:#f28c28}.ui-ruta .stl.s3{background:#d63a2f}
+.ui-ruta .niva{position:absolute;left:2px;top:2px;padding:0 4px;height:15px;border-radius:4px;font:900 10px/15px system-ui;color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.5)}.ui-ruta .niva.n1{background:#2d7fd6}.ui-ruta .niva.n2{background:#d63a2f}.ui-ruta .niva.n3{background:#2f9a52}.ui-ruta .niva.n4{background:linear-gradient(135deg,#f5c542,#b8860b);color:#3a2a00}.ui-ruta .niva.n5{background:linear-gradient(135deg,#d9dee6,#7d8796);color:#1a1d24}
 .ui-ruta .pris.plus{color:#5dff9a}.ui-ruta .pris.minus{color:#ffb3b0}.ui-ruta .pris.fil{color:#9fe8ff}
 .ui-ruta .lasikon{position:absolute;inset:0;display:grid;place-items:center;color:#fff}.ui-ruta .lasikon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.2}
 .ui-detalj{display:flex;gap:14px;align-items:center;padding:14px 16px;min-height:96px}
