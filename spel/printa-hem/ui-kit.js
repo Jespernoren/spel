@@ -127,9 +127,9 @@ export function knapp({ text, typ = 'neutral', attr = '', av = false, ikon = '' 
   return `<button class="ui-knapp ${typ}" ${attr} ${av ? 'disabled' : ''}>${ikon ? ik(ikon) : ''}<span>${text}</span></button>`;
 }
 // 1×1-ruta: miniatyr, pris uppe till vänster, antal nere till höger
-export function ruta({ bild = '', attr = '', vald = false, last = false, dyr = false, tom = false, antal = '', pris = '', prisTyp = '', titel = '', liten = false, storlek = 0, etikett = false }) {
+export function ruta({ bild = '', attr = '', vald = false, last = false, dyr = false, tom = false, antal = '', pris = '', prisTyp = '', titel = '', liten = false, storlek = 0, etikett = false, prisIkon = '' }) {
   if (tom) return `<div class="ui-ruta tom ${liten ? 'liten' : ''}" ${attr}></div>`;
-  if (etikett) return `<div class="ui-ruta-med">${ruta({ bild, attr, vald, last, dyr, antal, pris, prisTyp, titel, liten, storlek })}<span class="ui-ruta-namn ${dyr || last ? 'dim' : ''}">${esc(String(titel).replace(/^(Ritning|CAD-fil|Recept|Prototyp): /, ''))}</span>${pris !== '' ? `<span class="ui-ruta-pris ${prisTyp} ${dyr || last ? 'dim' : ''}">${String(pris).replace('.', ',')} kr</span>` : ''}</div>`;
+  if (etikett) return `<div class="ui-ruta-med">${ruta({ bild, attr, vald, last, dyr, antal, pris, prisTyp, titel, liten, storlek })}<span class="ui-ruta-namn ${dyr || last ? 'dim' : ''}">${esc(String(titel).replace(/^(Ritning|3D-modell|Recept|Prototyp): /, ''))}</span>${pris !== '' ? `<span class="ui-ruta-pris ${prisTyp} ${dyr || last ? 'dim' : ''}">${prisIkon ? IKON[prisIkon] || '' : ''}${String(pris).replace('.', ',')} kr</span>` : ''}</div>`;
   return `<button class="ui-ruta ${vald ? 'vald' : ''} ${last ? 'last' : ''} ${dyr ? 'dyr' : ''} ${liten ? 'liten' : ''}" ${attr} title="${esc(titel)}">
     <span class="bild">${bild}</span>${pris !== '' ? `<span class="pris ${prisTyp}">${pris}</span>` : ''}${antal !== '' && antal !== 1 ? `<span class="antal">${antal}</span>` : ''}${last ? `<span class="lasikon">${IKON.las}</span>` : ''}${storlek ? `<span class="stl s${storlek}">${'SML'[storlek - 1]}</span>` : ''}</button>`;
 }
@@ -189,7 +189,7 @@ export const UI_CSS = `
 .ui-ruta-med .ui-ruta .pris{display:none}
 .ui-ruta-med .ui-ruta-namn{max-width:104px;font-size:12.5px;min-height:2.4em}
 .ui-ruta-pris{font:900 13px system-ui;padding:2px 9px;border-radius:999px;background:rgba(255,255,255,.1);color:#fff;white-space:nowrap}
-.ui-ruta-pris.plus{background:#2f8a52;color:#fff}.ui-ruta-pris.minus{background:rgba(200,33,58,.85);color:#fff}.ui-ruta-pris.fil{background:#1b6f8f;color:#fff}.ui-ruta-pris.dim{opacity:.55}
+.ui-ruta-pris svg{width:13px;height:13px;vertical-align:-2px;margin-right:4px}.ui-ruta-pris.plus{background:#2f8a52;color:#fff}.ui-ruta-pris.minus{background:rgba(200,33,58,.85);color:#fff}.ui-ruta-pris.fil{background:#1b6f8f;color:#fff}.ui-ruta-pris.dim{opacity:.55}
 .ui-ruta.tom{background:#2a2f3c;border:2px dashed #3d4456;cursor:default}
 .ui-ruta.liten{width:58px;height:58px}
 .ui-ruta .bild{display:grid;place-items:center;width:100%;height:100%}.ui-ruta .bild img{width:54px;height:54px}.ui-ruta.liten .bild img{width:44px;height:44px}

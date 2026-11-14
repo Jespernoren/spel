@@ -126,6 +126,10 @@ export const HUD_CSS = `
 .hud-loop span.nu{opacity:1;transform:scale(1.18)}.hud-loop span.nu em{color:#7dffb0}.hud-loop span.nu .ui-ik,.hud-loop span.nu svg{filter:drop-shadow(0 0 5px rgba(125,255,176,.8))}
 .hud-loop i{font-style:normal;font-weight:900;color:#5a6274;font-size:12px}
 .hud-stopp .stopp-ik{display:block;margin:0 auto 2px;width:30px;height:30px;font-style:normal;color:#fff}.hud-stopp .stopp-ik:empty{display:none}.hud-stopp .stopp-ik svg,.hud-stopp .stopp-ik .ui-ik{width:30px;height:30px}
+.ph-mal-text.nasta{display:flex!important;align-items:center;gap:10px;font:800 16px/1.25 system-ui!important;margin:6px 0 4px!important}
+.ph-mal-text.nasta .nasta-ik{flex:0 0 40px;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:rgba(125,255,176,.14);color:#7dffb0;box-shadow:inset 0 0 0 2px rgba(125,255,176,.35)}
+.ph-mal-text.nasta .nasta-ik .ui-ik,.ph-mal-text.nasta .nasta-ik svg{width:26px;height:26px}
+.hud-uppdrag .hud-lista{display:none!important}
 .hud-flask{position:fixed;left:max(12px,env(safe-area-inset-left));z-index:21;width:280px;box-sizing:border-box;pointer-events:none;font:700 13px/1.35 system-ui;color:#fff;display:flex;flex-direction:column;gap:6px}
 .hud-flask>div{padding:8px 12px 9px;border-radius:10px;background:${LAGER_SVAG},rgba(25,28,36,.88);border-left:5px solid var(--lingon);box-shadow:0 6px 16px rgba(0,0,0,.3)}
 .hud-flask b{display:block;font:900 11px/1.2 system-ui;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}

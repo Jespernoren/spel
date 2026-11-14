@@ -353,7 +353,7 @@ const LAPPAR = {
   motor: ['📔 Dagbok', 'Grip OCH motor. Nu går det undan.'],
   printat: ['📱 Storebror', 'VA FAN?! Fick du den att FUNKA?? Jag gav upp efter två veckor, det var för jävla krångligt att installera allt. Grym du är 🤙 Gå och visa butiken över vägen. Ali köper allt som är printat.'],
   salt: ['🧺 Ali', 'Ali här. Nyckelringen sålde. Jag ville bli ingenjör, men fick ta över pappas butik. I natt lät jag en AI rita åt mig: en skräpgrip och en kvarnmotor. Kom och titta.'],
-  ritning: ['📔 Dagbok', 'Min första CAD-fil! Nu ska den bara printas. Jag printar inte bara saker – jag printar maskiner.'],
+  ritning: ['📔 Dagbok', 'Min första 3D-modell! Nu ska den bara printas. Jag printar inte bara saker – jag printar maskiner.'],
   sol: ['📔 Dagbok', 'Slut på trampandet. Nästan.'],
   skrivare2: ['📱 Storebror', 'VA?! Du har byggt en skrivare TILL?? Du har typ en printfarm nu. Okej. Det är faktiskt ganska ballt. 🔥'],
   klart: ['📔 Dagbok', 'Det börjar kännas som ett hem. På riktigt. Mamma kommer på söndag…'],
@@ -393,7 +393,7 @@ const rolfSteg = (i, del) => {
   const v = () => ROLF[i].vara, nm = () => VAROR[v()].namn.toLowerCase();
   return [
     { del, text: 'Läs brevet i Rolfs postlåda', klar: () => S.rolf.i > i || (S.rolf.i === i && (S.rolf.aktiv || S.post.tillRolf === v())), startPost: 'rolf:' + i },
-    { del, text: () => `Köp CAD-filen: ${nm()} (Ali)`, klar: () => S.rolf.i > i || harGava(v()) || S.ritningar.includes('gava:' + v()) },
+    { del, text: () => `Köp 3D-modellen: ${nm()} (Ali)`, klar: () => S.rolf.i > i || harGava(v()) || S.ritningar.includes('gava:' + v()) },
     { del, text: () => `Printa ${nm()}`, klar: () => S.rolf.i > i || harGava(v()) },
     { del, text: () => `Lägg ${nm()} i Rolfs postlåda`, klar: () => S.rolf.i > i || S.post.tillRolf === v() },
     { del, text: 'Vänta på Rolfs sopbil', klar: () => S.rolf.i > i },
@@ -417,7 +417,7 @@ const STEG_TAL = {
   7: 'Gå över vägen till Ali och sälj nyckelringen.',
   8: 'Tjäna femtio kronor. Köp sedan en gripklo eller en kvarnmotor hos Ali.',
   9: 'Printa det du köpte på skrivaren.',
-  10: 'Köp CAD-filen till en säng hos Ali.',
+  10: 'Köp 3D-modellen till en säng hos Ali.',
   11: 'Printa sängen på skrivaren.',
   12: 'Ställ sängen i skjulet och sov.',
 };
@@ -432,7 +432,7 @@ const STEG = [
   { del: D1, text: 'Sälj den hos Ali, över vägen', klar: () => S.stat.salt >= 1, lapp: 'salt' },
   { del: D1, text: () => `Tjäna 50 kr (${Math.min(S.mynt, 50)}/50) · köp grip eller motor`, klar: () => S.ritningar.includes('grip') || S.ritningar.includes('kvarnmotor') || forstaUpp(), lapp: 'ritning' },
   { del: D1, text: () => { const n = S.ritningar.includes('grip') && !S.grip ? 'skräpgrip' : 'kvarnmotor'; return skrivare.some((x) => x.klar === 'byggsats:' + (n === 'skräpgrip' ? 'grip' : 'kvarnmotor')) ? `Ta ${n === 'skräpgrip' ? 'skräpgripen' : 'kvarnmotorn'} ur skrivaren` : `Printa din ${n}`; }, klar: () => forstaUpp() },
-  { del: D1, text: () => S.mynt >= SANG_INSTRUKTION ? `Köp sängens CAD-fil hos Ali (${SANG_INSTRUKTION} kr)` : `Printa och sälj mer · ${S.mynt}/${SANG_INSTRUKTION} kr till sängen`, klar: () => S.ritningar.includes('sang') || S.sang, startLapp: 'hem' },
+  { del: D1, text: () => S.mynt >= SANG_INSTRUKTION ? `Köp sängens 3D-modell hos Ali (${SANG_INSTRUKTION} kr)` : `Printa och sälj mer · ${S.mynt}/${SANG_INSTRUKTION} kr till sängen`, klar: () => S.ritningar.includes('sang') || S.sang, startLapp: 'hem' },
   { del: D1, text: 'Printa sängen', klar: () => antalInv('sang') > 0 || S.sang },
   { del: D1, text: 'Ställ sängen i skjulet och sov', klar: () => S.sang && S.dag >= 2, lapp: 'sang',
     sms: ['mamma', 'Har du sovit nåt? Du har väl tandborste?? Och äter du?? Svara inte, jag vet att du är arg. ❤️ /Mamma'] },
@@ -2883,7 +2883,7 @@ function uppdateraBlick(dt) {
 }
 let aliHarRopat = false;
 function aliRopar() { if (aliHarRopat) return; aliHarRopat = true; tittaMot(ALI.x, ALI.z, 1.6); setTimeout(() => prata('ali', ALI_ROP), 500); }
-const DU_SANG = `CAD-filen till sängen kostar ${SANG_INSTRUKTION} spänn hos Ali. Okej – dags att starta printfabriken och tjäna stålar!`;
+const DU_SANG = `3D-modellen till sängen kostar ${SANG_INSTRUKTION} spänn hos Ali. Okej – dags att starta printfabriken och tjäna stålar!`;
 const DU_BYGG = 'Okej. Låt oss bygga. Först en skylt, så att alla vet vem som bor här.';
 function uppdateraMalPil() {
   const p = malPunkt();
@@ -3079,7 +3079,7 @@ const iSkjulet = () => Math.abs(spelare.pos.x - SKJUL.x) < SKJUL.b / 2 && Math.a
 function tapetsera(typ) {
   const i = +typ.split('_')[1];
   if (iBoden()) { S.bodTapet = i; }
-  else if (iSkjulet()) { if (!S.hem?.tapeter) { ui.toast('Skjulet behöver tapeter först (CAD-fil hos Ali)', 'fel'); ljud.fel(); return; } S.hem = { ...S.hem, tapet: i }; }
+  else if (iSkjulet()) { if (!S.hem?.tapeter) { ui.toast('Skjulet behöver tapeter först (3D-modell hos Ali)', 'fel'); ljud.fel(); return; } S.hem = { ...S.hem, tapet: i }; }
   else { ui.toast('Gå in i skjulet eller gamingboden och klicka där', 'fel'); ljud.fel(); return; }
   taBortVald(); visaTapeter(); ljud.stor(); konfetti(30); ui.toast(`Ny tapet: ${TAPETER[i].namn.toLowerCase()}!`, 'guld'); sparaSnart();
 }
@@ -3209,7 +3209,7 @@ interaktor.registrera(sangSpoke, {
   text: () => harSangIHand() ? '🛏️ Ställ sängen här och sov' : 'Här ska sängen stå – just nu sover du på det kalla golvet',
   kanAktivera: () => !S.sang,
   aktivera: () => {
-    if (!harSangIHand()) { ui.toast(S.ritningar.includes('sang') ? 'Printa sängen på skrivaren först' : 'Köp CAD-filen till sängen hos Ali', 'fel'); return; }
+    if (!harSangIHand()) { ui.toast(S.ritningar.includes('sang') ? 'Printa sängen på skrivaren först' : 'Köp 3D-modellen till sängen hos Ali', 'fel'); return; }
     taBortInv('sang');
     S.sang = true; visaSangPlats(); ljud.placera(); sparaSnart(); sov();
   },
@@ -4600,10 +4600,10 @@ function aliKopLista() {
   // Rolfs önskan: Ali har ritningen (billig – det ska aldrig vara pengarna som stoppar dig)
   { const gv = aktivGava(); if (gv && !harGava(gv) && !S.ritningar.includes('gava:' + gv)) {
     const v = VAROR[gv], pris = gavaRitningPris(gv);
-    add('Rolfs önskan', 'g:' + gv, tumme(gv), 'CAD-fil: ' + v.namn, `Det Rolf bad om. Printa den och lägg den i hans brevlåda vid grinden.`, pris, [['rulle', rullar(v.gram)]], () => { S.ritningar.push('gava:' + gv); aliRepl = gv === 'olhallare' ? 'Ölhållare? Till sopgubben? Ja ja. Den är bra. Kylklampen var min idé.' : 'Till Rolf igen? Han borde betala mig direkt.'; return true; });
+    add('Rolfs önskan', 'g:' + gv, tumme(gv), '3D-modell: ' + v.namn, `Det Rolf bad om. Printa den och lägg den i hans brevlåda vid grinden.`, pris, [['rulle', rullar(v.gram)]], () => { S.ritningar.push('gava:' + gv); aliRepl = gv === 'olhallare' ? 'Ölhållare? Till sopgubben? Ja ja. Den är bra. Kylklampen var min idé.' : 'Till Rolf igen? Han borde betala mig direkt.'; return true; });
   } }
   if ((forstaUpp() || S.ritningar.includes('sang')) && !S.ritningar.includes('sang') && !harSang())
-    add('Bygg ut hemmet', 'sang', tumme('sang'), 'CAD-fil: Säng', 'En riktig säng till skjulet. Slut på det kalla golvet.', SANG_INSTRUKTION, [['rulle', '2 rullar']], () => { S.ritningar.push('sang'); aliRepl = 'Sov gott, min vän.'; return true; });
+    add('Bygg ut hemmet', 'sang', tumme('sang'), '3D-modell: Säng', 'En riktig säng till skjulet. Slut på det kalla golvet.', SANG_INSTRUKTION, [['rulle', '2 rullar']], () => { S.ritningar.push('sang'); aliRepl = 'Sov gott, min vän.'; return true; });
   if (S.hem?.tapeter || S.bod) for (let i = 0; i < TAPETER.length; i++) {
     const id = 'tapet_' + i, pris = TAPETER[i].pris || 200;
     add('Tapeter – för skjulet och boden', 't_' + id, tumme(id), TAPETER[i].namn, 'Ställ dig i skjulet eller gamingboden, välj tapetrullen och klicka. Den sitter direkt.', pris,
@@ -4626,14 +4626,14 @@ function aliKopLista() {
     () => { if (!harRumFor(pr)) { aliRepl = 'Var ska du ha den? Fickorna är fulla.'; return false; } laggTill(pr); aliRepl = ['En present till sopgubben? Du är en konstig människa. Bra. Men konstig.', 'Jag slår in den. Gratis. Säg inte det till nån.', 'Rolf… han köper bara lättöl här. Och kattmat. Ge honom det här.'][Math.floor(Math.random() * 3)]; return true; });
   for (const [id, m] of Object.entries(MASKINER)) {
     if (S.ritningar.includes(id) || !m.syns() || arKlar(id)) continue;
-    add(m.hem ? 'Bygg ut hemmet' : 'Maskiner och verktyg', 'm:' + id, tumme('byggsats:' + id), 'CAD-fil: ' + m.namn, m.beskr, m.ritning,
+    add(m.hem ? 'Bygg ut hemmet' : 'Maskiner och verktyg', 'm:' + id, tumme('byggsats:' + id), '3D-modell: ' + m.namn, m.beskr, m.ritning,
       [['rulle', `${rullKort(m.gram * m.delar)} rullar totalt`], ['kugghjul', `${m.delar} delar: ${(DEL_NAMN[id] || []).join(', ').toLowerCase()}`]],
-      () => { S.ritningar.push(id); aliRepl = 'Bra val. CAD-filen är din. Den räcker till en.'; ui.toast(`CAD-fil köpt – printa ${m.namn.toLowerCase()} på skrivaren`, 'guld'); return true; });
+      () => { S.ritningar.push(id); aliRepl = 'Bra val. 3D-modellen är din. Den räcker till en.'; ui.toast(`3D-modell köpt – printa ${m.namn.toLowerCase()} på skrivaren`, 'guld'); return true; });
   }
   for (const [id, v] of Object.entries(VAROR)) {
     if (!v.recept || harRecept(id) || !v.syns()) continue;
     if (v.lyx && (placerade.some((x) => x.userData?.typ === id || x.typ === id) || S.placerade?.some((x) => x.typ === id) || antalInv(id))) continue;   // redan printad
-    if (v.lyx) add('Inredning', 'r:' + id, tumme(id), 'CAD-fil: ' + v.namn, `”${v.lyx}”`, v.recept, [['hjarta', `Trivsel +${v.trivsel}`], ['rulle', `${rullKort(v.gram)} rullar`], ['skrivare', `Skrivare ${STORLEK_NAMN[storlekFor(id)]}`, storlekFor(id) > storstaSkrivare() ? 'varn' : '']],
+    if (v.lyx) add('Inredning', 'r:' + id, tumme(id), '3D-modell: ' + v.namn, `”${v.lyx}”`, v.recept, [['hjarta', `Trivsel +${v.trivsel}`], ['rulle', `${rullKort(v.gram)} rullar`], ['skrivare', `Skrivare ${STORLEK_NAMN[storlekFor(id)]}`, storlekFor(id) > storstaSkrivare() ? 'varn' : '']],
       () => { S.ritningar.push('recept:' + id); aliRepl = `Min ${v.namn.toLowerCase()}… AI:n och jag gjorde den i natt. Printa den. Snälla.`; return true; });
     else add('Recept att sälja', 'r:' + id, tumme(id), 'Recept: ' + v.namn, 'Printa hur många du vill och sälj till Ali. Säljer du många samma dag sjunker priset.', v.recept,
       [['mynt', `Ali betalar ${v.pris} kr`, 'plus'], ['rulle', `${Math.round(v.pris / v.gram * RULLE)} kr per rulle`], ['skrivare', `Skrivare ${STORLEK_NAMN[storlekFor(id)]}`, storlekFor(id) > storstaSkrivare() ? 'varn' : '']],
@@ -4678,17 +4678,17 @@ function oppnaMarknad() {
     + (saljL.length ? grid(saljL.map((x) => uiRuta({ bild: tumme(x.typ), attr: `data-val="s:${x.key}"`, vald: 's:' + x.key === aliVald, antal: x.n, pris: 'Sälj +' + summaFor(x.typ, x.n), prisTyp: 'plus', titel: namnFor(x.typ), etikett: true })))
       : '<p class="ui-tom">Du har inget att sälja. Printa saker på skrivaren – de hamnar i din verktygsrad.</p>') + '</div>';
   // Rolfs önskan finns inte hos Ali – den printar du själv
-  { const gv = aktivGava(); if (gv && !harGava(gv)) kropp += `<div class="ali-tips">${ik('gava')} <span><b>Rolfs önskan: ${VAROR[gv]?.namn || gv}</b> – ${S.ritningar.includes('gava:' + gv) ? 'du har CAD-filen. Printa den på skrivaren under <b>Gåvor</b>' : 'köp CAD-filen här nere under <b>Rolfs önskan</b>, printa den på skrivaren'} och lägg den i Rolfs brevlåda vid grinden.</span></div>`; }
+  { const gv = aktivGava(); if (gv && !harGava(gv)) kropp += `<div class="ali-tips">${ik('gava')} <span><b>Rolfs önskan: ${VAROR[gv]?.namn || gv}</b> – ${S.ritningar.includes('gava:' + gv) ? 'du har 3D-modellen. Printa den på skrivaren under <b>Gåvor</b>' : 'köp 3D-modellen här nere under <b>Rolfs önskan</b>, printa den på skrivaren'} och lägg den i Rolfs brevlåda vid grinden.</span></div>`; }
   // KÖP
   kropp += `<div class="ali-niva kop"><div class="ali-niva-rub"><span>${ik('kop')} Köp av Ali</span><small>det kostar pengar</small></div>`;
   {
     // unika fynd: finns bara en gång och försvinner när du köpt dem – egen guldram överst
     const UNIKA = ['Rolfs önskan', 'Present till Rolf', 'Alis prototyper – en av varje'];
     const alla = [...new Set(kopL.map((x) => x.sekt))], unika = alla.filter((x) => UNIKA.includes(x)), sekts = alla.filter((x) => !UNIKA.includes(x));
-    const rutaK = (x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', titel: x.namn, storlek: x.storlek, etikett: true });
+    const rutaK = (x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', prisIkon: 'kop', titel: x.namn, storlek: x.storlek, etikett: true });
     if (unika.length) kropp += `<div class="ali-unik"><div class="ali-unik-rub"><span>★ Unika fynd</span><small>finns bara en gång – sen är de borta</small></div>${unika.map((sk) => `<div class="ali-unik-grupp"><b>${sk.replace(' – en av varje', '')}</b>${grid(kopL.filter((x) => x.sekt === sk).sort((a, b) => (S.mynt < a.pris) - (S.mynt < b.pris)).map(rutaK))}</div>`).join('')}</div>`;
-    kropp += sekts.map((sk) => sektion(sk) + grid(kopL.filter((x) => x.sekt === sk).sort((a, b) => (S.mynt < a.pris) - (S.mynt < b.pris)).map((x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', titel: x.namn, storlek: x.storlek, etikett: true })))).join('')
-      + (Object.values(MASKINER).some((m) => !m.syns()) ? `<p class="ui-tom">${ik('las')} Fler ritningar dyker upp när du kommer vidare – Ali sitter uppe med AI:n varje natt.</p>` : '');
+    kropp += sekts.map((sk) => sektion(sk) + grid(kopL.filter((x) => x.sekt === sk).sort((a, b) => (S.mynt < a.pris) - (S.mynt < b.pris)).map((x) => uiRuta({ bild: x.bild, attr: `data-val="k:${x.key}"`, vald: 'k:' + x.key === aliVald, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', prisIkon: 'kop', titel: x.namn, storlek: x.storlek, etikett: true })))).join('')
+      + (Object.values(MASKINER).some((m) => !m.syns()) ? `<p class="ui-tom">${ik('las')} Fler 3D-modeller dyker upp när du kommer vidare – Ali sitter uppe med AI:n varje natt.</p>` : '');
   }
   kropp += '</div>';
   if (vald && iKop) {
@@ -4711,9 +4711,14 @@ function oppnaMarknad() {
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { aliFlik = k.dataset.flik; aliVald = null; aliRepl = aliFlik === 'salj' ? 'Visa vad du har. Snabbt.' : 'Titta gärna. Rör inte.'; ljud.plock(); oppnaMarknad(); }; });
     el.querySelectorAll('[data-val]').forEach((k) => {
       // sälj-rutor: ett klick säljer allt av den saken direkt (inget bekräfta)
-      k.onclick = () => { aliVald = k.dataset.val; if (aliVald.startsWith('s:')) { salj1(Infinity); return; } aliRepl = bubbla; ljud.plock(); oppnaMarknad(); };
+      k.onclick = () => { aliVald = k.dataset.val; if (aliVald.startsWith('s:')) { salj1(Infinity); return; } if (aliVald.startsWith('k:')) { const x = kopL.find((y) => 'k:' + y.key === aliVald); if (x && S.mynt >= x.pris) { kopDirekt(x); return; } if (x) { aliRepl = `Den kostar ${x.pris} kr. Du har ${S.mynt}. Printa och sälj mer.`; ljud.fel(); oppnaMarknad(); return; } } aliRepl = bubbla; ljud.plock(); oppnaMarknad(); };
       k.ondblclick = () => el.querySelector('[data-kop],[data-salj1]')?.click();
     });
+    function kopDirekt(x) {
+      const forut = S.mynt; S.mynt -= x.pris;
+      if (x.kop() === false) { S.mynt = forut; ljud.fel(); oppnaMarknad(); return; }
+      ljud.kop(); sparaSnart(); oppnaMarknad();
+    }
     const kb = el.querySelector('[data-kop]');
     if (kb) kb.onclick = () => {
       const x = kopL.find((y) => 'k:' + y.key === aliVald); if (!x || S.mynt < x.pris) return;
@@ -4786,7 +4791,7 @@ function oppnaForrad() {
   const rits = S.ritningar.filter((id) => MASKINER[id]).map((id) => uiRuta({ bild: tumme('byggsats:' + id), attr: `data-k="r:${id}"`, vald: kistVald === 'r:' + id, titel: MASKINER[id].namn }));
   const kropp = sektion('Verktygsraden', nara ? 'klicka på en sak och välj vad du vill göra' : '') + grid(hb)
     + sektion(`Kistan · ${kistPlatser()}/${KISTA_PLATSER} platser`, nara ? '' : 'gå till kistan i skjulet för att flytta saker') + grid(kistRutor)
-    + (rits.length ? sektion('CAD-filer du har köpt', 'printas på skrivaren') + grid(rits) : '');
+    + (rits.length ? sektion('3D-modeller du har köpt', 'printas på skrivaren') + grid(rits) : '');
   // detaljrutan för det valda
   let fot = detalj({ tom: 'Klicka på en ruta.' });
   const [typ2, id2] = (kistVald || '').split(/:(.*)/s);
@@ -5283,6 +5288,31 @@ function ritaLoop(mEl) {
   if (loopEl.parentNode !== mEl) malDel.after(loopEl);
   const nu = loopSteg(), h = LOOP.map(([ikon, t, vem], i) => `<span class="${i === nu ? 'nu' : ''}">${vem ? portratt(vem, 20) : ik(ikon)}<em>${t}</em></span>`).join('<i>›</i>');
   if (loopEl.dataset.h !== h) { loopEl.dataset.h = h; loopEl.innerHTML = h; }
+}
+// ---------- Nästa grej: en ikon och några ord – det du ska göra NU ----------
+// Står något i vägen (slut på filament, rullen sitter kvar i kvarnen ...) visas det i stället för uppdraget.
+function nastaAtgard(text) {
+  const st = STEG[S.steg];
+  if (!st?.sov && skrivare.some((x) => x.klar)) return ['bock', 'Ta ut det som är klart ur skrivaren'];
+  const vilPrinta = /^(Printa|Gör det mysigt|Inred|Isolera|Bygg|Lägg plåttak|Tapetsera)/i.test(text) || /^Printa/.test(text);
+  const harFil = skrivare.some((x) => x.fil >= 100 || x.jobb);
+  if (vilPrinta && !harFil) {
+    if (antalInv('rulle')) return ['rulle', 'Ladda en rulle i skrivaren'];
+    if (helaRullar() > 0) return ['rulle', 'Ta rullen vid kvarnen'];
+    if (hand.saker.length || S.karraLast?.length) return ['kvarn', 'Lägg skräpet i kvarnen'];
+    if (S.kvarn.tratt > 0) return ['kvarn', 'Veva kvarnen'];
+    return ['hand', gardSkrap() > 0 ? 'Plocka skräp till kvarnen' : 'Hämta skräp på tippen'];
+  }
+  const ik2 = /^Printa/.test(text) ? 'skrivare' : /Sälj|Ali|Köp|CAD|Tjäna/.test(text) ? 'kop' : /Rolf|postlåd|brev/i.test(text) ? 'brev' : /sov|kväll|Klart för idag/i.test(text) ? 'klocka'
+    : /Städa|Plocka|skräp/i.test(text) ? 'hand' : /kvarn|Veva|tratt|tunna/i.test(text) ? 'kvarn' : /rulle|Ladda/i.test(text) ? 'rulle' : /cykel|Trampa/i.test(text) ? 'blixt'
+    : /Bygg|Isolera|plåttak|dörr|skylt/i.test(text) ? 'hus' : /mysigt|Inred|Tapet|fristad|jacuzzi/i.test(text) ? 'soffa' : 'mal';
+  return [ik2, text];
+}
+let malRaw = '';
+function ritaNasta() {
+  const text = malRaw; const [ikon, t] = nastaAtgard(text);
+  const h = `<span class="nasta-ik">${ik(ikon)}</span><span class="nasta-t">${rens(t)}</span>`;
+  if (malText.dataset.h !== h || !malText.firstElementChild) { malText.dataset.h = h; malText.innerHTML = h; malText.classList.add('nasta'); }
 }
 function ritaHud() {
   // klockan
@@ -6279,10 +6309,11 @@ function uppdatera(dt) {
   // HUD
   // efter kapitel 2 tar det aldrig slut: nästa trivselmål ligger alltid 100 bort
   const evigtMal = Math.ceil((trivsel() + 1) / 100) * 100;
-  malText.textContent = S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? `Bli folkbokförd: äg all mark och bygg ett hus åt Rolf (${S.mark.agt.length}/${MARK_TOMTER.length}) – tavlan vid vägen` : S.steg < STEG.length ? rens(stegText(STEG[S.steg])) : `Nästa mål: trivsel ${trivsel()}/${evigtMal} · trimma maskinerna hos Ali eller ta Rolfs jobb`;
+  malRaw = S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? `Bli folkbokförd: äg all mark och bygg ett hus åt Rolf (${S.mark.agt.length}/${MARK_TOMTER.length}) – tavlan vid vägen` : S.steg < STEG.length ? rens(stegText(STEG[S.steg])) : `Nästa mål: trivsel ${trivsel()}/${evigtMal} · trimma maskinerna hos Ali eller ta Rolfs jobb`;
   malDel.textContent = (S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? 'Slutmålet' : S.steg < STEG.length ? (KAP1_DELAR.includes(STEG[S.steg].del) ? 'Kapitel 1 · ' + STEG[S.steg].del : STEG[S.steg].del) : S.folkbokford ? 'Folkbokförd · fritt bygge' : 'Oändligt bygge').toUpperCase();
-  if (STEG[S.steg]?.sov && !kvallKlar()) { malText.textContent = `Dagens mål är klara! Bygg, printa och sälj fritt – det blir kväll om ${Math.max(1, Math.ceil((MIN_VAKEN - (S.vakenTid || 0)) / 60))} min.`; }
-  if (!S.skyltUppe && S.steg <= 1) { malDel.textContent = 'KAPITEL 1 · ETT HEM ATT BO I'; malText.textContent = 'Spika upp din adresskylt'; }
+  if (STEG[S.steg]?.sov && !kvallKlar()) { malRaw = `Dagens mål är klara! Bygg, printa och sälj fritt – det blir kväll om ${Math.max(1, Math.ceil((MIN_VAKEN - (S.vakenTid || 0)) / 60))} min.`; }
+  if (!S.skyltUppe && S.steg <= 1) { malDel.textContent = 'KAPITEL 1 · ETT HEM ATT BO I'; malRaw = 'Spika upp din adresskylt'; }
+  ritaNasta();
   if (S.steg >= STEG.length && S.kapitelKlart && !S.kapitel2Klart) { S.kapitel2Klart = true; sparaSnart(); kapitel2Slut(); }
   {
     let r = '';
