@@ -5645,6 +5645,7 @@ function stegKonkret(st) {
 }
 // när nästa handling är själva målet: en kort förklaring av hur man gör (vem/var)
 function nuTips(t) {
+  if (/Dagens mål är klara/.test(t)) return 'Printa och sälj hos Ali tills det blir kväll';
   if (/Köp/.test(t)) return 'Gå till Ali över vägen';
   if (/Printa/.test(t)) return 'Gå till skrivaren och välj den';
   if (/Rolf|postlåd|brev/i.test(t)) return 'Rolfs postlåda står vid tippens grind';
