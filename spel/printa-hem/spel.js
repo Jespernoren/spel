@@ -3236,9 +3236,9 @@ const MIN_VAKEN = 210;   // sekunder du måste ha varit vaken innan kvällen kom
 const kvallKlar = () => (S.vakenTid || 0) >= MIN_VAKEN;
 const sovDags = () => (!!STEG[S.steg]?.sov && kvallKlar()) || (!STEG[S.steg] && (S.dagTid || 0) >= DAG_LANGD);
 interaktor.registrera(tältSäng, {
-  text: () => sovDags() ? '🌙 Sov till nästa dag' : 'Din säng – det är inte kväll än. Gör klart dagens jobb först',
+  text: () => sovDags() ? '🌙 Sov till nästa dag' : STEG[S.steg]?.sov ? `Din säng – du är inte trött än (kväll om ${Math.max(1, Math.ceil((MIN_VAKEN - (S.vakenTid || 0)) / 60))} min)` : 'Din säng – det är inte kväll än. Gör klart dagens jobb först',
   kanAktivera: () => !!S.sang,
-  aktivera: () => { if (sovDags()) sov(); else ui.toast('Det är inte kväll än – gör klart dagens jobb först'); },
+  aktivera: () => { if (sovDags()) sov(); else ui.toast(STEG[S.steg]?.sov ? 'Inte trött än – printa och sälj lite till' : 'Det är inte kväll än – gör klart dagens jobb först'); },
 });
 // ---------- Kväll → natt → morgon ----------
 const KVALL = { himmel: 0xf0a878, sol: 0xffa96b, solStyrka: 1.1 }, DAG = { himmel: 0xbfdcf0, sol: 0xffffff, solStyrka: 2.0 };
@@ -4698,6 +4698,7 @@ function aliSaljLista() {
   return Object.entries(ager).filter(([t, n]) => n > 0 && saljPris(t)).map(([t, n]) => ({ key: 's:' + t, typ: t, n, pris: prisNu(t), bas: saljPris(t) }));
 }
 let aliSagt = '';
+let aliMunTimer = 0;
 function oppnaMarknad() {
   // en vy, två nivåer som alltid syns: SÄLJ (grönt – du får pengar) överst, KÖP (rött – det kostar) under
   const kopL = aliKopLista(), saljL = aliSaljLista();
@@ -4738,13 +4739,17 @@ function oppnaMarknad() {
         knappar: [{ text: `Sälj 1  +${vald.pris} kr`, typ: 'plus', attr: 'data-salj1', ikon: 'salj' }, vald.n > 1 ? { text: `Sälj alla  +${summaFor(vald.typ, vald.n).toLocaleString('sv-SE')} kr`, typ: 'plus', attr: 'data-saljalla' } : null].filter(Boolean) });
     }
   } else fot = detalj({ tom: 'Välj något att sälja eller köpa.' });
-  const html = panel({ portrattVem: 'ali', titel: 'Alis marknad', sub: `<span class="ui-bubbla">${bubbla}</span>`, resurser: resurserHtml(), kropp, fot, klass: 'ph-ali-panel' });
+  // två delar: Ali till vänster (stort huvud som pratar, texten under) – butiken till höger
+  kropp = `<div class="ali-split"><aside class="ali-sida"><div class="ali-huvud${performance.now() < pratarTill + 400 || bubbla !== aliSagt ? ' pratar' : ''}">${portratt('ali', 150)}</div><div class="ali-tal"><b>Ali</b><p>${bubbla}</p></div></aside><div class="ali-butik">${kropp}</div></div>`;
+  const html = panel({ ikon: 'kop', titel: 'Alis marknad', sub: 'Sälj det du printat · köp 3D-modeller och uppgraderingar', resurser: resurserHtml(), kropp, fot, klass: 'ph-ali-panel' });
   // säg bara repliken om den är ny – annars börjar Ali om varje gång du klickar på en sak
   if (bubbla !== aliSagt) prata('ali', bubbla);
   aliSagt = bubbla;
   aliRepl = '';
   oppnaRuta(html, (el) => {
     coachLapp(el, 'ali');
+    { const hv = el.querySelector('.ali-huvud'); clearInterval(aliMunTimer);
+      aliMunTimer = setInterval(() => { if (!hv.isConnected) { clearInterval(aliMunTimer); return; } hv.classList.toggle('pratar', pratarVem === 'ali' && performance.now() < pratarTill); }, 150); }
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { aliFlik = k.dataset.flik; aliVald = null; aliRepl = aliFlik === 'salj' ? 'Visa vad du har. Snabbt.' : 'Titta gärna. Rör inte.'; ljud.plock(); oppnaMarknad(); }; });
     el.querySelectorAll('[data-val]').forEach((k) => {
       // sälj-rutor: ett klick säljer allt av den saken direkt (inget bekräfta)
@@ -5403,7 +5408,7 @@ function coachLapp(el, id) {
   S.forsta = S.forsta || [];
   if (S.forsta.includes('meny:' + id)) return;
   S.forsta.push('meny:' + id); sparaSnart();
-  const kropp = el.querySelector('.ui-panel-kropp, .ui-kropp') || el.querySelector('.ui-panel') || el;
+  const kropp = el.querySelector('.ali-butik, .ui-panel-kropp, .ui-kropp') || el.querySelector('.ui-panel') || el;
   const d = document.createElement('div'); d.className = 'ph-coach'; d.innerHTML = `${ik('hand')}<span>${COACH[id]}</span>`;
   kropp.prepend(d);
   // vänta tills Ali (eller någon annan) pratat klart, och bara om menyn fortfarande är öppen

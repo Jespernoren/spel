@@ -86,6 +86,21 @@ export const HUD_CSS = `
 .ali-niva-rub .ui-knapp{min-width:0;padding:7px 12px;font-size:13.5px}
 .ali-niva.kop .ui-sektion span{color:#ffc2cb}
 .ph-ali-panel .ui-ruta .pris.minus{color:#ffb3bd}
+.ui-panel.ph-ali-panel{width:min(1060px,96vw)}
+.ph-ali-panel .ui-kropp{padding:0!important;overflow:hidden!important;display:flex;min-height:0}
+.ali-split{display:flex;flex:1;min-height:0;width:100%}
+.ali-sida{flex:0 0 230px;display:flex;flex-direction:column;align-items:center;gap:14px;padding:22px 16px;background:linear-gradient(180deg,#232a36,#1b2029);border-right:1px solid #343a4a;overflow:auto}
+.ali-huvud{width:150px;height:150px;border-radius:50%;box-shadow:0 0 0 4px #2f8a52,0 10px 26px rgba(0,0,0,.4);transform-origin:50% 90%}
+.ali-huvud .ui-portratt{width:150px!important;height:150px!important}
+.ali-huvud.pratar{animation:aliPrat .32s ease-in-out infinite alternate}
+@keyframes aliPrat{from{transform:rotate(-2deg) translateY(0)}to{transform:rotate(2deg) translateY(-3px) scale(1.02)}}
+.ali-tal{position:relative;width:100%;box-sizing:border-box;padding:12px 14px;border-radius:14px;background:#fff;color:#1a1d24;box-shadow:0 6px 16px rgba(0,0,0,.3)}
+.ali-tal::before{content:"";position:absolute;left:50%;top:-10px;margin-left:-10px;border:10px solid transparent;border-top:0;border-bottom-color:#fff}
+.ali-tal b{display:block;font:900 12px system-ui;letter-spacing:.1em;text-transform:uppercase;color:#2f8a52;margin-bottom:4px}
+.ali-tal p{margin:0;font:600 15px/1.45 system-ui}
+.ali-butik{flex:1;min-width:0;overflow:auto;padding:16px}
+@media (max-width:760px){.ali-split{flex-direction:column}.ali-sida{flex:none;flex-direction:row;padding:10px 12px;border-right:0;border-bottom:1px solid #343a4a}.ali-huvud,.ali-huvud .ui-portratt{width:70px!important;height:70px!important}.ali-tal::before{left:-10px;top:50%;margin:-10px 0 0;border:10px solid transparent;border-left:0;border-right-color:#fff}}
+
 .hud-skrivbar{position:absolute;left:0;top:0;transform-origin:50% 100%;width:190px;padding:6px 10px 8px;border-radius:9px;background:${LAGER_SVAG},rgba(25,28,36,.88);color:#fff;font:800 13px/1.2 system-ui;box-shadow:0 6px 14px rgba(0,0,0,.3)}
 .hud-skrivbar .rad{display:flex;justify-content:space-between;gap:8px;margin-bottom:5px}.hud-skrivbar b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hud-skrivbar span{color:#9fe8ff;font-variant-numeric:tabular-nums}
 .hud-skrivbar .bar{height:9px;border-radius:999px;background:rgba(255,255,255,.15);overflow:hidden}.hud-skrivbar .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3de3ff,#7dffb0)}
