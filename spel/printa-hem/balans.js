@@ -21,6 +21,10 @@ export const SALJ_TILLBAKA = 0.1;       // kr per gram när man säljer tillbaka
 export const FILAMENT_KOP = { gram: 1000, pris: 150 };  // en hel rulle – dyrare än du får för prints (≈60–180 kr/rulle)
 export const SLAPP_PER_DAG = 2;   // Ali släpper högst så här många nyheter per dag (dagens mål släpps alltid)
 
+// ---------- Trivsel ger mer betalt ----------
+export const TRIVSEL_PER_PROCENT = 20;   // varje 20 trivsel ger +1 % på allt Ali betalar för prints (hos Ali, säljlådan, leveranslådan)
+export const TRIVSEL_MAX_BONUS = 0.4;    // taket: +40 %
+
 // ---------- Kapitel och belöningar ----------
 export const KAP1_BELONING = 1000;   // kr när kapitel 1 är klart – så kapitel 2 kommer igång direkt
 export const TRIVSEL_MAL = 150;   // trivselmålet i kapitel 1
@@ -50,6 +54,10 @@ export const HOTBAR = 9;                // platser i verktygsraden (plats 1 = ve
 export const KISTA_PLATSER = 27, STACK = 20;   // kistan har 27 platser, max 20 av samma sak per plats
 export const RYGG_BAS = 18, RYGG_STOR = 27;     // ryggsäcken: 18 platser, 27 med Större ryggsäck
 export const UT_MAX = 12;   // så många färdiga saker som får stå på skrivaren innan den slutar upprepa
+
+// ---------- Automation ----------
+export const LASTARM_TID = 2.5;   // sekunder per plock för lastarmen vid tippen (×0,85 per armtrim)
+export const LASTARM_MAX = 700;   // gram lastarmen orkar lyfta utan trim – tar dunkar men inte tunnor (×1,7 per armtrim)
 
 // ---------- Marken (Bengt-Åke) ----------
 export const MARK_PRIS = {

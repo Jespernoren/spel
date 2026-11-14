@@ -122,6 +122,9 @@ export const HUD_CSS = `
 .ali-tal b{display:block;font:900 12px system-ui;letter-spacing:.1em;text-transform:uppercase;color:#2f8a52;margin-bottom:4px}
 .ali-tal p{margin:0;font:600 15px/1.45 system-ui}
 .ali-butik{flex:1;min-width:0;overflow:auto;padding:16px}
+.ali-far{display:flex;flex-direction:column;gap:2px;margin:6px 0 4px;padding:7px 10px;border-radius:10px;background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.35);color:#7dffb0;font-weight:700;font-size:13px}.ali-far small{font-size:10px;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
+.ali-bricka{position:absolute;left:3px;bottom:3px;max-width:calc(100% - 6px);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:#1f9d5c;color:#fff;font:800 10px/1.2 system-ui;padding:1px 5px;border-radius:6px;pointer-events:none}
+.mark-ger{display:block;color:#7dffb0}
 .ali-info{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid #343a4a}.ali-info>b{display:block;font:800 14px system-ui;margin-bottom:4px}.ali-info>p{margin:0 0 6px;font:500 12.5px/1.4 system-ui;color:#c5ccda}.ali-info .ui-fakta{display:flex;flex-direction:column;gap:4px}
 .ali-grupper{display:flex;flex-wrap:wrap;gap:2px 22px}.ali-grupper .ui-grid{display:flex!important;flex-wrap:wrap;gap:8px}
 .ali-grupp{margin-top:8px}.ali-grupp>b{display:flex;align-items:center;gap:6px;font:800 11px system-ui;letter-spacing:.08em;text-transform:uppercase;color:#a6f3c1;margin:4px 0 6px}
