@@ -75,7 +75,8 @@ const HOTBAR = 8;                // platser i verktygsraden (plats 1 = verktyget
 const KISTA_RACKVIDD = 3.2;
 const KISTA_PLATSER = 18, STACK = 20;   // kistan har 18 platser, max 20 av samma sak per plats      // så nära kistan måste man stå för att flytta saker
 const KAP1_BELONING = 1000;   // kr när kapitel 1 är klart – så kapitel 2 kommer igång direkt
-const MATTNAD = 0.85, MATTNAD_GOLV = 0.35;   // varje såld vara samma dag sänker Alis pris 20 % (lägst 25 %) – nollställs på morgonen
+const MATTNAD = 0.9, MATTNAD_GOLV = 0.5;   // varje såld vara av samma sort samma dag sänker Alis pris 10 % (lägst 50 % av fullpris) – nollställs på morgonen
+const ALI_VILL_BONUS = 1.5;   // "Ali vill ha idag": en slumpad vara per morgon ger +50 % hela dagen
 const SALJ_TILLBAKA = 0.1;       // kr per gram när man säljer tillbaka en byggsats till Ali
 const VEV_TID = 0.7;             // sekunder att veva per flaska (0,2 rulle) – större skräp tar längre
 const MOTOR_TID = 1.6;
@@ -85,7 +86,7 @@ const MOTOR_STROM = 1;           // ström per sekund när motorn mal
 const STROM_BAS = 100;           // batteriet vid skrivaren rymmer så här mycket
 const BANK_PLUS = 100;           // varje batteribank lagrar så här mycket mer
 const TRAMP_PER_S = 12;          // ström per sekund när man trampar
-const SOL_PER_S = 2.5;           // ström per sekund per solpanel
+const SOL_PER_S = 4;             // ström per sekund per solpanel – en panel driver Skrivare S (4/s) helt själv
 const SOLPARK_PER_S = 14;        // en solcellspark: sex paneler – mer än du hinner trampa
 // Verktygsnivåer för skräp: 0 = händer, 1 = skräpgrip, 2 = magnetpistol.
 // Varje nivå: bär mer, behöver sikta mindre noga, och plockar på längre håll.
@@ -139,10 +140,10 @@ const VAROR = {
   rulle4: { namn: 'Filament nivå 4 – guldkomposit', ikon: '', gram: 0, tid: 0, pris: 0, fil: 4 },
   rulle5: { namn: 'Filament nivå 5 – titanblandning', ikon: '', gram: 0, tid: 0, pris: 0, fil: 5 },
   // PETG-linjen: printas bara på den röda PETG-skrivaren. Dyra saker – varje rulle röd PETG är värd 5–10 vanliga.
-  n2_vas: { namn: 'Designvas i röd PETG', ikon: '', gram: 600, tid: 24, pris: 450, recept: 600, trivsel: 8, placerbar: true, radie: 0.2, niva: 2, syns: () => S.karra },
-  n2_hjalm: { namn: 'Cykelhjälm i PETG', ikon: '', gram: 900, tid: 30, pris: 800, recept: 1200, niva: 2, syns: () => harRecept('n2_vas') },
-  n2_neon: { namn: 'Neonskylt i röd PETG', ikon: '', gram: 1200, tid: 40, pris: 1800, recept: 2400, trivsel: 50, placerbar: true, radie: 0.35, niva: 2, syns: () => harRecept('n2_hjalm') },
-  n2_paddel: { namn: 'Kajakpaddel i PETG', ikon: '', gram: 2000, tid: 50, pris: 3200, recept: 4500, niva: 2, syns: () => harRecept('n2_neon') },
+  n2_vas: { namn: 'Designvas i röd PETG', ikon: '', gram: 600, tid: 24, pris: 320, recept: 600, trivsel: 8, placerbar: true, radie: 0.2, niva: 2, syns: () => S.karra },
+  n2_hjalm: { namn: 'Cykelhjälm i PETG', ikon: '', gram: 900, tid: 30, pris: 560, recept: 1200, niva: 2, syns: () => harRecept('n2_vas') },
+  n2_neon: { namn: 'Neonskylt i röd PETG', ikon: '', gram: 1200, tid: 40, pris: 900, recept: 2400, trivsel: 50, placerbar: true, radie: 0.35, niva: 2, syns: () => harRecept('n2_hjalm') },
+  n2_paddel: { namn: 'Kajakpaddel i PETG', ikon: '', gram: 2000, tid: 50, pris: 2300, recept: 4500, niva: 2, syns: () => harRecept('n2_neon') },
   n3_stol: { namn: 'Kolfiberstol', ikon: '', gram: 2000, tid: 60, pris: 5200, trivsel: 90, placerbar: true, radie: 0.4, niva: 3 },
   n4_staty: { namn: 'Guldstaty av Rolf', ikon: '', gram: 3000, tid: 80, pris: 9000, trivsel: 180, placerbar: true, radie: 0.45, niva: 4 },
   n5_drake: { namn: 'Titandrake', ikon: '', gram: 4000, tid: 100, pris: 16000, trivsel: 350, placerbar: true, radie: 0.6, niva: 5 },
@@ -186,13 +187,13 @@ const VAROR = {
   // recept: köps hos Ali – dyra, men betalar mer per rulle ju längre man kommer
   mobilstall: { namn: 'Mobilställ', ikon: '📱', gram: 300, tid: 12, pris: 50, recept: 100, syns: () => S.sang },
   // receptstegen: nästa recept syns när du köpt det förra – varje steg ger mer per rulle
-  fagelholk: { namn: 'Fågelholk', ikon: '🐦', gram: 800, tid: 26, pris: 120, recept: 300, trivsel: 6, placerbar: true, radie: 0.3, syns: () => S.rolf.i >= 1 || harRecept('mobilstall') },
-  lampskarm: { namn: 'Lampskärm', ikon: '💡', gram: 1200, tid: 34, pris: 220, recept: 600, syns: () => S.dag >= 3 || S.rolf.i >= 2 || harRecept('fagelholk') },
-  dronare: { namn: 'Drönarram', ikon: '🛸', gram: 1500, tid: 40, pris: 400, recept: 1000, syns: () => S.rolf.i >= 3 || harRecept('lampskarm') },
-  skateboard: { namn: 'Skateboard', ikon: '🛹', gram: 2000, tid: 50, pris: 650, recept: 1500, syns: () => harRecept('dronare') },
-  gitarr: { namn: 'Elgitarr', ikon: '🎸', gram: 3000, tid: 64, pris: 1100, recept: 2500, syns: () => harRecept('skateboard') },
-  cykelram: { namn: 'Cykelram', ikon: '🚲', gram: 5000, tid: 80, pris: 2000, recept: 4500, syns: () => harRecept('gitarr') },
-  pkajak: { namn: 'Printad kajak', ikon: '🛶', gram: 12000, tid: 120, pris: 4500, recept: 10000, syns: () => harRecept('cykelram') },
+  fagelholk: { namn: 'Fågelholk', ikon: '🐦', gram: 800, tid: 26, pris: 170, recept: 300, trivsel: 6, placerbar: true, radie: 0.3, syns: () => S.rolf.i >= 1 || harRecept('mobilstall') },
+  lampskarm: { namn: 'Lampskärm', ikon: '💡', gram: 1200, tid: 34, pris: 320, recept: 600, syns: () => S.dag >= 3 || S.rolf.i >= 2 || harRecept('fagelholk') },
+  dronare: { namn: 'Drönarram', ikon: '🛸', gram: 1500, tid: 40, pris: 480, recept: 1000, syns: () => S.rolf.i >= 3 || harRecept('lampskarm') },
+  skateboard: { namn: 'Skateboard', ikon: '🛹', gram: 2000, tid: 50, pris: 780, recept: 1500, syns: () => harRecept('dronare') },
+  gitarr: { namn: 'Elgitarr', ikon: '🎸', gram: 3000, tid: 64, pris: 1400, recept: 2500, syns: () => harRecept('skateboard') },
+  cykelram: { namn: 'Cykelram', ikon: '🚲', gram: 5000, tid: 80, pris: 2900, recept: 4500, syns: () => harRecept('gitarr') },
+  pkajak: { namn: 'Printad kajak', ikon: '🛶', gram: 12000, tid: 120, pris: 9000, recept: 10000, syns: () => harRecept('cykelram') },
 };
 // dyra saker man köper hos Ali (printas inte) – det är dessa man sparar till
 Object.assign(VAROR, {
@@ -264,7 +265,7 @@ const MASKINER = {
   gamingbod: { namn: 'Gamingbod (tillbyggnad)', ikon: '', flik: 'hem', monteras: true, syns: () => S.kapitelKlart, ritning: 1400, delar: 6, gram: 700, tid: 20, trivsel: 25, beskr: 'En egen bod bredvid skjulet – med RGB i taket. Plats för hela gamingsetupen' },
   grip: { namn: 'Skräpgrip', ikon: '🦾', ritning: 50, delar: 1, gram: 400, tid: 10, syns: () => true, beskr: `Bär ${BARA_SKRAP[1]} skräp, lättare att sikta, plockar upp när du går nära`, verktyg: true },
   bord: { namn: 'Arbetsbord', ikon: '🪵', syns: () => S.rolf.i >= 2 && S.dag >= 4, ritning: 120, delar: 3, gram: 700, tid: 14, beskr: 'Bordsyta för en skrivare till', trivsel: 8, radie: 1.0 },
-  sol: { namn: 'Solpanel', ikon: '☀️', syns: () => S.rolf.i >= 2 && S.dag >= 4, ritning: 180, delar: 3, gram: 800, tid: 14, beskr: 'Laddar ström av sig själv', trivsel: 6, radie: 0.8 },
+  sol: { namn: 'Solpanel', ikon: '☀️', syns: () => S.rolf.i >= 2 && S.dag >= 4, ritning: 180, delar: 3, gram: 800, tid: 14, beskr: `Ger ${SOL_PER_S} ström/s av sig själv – en panel driver Skrivare S utan att du trampar`, trivsel: 6, radie: 0.8 },
   rullband: { namn: 'Rullband från tippen', ikon: '', syns: () => S.kvarn.band && S.kapitelKlart, ritning: 1200, delar: 4, gram: 900, tid: 16, monteras: true, beskr: 'Går från tippen till containern bakom kvarnen. Lägg skräp på bandets inmatning vid tippen – du slipper gå hela vägen. Drar lite ström.' },
   lastarm: { namn: 'Lastarm vid tippen', ikon: '', syns: () => !!S.auto?.band, ritning: 1800, delar: 4, gram: 1000, tid: 18, monteras: true, beskr: 'Plockar skräp från tippen och lägger det på bandet åt dig. Orkar bara lätta saker i början – trimma den hos Ali för att lyfta tyngre.' },
   robotarm: { namn: 'Rulladdare (robotarm)', ikon: '', syns: () => !!S.auto?.lastarm, ritning: 2000, delar: 4, gram: 1000, tid: 18, monteras: true, beskr: 'Står vid extrudern. Tar varje färdig rulle och laddar den skrivare som har minst filament.' },
@@ -481,9 +482,10 @@ const STEG = [
   ...rolfSteg(2, N3),
   { del: N3, bild: 'byggsats:bord', text: 'Bygg ett arbetsbord', klar: () => harPlacerat('bord') },
   { del: N3, bild: 'byggsats:sol', text: 'Bygg en solpanel', klar: () => harPlacerat('sol'), lapp: 'sol' },
-  { del: N3, bild: 'byggsats:vaggar', text: () => `Isolera väggarna · ${S.hem?.vagg || 0}/4`, klar: () => S.hem?.vaggar || S.dag > 4 },
+  { del: N3, bild: 'byggsats:vaggar', text: () => `Isolera två väggar · ${Math.min(2, S.hem?.vagg || 0)}/2`, klar: () => (S.hem?.vagg || 0) >= 2 || S.hem?.vaggar || S.dag > 4 },
   sovSteg(4, N3),
   ...rolfSteg(3, N4),
+  { del: N4, bild: 'byggsats:vaggar', text: () => `Isolera de sista väggarna · ${S.hem?.vagg || 0}/4`, klar: () => S.hem?.vaggar || (S.hem?.vagg || 0) >= 4 || S.dag > 5 },
   { del: N4, bild: 'byggsats:skrivare2', text: 'Bygg Skrivare M på bordet', klar: () => harPlacerat('skrivare2'), lapp: 'skrivare2' },
   { del: N4, bild: () => nastaInred(), text: () => `Gör det mysigt · trivsel ${trivsel()}/${TRIVSEL_MAL}`, klar: () => trivsel() >= TRIVSEL_MAL, lapp: 'klart' },
   { del: K2, bild: 'byggsats:tapeter', text: 'Tapetsera skjulet', klar: () => !!S.hem?.tapeter },
@@ -1586,6 +1588,18 @@ function skapaVara(typ) {
     g.add(at(box(0.55, 0.7, 0.45, j), 0, 0.45, 0), at(box(0.6, 0.06, 0.5, j), 0, 0.83, 0), at(cyl(0.07, 0.07, 1.4, j, 10), 0, 1.55, -0.1));
     for (const [x, z] of [[-0.22, -0.18], [0.22, -0.18], [-0.22, 0.18], [0.22, 0.18]]) g.add(at(box(0.05, 0.1, 0.05, j), x, 0.05, z));
     g.add(at(box(0.3, 0.25, 0.01, new THREE.MeshStandardMaterial({ color: 0xff7a20, emissive: 0xff5a10, emissiveIntensity: 1.4 })), 0, 0.45, 0.226));
+  } else if (typ === 'n2_vas') {
+    const rod = mat(0xd63a2f, { roughness: 0.35 });
+    g.add(at(cyl(0.07, 0.05, 0.05, rod, 16), 0, 0.025, 0)); g.add(at(cyl(0.1, 0.07, 0.16, rod, 16), 0, 0.13, 0)); g.add(at(cyl(0.05, 0.1, 0.08, rod, 16), 0, 0.25, 0)); g.add(at(cyl(0.065, 0.05, 0.06, rod, 16), 0, 0.32, 0));
+  } else if (typ === 'n2_hjalm') {
+    const rod = mat(0xd63a2f, { roughness: 0.35 });
+    const k = new THREE.Mesh(new THREE.SphereGeometry(0.16, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), rod); k.scale.set(1, 0.85, 1.25); k.position.y = 0.02; g.add(k);
+    for (const x of [-0.06, 0, 0.06]) g.add(at(box(0.025, 0.02, 0.3, mat(0x1e1e1e)), x, 0.15, 0));
+  } else if (typ === 'n2_paddel') {
+    const rod = mat(0xd63a2f, { roughness: 0.35 }), skaft = mat(0x2b2b2b);
+    const p = new THREE.Group(); p.add(at(cyl(0.018, 0.018, 1.0, skaft, 8), 0, 0, 0));
+    for (const y of [-0.55, 0.55]) p.add(at(box(0.13, 0.22, 0.02, rod), 0, y, 0));
+    p.rotation.z = Math.PI / 2; p.position.y = 0.08; g.add(p);
   } else if (typ === 'n2_neon') {
     g.add(at(box(0.7, 0.05, 0.05, mat(0x333333)), 0, 0.03, 0));
     for (const [x, y, w, h] of [[-0.25, 0.35, 0.05, 0.5], [0, 0.6, 0.55, 0.05], [0.25, 0.35, 0.05, 0.5], [0, 0.35, 0.3, 0.05]]) g.add(at(box(w, h, 0.04, new THREE.MeshStandardMaterial({ color: 0x3aa0ff, emissive: 0x3aa0ff, emissiveIntensity: 1.2 })), x, y, 0));
@@ -3517,7 +3531,7 @@ function sov() {
     const fl = S.flask && S.flask.dag === natt ? Object.entries(S.flask.tid).sort((x, y) => y[1] - x[1])[0] : null;
     S.igar = { salt: Object.values(S.saltIdag || {}).reduce((x, y) => x + y, 0), printat: S.stat.printat - (S.dagPrintat ?? S.stat.printat), flask: fl && fl[1] >= 20 ? (FLASK_NAMN[fl[0]] || fl[0]) : null, fix: fl && fl[1] >= 20 ? FLASK_FIX[fl[0]]?.() : null };
     S.dagPrintat = S.stat.printat;
-    kollaKyla(); S.dag = natt + 1; S.saltIdag = {}; S.dagTid = 0; S.vakenTid = 0; aliHamtarLadan(); sparaSnart(); ruttnaOverNatten(); uppdateraArstid();
+    kollaKyla(); S.dag = natt + 1; S.saltIdag = {}; aliVillVal(); S.dagTid = 0; S.vakenTid = 0; aliHamtarLadan(); sparaSnart(); ruttnaOverNatten(); uppdateraArstid();
     // morgonens meddelanden väntar tills du klickat "Börja dagen" – sen kommer de ett i taget
     morgonKo = () => { familjSms(); kollaMarkTips(); kollaPolett(); kollaResa(); morgonRolf(); kollaSamtal(); };
     const morgonRolf = () => { if (S.dag === 5 && !(S.filGava || []).includes(0) && !(S.filGava || []).includes(2)) { S.filGava = [...(S.filGava || []), 0]; S.post.tillMig = [...S.post.tillMig, 'sak:fynd2']; visaPostInne(); setTimeout(() => sms('rolf', 'La en röd back i lådan. Hitta den i en tunna. Riktigt bra plast – PETG. Släng den i den röda kvarnen. Sen blir det röd filament, bättre grejer. Mer sånt när folk börjar respektera dej. /R'), 1500); } };
@@ -3601,7 +3615,7 @@ function dagensMalHtml(del) {
     rader.push([malIkon(t), t.replace(/ · .*$/, '')]);
   }
   rader.push(['klocka', 'Sov när allt är klart']);
-  return `<ul class="br-dagmal">${rader.slice(0, 6).map(([i, t]) => `<li>${ik(i)}<span>${rens(t)}</span></li>`).join('')}</ul>`;
+  return `<ul class="br-dagmal">${rader.slice(0, 6).map(([i, t]) => `<li>${ik(i)}<span>${rens(t)}</span></li>`).join('')}</ul>${aliVillHtml()}`;
 }
 
 // ---------- Spökbild för att placera saker ----------
@@ -4806,10 +4820,10 @@ function oppnaPrintMeny(sk) {
   const petg = sk.gen === PETG_GEN;
   for (const [id, v] of Object.entries(VAROR)) {
     if (v.kop) continue;
-    if (petg) { if (v.niva === 2 && harRecept(id)) lagg('salj', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, `🪙 ${prisNu(id)} kr hos Ali idag · ${Math.round(v.pris / v.gram * RULLE)} kr per rulle röd PETG${v.trivsel ? ' · kan också ställas ut' : ''}`, prisNu(id)); continue; }
+    if (petg) { if (v.niva === 2 && harRecept(id)) lagg('salj', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, `🪙 ${prisNu(id)} kr hos Ali idag${id === aliVill() ? ' ⭐ Ali vill ha den idag (+50 %)' : ''} · ${Math.round(v.pris / v.gram * RULLE)} kr per rulle röd PETG${v.trivsel ? ' · kan också ställas ut' : ''}`, prisNu(id)); continue; }
     if (v.niva === 2) continue;   // röd PETG printas bara på PETG-skrivaren
     if (v.pris > 0 && harRecept(id) && (!v.niva || (nivaUpplast(v.niva) && (antalInv('rulle' + v.niva) || antalInv('fynd' + v.niva))))) lagg('salj', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid,
-      `🪙 ${prisNu(id)} kr hos Ali idag${prisNu(id) < v.pris ? ` (fullpris ${v.pris} – marknaden är mättad)` : ` · ${Math.round(v.pris / v.gram * RULLE)} kr per rulle`}${v.trivsel ? ' · kan också ställas ut' : ''}`, prisNu(id));
+      `🪙 ${prisNu(id)} kr hos Ali idag${id === aliVill() ? ' ⭐ Ali vill ha den idag (+50 %)' : ''}${prisNu(id) < v.pris ? ` (fullpris ${v.pris} – marknaden är mättad)` : ` · ${Math.round(v.pris / v.gram * RULLE)} kr per rulle`}${v.trivsel ? ' · kan också ställas ut' : ''}`, prisNu(id));
     else if (v.lyx && harRecept(id)) lagg('hem', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, `✨ Trivsel +${v.trivsel} · ställ den i din fristad`);
     else if (id === 'sang' && S.ritningar.includes('sang') && !harSang()) lagg('hem', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, '🛏️ En riktig säng till skjulet');
     else if (v.gava && id === aktivGava() && !harGava(id) && S.ritningar.includes('gava:' + id)) lagg('gava', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, `🎁 Rolfs önskan – lägg den i hans postlåda`);
@@ -4927,7 +4941,21 @@ const saljPris = (typ) => {
 };
 // marknaden mättas: samma vara blir billigare ju fler du säljer samma dag
 const saltIdag = (t) => (S.saltIdag || {})[t] || 0;
-const prisNu = (t, extra = 0) => { const b = saljPris(t); return t.startsWith('byggsats:') || VAROR[t]?.lyx ? b : Math.max(1, Math.round(b * Math.max(MATTNAD_GOLV, MATTNAD ** (saltIdag(t) + extra)))); };
+const prisNu = (t, extra = 0) => { const b = saljPris(t); return t.startsWith('byggsats:') || VAROR[t]?.lyx ? b : Math.max(1, Math.round(b * (t === aliVill() ? ALI_VILL_BONUS : 1) * Math.max(MATTNAD_GOLV, MATTNAD ** (saltIdag(t) + extra)))); };
+// ---------- Ali vill ha idag: en vara du har recept på, +50 % hela dagen. Slumpas varje morgon. ----------
+function aliVillVal() {
+  // bara sånt du faktiskt kan printa nu: rätt skrivare och rätt filament
+  const kan = (id, v) => v.pris > 0 && !v.lyx && !v.gava && !v.kop && !v.proto && harRecept(id) && (!v.niva || (v.niva === 2 ? harPlacerat('skrivarepetg') : antalInv('rulle' + v.niva) > 0)) && storlekFor(id) <= Math.max(1, ...skrivare.filter((x) => x.gen !== 4).map((x) => GEN[x.gen].storlek));
+  const L = Object.entries(VAROR).filter(([id, v]) => kan(id, v)).map(([id]) => id);
+  const forra = S.aliVill?.typ;
+  const urval = L.length > 1 ? L.filter((id) => id !== forra) : L;
+  S.aliVill = { dag: S.dag, typ: urval.length ? urval[Math.floor(Math.random() * urval.length)] : null };
+}
+function aliVill() {
+  if (!S.aliVill || S.aliVill.dag !== S.dag || !S.aliVill.typ) aliVillVal();
+  return S.aliVill.typ;
+}
+const aliVillHtml = () => { const t = aliVill(); return t ? `<div class="ali-vill">${ikonHtml(t, 34)}<span><b>Ali vill ha idag: ${rens(VAROR[t].namn)}</b>&nbsp;– +50 % hela dagen (${prisNu(t)} kr just nu)</span></div>` : ''; };
 const summaFor = (t, n) => { let s2 = 0; for (let i = 0; i < n; i++) s2 += prisNu(t, i); return s2; };
 let aliRepl = '', aliFlik = 'kop';
 let aliVald = null;
@@ -5022,7 +5050,7 @@ function aliKopLista() {
     else if (v.niva === 2) add('Röd PETG', 'r:' + id, tumme(id), 'PETG-recept: ' + v.namn, 'Printas på PETG-skrivaren med röd PETG. Dyrt att sälja – röd PETG är värd mycket mer än vanlig plast.', v.recept,
       [['mynt', `Ali betalar ${v.pris} kr`, 'plus'], ['rulle', `${Math.round(v.pris / v.gram * RULLE)} kr per rulle röd PETG`], ['skrivare', 'PETG-skrivaren', harPlacerat('skrivarepetg') ? '' : 'varn']],
       () => { S.ritningar.push('recept:' + id); aliRepl = `${v.namn}. Röd. AI:n sa att röd säljer. AI:n har aldrig sålt något. Men okej.`; return true; });
-    else add('Recept att sälja', 'r:' + id, tumme(id), 'Recept: ' + v.namn, 'Printa hur många du vill och sälj till Ali. Säljer du många samma dag sjunker priset.', v.recept,
+    else add('Recept att sälja', 'r:' + id, tumme(id), 'Recept: ' + v.namn, 'Printa hur många du vill och sälj till Ali. Varje du säljer samma dag sänker priset 10 % – aldrig under halva.', v.recept,
       [['mynt', `Ali betalar ${v.pris} kr`, 'plus'], ['rulle', `${Math.round(v.pris / v.gram * RULLE)} kr per rulle`], ['skrivare', `Skrivare ${STORLEK_NAMN[storlekFor(id)]}`, storlekFor(id) > storstaSkrivare() ? 'varn' : '']],
       () => { if (kedjaLas(id)) { aliRepl = kedjaLas(id); return false; } S.ritningar.push('recept:' + id); aliRepl = `${v.namn}? Bra val. Folk köper sånt. Jag vet inte varför.`; return true; });
   }
@@ -5119,6 +5147,7 @@ function oppnaMarknad() {
     + (saljL.length ? '<div class="ali-grupper">' + SALJ_GRUPPER.filter((gr) => saljL.some((x) => x.grupp === gr)).map((gr) => `<div class="ali-grupp"><b>${gr}</b>${grid(saljL.filter((x) => x.grupp === gr).map((x) => `<div class="ali-markwrap${saljMarkerad(x.typ) ? ' pa' : ''}">${uiRuta({ liten: true, bild: tumme(x.typ), attr: `data-val="s:${x.key}"`, vald: 's:' + x.key === aliVald, niva: nivaFor(x.typ), antal: x.n, pris: 'Sälj +' + summaFor(x.typ, x.n), prisTyp: 'plus', titel: namnFor(x.typ), etikett: true })}<button class="ali-mark" data-mark="${x.typ}" title="${saljMarkerad(x.typ) ? 'Markerad – säljs med Sälj markerade' : 'Inte markerad – klicka för att sälja den med de andra'}">${saljMarkerad(x.typ) ? ik('bock') : ''}</button></div>`))}</div>`).join('') + '</div>'
       : '<p class="ui-tom">Du har inget att sälja. Printa saker på skrivaren – de hamnar i din verktygsrad.</p>')
     + (ejL.length ? `<div class="ali-grupp ej"><b>${ik('las')} Ali köper inte</b>${grid(ejL.map((x) => uiRuta({ liten: true, bild: tumme(x.typ), attr: `data-ej="${x.typ}"`, niva: nivaFor(x.typ), antal: x.n, pris: x.typ === aktivGava() ? 'Till Rolf' : x.typ === 'rulle' ? 'Från dag 3' : 'Säljs inte', prisTyp: 'minus', titel: namnFor(x.typ), etikett: true })))}</div>` : '') + '</div>';
+  kropp += aliVillHtml();
   // Rolfs önskan finns inte hos Ali – den printar du själv
   { const gv = aktivGava(); if (gv && !harGava(gv)) kropp += `<div class="ali-tips">${ik('gava')} <span><b>Rolfs önskan: ${VAROR[gv]?.namn || gv}</b> – ${S.ritningar.includes('gava:' + gv) ? 'du har 3D-modellen. Printa den på skrivaren under <b>Gåvor</b>' : 'köp 3D-modellen här nere under <b>Rolfs önskan</b>, printa den på skrivaren'} och lägg den i Rolfs brevlåda vid grinden.</span></div>`; }
   // KÖP
@@ -5177,7 +5206,7 @@ function oppnaMarknad() {
       S.mynt += summa; S.stat.salt += n; ljud.mynt(); myntRegn(summa);
       giAliBonus();
       const nm = namnFor(t).toLowerCase();
-      aliRepl = saltIdag(t) >= 4 ? `${saltIdag(t)} ${nm} idag?! Vem ska köpa alla? Här, ${summa} kr. Gör nåt annat imorgon.` : n > 1 ? `${n} st. Okej. ${summa} kr. Säljer de inte är det ditt fel.` : `${nm[0].toUpperCase() + nm.slice(1)}. Okej. ${summa} kr.`;
+      aliRepl = t === aliVill() && saltIdag(t) <= n ? `${nm[0].toUpperCase() + nm.slice(1)}! Precis vad jag ville ha idag. ${summa} kr – med extra.` : saltIdag(t) >= 4 ? `${saltIdag(t)} ${nm} idag?! Vem ska köpa alla? Här, ${summa} kr. Gör nåt annat imorgon.` : n > 1 ? `${n} st. Okej. ${summa} kr. Säljer de inte är det ditt fel.` : `${nm[0].toUpperCase() + nm.slice(1)}. Okej. ${summa} kr.`;
       if (aliBonus) { aliRepl = aliBonus; aliBonus = false; }
       sparaSnart(); oppnaMarknad();
     };
@@ -6765,6 +6794,10 @@ function uppdatera(dt) {
   // solpaneler
   S.strom = Math.min(stromMax(), S.strom + solEffekt() * dt);
   uppdateraPetg(dt);
+  // första gången en skrivare går helt på solkraft: ett tydligt "jag slipper trampa"-ögonblick
+  if (!S.solNotis && solEffekt() > 0 && skrivare.some((sk) => sk.jobb && !sk.vantar) && solEffekt() >= skrivare.filter((sk) => sk.jobb).reduce((x, sk) => x + GEN[sk.gen].strom, 0)) {
+    S.solNotis = true; ljud.klar(); notis('☀️ Skrivaren går på solkraft – du behöver inte trampa!', 'guld', { tid: 6000 }); sparaSnart();
+  }
 
   if (ui.igang && ui.butiksOverlay.hidden) {
     uppdateraFonsterSpoke();
