@@ -1205,6 +1205,15 @@ function uppdateraFigurer(dt) {
     const nick = pratar ? Math.sin(nu / 170) * 0.07 + Math.sin(nu / 410) * 0.04 : Math.sin(nu / 1900 + f.fas) * 0.025;
     f.huvud.rotation.x += (nick - f.huvud.rotation.x) * Math.min(1, dt * 8);
     if (pratar) { kropp.rotation.z = Math.sin(nu / 520) * 0.025; f.gungat = true; } else if (f.gungat) { kropp.rotation.z = 0; f.gungat = false; }
+    // vinkar när du kommer fram (högst en gång i minuten)
+    const arm = kropp.userData.arm;
+    if (arm) {
+      if (d < 5 && !f.nara && nu > (f.vinkatTill || 0) + 60000) { f.vinkStart = nu; f.vinkatTill = nu; }
+      f.nara = d < 5.5;
+      const vt = (nu - (f.vinkStart || -1e9)) / 1000;
+      if (vt < 1.8) { arm.rotation.z = Math.sign(arm.position.x || 1) * (2.3 + Math.sin(vt * 11) * 0.35) * Math.min(1, vt * 4, (1.8 - vt) * 4); f.vinkar = true; }
+      else if (f.vinkar) { arm.rotation.z = 0; f.vinkar = false; }
+    }
   }
 }
 // Ali: säljaren som aldrig är ledig – mustasch, trötta ögonbryn, armarna i kors
