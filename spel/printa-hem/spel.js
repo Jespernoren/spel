@@ -2340,6 +2340,7 @@ function uppdateraSkrivare(sk, dt) {
       if (VAROR[j.typ]?.lyx) S.ritningar = S.ritningar.filter((x) => x !== 'recept:' + j.typ);   // Alis fina ritningar räcker till en
       aliStolt(j.typ, VAROR[j.typ]?.namn, !!VAROR[j.typ]?.recept);
       S.stat.printat++;
+      if (S.stat.printat === 1) forstaPrintWow(sk);
       /* klar: grön skylt ovanför skrivaren */
     }
     sparaSkrivare();
@@ -4305,6 +4306,15 @@ function giAliBonus() {
   if (!kr) return;
   S.mynt += kr; setTimeout(() => myntRegn(kr), 700); aliBonus = rad;
 }
+// första printen: en liten show – konfetti, skrivaren studsar och en stor text
+function forstaPrintWow(sk) {
+  try { konfetti(90); } catch {}
+  const m = sk.mesh, bas = m.scale.clone(), t0 = performance.now();
+  const studs = () => { const t = (performance.now() - t0) / 700; if (t >= 1) { m.scale.copy(bas); return; } const k = 1 + Math.sin(t * Math.PI * 3) * 0.12 * (1 - t); m.scale.set(bas.x * k, bas.y * (2 - k), bas.z * k); requestAnimationFrame(studs); };
+  studs();
+  const e = document.createElement('i'); e.className = 'hud-pop stor'; e.textContent = 'Din första print!';
+  document.body.appendChild(e); setTimeout(() => e.remove(), 1900);
+}
 function plockPop(gram = 200) {
   const nu = performance.now(); komboN = nu - komboT < 2500 ? komboN + 1 : 1; komboT = nu;
   const e = document.createElement('i'); e.className = 'hud-pop';
@@ -6052,7 +6062,7 @@ function uppdatera(dt) {
     const vevar = anvandNere && interaktor.hovrad === vevYta && S.kvarn.tratt > 0 && !extruderFull();
     if (anvandNere && interaktor.hovrad === vevYta && extruderFull() && !fullVarnad) { fullVarnad = true; ui.toast(`Rullhållaren är full (${utlagerKap()} ${utlagerKap() === 1 ? 'rulle' : 'rullar'}) – ta rullarna först. Ali har större rullhållare.`, 'fel'); }
     if (vevar) {
-      S.kvarn.prog += dt * (1 + trimNiva('kvarn') * 0.25) * (harProto('m_nano') ? 1.6 : 1) / (VEV_TID * nastaGram() / 200);
+      S.kvarn.prog += dt * (S.dag === 1 ? 1.6 : 1) * (1 + trimNiva('kvarn') * 0.25) * (harProto('m_nano') ? 1.6 : 1) / (VEV_TID * nastaGram() / 200);
       vev.rotation.z -= dt * 10; malAnimation = 0.15;
       if (Math.random() < dt * 8) ljud.borsta();
       if (S.kvarn.prog >= 1) flaskaMald();

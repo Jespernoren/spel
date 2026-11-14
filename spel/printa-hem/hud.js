@@ -117,6 +117,7 @@ export const HUD_CSS = `
 .ph-notis.guld .rubrik{display:none}.ph-notis.guld .kropp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .br-rapport{display:block;margin-top:12px;padding:8px 12px;border-radius:9px;background:rgba(255,255,255,.06);font:600 14px/1.45 system-ui;color:#c5ccda}
 .hud-pop{position:fixed;left:50%;top:44%;z-index:25;pointer-events:none;font:900 20px system-ui;font-style:normal;color:#7dffb0;text-shadow:0 2px 6px rgba(0,0,0,.6);transform:translateX(-50%);animation:hudPop 1s ease-out forwards}
+.hud-pop.stor{top:36%;font-size:40px;color:#ffd37a;animation-duration:1.8s}
 @keyframes hudPop{from{opacity:0;transform:translate(-50%,10px) scale(.7)}20%{opacity:1;transform:translate(-50%,0) scale(1.15)}to{opacity:0;transform:translate(-50%,-40px) scale(1)}}
 .hud-mynt{position:fixed;z-index:60;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff4b0,#f5b70a 55%,#a86d00);box-shadow:0 0 6px rgba(255,200,40,.7);pointer-events:none}
 .hud-flask{position:fixed;left:max(12px,env(safe-area-inset-left));z-index:21;width:280px;box-sizing:border-box;pointer-events:none;font:700 13px/1.35 system-ui;color:#fff;display:flex;flex-direction:column;gap:6px}
