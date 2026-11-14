@@ -4876,12 +4876,21 @@ async function lasPlats(n) {
   try { const d = platsDoc(n); if (d) { const snap = await d.get(); if (snap.exists) { const m = JSON.parse(snap.data()?.spar || 'null'); if (m && (!bast || (m.sparadTid || 0) > (bast.sparadTid || 0))) bast = m; } } } catch {}
   return bast;
 }
-async function sparaPlats(n) {
+async function sparaPlats(n, namn) {
   spar.spara(true);
-  const data = { ...S, sparadTid: Date.now() }, json = JSON.stringify(data);
+  if (namn == null) { try { namn = (await lasPlats(n))?.platsNamn; } catch {} }
+  const data = { ...S, sparadTid: Date.now(), platsNamn: namn || '' }, json = JSON.stringify(data);
   try { localStorage.setItem(platsNyckel(n), json); } catch {}
   try { await platsDoc(n)?.set({ spar: json, tid: Date.now() }); } catch {}
 }
+// döp om en sparning utan att ändra den
+async function dopPlats(n, namn) {
+  const d = await lasPlats(n); if (!d) return;
+  d.platsNamn = namn; const json = JSON.stringify(d);
+  try { localStorage.setItem(platsNyckel(n), json); } catch {}
+  try { await platsDoc(n)?.set({ spar: json, tid: Date.now() }); } catch {}
+}
+const platsTitel = (d, n) => (d?.platsNamn || '').trim() || `Plats ${n}`;
 async function laddaPlats(n) {
   const d = await lasPlats(n); if (!d) return;
   d.sparadTid = Date.now(); spar.data = d; spar.spara(true);
@@ -4906,21 +4915,24 @@ async function oppnaSparplatser() {
   const info = [];
   for (let n = 1; n <= PLATSER; n++) info.push(await lasPlats(n));
   const besk = (d) => d ? `Dag ${d.dag || 1} · ${(d.mynt || 0).toLocaleString('sv-SE')} kr · sparad ${new Date(d.sparadTid || 0).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : 'Tom plats';
-  const kropp = sektion('Dina sparplatser', 'spelet sparar alltid automatiskt – här kan du spara en kopia') + grid(info.map((d, i) => uiRuta({ bild: ik(d ? 'spara' : 'ny'), attr: `data-plats="${i + 1}"`, vald: platsVald === i + 1, antal: i + 1, titel: `Plats ${i + 1}` })));
+  const kropp = sektion('Dina sparplatser', 'spelet sparar alltid automatiskt – här kan du spara en kopia') + grid(info.map((d, i) => uiRuta({ bild: ik(d ? 'spara' : 'ny'), attr: `data-plats="${i + 1}"`, vald: platsVald === i + 1, antal: i + 1, titel: d ? platsTitel(d, i + 1) : `Plats ${i + 1}`, etikett: true })));
   const d = info[platsVald - 1];
-  const fot = detalj({ bild: ik(d ? 'spara' : 'ny'), titel: `Plats ${platsVald}`, text: besk(d),
+  const namnFalt = `<span class="ph-platsnamn"><input data-namn maxlength="28" placeholder="Döp sparningen…" value="${rens(d?.platsNamn || '')}">${d ? '<button data-dop>Döp om</button>' : ''}</span>`;
+  const fot = detalj({ bild: ik(d ? 'spara' : 'ny'), titel: d ? platsTitel(d, platsVald) : `Plats ${platsVald}`, text: besk(d) + namnFalt,
     knappar: [{ text: d ? 'Spara över' : 'Spara här', typ: 'primar', attr: 'data-spara', ikon: 'spara' }, d ? { text: 'Ladda', typ: 'neutral', attr: 'data-ladda', ikon: 'pil' } : null].filter(Boolean) })
     + `<div style="padding:0 16px 14px;display:flex;gap:8px;flex-wrap:wrap">${knapp({ text: 'Dagar (bokmärken)', typ: 'neutral', attr: 'data-dagar', ikon: 'bok' })}${knapp({ text: 'Börja om från början', typ: 'minus', attr: 'data-nytt', ikon: 'varning' })}</div>`;
   oppnaRuta(panel({ ikon: 'spara', titel: 'Sparplatser', sub: 'Spara, börja om och kom tillbaka', kropp, fot }), (el) => {
     el.querySelectorAll('[data-plats]').forEach((k) => { k.onclick = () => { platsVald = +k.dataset.plats; ljud.plock(); oppnaSparplatser(); }; });
     el.querySelector('[data-spara]').onclick = async (e) => {
       if (info[platsVald - 1] && !confirm(`Skriva över plats ${platsVald}?`)) return;
-      e.currentTarget.disabled = true; await sparaPlats(platsVald); ui.toast(`Sparat på plats ${platsVald}`, 'bra'); oppnaSparplatser();
+      e.currentTarget.disabled = true; const nm = el.querySelector('[data-namn]')?.value.trim(); await sparaPlats(platsVald, nm || undefined); ui.toast(`Sparat: ${nm || 'plats ' + platsVald}`, 'bra'); oppnaSparplatser();
     };
     const ld = el.querySelector('[data-ladda]'); if (ld) ld.onclick = async () => {
       if (!confirm('Ladda den sparningen? Det du har nu ersätts (spara det först om du vill ha kvar det).')) return;
       ld.disabled = true; await laddaPlats(platsVald);
     };
+    const nf = el.querySelector('[data-namn]'); if (nf) { nf.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') el.querySelector('[data-dop]')?.click(); }); nf.addEventListener('keyup', (e) => e.stopPropagation()); }
+    const db = el.querySelector('[data-dop]'); if (db) db.onclick = async () => { await dopPlats(platsVald, nf.value.trim()); ljud.plock(); ui.toast('Sparningen döptes om', 'bra'); oppnaSparplatser(); };
     el.querySelector('[data-dagar]').onclick = () => oppnaBokmarken();
     el.querySelector('[data-nytt]').onclick = async () => {
       if (!confirm('Börja om från början? Det du har nu sparas automatiskt på en ledig sparplats först, så du kan ladda det igen.')) return;
