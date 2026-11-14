@@ -78,6 +78,9 @@ export const HUD_CSS = `
 .hud-dagbok-bar{height:4px;border-radius:2px;background:rgba(0,0,0,.1);margin-top:8px;overflow:hidden}.hud-dagbok-bar i{display:block;height:100%;width:0;background:#c49a6c}
 .ali-niva{border-radius:10px;padding:10px 12px 12px;margin-bottom:12px;border:2px solid}
 .ali-niva.salj{background:rgba(47,138,82,.12);border-color:rgba(47,138,82,.55)}
+.hud-matare[hidden]{display:none!important}
+.ph-tidtipp{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:40;padding:8px 18px;border-radius:999px;background:rgba(13,15,20,.85);border:2px solid #f5c542;color:#ffe9a8;font:800 20px/1.2 system-ui;pointer-events:none}.hud-nasta.rad-klar b{color:#7dffb0}
+.ph-tidig [data-hud="respekt"],.ph-tidig .hud-rang,.ph-tidig .ph-resp-chip,.ph-tidig .hud-klocka .arstid{display:none!important}
 .ali-vill{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:8px 12px;border-radius:12px;background:rgba(245,197,66,.14);border:2px dashed rgba(245,197,66,.7);color:#ffe9a8;font-size:14px;line-height:1.3}.ali-vill b{color:#f5c542}.ali-vill .ikon,.ali-vill img,.ali-vill canvas{flex:none}
 .ali-markwrap{display:block;position:relative}.ali-mark{position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:7px;border:2px solid rgba(255,255,255,.55);background:rgba(13,15,20,.75);color:#0d0f14;cursor:pointer;z-index:2;padding:2px;display:grid;place-items:center}.ali-mark svg{width:16px;height:16px;stroke:#0d0f14;stroke-width:3.5}
 .ali-markwrap.pa .ali-mark{background:#7dffb0;border-color:#7dffb0}.ali-markwrap:not(.pa)>*:first-child{opacity:.6}
