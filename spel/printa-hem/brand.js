@@ -86,7 +86,7 @@ export const BRAND_CSS = `
 .br-resa{text-align:left;margin:0 auto 22px;max-width:520px;padding:12px 14px;border-radius:10px;background:rgba(0,0,0,.25);border:1px solid var(--kant)}
 .br-resa-topp{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}.br-resa-topp b{font:900 15px var(--rubrik);color:var(--papper);letter-spacing:.04em;text-transform:uppercase}.br-resa-topp span{font:700 12.5px system-ui;color:#9aa3b5}
 .br-resa-bar{height:10px;border-radius:4px;background:rgba(0,0,0,.45);overflow:hidden;margin-bottom:10px}.br-resa-bar i{display:block;height:100%;background:${LAGER},linear-gradient(90deg,var(--fil),#7dffb0)}
-.br-delar{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;max-height:190px;overflow:auto}
+.br-delar{display:grid;grid-template-columns:1fr;gap:4px 14px;max-height:190px;overflow:auto}
 .br-del{display:flex;align-items:center;gap:7px;font:600 13px system-ui;color:#6c7488;min-width:0}
 .br-del .b{flex:none;width:16px;height:16px;border-radius:4px;border:2px solid #3a4155;display:grid;place-items:center;font:900 10px system-ui}
 .br-del .n{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.br-del .r{font-weight:800;font-size:11.5px}
