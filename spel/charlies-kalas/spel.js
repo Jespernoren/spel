@@ -29,13 +29,16 @@ const FORLATANDE_HOPP = 0.15;   // sekunder man kan hoppa efter att ha gått öv
 const MUS_KANSLA = 0.0035;
 const MUS_MJUKHET = 12;
 const SVANG_FART = 2.0;         // pekknapparna ◀ ▶
-const STEG_TID = 1.3;           // sekunder innan ett trappsteg försvinner när man står på det
-const STEG_TID_HJALP = 2.4;     // ... efter att man ramlat HJALP_EFTER_FALL gånger
+// Regnbågstrappan: en vanlig trappa som man går uppför (Charlies önskan).
+// Stegen bakom en försvinner när man har gått vidare till nästa steg.
+const FORSVINN_BAKOM = 0.5;     // sekunder innan steget bakom en försvinner
 const HJALP_EFTER_FALL = 3;
-const ANTAL_STEG = 19;          // trappsteg upp till toppen
-const STEG_HOJD = 0.6;          // hur mycket högre varje steg är
-const STEG_AVSTAND = 1.7;       // hur långt det är mellan stegen
-const STEG_DJUP = 1.5;          // hur djupt varje steg är (större = lättare)
+const ANTAL_STEG = 34;          // trappsteg upp till toppen
+const STEG_HOJD = 0.35;         // hur mycket högre varje steg är
+const STEG_AVSTAND = 0.94;      // hur långt det är mellan stegen
+const STEG_DJUP = 0.98;         // hur djupt varje steg är
+const STEG_BREDD = 2.8;         // hur brett varje steg är
+const KLIV_HOJD = 0.45;         // så högt kan man kliva upp utan att hoppa
 const KUNG_GODIS = 3;           // så mycket godis kungen vill ha
 const BUBBEL_RACKVIDD = 8;      // hur nära tjuven man ska vara för att bubblorna ska nå
 const KAMERA_AVSTAND = 6.0;
@@ -309,10 +312,10 @@ const plattformar = [];
 const trappSteg = [];
 for (let i = 0; i < ANTAL_STEG; i++) {
   const farg = REGNBAGE[i % 6];
-  const g = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.3, STEG_DJUP), m(farg, { emissive: farg, emissiveIntensity: 0.25, roughness: 0.4, transparent: true }));
-  const x = (i % 2 ? 0.7 : -0.7), z = TRAPP_START.z - i * STEG_AVSTAND, topp = STEG_HOJD * (i + 1);
+  const g = new THREE.Mesh(new THREE.BoxGeometry(STEG_BREDD, 0.3, STEG_DJUP), m(farg, { emissive: farg, emissiveIntensity: 0.25, roughness: 0.4, transparent: true }));
+  const x = 0, z = TRAPP_START.z - i * STEG_AVSTAND, topp = STEG_HOJD * (i + 1);
   g.position.set(x, topp - 0.15, z); skugga(g); varldGrupp.add(g);
-  const s = { typ: 'steg', nr: i, g, x, z, b: 2.4, d: STEG_DJUP, topp, synlig: false, tid: null, visaOm: 0 };
+  const s = { typ: 'steg', nr: i, g, x, z, b: STEG_BREDD, d: STEG_DJUP, topp, synlig: false, tid: null, visaOm: 0 };
   g.visible = false; trappSteg.push(s); plattformar.push(s);
 }
 // toppen av berget och bryggan
@@ -483,9 +486,9 @@ function skapaGodis(x, y, z, grupp) {
   const o = { g, x, y, z, grupp, tagen: false, bas: y + 0.6, fas: rnd(0, 6) }; godisar.push(o); return o;
 }
 // godis i världen (en del längs vägen, en del i trappan)
-for (const [x, z] of [[3, 22], [-4, 16], [-12, 8], [-18, 12], [-27, 4], [-20, -4], [6, 6], [14, 0], [20, -10], [30, 2], [-8, -14], [-22, -12], [4, -16], [16, -30], [-30, 30], [36, -2]]) skapaGodis(x, 0, z, varldGrupp);
+for (const [x, z] of [[2, 18], [-14, 10], [-22, 2], [12, 2], [22, -12], [-10, -16], [3, -14], [-30, 28]]) skapaGodis(x, 0, z, varldGrupp);
 // godis i slottet (världskoordinater)
-for (const [x, z] of [[-6, 10], [6, 12], [-3, 3], [4, -3], [-6, -6], [6, -7]]) skapaGodis(SLOTT_POS.x + x, 0, z, scen).ute = true;
+for (const [x, z] of [[-3, 4], [4, -2], [-5, -6]]) skapaGodis(SLOTT_POS.x + x, 0, z, scen).ute = true;
 godisar.filter(g => g.ute).forEach(g => { scen.remove(g.g); slottGrupp.add(g.g); g.g.position.x -= SLOTT_POS.x; });
 
 const presenter = PRESENTER.map((p, i) => {
@@ -741,8 +744,8 @@ async function besokGrupp(gr) {
     await vanta(2200);
     steg = 'trappa'; visaTrappa();
     await vanta(1600);
-    visa('Följ ballongen till berget! Trappan försvinner när man står på den, så hoppa snabbt!', 6);
-    uppdrag('Hoppa uppför regnbågstrappan till toppen!');
+    visa('Följ ballongen till berget! Gå uppför regnbågstrappan. Stegen försvinner bakom dig!', 6);
+    uppdrag('Gå uppför regnbågstrappan till toppen!');
   } else {
     await vanta(1600);
     uppdrag(`Följ ballongen och fråga grupperna (${besokta}/3)`);
@@ -751,7 +754,7 @@ async function besokGrupp(gr) {
 }
 function visaTrappa() {
   trappaAktiv = true; ljud.trappa();
-  trappSteg.forEach((s, i) => { s.visaOm = i * 0.08; s.tid = null; });
+  trappSteg.forEach((s, i) => { s.visaOm = 0.05 + i * 0.05; s.tid = null; });
 }
 function aterstallTrappa() { trappSteg.forEach((s, i) => { s.synlig = false; s.g.visible = false; s.tid = null; s.visaOm = 0.3 + i * 0.05; }); }
 
@@ -957,6 +960,16 @@ function styrSpelare(dt, bas) {
   if (kropp.mark && kropp.mark !== 'golv' && (!kropp.mark.synlig || !paPlattform(kropp.mark, 0.05))) kropp.mark = null;
   const styr = kropp.mark ? 1 : LUFT_STYRNING;
   kropp.x += rx * fart * styr * dt; kropp.z += rz * fart * styr * dt;
+  // kliv upp på nästa trappsteg (som en vanlig trappa, inget hopp behövs)
+  if (kropp.mark && omrade === 'varld') {
+    const nu = kropp.mark === 'golv' ? 0 : kropp.mark.topp;
+    let basta = null;
+    for (const p of plattformar) {
+      if (!p.synlig || p.topp <= nu + 0.01 || p.topp - nu > KLIV_HOJD || !paPlattform(p, 0.02)) continue;
+      if (!basta || p.topp > basta.topp) basta = p;
+    }
+    if (basta) bytMark(basta);
+  }
   if (kropp.mark && kropp.mark !== 'golv' && !paPlattform(kropp.mark, 0.05)) kropp.mark = null;
   const forraY = kropp.y;
   if (kropp.mark) { kropp.y = kropp.mark === 'golv' ? 0 : kropp.mark.topp; kropp.vy = 0; kropp.sedanMark = 0; }
@@ -967,9 +980,7 @@ function styrSpelare(dt, bas) {
       if (!p.synlig) continue;
       if (forraY >= p.topp - 0.2 && kropp.y <= p.topp && paPlattform(p, 0.15)) {
         if (forraY > p.topp + 0.08) ljud.landa();
-        kropp.y = p.topp; kropp.vy = 0; kropp.mark = p; kropp.sedanMark = 0;
-        if (p.typ === 'steg' && p.tid === null) p.tid = fall >= HJALP_EFTER_FALL ? STEG_TID_HJALP : STEG_TID;
-        if (p.typ === 'steg') paTrappan = true;
+        bytMark(p);
         break;
       }
     }
@@ -987,7 +998,7 @@ function styrSpelare(dt, bas) {
   // inte gå rakt igenom steg från sidan
   if (omrade === 'varld') for (const p of plattformar) {
     if (!p.synlig || p.typ !== 'steg') continue;
-    if (kropp.y < p.topp - 0.25 && kropp.y > p.topp - 1.6 && paPlattform(p, 0.25)) {
+    if (kropp.y < p.topp - KLIV_HOJD && kropp.y > p.topp - 1.6 && paPlattform(p, 0.25)) {
       const dx = kropp.x - p.x, dz = kropp.z - p.z, ox = p.b / 2 + 0.25 - Math.abs(dx), oz = p.d / 2 + 0.25 - Math.abs(dz);
       if (ox < oz) kropp.x += Math.sign(dx) * ox; else kropp.z += Math.sign(dz) * oz;
     }
@@ -1017,6 +1028,17 @@ function styrSpelare(dt, bas) {
   if (bubbelTryck) { bubbelTryck = false; blas(); }
 }
 
+// byt vad man står på; stegen bakom en försvinner när man gått vidare uppåt
+function bytMark(p) {
+  const forra = kropp.mark;
+  kropp.y = p.topp; kropp.vy = 0; kropp.mark = p; kropp.sedanMark = 0;
+  if (p.typ === 'steg') paTrappan = true;
+  if (p.typ === 'steg' || p.typ === 'topp') {
+    const hojd = p.typ === 'steg' ? p.nr : ANTAL_STEG;
+    for (const s of trappSteg) if (s.synlig && s.tid === null && s.nr < hojd) s.tid = FORSVINN_BAKOM;
+  }
+  if (forra === 'golv' && p.typ === 'steg' && p.nr === 0 && sedanTips > 6) { sedanTips = 0; visa('Gå uppför trappan! Stegen försvinner bakom dig, så gå inte baklänges.', 4.5); }
+}
 function blas() {
   if (blasPaus > performance.now()) return;
   blasPaus = performance.now() + 450;
@@ -1034,7 +1056,7 @@ let blasPaus = 0;
 
 function landadeFranTrappan(fran) {
   paTrappan = false; fall++; ljud.studs();
-  visa(fall === HJALP_EFTER_FALL ? 'Studs! Nu stannar trappstegen kvar lite längre. Försök igen!' : 'Studs! Ballongerna tog emot dig. Trappan kommer tillbaka, försök igen!', 3.5);
+  visa('Studs! Ballongerna tog emot dig. Trappan kommer tillbaka, försök igen!', 3.5);
   if (trappaAktiv) aterstallTrappa();
 }
 
@@ -1066,7 +1088,7 @@ function kollaVarld(dt) {
   // uppe på toppen
   if (kropp.y > BERG.hojd - 0.5 && kropp.mark && kropp.mark !== 'golv' && kropp.mark.typ === 'topp') {
     paTrappan = false;
-    if (!tjuv1.snall && sedanTips > 9) { sedanTips = 0; uppdrag('Blås såpbubblor på tjuven! (B eller 🫧)'); visa('Där är Beppe! Blås såpbubblor på tjuven, tryck B!', 5); }
+    if (!tjuv1.snall && sedanTips > 4) { sedanTips = 0; uppdrag('Blås såpbubblor på tjuven! (B eller 🫧)'); visa('Där är Beppe! Blås såpbubblor på tjuven, tryck B!', 5); }
   }
 }
 function kollaSlott(dt) {
