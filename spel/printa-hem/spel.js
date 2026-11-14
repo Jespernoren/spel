@@ -140,7 +140,7 @@ const VAROR = {
   rulle4: { namn: 'Filament nivå 4 – guldkomposit', ikon: '', gram: 0, tid: 0, pris: 0, fil: 4 },
   rulle5: { namn: 'Filament nivå 5 – titanblandning', ikon: '', gram: 0, tid: 0, pris: 0, fil: 5 },
   // PETG-linjen: printas bara på den röda PETG-skrivaren. Dyra saker – varje rulle röd PETG är värd 5–10 vanliga.
-  n2_vas: { namn: 'Designvas i röd PETG', ikon: '', gram: 600, tid: 24, pris: 320, recept: 600, trivsel: 8, placerbar: true, radie: 0.2, niva: 2, syns: () => S.karra },
+  n2_vas: { namn: 'Designvas i röd PETG', ikon: '', gram: 600, tid: 24, pris: 320, recept: 600, trivsel: 8, placerbar: true, radie: 0.2, niva: 2, syns: () => S.kapitel >= 2 },
   n2_hjalm: { namn: 'Cykelhjälm i PETG', ikon: '', gram: 900, tid: 30, pris: 560, recept: 1200, niva: 2, syns: () => harRecept('n2_vas') },
   n2_neon: { namn: 'Neonskylt i röd PETG', ikon: '', gram: 1200, tid: 40, pris: 900, recept: 2400, trivsel: 50, placerbar: true, radie: 0.35, niva: 2, syns: () => harRecept('n2_hjalm') },
   n2_paddel: { namn: 'Kajakpaddel i PETG', ikon: '', gram: 2000, tid: 50, pris: 2300, recept: 4500, niva: 2, syns: () => harRecept('n2_neon') },
@@ -190,15 +190,15 @@ const VAROR = {
   fagelholk: { namn: 'Fågelholk', ikon: '🐦', gram: 800, tid: 26, pris: 170, recept: 300, trivsel: 6, placerbar: true, radie: 0.3, syns: () => S.rolf.i >= 1 || harRecept('mobilstall') },
   lampskarm: { namn: 'Lampskärm', ikon: '💡', gram: 1200, tid: 34, pris: 320, recept: 600, syns: () => S.dag >= 3 || S.rolf.i >= 2 || harRecept('fagelholk') },
   dronare: { namn: 'Drönarram', ikon: '🛸', gram: 1500, tid: 40, pris: 480, recept: 1000, syns: () => S.rolf.i >= 3 || harRecept('lampskarm') },
-  skateboard: { namn: 'Skateboard', ikon: '🛹', gram: 2000, tid: 50, pris: 780, recept: 1500, syns: () => harRecept('dronare') },
-  gitarr: { namn: 'Elgitarr', ikon: '🎸', gram: 3000, tid: 64, pris: 1400, recept: 2500, syns: () => harRecept('skateboard') },
-  cykelram: { namn: 'Cykelram', ikon: '🚲', gram: 5000, tid: 80, pris: 2900, recept: 4500, syns: () => harRecept('gitarr') },
-  pkajak: { namn: 'Printad kajak', ikon: '🛶', gram: 12000, tid: 120, pris: 9000, recept: 10000, syns: () => harRecept('cykelram') },
+  skateboard: { namn: 'Skateboard', ikon: '🛹', gram: 2000, tid: 50, pris: 780, recept: 1500, syns: () => S.kapitel >= 2 && harRecept('dronare') },
+  gitarr: { namn: 'Elgitarr', ikon: '🎸', gram: 3000, tid: 64, pris: 1400, recept: 2500, syns: () => S.kapitel >= 2 && harRecept('skateboard') },
+  cykelram: { namn: 'Cykelram', ikon: '🚲', gram: 5000, tid: 80, pris: 2900, recept: 4500, syns: () => S.kapitel >= 3 && harRecept('gitarr') },
+  pkajak: { namn: 'Printad kajak', ikon: '🛶', gram: 12000, tid: 120, pris: 9000, recept: 10000, syns: () => S.kapitel >= 3 && harRecept('cykelram') },
 };
 // dyra saker man köper hos Ali (printas inte) – det är dessa man sparar till
 Object.assign(VAROR, {
-  gamingstol: { namn: 'Gamingstol', ikon: '🪑', recept: 900, pris: 0, gram: 3000, tid: 50, trivsel: 10, placerbar: true, radie: 0.35, syns: () => S.sang, lyx: 'Alis AI-modell nr 7. Han skrev prompten på en servett.' },
-  hogtalare: { namn: 'Högtalare', ikon: '🔊', recept: 700, pris: 0, gram: 1500, tid: 30, trivsel: 8, placerbar: true, radie: 0.2, syns: () => S.sang, lyx: 'Lådan printar du – Ali lägger med högtalarelementen.' },
+  gamingstol: { namn: 'Gamingstol', ikon: '🪑', recept: 900, pris: 0, gram: 3000, tid: 50, trivsel: 10, placerbar: true, radie: 0.35, syns: () => S.kapitel >= 3 && !!S.bod, lyx: 'Alis AI-modell nr 7. Han skrev prompten på en servett.' },
+  hogtalare: { namn: 'Högtalare', ikon: '🔊', recept: 700, pris: 0, gram: 1500, tid: 30, trivsel: 8, placerbar: true, radie: 0.2, syns: () => S.kapitel >= 3 && !!S.bod, lyx: 'Lådan printar du – Ali lägger med högtalarelementen.' },
   r_radio: { namn: 'Rörradio från jordkällaren (spelar dansband)', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 45, unik: true, radie: 0.3 },
   ra_flipper: { namn: 'Gammalt flipperspel (Rolfs hemliga ställe)', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 90, unik: true, radie: 0.5 },
   ra_kiosk: { namn: 'Röd telefonkiosk', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 100, unik: true, radie: 0.55 },
@@ -206,20 +206,20 @@ Object.assign(VAROR, {
   ra_bensin: { namn: 'Bensinpump från 1962', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 70, unik: true, radie: 0.4 },
   ra_emalj: { namn: 'Emaljskylt: MJÖLK & GRÄDDE', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 35, unik: true, radie: 0.3 },
   ra_fatgrill: { namn: 'Grill av ett oljefat', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 45, unik: true, radie: 0.4 },
-  kamin: { namn: 'Vedkamin', ikon: '🔥', recept: 900, pris: 0, gram: 4000, tid: 60, trivsel: 25, placerbar: true, radie: 0.35, syns: () => S.dag >= 8, lyx: 'Gjutjärnslook. Ställ den i skjulet så fryser du inte i vinter.' },
-  kyl: { namn: 'Minikylskåp', ikon: '🧊', recept: 1200, pris: 0, gram: 4000, tid: 60, trivsel: 10, placerbar: true, radie: 0.3, syns: () => S.rolf.i >= 1, lyx: 'Skalet printar du – kylaggregatet följer med ritningen.' },
-  gamingbord: { namn: 'Gamingbord med skärm', ikon: '🖥️', recept: 1800, pris: 0, gram: 5000, tid: 70, trivsel: 15, placerbar: true, radie: 0.6, syns: () => S.rolf.i >= 1, lyx: 'Bordet och skärmramen printar du – panelen ingår.' },
-  soffa: { namn: 'Soffa', ikon: '🛋️', recept: 2200, pris: 0, gram: 7000, tid: 80, trivsel: 15, placerbar: true, radie: 0.8, syns: () => S.rolf.i >= 2, lyx: 'Alis stolthet. Han har aldrig suttit i den.' },
-  ledpinne: { namn: 'RGB-ljuspinne', ikon: '🌈', recept: 500, pris: 0, gram: 600, tid: 16, trivsel: 6, placerbar: true, radie: 0.15, syns: () => S.kapitelKlart, lyx: 'AI:n föreslog ”mer RGB”. Den har rätt. Alltid mer RGB.' },
-  akustik: { namn: 'Akustikpaneler', ikon: '🔲', recept: 600, pris: 0, gram: 1500, tid: 24, trivsel: 6, placerbar: true, radie: 0.3, syns: () => S.kapitelKlart, lyx: 'Ljudisolering. Så mamma inte hör när du skriker i Discord.' },
-  neonskylt: { namn: 'Neonskylt GAME ON', ikon: '💡', recept: 900, pris: 0, gram: 800, tid: 20, trivsel: 8, placerbar: true, radie: 0.3, syns: () => S.kapitelKlart, lyx: 'Lyser rosa. Gör allt 40 % coolare. Vetenskapligt bevisat (av mig).' },
-  figurhylla: { namn: 'Hylla med figurer', ikon: '🗿', recept: 1200, pris: 0, gram: 2500, tid: 36, trivsel: 10, placerbar: true, radie: 0.35, syns: () => S.kapitelKlart, lyx: 'Samlarfigurer. Du printar dem själv. Ingen behöver veta.' },
-  projektor: { namn: 'Projektor + duk', ikon: '📽️', recept: 2500, pris: 0, gram: 3000, tid: 44, trivsel: 15, placerbar: true, radie: 0.5, syns: () => S.kapitelKlart, lyx: 'Bio i boden. Jag har aldrig varit på bio. Pappas butik.' },
-  arkad: { namn: 'Arkadmaskin', ikon: '🕹️', recept: 3000, pris: 0, gram: 9000, tid: 80, trivsel: 18, placerbar: true, radie: 0.45, syns: () => S.kapitelKlart, lyx: 'En riktig arkadmaskin. AI:n gjorde den retro. Med flit.' },
-  simrig: { namn: 'Racingsimulator', ikon: '🏎️', recept: 4500, pris: 0, gram: 10000, tid: 90, trivsel: 22, placerbar: true, radie: 0.7, syns: () => S.kapitelKlart, lyx: 'Racingstol, ratt och pedaler. Snabbare än sopbilen.' },
-  biljard: { namn: 'Biljardbord', ikon: '🎱', recept: 5000, pris: 0, gram: 15000, tid: 110, trivsel: 20, placerbar: true, radie: 1.1, syns: () => S.kapitelKlart, lyx: 'Rolf säger att han är ”proffs”. Han är inte proffs.' },
-  jacuzzi: { namn: 'Jacuzzi', ikon: '🛁', recept: 5000, pris: 0, gram: 9000, tid: 140, trivsel: 30, placerbar: true, radie: 1.1, syns: () => S.kapitelKlart, lyx: 'Varmt bubbelbad vid soptippen. Lyx är relativt.' },
-  dator: { namn: 'Gamingdator med RGB', ikon: '💻', recept: 3500, pris: 0, gram: 2500, tid: 60, trivsel: 20, placerbar: true, radie: 0.25, syns: () => S.rolf.i >= 2, lyx: 'Chassit printar du – Ali har en låda med begagnade datordelar.' },
+  kamin: { namn: 'Vedkamin', ikon: '🔥', recept: 3330, pris: 0, gram: 4000, tid: 60, trivsel: 25, placerbar: true, radie: 0.35, syns: () => S.kapitel >= 4, lyx: 'Gjutjärnslook. Ställ den i skjulet så fryser du inte i vinter.' },
+  kyl: { namn: 'Minikylskåp', ikon: '🧊', recept: 1200, pris: 0, gram: 4000, tid: 60, trivsel: 10, placerbar: true, radie: 0.3, syns: () => S.kapitel >= 2, lyx: 'Skalet printar du – kylaggregatet följer med ritningen.' },
+  gamingbord: { namn: 'Gamingbord med skärm', ikon: '🖥️', recept: 1800, pris: 0, gram: 5000, tid: 70, trivsel: 15, placerbar: true, radie: 0.6, syns: () => S.kapitel >= 3, lyx: 'Bordet och skärmramen printar du – panelen ingår.' },
+  soffa: { namn: 'Soffa', ikon: '🛋️', recept: 2200, pris: 0, gram: 7000, tid: 80, trivsel: 15, placerbar: true, radie: 0.8, syns: () => S.kapitel >= 2, lyx: 'Alis stolthet. Han har aldrig suttit i den.' },
+  ledpinne: { namn: 'RGB-ljuspinne', ikon: '🌈', recept: 500, pris: 0, gram: 600, tid: 16, trivsel: 6, placerbar: true, radie: 0.15, syns: () => S.kapitel >= 3, lyx: 'AI:n föreslog ”mer RGB”. Den har rätt. Alltid mer RGB.' },
+  akustik: { namn: 'Akustikpaneler', ikon: '🔲', recept: 600, pris: 0, gram: 1500, tid: 24, trivsel: 6, placerbar: true, radie: 0.3, syns: () => S.kapitel >= 3, lyx: 'Ljudisolering. Så mamma inte hör när du skriker i Discord.' },
+  neonskylt: { namn: 'Neonskylt GAME ON', ikon: '💡', recept: 900, pris: 0, gram: 800, tid: 20, trivsel: 8, placerbar: true, radie: 0.3, syns: () => S.kapitel >= 3, lyx: 'Lyser rosa. Gör allt 40 % coolare. Vetenskapligt bevisat (av mig).' },
+  figurhylla: { namn: 'Hylla med figurer', ikon: '🗿', recept: 1200, pris: 0, gram: 2500, tid: 36, trivsel: 10, placerbar: true, radie: 0.35, syns: () => S.kapitel >= 3, lyx: 'Samlarfigurer. Du printar dem själv. Ingen behöver veta.' },
+  projektor: { namn: 'Projektor + duk', ikon: '📽️', recept: 2500, pris: 0, gram: 3000, tid: 44, trivsel: 15, placerbar: true, radie: 0.5, syns: () => S.kapitel >= 3, lyx: 'Bio i boden. Jag har aldrig varit på bio. Pappas butik.' },
+  arkad: { namn: 'Arkadmaskin', ikon: '🕹️', recept: 3000, pris: 0, gram: 9000, tid: 80, trivsel: 18, placerbar: true, radie: 0.45, syns: () => S.kapitel >= 3, lyx: 'En riktig arkadmaskin. AI:n gjorde den retro. Med flit.' },
+  simrig: { namn: 'Racingsimulator', ikon: '🏎️', recept: 4500, pris: 0, gram: 10000, tid: 90, trivsel: 22, placerbar: true, radie: 0.7, syns: () => S.kapitel >= 3, lyx: 'Racingstol, ratt och pedaler. Snabbare än sopbilen.' },
+  biljard: { namn: 'Biljardbord', ikon: '🎱', recept: 5000, pris: 0, gram: 15000, tid: 110, trivsel: 20, placerbar: true, radie: 1.1, syns: () => S.kapitel >= 3, lyx: 'Rolf säger att han är ”proffs”. Han är inte proffs.' },
+  jacuzzi: { namn: 'Jacuzzi', ikon: '🛁', recept: 30000, pris: 0, gram: 9000, tid: 140, trivsel: 30, placerbar: true, radie: 1.1, syns: () => S.kapitel >= 3, lyx: 'Varmt bubbelbad vid soptippen. Lyx är relativt.' },
+  dator: { namn: 'Gamingdator med RGB', ikon: '💻', recept: 3500, pris: 0, gram: 2500, tid: 60, trivsel: 20, placerbar: true, radie: 0.25, syns: () => S.kapitel >= 3, lyx: 'Chassit printar du – Ali har en låda med begagnade datordelar.' },
 });
 const GAMER = ['gamingstol', 'gamingbord', 'dator', 'hogtalare', 'ledpinne', 'akustik', 'neonskylt', 'figurhylla', 'projektor', 'arkad', 'simrig', 'biljard', 'soffa', 'kyl'];
 // nästa gamer-sak att jobba på: den du redan håller på med, annars den billigaste du kan printa
@@ -236,23 +236,23 @@ const harRecept = (id) => !VAROR[id]?.recept || S.ritningar.includes('recept:' +
 // Maskiner: köp ritningen hos Ali, printa delarna, bygg ihop
 const MASKINER = {
   kvarnmotor: { namn: 'Kvarnmotor', ikon: '⚙️', ritning: 50, delar: 1, gram: 500, tid: 10, beskr: 'Batteridriven – kvarnen mal själv, du slipper veva', monteras: true, syns: () => true },
-  solpark: { namn: 'Solcellspark', ikon: '☀️', syns: () => harPlacerat('skrivare2') || harPlacerat('skrivare3') || antalAv('sol') >= 2, ritning: 700, delar: 4, gram: 2400, tid: 24, beskr: `Sex paneler på rad – ger ${SOLPARK_PER_S} ström/s, mer än du hinner trampa. Stora skrivare behöver en park`, trivsel: 4, radie: 1.5 },
-  bank: { namn: 'Batteribank', ikon: '🔋', syns: () => harPlacerat('sol'), ritning: 120, delar: 2, gram: 600, tid: 12, beskr: `Lagrar ${BANK_PLUS} ström till – första banken fördubblar batteriet. Bygg flera när solen inte räcker`, trivsel: 2, radie: 0.45 },
+  solpark: { namn: 'Solcellspark', ikon: '☀️', syns: () => S.kapitel >= 2, ritning: 4000, delar: 4, gram: 2400, tid: 24, beskr: `Sex paneler på rad – ger ${SOLPARK_PER_S} ström/s, mer än du hinner trampa. Stora skrivare behöver en park`, trivsel: 4, radie: 1.5 },
+  bank: { namn: 'Batteribank', ikon: '🔋', syns: () => S.kapitel >= 2 && harPlacerat('sol'), ritning: 1330, delar: 2, gram: 600, tid: 12, beskr: `Lagrar ${BANK_PLUS} ström till – första banken fördubblar batteriet. Bygg flera när solen inte räcker`, trivsel: 2, radie: 0.45 },
   korg: { namn: 'Ryggkorg', ikon: '🎒', syns: () => S.grip && S.sang, ritning: 90, delar: 2, gram: 500, tid: 12, beskr: `Bär ${BARA_SKRAP[2]} skräp på ryggen i stället för ${BARA_SKRAP[1]}`, verktyg: true },
   karra: { namn: 'Skottkärra', ikon: '🛒', syns: () => false, ritning: 200, delar: 3, gram: 900, tid: 16, beskr: 'Lyft tungt skräp: regntunnor och kajaker – de blir röd PETG i PETG-kvarnen', verktyg: true },
-  petgkvarn: { namn: 'PETG-kvarn', ikon: '', syns: () => S.karra, ritning: 200, delar: 3, gram: 600, tid: 16, beskr: 'Röd kvarn för TUNGT skräp: regntunnor, kajaker och Rolfs röda backar blir röd PETG – filament nivå 2. Den vanliga kvarnen klarar inte tunga saker. Ställs på gården.', trivsel: 4, radie: 0.7, flik: 'petg' },
-  skrivarepetg: { namn: 'PETG-skrivare', ikon: '', syns: () => S.karra, ritning: 900, delar: 5, gram: 900, tid: 18, beskr: 'Röd skrivare som BARA tar röd PETG. Den printar de dyra PETG-sakerna: vas, cykelhjälm, neonskylt, paddel. Står på golvet.', trivsel: 12, flik: 'petg' },
+  petgkvarn: { namn: 'PETG-kvarn', ikon: '', syns: () => S.kapitel >= 2, ritning: 3000, delar: 3, gram: 600, tid: 16, beskr: 'Röd kvarn för TUNGT skräp: regntunnor, kajaker och Rolfs röda backar blir röd PETG – filament nivå 2. Den vanliga kvarnen klarar inte tunga saker. Ställs på gården.', trivsel: 4, radie: 0.7, flik: 'petg' },
+  skrivarepetg: { namn: 'PETG-skrivare', ikon: '', syns: () => S.kapitel >= 2, ritning: 3000, delar: 5, gram: 900, tid: 18, beskr: 'Röd skrivare som BARA tar röd PETG. Den printar de dyra PETG-sakerna: vas, cykelhjälm, neonskylt, paddel. Står på golvet.', trivsel: 12, flik: 'petg' },
   petgband: { namn: 'Tungt rullband', ikon: '', syns: () => harPlacerat('petgkvarn') && (S.stat.tungMalt || 0) >= 3, ritning: 900, delar: 3, gram: 1000, tid: 16, monteras: true, beskr: 'PETG-kvarnens eget rullband: hämtar tunnor och kajaker från tippen själv och matar kvarnen. Montera: välj det och klicka på PETG-kvarnen.', flik: 'petg' },
-  magnet: { namn: 'Magnetpistol', ikon: '🧲', syns: () => S.korg && S.karra && ((S.stat.tungMalt || 0) >= 3 || S.dag >= 4), ritning: 300, delar: 3, gram: 1000, tid: 16, beskr: `Klicka och håll, sikta – suger till sig skräp. Bär ${BARA_SKRAP[3]}`, verktyg: true },
-  turbomotor: { namn: 'Turbomotor', ikon: '🔥', syns: () => S.kvarn.motor && S.rolf.i >= 1 && S.dag >= 4, ritning: 400, delar: 3, gram: 800, tid: 14, monteras: true, beskr: 'Kvarnen mal 2,5× snabbare. Drar lite mer ström. Röda ränder ingår' },
-  jetmotor: { namn: 'Jetmotor med efterbrännare', ikon: '🚀', syns: () => S.kvarn.turbo && S.rolf.i >= 3, ritning: 1500, delar: 4, gram: 1200, tid: 18, monteras: true, beskr: 'Kvarnen mal 6× snabbare. Med ELD. Drar mycket ström' },
+  magnet: { namn: 'Magnetpistol', ikon: '🧲', syns: () => S.kapitel >= 2 && S.karra, ritning: 4000, delar: 3, gram: 1000, tid: 16, beskr: `Klicka och håll, sikta – suger till sig skräp. Bär ${BARA_SKRAP[3]}`, verktyg: true },
+  turbomotor: { namn: 'Turbomotor', ikon: '🔥', syns: () => S.kvarn.motor && S.dag >= 5, ritning: 400, delar: 3, gram: 800, tid: 14, monteras: true, beskr: 'Kvarnen mal 2,5× snabbare. Drar lite mer ström. Röda ränder ingår' },
+  jetmotor: { namn: 'Jetmotor med efterbrännare', ikon: '🚀', syns: () => S.kapitel >= 3 && S.kvarn.turbo, ritning: 13330, delar: 4, gram: 1200, tid: 18, monteras: true, beskr: 'Kvarnen mal 6× snabbare. Med ELD. Drar mycket ström' },
   spolhallare: { namn: 'Stor spolhållare', ikon: '', syns: () => (S.stat.laddat || 0) >= 3 || S.rolf.i >= 1, ritning: 120, delar: 2, gram: 400, tid: 10, monteras: true, beskr: 'Monteras på en skrivare – rymmer 7 rullar i stället för 3. Välj den och klicka på skrivaren' },
-  spolhallare2: { namn: 'Spolhållare XL', ikon: '', syns: () => skrivare.some((x) => (x.spolNiva || 0) >= 1), ritning: 400, delar: 3, gram: 700, tid: 12, monteras: true, beskr: 'Bygger på den stora spolhållaren: 12 rullar' },
+  spolhallare2: { namn: 'Spolhållare XL', ikon: '', syns: () => skrivare.some((x) => (x.spolNiva || 0) >= 1), ritning: 1170, delar: 3, gram: 700, tid: 12, monteras: true, beskr: 'Bygger på den stora spolhållaren: 12 rullar' },
   spolhallare3: { namn: 'Spoltorn', ikon: '', syns: () => skrivare.some((x) => (x.spolNiva || 0) >= 2), ritning: 1500, delar: 4, gram: 900, tid: 14, monteras: true, beskr: 'Ett torn med 20 rullar – behövs för riktigt stora prints som biljardbord och jacuzzi' },
   matarband: { namn: 'Skräpcontainer – extra kapacitet', ikon: '🗑️', syns: () => S.kvarn.motor && S.rolf.i >= 1, ritning: 220, delar: 3, gram: 700, tid: 14, beskr: `En container som står BAKOM kvarnen. Töm allt skräp i den (60 st) – ett litet band matar kvarnens tratt automatiskt. Montera: välj den och klicka på kvarnen`, monteras: true },
   rullstall: { namn: 'Rullställ vid extrudern', ikon: '', syns: () => (S.stat.hamtat || 0) >= 3 || S.rolf.i >= 1, ritning: 180, delar: 2, gram: 500, tid: 12, beskr: 'Ställs bredvid extrudern och lagrar 4 rullar till – kvarnen kan mala längre utan att stanna. Upp till tre ställ.', monteras: true },
-  hardkniv: { namn: 'Härdade kvarnknivar', ikon: '', syns: () => S.kapitelKlart && (S.respekt >= 60 || ['fynd3'].some((f) => antalInv(f))), ritning: 300, delar: 2, gram: 600, tid: 12, monteras: true, beskr: 'Knivar av härdat stål. Utan dem klarar kvarnen inte Rolfs gröna kolfiberrester – med dem blir de filament nivå 3.' },
-  diamantkniv: { namn: 'Diamantkvarn', ikon: '', syns: () => (S.kvarn.kniv || 0) >= 1 && (S.respekt >= 110 || ['fynd4', 'fynd5'].some((f) => antalInv(f))), ritning: 1500, delar: 3, gram: 1000, tid: 16, monteras: true, beskr: 'Diamantbelagda knivar. Klarar guldkomposit och titanspån – filament nivå 4 och 5.' },
+  hardkniv: { namn: 'Härdade kvarnknivar', ikon: '', syns: () => S.kapitel >= 4, ritning: 1670, delar: 2, gram: 600, tid: 12, monteras: true, beskr: 'Knivar av härdat stål. Utan dem klarar kvarnen inte Rolfs gröna kolfiberrester – med dem blir de filament nivå 3.' },
+  diamantkniv: { namn: 'Diamantkvarn', ikon: '', syns: () => S.kapitel >= 4 && (S.kvarn.kniv || 0) >= 1, ritning: 10000, delar: 3, gram: 1000, tid: 16, monteras: true, beskr: 'Diamantbelagda knivar. Klarar guldkomposit och titanspån – filament nivå 4 och 5.' },
   stortratt: { namn: 'Stor kvarntratt', ikon: '🪣', syns: () => false, ritning: 150, delar: 2, gram: 600, tid: 12, beskr: 'Bred tratt med kross – nu får regntunnor och kajaker plats i kvarnen', monteras: true },
   // bygg ut skjulet till ett riktigt hem – printa delarna, välj dem och klicka på skjulet för att montera
   dorr: { namn: 'Dörr', ikon: '🚪', hem: true, monteras: true, syns: () => S.sang, ritning: 120, delar: 2, gram: 500, tid: 14, trivsel: 8, beskr: 'En riktig dörr – slut på drag och nyfikna katter' },
@@ -261,17 +261,17 @@ const MASKINER = {
   fonster: { namn: 'Fönster', ikon: '🪟', hem: true, monteras: true, syns: () => S.rolf.i >= 1, ritning: 150, delar: 2, gram: 700, tid: 14, trivsel: 8, beskr: 'Ljus in i skjulet. Sätt det var du vill på en plan vägg – du kan ha flera (max 4)' },
   golv: { namn: 'Trägolv', ikon: '🪵', hem: true, monteras: true, syns: () => S.rolf.i >= 2, ritning: 140, delar: 3, gram: 800, tid: 14, trivsel: 8, beskr: 'Varma golvplankor i stället för kall jord' },
   taklampa: { namn: 'Taklampa', ikon: '💡', hem: true, monteras: true, syns: () => S.rolf.i >= 2, ritning: 90, delar: 1, gram: 400, tid: 10, trivsel: 6, beskr: 'Mysigt gult ljus om kvällarna' },
-  tapeter: { namn: 'Tapeter', ikon: '🧻', hem: true, monteras: true, syns: () => S.kapitelKlart, ritning: 400, delar: 4, gram: 500, tid: 12, trivsel: 20, beskr: 'Riktiga tapeter på insidan – mamma kan inte klaga längre. Kräver tätade väggar' },
-  gamingbod: { namn: 'Gamingbod (tillbyggnad)', ikon: '', flik: 'hem', monteras: true, syns: () => S.kapitelKlart, ritning: 1400, delar: 6, gram: 700, tid: 20, trivsel: 25, beskr: 'En egen bod bredvid skjulet – med RGB i taket. Plats för hela gamingsetupen' },
+  tapeter: { namn: 'Tapeter', ikon: '🧻', hem: true, monteras: true, syns: () => S.kapitelKlart, ritning: 1330, delar: 4, gram: 500, tid: 12, trivsel: 20, beskr: 'Riktiga tapeter på insidan – mamma kan inte klaga längre. Kräver tätade väggar' },
+  gamingbod: { namn: 'Gamingbod (tillbyggnad)', ikon: '', flik: 'hem', monteras: true, syns: () => S.kapitel >= 3, ritning: 20000, delar: 6, gram: 700, tid: 20, trivsel: 25, beskr: 'En egen bod bredvid skjulet – med RGB i taket. Plats för hela gamingsetupen' },
   grip: { namn: 'Skräpgrip', ikon: '🦾', ritning: 50, delar: 1, gram: 400, tid: 10, syns: () => true, beskr: `Bär ${BARA_SKRAP[1]} skräp, lättare att sikta, plockar upp när du går nära`, verktyg: true },
   bord: { namn: 'Arbetsbord', ikon: '🪵', syns: () => S.rolf.i >= 2 && S.dag >= 4, ritning: 120, delar: 3, gram: 700, tid: 14, beskr: 'Bordsyta för en skrivare till', trivsel: 8, radie: 1.0 },
   sol: { namn: 'Solpanel', ikon: '☀️', syns: () => S.rolf.i >= 2 && S.dag >= 4, ritning: 670, delar: 3, gram: 800, tid: 14, beskr: `Ger ${SOL_PER_S} ström/s av sig själv – en panel driver Skrivare S utan att du trampar`, trivsel: 6, radie: 0.8 },
-  rullband: { namn: 'Rullband från tippen', ikon: '', syns: () => S.kvarn.band && S.kapitelKlart, ritning: 1200, delar: 4, gram: 900, tid: 16, monteras: true, beskr: 'Går från tippen till containern bakom kvarnen. Lägg skräp på bandets inmatning vid tippen – du slipper gå hela vägen. Drar lite ström.' },
-  lastarm: { namn: 'Lastarm vid tippen', ikon: '', syns: () => !!S.auto?.band, ritning: 1800, delar: 4, gram: 1000, tid: 18, monteras: true, beskr: 'Plockar skräp från tippen och lägger det på bandet åt dig. Orkar bara lätta saker i början – trimma den hos Ali för att lyfta tyngre.' },
-  robotarm: { namn: 'Rulladdare (robotarm)', ikon: '', syns: () => !!S.auto?.lastarm, ritning: 2000, delar: 4, gram: 1000, tid: 18, monteras: true, beskr: 'Står vid extrudern. Tar varje färdig rulle och laddar den skrivare som har minst filament.' },
+  rullband: { namn: 'Rullband från tippen', ikon: '', syns: () => S.kapitel >= 3 && S.kvarn.band, ritning: 12670, delar: 4, gram: 900, tid: 16, monteras: true, beskr: 'Går från tippen till containern bakom kvarnen. Lägg skräp på bandets inmatning vid tippen – du slipper gå hela vägen. Drar lite ström.' },
+  lastarm: { namn: 'Lastarm vid tippen', ikon: '', syns: () => !!S.auto?.band, ritning: 7500, delar: 4, gram: 1000, tid: 18, monteras: true, beskr: 'Plockar skräp från tippen och lägger det på bandet åt dig. Orkar bara lätta saker i början – trimma den hos Ali för att lyfta tyngre.' },
+  robotarm: { namn: 'Rulladdare (robotarm)', ikon: '', syns: () => !!S.auto?.lastarm, ritning: 9170, delar: 4, gram: 1000, tid: 18, monteras: true, beskr: 'Står vid extrudern. Tar varje färdig rulle och laddar den skrivare som har minst filament.' },
   saljlada: { namn: 'Säljlåda', ikon: '', syns: () => S.dag >= 3, ritning: 250, delar: 2, gram: 500, tid: 12, beskr: 'Ställs vid lägret. Lägg varor i lådan så swishar Ali pengarna direkt – du slipper gå över vägen för att sälja. Mättnaden och "Ali vill ha idag" gäller som vanligt.', trivsel: 2, radie: 0.45 },
-  utlada: { namn: 'Leveranslåda + autoprint', ikon: '', syns: () => !!S.auto?.arm, ritning: 2500, delar: 3, gram: 800, tid: 16, monteras: true, beskr: 'Färdiga saker från skrivarna hamnar direkt i lådan i stället för på skrivaren – du behöver aldrig ta ut något. Ali hämtar den varje morgon och betalar.' },
-  skrivare3: { namn: 'Skrivare L', ikon: '', syns: () => S.kapitelKlart && harPlacerat('skrivare2'), ritning: 2400, delar: 6, gram: 1200, tid: 20, beskr: 'Stor byggvolym: soffa, kajak, arkadmaskin, jacuzzi. 4× snabbare än S, två jobb i kö. Står på golvet.', trivsel: 25 },
+  utlada: { namn: 'Leveranslåda + autoprint', ikon: '', syns: () => !!S.auto?.arm, ritning: 15000, delar: 3, gram: 800, tid: 16, monteras: true, beskr: 'Färdiga saker från skrivarna hamnar direkt i lådan i stället för på skrivaren – du behöver aldrig ta ut något. Ali hämtar den varje morgon och betalar.' },
+  skrivare3: { namn: 'Skrivare L', ikon: '', syns: () => S.kapitel >= 2 && harPlacerat('skrivare2'), ritning: 8330, delar: 6, gram: 1200, tid: 20, beskr: 'Stor byggvolym: soffa, kajak, arkadmaskin, jacuzzi. 4× snabbare än S, två jobb i kö. Står på golvet.', trivsel: 25 },
   skrivare2: { namn: 'Skrivare M', ikon: '🖨️', syns: () => harPlacerat('bord'), ritning: 1330, delar: 5, gram: 900, tid: 18, beskr: 'Skalhoppet: dubbelt så stor byggvolym, 2,5× snabbare och TVÅ jobb – ett printas medan nästa väntar i kö. Upprepar samma vara tills filamentet tar slut. Printar drönare, gitarr och gamingstol. Måste stå på ett arbetsbord.', trivsel: 15, kraverBord: true },
 };
 // vad varje del heter – det är de här som printas en i taget
@@ -371,7 +371,7 @@ const LAPPAR = {
   start: ['📔 Dagbok', 'Dag 1. Inget mer tjat. Här står jag, vid soptippen, med storebrors gamla 3D-skrivare och ett skjul som luktar mus. Men skräp är plast – och plast är filament. Plan: 1) en säng. 2) städa gården. 3) bygga om skjulet till en riktig fristad – med gamingsetup.'],
   sang: ['📔 Dagbok', 'Första natten i en riktig säng. Jag printade den själv.'],
   mammaslut: ['💌 Brev från mamma – det första som kommit hit', 'Kära du!\n\nGrattis till nya huset!! Pappa och jag åkte förbi i söndags. Oj vad STÄDAT och fint det är. Jag är imponerad. Jag grät lite i bilen. Pappa sa "aha, vad lugnt då" – och han log.\n\nNu kan jag äntligen skicka post till dig. Det första kommer på tisdag: fyra burkar lingonsylt.\n\nKram, mamma ❤️\n\nPS. Rolf vinkade från sopbilen. Han hade en tomte på flaket.'],
-  polett: ['📔 Dagbok', 'Dag 14. Mammas paket kom tillbaka: "Okänd mottagare". Jag bor ju här. Det här är mitt hem nu. Men på pappret finns jag inte här. Jag måste bli folkbokförd – och då måste marken och tippen vara min, och Rolf behöver ett riktigt hus.'],
+  polett: ['📔 Dagbok', 'Dag 14. Mammas paket kom tillbaka: "Okänd mottagare". Jag bor ju här. Det här är mitt hem nu. Men på pappret finns jag inte här. Jag måste bli folkbokförd – och då måste jag äga tomten jag bor på och ha ett riktigt hus.'],
   hem: ['📔 Dagbok', 'Fabriken har kommit igång. Nu vill jag sova i en riktig säng i skjulet i stället för på det kalla golvet.'],
   sopbil: ['📔 Dagbok', 'Sopbilen tippade en ny last. All den plasten – och grinden är låst.'],
   rolf: ['🚛 Lapp från Rolf', 'ÖJ! Är de du som printar grejer?? Ja önskar mig en ölhållare me kylklamp. Lägg den i min postlåda vid grinden så får du nyckeln till tippen. Kall öl e viktigt. /Rolf (sopbilen)'],
@@ -431,10 +431,24 @@ function sopbilText() {
   return 'Sopbilen är på väg – Rolf hämtar gåvan';
 }
 const sovSteg = (dag, del) => ({ del, sov: true, text: 'Klart för idag – sov i skjulet', klar: () => S.dag > dag });
-const K2 = 'Kapitel 2 – Ett riktigt hem';
+// kapitel 2–4: en dag = en nivå, precis som kapitel 1
+const R6 = 'Dag 6 – Röd PETG', R7 = 'Dag 7 – PETG-skrivaren', R8 = 'Dag 8 – Magnetpistolen', R9 = 'Dag 9 – Solcellsparken', R10 = 'Dag 10 – Skrivare L och hösten';
+const F11 = 'Dag 11 – Rullbandet', F12 = 'Dag 12 – Robotarmarna', F13 = 'Dag 13 – Gamingboden', F14 = 'Dag 14 – Autoprint och jetmotor', F15 = 'Dag 15 – Fristaden';
+const M16 = 'Dag 16 – Egen mark', M17 = 'Dag 17 – Kolfiber och ängen', M18 = 'Dag 18 – Ett riktigt hus', M19 = 'Dag 19 – Diamantkvarnen', M20 = 'Dag 20 – Vintern', M21 = 'Dag 21 – Folkbokförd', M22 = 'Dag 22 – Jul på Soptippsvägen 1';
+const K2 = R6;   // första dagen i kapitel 2 (äldre kod letar efter den)
+const KAPITEL = [null,
+  { namn: 'Ett hem att bo i', mal: 'Bygg ett hem där du inte fryser – och som är lite trevligt.' },
+  { namn: 'Röda fabriken', mal: 'Tunga saker blir röd PETG. Bygg en egen röd fabrik bredvid den blå – och klara hösten.' },
+  { namn: 'Fabriken sköter sig själv', mal: 'Bygg maskiner som jobbar åt dig – sen en gamingbod och en jacuzzi.' },
+  { namn: 'Folkbokförd', mal: 'Köp marken, bygg ett riktigt hus och bli skriven på Soptippsvägen 1 före jul.' }];
 const KAP1_NAMN = 'Ett hem att bo i', KAP1_MAL = 'Bygg ett hem där du inte fryser – och som är lite trevligt.';
-const D1 = 'Dag 1 – Kom igång', N1 = 'Dag 2 – Tippen och Rolf', N2 = 'Dag 3 – Tungt skräp och PETG', N3 = 'Dag 4 – El och sol', N4 = 'Dag 5 – Printfarmen';
+const D1 = 'Dag 1 – Kom igång', N1 = 'Dag 2 – Tippen och Rolf', N2 = 'Dag 3 – Kärran och säljlådan', N3 = 'Dag 4 – El och sol', N4 = 'Dag 5 – Printfarmen';
 const KAP1_DELAR = [D1, N1, N2, N3, N4];   // en dag = en nivå – du sover dig vidare
+const KAP_DELAR = [null, KAP1_DELAR, [R6, R7, R8, R9, R10], [F11, F12, F13, F14, F15], [M16, M17, M18, M19, M20, M21, M22]];
+const kapitelFor = (del) => KAP_DELAR.findIndex((d) => d && d.includes(del));
+// vilket kapitel spelaren är i: räknas fram ur stegen (gamla sparningar får det de redan klarat)
+const kapitelNu = () => S.steg >= STEG.length ? 4 : Math.max(1, kapitelFor(STEG[S.steg]?.del));
+const printat = (typ) => (S.printTot || {})[typ] || 0;
 // enkla upplästa instruktioner för dag 1 (för den som inte läser så mycket) – index = steg
 const STEG_TAL = {
   0: 'Plocka upp skräp på gården. Klicka på en flaska.',
@@ -473,9 +487,8 @@ const STEG = [
   { del: N1, bild: 'byggsats:dorr', text: 'Bygg en dörr till skjulet', klar: () => S.hem?.dorr || S.dag > 2 },
   sovSteg(2, N1),
   ...rolfSteg(1, N2),
-  { del: N2, bild: 'karra', text: 'Lyft en tunna med skottkärran', klar: () => S.stat.tunga >= 1 },
-  { del: N2, bild: 'byggsats:petgkvarn', text: 'Bygg den röda PETG-kvarnen', klar: () => harPlacerat('petgkvarn') || S.dag > 3, lapp: 'petg' },
-  { del: N2, text: 'Mal tunnan i PETG-kvarnen', klar: () => (S.stat.tungMalt || 0) >= 1 || S.dag > 3 },
+  { del: N2, bild: 'karra', text: 'Fyll kärran med skräp och töm den i kvarnen', klar: () => (S.stat.karraTomt || 0) >= 1 || S.dag > 3 || S.kapitelKlart },
+  { del: N2, bild: 'byggsats:saljlada', text: 'Bygg säljlådan vid lägret', klar: () => harPlacerat('saljlada') || S.dag > 3 || S.kapitelKlart },
   { del: N2, bild: 'byggsats:tak', text: 'Lägg plåttak på skjulet', klar: () => S.hem?.tak || S.dag > 3 },
   sovSteg(3, N2),
   ...rolfSteg(2, N3),
@@ -487,17 +500,69 @@ const STEG = [
   { del: N4, bild: 'byggsats:vaggar', text: () => `Isolera de sista väggarna · ${S.hem?.vagg || 0}/4`, klar: () => S.hem?.vaggar || (S.hem?.vagg || 0) >= 4 || S.dag > 5 },
   { del: N4, bild: 'byggsats:skrivare2', text: 'Bygg Skrivare M på bordet', klar: () => harPlacerat('skrivare2'), lapp: 'skrivare2' },
   { del: N4, bild: () => nastaInred(), text: () => `Gör det mysigt · trivsel ${trivsel()}/${TRIVSEL_MAL}`, klar: () => trivsel() >= TRIVSEL_MAL, lapp: 'klart' },
-  { del: K2, bild: 'byggsats:tapeter', text: 'Tapetsera skjulet', klar: () => !!S.hem?.tapeter },
-  { del: K2, bild: 'byggsats:gamingbod', text: 'Bygg en gamingbod', klar: () => !!S.bod },
-  { del: K2, bild: () => nastaGamer(), text: () => `Inred boden · ${Math.min(3, gamerSaker())}/3 gamer-saker`, klar: () => gamerSaker() >= 3 },
-  { del: K2, bild: 'byggsats:skrivare3', text: 'Bygg Skrivare L', klar: () => harPlacerat('skrivare3') || harPlacerat('jacuzzi') },
-  { del: K2, bild: 'jacuzzi', text: 'Printa och ställ ut en jacuzzi', klar: () => harPlacerat('jacuzzi') },
-  { del: K2, bild: () => nastaInred(), text: () => `Världens bästa fristad · ${trivsel()}/300`, klar: () => trivsel() >= 300 },
+  // ---------- Kapitel 2 – Röda fabriken (dag 6–10) ----------
+  { del: R6, bild: 'karra', text: 'Lyft en tunna med skottkärran', klar: () => (S.stat.tunga || 0) >= 1 },
+  { del: R6, bild: 'byggsats:petgkvarn', text: 'Bygg den röda PETG-kvarnen', klar: () => harPlacerat('petgkvarn'), lapp: 'petg' },
+  { del: R6, text: 'Mal tunnan i PETG-kvarnen', klar: () => (S.stat.tungMalt || 0) >= 1 },
+  sovSteg(6, R6),
+  { del: R7, bild: 'byggsats:skrivarepetg', text: 'Bygg PETG-skrivaren', klar: () => harPlacerat('skrivarepetg') },
+  { del: R7, bild: 'n2_vas', text: 'Printa en designvas i röd PETG', klar: () => printat('n2_vas') >= 1 || (S.saltTot?.n2_vas || 0) >= 1 },
+  { del: R7, bild: 'n2_vas', text: 'Sälj designvasen', klar: () => (S.saltTot?.n2_vas || 0) >= 1 },
+  sovSteg(7, R7),
+  { del: R8, bild: 'byggsats:magnet', text: 'Bygg magnetpistolen', klar: () => !!S.magnet },
+  { del: R8, text: () => `Mal tunga saker i PETG-kvarnen · ${Math.min(3, S.stat.tungMalt || 0)}/3`, klar: () => (S.stat.tungMalt || 0) >= 3 },
+  { del: R8, bild: 'byggsats:bank', text: 'Bygg en batteribank', klar: () => harPlacerat('bank') },
+  sovSteg(8, R8),
+  { del: R9, bild: 'n2_hjalm', text: 'Köp receptet på cykelhjälmen hos Ali', klar: () => harRecept('n2_hjalm') },
+  { del: R9, bild: 'byggsats:solpark', text: 'Bygg en solcellspark', klar: () => harPlacerat('solpark') },
+  { del: R9, bild: () => skrivare.some((x) => (x.spolNiva || 0) >= 1) ? 'byggsats:spolhallare2' : 'byggsats:spolhallare', text: 'Montera en spolhållare XL på en skrivare', klar: () => skrivare.some((x) => (x.spolNiva || 0) >= 2) },
+  sovSteg(9, R9),
+  { del: R10, bild: 'byggsats:skrivare3', text: 'Bygg Skrivare L', klar: () => harPlacerat('skrivare3') },
+  { del: R10, bild: 'byggsats:tapeter', text: 'Tapetsera skjulet', klar: () => !!S.hem?.tapeter },
+  { del: R10, text: () => `Klara hösten: värme ${Math.min(4, varme())}/4`, klar: () => varme() >= 4 },
+  sovSteg(10, R10),
+  // ---------- Kapitel 3 – Fabriken sköter sig själv (dag 11–15) ----------
+  { del: F11, bild: () => S.kvarn.band ? 'byggsats:rullband' : 'byggsats:matarband', text: 'Bygg rullbandet från tippen', klar: () => !!S.auto?.band },
+  { del: F11, text: () => `Mata in skräp med bandet · ${Math.min(20, S.stat.bandSkrap || 0)}/20`, klar: () => (S.stat.bandSkrap || 0) >= 20 },
+  sovSteg(11, F11),
+  { del: F12, bild: 'byggsats:lastarm', text: 'Bygg lastarmen vid tippen', klar: () => !!S.auto?.lastarm },
+  { del: F12, bild: 'byggsats:robotarm', text: 'Bygg rulladdaren vid extrudern', klar: () => !!S.auto?.arm },
+  sovSteg(12, F12),
+  { del: F13, bild: 'byggsats:gamingbod', text: 'Bygg gamingboden', klar: () => !!S.bod },
+  { del: F13, bild: () => nastaGamer(), text: () => `Inred boden · ${Math.min(1, gamerSaker())}/1 gamersak`, klar: () => gamerSaker() >= 1 },
+  sovSteg(13, F13),
+  { del: F14, bild: 'byggsats:utlada', text: 'Bygg leveranslådan', klar: () => !!S.auto?.lada },
+  { del: F14, bild: () => S.kvarn.turbo ? 'byggsats:jetmotor' : 'byggsats:turbomotor', text: 'Montera jetmotorn på kvarnen', klar: () => !!S.kvarn.jet },
+  sovSteg(14, F14),
+  { del: F15, bild: () => nastaGamer(), text: () => `Inred boden · ${Math.min(3, gamerSaker())}/3 gamersaker`, klar: () => gamerSaker() >= 3 },
+  { del: F15, bild: 'jacuzzi', text: 'Printa och ställ ut en jacuzzi', klar: () => harPlacerat('jacuzzi') },
+  { del: F15, bild: () => nastaInred(), text: () => `Världens bästa fristad · trivsel ${trivsel()}/300`, klar: () => trivsel() >= 300 },
+  sovSteg(15, F15),
+  // ---------- Kapitel 4 – Folkbokförd (dag 16–22) ----------
+  { del: M16, text: 'Köp tomten du bor på – tavlan vid vägen', klar: () => agerMark('egen') },
+  { del: M16, bild: 'byggsats:hardkniv', text: 'Sätt härdade knivar i kvarnen', klar: () => (S.kvarn.kniv || 0) >= 1 },
+  sovSteg(16, M16),
+  { del: M17, bild: 'fynd3', text: 'Mal Rolfs kolfiberrester till filament', klar: () => (S.stat.maltNiva?.[3] || 0) >= 1 || antalInv('rulle3') > 0 || printat('n3_stol') >= 1 },
+  { del: M17, bild: 'n3_stol', text: 'Printa en kolfiberstol', klar: () => printat('n3_stol') >= 1 },
+  { del: M17, text: 'Köp ängen i öster – tavlan vid vägen', klar: () => agerMark('oster') },
+  sovSteg(17, M17),
+  { del: M18, text: 'Bygg ett riktigt hus på ängen – tavlan vid vägen', klar: () => agerMark('huset') },
+  { del: M18, text: 'Flytta in i huset', klar: () => !!S.flyttatIn },
+  sovSteg(18, M18),
+  { del: M19, bild: 'byggsats:diamantkniv', text: 'Bygg diamantkvarnen', klar: () => (S.kvarn.kniv || 0) >= 2 },
+  { del: M19, bild: 'fynd4', text: 'Mal en rulle guld eller titan', klar: () => (S.stat.maltNiva?.[4] || 0) + (S.stat.maltNiva?.[5] || 0) >= 1 || antalInv('rulle4') + antalInv('rulle5') > 0 },
+  sovSteg(19, M19),
+  { del: M20, bild: 'kamin', text: 'Printa och ställ ut en vedkamin', klar: () => harPlacerat('kamin') },
+  { del: M20, text: () => `Klara vintern: värme ${Math.min(9, varme())}/9`, klar: () => varme() >= 9 },
+  sovSteg(20, M20),
+  { del: M21, text: 'Bli folkbokförd – tavlan vid vägen', klar: () => !!S.folkbokford },
+  sovSteg(21, M21),
+  { del: M22, text: 'Fira jul på Soptippsvägen 1', klar: () => !!S.julFirad },
 ];
 // gården räknas som städad när skräpet är borta – tunga saker räknas först när du har kärran, och högen vid kvarnen (när den är full) är ditt lager
 const gardSkrap = () => {
   let k = null; try { k = kvarnPunkt(0.9, 0, 0.6); } catch { /* kvarnen finns inte än */ }
-  return skrapLista.filter((x) => (!x.userData.tung || S.karra) && !paTippen(x.position.x, x.position.z) && Math.abs(x.position.x) <= TOMT && Math.abs(x.position.z) <= TOMT
+  return skrapLista.filter((x) => kanLyfta(x) && !paTippen(x.position.x, x.position.z) && Math.abs(x.position.x) <= TOMT && Math.abs(x.position.z) <= TOMT
     && !(k && Math.hypot(x.position.x - k.x, x.position.z - k.z) < 1.3)).length;
 };
 // dag 2: det räcker att städa ungefär halva gården innan Rolf hör av sig (resten kan vänta)
@@ -1971,7 +2036,7 @@ function laggSkrap(x, z, variant, rot) {
   s.userData.skrap = [x, z, variant, rot];
   scen.add(s); skrapLista.push(s); skalaTraff(s);
   interaktor.registrera(s, {
-    text: () => !kanLyfta(s) ? `🔒 ${SKRAP_SORTER[s.userData.sort].namn} (${rullar(s.userData.gram)}) – för tung! Du behöver en skottkärra` : s.userData.tung ? (valdKarra() && karraFull(s.userData.gram) ? 'Kärran är full' : `🛒 Lasta ${SKRAP_SORTER[s.userData.sort].namn.toLowerCase()} i skottkärran (${rullar(s.userData.gram)})`) : valdKarra() ? (karraFull(s.userData.gram) ? 'Kärran är full' : `🛒 Lasta i kärran (${rullar(s.userData.gram)})`) : (hand.full ? 'Fullt i famnen' : niva() === 3 ? 'Håll inne – magneten drar' : `Plocka ${SKRAP_SORTER[s.userData.sort].namn.toLowerCase()} (${rullar(s.userData.gram)})`),
+    text: () => !kanLyfta(s) ? (S.karra ? `🔒 ${SKRAP_SORTER[s.userData.sort].namn} – för tung för kvarnen … än.` : `🔒 ${SKRAP_SORTER[s.userData.sort].namn} (${rullar(s.userData.gram)}) – för tung! Du behöver en skottkärra`) : s.userData.tung ? (valdKarra() && karraFull(s.userData.gram) ? 'Kärran är full' : `🛒 Lasta ${SKRAP_SORTER[s.userData.sort].namn.toLowerCase()} i skottkärran (${rullar(s.userData.gram)})`) : valdKarra() ? (karraFull(s.userData.gram) ? 'Kärran är full' : `🛒 Lasta i kärran (${rullar(s.userData.gram)})`) : (hand.full ? 'Fullt i famnen' : niva() === 3 ? 'Håll inne – magneten drar' : `Plocka ${SKRAP_SORTER[s.userData.sort].namn.toLowerCase()} (${rullar(s.userData.gram)})`),
     kanAktivera: () => (S.tippNyckel || !paTippen(s.position.x, s.position.z)) && kamera.position.distanceTo(s.position) <= SKRAP_RACKVIDD[niva()] + 1.6,
     aktivera: () => plockaSkrap(s),
   });
@@ -2022,7 +2087,7 @@ function autoPlock() {
 }
 const karraGram = () => S.karraLast.reduce((a, v) => a + SKRAP_SORTER[skrapSort(v)].gram, 0);
 const karraFull = (g = 0) => karraGram() + Math.max(g, 1) > KARRA_KAP;
-const kanLyfta = (s) => !s.userData.tung || S.karra;
+const kanLyfta = (s) => !s.userData.tung || (S.karra && S.kapitel >= 2);   // kapitel 1: kärran bär mer, men tunnor och kajaker är för tunga för kvarnen än
 function plockaSkrap(s, tyst = false) {
   if (!kanLyfta(s)) { if (!tyst) varna('tung'); return; }
   if (s.userData.tung && !valdKarra()) {
@@ -2566,7 +2631,7 @@ function uppdateraSkrivare(sk, dt) {
         
       }
     } else if (S.auto?.lada && sk.upprepa === j.typ && VAROR[j.typ]?.pris > 0) {
-      sk.jobb = null; tomBadd(sk); S.stat.printat++;
+      sk.jobb = null; tomBadd(sk); S.stat.printat++; S.printTot = { ...(S.printTot || {}), [j.typ]: (S.printTot?.[j.typ] || 0) + 1 };
       S.auto.innehall = { ...(S.auto.innehall || {}), [j.typ]: (S.auto.innehall?.[j.typ] || 0) + 1 };
       ladaPaket(sk, j.typ); ljud.placera(); if (sk.ko) nastaJobb(sk, null);
     } else {
@@ -2576,7 +2641,7 @@ function uppdateraSkrivare(sk, dt) {
       else if (nUt % 3 === 0) skrivarNotis(sk, `${nUt} st klara på skrivaren – ta ut dem`, 'bra');
       if (VAROR[j.typ]?.lyx) S.ritningar = S.ritningar.filter((x) => x !== 'recept:' + j.typ);   // Alis fina ritningar räcker till en
       aliStolt(j.typ, VAROR[j.typ]?.namn, !!VAROR[j.typ]?.recept);
-      S.stat.printat++;
+      S.stat.printat++; S.printTot = { ...(S.printTot || {}), [j.typ]: (S.printTot?.[j.typ] || 0) + 1 };
       if (S.stat.printat === 1) forstaPrintWow(sk);
       nastaJobb(sk, j.typ);
     }
@@ -2738,7 +2803,7 @@ function uppdateraAuto(dt) {
     for (let i = auto.paket.length - 1; i >= 0; i--) {
       const pk = auto.paket[i]; if (kor) pk.t += dt * bandFart() / L;
       pk.m.position.copy(b.A).lerp(b.B, Math.min(1, pk.t)); pk.m.position.y += 0.12; pk.m.rotation.y += dt;
-      if (pk.t >= 1) { scen.remove(pk.m); auto.paket.splice(i, 1); S.kvarn.binge.push(pk.tung ? -pk.gram : pk.gram); auto.flode.band.push([performance.now() / 1000, pk.gram]); }
+      if (pk.t >= 1) { scen.remove(pk.m); auto.paket.splice(i, 1); S.kvarn.binge.push(pk.tung ? -pk.gram : pk.gram); auto.flode.band.push([performance.now() / 1000, pk.gram]); S.stat.bandSkrap = (S.stat.bandSkrap || 0) + 1; }
     }
   }
   // robotarmen
@@ -3120,7 +3185,7 @@ interaktor.registrera(kvarn, {
       S.karraLast = kvar; ritaKarraLast();
       if (tung) varna('litenTratt');
       if (!n) { if (!tung) varna(extruderFull() ? 'rulle' : 'tratt'); return; }
-      S.stat.ilagt += n; ljud.stor(); ui.toast(`${n} st från kärran i tratten`, 'bra'); sparaSnart(); return;
+      S.stat.ilagt += n; S.stat.karraTomt = (S.stat.karraTomt || 0) + 1; ljud.stor(); ui.toast(`${n} st från kärran i tratten`, 'bra'); sparaSnart(); return;
     }
     let vantan = 0;
     while (hand.overst && hand.overst.userData.typ === 'skrap') {
@@ -3631,7 +3696,7 @@ function sov() {
     matDag(natt); kollaKyla(); S.dag = natt + 1; S.saltIdag = {}; aliVillVal(); S.dagTid = 0; S.vakenTid = 0; aliHamtarLadan(); sparaSnart(); ruttnaOverNatten(); uppdateraArstid();
     // morgonens meddelanden väntar tills du klickat "Börja dagen" – sen kommer de ett i taget
     morgonKo = () => { familjSms(); kollaMarkTips(); kollaPolett(); kollaResa(); morgonRolf(); kollaSamtal(); };
-    const morgonRolf = () => { if (S.dag === 5 && !(S.filGava || []).includes(0) && !(S.filGava || []).includes(2)) { S.filGava = [...(S.filGava || []), 0]; S.post.tillMig = [...S.post.tillMig, 'sak:fynd2']; visaPostInne(); setTimeout(() => sms('rolf', 'La en röd back i lådan. Hitta den i en tunna. Riktigt bra plast – PETG. Släng den i den röda kvarnen. Sen blir det röd filament, bättre grejer. Mer sånt när folk börjar respektera dej. /R'), 1500); } };
+    const morgonRolf = () => { if (S.dag >= 6 && S.kapitel >= 2 && !(S.filGava || []).includes(0) && !(S.filGava || []).includes(2)) { S.filGava = [...(S.filGava || []), 0]; S.post.tillMig = [...S.post.tillMig, 'sak:fynd2']; visaPostInne(); setTimeout(() => sms('rolf', 'La en röd back i lådan. Hitta den i en tunna. Riktigt bra plast – PETG. Släng den i den röda kvarnen. Sen blir det röd filament, bättre grejer. Mer sånt när folk börjar respektera dej. /R'), 1500); } };
     setTimeout(sparaDagBokmarke, 1500);
     skymning = 0; sover = false; sol.position.set(14, 24, 8); if (hemiLjus) hemiLjus.intensity = 1.4; if (skjulLampa) skjulLampa.intensity = skjulLampa.userData.bas || 4;
     satLjus(DAG); sl.innerHTML = `<div><svg viewBox="0 0 160 120" style="width:min(340px,70vw);display:block;margin:0 auto 10px">${kalenderSvg('DAG ' + S.dag, 40, 14, 'DAG ' + natt)}</svg>☀️ ${['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag'][(S.dag - 1) % 7]}</div>`; ljud.plock(); setTimeout(() => ljud.stor(), 900);
@@ -3919,8 +3984,8 @@ const ROLF = [
     brev: 'ÖJ! Ja såg att du börja städa gården. Respekt. Ingen städar här. Är de du som printar grejer oxå?? Ja önskar mig en ölhållare me kylklamp. Ritningen ligger i lådan. Nyckeln till tippen oxå – ta så mycket plast du vill. Lägg hållarn i lådan när den e klar. Kall öl e viktigt. /Rolf (sopbilen)',
     tack: 'TACK för hållarn!! Ölen e iskall. Lite stålar i lådan.\n\nEn sak. Mina fingrar e stela – artros. Doktorn säger att ja ska skriva mindre för hand. Lägg en lapp me ditt telefonnummer i lådan så sms:ar ja istället. Sms:a inte efter tio. /Rolf' },
   { vara: 'flaskoppnare', forskott: ['karra'], belo: ['mynt:120'],
-    brev: 'Gomorron! Rolf här. Kajsa (katten) knuffa ner min flasköppnare i tippen 😩 Printar du en ny? Me magnet så den sitter på flaket. Ritningen ligger i lådan. Ja ställde min gamla skottkärra bredvid – den e din redan nu. Me kärran kan du bära dom TUNGA grejerna i tippen, tunnor o kajaker. Massor me plast i dom! /Rolf',
-    tack: 'PERFEKT öppnare!!! Lite stålar i lådan. Hoppas kärran gör nytta – tunnorna o kajakerna e fulla me plast! /Rolf' },
+    brev: 'Gomorron! Rolf här. Kajsa (katten) knuffa ner min flasköppnare i tippen 😩 Printar du en ny? Me magnet så den sitter på flaket. Ritningen ligger i lådan. Ja ställde min gamla skottkärra bredvid – den e din redan nu. Me kärran bär du åtta gånger mer skräp per vända. Tunnorna o kajakerna e för tunga för din kvarn. Än. /Rolf',
+    tack: 'PERFEKT öppnare!!! Lite stålar i lådan. Hoppas kärran gör nytta. /Rolf' },
   { vara: 'grillspade', belo: ['mynt:250', 'extra'],
     brev: 'Ska grilla på lördag. Ensam som vanligt, Kajsa äter inte korv. Ingen grillspade. Min gamla smälte. Lång historia. Ritningen ligger i lådan. Fixar du? 250 spänn o ja tippar dubbelt nästa gång. /Rolf 🍖',
     tack: 'Grillspaden e ju KONST. Pengar i lådan. Ses på lördag. Eller inte. Vi får se. /Rolf' },
@@ -4172,9 +4237,18 @@ function geRolfNummer() {
   const vantar = S.rolfVantar || []; S.rolfVantar = [];
   vantar.forEach(([t, id], i) => setTimeout(() => sms('rolf', t, id), 40000 + i * 30000));
 }
-function sms(fran, text, id) {
+// sms-takt: högst ett ungefär var tredje minut, och inga under dag 1:s första åtta steg – resten väntar i kö
+const SMS_MELLAN = 180;   // sekunder speltid mellan två sms
+const smsSparr = () => (S.dag <= 1 && S.steg < 8) || ((S.speltid || 0) - (S.senSmsTid ?? -1e9) < SMS_MELLAN);
+function sms(fran, text, id, direkt = false) {
   // Rolf skriver brev tills du lagt ditt nummer i hans postlåda – sms:en väntar så länge
   if ((fran === 'rolf') && !S.rolfNummer) { S.rolfVantar = [...(S.rolfVantar || []), [text, id]].slice(-3); return; }
+  if (!direkt && S.mobil && smsSparr()) {
+    S.smsTakt = [...(S.smsTakt || []), [fran, text, id]];
+    while (S.smsTakt.length > 8) { const j = S.smsTakt.findIndex((x) => x[2] && SMS_POOL.some((m) => m.id === x[2])); S.smsTakt.splice(j >= 0 ? j : 0, 1); }   // långa köer: småpratet stryks först
+    sparaSnart(); return;
+  }
+  S.senSmsTid = S.speltid || 0;
   if (fran === 'rolf') text = rolfDialekt(text, true);
   senasteSms = performance.now();
   if (!S.mobil) return;
@@ -4240,7 +4314,11 @@ function kollaSmsKo() {
   if (pausad || !ui.butiksOverlay.hidden || !medEl2.hidden || medKo.length || performance.now() - senasteSms < 25000) return;
   S.smsKo.shift(); sms(f.vem, f.text, f.id); sparaSnart();
 }
-setInterval(() => { slappNya(); kollaAliKo(); kollaSmsKo(); }, 3000);
+function kollaSmsTakt() {
+  if (!S.smsTakt?.length || smsSparr() || pausad || !ui.igang || !ui.butiksOverlay.hidden || !medEl2.hidden || medKo.length || sover) return;
+  const [f, t, id] = S.smsTakt.shift(); sparaSnart(); sms(f, t, id, true);
+}
+setInterval(() => { slappNya(); kollaAliKo(); kollaSmsKo(); kollaSmsTakt(); }, 3000);
 function aliStolt(id, namn, arAlis) {
   if (!arAlis || !namn) return;
   S.aliStolt = S.aliStolt || [];
@@ -4749,7 +4827,7 @@ const ROLF_JOBBLAPP = ['Rolf här. Ja har en grej. Lite känslig. Ja la en lapp 
 const senaSystem = () => !!S.kapitelKlart;   // respekt, rang, prestationer, värme, mark, trim, fynd 3–5, skumma jobb och möglande mat syns först i kapitel 2
 const RESPEKT_NIVAER = [[25, 'Filament nivå 2 – röd PETG'], [60, 'Filament nivå 3 – grön kolfiber'], [110, 'Filament nivå 4 – guldkomposit'], [180, 'Filament nivå 5 – titanblandning']];
 const FIL_FARG = { 1: FIL1, 2: 0xd63a2f, 3: 0x2fbf5a, 4: 0xd4a017, 5: 0x9a8ab8 };
-const nivaUpplast = (n) => n <= 1 || (n === 2 && S.karra) || S.respekt >= RESPEKT_NIVAER[n - 2][0];
+const nivaUpplast = (n) => n <= 1 || (n === 2 ? S.kapitel >= 2 : S.kapitel >= 4);   // röd PETG i kapitel 2, nivå 3–5 i kapitel 4
 const hogstaNiva = () => [5, 4, 3, 2].find((n) => nivaUpplast(n)) || 1;
 // tungt skräp (tunnor, kajaker) kan ge filament av högre nivå när kvarnen mal det
 function tungtFilament() {
@@ -4811,7 +4889,7 @@ function myntRegn(summa) {
 // ---------- Korta varningar – visas vid siktet och läses upp med din egen röst ----------
 const VARN = { vrid: 'Tryck R för att vrida.',
   full: 'Fullt i händerna.',
-  tung: 'För tungt. Jag behöver en skottkärra.',
+  tung: 'För tung för kvarnen. Än.',
   karra: 'Kärran är full.',
   tratt: 'Tratten är full. Veva först.',
   rulle: 'Rullen är full. Ta den först.',
@@ -4846,7 +4924,7 @@ function andraRespekt(d, varfor) {
 // Rolfs fynd: nivå 2 (röd PETG) kan komma tidigt, nivå 3–5 först i kapitel 2 – sen kommer de som respekten redan räcker till
 function kollaFyndGavor() {
   RESPEKT_NIVAER.forEach(([g, namn], i) => {
-    const n = i + 2; if (S.respekt < g || (S.filGava || []).includes(n) || (n >= 3 && !S.kapitelKlart)) return;
+    const n = i + 2; if (S.respekt < g || (S.filGava || []).includes(n) || (n >= 3 ? S.kapitel < 4 : S.kapitel < 2)) return;
     S.filGava = [...(S.filGava || []), n];
     S.post.tillMig = [...S.post.tillMig, 'sak:fynd' + n, 'sak:fynd' + n, 'sak:fynd' + n]; visaPostInne();
     setTimeout(() => sms('rolf', rolfFyndSms(n)), 800);
@@ -4864,7 +4942,7 @@ function malFynd() {
   skickaSkrap(m, fran, trattTopp(), { dur: 0.7, tratt: false });
   ljud.stor(); ritaHotbar?.();
   setTimeout(() => {
-    laggTill('rulle' + n); ritaHotbar?.();
+    laggTill('rulle' + n); ritaHotbar?.(); S.stat.maltNiva = { ...(S.stat.maltNiva || {}), [n]: (S.stat.maltNiva?.[n] || 0) + 1 };
     ui.toast(`Kvarnen gav en rulle ${VAROR['rulle' + n].namn.toLowerCase()}! Den behövs för de finare recepten.`, 'guld');
     if (!S.fyndForklarat) { S.fyndForklarat = true; inkorg({ vem: 'du', titel: 'Tanke', lapp: true, text: `${VAROR['rulle' + n].namn.split('– ')[1]}. Starkare än vanlig plast – Ali har recept som kräver den. Rolf hittar mer ju mer folk respekterar mig.` }); }
   }, 900);
@@ -5122,14 +5200,16 @@ const DUBBEL_PRIS = ['bank', 'sol', 'solpark'];
 const antalAv = (id) => placerade.filter((p) => p.typ === id).length + antalInv('byggsats:' + id);
 const ritPris = (id) => DUBBEL_PRIS.includes(id) ? MASKINER[id].ritning * 2 ** antalAv(id) : MASKINER[id].ritning;
 // dagens huvudköp: ungefär dubbelt så dyrt varje dag (dörr → tak → solpanel → Skrivare M). Annars det billigaste du kan köpa hos Ali.
-const HUVUDKOP = { [N1]: 'dorr', [N2]: 'tak', [N3]: 'sol', [N4]: 'skrivare2' };
+const HUVUDKOP = { [N1]: 'dorr', [N2]: 'tak', [N3]: 'sol', [N4]: 'skrivare2', [R6]: 'petgkvarn', [R7]: 'skrivarepetg', [R8]: 'magnet', [R9]: 'solpark', [R10]: 'skrivare3', [F11]: 'rullband', [F12]: 'robotarm', [F13]: 'gamingbod', [F14]: 'utlada', [F15]: 'recept:jacuzzi', [M16]: 'mark:egen', [M17]: 'mark:oster', [M18]: 'mark:huset', [M19]: 'diamantkniv', [M20]: 'recept:kamin' };
 let nastaKopCache = null, nastaKopT = 0;
 function nastaKop() {
   if (performance.now() - nastaKopT < 1000) return nastaKopCache;
   nastaKopT = performance.now();
   const h = HUVUDKOP[STEG[S.steg]?.del];
   const klar = (id) => S.ritningar.includes(id) || arKlar(id) || harPlacerat(id) || antalInv('byggsats:' + id) || (MASKINER[id].hem && S.hem?.[id]) || skrivare.some((x) => x.jobb?.maskin === id || x.klar === 'byggsats:' + id);
-  if (h && MASKINER[h].syns() && !klar(h)) return (nastaKopCache = { namn: MASKINER[h].namn, pris: ritPris(h) });
+  if (h?.startsWith('mark:')) { const t = MARK_TOMTER.find((x) => x.id === h.slice(5)); if (t && !agerMark(t.id)) return (nastaKopCache = { namn: t.namn.replace(/^Ett riktigt hus.*/, 'Riktigt hus'), pris: t.pris }); }
+  else if (h?.startsWith('recept:')) { const id = h.slice(7); if (VAROR[id] && !harRecept(id) && !harPlacerat(id)) return (nastaKopCache = { namn: VAROR[id].namn, pris: VAROR[id].recept }); }
+  else if (h && MASKINER[h].syns() && !klar(h)) return (nastaKopCache = { namn: MASKINER[h].namn, pris: ritPris(h) });
   try {
     const L = aliKopLista().filter((x) => x.pris > 0 && !x.las && x.key !== 'filament' && !String(x.key).startsWith('pr:')).sort((a, b) => a.pris - b.pris);
     nastaKopCache = L[0] ? { namn: L[0].namn.replace(/^(3D-modell|Recept|PETG-recept): /, ''), pris: L[0].pris } : null;
@@ -5192,12 +5272,12 @@ function aliKopLista() {
     add('Tapeter – för skjulet och boden', 't_' + id, tumme(id), TAPETER[i].namn, 'Ställ dig i skjulet eller gamingboden, välj tapetrullen och klicka. Den sitter direkt.', pris,
       [['hus', 'Funkar i skjulet och boden']], () => { if (!harRumFor(id)) { aliRepl = 'Fickorna är fulla.'; return false; } laggTill(id); aliRepl = i === 0 ? 'Den fula igen? Okej. Smaken är som baken.' : 'Bra tapet. Min fru valde samma. Jag hatar den.'; return true; });
   }
-  if (S.kapitelKlart) for (const [id, v] of Object.entries(VAROR)) {
+  if (S.kapitel >= 2) for (const [id, v] of Object.entries(VAROR)) {
     if (!v.proto || (S.proto || []).includes(id)) continue;
-    const last = aliKunskap() < v.proto.lar;
-    add('Alis prototyper – en av varje', 'pt:' + id, tumme(id), v.namn, last ? `Ali har inte lärt sig bygga den än. Printa fler av hans ritningar (${aliKunskap()}/${v.proto.lar}).` : v.beskr, v.proto.pris,
-      [['stjarna', 'Unik – går inte att printa'], last ? ['las', `Låst: Ali behöver ${v.proto.lar - aliKunskap()} till`, 'varn'] : null].filter(Boolean),
-      () => { if (last) { aliRepl = 'Inte än. Jag lär mig fortfarande. Printa mina ritningar så lär jag mig fortare.'; return false; } if (!harRumFor(id)) { aliRepl = 'Fickorna är fulla.'; return false; }
+    const tidig = S.kapitel < 4, last = tidig || aliKunskap() < v.proto.lar;   // Alis drömhylla: syns från kapitel 2, går att köpa i kapitel 4
+    add('Alis prototyper – en av varje', 'pt:' + id, tumme(id), v.namn, tidig ? `Alis drömhylla. Han bygger den när du har kommit långt – i kapitel 4. ${v.beskr}` : last ? `Ali har inte lärt sig bygga den än. Printa fler av hans ritningar (${aliKunskap()}/${v.proto.lar}).` : v.beskr, v.proto.pris,
+      [['stjarna', 'Unik – går inte att printa'], tidig ? ['las', 'Låst till kapitel 4', 'varn'] : last ? ['las', `Låst: Ali behöver ${v.proto.lar - aliKunskap()} till`, 'varn'] : null].filter(Boolean),
+      () => { if (tidig) { aliRepl = 'Inte än. Den här är min dröm. Drömmar tar tid. Kapitel fyra, typ.'; return false; } if (last) { aliRepl = 'Inte än. Jag lär mig fortfarande. Printa mina ritningar så lär jag mig fortare.'; return false; } if (!harRumFor(id)) { aliRepl = 'Fickorna är fulla.'; return false; }
         S.proto = [...(S.proto || []), id]; laggTill(id); aliRepl = PROTO_SVAR[id];
         if (id === 'm_nano' || id === 'm_fusion') { taBortInv(id, 1); ui.toast(id === 'm_nano' ? 'Nanokvarnen sitter i kvarnen – den mal 60 % fortare' : 'Fusionsbatteriet är inkopplat: +600 ström och självladdning', 'guld'); }
         else if (v.proto.mod) ui.toast('Välj prototypen och klicka på en skrivare för att montera den', 'guld');
@@ -5227,7 +5307,7 @@ function aliKopLista() {
       () => { if (kedjaLas(id)) { aliRepl = kedjaLas(id); return false; } S.ritningar.push('recept:' + id); aliRepl = `${v.namn}? Bra val. Folk köper sånt. Jag vet inte varför.`; return true; });
   }
   for (const [k, t] of Object.entries(TRIM)) {
-    if (!S.kapitelKlart) continue;   // trimning syns först i kapitel 2 – ett nytt system per dag
+    if (!t.tidig && S.kapitel < 3) continue;   // trimning är kapitel 3 – rullhållaren (tidig) får finnas från start
     if (t.syns && !t.syns()) continue;
     add('Trimning – tar aldrig slut', 't:' + k, trimBild(k), `${t.namn} nivå ${trimNiva(k) + 1}`, t.beskr(trimNiva(k) + 1) + (trimNiva(k) ? ` (nu: ${t.beskr(trimNiva(k)).toLowerCase()})` : ''), trimPris(k), [['oandlig', `Nivå ${trimNiva(k)} → ${trimNiva(k) + 1}`]],
       () => { S.trim = { ...(S.trim || {}), [k]: trimNiva(k) + 1 }; aliRepl = ['AI:n och jag optimerade hela natten. Ingen sömn. Värt det.', 'Trimmad. Snabbare än min pappa någonsin var.', 'Nästa nivå kostar mer. Så funkar teknik. Och mitt liv.'][Math.floor(Math.random() * 3)]; ui.toast(`${t.namn} nivå ${trimNiva(k)}: ${t.beskr(trimNiva(k))}`, 'guld'); return true; });
@@ -5414,7 +5494,7 @@ interaktor.registrera(matarband, {
       setTimeout(() => skickaSkrap(x, fran, bingePunkt(0.45, (Math.random() - 0.5) * 0.6, (Math.random() - 0.5) * 0.4), { dur: 0.55, tratt: false }), n * 80); n++;
     }
     if (valdKarra()) { while (S.karraLast.length && S.kvarn.binge.length < BINGE_MAX) { const v = S.karraLast.pop(); const so = SKRAP_SORTER[skrapSort(v)]; if (so.tung) { S.karraLast.push(v); break; } S.kvarn.binge.push(so.tung ? -so.gram : so.gram); n++; } ritaKarraLast(); }
-    if (n) { S.stat.ilagt += n; ljud.stor(); ui.toast(`🗑️ ${n} skräp i containern – bandet sköter resten`, 'bra'); sparaSnart(); }
+    if (n) { S.stat.ilagt += n; if (valdKarra()) S.stat.karraTomt = (S.stat.karraTomt || 0) + 1; ljud.stor(); ui.toast(`🗑️ ${n} skräp i containern – bandet sköter resten`, 'bra'); sparaSnart(); }
     else ui.toast(S.kvarn.binge.length >= BINGE_MAX ? 'Containern är full!' : 'Bär hit skräp och töm det här', '');
   },
 });
@@ -5590,6 +5670,7 @@ function oppnaDagbok() {
     // det du själv har skrivit – nyast först, läses upp med din egen röst
     const mina = S.lappar.slice().reverse().filter((l) => /Dagbok/.test(lappInfo(l)[0]));
     kropp = sektion('Min dagbok', 'Det jag har skrivit, nyast först') + (mina.length ? mina.map((l) => rad({ bild: portratt('du', 40), titel: '', text: `<span style="font-size:15px;color:#f2f2f2">${rens(lappInfo(l)[1])}</span>`, hoger: knapp({ text: 'Läs upp', typ: 'neutral', attr: `data-las="${l}"`, ikon: 'pil' }) })).join('') : '<p class="ui-tom">Inget skrivet än.</p>');
+    if (senaSystem() && S.prestLogg?.length) kropp += sektion('Prestationer', 'Små saker jag har klarat, nyast först') + S.prestLogg.map((x) => { const p = PRESTATIONER.find((y) => y.id === x.id); return p ? rad({ bild: `<span class="ui-headik" style="width:30px;height:30px">${ik('stjarna')}</span>`, titel: rens(p.namn), text: `${rens(p.rad)} · dag ${x.dag}` }) : ''; }).join('');
   } else if (dagbokFlik === 'brev') {
     const brev = S.lappar.slice().reverse().filter((l) => !/Dagbok/.test(lappInfo(l)[0])).map((l) => { const [t, x] = lappInfo(l); return rad({ bild: portratt(vemAvTitel(t), 40), titel: rens(t), text: x }); });
     kropp = brev.length ? brev.join('') : '<p class="ui-tom">Inga brev än.</p>';
@@ -5643,7 +5724,7 @@ function startRuta(titel = ui.o.titel, text = ui.o.text, knappText = 'Starta') {
   ui.igang = false; spelare.aktiv = false;
   const t = rens(titel), ar = t.includes('<svg');
   // har du spelat en stund visas din resa i stället för ingressen: kapitel för kapitel, vad som är klart
-  const delar = []; STEG.forEach((x, i) => { const kn = KAP1_DELAR.includes(x.del) ? 'Kapitel 1 – ' + KAP1_NAMN : x.del; let d = delar.find((y) => y.namn === kn); if (!d) delar.push(d = { namn: kn, tot: 0, klara: 0 }); d.tot++; if (i < S.steg) d.klara++; });
+  const delar = []; STEG.forEach((x, i) => { const kn = kapitelFor(x.del) > 0 ? `Kapitel ${kapitelFor(x.del)} – ${KAPITEL[kapitelFor(x.del)].namn}` : x.del; let d = delar.find((y) => y.namn === kn); if (!d) delar.push(d = { namn: kn, tot: 0, klara: 0 }); d.tot++; if (i < S.steg) d.klara++; });
   const totPct = Math.round(Math.min(S.steg, STEG.length) / STEG.length * 100);
   const resa = ar && S.steg > 0 ? `<div class="br-resa"><div class="br-resa-topp"><b>Din resa</b><span>Dag ${S.dag} · ${totPct} % av storyn</span></div><div class="br-resa-bar"><i style="width:${totPct}%"></i></div>
     <div class="br-delar">${delar.map((d) => { const klar = d.klara === d.tot, nu = !klar && d.klara > 0 || (!klar && delar.find((y) => y.klara < y.tot) === d); return `<div class="br-del ${klar ? 'klar' : nu ? 'nu' : 'last'}"><span class="b">${klar ? '✓' : nu ? '▶' : ''}</span><span class="n">${rens(d.namn)}</span><span class="r">${klar ? 'Klart' : nu ? `${d.klara}/${d.tot}` : ''}</span></div>`; }).join('')}</div></div>` : '';
@@ -6381,7 +6462,8 @@ function kollaPrestationer() {
     let ok = false; try { ok = p.test(); } catch {}
     if (!ok) continue;
     const rp = p.resp ?? PREST_RESPEKT; S.prest.push(p.id); if (rp) andraRespekt(rp, 'Prestation: ' + p.namn);
-    if (senaSystem()) firaKo.push(() => visaFirande(rp ? `Prestation · +${rp} respekt` : 'Prestation', p.namn, p.rad));
+    S.prestLogg = [{ id: p.id, dag: S.dag }, ...(S.prestLogg || [])].slice(0, 40);   // tyst rad i dagboken – ingen popup
+    if (senaSystem()) notis(`📔 Prestation: ${p.namn}${rp ? ` · +${rp} respekt` : ''}`, '', { tid: 3000 });
   }
   const r = rangNu();
   if (r > (S.rang || 0)) { S.rang = r; const x = RANGER[r]; if (senaSystem()) firaKo.push(() => visaFirande('Ny rang', x.namn, `(${x.under})`, true)); }
@@ -6398,9 +6480,11 @@ function ritaRang() {
 setInterval(kollaPrestationer, 1500); RANGER_KLAR = true;
 // kapitel 2 får också sitt kort när det börjar
 setInterval(() => {
-  if (S.kap2Visad || !ui.igang || !ui.butiksOverlay.hidden || sover) return;
-  if (STEG[S.steg]?.del !== K2) return;
-  S.kap2Visad = true; visaKapitelKort(2, 'Ett riktigt hem', 'Gör stället till något du vill visa mamma.'); sparaSnart();
+  if (!ui.igang || !ui.butiksOverlay.hidden || sover || !medEl2.hidden) return;
+  const k = kapitelNu(); if (k < 2 || S.steg >= STEG.length) return;
+  S.kapVisad = S.kapVisad || (S.kap2Visad ? [2] : []);
+  if (S.kapVisad.includes(k)) return;
+  S.kapVisad.push(k); visaKapitelKort(k, KAPITEL[k].namn, KAPITEL[k].mal); sparaSnart();
 }, 2000);
 // prestationslistan i menyn: klarade med namn, oklarade hemliga
 function prestHtml() {
@@ -6686,7 +6770,7 @@ function familjSms() {
   S.familjDag = d;
 
   if (S.rolf.boter) { const b = Math.min(S.mynt, S.rolf.boter), t = CHEFEN[((S.rolf.ja / 2) - 1) % CHEFEN.length]; S.rolf.boter = 0; setTimeout(() => { S.mynt -= b; sms('chefen', `${t} ${b} kr. /Rolf (chefen)`); ui.toast(`Böter: −${b} kr`, 'fel'); sparaSnart(); }, 7000); }
-  if (S.kapitelKlart && S.rolf.i >= ROLF.length && S.rolf.jobb == null && !S.post.lapp && !S.post.tillRolf && !S.post.tillMig.length && S.rolf.jobbDag !== d && (d - (S.rolf.jobbDag || 0)) >= 2) {
+  if (S.dag >= 7 && S.rolf.i >= ROLF.length && S.rolf.jobb == null && !S.post.lapp && !S.post.tillRolf && !S.post.tillMig.length && S.rolf.jobbDag !== d && (d - (S.rolf.jobbDag || 0)) >= 2) {
     S.rolf.jobbDag = d; S.post.lapp = 'jobb'; visaPostInne();
     setTimeout(() => sms('rolf', ROLF_JOBBLAPP[(S.rolf.jobbNr || 0) === 0 ? 0 : 1]), 3500);
   }
@@ -7055,6 +7139,7 @@ function uppdatera(dt) {
       if (nasta?.startPost && !S.lappar.includes(nasta.startPost)) { S.post.lapp = nasta.startPost; visaPostInne(); ui.toast('✉️ Något har hamnat i postlådan vid soptippen…', 'guld'); }
       sparaSnart();
     }
+    { const kNy = kapitelNu(); if (kNy > (S.kapitel || 1)) { const forra = S.kapitel || 1; S.kapitel = kNy; for (let k = forra + 1; k <= kNy; k++) kapitelBorjar(k); } }
     if (S.steg >= STEG.findIndex((x) => x.del === K2) && !S.kapitelKlart) {
       S.kapitelKlart = true; document.body.classList.remove('ph-tidig'); andraRespekt(10, 'Byggde en riktig fristad'); S.mynt += KAP1_BELONING; spar.spara(true);   // startkapital till kapitel 2
       setTimeout(() => sms('mamma', 'Pappa och jag har lagt undan lite. 1 000 kr. Till något fint i ditt HUS. Inte till chips. ❤️ /Mamma'), 9000);
@@ -7137,12 +7222,12 @@ function uppdatera(dt) {
   // HUD
   // efter kapitel 2 tar det aldrig slut: nästa trivselmål ligger alltid 100 bort
   const evigtMal = Math.ceil((trivsel() + 1) / 100) * 100;
-  malRaw = S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? `Bli folkbokförd: äg all mark och bygg ett hus åt Rolf (${S.mark.agt.length}/${MARK_TOMTER.length}) – tavlan vid vägen` : S.steg < STEG.length ? rens(stegText(STEG[S.steg])) : `Nästa mål: trivsel ${trivsel()}/${evigtMal} · trimma maskinerna hos Ali eller ta Rolfs jobb`;
-  malDel.textContent = (S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? 'Slutmålet' : S.steg < STEG.length ? (KAP1_DELAR.includes(STEG[S.steg].del) ? 'Kapitel 1 · ' + STEG[S.steg].del : STEG[S.steg].del) : S.folkbokford ? 'Folkbokförd · fritt bygge' : 'Oändligt bygge').toUpperCase();
+  malRaw = S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? `Bli folkbokförd: tomten du bor på + ett riktigt hus (${['egen', 'huset'].filter(agerMark).length}/2) – tavlan vid vägen` : S.steg < STEG.length ? rens(stegText(STEG[S.steg])) : `Nästa mål: trivsel ${trivsel()}/${evigtMal} · trimma maskinerna hos Ali eller ta Rolfs jobb`;
+  malDel.textContent = (S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? 'Slutmålet' : S.steg < STEG.length ? (`Kapitel ${kapitelNu()} · ` + STEG[S.steg].del) : S.folkbokford ? 'Folkbokförd · fritt bygge' : 'Oändligt bygge').toUpperCase();
   if (STEG[S.steg]?.sov && !kvallKlar()) { malRaw = `Dagens mål är klara! Bygg, printa och sälj fritt – det blir kväll om ${Math.max(1, Math.ceil((MIN_VAKEN - (S.vakenTid || 0)) / 60))} min.`; }
   if (!S.skyltUppe && S.steg <= 1) { malDel.textContent = 'KAPITEL 1 · ETT HEM ATT BO I'; malRaw = 'Spika upp din adresskylt'; }
   ritaNasta();
-  if (S.steg >= STEG.length && S.kapitelKlart && !S.kapitel2Klart) { S.kapitel2Klart = true; sparaSnart(); kapitel2Slut(); }
+  if (S.steg >= STEG.length && S.julFirad && !S.kapitel2Klart) { S.kapitel2Klart = true; sparaSnart(); }   // efterspelet (Tippen på tid) öppnas
   {
     let r = '';
     {
@@ -7243,12 +7328,12 @@ function uppdatera(dt) {
 
 // ---------- Markköp: från hobo dweller till markägare. Rolf känner markägaren, Bengt-Åke, och medlar. ----------
 const MARK_TOMTER = [
-  { id: 'egen', namn: 'Tomten du bor på', text: 'Skjulet, gården, allt du byggt. Bengt-Åke vet inte ens att någon bor här. Köp den – då är det DIN mark.', pris: 8000, respekt: 0 },
-  { id: 'oster', namn: 'Ängen i öster', text: 'Platt och solig. Perfekt för solpaneler och en större printfarm. 22 × 42 meter.', pris: 18000, respekt: 20, kraver: 'egen', rekt: { minX: TOMT, maxX: TOMT + 22, minZ: -TOMT, maxZ: TOMT } },
+  { id: 'egen', namn: 'Tomten du bor på', text: 'Skjulet, gården, allt du byggt. Bengt-Åke vet inte ens att någon bor här. Köp den – då är det DIN mark.', pris: 30000, respekt: 0 },
+  { id: 'oster', namn: 'Ängen i öster', text: 'Platt och solig. Perfekt för solpaneler och en större printfarm. 22 × 42 meter.', pris: 42000, respekt: 0, kraver: 'egen', rekt: { minX: TOMT, maxX: TOMT + 22, minZ: -TOMT, maxZ: TOMT } },
   { id: 'tippkant', namn: 'Marken runt tippen', text: 'Bengt-Åkes sista bit: stenig, skräpig och väster om tippen. Gott om plats för allt som är för fult för gården.', pris: 60000, respekt: 70, kraver: 'egen', rekt: { minX: TIPP.x - TIPP.r - 18, maxX: -TOMT, minZ: -TOMT, maxZ: TOMT } },
   { id: 'tippen', namn: 'Rolfs soptipp', text: 'Kommunen vill bli av med tippen. Rolf får fortsätta köra sopbilen – men nu åt dig. Han säger att det känns "konstigt men bra".', pris: 120000, respekt: 110, kraver: 'tippkant' },
   { id: 'rolfhus', namn: 'Garage och hus åt Rolf', text: 'Ett garage för sopbilen och ett litet hus med veranda åt Rolf och Kajsa. Han har bott i en husvagn på tippen sen 2009.', pris: 80000, respekt: 140, kraver: 'tippen' },
-  { id: 'huset', namn: 'Ett riktigt hus på ängen', text: 'Två rum, kök, soffa och en trappa upp till en sovloft. Med riktiga fönster. Inget skjul längre – ett HUS.', pris: 60000, respekt: 50, kraver: 'oster' },
+  { id: 'huset', namn: 'Ett riktigt hus på ängen', text: 'Två rum, kök, soffa och en trappa upp till en sovloft. Med riktiga fönster. Inget skjul längre – ett HUS.', pris: 60000, respekt: 0, kraver: 'oster' },
   { id: 'norr', namn: 'Backen i norr', text: 'Lite skog, lite sten. Gott om plats för allt som inte får plats någon annanstans. 42 × 22 meter.', pris: 35000, respekt: 45, kraver: 'egen', rekt: { minX: -TOMT, maxX: TOMT, minZ: -TOMT - 22, maxZ: -TOMT } },
 ];
 S.mark = { agt: [], tips: false, ...S.mark };
@@ -7296,7 +7381,7 @@ function oppnaMark() {
         : knapp({ text: `Köp · ${t.pris.toLocaleString('sv-SE')} kr`, typ: dyr ? 'neutral' : 'gron', attr: `data-kop="${t.id}"${dyr ? ' disabled' : ''}`, ikon: 'mynt' });
       return rad({ bild: `<span class="ui-headik" style="width:54px;height:54px">${IKON.hus || IKON.kista}</span>`, titel: t.namn + (ag ? ' ✅' : ''), text: t.text, hoger: knappen });
     }).join('')
-    + (S.folkbokMal ? sektion('Folkbokföring') + rad({ bild: `<span class="ui-headik" style="width:54px;height:54px">${IKON.bok}</span>`, titel: S.folkbokford ? 'Du är folkbokförd här ✅' : 'Folkbokför dig på Soptippsvägen 1', text: S.folkbokford ? 'Posten hittar hit nu. Mamma också.' : `Äg all mark och bygg ett hus åt Rolf först (${S.mark.agt.length}/${MARK_TOMTER.length}).`, hoger: S.folkbokford ? '' : knapp({ text: 'Skicka in blanketten', typ: kanFolkbokfora() ? 'gron' : 'neutral', attr: `data-folkbok${kanFolkbokfora() ? '' : ' disabled'}`, ikon: 'bok' }) }) : '');
+    + (S.folkbokMal ? sektion('Folkbokföring') + rad({ bild: `<span class="ui-headik" style="width:54px;height:54px">${IKON.bok}</span>`, titel: S.folkbokford ? 'Du är folkbokförd här ✅' : 'Folkbokför dig på Soptippsvägen 1', text: S.folkbokford ? 'Posten hittar hit nu. Mamma också.' : `Köp tomten du bor på och bygg ett riktigt hus på ängen först (${['egen', 'huset'].filter(agerMark).length}/2).`, hoger: S.folkbokford ? '' : knapp({ text: 'Skicka in blanketten', typ: kanFolkbokfora() ? 'gron' : 'neutral', attr: `data-folkbok${kanFolkbokfora() ? '' : ' disabled'}`, ikon: 'bok' }) }) : '');
   const titel = S.folkbokford ? 'Status: godsägare · folkbokförd' : S.mark.agt.length === 0 ? 'Status: hobo dweller' : S.mark.agt.length === MARK_TOMTER.length ? 'Status: godsägare' : 'Status: markägare';
   oppnaRuta(panel({ portrattVem: 'rolf', titel: 'Mark till salu', sub: titel, resurser: resurserHtml() + resurs('hjarta', `Respekt ${S.respekt}`), kropp }), (el) => {
     el.querySelectorAll('[data-kop]').forEach((k) => { k.onclick = () => kopMark(k.dataset.kop); });
@@ -7481,6 +7566,17 @@ const storHus = new THREE.Group();
   const lampa = new THREE.PointLight(0xffd9a0, 6, 9); lampa.position.set(0, VAN - 0.3, 0); storHus.add(lampa);
   storHus.position.set(HX, 0, HZ); storHus.visible = false; scen.add(storHus);
   storHus.traverse((o) => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+  // flytta in: ett klick på huset (kapitel 4, dag 18)
+  interaktor.registrera(storHus, {
+    text: () => S.flyttatIn ? 'Ditt hus på ängen' : '🏡 Flytta in i huset',
+    kanAktivera: () => storHus.visible,
+    aktivera: () => {
+      if (S.flyttatIn) { ui.toast('Hemma.'); return; }
+      S.flyttatIn = true; konfetti(160); fanfar(); ljud.stor(); sparaSnart();
+      ui.toast('🏡 Du har flyttat in! Skjulet blir verkstad – du bor i ett riktigt hus nu.', 'guld');
+      setTimeout(() => sms('mamma', 'Du har flyttat in i ett HUS. Med trappa. Jag har köpt en dörrmatta. Det står VÄLKOMMEN på den. Pappa ville att det skulle stå GÅ HEM. Jag sa nej.'), 5000);
+    },
+  });
 }
 // Rolfs garage och hus vid tippen
 const rolfHus = new THREE.Group();
@@ -7501,7 +7597,7 @@ const rolfHus = new THREE.Group();
   rolfHus.traverse((o) => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
 }
 // Folkbokföringen: dag 14 trillar poletten ner. Målet blir att bli skriven här.
-const kanFolkbokfora = () => MARK_TOMTER.every((t) => agerMark(t.id)) && !S.folkbokford;
+const kanFolkbokfora = () => agerMark('egen') && agerMark('huset') && !S.folkbokford;   // tomten du bor på + ett riktigt hus räcker – resten av marken är efterspel
 function kollaPolett() {
   if (S.folkbokMal || S.dag < 14 || !S.kapitelKlart) return;
   S.folkbokMal = true; markTavla.visible = true; S.mark.tips = true; sparaSnart();
@@ -7558,6 +7654,9 @@ function oppnaBokmarken() {
 
 if (!lasBokmarken().some((b) => b.dag === S.dag)) setTimeout(sparaDagBokmarke, 5000);   // dagens bokmärke finns alltid
 raknaOmSteg(); visaPostInne(); uppdateraSkjul(); visaAdressSkylt(); ritaRullstall();
+S.kapitel = Math.max(S.kapitel || 1, kapitelNu(), S.kapitelKlart ? 2 : 1);   // gamla sparningar: kapitlet räknas fram ur det du redan har
+S.kapVisad = [...new Set([...(S.kapVisad || []), ...[2, 3, 4].filter((k) => k < S.kapitel || (k === 2 && S.kap2Visad))])];
+if (S.kapitel >= 4) { S.mark.tips = true; try { markTavla.visible = true; } catch {} }
 // den som redan klarat kapitel 1 innan kapitel 2 fanns ska inte få firandet igen
 if (S.kapitelKlart && S.steg < STEG.findIndex((x) => x.del === K2)) S.steg = STEG.findIndex((x) => x.del === K2);
 // ---------- Introt: varför bor du vid en soptipp? ----------
@@ -7726,6 +7825,52 @@ function konfetti(n = 140) {
   }
 }
 function fanfar() { [523, 659, 784, 1046].forEach((f, i) => ton(f, 0.35, 0.09, 'triangle', i * 0.16)); ton(784, 0.7, 0.08, 'triangle', 0.7); ton(1046, 0.9, 0.09, 'triangle', 0.85); }
+// ---------- Kapitlen: varje kapitel slutar med en belöning och börjar med ett kapitelkort ----------
+function kapitelBorjar(k) {
+  if (k === 3) {   // kapitel 2 klart: Rolfs jukebox + pengar
+    S.post.tillMig = [...S.post.tillMig, ...(antalInv('r_jukebox') || harPlacerat('r_jukebox') ? [] : ['sak:r_jukebox']), 'mynt:3000']; visaPostInne();
+    konfetti(140); fanfar(); ljud.stor();
+    ui.toast('🏆 KAPITEL 2 KLART! Röda fabriken går – och skjulet klarar hösten.', 'guld');
+    setTimeout(() => sms('rolf', 'Hösten e här o du fryser int. Respekt. Ja la jukeboxen från dödsbot i lådan. O lite stålar. Den spelar bara dansband. /R'), 3000);
+  }
+  if (k === 4) {   // kapitel 3 klart: flipperspelet + pengar, och marken öppnas
+    S.post.tillMig = [...S.post.tillMig, ...(antalInv('ra_flipper') || harPlacerat('ra_flipper') ? [] : ['sak:ra_flipper']), 'mynt:6000']; visaPostInne();
+    kapitel2Slut();
+    S.mark.tips = true; S.folkbokMal = true; try { markTavla.visible = true; } catch {}
+    setTimeout(() => sms('rolf', 'Ja hitta ett flipperspel på mitt hemliga ställe. De e ditt. Sen: Bengt-Åke vill sälja tomten du bor på. Tavlan vid vägen. /R'), 6000);
+  }
+  sparaSnart();
+}
+// kapitel 4: Rolfs fynd kommer när målet behöver dem, och julen när dag 22 är här
+setInterval(() => {
+  if (!ui.igang || sover || !S.kapitel || S.kapitel < 4) return;
+  const st = STEG[S.steg]; if (!st) return;
+  const t = typeof st.text === 'function' ? st.text() : st.text;
+  if (/kolfiber/.test(t) && !(S.filGava || []).includes(3) && !antalInv('fynd3') && !antalInv('rulle3')) {
+    S.filGava = [...(S.filGava || []), 3]; S.post.tillMig = [...S.post.tillMig, 'sak:fynd3', 'sak:fynd3', 'sak:fynd3']; visaPostInne();
+    setTimeout(() => sms('rolf', rolfFyndSms(3)), 800); sparaSnart();
+  }
+  if (/guld eller titan/.test(t) && !(S.filGava || []).includes(4) && !antalInv('fynd4') && !antalInv('fynd5')) {
+    S.filGava = [...(S.filGava || []), 4]; S.post.tillMig = [...S.post.tillMig, 'sak:fynd4', 'sak:fynd4']; visaPostInne();
+    setTimeout(() => sms('rolf', rolfFyndSms(4)), 800); sparaSnart();
+  }
+  if (st.del === M22 && !S.julFirad && !julPagar && medEl2.hidden && ui.butiksOverlay.hidden) julEnkel();
+}, 2500);
+// jul på Soptippsvägen 1 – enkel version (den stora finalen kommer i en senare runda)
+let julPagar = false;
+function julEnkel() {
+  julPagar = true;
+  sms('mamma', 'Julskinkan har legat i frysen sen augusti. Vi kommer. Alla. Pappa tar med Wham!-skivan. Duka för MÅNGA. ❤️ /Mamma');
+  setTimeout(() => sms('rolf', 'Ja o Kajsa kommer. Ja har tagit me trumstockarna. Säj inget till Bengt-Åke. Han kommer oxå. /R'), 9000);
+  setTimeout(() => sms('ali', 'Ali här. Jag stänger butiken i kväll. Första gången på tjugofem år. Jag tar med baklava. Det är inte julmat. Det är bättre.'), 18000);
+  setTimeout(() => {
+    konfetti(260); fanfar(); ljud.stor();
+    visaFirande('Jul på Soptippsvägen 1', 'God jul!', 'Hela familjen, Rolf, Kajsa, Ali och Bengt-Åke vid ditt bord. Folkbokförd. Hemma.', true);
+    S.julFirad = true; julPagar = false; sparaSnart();
+    setTimeout(() => sms('bror', 'Pappa grät lite vid julbordet. Han sa att det var pepparroten. Det fanns ingen pepparrot. God jul brorsan.'), 8000);
+    setTimeout(() => ui.toast('🎄 Spelet är klart! Bygg fritt – och testa Tippen på tid under Dagbok → Spelet.', 'guld'), 12000);
+  }, 26000);
+}
 function kapitel2Slut() {
   andraRespekt(15, 'Gamingbod och jacuzzi – folk pratar');
   konfetti(160); fanfar(); ljud.stor();
@@ -7736,6 +7881,7 @@ function kapitel2Slut() {
   ui.toast('🏆 KAPITEL 2 KLART! Din fristad är komplett – men det tar aldrig slut. Trimma, bygg, samla.', 'guld');
 }
 function kapitelSlut() {
+  S.kapVisad = [...new Set([...(S.kapVisad || []), 2])];
   pausad = true; ui.igang = false; spelare.aktiv = false;
   if (document.pointerLockElement) document.exitPointerLock();
   // ta en bild av fristaden (inifrån skjulet om man står där, annars det man ser)
