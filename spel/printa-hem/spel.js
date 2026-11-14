@@ -512,6 +512,17 @@ if (MOLN?.data && (MOLN.data.sparadTid || 0) > (spar.data.sparadTid || 0)) {
 }
 const S = spar.data;
 S.stat = { tipp: 0, plockat: 0, ilagt: 0, malt: 0, hamtat: 0, trampat: 0, printat: 0, salt: 0, ...S.stat };
+// ---------- Effektljud av/på: allt som går till högtalarna (utom musiken) passerar en egen volym ----------
+const effektBussar = new Set(), _bussFor = new WeakMap(), _koppla = AudioNode.prototype.connect;
+AudioNode.prototype.connect = function (dest, ...a) {
+  if (typeof AudioDestinationNode !== 'undefined' && dest instanceof AudioDestinationNode && !this.__direkt) {
+    let b = _bussFor.get(dest);
+    if (!b) { b = dest.context.createGain(); b.__direkt = true; b.gain.value = S.effekter === false ? 0 : 1; _koppla.call(b, dest); _bussFor.set(dest, b); effektBussar.add(b); }
+    return _koppla.call(this, b, ...a);
+  }
+  return _koppla.call(this, dest, ...a);
+};
+function satEffekter(pa) { S.effekter = pa; for (const b of effektBussar) b.gain.value = pa ? 1 : 0; sparaSnart(); }
 S.kvarn = { tratt: 0, trattGram: 0, prog: 0, ut: 0, motor: false, ...S.kvarn };
 S.post = { tillRolf: null, tillMig: [], lapp: null, ...S.post };
 S.rolf = { i: 0, aktiv: false, nasta: null, extra: 0, ...S.rolf };
@@ -2614,7 +2625,7 @@ const bakMusik = (() => {
     }
   }
   return {
-    start() { const c = ljudCtx(); if (!c || timer || S.musik === false) return; master = c.createGain(); master.gain.setValueAtTime(0.0001, c.currentTime); master.gain.exponentialRampToValueAtTime(MUSIK_VOLYM, c.currentTime + 6); master.connect(c.destination); nasta = c.currentTime + 0.2; steg = 0; timer = setInterval(schema, 150); },
+    start() { const c = ljudCtx(); if (!c || timer || S.musik === false) return; master = c.createGain(); master.__direkt = true; master.gain.setValueAtTime(0.0001, c.currentTime); master.gain.exponentialRampToValueAtTime(MUSIK_VOLYM, c.currentTime + 6); master.connect(c.destination); nasta = c.currentTime + 0.2; steg = 0; timer = setInterval(schema, 150); },
     stopp() { if (!timer) return; clearInterval(timer); timer = null; const c = ljudCtx(), m = master; master = null; try { m.gain.setTargetAtTime(0.0001, c.currentTime, 0.6); setTimeout(() => m.disconnect(), 3000); } catch {} },
     get pa() { return !!timer; },
   };
@@ -5178,7 +5189,7 @@ function oppnaDagbok() {
     const brev = S.lappar.slice().reverse().filter((l) => !/Dagbok/.test(lappInfo(l)[0])).map((l) => { const [t, x] = lappInfo(l); return rad({ bild: portratt(vemAvTitel(t), 40), titel: rens(t), text: x }); });
     kropp = brev.length ? brev.join('') : '<p class="ui-tom">Inga brev än.</p>';
   } else {
-    kropp = sektion('Spelet') + `<div class="ui-grid" style="gap:10px">${knapp({ text: 'Se introt igen', typ: 'neutral', attr: 'data-intro', ikon: 'film' })}${knapp({ text: 'Sparplatser', typ: 'neutral', attr: 'data-sparplatser', ikon: 'spara' })}${knapp({ text: `Musik: ${S.musik === false ? 'av' : 'på'}`, typ: 'neutral', attr: 'data-musik', ikon: 'rost' })}${knapp({ text: `Röster: ${{ rost: 'riktiga röster', prat: 'pratljud', tal: 'datorns talsyntes', av: 'av' }[rostLage()]}`, typ: 'neutral', attr: 'data-roster', ikon: 'rost' })}</div>`
+    kropp = sektion('Spelet') + `<div class="ui-grid" style="gap:10px">${knapp({ text: 'Se introt igen', typ: 'neutral', attr: 'data-intro', ikon: 'film' })}${knapp({ text: 'Sparplatser', typ: 'neutral', attr: 'data-sparplatser', ikon: 'spara' })}${knapp({ text: 'Ljud: musik, effekter, röster', typ: 'neutral', attr: 'data-ljudval', ikon: 'rost' })}${knapp({ text: `Musik: ${S.musik === false ? 'av' : 'på'}`, typ: 'neutral', attr: 'data-musik', ikon: 'rost' })}${knapp({ text: `Röster: ${{ rost: 'riktiga röster', prat: 'pratljud', tal: 'datorns talsyntes', av: 'av' }[rostLage()]}`, typ: 'neutral', attr: 'data-roster', ikon: 'rost' })}</div>`
       + sektion('Styrning') + `<p class="ui-tom">WASD gå · mus titta · klick/E använd · klicka och håll = veva, trampa, gripa · hjulet/1–8 byt sak · H tomhänt · Shift+Q släpp allt · R vrid · I dina saker · M meddelanden · B dagbok · V röster</p>`;
   }
   oppnaRuta(panel({ ikon: 'bok', titel: 'Dagbok', sub: `Dag ${S.dag}`, resurser: resurserHtml(), flikar: [['sms', 'telefon', 'Meddelanden' + (S.olasta ? ` (${S.olasta})` : '')], ['dagbok', 'bok', 'Min dagbok'], ['mal', 'mal', 'Mål'], ['brev', 'brev', 'Brev'], ['spel', 'kugghjul', 'Spelet']], aktivFlik: dagbokFlik, kropp }), (el) => {
@@ -5187,6 +5198,7 @@ function oppnaDagbok() {
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { dagbokFlik = k.dataset.flik; ljud.plock(); oppnaDagbok(); }; });
     el.querySelector('[data-intro]')?.addEventListener('click', () => { ui.stangButik(); if (document.pointerLockElement) document.exitPointerLock(); visaIntro(); });
     el.querySelector('[data-sparplatser]')?.addEventListener('click', () => oppnaSparplatser());
+    el.querySelector('[data-ljudval]')?.addEventListener('click', () => oppnaLjud(el.querySelector('.ui-panel')));
     el.querySelector('[data-musik]')?.addEventListener('click', () => { S.musik = S.musik === false; if (S.musik === false) bakMusik.stopp(); else bakMusik.start(); sparaSnart(); oppnaDagbok(); });
     el.querySelector('[data-roster]')?.addEventListener('click', () => { dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyV' })); setTimeout(oppnaDagbok, 50); });
   });
@@ -5231,13 +5243,14 @@ function startRuta(titel = ui.o.titel, text = ui.o.text, knappText = 'Starta') {
     <div class="br-delar">${delar.map((d) => { const klar = d.klara === d.tot, nu = !klar && d.klara > 0 || (!klar && delar.find((y) => y.klara < y.tot) === d); return `<div class="br-del ${klar ? 'klar' : nu ? 'nu' : 'last'}"><span class="b">${klar ? '✓' : nu ? '▶' : ''}</span><span class="n">${rens(d.namn)}</span><span class="r">${klar ? 'Klart' : nu ? `${d.klara}/${d.tot}` : ''}</span></div>`; }).join('')}</div></div>` : '';
   ui.overlay.innerHTML = `<div class="fp-ruta br-start">${ar ? t : `<h1>${t}</h1>`}${resa || `<div class="br-ingress">${rens(text)}</div>`}${resa ? prestHtml() : ''}
     <button class="fp-knapp br-starta">${rens(knappText)}</button>
-    <div class="br-val"><button class="br-valknapp" data-sparplatser>${ik('spara')}<span>Sparplatser</span></button><button class="br-valknapp" data-kontroller>${ik('hand')}<span>Kontroller</span></button><button class="br-valknapp" data-noll>${ik('omstart')}<span>Börja om</span></button></div>
+    <div class="br-val"><button class="br-valknapp" data-sparplatser>${ik('spara')}<span>Sparplatser</span></button><button class="br-valknapp" data-kontroller>${ik('hand')}<span>Kontroller</span></button><button class="br-valknapp" data-ljudval>${ik(S.effekter === false && S.musik === false ? 'tyst' : 'rost')}<span>Ljud</span></button><button class="br-valknapp" data-noll>${ik('omstart')}<span>Börja om</span></button></div>
     <button class="br-tyck" data-tyck>${ik('brev')} Tyck till om spelet</button>
     <a class="fp-tillbaka" href="../../index.html">← Alla spel</a></div>`;
   ui.overlay.hidden = false;
   ui.overlay.querySelector('.br-starta').onclick = () => ui.starta();
   ui.overlay.querySelector('[data-sparplatser]').onclick = () => ui.o.onSparplatser?.();
   { const ty = ui.overlay.querySelector('[data-tyck]'); if (ty) ty.onclick = () => oppnaTyckTill(ui.overlay.querySelector('.br-start')); }
+  ui.overlay.querySelector('[data-ljudval]').onclick = () => oppnaLjud(ui.overlay.querySelector('.br-start'));
   ui.overlay.querySelector('[data-kontroller]').onclick = () => {
     const pop = document.createElement('div'); pop.className = 'br-bekrafta';
     const K = [['W A S D', 'Gå'], ['Mus', 'Titta'], ['Klick / E', 'Använd, plocka upp'], ['Klicka och håll', 'Veva, trampa, gripa'], ['Shift', 'Spring'], ['Mellanslag', 'Hoppa'], ['Hjulet / 1–8', 'Byt sak i handen'], ['H', 'Tomhänt'], ['Q', 'Släpp skräp'], ['Shift + Q', 'Släpp allt'], ['R', 'Vrid det du ställer ut'], ['G', 'Flytta gamingboden'], ['I', 'Dina saker'], ['B', 'Dagbok och mål'], ['M', 'Alla sms i efterhand'], ['K', 'Sparplatser'], ['V', 'Byt röster'], ['Esc', 'Paus och den här menyn']];
@@ -6435,6 +6448,29 @@ addEventListener('keydown', (e) => {
 // ---------- Sparning ----------
 let sparaFlagga = false;
 function sparaSnart() { sparaFlagga = true; }
+// ---------- Ljudinställningar: musik, effektljud och röster – var för sig ----------
+function oppnaLjud(foralder) {
+  foralder?.querySelector('.br-ljudpop')?.remove();
+  const pop = document.createElement('div'); pop.className = 'br-bekrafta br-ljudpop';
+  const rad = (id, ikon, namn, sub, pa) => `<button class="br-ljudrad ${pa ? 'pa' : ''}" data-ljud="${id}">${ik(ikon)}<span><b>${namn}</b><small>${sub}</small></span><em>${pa ? 'PÅ' : 'AV'}</em></button>`;
+  const rita = () => {
+    pop.innerHTML = `<div class="br-bekrafta-ruta br-ljudruta"><b>Ljud</b>
+      ${rad('musik', 'film', 'Bakgrundsmusik', 'Lugn musik i bakgrunden', S.musik !== false)}
+      ${rad('effekter', 'blixt', 'Effektljud', 'Kvarn, skrivare, sopbil, pling', S.effekter !== false)}
+      ${rad('roster', 'rost', 'Röster', 'Figurerna pratar och dagboken läses upp', rostLage() !== 'av')}
+      <div class="br-knappar"><button class="fp-knapp" data-nej>Klar</button></div></div>`;
+    pop.querySelectorAll('[data-ljud]').forEach((k) => { k.onclick = () => {
+      const id = k.dataset.ljud;
+      if (id === 'musik') { S.musik = S.musik === false; if (S.musik === false) bakMusik.stopp(); else bakMusik.start(); }
+      if (id === 'effekter') satEffekter(S.effekter === false);
+      if (id === 'roster') { const pa = rostLage() !== 'av'; S.rost = !pa; if (!pa && (!S.rostLage || S.rostLage === 'av')) S.rostLage = 'rost'; tystna(); }
+      sparaSnart(); rita();
+    }; });
+    pop.querySelector('[data-nej]').onclick = () => pop.remove();
+  };
+  rita(); pop.onclick = (e) => { if (e.target === pop) pop.remove(); };
+  (foralder || document.body).appendChild(pop);
+}
 function samlaOchSpara(direkt = false) {
   S.skrap = skrapLista.map((s) => s.userData.skrap);
   S.hand = hand.saker.map((s) => 'skrap:' + (s.userData.variant ?? 0));
