@@ -550,14 +550,14 @@ const STEG = [
   sovSteg(11, F11),
   { del: F12, bild: 'byggsats:lastarm', text: 'Bygg lastarmen vid tippen', klar: () => !!S.auto?.lastarm },
   { del: F12, bild: 'byggsats:robotarm', text: 'Bygg rulladdaren vid extrudern', klar: () => !!S.auto?.arm },
-  { del: F12, bild: 'byggsats:lastarm', text: 'Trimma lastarmen hos Ali (Fabriken · Trimma)', klar: () => trimNiva('arm') >= 1 },
+  { del: F12, text: 'Trimma lastarmen hos Ali (Fabriken · Trimma)', klar: () => trimNiva('arm') >= 1 },
   sovSteg(12, F12),
   { del: F13, bild: 'byggsats:gamingbod', text: 'Bygg gamingboden', klar: () => !!S.bod },
   { del: F13, bild: () => nastaGamer(), text: () => `Inred boden · ${Math.min(1, gamerSaker())}/1 gamersak`, klar: () => gamerSaker() >= 1 },
   sovSteg(13, F13),
   { del: F14, bild: 'byggsats:utlada', text: 'Bygg leveranslådan', klar: () => !!S.auto?.lada },
   { del: F14, bild: () => S.kvarn.turbo ? 'byggsats:jetmotor' : 'byggsats:turbomotor', text: 'Montera jetmotorn på kvarnen', klar: () => !!S.kvarn.jet },
-  { del: F14, bild: 'byggsats:rullband', text: 'Trimma sopbilen hos Ali (Mutor till Rolf)', klar: () => trimNiva('sopbil') >= 1 },
+  { del: F14, text: 'Trimma sopbilen hos Ali (Mutor till Rolf)', klar: () => trimNiva('sopbil') >= 1 },
   sovSteg(14, F14),
   { del: F15, bild: () => nastaGamer(), text: () => `Inred boden · ${Math.min(3, gamerSaker())}/3 gamersaker`, klar: () => gamerSaker() >= 3 },
   { del: F15, bild: 'jacuzzi', text: 'Printa och ställ ut en jacuzzi', klar: () => harPlacerat('jacuzzi') },
@@ -3374,7 +3374,7 @@ function uppdateraMalPil() {
 }
 function uppdateraMalSkylt(dt) {
   malInfo.t -= dt; if (malInfo.t > 0) return; malInfo.t = 0.5;
-  const pos = kvarnPunkt(0, 3.0, 0), avst = Math.hypot(spelare.pos.x - pos.x, spelare.pos.z - pos.z), nara = avst < 8 && avst > 2.2;
+  const pos = kvarnPunkt(0, 3.0, 0), avst = Math.hypot(spelare.pos.x - pos.x, spelare.pos.z - pos.z), nara = avst < 5 && avst > 2.2;   // AA: bara nära
   if (!nara) { if (malInfo.sprite) malInfo.sprite.visible = false; return; }
   const nu = performance.now() / 1000;
   while (malLogg.length && malLogg[0][0] < nu - 60) malLogg.shift();
@@ -3778,7 +3778,8 @@ function sov() {
     if (nasta?.startPost && !S.lappar.includes(nasta.startPost)) { S.post.lapp = nasta.startPost; visaPostInne(); }
     const del = nasta?.del || 'Fritt bygge';
     const ig = S.igar, rapport = ig ? `<span class="br-rapport">Igår: ${ig.printat} printat · ${ig.salt} sålt${ig.flask ? `<br>Flaskhals: ${ig.flask}${ig.fix ? ` → ${ig.fix}` : ''}` : ''}</span>` : '';
-    ui.visaStart(`☀️ Dag ${S.dag}`, `<b>${del.replace(/^Dag \d+ – /, '')}</b>${dagensMalHtml(nasta?.del)}${rapport}${[2, 4].includes(S.dag) && !(S.betygDag || []).includes(natt) ? snabbBetygHtml(natt) : ''}`, 'Börja dagen');
+    const hoger = `${aliVillHtml()}${rapport}${[2, 4].includes(S.dag) && !(S.betygDag || []).includes(natt) ? snabbBetygHtml(natt) : ''}`;
+    ui.visaStart(`☀️ Dag ${S.dag}`, `<div class="br-morgon${hoger ? '' : ' en'}"><div class="br-morgon-v"><b>${del.replace(/^Dag \d+ – /, '')}</b>${dagensMalHtml(nasta?.del)}</div>${hoger ? `<div class="br-morgon-h">${hoger}</div>` : ''}</div>`, 'Börja dagen');
     kopplaSnabbBetyg(natt);
     const vanta = setInterval(() => { if (!ui.igang) return; clearInterval(vanta); const f = morgonKo; morgonKo = null; if (f) setTimeout(f, 2500); }, 300);
   }, 5500);
@@ -3846,7 +3847,7 @@ function dagensMalHtml(del) {
     rader.push([malIkon(t), t.replace(/ · .*$/, '')]);
   }
   rader.push(['klocka', 'Sov när allt är klart']);
-  return `<ul class="br-dagmal">${rader.slice(0, 6).map(([i, t]) => `<li>${ik(i)}<span>${rens(t)}</span></li>`).join('')}</ul>${aliVillHtml()}`;
+  return `<ul class="br-dagmal">${rader.slice(0, 6).map(([i, t]) => `<li>${ik(i)}<span>${rens(t)}</span></li>`).join('')}</ul>`;   // Ali vill ha idag står i högerkolumnen (AA)
 }
 
 // ---------- Spökbild för att placera saker ----------
@@ -6134,6 +6135,7 @@ const verktygIkon = (st) => !S.grip ? ik('hand') : ikonHtml(niva() === 3 ? 'bygg
 function ritaHotbar() {
   // första gången du har två saker: visa att hjulet byter sak (försvinner när du har rullat)
   if (!S.tipsHjul && S.hotbar.filter(Boolean).length >= 2 && !document.querySelector('.hud-hjultips')) {
+    setTimeout(() => { S.tipsHjul = true; document.querySelector('.hud-hjultips')?.remove(); }, 9000);   // AA: bara en stund
     document.body.insertAdjacentHTML('beforeend', `<div class="hud-hjultips"><span class="mus"><i></i></span><div><b>Rulla på hjulet</b> för att byta sak i handen<br><small>eller tryck 1–9 · E = ryggsäcken · H = tomhänt</small></div></div>`);
   }
   const el = document.querySelector('.ph-hotbar'); if (!el) return;
@@ -6175,11 +6177,15 @@ const respChip = document.querySelector('.ph-resp-chip'), respText = document.qu
 // ---------- Statuspanelen (hud.js): klocka, trivsel-gubbe, respekt-hjärta, uppdragslista ----------
 document.body.insertAdjacentHTML('beforeend', `<div class="hud-status">
   <div class="hud-klocka" title="Dagen är din nivå – klicka för bokmärken"><span class="dag">DAG 1</span><span class="tid">08:00</span><span class="arstid"></span></div>
+  <div class="hud-chip" data-hud="kr" title="Pengar">${ik('mynt')}<b>0 kr</b></div>
+  <div class="hud-chip" data-hud="rullar" title="Rullar filament du bär">${ik('rulle')}<b>0 rullar</b></div>
   <div class="hud-matare" data-hud="trivsel" title="Trivsel – hur du har det hemma"><div class="hud-ikon"></div><div class="hud-m"><div class="rad"><span>Trivsel</span><b></b></div><div class="hud-bar"><i></i></div></div></div>
   <div class="hud-matare" data-hud="respekt" title="Respekt – hur andra ser på dig"><div class="hud-ikon"></div><div class="hud-m"><div class="rad"><span>Respekt</span><b></b></div><div class="hud-bar"><i></i></div></div></div>
   <div class="hud-matare hud-nasta" data-hud="nasta" title="Dagens stora köp – så mycket pengar har du mot det"><div class="hud-ikon">${ik('mynt')}</div><div class="hud-m"><div class="rad"><span>Nästa</span><b></b></div><div class="hud-bar"><i></i></div></div></div>
   <div class="hud-matare hud-el" data-hud="el" title="El – trampa cykeln för att ladda"><div class="hud-ikon hud-el-ik">${ik('blixt')}</div><div class="hud-m"><div class="rad"><span>El</span><b></b></div><div class="hud-bar"><i></i></div></div></div>
+  <div class="hud-chip hud-chip-sms" data-hud="sms" title="Meddelanden och dagbok (M)">${ik('brev')}<b>Meddelanden</b><em hidden></em></div>
 </div>`);
+document.body.classList.add('aa');   // punkt AA: rensad skärm (statuskolumn, smal uppdragsremsa, en notis i taget)
 const hudEl = document.querySelector('.hud-status');
 document.body.classList.toggle('ph-tidig', !S.kapitelKlart);   // kapitel 1: respekt, rang och årstid syns inte än
 document.body.insertAdjacentHTML('beforeend', '<div class="hud-hand" hidden><b></b><span><i></i></span></div>');
@@ -6201,6 +6207,9 @@ function visaTabTips() {
   document.body.insertAdjacentHTML('beforeend', `<div class="hud-hjultips hud-tabtips"><kbd class="stor">Tab</kbd><div><b>Alla dina sms</b><br><small>Tryck Tab för att läsa dem igen</small></div></div>`);
 }
 hudEl.querySelector('.hud-klocka').onclick = () => oppnaBokmarken();
+hudEl.querySelector('[data-hud="sms"]').onclick = () => oppnaInkorg();
+hudEl.querySelector('[data-hud="kr"]').onclick = () => oppnaMarknad();
+hudEl.querySelector('[data-hud="rullar"]').onclick = () => oppnaInv();
 hudEl.querySelector('[data-hud="respekt"]').onclick = () => oppnaRespekt();
 hudEl.querySelector('[data-hud="trivsel"]').onclick = () => { dagbokFlik = 'mal'; oppnaDagbok(); };
 { const m = document.querySelector('.ph-mal'); m.classList.add('hud-uppdrag'); m.querySelector('.ph-mal-text').insertAdjacentHTML('afterend', '<ul class="hud-lista"></ul>'); m.insertAdjacentHTML('afterbegin', '<em class="hud-antal"></em>'); }
@@ -6212,7 +6221,7 @@ function hudMatare(namn, niva, ikonFn, varde, andel) {
   const i = el.querySelector('i'); const w = Math.round(Math.max(0.03, Math.min(1, andel)) * 100) + '%';
   if (i.style.width !== w) { i.style.width = w; i.style.backgroundColor = matarFarg(andel); }
 }
-let hudListaNyckel = '', hudSenastKlar = -1, hudForraText = '', hudForraSteg = S.steg, hudForraSkylt = !!S.skyltUppe;
+let tipsTill = 0, hudListaNyckel = '', hudSenastKlar = -1, hudForraText = '', hudForraSteg = S.steg, hudForraSkylt = !!S.skyltUppe;
 // klarat uppdrag: grönt, bock, konfetti – sedan stryks det och glider bort
 function firaUppdrag(text) {
   const mEl = malText.parentElement;
@@ -6312,6 +6321,7 @@ function stegKonkret(st) {
 }
 // när nästa handling är själva målet: en kort förklaring av hur man gör (vem/var)
 function nuTips(t) {
+  if (/Trimma/.test(t)) return 'Hos Ali: hyllan Fabriken → Trimning';
   if (/Sopbil/.test(t)) return 'Printa och sälj medan du väntar';
   if (/Dagens mål är klara/.test(t)) return 'Printa och sälj hos Ali tills det blir kväll';
   if (/Köp/.test(t)) return 'Gå till Ali över vägen';
@@ -6331,7 +6341,7 @@ function ritaNasta() {
   // tre nivåer: kapitel/dag (rubriken ovanför) → dagens mål (stor rad) → nästa sak att göra nu (med ikon)
   const ikonHtml2 = `<span class="nasta-ik${bild ? ' bild' : ''}">${bild ? ikonHtml(bild, 36) : ik(ikon)}</span>`;
   const h = t !== text && text
-    ? `<span class="nasta-rubrik">${rens(text)}</span><span class="nasta-rad">${ikonHtml2}<span class="nasta-t"><small>Nu:</small> ${rens(t)}</span></span>`
+    ? `<span class="nasta-rubrik">${rens(text)}</span><span class="nasta-rad" data-konkret>${ikonHtml2}<span class="nasta-t"><small>Nu:</small> ${rens(t)}</span></span>`
     : `<span class="nasta-rubrik">${rens(t)}</span><span class="nasta-rad">${ikonHtml2}<span class="nasta-t">${rens(nuTips(t))}</span></span>`;
   if (malText.dataset.h !== h || !malText.firstElementChild) { malText.dataset.h = h; malText.innerHTML = h; malText.classList.add('nasta'); }
 }
@@ -6393,14 +6403,17 @@ function ritaHud() {
   hudMatare('respekt', r < 5 ? 0 : r < 25 ? 1 : r < 60 ? 2 : r < 110 ? 3 : 4, hudHjarta, r, nasta ? (r - (forra?.[0] || 0)) / (nasta[0] - (forra?.[0] || 0)) : 1);
   // uppdraget hamnar under statuspanelen
   // uppdraget sitter högst upp i mitten – på smala skärmar under statuspanelen
-  const mEl = malText.parentElement, smal = innerWidth < 900, topp = smal ? Math.round(hudEl.getBoundingClientRect().bottom + 8) + 'px' : '';
-  if (mEl.style.top !== topp) mEl.style.top = topp; mEl.classList.toggle('smal', smal);
-  if (!smal && performance.now() > mittTid) {   // mittenkortet ryms mellan statuspanelen och pengarna uppe till höger
+  // punkt AA: en smal remsa överst i mitten (på smala skärmar till höger om statuskolumnen)
+  const mEl = malText.parentElement, smal = innerWidth < 900;
+  mEl.classList.toggle('smal', smal);
+  if (performance.now() > mittTid) {
     mittTid = performance.now() + 400;
-    const tp = document.querySelector('.fp-topp')?.getBoundingClientRect(), L = hudEl.getBoundingClientRect().right + 12, R = (tp?.width ? tp.left : innerWidth - 300) - 12;
-    const b = Math.max(260, Math.min(440, R - L)), x = Math.round(Math.max(L, (L + R) / 2 - b / 2)) + 'px';
-    if (mEl.style.left !== x) { mEl.style.left = x; mEl.style.width = b + 'px'; }
-  } else if (smal && mEl.style.width) { mEl.style.left = ''; mEl.style.width = ''; }
+    const L = Math.round(hudEl.getBoundingClientRect().right + 10);
+    const x = smal ? L + 'px' : '', w = smal ? (innerWidth - L - 10) + 'px' : '';
+    if (mEl.style.left !== x) { mEl.style.left = x; mEl.style.width = w; mEl.style.top = ''; }
+  }
+  // tipsraden ("Nu: …", "Rolf har lämnat något") bara när den behövs: konkret nästa steg, ny uppgift, eller Rolf
+  mEl.classList.toggle('visa-tips', !!malText.querySelector('[data-konkret]') || performance.now() < tipsTill);
   ritaLoop(mEl);
   // uppdragslistan: det som är klart (bockat), det du gör nu och vad som kommer
   const lista = mEl.querySelector('.hud-lista');
@@ -6409,6 +6422,7 @@ function ritaHud() {
   if (nyckel === hudListaNyckel) { hudForraText = malText.textContent; return; }
   const framat = hudListaNyckel && (S.steg > hudForraSteg || (S.skyltUppe && !hudForraSkylt));
   if (framat && hudForraText) firaUppdrag(hudForraText);
+  tipsTill = performance.now() + 9000;   // ny uppgift: visa tipset en stund
   hudListaNyckel = nyckel; hudForraSteg = S.steg; hudForraSkylt = !!S.skyltUppe; hudForraText = malText.textContent;
   if (!iSteg) { lista.innerHTML = ''; lista.style.display = 'none'; mEl.querySelector('.hud-antal').textContent = ''; return; }
   lista.style.display = '';
@@ -6419,7 +6433,7 @@ function ritaHud() {
   const nuI = poster.findIndex((p) => p.nu);
   const visa = poster.slice(Math.max(0, nuI - 2), nuI + 3);
   const klara = poster.filter((p) => p.klar).length;
-  mEl.querySelector('.hud-antal').textContent = `${klara}/${poster.length}`;
+  mEl.querySelector('.hud-antal').textContent = `${klara}/${poster.length} idag`;
   const kommer = poster.slice(nuI + 1, nuI + 2);
   lista.innerHTML = kommer.length ? kommer.map((p) => `<li class="${p.klar ? 'klar' : p.nu ? 'nu' : ''}${p.klar && p.i === S.steg - 1 && hudSenastKlar !== S.steg ? ' precis' : ''}"><span class="b">${p.klar ? '✓' : ''}</span><span>${p.text}</span></li>`).join('') : '';
   hudSenastKlar = S.steg;
@@ -6439,14 +6453,18 @@ const stromChip = document.querySelector('.ph-strom-chip'), barText = document.q
 // ---------- Notiser: korten trillar in överst i en hög till höger ----------
 const varnEl = document.querySelector('.ph-varningar');
 const notisEl = document.querySelector('.ph-hoger .ph-notiser'), medEl = document.querySelector('.ph-meddelanden');
-const NOTIS_MAX = 2;
+const NOTIS_MAX = 1, NOTIS_TID = 4000;   // punkt AA: en notis i taget, 4 sekunder, resten köas
+const notisKo = [];
 const RUBRIK = { bra: 'Klart', guld: 'Nytt', fel: 'Obs', '': 'Info', sms: 'Meddelande', lapp: 'Dagbok' };
 const RUBRIK_IKON = { bra: 'bock', guld: 'stjarna', fel: 'varning', '': 'info', sms: 'telefon', lapp: 'bok' };
 function notis(text, typ = '', o = {}) {
   // samma text igen inom kort: förnya kortet i stället för att lägga ett nytt
   const el = typ === 'sms' || typ === 'lapp' ? medEl : notisEl;   // meddelanden till vänster, notiser till höger
   const finns = [...el.children].find((k) => k.dataset.text === text && !k.classList.contains('ut'));
-  if (finns) { clearTimeout(finns._t); finns._t = setTimeout(() => taBort(finns), o.tid || 7000); finns.animate([{ transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 200 }); return finns; }
+  if (finns) { clearTimeout(finns._t); finns._t = setTimeout(() => taBort(finns), NOTIS_TID); finns.animate([{ transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 200 }); return finns; }
+  if (el === notisEl && [...el.children].some((x) => !x.classList.contains('ut'))) {   // en syns redan: köa (samma text bara en gång)
+    if (!notisKo.some(([t]) => t === text)) notisKo.push([text, typ, o]); if (notisKo.length > 6) notisKo.shift(); return null;
+  }
   const k = document.createElement('div');
   k.className = 'ph-notis ' + typ; k.dataset.text = text;
   k.innerHTML = `<div class="rubrik"><span>${ik(RUBRIK_IKON[typ] || 'info')} ${rens(o.titel || RUBRIK[typ] || 'Info')}</span><span>nu</span></div><div class="kropp">${rens(text)}</div>`;
@@ -6455,7 +6473,7 @@ function notis(text, typ = '', o = {}) {
   requestAnimationFrame(() => k.classList.add('in'));
   const ut = [...el.children].filter((x) => !x.classList.contains('ut'));
   ut.slice(el === medEl ? 3 : NOTIS_MAX).forEach(taBort);
-  k._t = setTimeout(() => taBort(k), o.tid || 7000);
+  k._t = setTimeout(() => { taBort(k); if (el === notisEl) setTimeout(() => { const n = notisKo.shift(); if (n) notis(...n); }, 450); }, el === notisEl ? NOTIS_TID : o.tid || 7000);
   return k;
 }
 // fasta varningar: ligger kvar tills problemet är löst
@@ -6878,7 +6896,8 @@ function inkorg({ vem, titel, text, lapp = false, block = false, klar, fore, sms
     inkorgVantar--; fore?.();
     // sms: iPhone-notis högst upp som läses upp direkt – en i taget, i den ordning de kom
     if (ios) triTon(); else ljud.plock();
-    lista.prepend(el);   // sms och dagbok i samma hörn uppe till höger
+    hudEl.querySelector('[data-hud="sms"]')?.animate([{ transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 400 });
+    lista.prepend(el);   // (dold med CSS i punkt AA – texten finns i Meddelanden)   // sms och dagbok i samma hörn uppe till höger
     requestAnimationFrame(() => el.classList.add('in'));
     [...lista.children].slice(INKORG_MAX).forEach((x) => { x.classList.add('ut'); setTimeout(() => x.remove(), 500); });
     el.classList.remove('vantar'); el.classList.add('laser'); const em = el.querySelector('em'); if (em) em.textContent = 'läser…';
@@ -7551,6 +7570,14 @@ function uppdatera(dt) {
   battFyll.scale.y = Math.max(0.02, S.strom / stromMax());
   battFyll.material.color.set(S.strom < 15 ? 0xff5c5c : 0x7dffb0); battFyll.material.emissive.set(S.strom < 15 ? 0xff5c5c : 0x7dffb0);
   ui.mynt(S.mynt);
+  { const sat = (id, t) => { const b = hudEl.querySelector(`[data-hud="${id}"] b`); if (b.textContent !== t) b.textContent = t; };
+    sat('kr', `${S.mynt.toLocaleString('sv-SE')} kr`); const nr = antalInv('rulle'); sat('rullar', `${nr} ${nr === 1 ? 'rulle' : 'rullar'}`);
+    const n = Math.max(S.olasta || 0, inkorgVantar), em = hudEl.querySelector('[data-hud="sms"] em');
+    if (em.textContent !== String(n)) { em.textContent = n; em.hidden = !n; hudEl.querySelector('[data-hud="sms"]').classList.toggle('ny', n > 0); }
+    // visa saker först när de behövs
+    hudEl.querySelector('[data-hud="trivsel"]').hidden = trivsel() <= 0 && !S.sang;
+    hudEl.querySelector('[data-hud="el"]').hidden = !((S.stat.trampat || 0) > 0 || S.strom > 0 || S.dag > 1 || harPlacerat('sol'));
+    const nk = hudEl.querySelector('[data-hud="nasta"]'), x = nastaKop(); if (x && S.mynt >= x.pris) nk.hidden = true; }
   // rullmätaren vid kvarnen
   {
     const nara = Math.hypot(spelare.pos.x - kvarn.position.x, spelare.pos.z - kvarn.position.z) < 4.5;
@@ -8303,3 +8330,65 @@ startaLoop(uppdatera, { scen, kamera, renderer });
 
 // formspråket "Printat & skrotigt" läggs sist så att det vinner över äldre stilar
 { const st = document.createElement('style'); st.textContent = BRAND_CSS + HUD_CSS + '.fp-topp>.fp-chip:first-child,.ph-resp-chip,.ph-dag-chip,.ph-bar-chip,.fp-hjalp,.ph-sms-chip{display:none!important}'; document.head.appendChild(st); }
+
+// ---------- Punkt AA: rensa skärmen (Jesper 2026-11-14) ----------
+// Statuskolumn till vänster (dag, kr, rullar, trivsel, el, meddelanden), uppdraget som en smal remsa överst i mitten,
+// en notis i taget till höger, sms och dagbok samlas i Meddelanden. Allt här skriver över äldre HUD-stil.
+{
+  const st = document.createElement('style');
+  st.textContent = `
+body.aa .fp-topp,body.aa .hud-flikar,body.aa .hud-inkorg,body.aa .ph-meddelanden,body.aa .hud-rang{display:none!important}
+body.aa .hud-status{width:172px;gap:4px}
+body.aa .hud-status [hidden]{display:none!important}
+body.aa .hud-klocka{padding:5px 10px 4px;gap:8px}
+body.aa .hud-klocka .dag{font-size:12px}body.aa .hud-klocka .tid{font-size:19px}body.aa .hud-klocka .arstid{font-size:9px}
+body.aa .hud-status .hud-matare{gap:7px;padding:4px 8px 4px 5px;border-bottom-width:2px}
+body.aa .hud-status .hud-ikon{width:24px!important;height:24px!important;flex:0 0 24px!important}
+body.aa .hud-status .hud-ikon svg,body.aa .hud-status .hud-ikon .ui-ik{width:20px!important;height:20px!important}
+body.aa .hud-status .hud-m .rad span{font-size:9.5px!important;letter-spacing:.04em}
+body.aa .hud-status .hud-m .rad b{font-size:11.5px!important}
+body.aa .hud-status .hud-m .rad{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:0!important;line-height:1.15}
+body.aa .hud-status .hud-m .rad span,body.aa .hud-status .hud-m .rad b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:128px}
+body.aa .hud-status .hud-m{min-width:0;flex:1}
+body.aa .hud-klocka{white-space:nowrap}body.aa .hud-klocka .arstid{display:none}
+body.aa .hud-status .hud-bar{height:4px!important;margin-top:2px}
+body.aa .hud-chip{pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:8px;padding:5px 10px 5px 8px;border-radius:10px;background:rgba(25,28,36,.88);border:1px solid rgba(255,255,255,.07);border-bottom:2px solid rgba(0,0,0,.45);font:800 13px system-ui;color:#fff;position:relative}
+body.aa .hud-chip svg,body.aa .hud-chip .ui-ik{width:20px;height:20px;flex:0 0 20px}
+body.aa .hud-chip-sms b{font-weight:700;font-size:12px;color:#c5ccda}
+body.aa .hud-chip-sms em{margin-left:auto;font:900 12px system-ui;font-style:normal;background:#ff5c5c;color:#fff;border-radius:999px;min-width:20px;height:20px;display:grid;place-items:center;padding:0 5px}
+body.aa .hud-chip-sms.ny b{color:#fff}
+/* uppdraget: en rad överst i mitten */
+body.aa .ph-mal.hud-uppdrag{left:50%!important;transform:translateX(-50%);width:auto!important;max-width:min(560px,calc(100vw - 2 * 196px));top:max(10px,env(safe-area-inset-top))!important;padding:6px 74px 6px 8px;border-radius:12px}
+body.aa .ph-mal.hud-uppdrag.smal{transform:none;max-width:none;padding-right:62px}
+body.aa .hud-uppdrag .ph-mal-del{display:none!important}
+body.aa .hud-antal{top:50%!important;transform:translateY(-50%);right:10px!important;font-size:11px!important;color:#7dffb0!important;white-space:nowrap}
+body.aa .ph-mal-text.nasta{display:grid!important;grid-template-columns:auto 1fr;column-gap:9px!important;row-gap:3px!important;align-items:center!important;margin:0!important}
+body.aa .ph-mal-text.nasta .nasta-rad{display:contents}
+body.aa .ph-mal-text.nasta .nasta-ik{grid-row:1;grid-column:1;flex:none!important;width:30px!important;height:30px!important}
+body.aa .ph-mal-text.nasta .nasta-ik svg,body.aa .ph-mal-text.nasta .nasta-ik .ui-ik{width:18px!important;height:18px!important}
+body.aa .ph-mal-text.nasta .nasta-ik.bild img{width:26px!important;height:26px!important}
+body.aa .nasta-rubrik{grid-row:1;grid-column:2;font:900 15px/1.2 system-ui!important}
+body.aa .nasta-t{grid-row:2;grid-column:1/-1;font:700 12.5px/1.3 system-ui!important;display:none}
+body.aa .hud-uppdrag.visa-tips .nasta-t{display:block}
+body.aa .ph-rolfrad{margin-top:4px;padding-top:4px;font-size:12px}
+body.aa .ph-rolfrad:empty{display:none}
+/* notiser: en i taget till höger */
+body.aa .ph-hoger{top:max(12px,env(safe-area-inset-top));width:280px}
+body.aa .ph-notis{padding:8px 11px;font-size:13px}
+/* morgonkortet: två kolumner */
+.br-morgon{display:grid;grid-template-columns:1.15fr 1fr;gap:14px;text-align:left;align-items:start}
+.br-morgon.en{grid-template-columns:1fr}
+.br-morgon-v>b{display:block;font-size:20px;margin-bottom:6px}
+.br-morgon-h{display:flex;flex-direction:column;gap:10px;font-size:14px}
+.br-morgon-h .ali-vill{margin:0}
+.br-morgon-h .br-rapport{display:block;margin:0}
+.br-start:has(.br-morgon){max-width:760px;width:min(760px,94vw)}
+.br-start:has(.br-morgon) .br-ingress{max-width:none!important;width:100%!important;margin-left:0!important;margin-right:0!important}
+.br-start:has(.br-morgon) .br-val{flex-wrap:nowrap;gap:6px;max-width:none}
+.br-start:has(.br-morgon) .br-valknapp{padding:5px 9px;font-size:12px;min-height:0}
+.br-start:has(.br-morgon) .br-valknapp svg{width:15px;height:15px}
+.br-start:has(.br-morgon) .br-tyck{font-size:12px;margin-top:4px}
+@media (max-width:640px){.br-morgon{grid-template-columns:1fr}body.aa .hud-status{width:132px}body.aa .hud-chip{font-size:11.5px;padding:4px 7px}body.aa .hud-chip-sms b{display:none}body.aa .ph-hoger{width:min(240px,60vw)}}
+`;
+  document.head.appendChild(st);
+}
