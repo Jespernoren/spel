@@ -93,6 +93,7 @@ export const HUD_CSS = `
 .ali-hylla .ui-grid{display:flex!important;flex-wrap:wrap;gap:8px}
 .ali-hylla-rub{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}.ali-hylla-rub .ui-ik{width:18px;height:18px;color:var(--h);align-self:center}
 .ali-hylla-rub b{font:900 13px system-ui;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--h) 70%,#fff)}.ali-hylla-rub small{font:600 12px system-ui;color:#9aa3b5}
+[data-tips]{box-shadow:0 0 0 3px #7dffb0,0 0 14px rgba(125,255,176,.5)!important}[data-tips]::after{content:"KÖP NÄSTA";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);padding:1px 6px;border-radius:999px;background:#7dffb0;color:#0d1a22;font:900 9px system-ui;letter-spacing:.06em;white-space:nowrap}
 .ali-hylla.h-rolf{--h:#ff6fa5}.ali-hylla.h-unik{--h:#ffc93c}.ali-hylla-grupper{display:flex;flex-wrap:wrap;gap:6px 18px}.ali-hylla-grupp>em{display:block;font:800 10.5px system-ui;font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:#c5ccda;opacity:.75;margin:0 0 5px}
 .ali-butik .ali-niva.kop{margin-bottom:0}
 .ali-butik .ali-niva.salj{position:sticky;bottom:-16px;z-index:3;margin:14px -16px -16px;border-radius:14px 14px 0 0;border-width:2px 0 0;background:linear-gradient(180deg,#183324,#121f18);box-shadow:0 -12px 26px rgba(0,0,0,.5);display:flex;flex-wrap:wrap;align-items:flex-start;column-gap:22px;padding:8px 16px 12px}
@@ -115,6 +116,7 @@ export const HUD_CSS = `
 .ali-tal b{display:block;font:900 12px system-ui;letter-spacing:.1em;text-transform:uppercase;color:#2f8a52;margin-bottom:4px}
 .ali-tal p{margin:0;font:600 15px/1.45 system-ui}
 .ali-butik{flex:1;min-width:0;overflow:auto;padding:16px}
+.ali-info{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid #343a4a}.ali-info>b{display:block;font:800 14px system-ui;margin-bottom:4px}.ali-info>p{margin:0 0 6px;font:500 12.5px/1.4 system-ui;color:#c5ccda}.ali-info .ui-fakta{display:flex;flex-direction:column;gap:4px}
 .ali-grupper{display:flex;flex-wrap:wrap;gap:2px 22px}.ali-grupper .ui-grid{display:flex!important;flex-wrap:wrap;gap:8px}
 .ali-grupp{margin-top:8px}.ali-grupp>b{display:flex;align-items:center;gap:6px;font:800 11px system-ui;letter-spacing:.08em;text-transform:uppercase;color:#a6f3c1;margin:4px 0 6px}
 .ali-grupp.ej{margin-top:14px;padding:10px;border-radius:10px;background:rgba(0,0,0,.25);border:1px dashed rgba(255,255,255,.18)}.ali-grupp.ej>b{color:#c5ccda}.ali-grupp.ej .ui-ruta{filter:grayscale(.85) brightness(.8);cursor:pointer}
@@ -165,6 +167,7 @@ export const HUD_CSS = `
 .ph-mal-text.nasta .nasta-ik{flex:0 0 40px;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:rgba(125,255,176,.14);color:#7dffb0;box-shadow:inset 0 0 0 2px rgba(125,255,176,.35)}
 .ph-mal-text.nasta .nasta-ik .ui-ik,.ph-mal-text.nasta .nasta-ik svg{width:26px;height:26px}
 .hud-uppdrag .hud-lista{display:none!important}
+.nasta-t{display:flex;flex-direction:column}.nasta-mal{display:flex;align-items:center;gap:5px;margin-top:3px;font:700 12.5px/1.3 system-ui;color:#ffd37a}.nasta-mal .ui-ik{width:14px;height:14px;flex:none}
 .ph-coach{display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:10px 14px;border-radius:10px;background:rgba(125,255,176,.13);border:2px dashed rgba(125,255,176,.55);color:#e9fff1;font:800 14px/1.3 system-ui;animation:coachPuls 1.4s ease-in-out infinite}
 .ph-coach .ui-ik{width:24px;height:24px;color:#7dffb0;flex:0 0 24px}
 @keyframes coachPuls{50%{border-color:rgba(125,255,176,.95);box-shadow:0 0 14px rgba(125,255,176,.35)}}
