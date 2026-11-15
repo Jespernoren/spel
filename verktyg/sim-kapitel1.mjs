@@ -55,6 +55,15 @@ await b.close();
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const synlig = (e) => ['sms-bubbla', 'notis', 'lapp', 'bubbla', 'meddelande', 'morgonkort'].includes(e.kalla);   // det som syns på skärmen (toasts är svar på ett klick och räknas inte)
 const flaggor = [];
+// BV: lugn start – ingen text, röst eller sms de första 5 s efter BÖRJA DAGEN, och inget sms de första 30 s
+for (const st of r.logg.filter((e) => e.kalla === 'händelse' && e.vem === 'morgonkortStangt')) {
+  for (const e of r.logg) {
+    if (e.dag !== st.dag || e.tot < st.tot || e.tot > st.tot + 30) continue;
+    const d = e.tot - st.tot;
+    if (d < 5 && (synlig(e) || e.kalla === 'röst' || e.kalla === 'sms') && e.kalla !== 'morgonkort') flaggor.push({ dag: e.dag, t: e.t, typ: 'LUGN', text: `${d.toFixed(1)} s efter BÖRJA DAGEN: [${e.kalla}] "${String(e.text).slice(0, 60)}"` });
+    else if (e.kalla === 'sms') flaggor.push({ dag: e.dag, t: e.t, typ: 'LUGN', text: `sms ${d.toFixed(1)} s efter BÖRJA DAGEN (minst 30 s): "${String(e.text).slice(0, 60)}"` });
+  }
+}
 // krockar: två synliga texter inom 5 s (samma text i två kanaler räknas inte)
 const syn = r.logg.filter(synlig);
 for (let i = 1; i < syn.length; i++) {

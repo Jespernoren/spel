@@ -472,7 +472,13 @@ const LAPPAR = {
 
 // brev från Rolf heter 'rolf:0', 'rolftack:0' osv
 // ROLF definieras längre ner – läs den försiktigt så att tidiga anrop inte kraschar
-const rolfMorgonRa = (n) => (ROLF?.[n - 1]?.tack || '') + '\n\n' + (ROLF?.[n]?.brev || '');   // B2: tack för förra presenten + nästa önskan i ett brev
+// BQ: kapitel 1:s ihopslagna brev är ETT brev med en signatur (tack + nästa önskan i samma text)
+const ROLF_RA = {
+  1: 'Gomorron! TACK för hållarn!! Ölen e iskall. Men nu har Kajsa knuffat ner min flasköppnare i tippen. Med flit, tror ja. Printar du en ny? Me magnet, så den sitter på flaket. Ritningen ligger i lådan. Ja la en gammal lur där oxå, så ja kan sms:a dig. O min gamla skottkärra står bredvid. Ta den. Du ser ut som en som behöver bära mer grejer. /Rolf',
+  2: 'Hörru. PERFEKT öppnare!!! Ölen öppnar sig nästan själv nu. Lite pengar i lådan. Nu nästa grej: ja ska grilla på lördag. Ensam som vanligt, Kajsa äter inte korv. Min gamla grillspade smälte. Lång historia. Ritningen ligger i lådan. Fixar du? Ja betalar bra. O ja kanske tappar lite extra skräp vid din grind. Av misstag. /Rolf 🍖',
+  3: 'Grillspaden e ju KONST. Pengar i lådan. Men flaket e så trist. Folk vinkar aldrig åt sopbilen. Me en tomte på flaket kanske dom gör det. En sån me luva o skägg. Ritningen ligger i lådan. Ja betalar. O du ska få se på skräp. /Rolf 🎅',
+};
+const rolfMorgonRa = (n) => ROLF_RA[n] || ((ROLF?.[n - 1]?.tack || '') + '\n\n' + (ROLF?.[n]?.brev || ''));   // B2: tack för förra presenten + nästa önskan i ett brev
 const rolfText = (n, falt) => { try { return rolfDialekt(ROLF?.[n]?.[falt] || '', false); } catch { return ''; } };
 // Rolf kommer från bonnvischan – det ska synas och höras. På sms skriver han med ett finger, så det blir lite fel.
 const ROLF_ORD = { inte: 'int', här: 'hä', där: 'dä', mig: 'mej', dig: 'dej', sig: 'sej', också: 'oxå', något: 'nåt', någon: 'nån', några: 'nåra', sådan: 'sån', sådana: 'såna', säga: 'säja', det: 'dä', de: 'dä', jag: 'ja', är: 'ä', e: 'ä', med: 'mä', me: 'mä', dom: 'dôm', dem: 'dôm', folk: 'fôlk', korv: 'kôrv', noga: 'nôga', fin: 'grann', fina: 'granna', pengar: 'pengar', någonting: 'nånting', mycket: 'mycke', ingenting: 'inget', kommer: 'kömmer', vad: 'va', nu: 'nu', väl: 'väl', titta: 'titta', pojke: 'pôjk', flicka: 'jänta', sedan: 'sen', säger: 'säjer', vet: 'vet' };
@@ -1221,7 +1227,7 @@ function visaKapitelKort(nr, namn, mal) {
   document.querySelector('.ph-kapkort')?.remove();
   const d = document.createElement('div'); d.className = 'ph-kapkort';
   d.innerHTML = `<small>KAPITEL ${nr}</small><b>${rens(namn)}</b><span>${rens(mal)}</span>`;
-  d.dataset.t = performance.now(); document.body.appendChild(d); setTimeout(() => d.classList.add('ut'), 5200); setTimeout(() => d.remove(), 6000);
+  d.dataset.t = performance.now(); document.body.appendChild(d); setTimeout(() => { lugnTill = Math.max(lugnTill, performance.now() + LUGN_START); }, 6000);   // BV: 5 s lugnt efter kapitelkortet setTimeout(() => d.classList.add('ut'), 5200); setTimeout(() => d.remove(), 6000);
 }
 // ett kapitelkort som av någon anledning blev kvar (timern hann inte gå) får aldrig pausa kanalen för evigt
 const kapkortKvar = () => { const k = document.querySelector('.ph-kapkort'); if (k && performance.now() - (+k.dataset.t || 0) > 7000) { k.remove(); return null; } return k; };
@@ -3506,10 +3512,17 @@ function textLogg(kalla, vem, text, varfor = '') {
 // STORY > MÅL > REAKTION > SMÅPRAT. Max en text per TEXT_MELLAN ms från olika källor. "Stryks om" kontrolleras precis innan visning.
 // STORY kommer även med en meny öppen, småprat väntar tills menyn är stängd. Allt väntar under animationer och kapitelkort.
 const VIKT_ORDNING = { STORY: 0, 'MÅL': 1, REAKTION: 2, 'SMÅPRAT': 3 };
+const MORGON_ORDNING = { 'MÅL': 0, STORY: 1, REAKTION: 2, 'SMÅPRAT': 3 };
 // Punkt 15: EN kanal för allt som berättar något. Bara en sak åt gången syns och hörs; text och röst kommer tillsammans.
 // En sak: { vikt, vem, text, visa(), rost (false = bara text), minMs, stryksOm(), efter(), forst }. Efter varje sak: ROST_PAUS.
 const kanal = []; let kanalAktiv = null, kanalFri = 0;
+// BV: lugn start på dagen
+const LUGN_START = 5000, SMS_TIDIGAST = 30000;
+let lugnTill = 0, dagStartTid = -1e9; const kanalSenare = [];
+function lugnStart() { lugnTill = performance.now() + LUGN_START; dagStartTid = performance.now(); }
+paHandelse('morgonkortStangt', lugnStart);
 function kanalLagg(it) {
+  if (it.sms && performance.now() - dagStartTid < SMS_TIDIGAST) it.tidigast = Math.max(it.tidigast || 0, dagStartTid + SMS_TIDIGAST);   // BV: inget sms de första 30 s
   it.t = performance.now(); it.vikt = it.vikt || 'REAKTION';
   // kön får inte växa: max en sak per figur i kön (STORY stryks aldrig – den väntar)
   if (it.vikt !== 'STORY' && it.vem) { const i = kanal.findIndex((x) => x.vem === it.vem && x.vikt !== 'STORY'); if (i >= 0) { textLogg('struken', kanal[i].vem, kanal[i].text || '', 'en nyare från samma'); kanal.splice(i, 1); } }
@@ -3528,6 +3541,7 @@ function startaDel(a, nu) {
 }
 function korKanal() {
   const nu = performance.now();
+  if (kanalSenare.length) kanal.push(...kanalSenare.splice(0));
   if (kanalAktiv) {
     const a = kanalAktiv; if (nu < a.slut || (pratarVem === a.vem && nu < pratarTill)) return;
     if (a.delar && a.delNr < a.delar.length - 1) {   // nästa del i samma inslag efter DIALOG_PAUS
@@ -3544,13 +3558,17 @@ function korKanal() {
     if (!ui.butiksOverlay.hidden && !(pausad || !ui.igang || animationPagar() || scenPagar() || !medEl2.hidden || !ui.overlay.hidden) && nu > pratarTill + DIALOG_PAUS && kanal.some((x) => x.vem === 'ali' && x.vikt === 'STORY')) endastAli = true;
     else return;
   }
-  kanal.sort((a, b) => (b.forst ? 1 : 0) - (a.forst ? 1 : 0) || VIKT_ORDNING[a.vikt] - VIKT_ORDNING[b.vikt] || a.t - b.t);
+  // BV: lugn start – de första 5 s efter BÖRJA DAGEN (och efter introt och kapitelkort) kommer ingenting
+  if (nu < lugnTill) return;
+  const ordning = nu - dagStartTid < SMS_TIDIGAST ? MORGON_ORDNING : VIKT_ORDNING;   // BV: på morgonen läses målet först
+  kanal.sort((a, b) => (b.forst ? 1 : 0) - (a.forst ? 1 : 0) || ordning[a.vikt] - ordning[b.vikt] || a.t - b.t);
+  const senare = kanalSenare;
   while (kanal.length) {
     const ia = endastAli ? kanal.findIndex((x) => x.vem === 'ali' && x.vikt === 'STORY') : 0; if (ia < 0) break;
     const it = kanal.splice(ia, 1)[0];
     if (it.stryksOm?.()) { textLogg('struken', it.vem || '', it.text || '', 'pekar bakåt'); continue; }
     if ((it.vikt === 'REAKTION' || it.vikt === 'SMÅPRAT') && !it.sms && nu - it.t > KANAL_GAMMAL) { textLogg('struken', it.vem || '', it.text || '', 'väntade för länge'); continue; }
-    if (it.tidigast && nu < it.tidigast) { kanal.unshift(it); return; }
+    if (it.tidigast && nu < it.tidigast) { senare.push(it); continue; }   // BV: väntar på sin tid – nästa sak i kön får gå före
     kanalAktiv = it; it.slut = nu + (it.minMs ?? 2500);
     textLogg('sak', it.vem || '', it.text || '(nytt mål i rutan)', it.vikt);
     if (it.delar) { it.delNr = 0; startaDel(it, nu); kanalRaknare(); return; }
@@ -4185,7 +4203,7 @@ interaktor.registrera(skjulYta, {
     if (id === 'vaggar') {
       const sidor = [...vaggarKlara(), vaggSikt.vagg], n = sidor.length;
       S.hem = { ...(S.hem || {}), vagg: n, vaggSida: sidor, ...(n >= 4 ? { vaggar: true } : {}) }; HEM_DELAR.vaggar.visible = true;
-      ljud.stor(); ui.toast(n >= 4 ? '🧱 Fjärde väggen sitter – skjulet är tätt! Ingen kyla läcker in längre.' : `🧱 ${VAGG_NAMN[vaggSikt.vagg]} klar. ${4 - n} kvar.`, 'guld');
+      ljud.stor(); ui.toast(n >= 4 ? '🧱 Skjulet är tätt!' : `🧱 ${VAGG_NAMN[vaggSikt.vagg]} klar. ${4 - n} kvar.`, 'guld');
     } else if (id === 'tapeter') {
       const sidor = [...tapetKlara(), vaggSikt.vagg], n = sidor.length;
       S.hem = { ...(S.hem || {}), tapetSida: sidor, ...(n >= 4 ? { tapeter: true } : {}) }; visaTapeter();
@@ -4454,14 +4472,41 @@ function sov() {
     const nasta = STEG[S.steg];
     if (nasta?.startPost && !S.lappar.includes(nasta.startPost) && !S.post.lapp) { S.post.lapp = nasta.startPost; visaPostInne(); }
     const del = nasta?.del || (S.julFirad ? 'Efterspelet' : 'Fritt bygge');
-    const ig = S.igar, rapport = ig ? `<span class="br-rapport">${S.saljLadaIgar ? `📦 Ali hämtade säljlådan i natt: ${S.saljLadaIgar.n} st · +${krT(S.saljLadaIgar.summa)} kr<br>` : ''}Igår: ${ig.printat} printat · ${ig.salt} sålt${ig.flask ? `<br>Flaskhals: ${ig.flask}${ig.fix ? ` → ${ig.fix}` : ''}` : ''}</span>` : '';
-    const hoger = `${aliVillHtml()}${rapport}${[2, 4].includes(S.dag) && !(S.betygDag || []).includes(natt) ? snabbBetygHtml(natt) : ''}`;
-    ui.visaStart(`☀️ Dag ${S.dag}`, `<div class="br-morgon${hoger ? '' : ' en'}"><div class="br-morgon-v"><b>${del.replace(/^Dag \d+ – /, '')}</b>${nasta ? dagensMalHtml(nasta.del) : S.julFirad ? efterspelHtml() : ''}</div>${hoger ? `<div class="br-morgon-h">${hoger}</div>` : ''}</div>`, 'Börja dagen');
+    // BN: morgonkortet visar storyn – rubrik, en mening om dagens storymål, gårdagen, Alis vara, humörfrågan och morgontanken. Inga delmål.
+    const tanke = morgonTanke(); S.morgonTanke = tanke; S.morgonTankeIgar = tanke?.id || S.morgonTankeIgar;
+    const ig = S.igar, rapport = ig ? `<span class="br-rapport">${S.saljLadaIgar ? `📦 Ali hämtade säljlådan i natt: ${S.saljLadaIgar.n} st · +${krT(S.saljLadaIgar.summa)} kr<br>` : ''}Igår: ${ig.printat} printat · ${ig.salt} sålt</span>` : '';
+    const tankeHtml = tanke ? `<span class="br-tanke">💭 ${rens(tanke.text)}</span>` : '';
+    const hoger = `${aliVillHtml()}${rapport}${tankeHtml}${[2, 4].includes(S.dag) && !(S.betygDag || []).includes(natt) ? snabbBetygHtml(natt) : ''}`;
+    ui.visaStart(`☀️ Dag ${S.dag}`, `<div class="br-morgon${hoger ? '' : ' en'}"><div class="br-morgon-v"><b>${del.replace(/^Dag \d+ – /, '')}</b>${nasta && DAG_STORY[S.dag - 1] ? `<p class="br-story">${DAG_STORY[S.dag - 1]}</p>` : nasta ? '' : S.julFirad ? efterspelHtml() : ''}</div>${hoger ? `<div class="br-morgon-h">${hoger}</div>` : ''}</div>`, 'Börja dagen');
     kopplaSnabbBetyg(natt);
     const vanta = setInterval(() => { if (!ui.igang) return; clearInterval(vanta); handelse('morgonkortStangt', { dag: S.dag }); const f = morgonKo; morgonKo = null; if (f) setTimeout(f, 2500); }, 300);
   }, 5500);
 }
 let morgonKo = null;
+// BN: en mening per dag om dagens storymål (dag 1–22)
+const DAG_STORY = ['Få igång skrivaren och sova i en egen säng.', 'Städa upp – och kanske träffa grannarna.', 'Bära mer och få tak över huvudet.', 'Sluta trampa och stänga ute kylan.', 'Fler skrivare och ett riktigt mysigt skjul.',
+  'Tunga saker kan bli ny plast.', 'Printa i rött och sälja dyrare.', 'Bära det tunga utan att slita ut sig.', 'Mer ström till fler skrivare.', 'Bli klar innan hösten kommer.',
+  'Låta skräpet komma till dig.', 'Låta maskinerna göra jobbet.', 'Sälja medan du sover.', 'Mer fart i kvarnen.', 'Bygga det du kom hit för.',
+  'Äga marken du bor på.', 'Något värdefullt i Rolfs rester.', 'Ett riktigt hus.', 'Guld.', 'Klara vintern.', 'Bli en riktig invånare.', 'Jul på Soptippsvägen.'];
+// BN: morgontanken – din egen utvärdering av gårdagen. Max en per dag, inte samma två dagar i rad, aldrig något redan köpt eller låst.
+const MORGON_TANKAR = [
+  { id: 'rullar', flask: 'Rullhållaren är full', text: 'Rullarna låg och väntade vid kvarnen hela dagen. Kanske ett rullställ vore bra?', ok: () => (S.rullstall || 0) < 3 && !!MASKINER.rullstall?.syns?.() },
+  { id: 'strom', flask: ['Batteriet är tomt', 'Motorn har ingen ström'], text: 'Skrivaren stod still när jag slutade trampa. Lite mer ström hade inte skadat.', ok: () => !harPlacerat('solpark') },
+  { id: 'plast', flask: 'Slut på filament', text: 'Skrivaren väntade på plast. Jag borde mala mer innan jag printar.', ok: () => true },
+  { id: 'bara', text: 'Jag sprang fram och tillbaka med skräp hela dagen. Kan jag bära mer?', ok: () => !S.ryggkorg && !!S.korg && (S.igar?.vandor || 0) >= 25 },
+  { id: 'mattnad', text: 'Ali tröttnade på pallarna. Kanske något nytt att sälja?', ok: () => mattnadPa() && (S.igar?.mattTyp === 'pall') },
+  { id: 'platta', flask: 'Plattan är full', text: 'Skrivaren stod och väntade på mig. Jag får ta ut sakerna fortare.', ok: () => true },
+];
+const MORGON_BRA = { id: 'bra', text: 'Bra dag i går. Allt flöt på.' };
+function morgonTanke() {
+  if (S.dag <= 1) return null;
+  const fl = S.flask?.tid ? Object.entries(S.flask.tid).filter(([, t]) => t >= 20).sort((x, y) => y[1] - x[1]).map(([k]) => k) : [];
+  const kand = [...fl.map((k) => MORGON_TANKAR.find((m) => [].concat(m.flask || []).includes(k))).filter(Boolean), ...MORGON_TANKAR.filter((m) => !m.flask)];
+  const t = kand.find((m) => m.id !== S.morgonTankeIgar && m.ok());
+  return t || (S.morgonTankeIgar === 'bra' ? null : MORGON_BRA);
+}
+// läses upp 20 s efter BÖRJA DAGEN (inga repliker om maskinerna de första 20 s, BO)
+paHandelse('morgonkortStangt', () => { const t = S.morgonTanke; if (!t) return; setTimeout(() => tanke(t.text, 'morgontanke', 'STORY'), 6000); });   // BV: efter dagens första mål
 function senareIdag(fn) {
   const dag = S.dag; let gjord = false;
   const kor = () => { if (gjord || S.dag !== dag) return; gjord = true; fn(); };
@@ -6430,14 +6475,14 @@ let aliPratVikt = '', aliTalDold = null;
 // men en STORY-replik (välkomsten, bonusen) ersätts aldrig. Max en replik per klick (oppnaMarknad säger bara en ny bubbla).
 // BJ: Alis repliker med belopp eller sakens namn har inget inspelat klipp. Rösten säger en fast del, bubblan visar hela texten.
 const ALI_FAST = [
-  [/Precis vad jag ville ha idag/, 'Precis vad jag ville ha idag. Bra.'],
+  [/Precis vad jag ville ha idag/, 'Precis det jag ville ha idag, min vän.'],
   [/Vem ska köpa alla\?/, 'Vem ska köpa alla? Gör nåt annat imorgon.'],
   [/Säljer de inte är det ditt fel/, 'Okej. Säljer de inte är det ditt fel.'],
   [/Printa och sälj mer\./, 'Printa och sälj mer.'],
   [/Bra val\. Folk köper sånt\. Jag vet inte varför\./, 'Bra val. Folk köper sånt. Jag vet inte varför.'],
   [/AI:n och jag gjorde den i natt\. Printa den\. Snälla\./, 'AI:n och jag gjorde den i natt. Printa den. Snälla.'],
   [/Röd\. AI:n sa att röd säljer\./, 'Röd. AI:n sa att röd säljer. AI:n har aldrig sålt något. Men okej.'],
-  [/^[^.!?]+\. Okej\. [\d ]+ kr\.$/, 'Okej. Bra.'],
+  [/^[^.!?]+\. Okej\. [\d ]+ kr\.$/, 'Okej. Tack ska du ha.'],
 ];
 const aliTal = (t) => { if (rostKlipp('ali', t) || elKlipp('ali', t)) return t; for (const [re, f] of ALI_FAST) if (re.test(t)) return f; return t; };
 const aliButikKo = []; let aliButikTimer = 0;
@@ -6928,7 +6973,7 @@ const ui = new FpUI({
   onButik: () => oppnaDagbok(),
   onNollstall: () => borjaOm(),
   onSparplatser: () => oppnaSparplatser(),
-  onStart: () => { ljudCtx(); setTimeout(() => bakMusik.start(), 4000); setTimeout(familjSms, 2000);
+  onStart: () => { ljudCtx(); lugnStart(); setTimeout(() => bakMusik.start(), 4000); setTimeout(familjSms, 2000);
     // Alis bakgrund – även till den som redan sålt sin första sak innan storyn fanns
 
     // B29: "Dag 1. Inget mer tjat…" kommer i dagboken på kvällen dag 1 (efter sängen) – starten börjar direkt med skylten
@@ -9221,11 +9266,11 @@ function rostManus() {
   vid('Ali när du printat hans modell'); for (const [id, m] of aliStoltSaker()) add('ali', aliStoltMall(id)(sakNamn(m.namn)));
   vid('Alis sms om nya 3D-modeller'); for (const id of new Set(Object.values(HUVUDKOP))) if (MASKINER[id] && !ALI_SPECIAL[id] && !ALI_INTE.has(id)) add('ali', ALI_NY_MALL(sakNamn(MASKINER[id].namn)));
   vid('Full byggplatta (punkt 11)'); add('du', PLATTA_TANKE); add('bror', PLATTA_BROR);
-  vid('Storykedjan (punkt BE)'); Object.values(KEDJA_TEXT).forEach(([kv, va, vem = 'du']) => { if (kv) add(vem, kv); if (va) add(vem, va); });
+  vid('Storykedjan (punkt BE)'); Object.values(KEDJA_TEXT).forEach(([kv, va, vem = 'du']) => { if (kv) add(vem, kv); if (va) add(vem, va); }); VAGG_KVAR_TEXT.forEach((t) => add('du', t));
   vid('Lappar, brev och dagbok'); Object.entries(LAPPAR).forEach(([id, [titel, t]]) => add(vemAvTitel(titel), t));
   vid('Introt'); INTRO_TAL().forEach(([v, t]) => add(v, t));
   vid('Berättaren läser målen'); Object.values(STEG_TAL).forEach((t) => add('berattare', t)); Object.values(STEG_TAL_SPARA).forEach(([t]) => add('berattare', t));
-  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); TANKAR_INLINE.forEach((t) => add('du', t)); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); ALI_FAST.forEach(([, f]) => add('ali', f)); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
+  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); TANKAR_INLINE.forEach((t) => add('du', t)); MORGON_TANKAR.forEach((m) => add('du', m.text)); add('du', MORGON_BRA.text); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); ALI_FAST.forEach(([, f]) => add('ali', f)); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
   rostManus.detalj = D;
   return L;
 }
@@ -11323,6 +11368,8 @@ function visaOmbyggt() {
 if (GAMMALT_SPEL) visaOmbyggt();
 // ---------- Punkt BE: storykedjan – kvittens → varför → nästa mål (claude/soptippsvagen-storykedja.md) ----------
 // Varje mål: först en kvittens (STORY, direkt), sedan en mening om varför nästa behövs, och 1 s senare läser berättaren det nya målet.
+// BX: räknar alltid de väggar som faktiskt sitter
+const VAGG_KVAR_TEXT = ['Det är redan tätt. Då kan pengarna gå till en större skrivare.', 'En vägg kvar. Sen är det tätt.', 'Två väggar kvar. Sen är det tätt.', 'Tre väggar kvar. Sen är det tätt.', 'Fyra väggar kvar. Sen är det tätt.'];
 const KEDJA_TEXT = {
   skylt: ['Soptippsvägen 1. Nu bor jag här. Officiellt. Typ.', 'Skrivaren står kvar på cykeln. Den ska av.'],
   lastat: ['Tung. Den har storebror aldrig burit så långt.'],
@@ -11348,7 +11395,7 @@ const KEDJA_TEXT = {
   pall: [null, 'Om det regnar i natt drunknar jag. Ett tak.'],
   rolf2: [null, 'Jag trampar mer än jag printar. Solen är gratis.'],
   samtal4: [null, 'Det drar genom väggarna. Det blir kallt snart.'],
-  rolf3: [null, 'Två väggar kvar. Sen är det tätt.'],
+  rolf3: [null, 'Två väggar kvar. Sen är det tätt.'],   // BX: texten väljs efter hur många väggar som faktiskt sitter (VAGG_KVAR_TEXT)
   vaggar: [null, 'En skrivare räcker inte längre. Ali hade en större.'],
   skrivareM: [null, 'Det är tätt, det är varmt. Nu ska det bli mysigt.'],
   // kapitel 2–4: varför-repliken på morgonen eller efter målet
@@ -11380,7 +11427,8 @@ paHandelse('tagitUrPrint', ({ sak }) => { if (sak === 'nyckelring') nyckelringUt
 const KEDJA_STRYK = { printKlar: () => nyckelringUttagen };
 function kedja(id) {
   S.kedja = S.kedja || []; if (S.kedja.includes(id)) return; S.kedja.push(id); sparaSnart();
-  const [kv, va, vem = 'du'] = KEDJA_TEXT[id] || [];
+  let [kv, va, vem = 'du'] = KEDJA_TEXT[id] || [];
+  if (id === 'rolf3') va = VAGG_KVAR_TEXT[Math.max(0, 4 - vaggarKlara().length)];   // BX
   const st0 = S.steg;   // det som pekar bakåt stryks: varför-raden när målet den förklarar redan är klart, kvittensen när spelaren hunnit två mål till
   const del = (typ, t) => { textLogg(typ, vem, t, id); return { text: t, typ, visa: () => notisVisa((vem === 'du' ? '💭 ' : '') + t, vem === 'du' ? 'tanke' : '', { tid: 5000 }) }; };
   const delar = [kv && S.steg <= st0 + 1 && del('kvittens', kv), va && del('varför', va)].filter(Boolean);
@@ -11493,6 +11541,8 @@ body.aa .ph-notis{padding:8px 11px;font-size:13px}
 .br-morgon-h{display:flex;flex-direction:column;gap:10px;font-size:14px}
 .br-morgon-h .ali-vill{margin:0}
 .br-morgon-h .br-rapport{display:block;margin:0}
+.br-morgon .br-story{margin:.5em 0 0;font:500 17px/1.4 system-ui;color:#ffe9b0}
+.br-morgon-h .br-tanke{display:block;margin-top:.6em;font:italic 500 14px/1.4 system-ui;color:#cfe3ff}
 .br-start:has(.br-morgon){max-width:760px;width:min(760px,94vw)}
 .br-start:has(.br-morgon) .br-ingress{max-width:none!important;width:100%!important;margin-left:0!important;margin-right:0!important}
 .br-start:has(.br-morgon) .br-val{flex-wrap:nowrap;gap:6px;max-width:none}
