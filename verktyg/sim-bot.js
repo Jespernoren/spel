@@ -45,7 +45,7 @@
       for (let varv = 0; varv < 20; varv++) {
         const med = H.medEl2;
         if (med && !med.hidden && med.innerHTML) {
-          const txt = med.innerText || ''; const knappar = [...med.querySelectorAll('button')].filter((b) => !b.disabled && !b.dataset.lasupp && b.offsetParent !== null);
+          const txt = med.innerText || ''; const knappar = [...med.querySelectorAll('button')].filter((b) => !b.disabled && !b.dataset.lasupp && b.offsetParent !== null && !b.classList.contains('ph-rostknapp'));
           if (!knappar.length) { await lasTid(1); continue; }
           await lasTid(Math.min(14, 1.2 + txt.length / LASFART));
           const k = knappar.find((b) => /stäng|ok|fortsätt|läst|klar|tack|lägg på|vidare|svara/i.test(b.textContent)) || knappar[0];
@@ -189,7 +189,7 @@
     if (sk.klar) await taUt(sk);
     const delar = val.maskin ? (H.MASKINER[val.maskin].delar || 1) : 1;
     const gram = (val.maskin ? H.MASKINER[val.maskin].gram : H.VAROR[val.typ].gram) * delar;
-    if (!(await filament(sk, Math.min(gram, 1000 * 3)))) return false;
+    if (!(await filament(sk, Math.min(gram, 1000 * 2)))) return false;   // rullhållaren tar 3 hela rullar – en halv rulle kvar räcker inte för en till
     await gaTill(sk.mesh, 1.4, 'skrivaren'); await vanta(MENY_TID);
     const r = H.startaJobb(sk, val); if (!r) { handling(`kunde inte starta ${namn}`); return false; }
     handling(`printar ${namn}${delar > 1 ? ` (${delar} delar)` : ''}`);
