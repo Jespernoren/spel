@@ -254,10 +254,11 @@
     const m = MASKIN(id);
     if (m.hem) {
       if (id === 'fonster') { valj(bs); H.taBortInv(bs); await gaTill(H.skjulYta, 2, 'skjulet'); H.sattFonster(); handling('sätter ett fönster'); return true; }
-      if (id === 'vaggar') { const v = ['bak', 'vanster', 'hoger', 'fram'].find((x) => !H.vaggarKlara().includes(x)); H.siktaVagg(v); valj(bs); const ok = await klick(H.skjulYta, 'skjulet (' + v + ')', 2.5); H.siktaVagg(null); return ok; }
+      if (id === 'vaggar' || id === 'tapeter') { const v = ['bak', 'vanster', 'hoger', 'fram'].find((x) => !(id === 'vaggar' ? H.vaggarKlara() : H.tapetKlara()).includes(x)); H.siktaVagg(v); valj(bs); const ok = await klick(H.skjulYta, 'skjulet (' + v + ')', 2.5); H.siktaVagg(null); return ok; }
       valj(bs); return klick(H.skjulYta, 'skjulet', 2.5);
     }
     if (['kvarnmotor', 'stortratt', 'matarband'].includes(id)) { valj(bs); return klick(H.kvarn, 'kvarnen'); }
+    if (id.startsWith('spolhallare')) { const sk = skrivareAlla().find((x) => (x.spolNiva || 0) < (id === 'spolhallare' ? 1 : id === 'spolhallare2' ? 2 : 3)) || skrivareAlla()[0]; valj(bs); return klick(sk.mesh, 'skrivaren (spolhållare)'); }
     return placera(bs);
   }
   async function placera(t) {

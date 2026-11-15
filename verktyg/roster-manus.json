@@ -2805,15 +2805,15 @@
   "var": "Alis sms om nya 3D-modeller"
  },
  {
-  "id": "ali-5243d596",
-  "figur": "ali",
-  "text": "Ali här. Satt uppe med AI:n hela natten. Ritningen till Gamingbod (tillbyggnad) är klar. Kom innan nio, då stänger jag.",
-  "var": "Alis sms om nya 3D-modeller"
- },
- {
   "id": "ali-cae595e3",
   "figur": "ali",
   "text": "Ali här. Satt uppe med AI:n hela natten. Ritningen till Leveranslåda + autoprint är klar. Kom innan nio, då stänger jag.",
+  "var": "Alis sms om nya 3D-modeller"
+ },
+ {
+  "id": "ali-5243d596",
+  "figur": "ali",
+  "text": "Ali här. Satt uppe med AI:n hela natten. Ritningen till Gamingbod (tillbyggnad) är klar. Kom innan nio, då stänger jag.",
   "var": "Alis sms om nya 3D-modeller"
  },
  {
@@ -3554,6 +3554,18 @@
   "id": "du-0773b03c",
   "figur": "du",
   "text": "Okej. Först en skylt vid vägen, så att alla vet vem som bor här.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-e0b93ed8",
+  "figur": "du",
+  "text": "Det får inte plats. Jag behöver något att tippa i.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-e1b3b151",
+  "figur": "du",
+  "text": "Den här är för tung för lilla kvarnen.",
   "var": "Dina tankar, tips och varningar"
  },
  {
