@@ -729,6 +729,15 @@
   "hand": false
  },
  {
+  "id": "rolf-b12ef844",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Rolfs sms om marken och säljlådan",
+  "visad": "Nämen. Ja ha tänkt. Kvarna dä, skrivarna dä, allt i en rad. Som på sopstationen. Dä går fortare. /R",
+  "skickas": "[old, tired, thick Värmland accent, calm] Ja ha tänkt. [short pause] Kvarna där, skrivarna där, allt i en rad. Som på sopstationen. Det går fortare. [chuckles]",
+  "hand": false
+ },
+ {
   "id": "rolf-ec937979",
   "figur": "rolf",
   "rost": "rolf",
