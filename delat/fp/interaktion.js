@@ -13,9 +13,10 @@ const MITT = new THREE.Vector2(0, 0);
  *     kanAktivera: funktion(obj) → true/false (valfri)
  */
 export class Interaktor {
-  constructor(kamera, scen, { rackvidd = 3 } = {}) {
+  constructor(kamera, scen, { rackvidd = 3, baraSynliga = false } = {}) {
     this.kamera = kamera;
     this.rackvidd = rackvidd;
+    this.baraSynliga = baraSynliga;   // true: dolda saker (visible = false, även en förälder) går inte att använda
     this.ray = new THREE.Raycaster();
     this.mal = [];
     this.blockerare = [];   // väggar m.m. som stoppar siktet (valfritt)
@@ -64,6 +65,7 @@ export class Interaktor {
       let o = h.object;
       while (o && !o.userData.interaktion) o = o.parent;
       if (!o) continue;
+      if (this.baraSynliga && !this.#synlig(o)) continue;
       const info = o.userData.interaktion;
       if (info.kanAktivera && !info.kanAktivera(o)) continue;
       this.hovrad = o;
@@ -76,6 +78,11 @@ export class Interaktor {
       this.ram.visible = false;
     }
     return this.hovrad;
+  }
+
+  #synlig(o) {
+    for (; o; o = o.parent) if (!o.visible) return false;
+    return true;
   }
 
   #arBlockerare(o) {

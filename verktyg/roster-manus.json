@@ -558,13 +558,6 @@
   "var": "Rolfs sms om marken och säljlådan"
  },
  {
-  "id": "rolf-b12ef844",
-  "figur": "rolf",
-  "text": "Nämen. Ja ha tänkt. Kvarna dä, skrivarna dä, allt i en rad. Som på sopstationen. Dä går fortare. /R",
-  "kalla": "Ja ha tänkt. Kvarna där, skrivarna där, allt i en rad. Som på sopstationen. Dä går fortare. /R",
-  "var": "Rolfs sms om marken och säljlådan"
- },
- {
   "id": "rolf-ec937979",
   "figur": "rolf",
   "text": "Jo jo. Ja la nåt i lådan. /R",
@@ -605,6 +598,30 @@
   "text": "Jo jo. Lådan! Ja va dä mä bilen nyss. /R",
   "kalla": "Lådan! Ja va där me bilen nyss. /R",
   "var": "Rolfs sms om marken och säljlådan"
+ },
+ {
+  "id": "bror-376f44c4",
+  "figur": "bror",
+  "text": "VA?! Fick du igång den?? Jag försökte i typ ett år. Den bara pep. 😳",
+  "var": "Brorsans sms dag 1 (punkt AS)"
+ },
+ {
+  "id": "bror-6034bbb6",
+  "figur": "bror",
+  "text": "Sälj den till Ali, han med affären vid tippen. Han köper gamla grejer. Han köpte min gamla mopedhjälm för 20 spänn.",
+  "var": "Brorsans sms dag 1 (punkt AS)"
+ },
+ {
+  "id": "ali-7964ae86",
+  "figur": "ali",
+  "text": "Pappas gamla köttkvarn. Den maler allt. Plast också, tror jag.",
+  "var": "Ali om det begagnade (punkt AS)"
+ },
+ {
+  "id": "ali-7442aa2b",
+  "figur": "ali",
+  "text": "Elcykelbatteri. Från en elcykel. Som inte finns längre.",
+  "var": "Ali om det begagnade (punkt AS)"
  },
  {
   "id": "helen-c25be313",
@@ -2506,6 +2523,54 @@
   "var": "Ali när du printat hans modell"
  },
  {
+  "id": "ali-c7b192d0",
+  "figur": "ali",
+  "text": "Ali här. Du printade min pappas gamla köttkvarn. Den… FUNKAR? Jag har bara sett såna på YouTube. Okej. Jag gråter inte. Det är damm i butiken.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-f2b12da8",
+  "figur": "ali",
+  "text": "pappas gamla köttkvarn – printad. På riktigt. Jag har visat bilden för min fru tre gånger. Hon säger \"ja ja\".",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-7ac483b8",
+  "figur": "ali",
+  "text": "Jag såg din pappas gamla köttkvarn på avstånd. Strecket på sidan blev lite snett. Mitt fel. Den är vacker ändå.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-ecb02bd6",
+  "figur": "ali",
+  "text": "Ali här. Ännu en ritning som blev på riktigt: pappas gamla köttkvarn. Semesterkassan växer. Livet växer.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-af2a7de9",
+  "figur": "ali",
+  "text": "Ali här. Du printade min cykelbatteri. Den… FUNKAR? Jag har bara sett såna på YouTube. Okej. Jag gråter inte. Det är damm i butiken.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-81d4897b",
+  "figur": "ali",
+  "text": "cykelbatteri – printad. På riktigt. Jag har visat bilden för min fru tre gånger. Hon säger \"ja ja\".",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-6ab91c73",
+  "figur": "ali",
+  "text": "Jag såg din cykelbatteri på avstånd. Strecket på sidan blev lite snett. Mitt fel. Den är vacker ändå.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-51169235",
+  "figur": "ali",
+  "text": "Ali här. Ännu en ritning som blev på riktigt: cykelbatteri. Semesterkassan växer. Livet växer.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
   "id": "ali-06132063",
   "figur": "ali",
   "text": "Ali här. Du printade min solcellspark. Den… FUNKAR? Jag har bara sett såna på YouTube. Okej. Jag gråter inte. Det är damm i butiken.",
@@ -4306,6 +4371,54 @@
   "var": "Alis sms om nya 3D-modeller"
  },
  {
+  "id": "ali-257b5491",
+  "figur": "ali",
+  "text": "Ali här. Satt uppe med AI:n hela natten. Pappas gamla köttkvarn är klar. Kom innan nio, då stänger jag och promptar nästa.",
+  "var": "Alis sms om nya 3D-modeller"
+ },
+ {
+  "id": "ali-c14d059a",
+  "figur": "ali",
+  "text": "Ali här. Ny instruktion inne: Pappas gamla köttkvarn. Kom innan nio. Jag stänger nio. Inte en minut senare.",
+  "var": "Alis sms om nya 3D-modeller"
+ },
+ {
+  "id": "ali-237013af",
+  "figur": "ali",
+  "text": "Pappas gamla köttkvarn har kommit. Jag bar in lådan själv. Ingen hjälpte mig. Som vanligt.",
+  "var": "Alis sms om nya 3D-modeller"
+ },
+ {
+  "id": "ali-683be08b",
+  "figur": "ali",
+  "text": "Ny grej: Pappas gamla köttkvarn. Köp den så jag slipper titta på den.",
+  "var": "Alis sms om nya 3D-modeller"
+ },
+ {
+  "id": "ali-6ffb791e",
+  "figur": "ali",
+  "text": "Ali här. Satt uppe med AI:n hela natten. Cykelbatteri är klar. Kom innan nio, då stänger jag och promptar nästa.",
+  "var": "Alis sms om nya 3D-modeller"
+ },
+ {
+  "id": "ali-a877ca41",
+  "figur": "ali",
+  "text": "Ali här. Ny instruktion inne: Cykelbatteri. Kom innan nio. Jag stänger nio. Inte en minut senare.",
+  "var": "Alis sms om nya 3D-modeller"
+ },
+ {
+  "id": "ali-23e29be6",
+  "figur": "ali",
+  "text": "Cykelbatteri har kommit. Jag bar in lådan själv. Ingen hjälpte mig. Som vanligt.",
+  "var": "Alis sms om nya 3D-modeller"
+ },
+ {
+  "id": "ali-be4ed752",
+  "figur": "ali",
+  "text": "Ny grej: Cykelbatteri. Köp den så jag slipper titta på den.",
+  "var": "Alis sms om nya 3D-modeller"
+ },
+ {
   "id": "ali-a6176fd0",
   "figur": "ali",
   "text": "Ali här. Satt uppe med AI:n hela natten. Solcellspark är klar. Kom innan nio, då stänger jag och promptar nästa.",
@@ -5264,9 +5377,15 @@
   "var": "Introt"
  },
  {
-  "id": "berattare-c1ed5578",
+  "id": "berattare-318e1742",
   "figur": "berattare",
-  "text": "Du packar det viktigaste: en ryggsäck och storebrors gamla 3D-skrivare. Den är långsam, den låter konstigt – men den funkar.",
+  "text": "Du packar det viktigaste: en ryggsäck och storebrors gamla 3D-skrivare. Den är långsam, den låter konstigt – men den funkar. Allt surras fast på cykeln.",
+  "var": "Introt"
+ },
+ {
+  "id": "berattare-f7902287",
+  "figur": "berattare",
+  "text": "Du cyklar. Förbi skolan. Förbi affären. Förbi där husen tar slut.",
   "var": "Introt"
  },
  {
@@ -5276,63 +5395,81 @@
   "var": "Introt"
  },
  {
+  "id": "berattare-ec476e9a",
+  "figur": "berattare",
+  "text": "Cykeln har tagit dig hit. Nu får den jobba. Storebrors skrivare har lite filament kvar. Dynamo + sladd = ström.",
+  "var": "Introt"
+ },
+ {
   "id": "berattare-615256f5",
   "figur": "berattare",
   "text": "Men skräp är plast. Plast kan bli filament. Och med filament kan man printa… allt.",
   "var": "Introt"
  },
  {
-  "id": "berattare-b6df5c2a",
+  "id": "berattare-a39e2828",
   "figur": "berattare",
-  "text": "Plan: bygga ett eget hem. Täta väggar, en riktig dörr, plåttak – och en gamingsetup. En lugn fristad. Utan tjat.",
+  "text": "Tänk om man kunde bygga det här till ett riktigt hem?",
   "var": "Introt"
  },
  {
-  "id": "berattare-183c6d9d",
+  "id": "berattare-0638f0a5",
   "figur": "berattare",
-  "text": "Plocka upp skräp på gården. Klicka på en flaska.",
+  "text": "Täta väggar. En riktig dörr. Plåttak.",
+  "var": "Introt"
+ },
+ {
+  "id": "berattare-e31932ac",
+  "figur": "berattare",
+  "text": "Och en gamingsetup.",
+  "var": "Introt"
+ },
+ {
+  "id": "berattare-dec8c4d0",
+  "figur": "berattare",
+  "text": "En lugn fristad. Utan mammas tjat.",
+  "var": "Introt"
+ },
+ {
+  "id": "berattare-8db71be3",
+  "figur": "berattare",
+  "text": "Klicka på cykeln och lasta av storebrors skrivare. Ställ den på den lysande rutan i linje ett.",
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-a6d832b8",
+  "id": "berattare-0aa21bf5",
   "figur": "berattare",
-  "text": "Bär skräpet till kvarnen och lägg det i tratten.",
+  "text": "Klicka på cykeln igen och bygg om den till en generator.",
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-2729eee4",
+  "id": "berattare-98a99bbf",
   "figur": "berattare",
-  "text": "Ta tag i veven på kvarnens framsida – klicka och håll inne tills rullen är full.",
+  "text": "Trampa cykeln för ström och printa en nyckelring på skrivaren.",
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-3edf8b93",
+  "id": "berattare-95aa4eea",
   "figur": "berattare",
-  "text": "Rullen är klar! Den glider själv genom slangen in i skrivaren.",
+  "text": "Gå över vägen till Ali och sälj nyckelringen. Eller printa två till först – filamentet räcker till tre.",
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-0ef81041",
+  "id": "berattare-740e4908",
   "figur": "berattare",
-  "text": "Klicka på skrivaren för att se hur mycket filament den har.",
+  "text": "Köp kvarnen hos Ali. Och cykelbatteriet, om pengarna räcker.",
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-5dd322d3",
+  "id": "berattare-be4deb29",
   "figur": "berattare",
-  "text": "Trampa cykeln för att få ström – klicka på pedalerna och håll inne.",
+  "text": "Ställ kvarnen på den lysande rutan i linje ett.",
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-52a16757",
+  "id": "berattare-7ead3104",
   "figur": "berattare",
-  "text": "Klicka på skrivaren och printa en nyckelring.",
-  "var": "Berättaren läser målen"
- },
- {
-  "id": "berattare-fffe6b61",
-  "figur": "berattare",
-  "text": "Gå över vägen till Ali och sälj nyckelringen.",
+  "text": "Plocka en flaska, lägg den i kvarnen och veva. Då blir det en hel rulle.",
   "var": "Berättaren läser målen"
  },
  {
