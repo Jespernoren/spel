@@ -99,15 +99,15 @@ const VAROR = {
   a_holo: { namn: 'Prototyp: Hologramskylt', ikon: '', placerbar: true, trivsel: 150, unik: true, proto: { lar: 5 }, beskr: 'En skylt som svävar i luften och byter färg. Trivsel +150.' },
   m_snal: { namn: 'Prototyp: Kvantmunstycke', ikon: '', proto: { lar: 6, mod: true }, beskr: 'Monteras på EN skrivare: den drar 35 % mindre filament.' },
   m_nano: { namn: 'Prototyp: Nanokvarn', ikon: '', proto: { lar: 8 }, beskr: 'Byggs in i kvarnen direkt: den mal 60 % fortare.' },
-  m_grav: { namn: 'Prototyp: Gravitationsbädd', ikon: '', proto: { lar: 10, mod: true }, beskr: 'Monteras på EN skrivare: den kan printa en storlek större (S blir M, M blir L).' },
-  m_fusion: { namn: 'Prototyp: Fickfusionsbatteri', ikon: '', proto: { lar: 12 }, beskr: 'Kopplas in direkt: +600 ström i batteriet och det laddar sig självt.' },
+  m_grav: { namn: 'Prototyp: Gravitations\u00adbädd', ikon: '', proto: { lar: 10, mod: true }, beskr: 'Monteras på EN skrivare: den kan printa en storlek större (S blir M, M blir L).' },
+  m_fusion: { namn: 'Prototyp: Fickfusions\u00adbatteri', ikon: '', proto: { lar: 12 }, beskr: 'Kopplas in direkt: +600 ström i batteriet och det laddar sig självt.' },
   a_robot: { namn: 'Prototyp: Alis AI-robot', ikon: '', placerbar: true, trivsel: 250, unik: true, proto: { lar: 14 }, beskr: 'Alis dröm. En liten robot som piper och blinkar. Trivsel +250.' },
   tapet_1: { namn: 'Tapet: grön med guldprickar', ikon: '', tapet: 1 },
   tapet_2: { namn: 'Tapet: blå ränder', ikon: '', tapet: 2 },
   tapet_3: { namn: 'Tapet: rosa blommor', ikon: '', tapet: 3 },
   tapet_4: { namn: 'Tapet: vitt tegel', ikon: '', tapet: 4 },
   tapet_5: { namn: 'Tapet: gamer, svart med neon', ikon: '', tapet: 5 },
-  tapet_0: { namn: 'Tapet: 70-tal (brun och orange)', ikon: '', tapet: 0 },
+  tapet_0: { namn: 'Tapet: 70-tal', ikon: '', tapet: 0 },
   // presenter du köper hos Ali och lägger i Rolfs postlåda
   p_sexpack: { namn: 'Sexpack lättöl till Rolf', ikon: '' },
   p_korv: { namn: 'Grillkorv till lördagen', ikon: '' },
@@ -687,6 +687,10 @@ if (S.rolf.aktiv && S.rolf.jobb == null && S.rolf.i <= 3) {
 if (S.post.lapp === 'rolf') S.post.lapp = 'rolf:0';
 // migrering: städa bort sånt som inte finns längre så att gamla sparningar fungerar efter uppdateringar
 (function migrera() {
+  // punkt AB i gamla sparfiler: sms och köer som redan sparats med de gamla orden
+  const AB_BYT = [['VA FAN?!', 'VA?! SERIÖST?!'], ['det var för jävla krångligt', 'det var alldeles för krångligt'], ['Dom e fina. Fan. /R', 'Dom e fina. Jaja. /R'], ['Sån skit köper', 'Sånt köper']];
+  const abRens = (x) => { if (x && typeof x.text === 'string') for (const [g, n] of AB_BYT) x.text = x.text.split(g).join(n); };
+  for (const k of ['sms', 'smsKo', 'aliKo']) if (Array.isArray(S[k])) S[k].forEach(abRens);
   const finns = (t) => !!(VAROR[t] || MASKINER[t] || (t?.startsWith?.('byggsats:') && MASKINER[t.split(':')[1]]));
   S.forrad = Object.fromEntries(Object.entries(S.forrad || {}).filter(([t, n]) => finns(t) && n > 0));
   // kistan blev ett vanligt förråd med platser (gamla sparningar: allt som låg i kistan ligger kvar)
@@ -3764,7 +3768,7 @@ interaktor.registrera(skjulYta, {
 });
 // tapetmönster (ritas en gång var på en canvas). 0 = fula 70-talstapeten man får först
 const TAPETER = [
-  { namn: '70-talstapet (brun och orange)', pris: 0, rita: (g) => { g.fillStyle = '#8a5a2b'; g.fillRect(0, 0, 128, 128); for (let y = 0; y < 128; y += 32) for (let x = 0; x < 128; x += 32) { g.fillStyle = '#e07b2a'; g.beginPath(); g.arc(x + 16, y + 16, 12, 0, 7); g.fill(); g.fillStyle = '#f2c14e'; g.beginPath(); g.arc(x + 16, y + 16, 6, 0, 7); g.fill(); } } },
+  { namn: '70-talstapeten', pris: 0, rita: (g) => { g.fillStyle = '#8a5a2b'; g.fillRect(0, 0, 128, 128); for (let y = 0; y < 128; y += 32) for (let x = 0; x < 128; x += 32) { g.fillStyle = '#e07b2a'; g.beginPath(); g.arc(x + 16, y + 16, 12, 0, 7); g.fill(); g.fillStyle = '#f2c14e'; g.beginPath(); g.arc(x + 16, y + 16, 6, 0, 7); g.fill(); } } },
   { namn: 'Grön med guldprickar', pris: 500, rita: (g) => { g.fillStyle = '#2f5d50'; g.fillRect(0, 0, 128, 128); g.fillStyle = '#3d7565'; for (let x = 0; x < 128; x += 32) g.fillRect(x, 0, 14, 128); g.fillStyle = '#e8c27a'; for (let y = 16; y < 128; y += 32) for (let x = 7; x < 128; x += 32) { g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); } } },
   { namn: 'Blå ränder', pris: 900, rita: (g) => { g.fillStyle = '#dfe9f5'; g.fillRect(0, 0, 128, 128); g.fillStyle = '#3a6ea5'; for (let x = 0; x < 128; x += 24) g.fillRect(x, 0, 9, 128); } },
   { namn: 'Rosa blommor', pris: 1500, rita: (g) => { g.fillStyle = '#fbe3ea'; g.fillRect(0, 0, 128, 128); for (let y = 0; y < 128; y += 32) for (let x = (y / 32) % 2 * 16; x < 128; x += 32) { g.fillStyle = '#e66a8d'; for (let k = 0; k < 5; k++) { const a = k * 1.256; g.beginPath(); g.arc(x + 16 + Math.cos(a) * 6, y + 16 + Math.sin(a) * 6, 4, 0, 7); g.fill(); } g.fillStyle = '#f9d65c'; g.beginPath(); g.arc(x + 16, y + 16, 3, 0, 7); g.fill(); } } },
@@ -7970,22 +7974,22 @@ function uppdatera(dt) {
 
 // ---------- Markköp: från hobo dweller till markägare. Rolf känner markägaren, Bengt-Åke, och medlar. ----------
 const MARK_TOMTER = [
-  { id: 'egen', namn: 'Tomten du bor på', text: 'Skjulet, gården, allt du byggt. Bengt-Åke vet inte ens att någon bor här. Köp den – då är det DIN mark.' },
-  { id: 'oster', namn: 'Ängen i öster', text: 'Platt och solig. Perfekt för solpaneler och en större printfarm. 22 × 42 meter.', kraver: 'egen', rekt: { minX: TOMT, maxX: TOMT + 22, minZ: -TOMT, maxZ: TOMT } },
-  { id: 'tippkant', namn: 'Marken runt tippen', text: 'Bengt-Åkes sista bit: stenig, skräpig och väster om tippen. Gott om plats för allt som är för fult för gården.', kraver: 'egen', rekt: { minX: TIPP.x - TIPP.r - 18, maxX: -TOMT, minZ: -TOMT, maxZ: TOMT } },
-  { id: 'tippen', namn: 'Rolfs soptipp', text: 'Kommunen vill bli av med tippen. Rolf får fortsätta köra sopbilen – men nu åt dig. Han säger att det känns "konstigt men bra".', kraver: 'tippkant' },
-  { id: 'rolfhus', namn: 'Garage och hus åt Rolf', text: 'Ett garage för sopbilen och ett litet hus med veranda åt Rolf och Kajsa. Han har bott i en husvagn på tippen sen 2009.', kraver: 'tippen' },
-  { id: 'huset', namn: 'Ett riktigt hus på ängen', text: 'Två rum, kök, soffa och en trappa upp till en sovloft. Med riktiga fönster. Inget skjul längre – ett HUS.', kraver: 'oster' },
-  { id: 'norr', namn: 'Backen i norr', text: 'Lite skog, lite sten. Gott om plats för allt som inte får plats någon annanstans. 42 × 22 meter.', kraver: 'egen', rekt: { minX: -TOMT, maxX: TOMT, minZ: -TOMT - 22, maxZ: -TOMT } },
+  { id: 'egen', namn: 'Tomten du bor på', text: 'Skjulet och gården. Bengt-Åke vet inte ens att du bor här.' },
+  { id: 'oster', namn: 'Ängen i öster', text: 'Platt och solig. Perfekt för solpaneler.', kraver: 'egen', rekt: { minX: TOMT, maxX: TOMT + 22, minZ: -TOMT, maxZ: TOMT } },
+  { id: 'tippkant', namn: 'Marken runt tippen', text: 'Stenig och skräpig. Plats för allt som är för fult för gården.', kraver: 'egen', rekt: { minX: TIPP.x - TIPP.r - 18, maxX: -TOMT, minZ: -TOMT, maxZ: TOMT } },
+  { id: 'tippen', namn: 'Rolfs soptipp', text: 'Rolf kör sopbilen åt dig nu. Det känns "konstigt men bra".', kraver: 'tippkant' },
+  { id: 'rolfhus', namn: 'Garage och hus åt Rolf', text: 'Garage för sopbilen och ett litet hus. Husvagn sedan 2009 räcker.', kraver: 'tippen' },
+  { id: 'huset', namn: 'Ett riktigt hus på ängen', text: 'Två rum, kök och sovloft. Inget skjul längre – ett HUS.', kraver: 'oster' },
+  { id: 'norr', namn: 'Backen i norr', text: 'Lite skog, lite sten. Plats för allt som inte får plats annars.', kraver: 'egen', rekt: { minX: -TOMT, maxX: TOMT, minZ: -TOMT - 22, maxZ: -TOMT } },
 ];for (const m of MARK_TOMTER) Object.assign(m, B.MARK_PRIS[m.id]);
 const MARK_GER = {
-  egen: 'Rang Lagfaren, ängen och backen går att köpa – och folkbokföring ihop med huset',
-  oster: '22 × 42 m att bygga på, och huset på ängen går att köpa',
-  tippkant: 'Plats runt tippen, och Rolfs soptipp går att köpa',
+  egen: 'Rang Lagfaren – ängen och backen går att köpa',
+  oster: '22 × 42 m till – huset på ängen går att köpa',
+  tippkant: 'Plats runt tippen – Rolfs soptipp går att köpa',
   tippen: 'Tippen blir din – och Rolfs hus går att köpa',
   rolfhus: 'Rolf och Kajsa flyttar in med veranda',
-  huset: 'Ett riktigt hus att flytta in i – folkbokföring ihop med tomten',
-  norr: '42 × 22 m till – och kanske en begravd Volvo',
+  huset: 'Ett riktigt hus – folkbokföring ihop med tomten',
+  norr: '42 × 22 m till – kanske en begravd Volvo',
 };
 for (const m of MARK_TOMTER) m.ger = MARK_GER[m.id];
 

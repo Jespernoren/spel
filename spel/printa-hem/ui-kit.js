@@ -130,7 +130,7 @@ export function knapp({ text, typ = 'neutral', attr = '', av = false, ikon = '' 
 // 1×1-ruta: miniatyr, pris uppe till vänster, antal nere till höger
 export function ruta({ bild = '', attr = '', vald = false, last = false, dyr = false, tom = false, antal = '', pris = '', prisTyp = '', titel = '', liten = false, storlek = 0, niva = 0, etikett = false, prisIkon = '' }) {
   if (tom) return `<div class="ui-ruta tom ${liten ? 'liten' : ''}" ${attr}></div>`;
-  if (etikett) return `<div class="ui-ruta-med">${ruta({ bild, attr, vald, last, dyr, antal, pris, prisTyp, titel, liten, storlek, niva })}<span class="ui-ruta-namn ${dyr || last ? 'dim' : ''}">${esc(String(titel).replace(/^(Ritning|3D-modell|Recept|Prototyp): /, ''))}</span>${pris !== '' ? `<span class="ui-ruta-pris ${prisTyp} ${dyr || last ? 'dim' : ''}">${prisIkon ? IKON[prisIkon] || '' : ''}${String(pris).replace('.', ',')} kr</span>` : ''}</div>`;
+  if (etikett) return `<div class="ui-ruta-med">${ruta({ bild, attr, vald, last, dyr, antal, pris, prisTyp, titel, liten, storlek, niva })}<span class="ui-ruta-namn ${dyr || last ? 'dim' : ''}">${esc(String(titel).replace(/^(Ritning|3D-modell|Recept|PETG-recept|Prototyp): /, ''))}</span>${pris !== '' ? `<span class="ui-ruta-pris ${prisTyp} ${dyr || last ? 'dim' : ''}">${prisIkon ? IKON[prisIkon] || '' : ''}${String(pris).replace('.', ',')} kr</span>` : ''}</div>`;
   return `<button class="ui-ruta ${vald ? 'vald' : ''} ${last ? 'last' : ''} ${dyr ? 'dyr' : ''} ${liten ? 'liten' : ''}" ${attr} title="${esc(titel)}">
     <span class="bild">${bild}</span>${pris !== '' ? `<span class="pris ${prisTyp}">${pris}</span>` : ''}${antal !== '' && antal !== 1 ? `<span class="antal">${antal}</span>` : ''}${last ? `<span class="lasikon">${IKON.las}</span>` : ''}${storlek ? `<span class="stl s${storlek}">${'SML'[storlek - 1]}</span>` : ''}${niva ? `<span class="niva n${niva}" title="Nivå ${niva}">N${niva}</span>` : ''}</button>`;
 }
@@ -183,7 +183,7 @@ export const UI_CSS = `
 .ui-ruta:hover{background:#a5a5a5}.ui-ruta:active{transform:scale(.96)}
 .ui-ruta.vald{background:#ffd98a;border-color:#b07a00 #fff2c8 #fff2c8 #b07a00;box-shadow:0 0 0 2px #ffb84d}
 .ui-ruta.dyr{background:#5a4a4a;border-color:#3a2a2a #7a6262 #7a6262 #3a2a2a}.ui-ruta.dyr .bild{opacity:.3;filter:grayscale(1)}.ui-ruta.dyr .pris{color:#ff8a85!important;font-size:12px}.ui-ruta.last{background:#6d6d6d}.ui-ruta.last .bild{opacity:.35;filter:grayscale(1)}
-.ui-ruta-med{display:flex;flex-direction:column;align-items:center;gap:4px;width:84px}.ui-ruta-namn{font:700 11.5px/1.2 system-ui;color:#d9d4c7;text-align:center;max-width:84px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.ui-ruta-namn.dim{color:#7d869a}
+.ui-ruta-med{display:flex;flex-direction:column;align-items:center;gap:4px;width:84px}.ui-ruta-namn{font:700 11.5px/1.2 system-ui;color:#d9d4c7;text-align:center;max-width:84px;overflow-wrap:anywhere;hyphens:manual;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.ui-ruta-namn.dim{color:#7d869a}
 .ui-grid:has(.ui-ruta-med){gap:10px 10px}
 .ui-ruta-med{width:112px;padding:6px 6px 8px;border-radius:10px;background:rgba(255,255,255,.045);gap:5px}
 .ui-ruta-med .ui-ruta{width:100px;height:100px}.ui-ruta-med .ui-ruta .bild img{width:88px;height:88px}.ui-ruta-med .ui-ruta .bild .ui-ik{width:52px;height:52px}
