@@ -11,7 +11,8 @@ import path from 'path';
 
 const ROST_ID = {
   mamma: 'KXa8ZwUkoRUXzlvWVH45', pappa: 'XCJuXKNe1b2guCye5YRd', rolf: 'YwdqQE1lPKpzJWBC2ZoK',
-  // du, bror, berattare, chefen: läggs till när Jesper skickar röst-id. Ali behåller den gamla rösten.
+  du: 'gTmjceSSOghNgfcSeoEH', berattare: 'VWpskToyR7MBO58Hh6NP',   // punkt AW: du i introt, berättaren bara som lyssningsprov än så länge
+  // bror, chefen: läggs till när Jesper skickar röst-id. Ali behåller den gamla rösten.
 };
 const FIGURER = ['rolf', 'ali', 'pappa', 'bror', 'chefen', 'du', 'mamma', 'berattare'];
 const [fil = 'verktyg/roster-taggar.json', lage = 'nya', figurerArg = ''] = process.argv.slice(2);   // lage: nya | alla; figurer: t.ex. "rolf,mamma,pappa"
@@ -44,9 +45,11 @@ for (const r of lista) {
   if (!grupper.has(k)) grupper.set(k, { ...r, nycklar: [...r.nycklar] }); else grupper.get(k).nycklar.push(...r.nycklar);
 }
 let gjorda = 0, tecken = 0, fel = 0, iRad = 0;
+console.log(`att skicka: ${grupper.size} klipp, ${[...grupper.values()].reduce((a, r) => a + r.text.length, 0)} tecken (de som redan finns hoppas över)`);
 for (const r of grupper.values()) {
-  const mp3 = `${r.id.replace(/[^\w-]/g, '_')}.mp3`, ut = path.join(UT, mp3);
-  if (lage !== 'alla' && fs.existsSync(ut)) { for (const k of r.nycklar) index[k] = mp3; continue; }
+  const mp3 = `${r.id.replace(/[^\w-]/g, '_')}.mp3`, ut = r.prov ? path.join('verktyg/roster-prov/el', mp3) : path.join(UT, mp3);   // prov: lyssningsprov, inte i spelet
+  if (r.prov) fs.mkdirSync('verktyg/roster-prov/el', { recursive: true });
+  if (lage !== 'alla' && fs.existsSync(ut)) { if (!r.prov) for (const k of r.nycklar) index[k] = mp3; continue; }
   const svar = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ROST_ID[r.rost]}?output_format=mp3_44100_128`, {
     method: 'POST',
     headers: { 'xi-api-key': NYCKEL, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
@@ -60,7 +63,7 @@ for (const r of grupper.values()) {
   }
   iRad = 0;
   const buf = Buffer.from(await svar.arrayBuffer());
-  fs.writeFileSync(ut, buf); for (const k of r.nycklar) index[k] = mp3;
+  fs.writeFileSync(ut, buf); if (!r.prov) for (const k of r.nycklar) index[k] = mp3;
   gjorda++; tecken += r.text.length; console.log(`ok ${r.id} (${Math.round(buf.length / 1024)} kB, ${r.text.length} tecken)`);
   if (gjorda % 20 === 0) fs.writeFileSync(indexFil, JSON.stringify(index, null, 1));   // spara index ofta
 }

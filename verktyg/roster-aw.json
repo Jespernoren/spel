@@ -1,0 +1,174 @@
+[
+ {
+  "id": "intro-mamma-b41da67e",
+  "figur": "mamma",
+  "rost": "mamma",
+  "visad": "Städa ditt rum!",
+  "skickas": "[thick Småland accent, fast, shrill, worried] [firm] Städa ditt rum!",
+  "hand": true
+ },
+ {
+  "id": "intro-mamma-ba6b1b4e",
+  "figur": "mamma",
+  "rost": "mamma",
+  "visad": "Har du städat? Jag sa ju STÄDA!",
+  "skickas": "[thick Småland accent, fast, shrill, worried] [annoyed] Har du städat? [exasperated] Jag sa ju STÄDA!",
+  "hand": true
+ },
+ {
+  "id": "intro-mamma-3bcfb608",
+  "figur": "mamma",
+  "rost": "mamma",
+  "visad": "Det LUKTAR härifrån! Jag säger det inte igen!",
+  "skickas": "[thick Småland accent, fast, shrill, worried] [disgusted] Det LUKTAR härifrån! [angry] Jag säger det inte igen!",
+  "hand": true
+ },
+ {
+  "id": "intro-mamma-2183ecae",
+  "figur": "mamma",
+  "rost": "mamma",
+  "visad": "Det ser ut som en SOPTIPP här inne!",
+  "skickas": "[thick Småland accent, fast, shrill, worried] [furious] [shouting] Det ser ut som en SOPTIPP här inne!",
+  "hand": true
+ },
+ {
+  "id": "intro-mamma-5d1f2570",
+  "figur": "mamma",
+  "rost": "mamma",
+  "visad": "Vet du vad? Du kan lika gärna BO på en soptipp!",
+  "skickas": "[thick Småland accent, fast, shrill, worried] [furious] Vet du vad? [shouting] Du kan lika gärna BO på en soptipp!",
+  "hand": true
+ },
+ {
+  "id": "intro-du-9d8b298e",
+  "figur": "du",
+  "rost": "du",
+  "visad": "Okej då. Då gör jag det.",
+  "skickas": "[dry, deadpan, sulky] [sighs] Okej då. [short pause] Då gör jag det.",
+  "hand": true
+ },
+ {
+  "id": "pappa-640ec13f",
+  "figur": "pappa",
+  "rost": "pappa",
+  "visad": "Hej. Mamma sa att jag skulle skriva. Så. Hej. Allt bra? /Pappa",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Hej. [sighs] Mamma sa att jag skulle skriva. Så. Hej. [quietly] Allt bra? /Pappa"
+ },
+ {
+  "id": "pappa-dfac1e37",
+  "figur": "pappa",
+  "rost": "pappa",
+  "visad": "Hej. Det är pappa.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Hej. Det är pappa."
+ },
+ {
+  "id": "pappa-d351233b",
+  "figur": "pappa",
+  "rost": "pappa",
+  "visad": "Mamma står bredvid. Hon säger att jag ska fråga om du äter.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Mamma står bredvid. Hon säger att jag ska fråga om du äter."
+ },
+ {
+  "id": "pappa-0be7bf6c",
+  "figur": "pappa",
+  "rost": "pappa",
+  "visad": "Jaha. En kvarn. Vad lugnt då.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Jaha. En kvarn. Vad lugnt då."
+ },
+ {
+  "id": "pappa-c0f37e2e",
+  "figur": "pappa",
+  "rost": "pappa",
+  "visad": "Jag kanske kommer förbi nån dag. Om det passar.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Jag kanske kommer förbi nån dag. Om det passar."
+ },
+ {
+  "id": "pappa-79c0ac4b",
+  "figur": "pappa",
+  "rost": "pappa",
+  "visad": "Bra. Hej då då.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Bra. Hej då då."
+ },
+ {
+  "id": "pappa-246088cf",
+  "figur": "pappa",
+  "rost": "pappa",
+  "visad": "Jaha.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Jaha."
+ },
+ {
+  "id": "pappa-c9b662ed",
+  "figur": "pappa",
+  "rost": "pappa",
+  "visad": "Ja ska fatta mej kort.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Ja ska fatta mej kort."
+ },
+ {
+  "id": "pappa-acd86ecf",
+  "figur": "pappa",
+  "rost": "pappa",
+  "visad": "Scania byggde sin första lastbil nittonhundraelva.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] Scania byggde sin första lastbil nittonhundraelva. [chuckles]"
+ },
+ {
+  "id": "pappa-ba7bd84b",
+  "figur": "pappa",
+  "rost": "pappa",
+  "visad": "Djurgården har vunnit SM tolv gånger.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] Djurgården har vunnit SM tolv gånger. [chuckles]"
+ },
+ {
+  "id": "pappa-4a44c5bc",
+  "figur": "pappa",
+  "rost": "pappa",
+  "visad": "Skinkan har legat i frysen sen augusti.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Skinkan har legat i frysen sen augusti."
+ },
+ {
+  "id": "pappa-bade44bc",
+  "figur": "pappa",
+  "rost": "pappa",
+  "visad": "Ja … är stolt över dej. Aha. Vad lugnt då.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Ja … Är stolt över dej. Aha. Vad lugnt då."
+ },
+ {
+  "id": "berattare-el-1",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "berattare-el-1",
+  "skickas": "[warm, hopeful, storyteller] I utkanten av stan ligger soptippen. [short pause] Bredvid den: ett gammalt, tomt skjul och en gård full av skräp.",
+  "prov": "berattare-el-1"
+ },
+ {
+  "id": "berattare-el-2",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "berattare-el-2",
+  "skickas": "[warm, hopeful, storyteller] [calm] Klicka på cykeln och lasta av storebrors skrivare. Ställ den på den lysande rutan i linje ett.",
+  "prov": "berattare-el-2"
+ },
+ {
+  "id": "berattare-el-3",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "berattare-el-3",
+  "skickas": "[warm, hopeful, storyteller] [friendly] Sälj det du har printat. Pengarna kan du använda till nya saker och uppgraderingar.",
+  "prov": "berattare-el-3"
+ },
+ {
+  "id": "berattare-el-4",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "berattare-el-4",
+  "skickas": "[warm, hopeful, storyteller] [proud] Kapitel ett. Ett hem att bo i. [short pause] Bygg ett hem där du inte fryser – och som är lite trevligt.",
+  "prov": "berattare-el-4"
+ },
+ {
+  "id": "berattare-el-5",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "berattare-el-5",
+  "skickas": "[warm, hopeful, storyteller] [dreamy] Tänk om man kunde bygga det här till ett riktigt hem? [short pause] Täta väggar. En riktig dörr. Plåttak. [short pause] Och en gamingsetup. [soft] En lugn fristad. Utan mammas tjat.",
+  "prov": "berattare-el-5"
+ }
+]
