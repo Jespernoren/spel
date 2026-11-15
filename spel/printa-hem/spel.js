@@ -5842,7 +5842,7 @@ async function sparaPaLedigPlats() {
   const info = []; for (let n = 1; n <= PLATSER; n++) info.push(await lasPlats(n));
   let plats = info.findIndex((d) => !d) + 1;
   if (!plats) plats = info.map((d, i) => [d.sparadTid || 0, i + 1]).sort((a, b) => a[0] - b[0])[0][1];
-  if ((S.speltid || 0) > 60) { await sparaPlats(plats); ui.toast(`Ditt spel sparades på plats ${plats}`, 'bra'); }
+  if ((S.speltid || 0) > 60) { await sparaPlats(plats, S.spelarNamn || undefined); ui.toast(`Ditt spel sparades på plats ${plats}`, 'bra'); }
 }
 async function borjaOm() {
   try { await sparaPaLedigPlats(); } catch {}
@@ -5897,7 +5897,7 @@ function oppnaDagbok() {
     const brev = S.lappar.slice().reverse().filter((l) => !/Dagbok/.test(lappInfo(l)[0])).map((l) => { const [t, x] = lappInfo(l); return rad({ bild: portratt(vemAvTitel(t), 40), titel: rens(t), text: x }); });
     kropp = brev.length ? brev.join('') : '<p class="ui-tom">Inga brev än.</p>';
   } else {
-    kropp = sektion('Spelet') + (S.kapitel2Klart ? `<div class="ui-grid" style="gap:10px;margin-bottom:10px">${knapp({ text: `Tippen på tid${tidRekord() ? ' · rekord ' + tidText(tidRekord()) : ''}`, typ: 'plus', attr: 'data-tidtipp', ikon: 'klocka' })}</div><p class="ui-tom">Gården fylls med ${TIDTIPP_N} skräp. Plocka upp allt så fort du kan – klockan går tills det sista är borta.</p>` : '') + `<div class="ui-grid" style="gap:10px">${knapp({ text: 'Se introt igen', typ: 'neutral', attr: 'data-intro', ikon: 'film' })}${knapp({ text: 'Sparplatser', typ: 'neutral', attr: 'data-sparplatser', ikon: 'spara' })}${knapp({ text: 'Ljud: musik, effekter, röster', typ: 'neutral', attr: 'data-ljudval', ikon: 'rost' })}${knapp({ text: `Musik: ${S.musik === false ? 'av' : 'på'}`, typ: 'neutral', attr: 'data-musik', ikon: 'rost' })}${knapp({ text: `Röster: ${{ rost: 'riktiga röster', prat: 'pratljud', tal: 'datorns talsyntes', av: 'av' }[rostLage()]}`, typ: 'neutral', attr: 'data-roster', ikon: 'rost' })}</div>`
+    kropp = sektion('Spelet') + (S.kapitel2Klart ? `<div class="ui-grid" style="gap:10px;margin-bottom:10px">${knapp({ text: `Tippen på tid${tidRekord() ? ' · rekord ' + tidText(tidRekord()) : ''}`, typ: 'plus', attr: 'data-tidtipp', ikon: 'klocka' })}</div><p class="ui-tom">Gården fylls med ${TIDTIPP_N} skräp. Plocka upp allt så fort du kan – klockan går tills det sista är borta.</p>` : '') + `<div class="ui-grid" style="gap:10px">${knapp({ text: 'Se introt igen', typ: 'neutral', attr: 'data-intro', ikon: 'film' })}${knapp({ text: `Namn: ${S.spelarNamn || 'Anonym'} · byt`, typ: 'neutral', attr: 'data-bytnamn', ikon: 'stjarna' })}${knapp({ text: 'Sparplatser', typ: 'neutral', attr: 'data-sparplatser', ikon: 'spara' })}${knapp({ text: 'Ljud: musik, effekter, röster', typ: 'neutral', attr: 'data-ljudval', ikon: 'rost' })}${knapp({ text: `Musik: ${S.musik === false ? 'av' : 'på'}`, typ: 'neutral', attr: 'data-musik', ikon: 'rost' })}${knapp({ text: `Röster: ${{ rost: 'riktiga röster', prat: 'pratljud', tal: 'datorns talsyntes', av: 'av' }[rostLage()]}`, typ: 'neutral', attr: 'data-roster', ikon: 'rost' })}</div>`
       + sektion('Styrning') + `<p class="ui-tom">WASD gå · mus titta · klick/E använd · klicka och håll = veva, trampa, gripa · hjulet/1–8 byt sak · H tomhänt · Shift+Q släpp allt · R vrid · I dina saker · M meddelanden · B dagbok · V röster</p>`;
   }
   oppnaRuta(panel({ ikon: 'bok', titel: 'Dagbok', sub: `Dag ${S.dag}`, resurser: resurserHtml(), flikar: [['sms', 'telefon', 'Meddelanden' + (S.olasta ? ` (${S.olasta})` : '')], ['dagbok', 'bok', 'Min dagbok'], ['mal', 'mal', 'Mål'], ['brev', 'brev', 'Brev'], ['spel', 'kugghjul', 'Spelet']], aktivFlik: dagbokFlik, kropp }), (el) => {
@@ -5907,6 +5907,7 @@ function oppnaDagbok() {
     el.querySelector('[data-intro]')?.addEventListener('click', () => { ui.stangButik(); if (document.pointerLockElement) document.exitPointerLock(); visaIntro(); });
     el.querySelector('[data-tidtipp]')?.addEventListener('click', () => { ui.stangButik(); startaTidtipp(); });
     el.querySelector('[data-sparplatser]')?.addEventListener('click', () => oppnaSparplatser());
+    el.querySelector('[data-bytnamn]')?.addEventListener('click', () => { if (document.pointerLockElement) document.exitPointerLock(); fragaNamn(() => oppnaDagbok(), true); });
     el.querySelector('[data-ljudval]')?.addEventListener('click', () => oppnaLjud(el.querySelector('.ui-panel')));
     el.querySelector('[data-musik]')?.addEventListener('click', () => { S.musik = S.musik === false; if (S.musik === false) bakMusik.stopp(); else bakMusik.start(); sparaSnart(); oppnaDagbok(); });
     el.querySelector('[data-roster]')?.addEventListener('click', () => { dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyV' })); setTimeout(oppnaDagbok, 50); });
@@ -5958,7 +5959,7 @@ function startRuta(titel = ui.o.titel, text = ui.o.text, knappText = 'Starta') {
     <button class="br-tyck" data-tyck>${ik('brev')} Tyck till om spelet</button>
     <a class="fp-tillbaka" href="../../index.html">← Alla spel</a></div>`;
   ui.overlay.hidden = false;
-  ui.overlay.querySelector('.br-starta').onclick = () => ui.starta();
+  ui.overlay.querySelector('.br-starta').onclick = () => { if (!S.spelarNamn) fragaNamn(() => ui.starta()); else ui.starta(); };
   ui.overlay.querySelector('[data-sparplatser]').onclick = () => ui.o.onSparplatser?.();
   { const ty = ui.overlay.querySelector('[data-tyck]'); if (ty) ty.onclick = () => oppnaTyckTill(ui.overlay.querySelector('.br-start')); }
   ui.overlay.querySelector('[data-ljudval]').onclick = () => oppnaLjud(ui.overlay.querySelector('.br-start'));
@@ -6601,7 +6602,7 @@ let dbP = null;
 const hamtaDb = () => dbP || (dbP = (async () => { try { return window.claude?.use ? await window.claude.use('db') : null; } catch { return null; } })());
 async function skickaData(typ, data, id) {
   if (navigator.webdriver && typ !== 'test') return;   // automatiska tester ska inte fylla svarsarket
-  const rad = { ...data, spelare: spelarId, tid: new Date().toISOString(), version: 'v' + (document.querySelector('script[src*="spel.js"]')?.src.split('v=')[1] || 'artifact') };
+  const rad = { ...data, spelare: spelarId, namn: S.spelarNamn || '', tid: new Date().toISOString(), version: 'v' + (document.querySelector('script[src*="spel.js"]')?.src.split('v=')[1] || 'artifact') };
   try { const db = await hamtaDb(); if (db) await db.collection(typ).doc(id || (spelarId + '_' + Date.now().toString(36))).set(rad); } catch {}
   try { if (FEEDBACK_FORM) { const f = new FormData(); f.append(FEEDBACK_FORM.typ, typ); f.append(FEEDBACK_FORM.data, JSON.stringify(rad)); fetch(FEEDBACK_FORM.url, { method: 'POST', mode: 'no-cors', body: f }).catch(() => {}); } } catch {}
 }
@@ -8054,6 +8055,14 @@ INTRO.forEach((p, i) => { p.bild = INTRO_BILDER[i]; });
 const figurBild = (vem, farg) => `<div style="display:grid;place-items:center;width:min(300px,70vw);height:200px;margin:0 auto;border-radius:16px;background:${farg}">${portratt(vem, 170)}</div>`;
 const introCss = document.createElement('style');
 introCss.textContent = `
+.ph-namn{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(8,9,14,.72);font-family:system-ui,sans-serif}
+.ph-namn-ruta{display:flex;flex-direction:column;align-items:center;gap:14px;padding:30px 34px;min-width:min(380px,90vw)}
+.ph-namn-ruta h2{margin:0;font:900 30px var(--rubrik,'Arial Black',system-ui);color:#fff}
+.ph-namn-falt{width:100%;box-sizing:border-box;font:600 22px system-ui;padding:12px 14px;border-radius:10px;border:2px solid #4cc9f0;background:#0f1118;color:#fff;text-align:center}
+.ph-namn-falt.skak{animation:phSkak .35s}
+@keyframes phSkak{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.ph-namn-ruta .fp-knapp{min-width:200px}
+.ph-namn-hoppa{background:none;border:0;color:#aab;font:500 15px system-ui;text-decoration:underline;cursor:pointer;padding:6px}
 .ph-intro{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#2a2440,#0b0a14);font-family:system-ui,sans-serif;color:#fff;cursor:pointer;user-select:none}
 .ph-intro-kort{width:min(560px,90vw);text-align:center;animation:phIn .5s cubic-bezier(.2,.9,.3,1.2)}
 .ph-intro-scen{font-size:clamp(44px,10vw,84px);line-height:1.25;margin-bottom:22px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.5))}
@@ -8111,6 +8120,25 @@ const introMusik = (() => {
     },
   };
 })();
+// vad heter du? – efter introt, innan spelet startar (gamla sparfiler får frågan en gång)
+function fragaNamn(klar, byt = false) {
+  document.querySelector('.ph-namn')?.remove();
+  const el = document.createElement('div'); el.className = 'ph-namn';
+  el.innerHTML = `<form class="fp-ruta ph-namn-ruta" autocomplete="off"><h2>${byt ? 'Byt namn' : 'Vad heter du?'}</h2>
+    <input class="ph-namn-falt" maxlength="20" placeholder="Ditt namn eller smeknamn" value="${byt ? rens(S.spelarNamn || '') : ''}" enterkeyhint="go" aria-label="Ditt namn eller smeknamn">
+    <button class="fp-knapp" type="submit">Kör!</button>
+    ${byt ? '<button type="button" class="ph-namn-hoppa" data-avbryt>Avbryt</button>' : '<button type="button" class="ph-namn-hoppa" data-hoppa>Hoppa över</button>'}</form>`;
+  document.body.appendChild(el);
+  const falt = el.querySelector('input'), form = el.querySelector('form');
+  const klart = (namn) => { if (namn != null) { S.spelarNamn = namn; sparaSnart(); } el.remove(); klar?.(); };
+  form.onsubmit = (e) => { e.preventDefault(); const v = falt.value.replace(/\s+/g, ' ').trim().slice(0, 20); if (!v) { falt.classList.remove('skak'); void falt.offsetWidth; falt.classList.add('skak'); falt.focus(); return; } klart(v); };
+  el.querySelector('[data-hoppa]')?.addEventListener('click', () => klart('Anonym'));
+  el.querySelector('[data-avbryt]')?.addEventListener('click', () => klart(null));
+  // tangenterna hör till fältet, inte spelet
+  for (const t of ['keydown', 'keyup', 'keypress']) el.addEventListener(t, (e) => e.stopPropagation());
+  el.addEventListener('pointerdown', (e) => e.stopPropagation());
+  setTimeout(() => falt.focus(), 50);
+}
 function visaIntro(klar) {
   const el = document.createElement('div'); el.className = 'ph-intro';
   document.body.appendChild(el);
