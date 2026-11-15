@@ -327,6 +327,7 @@
       valj('n2_vas'); await gaTill(l.mesh, 1.4, 'säljlådan'); H.saljladaAktivera(l); handling('lägger en vas i säljlådan'); await vanta(1); return;
     }
     if (/^Köp receptet på cykelhjälmen/.test(txt)) { await kopRecept('n2_hjalm'); return; }
+    if (/^Printa en lampskärm att sälja/.test(txt)) { if (!H.harRecept('lampskarm')) await kopRecept('lampskarm'); await printa({ typ: 'lampskarm' }); return; }   // CF
     if (/^Lyft en tunna/.test(txt)) {
       valj('karra'); const t = H.skrapLista.filter((x) => x.userData.tung && x.userData.interaktion).sort((a, b) => Math.hypot(a.position.x - H.spelare.pos.x, a.position.z - H.spelare.pos.z) - Math.hypot(b.position.x - H.spelare.pos.x, b.position.z - H.spelare.pos.z))[0];
       if (!t) { handling('ingen tunna att lyfta'); await vanta(5); return; }

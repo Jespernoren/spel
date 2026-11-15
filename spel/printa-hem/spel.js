@@ -306,7 +306,7 @@ const MASKINER = {
   skrivare3: { namn: 'Skrivare L', ikon: '', syns: () => S.kapitel >= 2 && harPlacerat('skrivare2'), beskr: 'Stor byggvolym: soffa, kajak, arkadmaskin, jacuzzi. 4× snabbare än S, två jobb i kö. Står på golvet.', trivsel: 25 },
   // punkt AN: Helens skjul – ritningen kommer från Rolf, säljs aldrig hos Ali. Monteras på den streckade rutan i tippkanten.
   helenskjul: { namn: 'Helens skjul', ikon: '🏚️', flik: 'hem', monteras: true, syns: () => false, ritning: 0, delar: 3, gram: 1000, tid: 20, beskr: 'Rolfs ritning: som ditt första skjul, fast sämre. Ställs på den streckade rutan i tippkanten' },
-  skrivare2: { namn: 'Skrivare M', ikon: '🖨️', syns: () => harPlacerat('bord'), beskr: 'Skalhoppet: dubbelt så stor byggvolym, 2,5× snabbare och en kö – lägg upp till tre saker i kö medan den printar. Printar drönare, gitarr och gamingstol. Måste stå på ett arbetsbord.', trivsel: 15, kraverBord: true },
+  skrivare2: { namn: 'Skrivare M', ikon: '🖨️', syns: () => harPlacerat('bord') && harPlacerat('sol'), beskr: 'Skalhoppet: dubbelt så stor byggvolym, 2,5× snabbare och en kö – lägg upp till tre saker i kö medan den printar. Printar drönare, gitarr och gamingstol. Måste stå på ett arbetsbord.', trivsel: 15, kraverBord: true },
 };
 // vad varje del heter – det är de här som printas en i taget
 const DEL_NAMN = {
@@ -534,7 +534,7 @@ const KAPITEL = [null,
   { namn: 'Fabriken sköter sig själv', mal: 'Bygg maskiner som jobbar åt dig – sen en gamingbod och en jacuzzi.' },
   { namn: 'Folkbokförd', mal: 'Köp marken, bygg ett riktigt hus och bli skriven på Soptippsvägen 1 före jul.' }];
 const KAP1_NAMN = 'Ett hem att bo i', KAP1_MAL = 'Bygg ett hem där du inte fryser – och som är lite trevligt.';
-const D1 = 'Dag 1 – Kom igång', N1 = 'Dag 2 – Tippen och Rolf', N2 = 'Dag 3 – Kärran och taket', N3 = 'Dag 4 – El och sol', N4 = 'Dag 5 – Printfarmen';
+const D1 = 'Dag 1 – Kom igång', N1 = 'Dag 2 – Tippen och Rolf', N2 = 'Dag 3 – Kärran och taket', N3 = 'Dag 4 – Sol och en skrivare till', N4 = 'Dag 5 – Tätt och mysigt';
 const KAP1_DELAR = [D1, N1, N2, N3, N4];   // en dag = en nivå – du sover dig vidare
 const KAP_DELAR = [null, KAP1_DELAR, [R6, R7, R8, R9, R10], [F11, F12, F13, F14, F15], [M16, M17, M18, M19, M20, M21, M22]];
 const kapitelFor = (del) => KAP_DELAR.findIndex((d) => d && d.includes(del));
@@ -612,11 +612,12 @@ const STEG = [
   ...rolfSteg(2, N3),
   { del: N3, bild: 'byggsats:bord', text: 'Bygg ett arbetsbord', klar: () => harPlacerat('bord') },
   { del: N3, bild: 'byggsats:sol', text: 'Bygg en solpanel', klar: () => harPlacerat('sol'), lapp: 'sol' },
+  { del: N3, bild: 'byggsats:skrivare2', text: 'Bygg Skrivare M på bordet', klar: () => harPlacerat('skrivare2'), lapp: 'skrivare2' },   // CF: en dag tidigare
   { del: N3, bild: 'byggsats:vaggar', text: () => `Isolera två väggar · ${Math.min(2, S.hem?.vagg || 0)}/2`, klar: () => (S.hem?.vagg || 0) >= 2 || S.hem?.vaggar || S.dag > 4 },
   sovSteg(4, N3),
   ...rolfSteg(3, N4),
   { del: N4, bild: 'byggsats:vaggar', text: () => `Isolera de sista väggarna · ${S.hem?.vagg || 0}/4`, klar: () => S.hem?.vaggar || (S.hem?.vagg || 0) >= 4 || S.dag > 5 },
-  { del: N4, bild: 'byggsats:skrivare2', text: 'Bygg Skrivare M på bordet', klar: () => harPlacerat('skrivare2'), lapp: 'skrivare2' },
+  { id: 'lampskarm', del: N4, bild: 'lampskarm', text: 'Printa en lampskärm att sälja', klar: () => printat('lampskarm') >= 1 || (S.saltTot?.lampskarm || 0) >= 1 || harPlacerat('lampskarm') },   // CF: ett nytt recept som gör M meningsfull
   { del: N4, bild: () => nastaInred(), text: () => `Gör det mysigt · trivsel ${trivsel()}/${TRIVSEL_MAL}`, klar: () => trivsel() >= TRIVSEL_MAL, lapp: 'klart' },
   { ...sovSteg(5, N4), k1Slut: true },   // B50: kapitel 1 slutar med telefonscenen och sömnen – kapitel 2 börjar morgonen dag 6
   // ---------- Kapitel 2 – Röda fabriken (dag 6–10) ----------
@@ -2727,6 +2728,7 @@ function placera(p, nytt = true) {
   placerade.push(p);
   if (nytt && fabrikSak(typ)) printaFram([mesh]);   // punkt BA: maskinen printas fram ur ritningen
   if (nytt) handelse('placerat', { sak: typ });
+  if (nytt && SKRIVARTYP[typ] && typ !== 'skrivarepetg') setTimeout(() => { const sk = skrivare.find((x) => x.mesh === mesh); if (sk && !kopplad(sk)) tanke(TANKE_UTANFOR, 'slang', 'STORY'); }, 500);   // CE
   if (SKRIVARTYP[typ]) {
     laggTillSkrivare(p.id, SKRIVARTYP[typ], mesh, S.skrivare[p.id]);
   } else if (typ === 'petgkvarn') {
@@ -2872,8 +2874,11 @@ function visaPaBadd(sk, typ, prog) {
 }
 function tomBadd(sk) { if (sk.visning) sk.mesh.userData.bad.remove(sk.visning); sk.visning = null; }
 
+const kopplad = (sk) => sk.gen === PETG_GEN || linjeSkrivare(1).includes(sk) || sk.id === 'g1';
+// CE: 'behöver filament' bara när tornet faktiskt är tomt – och med orsaken
+const tomOrsak = (sk) => sk.gen === PETG_GEN ? 'tom – ladda röd PETG' : !kopplad(sk) ? 'står utanför linjen – slangen når inte' : helaRullar() < 1 ? 'rulltornet är tomt – mal mer skräp' : 'plasten är på väg genom slangen';
 function skrivarText(sk) {
-  const namn = (sk.gen === PETG_GEN ? 'PETG-skrivaren' : 'Skrivare ' + GEN[sk.gen].namn) + ` (${sk.fil > 0 ? rullar(sk.fil) : sk.gen === PETG_GEN ? 'tom – ladda röd PETG' : 'tom – ladda en rulle'})`;
+  const namn = (sk.gen === PETG_GEN ? 'PETG-skrivaren' : 'Skrivare ' + GEN[sk.gen].namn) + ` (${sk.fil > 0 ? rullar(sk.fil) : tomOrsak(sk)})`;
   if (sk.klar) { const n = antalUt(sk); return `Ta ut ${n > 1 ? n + ' saker' : namnPa(sk.klar)}${sk.jobb ? ` · printar ${Math.floor(framsteg(sk).andel * 100)} %` : ''}`; }
   if (sk.jobb) {
     const j = sk.jobb, vad = j.maskin ? `${MASKINER[j.maskin].namn}: ${delNamn(j.maskin, j.del - 1).toLowerCase()} (del ${j.del}/${MASKINER[j.maskin].delar})` : VAROR[j.typ].namn;
@@ -3653,16 +3658,19 @@ function byggOmCykeln() {
 // nytt spel: skrivaren har 300 g kvar (tre nyckelringar)
 if (!S.skrivareStar && !S.stat.printat) { const g1 = skrivare.find((x) => x.id === 'g1'); if (g1 && !g1.fil) g1.fil = 300; }
 ritaStart();
-let autoRullT = 0;
+let autoRullT = 0, slangSenast = -1e9;
 function autoRulle(dt) {
   autoRullT += dt; if (autoRullT < 0.5) return; autoRullT = 0;
   if (!S.kvarnStar || !S.skrivareStar) return;   // punkt AS: kvarnen och skrivaren måste stå på gården
   if (helaRullar() < 1) return;
   const rp = rulle.getWorldPosition(new THREE.Vector3()), w = new THREE.Vector3();
-  const kand = linjeSkrivare(1).slice(0, linjeSpolar(1))
-    .filter((sk) => sk.gen !== PETG_GEN && rullPlatsI(sk) > 0).sort((x, y) => x.fil - y.fil);   // punkt AM: linjens spolhållare matar 1, 2 eller 4 skrivare
+  // CA/CE: tornet matar skrivarna i linjen genom slangen. Utan slangfördelaren en skrivare åt gången (en rulle var 10:e sekund), med den alla direkt
+  const kand = linjeSkrivare(1).filter((sk) => sk.gen !== PETG_GEN && rullPlatsI(sk) > 0).sort((x, y) => x.fil - y.fil);
+  if (!S.auto?.arm && performance.now() - slangSenast < (kand[0]?.fil < 50 ? 2000 : 10000)) return;
+  slangSenast = performance.now();
   const sk = kand[0]; if (!sk) return;
   S.kvarn.ut -= RULLE; sk.fil += RULLE; S.stat.hamtat++; S.stat.laddat = (S.stat.laddat || 0) + 1;
+  if (!(S.slangKopplad || []).includes(sk.id)) { S.slangKopplad = [...(S.slangKopplad || []), sk.id]; try { spelaLjud('placera'); platsToast('🔗 Slangen kopplad', sk.mesh, 'bra'); } catch {} }   // CE
   ljud.plock(); sparaSkrivare(); sparaSnart();
   if (!S.autoRullSedd) { S.autoRullSedd = true; }   // D4: kvittensen för rullen säger det
   else skrivarNotis(sk, `Ny rulle från kvarnen – ${rullar(sk.fil)} i skrivaren`, 'bra', false, 'rulle');
@@ -3777,6 +3785,7 @@ function uppdateraPetg(dt) {
   }
 }
 // tankar som skrivs direkt i koden – listas här så att de får röst (Kokoro)
+const TANKE_UTANFOR = 'Den här måste stå i linjen vid kvarnen, annars når inte slangen.';
 const TANKAR_INLINE = ['Det får inte plats. Jag behöver något att tippa i.', 'Den här är för tung för lilla kvarnen.'];
 function iTratten(gram, tung) {
   if (!S.kvarnStar) return false;   // B23: kvarnen och tratten finns inte i världen före köpet
@@ -6280,7 +6289,7 @@ const DUBBEL_PRIS = ['bank', 'sol', 'solpark'];
 const antalAv = (id) => placerade.filter((p) => p.typ === id).length + antalInv('byggsats:' + id);
 const ritPris = (id) => DUBBEL_PRIS.includes(id) ? MASKINER[id].ritning * 2 ** antalAv(id) : MASKINER[id].ritning;
 // dagens huvudköp: ungefär dubbelt så dyrt varje dag (dörr → tak → solpanel → Skrivare M). Annars det billigaste du kan köpa hos Ali.
-const HUVUDKOP = { [N1]: 'dorr', [N2]: 'tak', [N3]: 'sol', [N4]: 'skrivare2', [R6]: 'petgkvarn', [R7]: 'skrivarepetg', [R8]: 'magnet', [R9]: 'solpark', [R10]: 'skrivare3', [F11]: 'rullband', [F12]: 'robotarm', [F13]: 'utlada', [F14]: 'jetmotor', [F15]: 'gamingbod', [M16]: 'mark:egen', [M17]: 'mark:oster', [M18]: 'mark:huset', [M19]: 'diamantkniv', [M20]: 'recept:kamin' };
+const HUVUDKOP = { [N1]: 'dorr', [N2]: 'tak', [N3]: 'skrivare2', [N4]: 'recept:lampskarm', [R6]: 'petgkvarn', [R7]: 'skrivarepetg', [R8]: 'magnet', [R9]: 'solpark', [R10]: 'skrivare3', [F11]: 'rullband', [F12]: 'robotarm', [F13]: 'utlada', [F14]: 'jetmotor', [F15]: 'gamingbod', [M16]: 'mark:egen', [M17]: 'mark:oster', [M18]: 'mark:huset', [M19]: 'diamantkniv', [M20]: 'recept:kamin' };
 let nastaKopCache = null, nastaKopT = 0;
 function nastaKop() {
   if (performance.now() - nastaKopT < 1000) return nastaKopCache;
@@ -9327,7 +9336,7 @@ function rostManus() {
   vid('Lappar, brev och dagbok'); Object.entries(LAPPAR).forEach(([id, [titel, t]]) => add(vemAvTitel(titel), t));
   vid('Introt'); INTRO_TAL().forEach(([v, t]) => add(v, t));
   vid('Berättaren läser målen'); Object.values(STEG_TAL).forEach((t) => add('berattare', t)); Object.values(STEG_TAL_SPARA).forEach(([t]) => add('berattare', t));
-  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); TANKAR_INLINE.forEach((t) => add('du', t)); GORAN_HALLA.forEach((t) => add('du', t)); add('du', GORAN_MAMMA); add('du', GORAN_FAGELBAD); MORGON_TANKAR.forEach((m) => add('du', m.text)); add('du', MORGON_BRA.text); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); ALI_FAST.forEach(([, f]) => add('ali', f)); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
+  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); TANKAR_INLINE.forEach((t) => add('du', t)); add('du', TANKE_UTANFOR); GORAN_HALLA.forEach((t) => add('du', t)); add('du', GORAN_MAMMA); add('du', GORAN_FAGELBAD); MORGON_TANKAR.forEach((m) => add('du', m.text)); add('du', MORGON_BRA.text); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); ALI_FAST.forEach(([, f]) => add('ali', f)); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
   rostManus.detalj = D;
   return L;
 }
@@ -10689,9 +10698,11 @@ function iPlanRuta(x, z, marg = 0) {
   return false;
 }
 // skrivarna i en linje, i platsordning (plats 1 först)
+// CE: en skrivare är kopplad med slang till linjens rulltorn om den står i linjen – eller på ett arbetsbord (bordet räknas till linje 1)
+const paBordet = (sk) => placerade.some((p) => p.mesh === sk.mesh && p.pa);
 function linjeSkrivare(nr) {
   const z = PLAN.LINJER[nr - 1].z, w = new THREE.Vector3();
-  return skrivare.filter((sk) => { sk.mesh.getWorldPosition(w); return Math.abs(w.z - z) < 1.2 && w.x > -12 && w.x < -2; }).sort((a, b) => a.mesh.getWorldPosition(w).x - b.mesh.getWorldPosition(new THREE.Vector3()).x);
+  return skrivare.filter((sk) => { sk.mesh.getWorldPosition(w); return (Math.abs(w.z - z) < 1.2 && w.x > -12 && w.x < -2) || (nr === 1 && paBordet(sk)); }).sort((a, b) => a.mesh.getWorldPosition(w).x - b.mesh.getWorldPosition(new THREE.Vector3()).x);
 }
 // linjens spolhållare: vanlig och stor = 1 spole, XL = 2, spoltorn = 4 (nivån är den högsta som monterats i linjen)
 function linjeSpolar(nr) { void nr; return S.auto?.arm ? 99 : 1; }   // CA: utan slangfördelaren får en skrivare plast åt gången, med den alla i linjen
@@ -11466,10 +11477,11 @@ const KEDJA_TEXT = {
   pall: [null, 'Mina ben är slut. Det blåser hela tiden här ute. Tänk om vinden kunde trampa åt mig.'],   // BL
   vindsnurra: ['Den snurrar! Långsamt. Men den snurrar.', 'Om det regnar i natt drunknar jag. Ett tak.'],
   rolf2: [null, 'Vindsnurran är för långsam. Och när det är stilla står allt. Solen är gratis.'],   // BL
-  samtal4: [null, 'Det drar genom väggarna. Det blir kallt snart.'],
+  samtal4: [null, null],   // CF: varför-repliken efter solpanelen pekar nu på Skrivare M
+  sol: [null, 'Nu finns det ström över. Bordet har plats för en skrivare till.'],   // CF
   rolf3: [null, 'Två väggar kvar. Sen är det tätt.'],   // BX: texten väljs efter hur många väggar som faktiskt sitter (VAGG_KVAR_TEXT)
-  vaggar: [null, 'En skrivare räcker inte längre. Ali hade en större.'],
-  skrivareM: [null, 'Det är tätt, det är varmt. Nu ska det bli mysigt.'],
+  vaggar: [null, 'Det är tätt, det är varmt. Nu ska det bli mysigt.'],   // CF
+  skrivareM: [null, 'Två skrivare som surrar. Men det drar genom väggarna. Det blir kallt snart.'],   // CF
   // kapitel 2–4: varför-repliken på morgonen eller efter målet
   d6: [null, 'Tunnorna och kajakerna är för tunga för min lilla kvarn. Men Ali har en röd kvarn.'],
   d7: [null, 'Röd plast. Nu behöver jag något som printar den.'],
@@ -11522,7 +11534,7 @@ paHandelse('lastatAv', () => kedja('lastat'));
 paHandelse('placerat', ({ sak }) => {
   if (sak === 'skrivareS') kedja('skrivareStar'); else if (sak === 'kvarnen') kedja('kvarnStar');
   else if (sak === 'vindsnurra') kedja('vindsnurra');
-  else if (sak === 'saljlada') kedja('saljlada'); else if (sak === 'sophallare') kedja('sophallare'); else if (sak === 'skrivare2') kedja('skrivareM'); else if (sak === 'solpark') kedja('solpark');
+  else if (sak === 'saljlada') kedja('saljlada'); else if (sak === 'sophallare') kedja('sophallare'); else if (sak === 'skrivare2') kedja('skrivareM'); else if (sak === 'sol' && !harPlacerat('skrivare2')) kedja('sol'); else if (sak === 'solpark') kedja('solpark');
 });
 // Rolf om säljlådan (planeringschatten): efter Alis replik – STORY i kanalen kommer i tur och ordning efter Alis inslag
 const ROLF_SALJLADA = 'Lådan vid fabriken! Ali kommer mä sin lilla bil varje morron. Ja vinkar. Han vinkar int. /R';

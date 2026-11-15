@@ -211,5 +211,5 @@ export const MASKIN_SIFFROR = {
   saljlada: { ritning: 670, delar: 2, gram: 500, tid: 12 },
   utlada: { ritning: 15000, delar: 3, gram: 800, tid: 16 },
   skrivare3: { ritning: 5833, delar: 6, gram: 1200, tid: 20 },   // BI: 5 000 → 3 500 kr
-  skrivare2: { ritning: 1330, delar: 5, gram: 900, tid: 18 },
+  skrivare2: { ritning: 833, delar: 5, gram: 900, tid: 18 },   // CF: 800 → 500 kr, dag 4
 };

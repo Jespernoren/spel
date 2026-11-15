@@ -3030,9 +3030,9 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-b42f8e55",
+  "id": "du-d77e49dc",
   "figur": "du",
-  "text": "Det drar genom väggarna. Det blir kallt snart.",
+  "text": "Nu finns det ström över. Bordet har plats för en skrivare till.",
   "var": "Storykedjan (punkt BE)"
  },
  {
@@ -3042,15 +3042,15 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-c2488fb9",
-  "figur": "du",
-  "text": "En skrivare räcker inte längre. Ali hade en större.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
   "id": "du-c00b66c2",
   "figur": "du",
   "text": "Det är tätt, det är varmt. Nu ska det bli mysigt.",
+  "var": "Storykedjan (punkt BE)"
+ },
+ {
+  "id": "du-78079483",
+  "figur": "du",
+  "text": "Två skrivare som surrar. Men det drar genom väggarna. Det blir kallt snart.",
   "var": "Storykedjan (punkt BE)"
  },
  {
@@ -3635,6 +3635,12 @@
   "id": "du-e1b3b151",
   "figur": "du",
   "text": "Den här är för tung för lilla kvarnen.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-c7b54a91",
+  "figur": "du",
+  "text": "Den här måste stå i linjen vid kvarnen, annars når inte slangen.",
   "var": "Dina tankar, tips och varningar"
  },
  {
