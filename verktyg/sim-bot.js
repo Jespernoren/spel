@@ -5,21 +5,21 @@
 // Allt som visas eller läses upp loggas med tid och källa (window.__textLogg i spel.js).
 (() => {
   const H = window.__printahem, S = H.S;
-  const GA_FART = 4.5;          // m/s, samma som spelaren
+  const GA_FART = 5.2;          // m/s, samma som spelaren (FART_UTAN)
   const LASFART = 15;           // tecken per sekund när ett meddelande läses
   const MENY_TID = 1.5;         // sekunder att hitta i en meny
   const V = window.__vt;
   const logg = [], handlingar = [], dagar = [];
   let tid = 0, dagStart = 0, senasteSteg = -1, senasteMal = '';
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-  window.__textLogg = (kalla, vem, text) => {
+  window.__textLogg = (kalla, vem, text, varfor = '') => {
     text = String(text).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(); if (!text) return;
-    logg.push({ t: tid - dagStart, tot: tid, dag: S.dag, kalla, vem: String(vem || ''), text, steg: H.stegText?.() || '', mynt: S.mynt });
+    logg.push({ t: tid - dagStart, tot: tid, dag: S.dag, kalla, vem: String(vem || ''), text, varfor: String(varfor || ''), steg: H.stegText?.() || '', mynt: S.mynt });
   };
   // ui.toast och morgonkortet går via FpUI – fånga dem här
   const toast0 = H.ui.toast.bind(H.ui); H.ui.toast = (t, typ) => { window.__textLogg('toast', typ || '', t); return toast0(t, typ); };
   const start0 = H.ui.visaStart.bind(H.ui); H.ui.visaStart = (titel, text, knapp) => { window.__textLogg('morgonkort', titel, String(titel) + ' · ' + String(text || '')); return start0(titel, text, knapp); };
-  const handling = (text) => { handlingar.push({ t: tid - dagStart, tot: tid, dag: S.dag, text, mynt: S.mynt }); };
+  const handling = (text) => { handlingar.push({ t: tid - dagStart, tot: tid, dag: S.dag, text, mynt: S.mynt }); if (window.__simUtforlig) console.log(`[sim]   ${fmt(tid - dagStart)} ${text}`); };
 
   // ---------- tid ----------
   const synligt = (el) => el && !el.hidden && el.offsetParent !== null || (el && !el.hidden && getComputedStyle(el).display !== 'none' && el.isConnected);
@@ -38,7 +38,7 @@
     }
   }
   // popups: läs (tid efter längd) och klicka vidare
-  let iPopup = false;
+  let iPopup = false, iButik = false;
   async function stangPopups() {
     if (iPopup) return; iPopup = true;
     try {
@@ -55,6 +55,12 @@
         if (ov && !ov.hidden && ov.querySelector('.fp-knapp')) {
           await lasTid(Math.min(10, 1.5 + (ov.innerText || '').length / (LASFART * 2)));
           const k = ov.querySelector('.fp-knapp'); handling(`kort: "${k.textContent.trim()}"`); k.click(); await lasTid(0.3); continue;
+        }
+        const bo = H.ui.butiksOverlay;
+        if (!iButik && bo && !bo.hidden) {   // paneler (Rolfs postlåda, fynd, Helen …): läs och stäng
+          await lasTid(Math.min(8, 1.5 + (bo.innerText || '').length / (LASFART * 2)));
+          const k = bo.querySelector('[data-fynd-ok], .fp-knapp.primar, button.primar'); handling(`panel: "${(bo.innerText || '').trim().slice(0, 30)}"`);
+          if (k) k.click(); else H.ui.stangButik(); await lasTid(0.3); continue;
         }
         const kap = document.querySelector('.ph-kapkort button, .ph-rangkort button');
         if (kap) { await lasTid(3); kap.click(); continue; }
@@ -96,8 +102,8 @@
   const aliPos = () => ({ x: H.ALI.x, z: H.ALI.z - 1.6 });
   async function ali(gor, varfor) {
     const a = aliPos(); await ga(a.x, a.z, 'Ali'); handling('öppnar Alis butik' + (varfor ? ' – ' + varfor : ''));
-    H.oppnaMarknad(); await vanta(MENY_TID);
-    await gor(); await vanta(0.5); H.ui.stangButik(); await vanta(0.3);
+    iButik = true; H.oppnaMarknad(); await vanta(MENY_TID);
+    try { await gor(); await vanta(0.5); } finally { H.ui.stangButik(); iButik = false; } await vanta(0.3);
   }
   function aliKnapp(pre, id) { return [...document.querySelectorAll(`[data-val^="${pre}:"]`)].find((e) => e.dataset.val.endsWith(':' + id)); }
   async function saljAllt(behall = []) {
@@ -119,8 +125,8 @@
 
   // ---------- skräp, kvarnen och rullar ----------
   const kvarnPos = () => pos(H.kvarn);
-  const gardsSkrap = () => H.skrapLista.filter((s) => !H.paTippen(s.position.x, s.position.z) && H.kanLyfta(s) && !s.userData.tung);
-  const tippSkrap = () => H.skrapLista.filter((s) => H.paTippen(s.position.x, s.position.z) && H.kanLyfta(s) && !s.userData.tung);
+  const gardsSkrap = () => H.skrapLista.filter((s) => s.userData.interaktion && s.visible !== false && !H.paTippen(s.position.x, s.position.z) && H.kanLyfta(s) && !s.userData.tung);
+  const tippSkrap = () => H.skrapLista.filter((s) => s.userData.interaktion && s.visible !== false && H.paTippen(s.position.x, s.position.z) && H.kanLyfta(s) && !s.userData.tung);
   async function plockaLass({ tippen = false, max = 99 } = {}) {
     const kap = H.BARA_SKRAP[H.niva()]; let n = 0;
     if (H.valdTyp() && H.valdTyp() !== 'karra') H.byt(0);
@@ -129,6 +135,7 @@
       const p = H.spelare.pos; lista.sort((a, b) => Math.hypot(a.position.x - p.x, a.position.z - p.z) - Math.hypot(b.position.x - p.x, b.position.z - p.z));
       const s = lista[0];
       await gaTill(s, 1.0); H.kamera.position.set(H.spelare.pos.x, 1.6, H.spelare.pos.z);
+      if (!s.userData.interaktion) continue;   // någon annan tog den medan boten gick dit
       const fore = H.hand.saker.length; s.userData.interaktion.aktivera(); await vanta(0.6);
       if (H.hand.saker.length === fore) break; n++;
     }
@@ -144,6 +151,7 @@
     let varv = 0;
     while (S.kvarn.tratt > 0 && !H.extruderFull() && varv++ < 400) {
       if (!S.kvarn.motor) { await gaTill(H.vevYta, 1.2); H.veva(1.2); }
+      else if (S.strom < 1 && H.solEffekt() <= 0) { await strom(5); continue; }   // motorn behöver ström
       await vanta(1);
     }
   }
@@ -208,13 +216,13 @@
     // printa och sälj den bästa saken du har recept på tills du har `mal` kr
     let varv = 0;
     while (S.mynt < mal && varv++ < 30) {
-      const kand = Object.keys(H.VAROR).filter((t) => H.VAROR[t].pris > 0 && !H.VAROR[t].lyx && !H.VAROR[t].niva && H.harRecept(t) && (H.VAROR[t].syns?.() ?? true) && !H.VAROR[t].gava);
+      const kand = Object.keys(H.VAROR).filter((t) => !/^(g_|h_|hf_|ra_|r_|p_|fynd|burk|rulle|n_)/.test(t) && H.VAROR[t].pris > 0 && !H.VAROR[t].lyx && !H.VAROR[t].niva && H.harRecept(t) && (H.VAROR[t].syns?.() ?? true) && !H.VAROR[t].gava && H.VAROR[t].gram > 0);
       kand.sort((a, b) => H.prisNu(b) / H.VAROR[b].tid - H.prisNu(a) / H.VAROR[a].tid);
       const t = kand[0]; if (!t) { handling('inget att printa och sälja!'); return; }
       handling(`tjänar pengar${varfor ? ' till ' + varfor : ''}: ${S.mynt}/${mal} kr → printar ${H.VAROR[t].namn.toLowerCase()} (${H.prisNu(t)} kr)`);
       const sk = ledig(); const antal = Math.max(1, Math.min(4, Math.floor((sk.fil || 0) / H.VAROR[t].gram)));
       for (let i = 0; i < antal && S.mynt + i * H.prisNu(t) < mal; i++) { if (!(await printa({ typ: t }))) break; }
-      await ali(() => saljAllt(BEHALL()), 'sälja');
+      await ali(() => saljAllt(BEHALL().filter((x) => x !== t || H.antalInv(t) > 1)), 'sälja');   // det som printades för pengar säljs (en pall/kruka får vara kvar till trivseln)
     }
   }
   const BEHALL = () => ['sang', 'pall', 'kruka', 'lampskarm', 'fagelholk', ...(H.aktivGava() ? [H.aktivGava()] : [])].filter((t) => !(t === 'kruka' && H.antalInv('kruka') > 2));
@@ -252,7 +260,7 @@
     handling(`ställer ut ${(m?.namn || H.VAROR[typ]?.namn || typ).toLowerCase()}`); await vanta(0.5); return true;
   }
   async function gePresent(v) {
-    if (!H.antalInv(v)) return false; valj(v); return klick(H.postlada, 'Rolfs postlåda');
+    if (!H.antalInv(v)) { handling(`har ingen ${v}: post ${JSON.stringify(S.post)} rolf ${JSON.stringify(S.rolf)} steg ${S.steg} pausad ${H.pausad()} med ${H.medEl2?.hidden} ${(H.medEl2?.innerText || "").slice(0, 80)} igang ${H.ui.igang} ov ${H.ui.overlay.hidden} butik ${H.ui.butiksOverlay.hidden} klar ${H.STEG[S.steg].klar()} text ${(H.ui.butiksOverlay.innerText||"").slice(0,80)}`); return false; } const ok = valj(v); handling(`valj ${v}: ${ok}, vald ${H.valdTyp()}, post ${JSON.stringify({ l: S.post.lapp, tr: S.post.tillRolf, tm: S.post.tillMig })}, nummer ${S.rolfNummer}`); return klick(H.postlada, 'Rolfs postlåda');
   }
 
   // ---------- ett steg ----------
@@ -261,6 +269,7 @@
     if (S.post.tillMig?.length || S.post.lapp) { await klick(H.postlada, 'Rolfs postlåda'); await stangPopups(); }
     if (H.vantarPaNummer?.()) { await klick(H.postlada, 'Rolfs postlåda (telefonnumret)'); }
     for (const sk of skrivareAlla()) if (sk.klar && !sk.jobb) await taUt(sk);
+    if (!S.skyltUppe && S.dag === 1) { await klick(H.bradhog, 'brädhögen'); await vanta(4); return; }
     const id = H.stegId(), txt = H.stegText() || '', st = H.STEG[S.steg];
     if (!st) return 'slut';
     if (st.sov) {
@@ -268,7 +277,8 @@
       handling(`väntar på kvällen (vaken ${Math.round(S.vakenTid || 0)} s)`); await tjana(S.mynt + 60, 'kvällen'); return;
     }
     switch (id) {
-      case 'lasta': if (!S.skrivareLastad) await klick(H.vagCykel, 'cykeln vid vägen'); else { valj('skrivareS'); await klick(H.startYta, 'rutan i linje 1'); } return;
+      case 'lasta': await klick(H.vagCykel, 'cykeln vid vägen'); return;
+      case 'stall': valj('skrivareS'); await klick(H.startYta, 'rutan i linje 1'); return;
       case 'bygg': await klick(H.vagCykel, 'cykeln'); await vanta(3); return;
       case 'trampa': await strom(6); await printa({ typ: 'nyckelring' }); return;
       case 'salj': {
@@ -282,7 +292,7 @@
       case 'kopGrip': await kopMaskin('grip'); return;
       case 'printGrip': if (!H.antalInv('byggsats:grip') && !S.grip) await printa({ maskin: 'grip' }); return;
       case 'kopMotor': await kopMaskin('kvarnmotor'); await printa({ maskin: 'kvarnmotor' }); return;
-      case 'kopSang': await kopRecept('sang'); return;
+      case 'kopSang': { if (S.ritningar.includes('sang')) return; if (S.mynt < 60) { await tjana(60, 'sängen'); return; } await ali(async () => { await kopHosAli('sang'); }, 'köpa sängen'); return; }
       case 'printSang': await printa({ typ: 'sang' }); return;
       case 'sov1': valj('sang'); await klick(H.sangSpoke, 'sängplatsen i skjulet', 2); await vantaPaMorgon(); return;
       case 'kopSack': await bygg('korg'); return;
@@ -295,6 +305,11 @@
     if (/^Printa /.test(txt) && H.aktivGava()) { const v = H.aktivGava(); if (!H.antalInv(v)) await printa({ typ: v }); return; }
     if (/^Lägg .* i Rolfs postlåda/.test(txt)) { await gePresent(H.aktivGava()); return; }
     if (/^Hämta 5 skräp på soptippen/.test(txt)) { await plockaLass({ tippen: true }); await tomIKvarnen(); await mal(); return; }
+    if (/^Lyft en tunna/.test(txt)) {
+      valj('karra'); const t = H.skrapLista.filter((x) => x.userData.tung && x.userData.interaktion).sort((a, b) => Math.hypot(a.position.x - H.spelare.pos.x, a.position.z - H.spelare.pos.z) - Math.hypot(b.position.x - H.spelare.pos.x, b.position.z - H.spelare.pos.z))[0];
+      if (!t) { handling('ingen tunna att lyfta'); await vanta(5); return; }
+      await gaTill(t, 1.2, 'en tunna'); t.userData.interaktion.aktivera(); await vanta(1); handling('lyfter en tunna med kärran'); await klick(H.kvarn, 'kvarnen'); await mal(); H.byt(0); return;
+    }
     if (/^Fyll kärran/.test(txt)) {
       valj('karra'); let n = 0;
       while (!H.karraFull(200) && n < 8) { const l = gardsSkrap().length ? gardsSkrap() : tippSkrap(); if (!l.length) break; const p = H.spelare.pos; l.sort((a, b) => Math.hypot(a.position.x - p.x, a.position.z - p.z) - Math.hypot(b.position.x - p.x, b.position.z - p.z)); await gaTill(l[0], 1.0); l[0].userData.interaktion.aktivera(); await vanta(0.6); n++; }
@@ -312,7 +327,7 @@
   }
   async function vantaPaMorgon() {
     const dag = S.dag; const slutDag = tid - dagStart;
-    dagar.push({ dag: dag - (S.dag > dag ? 1 : 0), sek: slutDag, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat });
+    dagar.push({ dag, sek: slutDag, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat });
     let n = 0; while (n++ < 400 && (S.dag === dag || !H.ui.igang)) { await vanta(0.5); }
     await vanta(1); dagStart = tid; handling(`— dag ${S.dag} börjar —`);
   }
@@ -321,10 +336,12 @@
     async kor(tillDag = 6, maxMin = 120) {
       dagStart = tid; window.__textLogg('MÅL', '', H.stegText());
       const stopp = tid + maxMin * 60; let sista = -1, samma = 0;
-      while (S.dag < tillDag && tid < stopp) {
-        const fore = S.steg + ':' + S.dag; await gorSteg();
-        if (fore === sista) { if (++samma > 25) { handling('fastnade: ' + H.stegText()); break; } } else { sista = fore; samma = 0; }
+      while (S.dag < tillDag && tid < stopp && !(tillDag <= 6 && (S.kapitel || 1) >= 2)) {   // kapitel 1 är klart när kapitel 2 börjar
+        { let w = 0; while (H.pratar?.() && w++ < 120) await vanta(0.1); }   // en spelare lyssnar klart innan hen gör nästa sak
+        const fore = S.steg + ':' + S.dag; console.log(`[sim] dag ${S.dag} ${fmt(tid - dagStart)} ${S.mynt} kr · ${H.stegId?.() || ''} · ${(H.stegText() || '').slice(0, 50)}`); await gorSteg();
+        if (fore === sista) { await vanta(1); if (++samma > 60) { handling('fastnade: ' + H.stegText()); break; } } else { sista = fore; samma = 0; }
       }
+      if (!dagar.some((d) => d.dag === S.dag)) dagar.push({ dag: S.dag, sek: tid - dagStart, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat, ofardig: true });
       return { logg, handlingar, dagar, kop, tid };
     },
     logg, handlingar, dagar, kop, get tid() { return tid; },

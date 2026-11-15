@@ -7,10 +7,11 @@
 import fs from 'fs';
 import { chromium } from '/home/claude/verktyg/node_modules/playwright-core/index.mjs';
 
-const [url = 'http://127.0.0.1:8765/printa-hem.html', ut = 'sim-kapitel1.md', nr = '1'] = process.argv.slice(2);
+const [url = 'http://127.0.0.1:8765/printa-hem.html', ut = 'sim-kapitel1.md', nr = '1', tillDag = '6'] = process.argv.slice(2);
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
 const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
 const sidfel = []; p.on('pageerror', (e) => sidfel.push(e.message));
+p.on('console', (m) => { const t = m.text(); if (t.startsWith('[sim]')) console.log(t); });
 // virtuell tid: aktiveras när boten startar
 await p.addInitScript(() => {
   const rs = window.setTimeout.bind(window), rc = window.clearTimeout.bind(window), si = window.setInterval.bind(window), ci = window.clearInterval.bind(window), raf = window.requestAnimationFrame.bind(window);
@@ -36,23 +37,23 @@ await p.addInitScript(() => {
         try { typeof nasta.fn === 'function' ? nasta.fn(...nasta.a) : null; } catch (e) { console.error('timer', e.message); }
       }
       const q = rafQ; rafQ = [];
-      for (const fn of q) { if (fn.name === 'ruta') continue; try { fn(vt); } catch (e) { console.error('raf', e.message); } }
+      for (const fn of q) { if (fn.name === 'ruta' || fn.motorLoop) continue; try { fn(vt); } catch (e) { console.error('raf', e.message); } }
     },
-    verklig: (fn, ms) => rs(fn, ms),
+    verklig: (fn, ms) => { if (ms) return rs(fn, ms); const ch = new MessageChannel(); ch.port1.onmessage = () => fn(); ch.port2.postMessage(0); },   // MessageChannel stryps inte som setTimeout i en dold flik
     get nu() { return vt; },
   };
   if (!sessionStorage.getItem('sim')) { sessionStorage.setItem('sim', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ introSett: true, spelarNamn: 'Simulering' })); }
 });
 await p.goto(url); await p.waitForTimeout(3500);
 await p.click('.br-starta').catch(() => {}); await p.waitForTimeout(2000);
-await p.evaluate(() => window.__vt.start());
+await p.evaluate((u) => { window.__vt.start(); window.__simUtforlig = u; }, !!process.env.UTFORLIG);
 await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.meta.url), 'utf8') });
-const r = await p.evaluate(() => window.__simBot.kor(6, 130));
+const r = await p.evaluate((d) => window.__simBot.kor(d, 30 * d), +tillDag);
 await b.close();
 
 // ---------- rapport ----------
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-const synlig = (e) => !['röst', 'MÅL'].includes(e.kalla);
+const synlig = (e) => ['sms-bubbla', 'notis', 'lapp', 'bubbla', 'meddelande', 'morgonkort'].includes(e.kalla);   // det som syns på skärmen (toasts är svar på ett klick och räknas inte)
 const flaggor = [];
 // krockar: två synliga texter inom 5 s (samma text i två kanaler räknas inte)
 const syn = r.logg.filter(synlig);
@@ -68,6 +69,30 @@ for (let i = 1; i < rost.length; i++) {
   const a = rost[i - 1], c = rost[i], langd = Math.min(9, 0.6 + a.text.length * 0.062);
   if (c.tot - a.tot < langd - 0.3) flaggor.push({ dag: c.dag, t: c.t, typ: 'RÖST AVBRUTEN', text: `${a.vem}: "${a.text.slice(0, 50)}" (behöver ${langd.toFixed(1)} s, fick ${(c.tot - a.tot).toFixed(1)} s) ← ${c.vem}: "${c.text.slice(0, 40)}"` });
 }
+// punkt BE: kvittens → varför → nytt mål. Flagga om något saknas eller om målet läses upp mer än 2 s efter att kedjan pratat klart.
+const rostLangd = (t) => Math.min(9, 0.6 + t.length * 0.062);
+const rostFor = (text, efter) => r.logg.find((e) => e.kalla === 'röst' && e.tot >= efter - 0.5 && e.text.startsWith(text.slice(0, 40)));
+const kedjeRader = [];
+for (const kv of r.logg.filter((e) => e.kalla === 'kvittens')) {
+  const va = r.logg.find((e) => e.kalla === 'varför' && e.varfor === kv.varfor && e.tot >= kv.tot && e.tot - kv.tot < 30);
+  const sista = va || kv, rs = rostFor(sista.text, sista.tot), slut = rs ? rs.tot + rostLangd(sista.text) : null;
+  const mal = r.logg.find((e) => e.kalla === 'röst' && /· MÅL$/.test(e.text) && e.tot >= (rs?.tot ?? sista.tot));
+  const gap = slut != null && mal ? mal.tot - slut : null;
+  kedjeRader.push({ dag: kv.dag, t: kv.t, id: kv.varfor, kv: kv.text, va: va?.text || '', gap, mal: mal?.text.replace(/ · MÅL$/, '') || '' });
+  if (!rs) flaggor.push({ dag: kv.dag, t: kv.t, typ: 'KEDJA', text: `${kv.varfor}: kvittensen lästes aldrig upp` });
+  else if (!r.logg.some((e) => e.kalla === 'MÅL' && Math.abs(e.tot - kv.tot) < 10)) { /* kvittens mitt i ett mål – inget nytt mål väntas */ }
+  else if (!mal || mal.tot - slut > 20) flaggor.push({ dag: kv.dag, t: kv.t, typ: 'KEDJA', text: `${kv.varfor}: inget nytt mål lästes upp efter kedjan` });
+  else if (gap > 2) flaggor.push({ dag: kv.dag, t: kv.t, typ: 'KEDJA', text: `${kv.varfor}: nytt mål ${gap.toFixed(1)} s efter kedjan (max 2 s)` });
+}
+for (const m of r.logg.filter((e) => e.kalla === 'MÅL')) {
+  if (!r.logg.some((e) => ['kvittens', 'varför'].includes(e.kalla) && Math.abs(e.tot - m.tot) < 8)) flaggor.push({ dag: m.dag, t: m.t, typ: 'KEDJA', text: `mål utan kvittens: "${m.text.slice(0, 70)}"` });
+}
+// punkt 10: varje sms ska synas som bubbla
+for (const sm of r.logg.filter((e) => e.kalla === 'sms')) {
+  const bb = r.logg.find((e) => e.kalla === 'sms-bubbla' && e.text === sm.text && e.tot >= sm.tot);
+  if (!bb) flaggor.push({ dag: sm.dag, t: sm.t, typ: 'SMS', text: `${sm.vem}: "${sm.text.slice(0, 50)}" syntes aldrig som bubbla` });
+  else if (bb.tot - sm.tot > 15) flaggor.push({ dag: sm.dag, t: sm.t, typ: 'SMS', text: `${sm.vem}: bubblan kom ${(bb.tot - sm.tot).toFixed(0)} s efter sms:et` });
+}
 // tempo
 for (const d of r.dagar) {
   const min = d.sek / 60, [lo, hi] = d.dag === 1 ? [10, 12] : [10, 15];
@@ -79,6 +104,7 @@ let md = `# Simulering kapitel 1 – körning ${nr}\n\n*Gjord ${new Date().toISO
 md += `## Sammanfattning\n\n| Dag | Minuter | Prints (totalt) | Kr vid sömn | Bär | Trivsel |\n|---|---|---|---|---|---|\n`;
 for (const d of r.dagar) md += `| ${d.dag} | ${(d.sek / 60).toFixed(1)} | ${d.printat} | ${d.mynt} | ${d.bar} | ${d.trivsel} |\n`;
 md += `\n**Köp:**\n\n` + r.kop.map((k) => `- dag ${k.dag} ${fmt(k.t)} – ${k.id} (${k.pris} kr)`).join('\n') + '\n';
+md += `\n## Storykedjan (kvittens → varför → nytt mål)\n\n| Dag | Tid | Id | Kvittens | Varför | Nytt mål | Tid till målet |\n|---|---|---|---|---|---|---|\n` + kedjeRader.map((k) => `| ${k.dag} | ${fmt(k.t)} | ${k.id} | ${k.kv.slice(0, 60)} | ${k.va.slice(0, 60)} | ${k.mal.slice(0, 60)} | ${k.gap == null ? '–' : k.gap.toFixed(1) + ' s'} |`).join('\n') + '\n';
 md += `\n## Flaggor (${flaggor.length})\n\n` + (flaggor.length ? flaggor.map((f) => `- **${f.typ}** dag ${f.dag} ${fmt(f.t)}: ${f.text}`).join('\n') : '- inga') + '\n';
 md += `\nSidfel: ${sidfel.length ? sidfel.slice(0, 5).join(' · ') : 'inga'}\n`;
 for (const dag of [...new Set(r.logg.map((e) => e.dag))]) {

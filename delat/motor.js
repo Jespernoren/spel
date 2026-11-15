@@ -48,6 +48,7 @@ export function startaLoop(uppdatera, { scen, kamera, renderer }) {
     renderer.render(scen, kamera);
     requestAnimationFrame(ruta);
   }
+  ruta.motorLoop = true;   // simuleringar (verktyg/sim-*.mjs) känner igen ritloopen på den här flaggan, även när koden är minifierad
   ruta();
 }
 
