@@ -5969,10 +5969,10 @@ function oppnaInv({ salj = false } = {}) {
   oppnaRuta(html, (el) => {
     el.querySelectorAll('[data-s]').forEach((k) => {
       const [a, i] = k.dataset.s.split(':');
-      k.onclick = (e) => { if (e.shiftKey) invFlytta(a, +i); else invKlick(a, +i, false); invFixa(); oppnaInv(); };
+      k.onclick = (e) => { if (invDrogs) { invDrogs = false; return; } if (e.shiftKey) invFlytta(a, +i); else invKlick(a, +i, false); invFixa(); oppnaInv(); };
       k.oncontextmenu = (e) => { e.preventDefault(); invKlick(a, +i, true); invFixa(); oppnaInv(); };
       k.ondblclick = () => { if (invHand) invKlick(a, +i, false); invFlytta(a, +i); invFixa(); oppnaInv(); };
-      k.onpointerenter = () => { const p = INV_OMR[a]()?.[+i]; if (p && p.typ !== invInfo) { invInfo = p.typ; const f = el.querySelector('.ui-detalj'); if (f) f.outerHTML = detalj({ bild: tumme(p.typ, 72), titel: namnFor(p.typ), text: tipsFor(p.typ) + (saljPris(p.typ) && p.typ !== aktivGava() ? ` Ali betalar ${saljPris(p.typ)} kr styck.` : '') }); } };
+      k.onpointerenter = () => { if (invDrag) return; const p = INV_OMR[a]()?.[+i]; if (p && p.typ !== invInfo) { invInfo = p.typ; const f = el.querySelector('.ui-detalj'); if (f) f.outerHTML = detalj({ bild: tumme(p.typ, 72), titel: namnFor(p.typ), text: tipsFor(p.typ) + (saljPris(p.typ) && p.typ !== aktivGava() ? ` Ali betalar ${saljPris(p.typ)} kr styck.` : '') }); } };
     });
     el.querySelectorAll('[data-r]').forEach((k) => { k.onclick = () => { const id = k.dataset.r; const f = el.querySelector('.ui-detalj'); if (f) f.outerHTML = detalj({ bild: tumme('byggsats:' + id, 72), titel: MASKINER[id].namn, text: MASKINER[id].beskr, faktaLista: [['recept', ritStatus(id)], ['rulle', `${rullKort(MASKINER[id].gram * MASKINER[id].delar)} rullar`]] }); }; });
     coachLapp(el, 'inv');
@@ -5981,6 +5981,60 @@ function oppnaInv({ salj = false } = {}) {
   invRitar = false; ritaInvHand();
   kistaOppen = nara && !invSalj;
 }
+// punkt AE: dra och släpp (mus och touch) – ett tillägg till klicka-lyfta-lägga
+let invDrag = null, invDrogs = false;
+function invMalUnder(x, y) {
+  const el = document.elementFromPoint(x, y);
+  const s = el?.closest?.('[data-s]'); if (s) { const [a, i] = s.dataset.s.split(':'); return { a, i: +i, el: s }; }
+  const h = el?.closest?.('.ph-hotbar [data-i]'); if (h) return { a: 'h', i: +h.dataset.i, el: h };
+  return null;
+}
+function invDragStart(e, a, i) {
+  if (e.button > 0 || invHand) return;   // har du redan något i handen gäller klicken som förut
+  const p = INV_OMR[a]()?.[i]; if (!p || (a === 'h' && i === 0)) return;
+  invDrag = { a, i, x: e.clientX, y: e.clientY, igang: false, id: e.pointerId };
+}
+addEventListener('pointermove', (e) => {
+  const D = invDrag; if (!D || e.pointerId !== D.id) return;
+  if (!D.igang) {
+    if (Math.hypot(e.clientX - D.x, e.clientY - D.y) < 7) return;
+    if (D.a === 'k' && !naraKista()) { invDrag = null; return; }
+    D.igang = true; invKlick(D.a, D.i, false); if (!invHand) { invDrag = null; return; }
+    document.querySelector(`[data-s="${D.a}:${D.i}"]`)?.classList.add('inv-drar');
+    ritaInvHand();
+  }
+  const m = invMalUnder(e.clientX, e.clientY);
+  document.querySelectorAll('.inv-over').forEach((x) => { if (x !== m?.el) x.classList.remove('inv-over'); });
+  m?.el.classList.add('inv-over');
+}, { passive: true });
+function invDragSlut(e) {
+  const D = invDrag; if (!D || e.pointerId !== D.id) return; invDrag = null;
+  document.querySelectorAll('.inv-over,.inv-drar').forEach((x) => x.classList.remove('inv-over', 'inv-drar'));
+  if (!D.igang) return;
+  invDrogs = true; setTimeout(() => { invDrogs = false; }, 60);
+  const m = invMalUnder(e.clientX, e.clientY);
+  if (m && !(m.a === D.a && m.i === D.i)) invKlick(m.a, m.i, false);
+  // det som är kvar i handen (bytt sak, rest av en full hög, eller släppt utanför) går tillbaka dit det kom ifrån
+  if (invHand) {
+    const arr = INV_OMR[D.a](), p = arr?.[D.i];
+    if (!p) { arr[D.i] = invHand; invHand = null; }
+    else if (p.typ === invHand.typ && p.n + invHand.n <= STACK) { p.n += invHand.n; invHand = null; }
+    else { const h = invHand; invHand = null; laggTill(h.typ, h.n); }
+  }
+  invFixa(); oppnaInv();
+}
+// webbläsarens egen bild-dragning avbryter pekaren (pointercancel) – stäng av den i inventoryt
+addEventListener('dragstart', (e) => { if (e.target.closest?.('.inv-panel,.ph-hotbar')) e.preventDefault(); }, true);
+addEventListener('pointerup', invDragSlut);
+addEventListener('pointercancel', invDragSlut);
+// verktygsraden längst ner går också att dra från när inventoryt är öppet
+addEventListener('pointerdown', (e) => {
+  if (!invRutaOppen()) return;
+  const s = e.target.closest?.('.inv-panel [data-s]');
+  if (s) { const [a, i] = s.dataset.s.split(':'); invDragStart(e, a, +i); return; }
+  const k = e.target.closest?.('.ph-hotbar [data-i]'); if (k) invDragStart(e, 'h', +k.dataset.i);
+}, true);
+const invRutaOppen = () => !!document.querySelector('.inv-panel');
 const oppnaForrad = () => oppnaInv();
 // får det plats i verktygsraden och ryggsäcken? (provas på kopior)
 const MONTERAS_DIREKT = ['byggsats:grip', 'byggsats:korg', 'byggsats:karra', 'byggsats:magnet', 'byggsats:kvarnmotor', 'byggsats:stortratt', 'byggsats:rullstall', 'byggsats:rullband', 'byggsats:lastarm', 'byggsats:robotarm', 'byggsats:utlada', 'byggsats:ryggsack2'];
@@ -6366,6 +6420,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:5;opac
 .inv-grid .ui-ruta .bild,.inv-grid .ui-ruta .bild img{width:78%;height:78%;max-width:54px;max-height:54px}
 .inv-grid .ui-ruta .bild{display:grid;place-items:center}
 .inv-grid .ui-ruta .bild img{width:100%;height:100%}
+.inv-over{outline:3px solid #ffd43b!important;outline-offset:-2px;box-shadow:0 0 12px #ffd43b88!important}
+.inv-drar{opacity:.35}
+.inv-panel [data-s],.ph-hotbar [data-i]{touch-action:none}
+.inv-panel img,.ph-hotbar img{-webkit-user-drag:none;user-select:none}
+body:has(.inv-panel) .ph-hotbar{z-index:31}
 .inv-hand{position:fixed;z-index:200;pointer-events:none;transform:translate(-50%,-50%);filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
 .inv-hand span{position:absolute;right:-4px;bottom:-4px;background:#111;color:#fff;font:700 12px system-ui;border-radius:6px;padding:1px 5px}
 .inv-not{opacity:.8;font-size:13px;margin:4px 0 8px}
@@ -9190,7 +9249,7 @@ function uppdateraLiv(dt) {
   if (bengt.visible && nu > bengtSynsTill) bengt.visible = false;
 }
 S.upprepaVald = true;   // issue #18: gamla sparfiler fick upprepa AV en gång (i skrivarnas laddning ovan)
-window.__printahem = { spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { invDragInfo: () => invDrag, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 
