@@ -176,9 +176,9 @@ const VAROR = {
   // receptstegen: nästa recept syns när du köpt det förra – varje steg ger mer per rulle
   fagelholk: { namn: 'Fågelholk', ikon: '🐦', trivsel: 6, placerbar: true, radie: 0.3, syns: () => S.rolf.i >= 1 || harRecept('mobilstall') },
   n_kopp: { nBest: true, namn: 'Kaffekopp: BENGT-ÅKE', ikon: '', syns: () => S.n?.vill === 'n_kopp', beskr: 'Beställd av N. Diskret paketerad.' },
-  t_spalje: { tradgard: true, namn: 'Spaljé till Birgittas rosor', ikon: '', syns: () => S.ritningar.includes('recept:t_spalje') && !S.tradgard?.spalje, beskr: 'Till trädgården bakom Rolfs husvagn. Rosorna behöver något att klättra på.' },
-  t_bevattning: { tradgard: true, namn: 'Bevattning till trädgården', ikon: '', syns: () => S.ritningar.includes('recept:t_bevattning') && !S.tradgard?.vatten, beskr: 'Slang med droppare. Rolf glömmer att vattna.' },
-  t_vaxthus: { tradgard: true, namn: 'Växthus till Birgittas rosor', ikon: '', syns: () => S.ritningar.includes('recept:t_vaxthus') && !S.tradgard?.vaxthus, beskr: 'Printat växthus. Så att rosorna klarar vintern.' },
+  t_spalje: { tradgard: true, namn: 'Spaljé till Birgittas trädgård', ikon: '', niva: 2, syns: () => S.dag >= 13 && !!S.tradgard?.brev && !S.tradgard?.spalje, beskr: 'Röd PETG. Till täppan bakom Rolfs husvagn. Rosorna behöver något att klättra på.' },
+  t_bevattning: { tradgard: true, namn: 'Droppslang till trädgården', ikon: '', niva: 2, syns: () => S.dag >= 13 && !!S.tradgard?.brev && !S.tradgard?.vatten, beskr: 'Röd PETG. Droppar lite hela tiden. Rolf glömmer att vattna.' },
+  t_vaxthus: { tradgard: true, namn: 'Växthus till Birgittas rosor', ikon: '', niva: 3, syns: () => S.dag >= 20 && S.kapitel >= 4 && !!S.tradgard?.spalje && !!S.tradgard?.vatten && !S.tradgard?.vaxthus, beskr: 'Kolfiber. Så att rosorna klarar vintern.' },
   g_kapsyl: { namn: 'Kapsyl från Göran', ikon: '', kop: true, beskr: 'Blank. Göran tyckte den var fin.' },
   g_skruv: { namn: 'Blank skruv från Göran', ikon: '', kop: true, beskr: 'Rostfri. Göran har smak.' },
   fagelskramma: { namn: 'Fågelskrämma', ikon: '', trivsel: 3, placerbar: true, radie: 0.35, syns: () => S.dag >= 6 && !!S.goranSedd, lyx: 'Skrämmer fåglar. Enligt förpackningen.' },
@@ -397,6 +397,9 @@ const rullar = (g) => {
 
 // ---------- Story-lappar ----------
 const LAPPAR = {
+  // punkt N: Rolfs brev dag 11 och efter växthuset
+  tr_brev: ['✉️ Brev från Rolf', 'ÖJ. Ja va int mä mej själv på konditoriet. Förlåt att ja prata så mycke. Bakom husvagnen fanns Birgittas trädgård. Nu ä dä bara nässlor. Ja har int rört den på sju år. Ja kan int. Men om nån annan började … Ja vet int. Du ä ju bra på skräp. MVH ROLF'],
+  tr_rosor: ['✉️ Brev från Rolf', 'Hon hade gillat dä. Ja planterade rosorna i natt. Kajsa höll ficklampan. Hon ä int bra på att hålla ficklampa. MVH ROLF'],
   // punkt L: den hemliga beställaren N. – prydlig gammaldags stil
   n0: ['📜 Lapp från N.', 'Undertecknad önskar beställa en fågelholk. Fåglarna i trakten har ingenstans att bo. Det har undertecknad i viss mening inte heller. Lämnas i lådan vid staketet. Med vänlig hälsning, N.'],
   n1: ['📜 Lapp från N.', 'Tack för holken. Den är bebodd. Undertecknad önskar nu en lampskärm, helst i en lugn färg. Det är mörkt om kvällarna här ute. Med vänlig hälsning, N.'],
@@ -5275,13 +5278,14 @@ function oppnaPrintMeny(sk) {
   const petg = sk.gen === PETG_GEN;
   for (const [id, v] of Object.entries(VAROR)) {
     if (v.kop) continue;
+    if (petg && v.tradgard) { if (v.niva === 2 && harRecept(id) && v.syns()) lagg('gava', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, '🌹 Till Birgittas trädgård bakom tippen'); continue; }
     if (petg) { if (v.niva === 2 && harRecept(id)) lagg('salj', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, `🪙 ${prisNu(id)} kr hos Ali idag${id === aliVill() ? ' ⭐ Ali vill ha den idag (+50 %)' : ''} · ${Math.round(v.pris / v.gram * RULLE)} kr per rulle röd PETG${v.trivsel ? ' · kan också ställas ut' : ''}`, prisNu(id)); continue; }
     if (v.niva === 2) continue;   // röd PETG printas bara på PETG-skrivaren
     if (v.pris > 0 && harRecept(id) && (!v.niva || (nivaUpplast(v.niva) && (antalInv('rulle' + v.niva) || antalInv('fynd' + v.niva))))) lagg('salj', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid,
       `🪙 ${prisNu(id)} kr hos Ali idag${id === aliVill() ? ' ⭐ Ali vill ha den idag (+50 %)' : ''}${prisNu(id) < v.pris ? ` (fullpris ${v.pris} – marknaden är mättad)` : ` · ${Math.round(v.pris / v.gram * RULLE)} kr per rulle`}${v.trivsel ? ' · kan också ställas ut' : ''}`, prisNu(id));
     else if (v.lyx && harRecept(id)) lagg('hem', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, `✨ Trivsel +${v.trivsel} · ställ den i din fristad`);
     else if (v.nBest && harRecept(id) && v.syns()) lagg('gava', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, '📜 Beställning från N. – lägg den i postlådan');
-    else if (v.tradgard && harRecept(id) && v.syns()) lagg('gava', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, '🌹 Till Birgittas trädgård bakom tippen');
+    else if (v.tradgard && v.niva !== 2 && harRecept(id) && v.syns()) lagg('gava', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, '🌹 Till Birgittas trädgård bakom tippen');
     else if (id === 'sang' && S.ritningar.includes('sang') && !harSang()) lagg('hem', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, '🛏️ En riktig säng till skjulet');
     else if (v.gava && id === aktivGava() && !harGava(id) && S.ritningar.includes('gava:' + id)) lagg('gava', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, `🎁 Rolfs önskan – lägg den i hans postlåda`);
   }
@@ -8538,12 +8542,8 @@ setInterval(kollaN, 3000);
 // Rolfs husvagn står bakom tippen. Trädgården Birgitta anlade där har vuxit igen. Efter konditoriet ber Rolf om hjälp:
 // dag 13 spaljé och bevattning, dag 20 ett printat växthus för rosorna. Ingen belöning – bara Rolf.
 const TRADGARD_REPLIK = {
-  fraga: ['rolf', 'Birgitta hade en trädgård bakom husvagnen. Rosor o gurka. Dä har vuxit igen sen hon dog. Ja kan int få nåt att växa. Du kan printa saker. Kan du hjälpa mej? /R'],
-  ritningar: ['rolf', 'La två ritningar i lådan. En spaljé till rosorna o en slang som vattnar. Trädgården ligger bakom tippen, vid husvagnen. Ingen brådska. Dom har väntat i sju år. /R'],
-  spalje: ['rolf', 'Rosorna har nåt att hålla i nu. Dä har ja oxå. /R'],
-  vatten: ['rolf', 'Slangen funkar. Ja satt o tittade på den i en timme. Gurkan växer. Ja pratar med den. Birgitta gjorde oxå så. /R'],
-  vinter: ['rolf', 'Dä ä vinter nu. Rosorna klarar int frosten. Birgitta hade dom i ett växthus. Ja la en ritning i lådan. /R'],
-  klar: ['rolf', 'Hon hade gillat de. MVH ROLF'],
+  tack: ['rolf', 'Ja såg. Ja stod vid fönstret länge. Tack. MVH ROLF'],
+  reserv: ['rolf', 'Trädgårn står kvar. Ingen brådska. Nässlorna har inga planer. MVH ROLF'],
 };
 const TRAD = { x: -28.6, z: 0.6 };
 const rolfVagn = new THREE.Group(), tradgard = new THREE.Group();
@@ -8564,22 +8564,24 @@ const rolfVagn = new THREE.Group(), tradgard = new THREE.Group();
 }
 function ritaTradgard() {
   const T = S.tradgard || {};
-  const nyckel = [T.spalje, T.vatten, T.vaxthus].map(Number).join('');
+  const nyckel = [T.spalje, T.vatten, T.vaxthus, T.rosor, T.rensad].map(Number).join('');
   if (tradgard.userData.n === nyckel) return; tradgard.userData.n = nyckel;
   for (const o of [...tradgard.children]) tradgard.remove(o);
   const jord = mat(0x5b4330), ram = mat(0x7a5a3a);
   tradgard.add(at(box(3.2, 0.12, 2.2, jord), 0, 0.06, 0));
+  if (T.spalje && T.vatten) tradgard.add(at(box(5.2, 0.02, 4.2, mat(0x5fa84a)), 0, 0.015, 0));   // gräset blir grönt
+  if (!T.vatten) { const kanna = new THREE.Group(); kanna.add(at(cyl(0.12, 0.14, 0.26, mat(0x6f7c74), 10), 0, 0.13, 0)); const pip = box(0.25, 0.03, 0.03, mat(0x6f7c74)); pip.position.set(0.18, 0.2, 0); pip.rotation.z = 0.6; kanna.add(pip); kanna.position.set(1.95, 0, 0.6); kanna.rotation.z = 1.4; kanna.position.y = 0.12; tradgard.add(kanna); }
+  if (!T.spalje) { for (const [x, rz] of [[-0.9, 0.3], [-0.3, -0.5], [0.5, 0.15]]) { const p = box(0.04, 1.0, 0.04, mat(0x7a4a2a)); p.position.set(x, 0.45, -1.0); p.rotation.z = rz; tradgard.add(p); } const tv = box(1.2, 0.04, 0.04, mat(0x7a4a2a)); tv.position.set(-0.4, 0.7, -1.0); tv.rotation.z = 0.2; tradgard.add(tv); }
   for (const [w, d, x, z] of [[3.3, 0.1, 0, 1.12], [3.3, 0.1, 0, -1.12], [0.1, 2.3, 1.62, 0], [0.1, 2.3, -1.62, 0]]) tradgard.add(at(box(w, 0.22, d, ram), x, 0.11, z));
-  const skott = (T.vatten ? 1 : 0) + (T.spalje ? 1 : 0) + (T.vaxthus ? 1 : 0);
-  // ogräs: mycket i början, mindre för varje sak du fixar
-  const ograsN = [26, 12, 6, 0][skott];
+  // nässlor: mycket i början, borta när täppan är rensad
+  const ograsN = T.rensad ? (T.spalje && T.vatten ? 0 : 4) : 26;
   for (let i = 0; i < ograsN; i++) { const h = (i * 2654435761) >>> 0; const k = cyl(0, 0.08 + (h % 7) / 60, 0.3 + (h % 11) / 18, mat((h & 1) ? 0x6b7a3a : 0x8a7a4a), 5); k.position.set(((h % 300) / 100) - 1.5, 0.2, (((h >>> 8) % 200) / 100) - 1.0); k.rotation.z = ((h % 13) - 6) / 20; tradgard.add(k); }
   // rosorna längs bakkanten: döda pinnar → gröna buskar → blommor
   for (let i = 0; i < 5; i++) {
     const x = -1.2 + i * 0.6, z = -0.75;
     if (!T.vatten) { tradgard.add(at(box(0.03, 0.5, 0.03, mat(0x5a4a35)), x, 0.37, z)); continue; }
     tradgard.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 6), mat(0x3f7a3a)), x, 0.4, z));
-    if (T.vaxthus) for (let j = 0; j < 4; j++) tradgard.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 5), mat(0xc8213a)), x + Math.cos(j * 1.7) * 0.16, 0.5 + (j % 2) * 0.1, z + Math.sin(j * 1.7) * 0.16));
+    if (T.rosor) for (let j = 0; j < 4; j++) tradgard.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 5), mat(0xc8213a)), x + Math.cos(j * 1.7) * 0.16, 0.5 + (j % 2) * 0.1, z + Math.sin(j * 1.7) * 0.16));
   }
   if (T.vatten) { // gurkplantor och en printad slang med droppare
     for (let i = 0; i < 4; i++) tradgard.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.13, 7, 5), mat(0x5aa04a)), -1.1 + i * 0.7, 0.22, 0.45));
@@ -8605,26 +8607,38 @@ interaktor.registrera(tradgard, {
   text: () => { const T = S.tradgard || {};
     const har = ['t_spalje', 't_bevattning', 't_vaxthus'].find((id) => antalInv(id) > 0);
     if (har) return `Montera ${VAROR[har].namn.toLowerCase()}`;
-    if (T.vaxthus) return 'Birgittas trädgård. Rosorna blommar.';
-    if (!T.fragad) return 'En trädgård som har vuxit igen';
-    return T.spalje && T.vatten ? 'Birgittas trädgård. Det växer.' : 'Birgittas trädgård – printa det Rolf bad om och montera här'; },
+    if (T.rosor) return 'Birgittas trädgård. Rosorna blommar.';
+    if (T.vaxthus) return 'Birgittas trädgård. Växthuset står klart.';
+    if (T.spalje && T.vatten) return 'Birgittas trädgård. Det växer.';
+    if (T.rensad) return 'Birgittas trädgård – spaljé och droppslang hos Ali (röd PETG)';
+    return 'Birgittas trädgård. Nässlor, en vattenkanna, en rostig spaljé.'; },
   aktivera: () => {
     const T = S.tradgard = S.tradgard || {};
-    const mont = (id, nyckel, rep) => { taBortInv(id); T[nyckel] = true; ljud.placera(); ui.toast(`${VAROR[id].namn} på plats.`, 'bra'); ritaTradgard(); sparaSnart(); setTimeout(() => sms(...rep), 6000); };
-    if (antalInv('t_spalje') > 0) return mont('t_spalje', 'spalje', TRADGARD_REPLIK.spalje);
-    if (antalInv('t_bevattning') > 0) return mont('t_bevattning', 'vatten', TRADGARD_REPLIK.vatten);
-    if (antalInv('t_vaxthus') > 0) { mont('t_vaxthus', 'vaxthus', TRADGARD_REPLIK.klar); konfetti?.(60); return; }
-    ui.toast(T.fragad ? 'Printa det Rolf bad om först (3D-modellerna låg i postlådan)' : 'Det har vuxit igen här. Någon brukade bry sig om den.', '');
+    const mont = (id, nyckel) => { taBortInv(id); T[nyckel] = true; if (nyckel === 'vaxthus') T.vaxthusDag = S.dag; ljud.placera(); ui.toast(`${VAROR[id].namn} på plats.`, 'bra'); ritaTradgard(); sparaSnart(); if (T.spalje && T.vatten && (nyckel === 'spalje' || nyckel === 'vatten')) setTimeout(() => sms(...TRADGARD_REPLIK.tack), 6000); };
+    if (antalInv('t_spalje') > 0) return mont('t_spalje', 'spalje');
+    if (antalInv('t_bevattning') > 0) return mont('t_bevattning', 'vatten');
+    if (antalInv('t_vaxthus') > 0) return mont('t_vaxthus', 'vaxthus');
+    ui.toast(T.rensad ? 'Spaljé och droppslang finns hos Ali (röd PETG) – printa och montera här' : T.brev ? 'Plocka bort skräpet och nässlorna i täppan först' : 'Det har vuxit igen här. Någon brukade bry sig om den.', '');
   },
 });
 // berättelsen
+const tradSkrap = () => skrapLista.filter((x) => Math.abs(x.position.x - TRAD.x) < 1.7 && Math.abs(x.position.z - TRAD.z) < 1.2).length;
 function kollaTradgard() {
   ritaTradgard();
   if (!ui.igang || sover || pausad) return;
   const T = S.tradgard = S.tradgard || {};
-  if (!T.fragad && (S.resa === 'klar' && S.dag >= 10 || S.dag >= 12)) { T.fragad = true; T.fragadDag = S.dag; sparaSnart(); setTimeout(() => sms(...TRADGARD_REPLIK.fraga), S.resa === 'klar' ? 45000 : 2000); return; }
-  if (T.fragad && S.dag >= 13 && S.dag > (T.fragadDag ?? 0) && !T.ritningar) { T.ritningar = true; S.post.tillMig = [...S.post.tillMig, 'ritning:t_spalje', 'ritning:t_bevattning']; visaPostInne(); sparaSnart(); sms(...TRADGARD_REPLIK.ritningar); return; }
-  if (T.spalje && T.vatten && S.dag >= 20 && !T.vinter) { T.vinter = true; S.post.tillMig = [...S.post.tillMig, 'ritning:t_vaxthus']; visaPostInne(); sparaSnart(); sms(...TRADGARD_REPLIK.vinter); }
+  // dag 11: Rolfs brev, och 8 bitar skräp bland nässlorna (vanligt plock)
+  if (!T.brev && S.dag >= 11) {
+    if (S.post.lapp) return;
+    T.brev = true; S.post.lapp = 'tr_brev'; visaPostInne();
+    for (let i = 0; i < 8; i++) laggSkrap(TRAD.x - 1.3 + (i % 4) * 0.85, TRAD.z - 0.5 + Math.floor(i / 4) * 0.9, slumpVariant(), i);
+    T.skrapLagt = true; sparaSnart(); return;
+  }
+  if (T.skrapLagt && !T.rensad && tradSkrap() === 0) { T.rensad = true; ritaTradgard(); sparaSnart(); ui.toast('Täppan är rensad. Ali har spaljé och droppslang i röd PETG.', 'guld'); return; }
+  // reserv: en gång till dag 15 om inget har hänt
+  if (T.brev && !T.rensad && !T.reserv && S.dag >= 15) { T.reserv = true; sparaSnart(); sms(...TRADGARD_REPLIK.reserv); return; }
+  // morgonen efter växthuset: Rolf har planterat rosorna
+  if (T.vaxthus && !T.rosor && S.dag > (T.vaxthusDag ?? 99) && !S.post.lapp) { T.rosor = true; S.post.lapp = 'tr_rosor'; visaPostInne(); ritaTradgard(); sparaSnart(); }
 }
 setInterval(kollaTradgard, 2500);
 // ---------- Punkt G: polaroidväggen ----------

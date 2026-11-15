@@ -153,9 +153,9 @@ export const VARA_SIFFROR = {
   mobilstall: { gram: 300, tid: 12, pris: 50, recept: 100 },
   fagelholk: { gram: 800, tid: 26, pris: 170, recept: 300 },
   n_kopp: { gram: 300, tid: 14, pris: 0, recept: 1 },         // punkt L: bara för N. (betalningen följer JOBB_ANDEL, minst 300 kr)
-  t_spalje: { gram: 1500, tid: 30, pris: 0, recept: 1 },       // punkt N: ritningen kommer från Rolf (recept: 1 = måste ha ritningen)
-  t_bevattning: { gram: 1200, tid: 26, pris: 0, recept: 1 },
-  t_vaxthus: { gram: 4000, tid: 60, pris: 0, recept: 1 },
+  t_spalje: { gram: 1500, tid: 30, pris: 0, recept: 500 },     // punkt N: röd PETG, 500 × PRIS_SKALA = 300 kr hos Ali
+  t_bevattning: { gram: 1200, tid: 26, pris: 0, recept: 420 },  // 250 kr
+  t_vaxthus: { gram: 4000, tid: 60, pris: 0, recept: 6670 },    // kolfiber, kapitel 4: ca 4 000 kr
   fagelskramma: { gram: 600, tid: 20, pris: 30, recept: 40 },    // punkt I: Göran sätter sig på den (under 150 kr – skalas inte)
   fagelbad: { gram: 900, tid: 28, pris: 45, recept: 60 },         // punkt I: Göran flyttar in
   g_kapsyl: { gram: 0, tid: 0, pris: 4 },                          // Görans gåvor – humor, inte ekonomi
