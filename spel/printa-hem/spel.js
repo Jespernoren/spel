@@ -2918,7 +2918,7 @@ function startaDirekt(sk, val) {
     if (v.niva === 2 && sk.gen !== PETG_GEN) return false;   // PETG-saker kräver PETG-skrivaren
     if (sk.gen === PETG_GEN && v.niva !== 2) return false;
     if (v.niva && v.niva !== 2) {   // kräver en rulle av rätt nivå (förbrukas när utskriften startar)
-      if (!antalInv('rulle' + v.niva)) { setTimeout(() => ui.toast(`Kräver en rulle ${VAROR['rulle' + v.niva].namn.toLowerCase()} i verktygsraden eller kistan`, 'fel'), 50); return false; }
+      if (!antalInv('rulle' + v.niva)) { ui.toast(`Kräver en rulle ${VAROR['rulle' + v.niva].namn} i verktygsraden eller kistan`, 'fel'); return false; }   // U001: direkt
       taBortInv('rulle' + v.niva);
     }
     sk.jobb = { typ: val.typ };
@@ -3047,7 +3047,7 @@ const auto = { byggd: false, band: null, paket: [], bandT: 0, arm: null, armT: 0
 function monteraAuto(id) {
   if (id === 'utlada') {   // leveranslådan slår på upprepa för alla skrivare med autoprint (går att stänga av per skrivare)
     for (const sk of skrivare) if (sk.gen !== PETG_GEN) { sk.upprepaPa = true; if (sk.jobb?.typ && upprepbar(sk.jobb.typ)) sk.upprepa = sk.jobb.typ; }
-    sparaSkrivare(); setTimeout(() => ui.toast('Leveranslådan är på – skrivarna printar vidare av sig själva.', 'guld'), 2600);
+    sparaSkrivare(); handelse('placerat', { sak: 'leveranslada' });
   }
   S.auto[{ rullband: 'band', lastarm: 'lastarm', robotarm: 'arm', utlada: 'lada' }[id]] = true; byggAuto(); ljud.stor(); sparaSnart();
   ui.toast({ rullband: 'Rullbandet står klart! Bär skräp till inmatningen vid tippen – bandet tar det till containern.', lastarm: 'Lastarmen sitter vid tippen och lägger skräp på bandet åt dig. Den orkar bara lätta saker – trimma den hos Ali.', robotarm: 'Robotarmen sitter vid kvarnen – färdiga rullar laddas in i skrivarna automatiskt.', utlada: 'Leveranslådan står vid skrivaren. Välj en sak på skrivaren och slå på Autoprint – Ali hämtar lådan varje morgon.' }[id], 'guld');
@@ -3367,15 +3367,26 @@ const vagCykel = new THREE.Group(); {
   // pakethållaren över bakhjulet, med storebrors skrivare fastspänd med två orange spännband
   vagCykel.add(at(box(0.32, 0.03, 0.5, stal), 0, 0.72, -0.5));
   for (const x of [-0.14, 0.14]) vagCykel.add(at(box(0.03, 0.36, 0.03, stal), x, 0.54, -0.68));
-  const pakS = skapaSkrivare(1); pakS.scale.setScalar(0.62); pakS.position.set(0, 0.74, -0.5); vagCykel.add(pakS); vagCykel.userData.skrivare = pakS;
+  // punkt 9: samma Skrivare S som på gården (skapaSkrivare(1)), stor nog att kännas igen – spännbanden bara runt bottenplattan
+  const pakS = skapaSkrivare(1); pakS.scale.setScalar(0.82); pakS.position.set(0, 0.74, -0.5); vagCykel.add(pakS); vagCykel.userData.skrivare = pakS;
   const bandMat = mat(0xf28c28);
-  for (const z of [-0.6, -0.4]) { vagCykel.add(at(box(0.36, 0.025, 0.045, bandMat), 0, 1.14, z)); for (const x of [-0.18, 0.18]) vagCykel.add(at(box(0.025, 0.42, 0.045, bandMat), x, 0.93, z)); }
-  vagCykel.add(at(box(0.04, 0.32, 0.04, svart), 0.08, 0.16, -0.1).rotateZ(0.5));   // stödet
+  for (const z of [-0.62, -0.38]) { vagCykel.add(at(box(0.44, 0.02, 0.035, bandMat), 0, 0.815, z)); for (const x of [-0.215, 0.215]) vagCykel.add(at(box(0.02, 0.1, 0.035, bandMat), x, 0.77, z)); }
+  { const st = at(box(0.04, 0.32, 0.04, svart), 0.08, 0.16, -0.1).rotateZ(0.5); st.userData.stod = true; vagCykel.add(st); }   // stödet
   vagCykel.position.set(VAG_CYKEL.x, 0, VAG_CYKEL.z); vagCykel.rotation.set(0, VAG_CYKEL.rot, 0.08);
   vagCykel.traverse((o) => { if (o.isMesh) o.castShadow = true; });
   scen.add(vagCykel);
 }
 traffYta(vagCykel, 0.7, 1.2, 1.8);
+// punkt 9: generatorcykeln är samma cykel som kom på vägen (utan skrivaren, banden och stödet), upplyft på stället.
+// Den gamla lådcykelns delar döljs; generatorn och blixten sitter kvar.
+{
+  const c = vagCykel.clone(true); c.position.set(0, 0.18, 0); c.rotation.set(0, 0, 0);
+  const bort = []; c.traverse((o) => { if (o === c) return; if (o.type === 'Group' || o.userData.stod || (o.isMesh && o.material?.color?.getHex?.() === 0xf28c28)) bort.push(o); });
+  bort.forEach((o) => o.parent?.remove(o)); c.traverse((o) => { o.visible = true; });
+  for (const o of [...cykel.children]) if (o !== generator && o !== blixt && o !== pedaler && !(o.material === traffMat)) o.visible = false;
+  pedaler.position.y = 0.6; cykel.add(c);
+  cykel.userData.hjul = c.children.filter((o) => o.geometry?.type === 'TorusGeometry');
+}
 // stället som cykeln lyfts upp på vid linje 1 (bakhjulet blir fritt)
 const cykelStall = new THREE.Group(); {
   const m = mat(0x555c66, { metalness: 0.4 });
@@ -3454,7 +3465,7 @@ function korTextKo() {
     const x = textKo[i];
     if (x.o.stryksOm?.()) { textKo.splice(i, 1); textLogg('struken', x.kalla, x.o.text || '', 'pekar bakåt'); return; }
     if (x.vikt === 'REAKTION' && nu - x.t > REAKTION_MAX_VANTAN) { textKo.splice(i, 1); textLogg('struken', x.kalla, x.o.text || '', 'väntade för länge'); return; }
-    if (x.vikt === 'SMÅPRAT' && (!ui.butiksOverlay.hidden || pausad || !ui.igang)) continue;
+    if (x.vikt === 'SMÅPRAT' && (pausad || !ui.igang)) continue;   // punkt 10: sms syns även med en meny öppen
     if (x.kalla !== textSenastKalla && nu - textSenast < TEXT_MELLAN) return;
     textKo.splice(i, 1); textSenast = nu; textSenastKalla = x.kalla; x.visa(); return;
   }
@@ -4757,7 +4768,7 @@ function rolfBrevLast(i) {
   S.rolf.aktiv = true;
   const o = ROLF[i]; if (!o) return;
   if (!S.ritningar.includes('gava:' + o.vara)) S.ritningar.push('gava:' + o.vara);
-  setTimeout(() => ui.toast(`📐 3D-modellen till ${VAROR[o.vara].namn.toLowerCase()} låg med i brevet – printa den på skrivaren`, 'guld'), 1200);
+  efterBrev('rolf:' + i, () => ui.toast(`📐 3D-modellen till ${VAROR[o.vara].namn} låg med i brevet – printa den på skrivaren`, 'guld'));   // U003
   const fs = (o.forskott || []).filter((b) => !(b === 'nyckel' && S.tippNyckel) && !(b === 'karra' && S.karra));
   if (fs.length) {
     for (const b of fs) { if (b === 'nyckel') { S.tippNyckel = true; oppnaGrind(); } else if (b === 'karra') { S.karra = true; const k = laggTill('karra'); if (typeof k === 'number') byt(k); } }
@@ -4813,7 +4824,7 @@ function visaFynd(lista, efter) {
 }
 function efterBeloning(lista) {
   const nr = S.rolf.i - 1;
-  for (const b of lista) if (b.startsWith('tack:')) { if (!S.rolfNummer) setTimeout(() => sms('rolf', ROLF_TACK[b.slice(5)].text), 1200); S.rolf.presenter = (S.rolf.presenter || 0) + 1; andraRespekt(Math.round(6 + VAROR[b.slice(5)].present / 400), 'Gav Rolf en present'); setTimeout(() => ui.toast(`Rolf kommer nu oftare med lass – var ${Math.round(sopbilVar())} s och ${SOPBIL_LAST + sopbilExtra()} skräp per lass`, 'guld'), 2500); }
+  for (const b of lista) if (b.startsWith('tack:')) { if (!S.rolfNummer) setTimeout(() => sms('rolf', ROLF_TACK[b.slice(5)].text), 1200); S.rolf.presenter = (S.rolf.presenter || 0) + 1; andraRespekt(Math.round(6 + VAROR[b.slice(5)].present / 400), 'Gav Rolf en present'); setTimeout(() => ui.toast(`Rolf kommer nu oftare med lass – var ${Math.round(sopbilVar())} s och ${SOPBIL_LAST + sopbilExtra()} skräp per lass`, 'guld'), 1000); }   // U004: efter att Rolfs tack lästs (efterBeloning körs när rutan stängs)
   if (lista.includes('jobb')) andraRespekt(-3, 'Gjorde ett skumt jobb åt Rolf');
   const ovrigt = lista.includes('jobb') || lista.includes('heder') || lista.some((b) => b.startsWith('tack:') || b.startsWith('ritning:') || b.startsWith('nmynt:'));
   if (lista.includes('jobb')) sms('rolf', ROLF_JOBB[S.rolf.jobbTack % ROLF_JOBB.length].tackJa);
@@ -4871,7 +4882,34 @@ function smsFram(fran, text, id, o = {}) {
   textLogg('sms', fran, text);
   // syns direkt som en bubbla i inkorgen uppe till höger – uppläsningen väntar på sin tur i kön
   const m = { fran, text, ny: true }; S.sms.push(m); S.sms = S.sms.slice(-40); S.olasta = S.sms.filter((x) => x.ny).length; sparaSnart();
-  inkorg({ vem: fran, titel: AVSANDARE[fran]?.namn || fran, text, smsId: id, klar: () => { m.ny = false; smsLast(fran); } });
+  smsBubbla(fran, AVSANDARE[fran]?.namn || fran, text, () => { m.ny = false; smsLast(fran); });
+}
+// punkt 10: varje sms syns som en bubbla uppe till höger i samma ögonblick som rösten börjar – även när en meny är öppen.
+// Texten ligger kvar i Dagbok → Meddelanden (S.sms).
+const smsFack = document.createElement('div'); smsFack.className = 'hud-smsfack'; document.body.appendChild(smsFack);
+{ const st = document.createElement('style'); st.textContent = `.hud-smsfack{position:fixed;right:max(12px,env(safe-area-inset-right));top:calc(var(--bar-h,64px) + 10px);z-index:120;width:min(380px,92vw);display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.hud-smsfack .hud-ios{position:relative;right:auto;top:auto;width:auto}`; document.head.appendChild(st); }
+function smsBubbla(vem, titel, text, klar) {
+  const el = document.createElement('div'); el.className = 'hud-ios';
+  el.innerHTML = `<div class="app app-portratt">${humorPortratt(vemAvSms(vem), text, 38)}</div><div class="inne"><div class="topp"><span>MEDDELANDEN</span><span class="nu">nu</span></div><div class="fran"><b>${rens(titel)}</b></div><div class="txt">${rens(text)}</div><div class="hud-bubbla-bar"><i></i></div></div>`;
+  let visad = false, start = 0;
+  const visa = () => {
+    if (visad) return; visad = true; start = performance.now();
+    triTon(); hudEl.querySelector('[data-hud="sms"]')?.animate([{ transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 400 });
+    smsFack.prepend(el); requestAnimationFrame(() => el.classList.add('in'));
+    [...smsFack.children].slice(INKORG_MAX).forEach((x) => { x.classList.add('ut'); setTimeout(() => x.remove(), 500); });
+    textLogg('sms-bubbla', vem, text);
+    const bar = el.querySelector('.hud-bubbla-bar i');
+    const tick = () => {
+      const nu = performance.now(), slut = Math.max(start + 2500, pratarVem === vem ? pratarTill : 0);
+      bar.style.width = Math.min(100, (nu - start) / Math.max(1, slut - start) * 100) + '%';
+      if (nu < slut) { requestAnimationFrame(tick); return; }
+      klar?.(); setTimeout(() => { el.classList.add('ut'); setTimeout(() => el.remove(), 500); }, 6000);
+    };
+    requestAnimationFrame(tick);
+  };
+  prata(vem, text, 'STORY', { start: visa });
+  setTimeout(visa, 12000);   // reserv: rösten kom aldrig igång – bubblan visas ändå
 }
 function triTon() {
   try { const c = ljudCtx(); if (!c) return; [[1318.5, 0], [1046.5, 0.13], [1568, 0.26]].forEach(([f, d]) => {
@@ -5097,7 +5135,7 @@ function ruttnaOverNatten() {
   }
   for (const x of S.hotbar) if (x && RUTTNAR[x.typ]) { x.typ = RUTTNAR[x.typ]; n++; }
   for (const x of [...S.ryggsack, ...S.kistan]) if (x && RUTTNAR[x.typ]) { x.typ = RUTTNAR[x.typ]; n++; }
-  if (n) { ritaHotbar(); ritaHand(); setTimeout(() => ui.toast('🤢 Något luktar … Mammas mat har möglat och blommorna har vissnat. Trivseln sjunker.', 'fel'), 6500); sparaSnart(); }
+  if (n) { ritaHotbar(); ritaHand(); morgonToast('🤢 Något luktar … Mammas mat har möglat och blommorna har vissnat. Trivseln sjunker.', 'fel'); sparaSnart(); }
 }
 // kylen: färsk mat möglar inte där inne
 const KYLBAR = new Set(['burk_kompott', 'burk_raggmunk', 'burk_sill']);
@@ -5440,10 +5478,10 @@ const VARME_KRAV = { sommar: 0, host: 4, vinter: 9 };
 function kollaKyla() {     // körs när man somnar
   if (!S.kapitelKlart) return;   // värme och årstider räknas först i kapitel 2
   const a = arstid(), krav = VARME_KRAV[a], v = varme();
-  if (v >= krav) { if (a !== 'sommar' && !S.varmVisad?.[a]) { S.varmVisad = { ...(S.varmVisad || {}), [a]: true }; setTimeout(() => ui.toast(`🔥 Varmt och skönt i skjulet trots ${a === 'host' ? 'hösten' : 'vintern'}.`, 'bra'), 7000); } return; }
+  if (v >= krav) { if (a !== 'sommar' && !S.varmVisad?.[a]) { S.varmVisad = { ...(S.varmVisad || {}), [a]: true }; morgonToast(`🔥 Varmt och skönt i skjulet trots ${a === 'host' ? 'hösten' : 'vintern'}.`, 'bra'); } return; }
   S.frusDag = S.dag + 1; S.frusit = (S.frusit || 0) + 1;
   const vad = [!S.hem?.tak && 'tak', !S.hem?.dorr && 'dörr', (S.hem?.vagg || 0) < 4 && 'fler väggar', !S.hem?.golv && 'golv', a === 'vinter' && !placerade.some((p) => p.typ === 'kamin') && 'en vedkamin (ritning hos Ali)'].filter(Boolean);
-  setTimeout(() => ui.toast(`🥶 Du frös i natt! Trivsel −40 idag. Skjulet behöver: ${vad.join(', ')}.`, 'fel'), 7000);
+  morgonToast(`🥶 Du frös i natt! Trivsel −40 idag. Skjulet behöver: ${vad.join(', ')}.`, 'fel');
   const r = [['mamma', 'Pappa säger att det var minusgrader i natt. Har du LÅNGKALSONGER?? Jag stickar ett par. Två par.'], ['bror', 'Mamma har googlat "hypotermi". Hon har skickat länken till mig fyra gånger. Skaffa en kamin, för min skull.'], ['mamma', 'Jag har lagt raggsockor i en kasse. Och en filt. Och sylt. Pappa kör i morgon.']][S.frusit % 3];
   setTimeout(() => sms(r[0], r[1]), 15000);
 }
@@ -5515,10 +5553,10 @@ const BROR_SMS2 = 'Sälj den till Ali, han med affären vid tippen. Han köper g
 let aliRopTid = 0;
 function brorSms() {
   if (S.brorSms) return; S.brorSms = true; sparaSnart();
-  setTimeout(() => { smsFram('bror', BROR_SMS1); prata('bror', BROR_SMS1, 'STORY'); }, 2000);
+  setTimeout(() => { smsFram('bror', BROR_SMS1, undefined, { vikt: 'STORY' }); }, 2000);
   setTimeout(() => {
     if ((S.stat.salt || 0) > 0) { textLogg('struken', 'bror', BROR_SMS2 + ' (du har redan sålt)'); return; }   // pekar inte bakåt
-    smsFram('bror', BROR_SMS2); prata('bror', BROR_SMS2, 'STORY'); aliRopTid = performance.now() + 30000;
+    smsFram('bror', BROR_SMS2, undefined, { vikt: 'STORY', stryksOm: () => (S.stat.salt || 0) > 0 }); aliRopTid = performance.now() + 30000;
   }, 6000);
 }
 // Alis rop över vägen kommer bara om man inte har gått dit inom ca 30 s efter brorsans sms
@@ -6142,7 +6180,7 @@ function aliMinns() {
 function oppnaMarknad() {
   if (ui.butiksOverlay.hidden) handelse('oppnatButik');
   // punkt AX: krukreceptet kommer dag 2 på morgonen, gratis, första gången du öppnar butiken
-  if (S.dag >= 2 && !S.ritningar.includes('recept:kruka')) { S.ritningar.push('recept:kruka'); aliRepl = ALI_KRUKA; sparaSnart(); setTimeout(() => ui.toast('Ali gav dig receptet till blomkrukan – gratis', 'guld'), 400); }
+  if (S.dag >= 2 && !S.ritningar.includes('recept:kruka')) { S.ritningar.push('recept:kruka'); aliRepl = ALI_KRUKA; sparaSnart(); efterPrat('ali', () => ui.toast('Ali gav dig receptet till blomkrukan – gratis', 'guld')); }   // U008: efter Alis hälsning
   // en vy, två nivåer som alltid syns: SÄLJ (grönt – du får pengar) överst, KÖP (rött – det kostar) under
   const kopL = aliKopLista(), saljL = aliSaljLista(), ejL = aliEjLista();
   const hitta = (k) => k?.startsWith('s:') ? saljL.find((x) => 's:' + x.key === k) : k?.startsWith('k:') ? kopL.find((x) => 'k:' + x.key === k) : null;
@@ -7668,6 +7706,14 @@ function inkorg({ vem, titel, text, lapp = false, block = false, klar, fore, sms
   };
   if (block) budKo.unshift(lasUpp); else bud(lasUpp);
 }
+// punkt 12: fördröjda toasts kopplas till händelser
+const efterBrevKo = {};
+function efterBrev(id, fn, ms = 1000) { (efterBrevKo[id] = efterBrevKo[id] || []).push([fn, ms]); }
+paHandelse('brevLast', ({ id }) => { const l = efterBrevKo[id]; if (!l) return; delete efterBrevKo[id]; l.forEach(([fn, ms]) => setTimeout(fn, ms)); });
+const morgonToasts = [];   // sker under natten, visas när morgonkortet stängs
+const morgonToast = (text, typ) => { if (!morgonToasts.some(([t]) => t === text)) morgonToasts.push([text, typ]); };
+paHandelse('morgonkortStangt', () => { morgonToasts.splice(0).forEach(([t, typ], i) => setTimeout(() => ui.toast(t, typ), 600 + i * 2500)); });
+function efterPrat(vem, fn) { const t0 = performance.now(); const v = () => { if (performance.now() - t0 < 20000 && pratarVem === vem && performance.now() < pratarTill) { setTimeout(v, 250); return; } fn(); }; setTimeout(v, 400); }
 function visaLapp(id) {
   if (!lappInfo(id)) { textLogg('struken', 'lapp', id, 'lappen finns inte längre'); return; }
   if (!S.lappar.includes(id)) S.lappar.push(id);
@@ -7676,8 +7722,8 @@ function visaLapp(id) {
   if (/Storebror/.test(titel)) { sms('bror', text); sparaSnart(); return; }
   if (/^🧺 Ali/.test(titel)) { if (id === 'salt') S.aliStoryVisad = true; sms('ali', text); sparaSnart(); return; }
   // de stora dagboksögonblicken (dag 1, skylten) visas på pausad skärm och läses upp med din röst – innan någon instruktion
-  if (titel.includes('Dagbok')) inkorg({ vem: 'du', titel: 'Dagbok', text, lapp: true, block: id === 'start' || id === 'skylt' });
-  else medKo.push({ typ: 'lapp', titel, text });
+  if (titel.includes('Dagbok')) inkorg({ vem: 'du', titel: 'Dagbok', text, lapp: true, block: id === 'start' || id === 'skylt', klar: () => handelse('brevLast', { id }) });
+  else medKo.push({ typ: 'lapp', titel, text, id });
   sparaSnart();
 }
 
@@ -8105,7 +8151,7 @@ function visaNastaMeddelande() {
   };
   ritaLjud();
   medEl2.firstElementChild.appendChild(ljudKnapp);
-  knapp.onclick = stangMeddelande;
+  knapp.onclick = () => { const las = !knapp.disabled && !knapp.hidden; stangMeddelande(); if (las && m.id) handelse('brevLast', { id: m.id }); };
 }
 // muslåset kan beviljas en stund efter klicket på Starta – kommer det när ett meddelande visas släpper vi det så att man kan klicka Läst
 document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement && !medEl2.hidden) document.exitPointerLock(); });
@@ -8222,7 +8268,7 @@ function uppdatera(dt) {
       if (S.strom < stromMax() - 5) fullVarnad = false;
       S.stat.trampat += TRAMP_PER_S * dt;
       trampTid += dt;
-      pedaler.rotation.x += dt * 9; hjul.rotation.x += dt * 14;
+      pedaler.rotation.x += dt * 9; hjul.rotation.x += dt * 14; cykel.userData.hjul?.forEach((h) => { h.rotation.x += dt * 14; });
       if (trampTid > 0.25) { trampTid = 0; ljud.borsta(); }
     }
 
@@ -8772,7 +8818,7 @@ function kollaPolett() {
   S.folkbokMal = true; markTavla.visible = true; S.mark.tips = true; sparaSnart();
   setTimeout(() => sms('mamma', 'Paketet kom TILLBAKA. Det står "Okänd mottagare". Är du ens skriven där?? Vart ska jag skicka din POST?!'), 4000);
   setTimeout(() => visaLapp('polett'), 9000);
-  setTimeout(() => ui.toast('💡 Poletten trillar ner: du bor faktiskt här. Nytt mål: bli folkbokförd (tavlan vid vägen).', 'guld'), 12000);
+  efterBrev('polett', () => ui.toast('💡 Poletten trillar ner: du bor faktiskt här. Nytt mål: bli folkbokförd (tavlan vid vägen).', 'guld'));   // U011: när mammas paket-dagbok är läst
   setTimeout(() => sms('bror', 'Mamma har ringt Skatteverket. Två gånger. De sa att du måste äga där du bor eller ha ett kontrakt. Hon frågade om de kunde göra ett undantag "för det är ju mitt barn". De kunde inte.'), 30000);
 }
 function folkbokfor() {
@@ -8873,7 +8919,7 @@ function rostManus() {
 // Bilderna renderas ur spelet (verktyg/ai3.mjs → intro/<namn>.webp). Rummet i kort 2–6 är samma bakgrund – bara kalendern,
 // mamma och stöket byts som lager ovanpå. Ingen svart blinkning mellan korten: lagren tonas (0,4 s). Klick/mellanslag = nästa kort.
 const SKJUL_PTS = {"tak":[[0.2273,0.2665],[0.3387,0.2101],[0.7586,0.181],[0.7778,0.2417],[0.2273,0.2665]],"dorr":[[0.4176,0.7275],[0.4135,0.3365],[0.5517,0.3352],[0.5491,0.7497]],"fonster":[[0.3103,0.4923],[0.3078,0.3865],[0.3794,0.3876],[0.381,0.4969],[0.3103,0.4923]],"dorrMitt":[0.481,0.5442]};
-const KORT12_PTS = {"stall":[[49.3,44.6,39.9,42.7],[49.3,43.7,49.3,44.6],[49.3,44.6,49.8,44.3],[40.5,42.5,49.8,44.3],[49.8,44.3,49.8,43.4],[39.9,41.9,49.3,43.7],[49.8,43.4,49.3,43.7],[43.3,43.4,42.5,43.3],[43.1,35.7,43.3,43.4],[43.3,43.4,43.8,43.1],[49.8,43.4,40.5,41.6],[43.1,43,42.5,43.3],[42.5,43.3,42.4,35.6],[43.1,43,43.8,43.1],[43.8,43.1,43.7,35.6],[42.9,35.5,43.1,43],[40.5,42.5,39.9,42.7],[39.9,42.7,39.9,41.9],[40.5,41.6,40.5,42.5],[53.8,42,45,40.4],[53.8,41.1,53.8,42],[53.8,42,54.2,41.7],[39.9,41.9,40.5,41.6],[45.5,40.2,54.2,41.7],[54.2,41.7,54.2,40.9],[45,39.7,53.8,41.1],[54.2,40.9,53.8,41.1],[48.2,41,47.4,40.9],[48.1,34.1,48.2,41],[48.2,41,48.6,40.8],[47.9,40.7,47.4,40.9],[47.4,40.9,47.4,34],[54.2,40.9,45.5,39.5],[47.9,40.7,48.6,40.8],[48.6,40.8,48.6,33.9],[47.9,33.9,47.9,40.7],[45.5,40.2,45,40.4],[45,40.4,45,39.7],[45.5,39.5,45.5,40.2],[45,39.7,45.5,39.5],[43.2,36.2,42.4,36.1],[43.1,35.3,43.2,36.2],[43.2,36.2,48.6,34.4],[47.9,34.3,42.4,36.1],[42.4,36.1,42.4,35.2],[42.4,35.6,43.1,35.7],[43.7,35.6,43.1,35.7],[43.7,35.6,42.9,35.5],[42.4,35.6,42.9,35.5],[42.4,35.2,43.1,35.3],[48.6,33.5,43.1,35.3],[42.4,35.2,47.9,33.4],[47.9,34.3,48.6,34.4],[48.6,34.4,48.6,33.5],[47.9,33.4,47.9,34.3],[47.4,34,48.1,34.1],[48.6,33.9,48.1,34.1],[47.4,34,47.9,33.9],[48.6,33.9,47.9,33.9],[48.6,33.5,47.9,33.4]],"kabel":[[45.6,34.7],[46,35.3],[46.3,35.9],[46.6,36.5],[46.9,37.1],[47.2,37.7],[47.5,38.3],[47.8,38.8],[48,39.1],[48.3,39.3],[48.6,39.4],[48.9,39.3],[49.2,39.1],[49.5,38.7],[49.8,38.3],[50.1,37.9],[50.4,37.3],[50.7,36.8],[50.9,36.2],[51.2,35.7],[51.5,35.1],[51.7,34.5],[52,33.8],[52.3,33.1],[52.5,32.3],[52.7,31.5],[52.9,30.7],[53.2,29.9],[53.4,29.1],[53.6,28.4],[53.8,27.6]]};   // punkt BE: ritningen i kort 12 (räknas fram av verktyg/ai3.mjs)
+const KORT12_PTS = {"stall":[[49.3,44.6,39.9,42.7],[49.3,43.7,49.3,44.6],[49.3,44.6,49.8,44.3],[40.5,42.5,49.8,44.3],[49.8,44.3,49.8,43.4],[39.9,41.9,49.3,43.7],[49.8,43.4,49.3,43.7],[43.3,43.4,42.5,43.3],[43.1,35.7,43.3,43.4],[43.3,43.4,43.8,43.1],[49.8,43.4,40.5,41.6],[43.1,43,42.5,43.3],[42.5,43.3,42.4,35.6],[43.1,43,43.8,43.1],[43.8,43.1,43.7,35.6],[42.9,35.5,43.1,43],[40.5,42.5,39.9,42.7],[39.9,42.7,39.9,41.9],[40.5,41.6,40.5,42.5],[53.8,42,45,40.4],[53.8,41.1,53.8,42],[53.8,42,54.2,41.7],[39.9,41.9,40.5,41.6],[45.5,40.2,54.2,41.7],[54.2,41.7,54.2,40.9],[45,39.7,53.8,41.1],[54.2,40.9,53.8,41.1],[48.2,41,47.4,40.9],[48.1,34.1,48.2,41],[48.2,41,48.6,40.8],[47.9,40.7,47.4,40.9],[47.4,40.9,47.4,34],[54.2,40.9,45.5,39.5],[47.9,40.7,48.6,40.8],[48.6,40.8,48.6,33.9],[47.9,33.9,47.9,40.7],[45.5,40.2,45,40.4],[45,40.4,45,39.7],[45.5,39.5,45.5,40.2],[45,39.7,45.5,39.5],[43.2,36.2,42.4,36.1],[43.1,35.3,43.2,36.2],[43.2,36.2,48.6,34.4],[47.9,34.3,42.4,36.1],[42.4,36.1,42.4,35.2],[42.4,35.6,43.1,35.7],[43.7,35.6,43.1,35.7],[43.7,35.6,42.9,35.5],[42.4,35.6,42.9,35.5],[42.4,35.2,43.1,35.3],[48.6,33.5,43.1,35.3],[42.4,35.2,47.9,33.4],[47.9,34.3,48.6,34.4],[48.6,34.4,48.6,33.5],[47.9,33.4,47.9,34.3],[47.4,34,48.1,34.1],[48.6,33.9,48.1,34.1],[47.4,34,47.9,33.9],[48.6,33.9,47.9,33.9],[48.6,33.5,47.9,33.4]],"kabel":[[45.6,34.7],[46,35.3],[46.3,35.9],[46.6,36.5],[46.9,37.1],[47.2,37.7],[47.5,38.3],[47.8,38.8],[48,39.1],[48.3,39.3],[48.6,39.4],[48.9,39.3],[49.2,39.1],[49.5,38.7],[49.8,38.3],[50.1,37.9],[50.4,37.3],[50.7,36.8],[50.9,36.2],[51.2,35.7],[51.5,35.1],[51.7,34.5],[52,33.8],[52.3,33.1],[52.5,32.3],[52.7,31.5],[52.9,30.7],[53.2,29.9],[53.4,29.1],[53.6,28.4],[53.8,27.6]]}
 const KORT13_PTS = {"kvarn":[[73.1,53,69.9,48.6],[58.9,48.6,60.3,53],[73.1,51.9,73.1,53],[73.1,53,60.3,53],[60.3,53,60.4,51.9],[69.9,47.6,73.1,51.9],[60.4,51.9,58.9,47.6],[60.4,51.9,73.1,51.9],[58.9,47.6,58.9,48.6],[58.9,48.6,69.9,48.6],[69.9,48.6,69.9,47.6],[41.1,47.8,42.9,42.2],[28.8,42.2,23.3,47.8],[40.6,27.5,41.1,47.8],[41.1,47.8,23.3,47.8],[23.3,47.8,21.9,27.5],[69.9,47.6,58.9,47.6],[43.2,42.4,43.6,40.8],[39.7,40.8,38.9,42.4],[43.1,39.3,43.2,42.4],[43.2,42.4,38.9,42.4],[38.9,42.4,38.9,39.3],[28,26.1,28.8,42.2],[28.8,42.2,42.9,42.2],[42.9,42.2,42.7,26.1],[26.4,41.5,25.5,41.3],[27.1,41.3,26.4,41.5],[25.5,41.3,24.9,40.8],[27.8,40.8,27.1,41.3],[26.7,40.2,25.3,41.3],[25.3,41.3,24.7,41.1],[25.9,41.1,25.3,41.3],[25.9,41,26.7,41.2],[26.7,41.2,27.5,41],[26,41.2,26.3,40.9],[24.7,40.9,24.3,41.2],[25.5,33,26,41.2],[26,41.2,24.3,41.2],[24.3,41.2,23.8,33],[24.7,41.1,26.1,40],[25.9,41.1,27.2,40],[24.7,41.1,24.5,40.5],[26.1,40.5,25.9,41.1],[25.3,40.5,25.9,41],[27.5,41,28.1,40.5],[24.2,32.8,24.7,40.9],[24.7,40.9,26.3,40.9],[26.3,40.9,25.9,32.8],[24.9,40.8,24.5,40.1],[28.1,40.1,27.8,40.8],[26.1,40.8,27.4,39.7],[39.7,37.9,39.7,40.8],[39.7,40.8,43.6,40.8],[43.6,40.8,43.6,37.9],[40.6,40.8,41.5,39.9],[40.6,40.8,40.3,40.7],[40.4,40.4,40.6,40.8],[40.3,40.7,41.2,39.8],[40.3,40.7,39.8,40.3],[24.9,39.8,25.3,40.5],[28.1,40.5,28.4,39.8],[24.5,40.5,25.8,39.4],[26.1,40.5,27.4,39.4],[24.5,40.5,24.7,39.9],[25.8,39.9,26.1,40.5],[24.5,40.5,25.8,39.4],[40.4,40.4,41.3,39.5],[39.9,39.9,40.4,40.4],[40.7,39.3,39.8,40.3],[39.8,40.3,39.3,39.7],[26.1,40,26.7,40.2],[26.7,40.2,27.2,40],[24.5,40.1,24.4,39.3],[28,39.3,28.1,40.1],[28.1,40.1,28.4,39.8],[25.8,39.4,26.1,40],[27.2,40,27.4,39.4],[24.7,39.9,26,38.9],[25.8,39.9,27.1,38.9],[24.7,39.9,25.2,39.7],[25.2,39.7,25.8,39.9],[39.9,39.9,40.8,38.9],[41.5,39.9,42.4,38.9],[39.3,39.5,39.9,39.9],[24.8,39,24.9,39.8],[28.4,39.8,28.4,39],[41.2,39.8,42.2,38.9],[24.4,39.7,24.8,39.4],[25.2,39.7,26.6,38.7],[39.3,39.7,40.2,38.8],[39.3,39.7,39.1,39.4],[39.3,39.5,40.3,38.5],[41.3,39.5,42.3,38.6],[26,38.9,25.8,39.4],[27.4,39.4,27.1,38.9],[39.1,39.4,40,38.4],[24.4,39.3,24.7,38.6],[27.6,38.6,28,39.3],[43.6,37.9,43.1,39.3],[38.9,39.3,39.7,37.9],[38.9,39.3,43.1,39.3],[41.7,38.4,40.7,39.3],[25.1,38.3,24.8,39],[28.4,39,28,38.3],[26.6,38.7,26,38.9],[27.1,38.9,26.6,38.7],[40.8,38.9,41.8,38],[42.2,38.9,43.1,37.9],[42.4,38.9,43.4,38],[40.2,38.8,41.2,37.9],[24.7,38.6,25.4,38.1],[27,38.1,27.6,38.6],[42.3,38.6,43.2,37.7],[40.3,38.5,41.3,37.6],[40,38.4,41,37.5],[42.6,37.5,41.7,38.4],[25.7,37.8,25.1,38.3],[28,38.3,27.3,37.8],[25.4,38.1,26.2,37.9],[26.2,37.9,27,38.1],[41.8,38,42.7,37.1],[43.4,38,44.3,37.1],[43.6,37.9,39.7,37.9],[41.2,37.9,42.1,36.9],[43.1,37.9,44.1,37],[26.5,37.7,25.7,37.8],[27.3,37.8,26.5,37.7],[43.2,37.7,44.1,36.8],[41.3,37.6,42.2,36.7],[41,37.5,41.9,36.6],[43.6,36.5,42.6,37.5],[42.7,37.1,43.6,36.2],[44.3,37.1,45.3,36.1],[44.1,37,45.1,36],[42.1,36.9,43.1,36],[44.1,36.8,45,35.9],[42.2,36.7,43.1,35.8],[41.9,36.6,42.9,35.7],[44.6,35.5,43.6,36.5],[43.6,36.2,44.5,35.3],[45.3,36.1,46.2,35.1],[43.1,36,44,35],[45.1,36,46,35],[45,35.9,45.9,34.9],[43.1,35.8,44,34.9],[42.9,35.7,43.8,34.7],[45.5,34.5,44.6,35.5],[44.5,35.3,45.4,34.4],[24.8,34.2,23,35.2],[23,35.2,22.4,35],[23.6,35,23,35.2],[46.2,35.1,47.1,34.1],[22.4,35,24.2,34],[23.6,35,25.4,34],[22.4,35,22,34.5],[24,34.5,23.6,35],[22.8,34.5,22.8,35],[21.9,34.5,22,35],[44,35,45,34],[46,35,46.9,33.9],[23.6,34.4,23.6,34.9],[21.4,34.4,21.6,34.9],[44,34.9,44.8,34],[45.9,34.9,46.7,33.9],[21.5,34.2,21.6,34.7],[24.1,34.7,24.2,34.2],[43.8,34.7,44.7,33.8],[22.1,34,22.2,34.6],[24.3,34,24.2,34.6],[22,34.5,23.8,33.6],[24,34.5,25.7,33.6],[22,34.5,22,33.8],[24,33.8,24,34.5],[24,34.5,25.7,33.6],[22.7,33.9,22.8,34.5],[21.9,33.9,21.9,34.5],[22.9,34,23,34.5],[23.8,34,23.7,34.5],[46.4,33.5,45.5,34.5],[23.5,33.8,23.6,34.4],[21.5,33.8,21.4,34.4],[45.4,34.4,46.2,33.5],[24.2,34,24.8,34.2],[24.8,34.2,25.4,34],[21.6,33.7,21.5,34.2],[24.2,34.2,24.1,33.7],[21.9,34.1,23.8,33.3],[47.1,34.1,47.9,33],[23.8,33.6,24.2,34],[25.4,34,25.7,33.6],[22.1,33.6,22.1,34],[22.9,33.5,22.9,34],[23.7,33.5,23.8,34],[24.1,33.6,24.3,34],[44.8,34,45.7,33],[45,34,45.8,33],[46.9,33.9,47.8,32.8],[46.7,33.9,47.5,32.9],[22,33.8,23.8,33],[24,33.8,25.7,33],[22,33.8,22.3,33.3],[23.5,33.3,24,33.8],[44.7,33.8,45.5,32.8],[23.8,33,23.8,33.6],[25.7,33.6,25.7,33],[23.3,28.9,23.6,33.6],[23.6,33.6,39.4,33.6],[39.4,33.6,39.3,28.9],[46.2,33.5,46.9,32.5],[47.2,32.4,46.4,33.5],[22.3,33.3,24.1,32.5],[23.5,33.3,25.3,32.5],[22.3,33.3,22.9,33.1],[22.9,33.1,23.5,33.3],[22.9,33.1,24.7,32.3],[25.9,32.8,25.5,33],[23.8,33,24.2,32.8],[23.8,33,25.5,33],[24.1,32.5,23.8,33],[25.7,33,25.3,32.5],[45.7,33,46.4,32.1],[45.8,33,46.6,32],[47.9,33,48.6,31.9],[47.5,32.9,48.2,31.8],[25.9,32.8,24.2,32.8],[45.5,32.8,46.3,31.8],[47.8,32.8,48.5,31.7],[24.7,32.3,24.1,32.5],[25.3,32.5,24.7,32.3],[46.9,32.5,47.6,31.4],[48,31.3,47.2,32.4],[46.4,32.1,47.1,31],[46.6,32,47.3,30.9],[48.6,31.9,49.3,30.8],[46.3,31.8,47,30.8],[48.2,31.8,48.9,30.7],[48.5,31.7,49.2,30.6],[47.6,31.4,48.3,30.4],[48.7,30.1,48,31.3],[47.1,31,47.7,30],[47.3,30.9,48,29.8],[47,30.8,47.6,29.7],[49.3,30.8,49.9,29.7],[48.9,30.7,49.5,29.6],[49.2,30.6,49.9,29.5],[48.3,30.4,48.9,29.3],[49.3,29,48.7,30.1],[47.7,30,48.4,28.9],[48,29.8,48.7,28.7],[47.6,29.7,48.3,28.6],[49.9,29.7,50.6,28.6],[49.5,29.6,50.2,28.6],[49.9,29.5,50.5,28.4],[48.9,29.3,49.5,28.3],[50,27.9,49.3,29],[39.3,28.9,23.3,28.9],[48.4,28.9,49,27.8],[48.7,28.7,49.3,27.6],[48.3,28.6,48.9,27.6],[50.6,28.6,51.2,27.6],[50.2,28.6,50.8,27.6],[50.5,28.4,51.1,27.3],[49.5,28.3,50.1,27.2],[50.6,26.8,50,27.9],[49,27.8,49.6,26.8],[48.9,27.6,49.6,26.5],[49.3,27.6,50,26.5],[51.2,27.6,51.8,26.6],[50.8,27.6,51.4,26.6],[42.7,26.1,40.6,27.5],[21.9,27.5,28,26.1],[21.9,27.5,40.6,27.5],[51.1,27.3,51.8,26.2],[32.7,27.2,31,27.1],[34.6,27.1,32.7,27.2],[50.1,27.2,50.8,26.2],[31,27.1,30,27],[36.3,27,34.6,27.1],[37.1,26.8,36.3,27],[21.4,15.7,29.9,26.9],[30,26.8,31,26.7],[44,16,37.2,26.8],[49.6,26.8,50.3,25.8],[51.3,25.8,50.6,26.8],[31,26.7,32.6,26.6],[36,26.6,37,26.7],[32.6,26.6,34.4,26.5],[34.4,26.5,36,26.6],[51.8,26.6,52.5,25.6],[51.4,26.6,52,25.6],[49.6,26.5,50.2,25.4],[50,26.5,50.6,25.5],[51.8,26.2,52.4,25.3],[50.8,26.2,51.4,25.3],[42.7,26.1,28,26.1],[50.3,25.8,50.9,24.8],[52,24.8,51.3,25.8],[52.5,25.6,53.1,24.8],[52,25.6,52.7,24.8],[54.8,24.7,55.7,25.6],[54.4,24.7,55.3,25.6],[56.2,25.2,55.7,25.6],[55.7,25.6,55.3,25.6],[55.3,25.6,55.3,25.1],[50.6,25.5,51.3,24.4],[50.2,25.4,50.9,24.4],[52.4,25.3,53.1,24.4],[51.4,25.3,52.1,24.4],[55.4,24.3,56.2,25.2],[56.5,24.5,56.2,25.2],[54.4,24.3,55.3,25.1],[55.3,25.1,55.6,24.5],[50.9,24.8,51.7,23.8],[52.7,23.8,52,24.8],[53.1,24.8,53.8,24.2],[52.7,24.8,53.3,24.2],[54.1,24.1,54.8,24.7],[53.7,24.1,54.4,24.7],[54.8,23.8,55.6,24.5],[56.5,24.5,55.8,23.8],[55.6,24.5,56.1,24.1],[56.5,24.1,56.5,24.5],[50.9,24.4,51.7,23.4],[51.3,24.4,52.1,23.4],[53.1,24.4,53.9,23.7],[52.1,24.4,52.9,23.7],[54.6,23.7,55.4,24.3],[53.7,23.7,54.4,24.3],[53.8,24.2,54.1,24.1],[53.3,24.2,53.7,24.1],[53.7,24.1,54.1,24.1],[55.4,23.4,56.1,24.1],[55.8,23.4,56.5,24.1],[56.1,24.1,56.5,24.1],[51.7,23.8,52.6,23],[53.6,23,52.7,23.8],[53.9,23,54.8,23.8],[55.8,23.8,54.9,23],[53.9,23.7,54.6,23.7],[52.9,23.7,53.7,23.7],[51.7,23.4,52.7,22.5],[52.1,23.4,53.1,22.5],[54.4,22.5,55.4,23.4],[54.8,22.5,55.8,23.4],[52.6,23,53.9,23],[54.9,23,53.6,23],[52.7,22.5,54.4,22.5],[53.1,22.5,54.8,22.5],[54.8,22.5,54.4,22.5],[35.5,16.7,30.4,16.6],[40,16.6,35.5,16.7],[30.4,16.6,25.7,16.4],[43.1,16.4,40,16.6],[25.7,16.4,22.3,16],[44,16,43.1,16.4],[22.3,16,21.5,15.6],[41.9,15.6,44,16],[21.5,15.6,24.2,15.3],[36.7,15.3,41.9,15.6],[24.2,15.3,30,15.1],[30,15.1,36.7,15.3]],"extruder":[[65.6,47.3,63.2,43.2],[51.6,43.2,51.9,47.3],[66.2,32.1,65.6,47.3],[65.6,47.3,51.9,47.3],[51.9,47.3,51.9,32.1],[52.8,40.5,52.8,43.6],[52.8,43.6,64.9,43.6],[64.9,43.6,65,40.5],[51.6,30.2,51.6,43.2],[51.6,43.2,63.2,43.2],[63.2,43.2,63.6,30.2],[65,40.5,52.8,40.5],[62.7,38.1,62.9,38.7],[63.1,38.7,63.3,38.1],[61.4,38.7,61.2,38.1],[61.7,38.1,61.6,38.7],[58.4,38.1,58.5,38.7],[58.7,38.7,58.8,38.1],[57,38.7,56.9,38.1],[57.2,38.1,57.1,38.7],[65.3,37.8,65.5,38.3],[65.7,38.3,65.9,37.8],[52.6,38.3,52.6,37.8],[52.7,37.8,52.6,38.3],[62.6,37.1,62.7,38.1],[63.3,38.1,63.4,37.1],[61.2,38.1,61.1,37.1],[61.8,37.1,61.7,38.1],[58.3,37.1,58.4,38.1],[58.8,38.1,58.9,37.1],[56.9,38.1,56.8,37.1],[57.2,37.1,57.2,38.1],[65.2,37,65.3,37.8],[65.9,37.8,66,37],[52.6,37.8,52.5,37],[52.7,37,52.7,37.8],[66,37.8,66.6,37.8],[66.6,37.8,66,37.6],[67.1,37.6,66.6,37.8],[65.1,37.4,66,37.8],[66,37.8,67,37.4],[65.2,37.5,52.5,37.7],[62.6,37.7,61.1,37.7],[58.3,37.7,56.8,37.7],[66,37.6,65.1,37.4],[66,37.6,65.8,37],[67.4,37,67.1,37.6],[64.8,36.5,65.1,37.4],[67,37.4,67.4,36.5],[67.4,37.2,67.4,36.8],[63.4,37.1,63.4,35.9],[62.6,36,62.6,37.1],[61.8,35.9,61.8,37.1],[61.1,37.1,61.1,36],[58.9,37.1,58.8,35.9],[58.3,36,58.3,37.1],[57.2,35.9,57.2,37.1],[56.8,37.1,56.8,36],[66,37,66,36],[65.2,36.1,65.2,37],[52.7,36,52.7,37],[52.5,37,52.5,36.1],[65.8,37,64.8,36.5],[67.4,37,67.4,36.5],[65.8,37,66.1,36.5],[67.2,36.5,67.4,37],[65.8,37,64.8,36.5],[58.9,36.6,57.2,35],[66.1,36.5,65.2,35.6],[67.2,36.5,67,35.6],[66.1,36.5,66.6,36.2],[66.6,36.2,67.2,36.5],[65.2,35.6,64.8,36.5],[67.4,36.5,67,35.6],[66.6,36.2,66.1,35.3],[65.2,35.3,65.2,36.1],[52.5,36.1,52.5,35.3],[66,36,65.8,35.2],[52.6,35.2,52.7,36],[62.7,35,62.6,36],[61.1,36,61.1,35],[58.3,35,58.3,36],[56.8,36,56.8,35],[66,35.9,52.7,35.6],[63.4,35.9,63.2,34.9],[61.7,34.9,61.8,35.9],[58.8,35.9,58.7,34.9],[57.2,34.9,57.2,35.9],[63.4,35.7,61.8,35.7],[66.1,35.3,65.2,35.6],[67,35.6,66.1,35.3],[65.4,34.8,65.2,35.3],[52.5,35.3,52.6,34.8],[65.8,35.2,65.6,34.8],[52.6,34.8,52.6,35.2],[62.8,34.4,62.7,35],[61.1,35,61.3,34.4],[58.5,34.4,58.3,35],[56.8,35,56.9,34.4],[63.2,34.9,63,34.4],[61.5,34.4,61.7,34.9],[58.7,34.9,58.6,34.4],[57,34.4,57.2,34.9],[66.5,32.2,63.8,30.3],[51.4,30.3,51.7,32.2],[66.6,30.9,66.5,32.2],[66.5,32.2,51.7,32.2],[51.7,32.2,51.7,30.9],[63.6,30.2,66.2,32.1],[51.9,32.1,51.6,30.2],[51.9,32.1,66.2,32.1],[63.8,29.2,66.6,30.9],[51.7,30.9,51.4,29.2],[51.7,30.9,66.6,30.9],[51.4,29.2,51.4,30.3],[51.4,30.3,63.8,30.3],[63.8,30.3,63.8,29.2],[63.6,30.2,51.6,30.2],[55.9,30.2,55.1,30.1],[56.8,30.1,55.9,30.2],[55.1,30.1,54.5,30],[57.2,30,56.8,30.1],[52.1,25.3,54.4,30],[59.7,25.4,57.2,30],[54.5,29.9,54.9,29.8],[56.5,29.8,57.1,29.9],[54.9,29.8,55.7,29.8],[55.7,29.8,56.5,29.8],[63.8,29.2,51.4,29.2],[53.8,25.5,56.2,25.6],[56.2,25.6,58.5,25.5],[52.3,25.4,53.8,25.5],[58.5,25.5,59.6,25.4],[59.6,25.4,59.3,25.2],[53.5,25.1,52.3,25.2],[59.3,25.2,57.8,25.1],[55.6,25.1,53.5,25.1],[57.8,25.1,55.6,25.1]],"rulle":[[66,50.8,64.4,50.6],[67.5,50.6,66,50.8],[64.4,50.5,65.9,50.7],[65.9,50.7,67.5,50.5],[64.4,50.6,63.1,49.9],[69,49.9,67.5,50.6],[63,49.8,64.4,50.5],[67.5,50.5,68.9,49.8],[63.1,49.9,62,48.9],[70.1,48.9,69,49.9],[61.9,48.8,63,49.8],[68.9,49.8,70,48.8],[65.9,49.5,64.8,49.3],[67.1,49.3,65.9,49.5],[64.8,49.3,63.8,48.8],[68.1,48.8,67.1,49.3],[65.1,49.1,63.6,48.9],[66.5,48.9,65.1,49.1],[63.6,48.8,65,49],[65,49,66.5,48.8],[63.6,48.9,62.3,48.3],[67.9,48.3,66.5,48.9],[62,48.9,61.3,47.5],[70.9,47.5,70.1,48.9],[62.3,48.2,63.6,48.8],[66.5,48.8,67.8,48.2],[61.3,47.4,61.9,48.8],[70,48.8,70.8,47.4],[63.8,48.8,63,48],[69,48,68.1,48.8],[62.3,48.3,61.3,47.3],[69,47.3,67.9,48.3],[61.3,47.2,62.3,48.2],[67.8,48.2,68.9,47.2],[63,48,62.5,47],[69.6,47,69,48],[64,47.8,65.1,48],[65.1,48,66.2,47.8],[63.1,47.3,64,47.8],[66.2,47.8,67.2,47.3],[66.1,47.6,65.3,47.3],[66.9,47.3,66.1,47.6],[61.3,47.5,61.1,46],[71.2,46,70.9,47.5],[61,45.9,61.3,47.4],[70.8,47.4,71.1,45.9],[61.3,47.3,60.7,46],[69.7,46,69,47.3],[62.3,46.6,63.1,47.3],[67.2,47.3,68,46.6],[65.3,47.3,64.7,46.8],[67.5,46.8,66.9,47.3],[60.6,45.9,61.3,47.2],[68.9,47.2,69.7,45.9],[62.5,47,62.4,45.9],[69.8,45.9,69.6,47],[64.7,46.8,64.5,46],[67.8,46,67.5,46.8],[65.2,45.2,66.1,46.7],[66.1,46.7,65.7,46.6],[66.6,46.6,66.1,46.7],[61.9,45.7,62.3,46.6],[68,46.6,68.6,45.7],[65.7,46.6,64.8,45],[66.6,46.6,65.6,45],[65.7,46.6,65.5,46.3],[66.8,46.3,66.6,46.6],[65.5,46.3,64.5,44.7],[66.8,46.3,65.8,44.7],[65.5,46.3,65.5,45.8],[66.8,45.8,66.8,46.3],[66.9,46.2,65.8,44.8],[65.5,46.1,64.5,44.5],[60.7,46,60.5,44.6],[70,44.6,69.7,46],[61.1,46,61.4,44.5],[71,44.5,71.2,46],[61.1,46,61,45.9],[71.2,46,71.1,45.9],[64.5,46,64.8,45.2],[67.6,45.2,67.8,46],[64.4,45.8,65.1,46],[65.1,46,65.9,45.8],[64.5,46,63.7,44.5],[67.8,46,66.7,44.8],[60.4,44.5,60.6,45.9],[69.7,45.9,69.9,44.5],[61.3,44.4,61,45.9],[71.1,45.9,71,44.4],[62.4,45.9,62.6,44.8],[69.7,44.8,69.8,45.9],[62.4,45.9,61.7,44.6],[69.8,45.9,68.8,44.6],[63.9,45.3,64.4,45.8],[65.9,45.8,66.5,45.3],[65.5,45.8,64.6,44.3],[66.8,45.8,65.8,44.3],[65.5,45.8,65.8,45.5],[66.6,45.5,66.8,45.8],[61.7,44.6,61.9,45.7],[68.6,45.7,68.8,44.6],[65.8,45.5,64.8,44],[66.6,45.5,65.6,44],[65.8,45.5,66.2,45.4],[66.2,45.4,66.6,45.5],[66.2,45.4,65.2,43.9],[63.7,44.5,63.9,45.3],[66.5,45.3,66.7,44.5],[64.8,45.2,65.4,44.7],[67,44.7,67.6,45.2],[64.8,45,65.2,45.2],[65.2,45.2,65.6,45],[64.5,44.7,64.8,45],[65.6,45,65.8,44.7],[62.6,44.8,63.1,43.8],[69.2,43.8,69.7,44.8],[65.4,44.7,66.2,44.5],[66.2,44.5,67,44.7],[64.6,44.3,64.5,44.7],[65.8,44.7,65.8,44.3],[60.5,44.6,60.7,43.2],[69.9,43.2,70,44.6],[60.5,44.6,60.4,44.5],[70,44.6,69.9,44.5],[61.9,43.6,61.7,44.6],[68.8,44.6,68.7,43.6],[60.7,43.1,60.4,44.5],[69.9,44.5,69.8,43.1],[61.4,44.5,62.1,43.2],[70.4,43.2,71,44.5],[63.9,43.8,63.7,44.5],[66.7,44.5,66.6,43.8],[62.1,43.1,61.3,44.4],[71,44.4,70.3,43.1],[64.8,44,64.6,44.3],[65.8,44.3,65.6,44],[65.2,43.9,64.8,44],[65.6,44,65.2,43.9],[63.1,43.8,64,43],[68.4,43,69.2,43.8],[64.5,43.3,63.9,43.8],[66.6,43.8,66,43.3],[62.4,42.6,61.9,43.6],[68.7,43.6,68.2,42.6],[65.3,43.1,64.5,43.3],[66,43.3,65.3,43.1],[60.7,43.2,61.5,41.9],[69.2,41.9,69.9,43.2],[62.1,43.2,63.3,42.1],[69.3,42.1,70.4,43.2],[61.4,41.8,60.7,43.1],[69.8,43.1,69.2,41.8],[63.2,42,62.1,43.1],[70.3,43.1,69.2,42],[64,43,65.1,42.5],[67.4,42.5,68.4,43],[63.3,41.9,62.4,42.6],[68.2,42.6,67.4,41.9],[65.1,42.5,66.2,42.3],[66.2,42.3,67.4,42.5],[63.3,42.1,64.8,41.4],[67.9,41.4,69.3,42.1],[64.7,41.3,63.2,42],[69.2,42,67.8,41.3],[61.5,41.9,62.5,40.9],[68.2,40.9,69.2,41.9],[64.3,41.4,63.3,41.9],[67.4,41.9,66.5,41.4],[62.5,40.8,61.4,41.8],[69.2,41.8,68.1,40.8],[64.8,41.4,66.3,41.2],[66.3,41.2,67.9,41.4],[65.4,41.2,64.3,41.4],[66.5,41.4,65.4,41.2],[66.3,41.1,64.7,41.3],[67.8,41.3,66.3,41.1],[62.5,40.9,63.9,40.2],[66.9,40.2,68.2,40.9],[63.9,40.1,62.5,40.8],[68.1,40.8,66.8,40.1],[63.9,40.2,65.4,40],[65.4,40,66.9,40.2],[65.4,39.9,63.9,40.1],[66.8,40.1,65.4,39.9]],"slang":[[65.7,43.9],[66.2,44.3],[66.7,44.7],[67.1,45.2],[67.6,45.7],[68.1,46.1],[68.5,46.5],[69,46.9],[69.4,47.1],[69.9,47.4],[70.4,47.5],[71.1,47.5],[71.7,47.5],[72.4,47.4],[73.1,47.3],[73.8,47.1],[74.4,46.8],[75.1,46.5],[75.7,46.1],[76.3,45.7],[76.8,45.1],[77.2,44.5],[77.7,43.8],[78.1,43],[78.5,42.1],[78.9,41.1],[79.2,40.2],[79.6,39.2],[79.9,38.2],[80.1,37.1],[80.4,36.2],[80.6,35],[80.8,33.8],[80.9,32.6],[81,31.3],[81.1,30],[81.1,28.6],[81.1,27.3],[81.2,25.9],[81.2,24.6],[81.3,23.2]]};   // punkt BA: ritningslinjerna i kort 13 (räknas fram av verktyg/ai3.mjs)
 const INTRO_PAUS = 400;   // punkt BC: ms efter att rösten är klar innan nästa rad eller kort kommer
 const IB = (namn, extra = {}) => ({ id: extra.id || namn, src: `intro/${namn}.webp`, ...extra });
@@ -9302,7 +9348,7 @@ function julScen() {
     konfetti(260); fanfar(); ljud.stor();
     S.julFirad = true; julPagar = false; sparaSnart(); kollaSkylt();   // sista polaroiden tas av polaroidväggen
     // kvällen: gästerna går, flaggan är uppe – mammas brev ligger i postlådan
-    setTimeout(() => { ui.toast('Gästerna har gått. Flaggan på postlådan är uppe.', 'guld'); if (!S.lappar.includes('mammajul')) { S.post.lapp = 'mammajul'; visaPostInne(); sparaSnart(); } }, 9000);
+    ui.toast('Gästerna har gått. Flaggan på postlådan är uppe.', 'guld'); if (!S.lappar.includes('mammajul')) { S.post.lapp = 'mammajul'; visaPostInne(); sparaSnart(); }   // U012: när julscenen är slut
   }
   nasta();
 }
@@ -9513,7 +9559,7 @@ function nLappLast(i) {
   const b = N_BEST[i]; if (!b) return;
   S.n.vill = b.id;
   if (b.id === 'n_kopp' && !S.ritningar.includes('recept:n_kopp')) S.ritningar.push('recept:n_kopp');
-  setTimeout(() => ui.toast(`N. vill ha: ${VAROR[b.id].namn.toLowerCase()} – lådan märkt N. står vid staketet i norr`, 'guld'), 1500);
+  efterBrev('n' + i, () => ui.toast(`N. vill ha: ${VAROR[b.id].namn} – lådan märkt N. står vid staketet i norr`, 'guld'));   // U013
   sparaSnart();
 }
 interaktor.registrera(nLada, {
@@ -11018,6 +11064,7 @@ function kedja(id) {
   }
 }
 paHandelse('skyltKlar', () => kedja('skylt'));
+paHandelse('placerat', ({ sak }) => { if (sak === 'leveranslada') ui.toast('Leveranslådan är på – skrivarna printar vidare av sig själva.', 'guld'); });   // U002
 paHandelse('placerat', ({ sak }) => {   // punkt BD: mamma om jacuzzin, 30 s efter att den står ute (en gång)
   if (sak !== 'jacuzzi' || S.mammaJacuzzi) return; S.mammaJacuzzi = true; sparaSnart();
   MAMMA_SVAR_K2.forEach((t, i) => setTimeout(() => sms('mamma', t), 30000 + i * 4000));
