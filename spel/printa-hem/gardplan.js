@@ -20,15 +20,15 @@ export const LINJER = [
 
 // platserna i varje linje (x = mitten, b × d = storlek). Skrivarplatserna är stora nog för en L-skrivare.
 export const LINJE_PLATSER = [
-  { typ: 'container', namn: 'Skräpcontainer', x: -18.6, b: 1.8, d: 1.8 },
+  { typ: 'container', namn: 'Skräpcontainer', x: -18.3, b: 1.8, d: 1.8 },
   { typ: 'kvarn', namn: 'Kvarn', x: -16.3, b: 2.0, d: 1.8 },
-  { typ: 'extruder', namn: 'Extruder', x: -14.3, b: 1.4, d: 1.2 },
-  { typ: 'spolhallare', namn: 'Spolhållare', x: -12.8, b: 1.0, d: 1.2 },
-  { typ: 'skrivare1', namn: 'Skrivarplats 1', x: -11.0, b: 1.6, d: 1.6 },
-  { typ: 'skrivare2', namn: 'Skrivarplats 2', x: -9.1, b: 1.6, d: 1.6 },
-  { typ: 'skrivare3', namn: 'Skrivarplats 3', x: -7.2, b: 1.6, d: 1.6 },
-  { typ: 'skrivare4', namn: 'Skrivarplats 4', x: -5.3, b: 1.6, d: 1.6 },
-  { typ: 'utband', namn: 'Utband', x: -3.9, b: 0.9, d: 0.8 },
+  { typ: 'extruder', namn: 'Extruder', x: -15.0, b: 1.0, d: 1.2 },
+  { typ: 'spolhallare', namn: 'Spolhållare', x: -13.8, b: 1.0, d: 1.2 },
+  { typ: 'skrivare1', namn: 'Skrivarplats 1', x: -10.5, b: 1.6, d: 1.6 },
+  { typ: 'skrivare2', namn: 'Skrivarplats 2', x: -8.7, b: 1.6, d: 1.6 },
+  { typ: 'skrivare3', namn: 'Skrivarplats 3', x: -6.9, b: 1.6, d: 1.6 },
+  { typ: 'skrivare4', namn: 'Skrivarplats 4', x: -5.1, b: 1.6, d: 1.6 },
+  { typ: 'utband', namn: 'Utband', x: -3.85, b: 0.7, d: 0.8 },
 ];
 
 // alla fasta platser i fabriken: fem linjer + det som är gemensamt
@@ -39,19 +39,23 @@ export const FABRIK_PLATSER = [
   { id: 'lastarm', typ: 'lastarm', kapitel: 3, x: -20.3, z: 15.5, b: 1.6, d: 1.6, text: 'Lastarmen vid tippen – kapitel 3', farg: '#c0612b' },
   { id: 'samlingsband', typ: 'samlingsband', kapitel: 3, x: -2.9, z: 1.0, b: 0.8, d: 24, text: 'Samlingsband till lådan – kapitel 3', farg: '#c0612b' },
   { id: 'saljlada', typ: 'saljlada', kapitel: 1, x: -2.9, z: 14.6, b: 1.6, d: 1.4, text: 'Säljlådan (dag 3) – leveranslådan i kapitel 3', farg: '#e9b949' },
-  { id: 'cykel', typ: 'cykel', kapitel: 1, x: -12.8, z: 13.6, b: 1.0, d: 1.8, text: 'Cykeln', farg: '#4cc9f0' },
+  { id: 'cykel', typ: 'cykel', kapitel: 1, x: -12.6, z: 13.9, b: 1.0, d: 1.8, text: 'Cykeln', farg: '#4cc9f0' },
   { id: 'sol', typ: 'sol', kapitel: 1, x: -18.2, z: -17.5, b: 2.2, d: 1.6, text: 'Solpanelen (dag 4)', farg: '#ffd43b' },
   { id: 'bank', typ: 'bank', kapitel: 2, x: -15.4, z: -17.5, b: 1.4, d: 1.2, text: 'Batteribanken', farg: '#ffd43b' },
   { id: 'solpark', typ: 'solpark', kapitel: 2, x: -11.0, z: -17.5, b: 5.0, d: 2.4, text: 'Solcellsparken', farg: '#ffd43b' },
+  { id: 'sol2', typ: 'sol', kapitel: 2, x: -18.2, z: -14.6, b: 2.2, d: 1.6, text: 'En solpanel till', farg: '#ffd43b' },
+  { id: 'bank2', typ: 'bank', kapitel: 2, x: -15.4, z: -14.6, b: 1.4, d: 1.2, text: 'En batteribank till', farg: '#ffd43b' },
+  { id: 'solpark2', typ: 'solpark', kapitel: 3, x: -11.0, z: -14.4, b: 5.0, d: 2.4, text: 'Solcellspark 2', farg: '#ffd43b' },
+  { id: 'solpark3', typ: 'solpark', kapitel: 3, x: -5.6, z: -17.5, b: 5.0, d: 2.4, text: 'Solcellspark 3', farg: '#ffd43b' },
   { id: 'fabrikshall', typ: 'fabrikshall', kapitel: 4, x: -11.5, z: 8.75, b: 18.4, d: 9.5, text: 'Fabrikshallen – tak och väggar över linje 1–2 (senare)', farg: '#9aa3b5', last: true },
 ];
 
-// hemmet: fri placering inom zonen, några fasta startplatser
+// hemmet: fri placering inom zonen. Skjulet ligger nära kvarnen och Ali, den bakre delen (norr) sparas till gamingboden och mysiga saker
 export const HEM_ZON = { minX: 5, maxX: 20, minZ: -19, maxZ: 15 };
 export const HEM_PLATSER = [
-  { id: 'skjul', typ: 'skjul', x: 14, z: 0, b: 3.6, d: 3.0, text: 'Skjulet – kistan och sängen står inne' },
-  { id: 'bod', typ: 'bod', x: 14, z: -5.5, b: 3.2, d: 2.8, text: 'Gamingboden (kapitel 3)' },
-  { id: 'uteplats', typ: 'uteplats', x: 9.5, z: 3.5, b: 4, d: 3, text: 'Uteplatsen' },
+  { id: 'skjul', typ: 'skjul', x: 9, z: 7, b: 3.6, d: 3.0, text: 'Skjulet – kistan och sängen står inne' },
+  { id: 'bod', typ: 'bod', x: 9, z: 2.4, b: 3.2, d: 2.8, text: 'Gamingboden (kapitel 3) – norr om skjulet' },
+  { id: 'uteplats', typ: 'uteplats', x: 9, z: 10.6, b: 4, d: 2.4, text: 'Uteplatsen framför dörren' },
   { id: 'huset', typ: 'huset', x: 26, z: 0, b: 8, d: 6, text: 'Huset på ängen (kapitel 4) – hemmet växer österut' },
 ];
 
