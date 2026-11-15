@@ -29,4 +29,13 @@ def narke(ipa):
     s = s.replace('ɛː', 'eː')
     return s
 
-DIALEKT = {'varmland': varmland, 'stockholm': stockholm, 'narke': narke}
+def smaland(ipa):
+    """Mamma (punkt AH): småländska från Nässjö – skorrande r, framskjutet a, ä blir e, o glider lite."""
+    s = ipa
+    s = s.replace('r', 'ʁ')                             # skorrande r: "ʁum"
+    s = s.replace('ɑː', 'aː')                           # "jaa", "maamma"
+    s = s.replace('ɛː', 'eː')                           # städa → steeda
+    s = s.replace('oː', 'oʊ')                           # något → noʊgot, lite sjungande
+    return s
+
+DIALEKT = {'varmland': varmland, 'stockholm': stockholm, 'narke': narke, 'smaland': smaland}

@@ -9,9 +9,10 @@ from kokoro_sv import SwedishKokoro
 from dialekt import DIALEKT
 # vem: (Kokoro-röst, tempo, ffmpeg-klang, halvtoner (djupare = minus), dialekt)
 ROSTER = {
-    'rolf':      ('Björn',  0.90, 'bass=g=4:f=130', -3.0, 'varmland'),     # värmlänning/dalmas, djup och långsam
-    'mamma':     ('Stina',  1.18, 'highpass=f=220,equalizer=f=1150:t=q:w=1.4:g=8,equalizer=f=2700:t=q:w=1:g=4,lowpass=f=6500', 0.5, 'narke'),   # närkingska – nasal och gnällig
-    'pappa':     ('Lars',   1.0,  'bass=g=3:f=150', -2.0, 'stockholm'),    # stockholmare, glad och obrydd
+    # punkt AH: Rolf gammal och trött men inte för långsam, mamma småländska (Nässjö) – gäll och nasal, pappa matt och neutral
+    'rolf':      ('Björn',  0.95, 'bass=g=4:f=130,tremolo=f=4.5:d=0.07,lowpass=f=5500', -3.5, 'varmland'),
+    'mamma':     ('Stina',  1.15, 'highpass=f=260,equalizer=f=1250:t=q:w=1.2:g=9,equalizer=f=3000:t=q:w=1:g=5,lowpass=f=7000', 1.5, 'smaland'),
+    'pappa':     ('Lars',   0.92, 'bass=g=2:f=150,lowpass=f=4800,acompressor=threshold=-22dB:ratio=3:attack=10:release=120', -2.5, 'stockholm'),
     'bror':      ('Anton',  1.03, 'equalizer=f=3000:t=q:w=1:g=2.5', 1.0, 'stockholm'),   # yngre och ljusare än pappa
     'du':        ('Viktor', 1.0,  'bass=g=1:f=150', -1.0, None),
     'chefen':    ('Björn+Lars:0.6', 1.06, 'acompressor=threshold=-24dB:ratio=6:attack=5:release=80:makeup=4,asoftclip=type=atan:param=1.6,highpass=f=220,lowpass=f=3800', -4.0, None),   # bastant, arg kommunchef – i telefon
@@ -83,6 +84,7 @@ def main():
         sf.write(wav, lasipa(tts, tal(text), rost, tempo, dialekt), 24000)
         djup = f'rubberband=pitch={2 ** (st / 12):.4f},' if st else ''
         subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', wav, '-af', f'{REN},{djup}{klang},loudnorm=I=-17:TP=-2,silenceremove=start_periods=1:start_silence=0.05:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_silence=0.15:start_threshold=-45dB,areverse', '-ac', '1', '-ar', '24000', '-b:a', '64k', fil], check=True)
+        if os.path.getsize(fil) < 2000: os.remove(fil); raise SystemExit(f'tyst klipp: {k}')   # skydd mot filterkedjor som ger tystnad
         klara += 1
         if klara % 20 == 0: print(del_nr, klara, '/', len(jobb), flush=True)
     print('klar', del_nr, klara)
