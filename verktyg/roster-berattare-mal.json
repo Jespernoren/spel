@@ -1,0 +1,254 @@
+[
+ {
+  "id": "berattare-68861b71",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Undertecknad önskar beställa en fågelholk. Fåglarna i trakten har ingenstans att bo. Det har undertecknad i viss mening inte heller. Lämnas i lådan vid staketet. Med vänlig hälsning, N.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Undertecknad önskar beställa en fågelholk. Fåglarna i trakten har ingenstans att bo. Det har undertecknad i viss mening inte heller. Lämnas i lådan vid staketet. Med vänlig hälsning, N.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-69aaa74c",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Tack för holken. Den är bebodd. Undertecknad önskar nu en lampskärm, helst i en lugn färg. Det är mörkt om kvällarna här ute. Med vänlig hälsning, N.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Tack för holken. Den är bebodd. Undertecknad önskar nu en lampskärm, helst i en lugn färg. Det är mörkt om kvällarna här ute. Med vänlig hälsning, N.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-1742827b",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Undertecknad önskar en vas. Röd. Till en blomma som undertecknad tänker köpa sig själv. Det är tillåtet. Med vänlig hälsning, N.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Undertecknad önskar en vas. Röd. Till en blomma som undertecknad tänker köpa sig själv. Det är tillåtet. Med vänlig hälsning, N.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-1241cabe",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Undertecknad har sett era maskiner genom kikaren. Det är imponerande. Undertecknad önskar ett mobilställ, för att kunna se på väderleksrapporten och samtidigt ha händerna fria. Med vänlig hälsning, N.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Undertecknad har sett era maskiner genom kikaren. Det är imponerande. Undertecknad önskar ett mobilställ, för att kunna se på väderleksrapporten och samtidigt ha händerna fria. Med vänlig hälsning, N.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-580dbb3b",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Undertecknad önskar en kaffekopp med namnet BENGT-ÅKE. Diskret paketerad. Med vänlig hälsning, B-Å N.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Undertecknad önskar en kaffekopp med namnet BENGT-ÅKE. Diskret paketerad. Med vänlig hälsning, B-Å N.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-bbb5755c",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Undertecknad önskar ingenting. Undertecknad ville bara skriva. B-Å N.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Undertecknad önskar ingenting. Undertecknad ville bara skriva. B-Å N.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-6ea82fe3",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Klicka på cykeln och lasta av storebrors skrivare.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Klicka på cykeln och lasta av storebrors skrivare.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-f78bbab2",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Ställ skrivaren på den lysande platsen i linje ett.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Ställ skrivaren på den lysande platsen i linje ett.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-cd9810cc",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Klicka på cykeln igen och gör om den så att den ger ström.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Klicka på cykeln igen och gör om den så att den ger ström.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-98a99bbf",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Trampa cykeln för ström och printa en nyckelring på skrivaren.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Trampa cykeln för ström och printa en nyckelring på skrivaren.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-95aa4eea",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Gå över vägen till Ali och sälj nyckelringen. Eller printa två till först – filamentet räcker till tre.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Gå över vägen till Ali och sälj nyckelringen. Eller printa två till först – filamentet räcker till tre.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-740e4908",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Köp kvarnen hos Ali. Och cykelbatteriet, om pengarna räcker.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Köp kvarnen hos Ali. Och cykelbatteriet, om pengarna räcker.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-be4deb29",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Ställ kvarnen på den lysande rutan i linje ett.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Ställ kvarnen på den lysande rutan i linje ett.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-7ead3104",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Plocka en flaska, lägg den i kvarnen och veva. Då blir det en hel rulle.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Plocka en flaska, lägg den i kvarnen och veva. Då blir det en hel rulle.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-8264824d",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Köp en skräpgrip hos Ali. Den kostar femtio kronor.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Köp en skräpgrip hos Ali. Den kostar femtio kronor.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-fe68d990",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Printa skräpgripen på skrivaren.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Printa skräpgripen på skrivaren.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-93adf01f",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Köp sopsäcken hos Ali och printa den. Då bär du sex saker.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Köp sopsäcken hos Ali och printa den. Då bär du sex saker.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-6154c3cc",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Ali har ett recept åt dig. Printa en blomkruka.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Ali har ett recept åt dig. Printa en blomkruka.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-5f499e7d",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Bygg ryggkorgen. Då bär du tio saker.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Bygg ryggkorgen. Då bär du tio saker.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-3fdaa028",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Köp receptet till pallen hos Ali och printa en.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Köp receptet till pallen hos Ali och printa en.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-477b7647",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Köp kvarnmotorn hos Ali.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Köp kvarnmotorn hos Ali.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-f37b8fa9",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Printa kvarnmotorn på skrivaren och ta ut den. Då sätter du den direkt på kvarnen.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Printa kvarnmotorn på skrivaren och ta ut den. Då sätter du den direkt på kvarnen.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-11f909e1",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Köp 3D-modellen till sängen hos Ali.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Köp tre-dé-modellen till sängen hos Ali.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-e35e2966",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Printa sängen på skrivaren.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Printa sängen på skrivaren.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-d20ba676",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Ställ sängen i skjulet och sov.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Ställ sängen i skjulet och sov.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-6f77beca",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Printa och sälj nyckelringar tills du har femtio kronor till gripen.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Printa och sälj nyckelringar tills du har femtio kronor till gripen.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-6e7b39ff",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Printa och sälj mer tills du har femtio kronor till kvarnmotorn.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Printa och sälj mer tills du har femtio kronor till kvarnmotorn.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "berattare-197adc55",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Printa och sälj mer tills du har sextio kronor till sängen.",
+  "skickas": "[warm, hopeful, storyteller] [calm, clear] Printa och sälj mer tills du har sextio kronor till sängen.",
+  "hand": true,
+  "speed": 1.1
+ }
+]
