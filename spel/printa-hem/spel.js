@@ -3534,7 +3534,7 @@ function raknaOmSteg() {
   S.steg = 0;
   while (S.steg < STEG.length && STEG[S.steg].klar()) S.steg++;
   const st = STEG[S.steg];
-  if (st?.startPost && !S.lappar.includes(st.startPost)) S.post.lapp = st.startPost;
+  if (st?.startPost && !S.lappar.includes(st.startPost) && !S.post.lapp) S.post.lapp = st.startPost;   // B4: skriv aldrig över en annan lapp (N., trädgården, jobb)
 }
 if (S.kvarn.motor) kvarn.add(motor);
 let malAnimation = 0;
@@ -4292,7 +4292,7 @@ function sov() {
     rolfMorgonTack();
     while (S.steg < STEG.length && STEG[S.steg].klar()) S.steg++;
     const nasta = STEG[S.steg];
-    if (nasta?.startPost && !S.lappar.includes(nasta.startPost)) { S.post.lapp = nasta.startPost; visaPostInne(); }
+    if (nasta?.startPost && !S.lappar.includes(nasta.startPost) && !S.post.lapp) { S.post.lapp = nasta.startPost; visaPostInne(); }
     const del = nasta?.del || (S.julFirad ? 'Efterspelet' : 'Fritt bygge');
     const ig = S.igar, rapport = ig ? `<span class="br-rapport">Igår: ${ig.printat} printat · ${ig.salt} sålt${ig.flask ? `<br>Flaskhals: ${ig.flask}${ig.fix ? ` → ${ig.fix}` : ''}` : ''}</span>` : '';
     const hoger = `${aliVillHtml()}${rapport}${[2, 4].includes(S.dag) && !(S.betygDag || []).includes(natt) ? snabbBetygHtml(natt) : ''}`;
@@ -4888,9 +4888,9 @@ function geRolfNummer() {
 const smsSparr = () => (S.dag <= 1 && S.steg < SI.kop) || ((S.speltid || 0) - (S.senSmsTid ?? -1e9) < SMS_MELLAN);
 function sms(fran, text, id, direkt = false, o = {}) {
   // Rolf skriver brev tills du lagt ditt nummer i hans postlåda – sms:en väntar så länge
-  if ((fran === 'rolf') && !S.rolfNummer) { S.rolfVantar = [...(S.rolfVantar || []), [text, id]].slice(-3); return; }
+  if ((fran === 'rolf') && !S.rolfNummer) { S.rolfVantar = [...(S.rolfVantar || []), [text, id]].slice(-3); textLogg('väntar', fran, text, 'Rolf har inte ditt nummer än'); return; }
   if (!direkt && S.mobil && smsSparr()) {
-    S.smsTakt = [...(S.smsTakt || []), [fran, text, id]];
+    S.smsTakt = [...(S.smsTakt || []), [fran, text, id]]; textLogg('väntar', fran, text, smsSparr() && S.dag <= 1 && S.steg < SI.kop ? 'dag 1 före första köpet' : 'max ett sms per ' + SMS_MELLAN + ' s');
     while (S.smsTakt.length > 8) { const j = S.smsTakt.findIndex((x) => x[2] && SMS_POOL.some((m) => m.id === x[2])); S.smsTakt.splice(j >= 0 ? j : 0, 1); }   // långa köer: småpratet stryks först
     sparaSnart(); return;
   }
@@ -4902,7 +4902,7 @@ function sms(fran, text, id, direkt = false, o = {}) {
   const maSvara = SMS_POOL.find((x) => x.id === id)?.svar && S.smsSvar?.[id] == null;
   if (maSvara) { S.sms.push({ fran, text }); S.sms = S.sms.slice(-40); sparaSnart(); bud(() => medKo.push({ typ: 'sms', fran, text, id })); return; }
   // storyn i ordning: har du ett oläst sms från samma person väntar nästa tills du läst det
-  if (S.sms.some((m) => m.ny && m.fran === fran)) { S.smsVantar = [...(S.smsVantar || []), [fran, text, id]]; sparaSnart(); return; }
+  if (S.sms.some((m) => m.ny && m.fran === fran)) { S.smsVantar = [...(S.smsVantar || []), [fran, text, id]]; textLogg('väntar', fran, text, 'ett oläst sms från samma person'); sparaSnart(); return; }
   smsFram(fran, text, id, o);
 }
 // punkt BD: vilken vikt har ett sms? Småprat ur poolen och Alis sms = SMÅPRAT, resten = STORY
@@ -8348,7 +8348,7 @@ function uppdatera(dt) {
       if (st.sms && !(S.smsSkickat || []).includes(st.lapp || st.sms[1])) { S.smsSkickat = [...(S.smsSkickat || []), st.lapp || st.sms[1]]; sms(st.sms[0], st.sms[1]); }
       const nasta = STEG[S.steg];
       if (nasta?.startLapp && !S.lappar.includes(nasta.startLapp)) { visaLapp(nasta.startLapp); }
-      if (nasta?.startPost && !S.lappar.includes(nasta.startPost)) { S.post.lapp = nasta.startPost; visaPostInne(); ui.toast('✉️ Något har hamnat i postlådan vid soptippen…', 'guld'); }
+      if (nasta?.startPost && !S.lappar.includes(nasta.startPost) && !S.post.lapp) { S.post.lapp = nasta.startPost; visaPostInne(); ui.toast('✉️ Något har hamnat i postlådan vid soptippen…', 'guld'); }
       sparaSnart();
     }
     kollaFast();
@@ -9148,7 +9148,8 @@ function visaIntro(klar) {
   const nasta = () => { i++; if (i >= INTRO.length) slut(); else visa(); };
   forladdaIntro(0); forladdaIntro(1);
   const tangent = (e) => { if (['Space', 'Enter', 'ArrowRight', 'KeyE'].includes(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); nasta(); } else if (e.code === 'Escape') { e.stopImmediatePropagation(); slut(); } };
-  function slut() { avbryt(); introPagar = false; introMusik.stopp(S.introSett ? 2 : 6); removeEventListener('keydown', tangent, true); el.remove(); S.introSett = true; sparaSnart(); klar?.(); }
+  // B13: Hoppa över tömmer introts röstkö
+  function slut() { avbryt(); pratKo.length = 0; tystna(); introPagar = false; introMusik.stopp(S.introSett ? 2 : 6); removeEventListener('keydown', tangent, true); el.remove(); S.introSett = true; sparaSnart(); klar?.(); }
   // en startruta först: webbläsaren spelar bara upp ljud efter ett klick
   el.innerHTML = `<div class="ph-intro-kort"><div class="ph-intro-titel" style="margin:0 0 18px">${logo({ bredd: 480 })}</div><div class="ph-intro-text">Slå på ljudet – berättaren läser upp historien.</div><button class="fp-knapp" style="margin-top:22px">Börja</button></div>`;
   rostKlar.then(() => { for (const [v, t] of INTRO_TAL()) { const k = rostKlipp(v, t); if (k) hamtaPack(k[0]); } });
