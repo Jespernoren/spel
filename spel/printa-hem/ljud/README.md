@@ -1,6 +1,6 @@
 # Ljudeffekter – Soptippsvägen 1
 
-Alla ljud här kommer från **Kenney** (www.kenney.nl) och är **CC0** (fria att använda, se `licenser/`). Valda ur `verktyg/kenney-urval/` i punkt X och omkodade till mono-mp3 (64 kbit/s) så att de spelar i alla webbläsare.
+Alla ljud här kommer från **Kenney** (www.kenney.nl) och är **CC0** (fria att använda, se `licenser/`). Valda ur Kenneys ljudpaket i punkt X och omkodade till mono-mp3 (64 kbit/s) så att de spelar i alla webbläsare.
 
 | Fil | Används när | Original |
 |---|---|---|
