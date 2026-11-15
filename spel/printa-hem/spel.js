@@ -6838,7 +6838,7 @@ const RANGER = [   // följer kapitlen (bygglistan punkt R) – de fyra första 
   { namn: 'Brukspatron', under: 'fabriken sköter sig själv', krav: () => kapitelNu() >= 4 },                        // kapitel 3 klart, dag 15
   { namn: 'Lagfaren', under: 'Bengt-Åke sålde. Motvilligt.', krav: () => S.mark.agt.includes('egen') },             // tomten du bor på, dag 16
   { namn: 'Mantalsskriven', under: 'posten hittar hit nu', krav: () => !!S.folkbokford },                           // dag 21
-  { namn: 'Hedersmedborgare', under: 'motvilligt', krav: () => !!S.julFirad },                                      // julen + mammas brev, dag 22
+  { namn: 'Hedersmedborgare', under: 'motvilligt', krav: () => !!S.julFirad && S.lappar.includes('mammajul') },                                      // julen + mammas brev, dag 22
   { namn: 'Tippgodsägare', under: 'all mark, alla stubbar', krav: () => S.mark.agt.length >= MARK_TOMTER.length },  // efterspelet
 ];
 const PRESTATIONER = [
@@ -8440,7 +8440,8 @@ const JUL_REPLIK = [
   ['rolf', 'Rolf och Kajsa', 'Goddag … ja. Ja har kavaj. Fråga int.'],
   ['ali', 'Ali (och hans fru)', 'Habibi. Roboten säger god jul. Jag lärde den. Säg inget till min fru – hon är här.'],
   ['berattare', 'Lasse och Gunnar', 'Lasse har en ny termos. Den håller värmen i nitton timmar. Han har testat. Gunnar säger: "Vanilj."'],
-  ['berattare', 'Bengt-Åke', 'HMPF. God jul. (Han ställer en gran från egen skog i hörnet. Han går inte.)'],
+  ['berattare', 'Bengt-Åke', 'Bengt-Åke ställer en gran från egen skog i hörnet. Han går inte.'],
+  ['berattare', 'Bengt-Åke', 'HMPF. God jul.'],
   ['bror', 'Storebror', 'Den är inte från mig. Den låg utanför. Typ.'],
   ['mamma', 'Mamma', 'Det är så STÄDAT!'],
   ['pappa', 'Pappa', 'Jaha.'],
@@ -8450,7 +8451,7 @@ function julRader() {
   return [...JUL_REPLIK,
     ['berattare', 'Julbordet', `Skinkan från augusti. ${rosor ? 'Birgittas rosor i en vas.' : 'Granris i en vas.'} ${S.goranMaskot ? 'Göran sitter på fönsterblecket och tittar på skinkan.' : ''}`.trim()],
     ['berattare', 'Rolfs Rockers', `Rolf på trummor ${stockar ? 'med trumstockarna från 1987' : 'med två kastruller'}. Lasse och Gunnar på printade elgitarrer. Det är högt. Det är bra.`],
-    ['pappa', 'Pappas tal', 'Ja … är stolt över dej. Aha. Vad lugnt då.'],
+    ...['Ja ska fatta mej kort.', 'Scania byggde sin första lastbil nittonhundraelva.', 'Djurgården har vunnit SM tolv gånger.', 'Skinkan har legat i frysen sen augusti.', 'Ja … är stolt över dej. Aha. Vad lugnt då.'].map((t) => ['pappa', 'Pappas tal', t, 'fyll']),
     ['berattare', 'Mamma', 'Mamma gråter.']];
 }
 function julScen() {
@@ -8464,10 +8465,11 @@ function julScen() {
   const nasta = () => {
     i++; clearTimeout(auto);
     if (i >= rader.length) { slut(); return; }
-    const [vem, namn, text] = rader[i];
-    el.innerHTML = `<div class="ph-jul-kort"><small>${i < JUL_REPLIK.length ? 'Gästerna kommer' : 'Jul på Soptippsvägen 1'}</small><b>${rens(namn)}</b><p>${rens(text)}</p><span class="ph-jul-vidare">Klicka för att fortsätta</span></div>`;
+    const [vem, namn, text, fyll] = rader[i];
+    const tidigare = []; if (fyll) for (let j = i - 1; j >= 0 && rader[j][3] === 'fyll' && rader[j][1] === namn; j--) tidigare.unshift(rader[j][2]);
+    el.innerHTML = `<div class="ph-jul-kort"><small>${i < JUL_REPLIK.length ? 'Gästerna kommer' : 'Jul på Soptippsvägen 1'}</small><b>${rens(namn)}</b>${tidigare.map((t) => `<p class="ph-jul-forra">${rens(t)}</p>`).join('')}<p>${rens(text)}</p><span class="ph-jul-vidare">Klicka för att fortsätta</span></div>`;
     tystna(); setTimeout(() => prata(vem, text), 150);
-    const vanta = () => { if (performance.now() < pratarTill + 400) { auto = setTimeout(vanta, 300); return; } auto = setTimeout(nasta, 1800); };
+    const vanta = () => { if (performance.now() < pratarTill + 400) { auto = setTimeout(vanta, 300); return; } auto = setTimeout(nasta, fyll ? 2600 : 1800); };
     auto = setTimeout(vanta, 1200);
   };
   const tangent = (e) => { if (['Space', 'Enter', 'KeyE'].includes(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); nasta(); } };
@@ -8501,16 +8503,16 @@ function julTest() {
 }
 { const st = document.createElement('style'); st.textContent = `.ph-jul{position:fixed;inset:0;z-index:92;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,rgba(60,30,20,.82),rgba(8,10,16,.94));cursor:pointer;font-family:system-ui}
 .ph-jul-kort{max-width:min(620px,88vw);text-align:center;color:#f4ecd8;animation:phJulIn .5s ease-out}.ph-jul-kort small{display:block;color:#ffd27a;font:800 13px system-ui;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px}
-.ph-jul-kort b{display:block;font:900 30px var(--rubrik,'Arial Black',system-ui);margin-bottom:12px}.ph-jul-kort p{font:500 22px/1.45 system-ui;margin:0 0 22px}.ph-jul-vidare{font:500 13px system-ui;color:#a9a091}
+.ph-jul-kort b{display:block;font:900 30px var(--rubrik,'Arial Black',system-ui);margin-bottom:12px}.ph-jul-kort p{font:500 22px/1.45 system-ui;margin:0 0 22px}.ph-jul-forra{opacity:.45;font-size:18px!important;margin:0 0 8px!important}.ph-jul-vidare{font:500 13px system-ui;color:#a9a091}
 @keyframes phJulIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}`; document.head.appendChild(st); }
-function kapitel2Slut() {
+function kapitel2Slut() {   // anropas när kapitel 3 är klart (k === 4)
   andraRespekt(15, 'Gamingbod och jacuzzi – folk pratar');
   konfetti(160); fanfar(); ljud.stor();
   const sv = MAMMA_SVAR_K2; void ['Mamma här. Du skickade en bild på en JACUZZI?!', '…och tapeter. Och en gamingbod med lampor i alla färger.', 'Okej. Jag erkänner. Det är finare än hemma.', 'Kan jag komma och bada på söndag? Pappa tar med korv.'];
   sv.forEach((t, i) => setTimeout(() => sms('mamma', t), 1500 + i * 400));
   setTimeout(() => sms('mamma', 'Pappa såg bilden. Han sa "aha, vad lugnt då". Det betyder att han är JÄTTESTOLT.'), 3500);
   setTimeout(() => sms('rolf', 'Hörde att du har JACUZZI. Ja tar med grillen. Och Kajsa. Hon e en katt. Hon badar inte. /R'), 5000);
-  ui.toast('🏆 KAPITEL 2 KLART! Din fristad är komplett – men det tar aldrig slut. Trimma, bygg, samla.', 'guld');
+  ui.toast('🏆 KAPITEL 3 KLART! Fabriken sköter sig själv.', 'guld');
 }
 // ---------- Punkt I: måsen Göran ----------
 // Dag 4: mamma sms:ar om måsar, Göran (döpt av Rolf) dyker upp och snor ibland en nyckelring.
