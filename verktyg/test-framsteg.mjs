@@ -25,7 +25,7 @@ for (let i = 0; i < 60 && !(await p.evaluate(() => !!window.__printahem?.ui?.iga
 }
 steg.push(['spelet igång', await p.evaluate(() => !!window.__printahem?.ui?.igang)]);
 await p.waitForTimeout(8000);
-const r = await p.evaluate(async () => { const H = window.__printahem; const sk = H.skrivare[0]; sk.fil = 3000; H.S.strom = 999; H.startaJobb(sk, { maskin: "grip" }); H.simulera(3); const f = H.framsteg(sk); const hov = H.skrivarText(sk); const bar = [...document.querySelectorAll(".hud-skrivbar span")].map((x) => x.textContent); const pct = Math.floor(f.andel * 100) + " %"; return { f, hov, bar, ok: hov.includes(pct) && bar.filter(Boolean).every((b) => b.startsWith(pct)) }; }); console.log(JSON.stringify(r)); if (!r.ok) { console.log("✗ framstegen skiljer sig mellan vyerna"); process.exitCode = 1; } else console.log("✓ samma framsteg i alla vyer");
+const r = await p.evaluate(async () => { const H = window.__printahem; const sk = H.skrivare[0]; sk.fil = 3000; H.S.strom = 999; H.startaJobb(sk, { maskin: "grip" }); H.simulera(0.5); const f = H.framsteg(sk); const hov = H.skrivarText(sk); const bar = [...document.querySelectorAll(".hud-skrivbar span")].map((x) => x.textContent); const pct = Math.floor(f.andel * 100) + " %"; return { f, hov, bar, ok: hov.includes(pct) && bar.filter(Boolean).every((b) => b.startsWith(pct)) }; }); console.log(JSON.stringify(r)); if (!r.ok) { console.log("✗ framstegen skiljer sig mellan vyerna"); process.exitCode = 1; } else console.log("✓ samma framsteg i alla vyer");
 steg.push(['dag 1, första målet', await p.evaluate(() => window.__printahem.S.dag === 1 && !!window.__printahem.stegText())]);
 for (const [t, ok] of steg) console.log(ok ? '✓' : '✗', t);
 console.log(fel.length ? fel.join('\n') : 'inga sidfel');

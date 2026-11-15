@@ -190,6 +190,7 @@ export const MASKIN_SIFFROR = {
   spolhallare3: { ritning: 1500, delar: 4, gram: 900, tid: 14 },
   matarband: { ritning: 200, delar: 3, gram: 700, tid: 14 },
   rullstall: { ritning: 180, delar: 2, gram: 500, tid: 12 },
+  vindsnurra: { ritning: 133, delar: 1, gram: 400, tid: 15 },   // BL: 80 kr hos Ali, under en halv rulle, ca 15 s
   hardkniv: { ritning: 1670, delar: 2, gram: 600, tid: 12 },
   diamantkniv: { ritning: 10000, delar: 3, gram: 1000, tid: 16 },
   stortratt: { ritning: 150, delar: 2, gram: 600, tid: 12 },

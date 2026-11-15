@@ -2652,9 +2652,15 @@
   "var": "Ali när du printat hans modell"
  },
  {
-  "id": "ali-6a36157c",
+  "id": "ali-6ea045b5",
   "figur": "ali",
-  "text": "Ali här. Ännu en ritning som blev på riktigt: Rullställ vid kvarnen. Semesterkassan växer. Livet växer.",
+  "text": "Ali här. Du printade Vindsnurra till skjultaket från min ritning. Och det FUNKAR? Jag har bara sett sånt på YouTube.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-6fcdca40",
+  "figur": "ali",
+  "text": "Ali här. Ännu en ritning som blev på riktigt: Rullställ till rulltornet. Semesterkassan växer. Livet växer.",
   "var": "Ali när du printat hans modell"
  },
  {
@@ -2754,9 +2760,9 @@
   "var": "Ali när du printat hans modell"
  },
  {
-  "id": "ali-8b49094c",
+  "id": "ali-d189025a",
   "figur": "ali",
-  "text": "Ali här. Jag såg Rulladdare (robotarm) på avstånd. Ett streck blev lite snett. Mitt fel. Vackert ändå.",
+  "text": "Ali här. Jag såg Slangfördelare till rulltornet på avstånd. Ett streck blev lite snett. Mitt fel. Vackert ändå.",
   "var": "Ali när du printat hans modell"
  },
  {
@@ -2820,9 +2826,9 @@
   "var": "Alis sms om nya 3D-modeller"
  },
  {
-  "id": "ali-60330739",
+  "id": "ali-6ade20c3",
   "figur": "ali",
-  "text": "Ali här. Satt uppe med AI:n hela natten. Ritningen till Rulladdare (robotarm) är klar. Kom innan nio, då stänger jag.",
+  "text": "Ali här. Satt uppe med AI:n hela natten. Ritningen till Slangfördelare till rulltornet är klar. Kom innan nio, då stänger jag.",
   "var": "Alis sms om nya 3D-modeller"
  },
  {
@@ -3000,15 +3006,27 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
+  "id": "du-d9a97ec6",
+  "figur": "du",
+  "text": "Mina ben är slut. Det blåser hela tiden här ute. Tänk om vinden kunde trampa åt mig.",
+  "var": "Storykedjan (punkt BE)"
+ },
+ {
+  "id": "du-fb998744",
+  "figur": "du",
+  "text": "Den snurrar! Långsamt. Men den snurrar.",
+  "var": "Storykedjan (punkt BE)"
+ },
+ {
   "id": "du-e8b0d1d1",
   "figur": "du",
   "text": "Om det regnar i natt drunknar jag. Ett tak.",
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-b1703773",
+  "id": "du-7b66188a",
   "figur": "du",
-  "text": "Jag trampar mer än jag printar. Solen är gratis.",
+  "text": "Vindsnurran är för långsam. Och när det är stilla står allt. Solen är gratis.",
   "var": "Storykedjan (punkt BE)"
  },
  {
@@ -3078,9 +3096,15 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-99b13838",
+  "id": "du-56d0cec1",
   "figur": "du",
-  "text": "Skrivarna står och väntar på rullar. Fler spolar.",
+  "text": "Skrivarna står och väntar på rullar. Tornet behöver en våning till.",
+  "var": "Storykedjan (punkt BE)"
+ },
+ {
+  "id": "du-1f6303af",
+  "figur": "du",
+  "text": "Tornet är fullt, men bara en skrivare får plast åt gången. Slangen måste delas.",
   "var": "Storykedjan (punkt BE)"
  },
  {
@@ -3611,6 +3635,30 @@
   "id": "du-e1b3b151",
   "figur": "du",
   "text": "Den här är för tung för lilla kvarnen.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-8e39e1ac",
+  "figur": "du",
+  "text": "HALLÅ! Den där måsen tog min nyckelring!",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-86dd54ae",
+  "figur": "du",
+  "text": "HALLÅ! Den där måsen tog min grej!",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-86200762",
+  "figur": "du",
+  "text": "Mamma hade rätt. Säg inget till henne.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-c8ed16cb",
+  "figur": "du",
+  "text": "Göran tar mina saker. Kanske han vill ha något eget?",
   "var": "Dina tankar, tips och varningar"
  },
  {
