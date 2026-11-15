@@ -1221,14 +1221,14 @@ let spikAnim = null;
 function spikaAnim(o, klar) {
   if (spikAnim) return false;
   const slag = o.slag || 5, tid = o.tid || 2.7;
-  spikAnim = { ...o, slag, tid, t: 0, gjorda: 0, klar, yaw0: spelare.yaw, pitch0: spelare.pitch };
+  spikAnim = { ...o, slag, tid, t: 0, t0: performance.now(), gjorda: 0, klar, yaw0: spelare.yaw, pitch0: spelare.pitch };
   spelare.aktiv = false; hammare.visible = true; gripVerktyg.userData.dold = gripVerktyg.visible; gripVerktyg.visible = false;
   return true;
 }
 function spikaTick(dt) {
   for (let i = flisor.length - 1; i >= 0; i--) { const x = flisor[i]; x.t -= dt; x.v.y -= 9.8 * dt; x.f.position.addScaledVector(x.v, dt); x.f.rotation.x += dt * 9; x.f.rotation.z += dt * 7; if (x.t <= 0 || x.f.position.y < 0) { scen.remove(x.f); flisor.splice(i, 1); } }
   const A = spikAnim; if (!A) return;
-  A.t += dt;
+  A.t = (performance.now() - A.t0) / 1000;   // punkt AJ: riktig tid, så att spikningen tar 2,8 s även på en långsam iPad
   // blicken låst mot målet
   const m = A.mal, dx = m.x - spelare.pos.x, dz = m.z - spelare.pos.z;
   const yaw = Math.atan2(-dx, -dz), pitch = Math.atan2((m.y ?? 1) - 1.6, Math.hypot(dx, dz));
