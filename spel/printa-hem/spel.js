@@ -301,7 +301,7 @@ const MASKINER = {
   skrivare3: { namn: 'Skrivare L', ikon: '', syns: () => S.kapitel >= 2 && harPlacerat('skrivare2'), beskr: 'Stor byggvolym: soffa, kajak, arkadmaskin, jacuzzi. 4× snabbare än S, två jobb i kö. Står på golvet.', trivsel: 25 },
   // punkt AN: Helens skjul – ritningen kommer från Rolf, säljs aldrig hos Ali. Monteras på den streckade rutan i tippkanten.
   helenskjul: { namn: 'Helens skjul', ikon: '🏚️', flik: 'hem', monteras: true, syns: () => false, ritning: 0, delar: 3, gram: 1000, tid: 20, beskr: 'Rolfs ritning: som ditt första skjul, fast sämre. Ställs på den streckade rutan i tippkanten' },
-  skrivare2: { namn: 'Skrivare M', ikon: '🖨️', syns: () => harPlacerat('bord'), beskr: 'Skalhoppet: dubbelt så stor byggvolym, 2,5× snabbare och TVÅ jobb – ett printas medan nästa väntar i kö. Upprepar samma vara tills filamentet tar slut. Printar drönare, gitarr och gamingstol. Måste stå på ett arbetsbord.', trivsel: 15, kraverBord: true },
+  skrivare2: { namn: 'Skrivare M', ikon: '🖨️', syns: () => harPlacerat('bord'), beskr: 'Skalhoppet: dubbelt så stor byggvolym, 2,5× snabbare och en kö – lägg upp till tre saker i kö medan den printar. Printar drönare, gitarr och gamingstol. Måste stå på ett arbetsbord.', trivsel: 15, kraverBord: true },
 };
 // vad varje del heter – det är de här som printas en i taget
 const DEL_NAMN = {
@@ -2775,7 +2775,7 @@ function visaSpolar(sk) {
 }
 function laggTillSkrivare(id, gen, mesh, sparat) {
   const sk = { id, gen, mesh, jobb: null, prog: 0, klar: null, visning: null, vantar: '', fil: 0, upprepaPa: !!S.auto?.lada && gen !== PETG_GEN };   // byggd efter leveranslådan: autoprint direkt
-  if (sparat) Object.assign(sk, { jobb: sparat.jobb, prog: sparat.prog || 0, klar: sparat.klar, fil: sparat.fil || 0, spolNiva: sparat.spolNiva || 0, upprepa: sparat.upprepa || null, upprepaPa: !!sparat.upprepaPa, klarL: sparat.klarL || null, ko: sparat.ko || null, mod: sparat.mod || null });
+  if (sparat) Object.assign(sk, { jobb: sparat.jobb, prog: sparat.prog || 0, klar: sparat.klar, fil: sparat.fil || 0, spolNiva: sparat.spolNiva || 0, upprepa: sparat.upprepa || null, upprepaPa: !!sparat.upprepaPa, klarL: sparat.klarL || null, ko: Array.isArray(sparat.ko) ? sparat.ko : sparat.ko ? [sparat.ko] : [], mod: sparat.mod || null });
   // spolen på skrivarens sida: tjock när den är full, krymper medan den printar
   const spole = new THREE.Group(), B = 0.5 * (mesh.userData.sk || 1);
   const helSpole = filamentSpole(gen === PETG_GEN ? 0xd63a2f : FIL1, 0.13, 0.1); helSpole.rotation.y = Math.PI / 2; spole.add(helSpole);
@@ -2851,7 +2851,7 @@ function anvandSkrivare(sk) {
   if (sk.klar) {
     const lista = Object.entries(sk.klarL || { [sk.klar]: 1 }); sk.klar = null; sk.klarL = null; tomBadd(sk);
     for (const [typ, n] of lista) { taUt(typ, n); handelse('tagitUrPrint', { sak: typ, n }); }
-    sk.plattaSedan = 0; if (!sk.jobb && (sk.ko || sk.upprepa)) nastaJobb(sk, sk.upprepa);   // punkt 11: plats igen – samma sak en gång till
+    sk.plattaSedan = 0; if (!sk.jobb && (sk.ko?.length || sk.upprepa)) nastaJobb(sk, sk.upprepa);   // punkt 11: plats igen – samma sak en gång till
     if (lista.length > 1 || lista[0][1] > 1) ui.toast(`Tog ut ${lista.map(([t, n]) => `${n} ${namnFor(t).toLowerCase()}`).join(', ')}`, 'bra');
     sparaSkrivare(); return;
   }
@@ -2891,18 +2891,19 @@ function taUt(typ, n = 1) {
 
 // Skrivare M och L har två jobb: det som printas och ett i kö
 const kanKo = (sk) => sk.gen === 2 || sk.gen === 3;
+const KO_MAX_SKRIVARE = 3;   // punkt 14: en kö av egna val (max 3) på Skrivare M och L
 const upprepbar = (typ) => !!VAROR[typ] && VAROR[typ].pris > 0 && !VAROR[typ].lyx && !VAROR[typ].gava;
 const antalUt = (sk) => sk.klar ? Object.values(sk.klarL || { [sk.klar]: 1 }).reduce((a, n) => a + n, 0) : 0;
 const plattPlats = (sk) => PLATTA[sk.gen] || 1;
 const plattaFull = (sk) => antalUt(sk) >= plattPlats(sk);
-const vantarPaPlatta = (sk) => !sk.jobb && !!sk.klar && !!(sk.upprepa || sk.ko) && plattaFull(sk);
+const vantarPaPlatta = (sk) => !sk.jobb && !!sk.klar && !!(sk.upprepa || sk.ko?.length) && plattaFull(sk);
 function laggUt(sk, typ) {
   if (!sk.klar) { sk.klar = typ; sk.klarL = { [typ]: 1 }; return; }
   sk.klarL = sk.klarL || { [sk.klar]: 1 }; sk.klarL[typ] = (sk.klarL[typ] || 0) + 1;
 }
 function startaJobb(sk, val) {
   if (sk.jobb) {
-    if (kanKo(sk) && !sk.ko && (val.maskin || (storlekFor(val.typ) <= skrivStorlek(sk) && !(VAROR[val.typ]?.niva === 2)))) { sk.ko = val; sparaSkrivare(); return 'ko'; }
+    if (kanKo(sk) && (sk.ko?.length || 0) < KO_MAX_SKRIVARE && (val.maskin || (storlekFor(val.typ) <= skrivStorlek(sk) && !(VAROR[val.typ]?.niva === 2)))) { sk.ko = [...(sk.ko || []), val]; sparaSkrivare(); return 'ko'; }
     return 'upptagen';
   }
   return startaDirekt(sk, val);
@@ -2925,7 +2926,7 @@ function startaDirekt(sk, val) {
       taBortInv('rulle' + v.niva);
     }
     sk.jobb = { typ: val.typ };
-    sk.upprepa = upprepbar(val.typ) && sk.upprepaPa ? val.typ : null;   // upprepa är AV som standard och gäller per skrivare
+    sk.upprepa = upprepbar(val.typ) && sk.upprepaPa && S.auto?.lada ? val.typ : null;   // punkt 14: autoprint finns bara när leveranslådan är byggd – annars är varje print EN sak
     visaPaBadd(sk, val.typ, 0);
   }
   sk.prog = 0; sparaSkrivare();
@@ -2956,8 +2957,8 @@ function avbrytJobb(sk) {
 }
 // när ett jobb är klart: först det som står i kö, annars samma vara igen så länge filamentet räcker
 function nastaJobb(sk, forra) {
-  if (plattaFull(sk)) { if (sk.ko || (forra && sk.upprepa === forra)) plattanFull(sk); return false; }   // punkt 11: plattan är full – skrivaren väntar
-  if (sk.ko) { const v = sk.ko; sk.ko = null; if (startaDirekt(sk, v) === true) { skrivarNotis(sk, `Startar nästa i kön: ${(v.maskin ? MASKINER[v.maskin].namn : VAROR[v.typ].namn).toLowerCase()}`, 'bra'); return true; } }
+  if (plattaFull(sk)) { if (sk.ko?.length || (forra && sk.upprepa === forra)) plattanFull(sk); return false; }   // punkt 11: plattan är full – skrivaren väntar
+  if (sk.ko?.length) { const v = sk.ko.shift(); if (startaDirekt(sk, v) === true) { skrivarNotis(sk, `Startar nästa i kön: ${(v.maskin ? MASKINER[v.maskin].namn : VAROR[v.typ].namn).toLowerCase()}`, 'bra'); return true; } }
   if (forra && sk.upprepa === forra) {
     const g = VAROR[forra].gram * (sk.mod === 'm_snal' ? 0.65 : 1);
     if (sk.fil + 0.5 >= g) { const u = sk.upprepa; const ok = startaDirekt(sk, { typ: forra }) === true; sk.upprepa = u; return ok; }
@@ -3021,7 +3022,7 @@ function uppdateraSkrivare(sk, dt) {
     } else if (S.auto?.lada && sk.upprepa === j.typ && VAROR[j.typ]?.pris > 0) {
       sk.jobb = null; tomBadd(sk); S.stat.printat++; S.printTot = { ...(S.printTot || {}), [j.typ]: (S.printTot?.[j.typ] || 0) + 1 };
       S.auto.innehall = { ...(S.auto.innehall || {}), [j.typ]: (S.auto.innehall?.[j.typ] || 0) + 1 };
-      ladaPaket(sk, j.typ); ljud.placera(); if (sk.ko) nastaJobb(sk, null);
+      ladaPaket(sk, j.typ); ljud.placera(); if (sk.ko?.length) nastaJobb(sk, null);
     } else {
       sk.jobb = null; laggUt(sk, j.typ); ljud.klar();
       const nUt = antalUt(sk);
@@ -3048,7 +3049,7 @@ const armTid = () => LASTARM_TID * 0.85 ** trimNiva('arm');
 const AUTO = { armTid: 2.5 };
 const auto = { byggd: false, band: null, paket: [], bandT: 0, arm: null, armT: 0, armAnim: 0, lastarm: null, lastT: 0, lastAnim: 0, lada: null, skylt: null, flode: { arm: [], band: [] }, vantarPaTung: false };
 function monteraAuto(id) {
-  if (id === 'utlada') {   // leveranslådan slår på upprepa för alla skrivare med autoprint (går att stänga av per skrivare)
+  if (id === 'utlada') {   // leveranslådan slår på autoprint för alla skrivare (går att stänga av per skrivare)
     for (const sk of skrivare) if (sk.gen !== PETG_GEN) { sk.upprepaPa = true; if (sk.jobb?.typ && upprepbar(sk.jobb.typ)) sk.upprepa = sk.jobb.typ; }
     sparaSkrivare(); handelse('placerat', { sak: 'leveranslada' });
   }
@@ -3221,7 +3222,7 @@ function uppdateraAuto(dt) {
   ritaLadSkylt();
 }
 function sparaSkrivare() {
-  for (const sk of skrivare) S.skrivare[sk.id] = { jobb: sk.jobb, prog: sk.prog, klar: sk.klar, fil: sk.fil, spolNiva: sk.spolNiva || 0, upprepa: sk.upprepa || null, upprepaPa: !!sk.upprepaPa, mod: sk.mod || null, klarL: sk.klarL || null, ko: sk.ko || null };
+  for (const sk of skrivare) S.skrivare[sk.id] = { jobb: sk.jobb, prog: sk.prog, klar: sk.klar, fil: sk.fil, spolNiva: sk.spolNiva || 0, upprepa: sk.upprepa || null, upprepaPa: !!sk.upprepaPa, mod: sk.mod || null, klarL: sk.klarL || null, ko: sk.ko || [] };
   sparaSnart();
 }
 
@@ -5813,12 +5814,14 @@ function oppnaPrintMeny(sk) {
   const taAv = helaISkrivare >= 1 && !sk.jobb ? `<div class="ph-saljallt">${knapp({ text: `Ta av en rulle (${helaISkrivare} hel${helaISkrivare > 1 ? 'a' : ''} i skrivaren)`, typ: 'neutral', attr: 'data-taav', ikon: 'rulle' })}<span>Hamnar i verktygsraden – bra om du vill flytta filament till en annan skrivare</span></div>` : '';
   const jNu = sk.jobb, jNamn = jNu ? (jNu.maskin ? MASKINER[jNu.maskin].namn : VAROR[jNu.typ]?.namn || '') : '';
   const printarNu = jNu ? `<div class="ph-saljallt ph-printarnu"><span><b>Printar: ${rens(jNamn)}</b> · ${Math.round((sk.prog || 0) * 100)} %${sk.upprepa ? ' · upprepar' : ''}</span>${sk.upprepa ? knapp({ text: 'Stoppa efter den här', typ: 'neutral', attr: 'data-stoppa', ikon: 'klocka' }) : ''}${knapp({ text: 'Avbryt', typ: 'minus', attr: 'data-avbryt', ikon: 'stang' })}</div>` : '';
-  const kropp = printarNu + taAv + (FLIKAR.length ? FLIKAR.map(([fl, , namn]) => sektion(namn, fl === 'salj' ? 'grön siffra = vad Ali betalar idag' : 'siffran = rullar filament') + grid(saker.filter((x) => x.flik === fl).sort((a, b) => (b === malSak) - (a === malSak) || (forStor(a) || kanInte(a)) - (forStor(b) || kanInte(b))).map((x) => uiRuta({ bild: tumme(x.attr.startsWith('data-maskin') ? 'byggsats:' + x.id : x.id), attr: `data-pval="${x.id}"`, vald: x === vald, dyr: !forStor(x) && kanInte(x), last: forStor(x), storlek: storlekRuta(x.id, x.attr.startsWith('data-maskin')), niva: x.attr.startsWith('data-maskin') ? 0 : (VAROR[x.id]?.niva || 0), pris: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? '+' + prisNu(x.id) : rullKort(x.gram), prisTyp: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? 'plus' : 'fil', titel: x.namn, etikett: true })))).join('')
+  const koNamn = (v) => v.maskin ? MASKINER[v.maskin].namn : VAROR[v.typ]?.namn || '';
+  const koHtml = sk.ko?.length ? `<div class="ph-saljallt ph-printarnu"><span><b>I kön:</b> ${sk.ko.map((v, i) => `${rens(koNamn(v))} <button class="ph-kobort" data-kobort="${i}" title="Ta bort ur kön">✕</button>`).join(' · ')}</span>${knapp({ text: 'Töm kön', typ: 'neutral', attr: 'data-kotom', ikon: 'stang' })}</div>` : '';
+  const kropp = printarNu + koHtml + taAv + (FLIKAR.length ? FLIKAR.map(([fl, , namn]) => sektion(namn, fl === 'salj' ? 'grön siffra = vad Ali betalar idag' : 'siffran = rullar filament') + grid(saker.filter((x) => x.flik === fl).sort((a, b) => (b === malSak) - (a === malSak) || (forStor(a) || kanInte(a)) - (forStor(b) || kanInte(b))).map((x) => uiRuta({ bild: tumme(x.attr.startsWith('data-maskin') ? 'byggsats:' + x.id : x.id), attr: `data-pval="${x.id}"`, vald: x === vald, dyr: !forStor(x) && kanInte(x), last: forStor(x), storlek: storlekRuta(x.id, x.attr.startsWith('data-maskin')), niva: x.attr.startsWith('data-maskin') ? 0 : (VAROR[x.id]?.niva || 0), pris: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? '+' + prisNu(x.id) : rullKort(x.gram), prisTyp: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? 'plus' : 'fil', titel: x.namn, etikett: true })))).join('')
     + (antalInv('rulle') ? `<p class="ui-tom">${ik('rulle')} Du bär ${antalInv('rulle')} ${antalInv('rulle') === 1 ? 'rulle' : 'rullar'} – välj den i verktygsraden och klicka på skrivaren för att ladda.</p>` : '')
     : `<p class="ui-tom">${petg ? 'Köp ett PETG-recept hos Ali (hyllan Röd PETG) – vas, hjälm, neonskylt, paddel.' : 'Inget att printa just nu – köp ritningar och recept hos Ali.'}</p>`);
   const fot = vald ? detalj({ bild: tumme(vald.attr.startsWith('data-maskin') ? 'byggsats:' + vald.id : vald.id, 72), titel: vald.namn, text: rens(vald.info).replace(/<br>/g, ' · '),
     faktaLista: [VAROR[vald.id]?.niva && !vald.attr.startsWith('data-maskin') ? ['rulle', nivaText(VAROR[vald.id].niva), antalInv('rulle' + VAROR[vald.id].niva) ? 'plus' : 'minus'] : null, VAROR[vald.id]?.pris && !vald.attr.startsWith('data-maskin') ? ['mynt', `Ali betalar ${prisNu(vald.id)} kr idag${prisNu(vald.id) < saljPris(vald.id) ? ` (vanligt ${saljPris(vald.id)})` : ''}`, 'plus'] : null, VAROR[vald.id]?.pris && !vald.attr.startsWith('data-maskin') ? ['oandlig', `${Math.round(prisNu(vald.id) / (vald.gram / RULLE))} kr per rulle`, 'plus'] : null, sk.fil > 0 && sk.fil < behov(vald) && !forStor(vald) ? ['varning', `Laddat räcker till ${Math.floor(sk.fil / behov(vald) * 100)} % – den pausar sedan tills du laddar mer`, 'varn'] : null, ['klocka', `${Math.round(vald.tid / g.fart)} s`], ['rulle', `${rullar(vald.gram)}${vald.attr.startsWith('data-maskin') ? ` (${rullar(behov(vald))} per del)` : ''}`]],
-    knappar: [!vald.attr.startsWith('data-maskin') && upprepbar(vald.id) ? { text: sk.upprepaPa ? 'Upprepa: PÅ' : 'Upprepa: AV', typ: sk.upprepaPa ? 'plus' : 'neutral', attr: `data-upprepa="${vald.id}"`, ikon: 'oandlig' } : null, { text: sk.jobb ? (kanKo(sk) && !sk.ko ? 'Lägg i kö' : sk.ko ? 'Kön är full' : 'Printar redan…') : saknarRulle(vald) ? `Kräver filament nivå ${saknarRulle(vald)}` : forStor(vald) ? `Kräver skrivare ${STORLEK_NAMN[storlekFor(vald.id)]}` : kanInte(vald) ? 'Ladda mer filament' : 'Printa', typ: 'plus', attr: vald.attr + ' data-printa', av: sk.jobb ? !(kanKo(sk) && !sk.ko) || forStor(vald) : kanInte(vald), ikon: forStor(vald) ? 'las' : 'skrivare' }].filter(Boolean) }) : detalj({});
+    knappar: [S.auto?.lada && sk.gen !== PETG_GEN && !vald.attr.startsWith('data-maskin') && upprepbar(vald.id) ? { text: sk.upprepaPa ? 'Autoprint: PÅ' : 'Autoprint: AV', typ: sk.upprepaPa ? 'plus' : 'neutral', attr: `data-upprepa="${vald.id}"`, ikon: 'oandlig' } : null, { text: sk.jobb ? (kanKo(sk) ? ((sk.ko?.length || 0) < KO_MAX_SKRIVARE ? `Lägg i kö (${(sk.ko?.length || 0) + 1}/${KO_MAX_SKRIVARE})` : 'Kön är full') : 'Avbryt och printa den här') : saknarRulle(vald) ? `Kräver filament nivå ${saknarRulle(vald)}` : forStor(vald) ? `Kräver skrivare ${STORLEK_NAMN[storlekFor(vald.id)]}` : kanInte(vald) ? 'Ladda mer filament' : 'Printa', typ: 'plus', attr: vald.attr + ' data-printa', av: sk.jobb ? (kanKo(sk) ? (sk.ko?.length || 0) >= KO_MAX_SKRIVARE || forStor(vald) : forStor(vald) || saknarRulle(vald) > 0) : kanInte(vald), ikon: forStor(vald) ? 'las' : 'skrivare' }].filter(Boolean) }) : detalj({});
   const html = panel({ ikon: 'skrivare', titel: `Skrivare ${g.namn} · byggvolym ${g.mm} mm${sk.mod ? ' · ' + VAROR[sk.mod].namn.replace('Prototyp: ', '') : ''}`, sub: S.strom < 20 ? 'Lite ström – trampa cykeln så att skrivaren orkar' : 'Välj vad du vill printa', resurser: resurs('rulle', `${rullar(sk.fil)} laddat`) + resurs('blixt', Math.floor(S.strom), S.strom < 20 ? 'varn' : ''),
     kropp, fot });
   oppnaRuta(html, (el) => {
@@ -5836,15 +5839,18 @@ function oppnaPrintMeny(sk) {
     });
     el.querySelector('[data-stoppa]')?.addEventListener('click', () => { sk.upprepa = null; sk.upprepaPa = false; sparaSkrivare(); ljud.plock(); ui.toast('Skrivaren stannar när den här är klar', 'bra'); oppnaPrintMeny(sk); });
     el.querySelector('[data-avbryt]')?.addEventListener('click', () => { avbrytJobb(sk); ljud.plock(); oppnaPrintMeny(sk); });
+    el.querySelectorAll('[data-kobort]').forEach((k) => { k.onclick = (e) => { e.stopPropagation(); sk.ko.splice(+k.dataset.kobort, 1); sparaSkrivare(); ljud.plock(); oppnaPrintMeny(sk); }; });
+    el.querySelector('[data-kotom]')?.addEventListener('click', () => { sk.ko = []; sparaSkrivare(); ljud.plock(); oppnaPrintMeny(sk); });
     el.querySelectorAll('[data-upprepa]').forEach((k) => { k.onclick = () => {
       const t = k.dataset.upprepa; sk.upprepaPa = !sk.upprepaPa; if (sk.jobb?.typ === t) sk.upprepa = sk.upprepaPa ? t : null; sparaSkrivare(); sparaSnart(); ljud.plock();
-      ui.toast(sk.upprepaPa ? `Upprepa PÅ för den här skrivaren: den printar ${VAROR[t].namn.toLowerCase()} om och om igen så länge plattan har plats och filamentet räcker${S.auto?.lada ? ' – allt hamnar i leveranslådan' : ''}` : 'Upprepa AV: skrivaren printar bara en', sk.upprepaPa ? 'guld' : '');
+      ui.toast(sk.upprepaPa ? `Autoprint PÅ: skrivaren printar ${VAROR[t].namn} tills du byter eller filamentet tar slut – bandet tar allt till leveranslådan` : 'Autoprint AV: skrivaren printar en sak i taget', sk.upprepaPa ? 'guld' : '');
       oppnaPrintMeny(sk);
     }; });
     el.querySelectorAll('[data-printa]').forEach((k) => {
       k.onclick = () => {
+        if (sk.jobb && !kanKo(sk)) avbrytJobb(sk);   // punkt 14: Skrivare S – avbryt den pågående (filamentet tillbaka) och starta den nya
         const ok = startaJobb(sk, k.dataset.vara ? { typ: k.dataset.vara } : { maskin: k.dataset.maskin });
-        if (ok === 'upptagen') { ljud.fel(); ui.toast(sk.ko ? 'Kön är full – vänta tills den här är klar' : 'Skrivaren printar redan – vänta tills den är klar', 'fel'); return; }
+        if (ok === 'upptagen') { ljud.fel(); ui.toast(sk.ko?.length >= KO_MAX_SKRIVARE ? 'Kön är full – ta bort något ur kön först' : 'Skrivaren printar redan – vänta tills den är klar', 'fel'); return; }
         if (ok === 'ko') { ljud.kop(); ui.stangButik(); skrivarNotis(sk, 'Lagt i kö – startar när den här är klar', 'bra'); return; }
         if (ok) { ljud.kop(); ui.stangButik(); const j = sk.jobb; skrivarNotis(sk, `Printar ${(j?.maskin ? MASKINER[j.maskin].namn : VAROR[j?.typ]?.namn || '').toLowerCase()}…`, 'bra'); }
         else { ljud.fel(); ui.toast(k.dataset.vara && storlekFor(k.dataset.vara) > skrivStorlek(sk) ? `För stor – kräver skrivare ${STORLEK_NAMN[storlekFor(k.dataset.vara)]}` : 'För lite filament i skrivaren', 'fel'); }
@@ -6773,7 +6779,7 @@ css.textContent = `
 .ph-med{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:rgba(6,9,22,.72);backdrop-filter:blur(5px);font-family:system-ui,sans-serif}
 .ph-med[hidden]{display:none}
 .ph-telefon{width:min(340px,90vw);border-radius:34px;background:#0d0d0f;border:6px solid #2a2a2e;box-shadow:0 30px 80px rgba(0,0,0,.6);overflow:hidden;padding-bottom:18px;text-align:center;animation:phIn .45s cubic-bezier(.2,.9,.3,1.2)}
-.ph-saljallt{display:flex;align-items:center;gap:12px;margin:2px 0 6px}.ph-saljallt span{opacity:.7;font-size:13px}
+.ph-kobort{background:none;border:0;color:#ff8a7a;font:700 13px system-ui;cursor:pointer;padding:0 3px}.ph-saljallt{display:flex;align-items:center;gap:12px;margin:2px 0 6px}.ph-saljallt span{opacity:.7;font-size:13px}
 .ph-jobbbrev{background:#fff8e1;color:#3a2a10;font-family:'Comic Sans MS','Chalkboard SE',cursive;font-size:16px;line-height:1.5;padding:16px 18px;border-radius:6px;transform:rotate(-0.6deg);box-shadow:0 3px 0 #d8c58f;margin:4px 0 6px}
 .ph-tel-svar{display:flex;flex-direction:column;gap:8px;padding:0 16px 12px}
 .ph-svarknapp{border:2px solid #2d7fd6;background:#fff;color:#2d7fd6;border-radius:18px;padding:9px 14px;font:700 15px system-ui;cursor:pointer;text-align:left}
@@ -7441,7 +7447,9 @@ function oppnaTyckTill(foralder) {
   pop.querySelector('[data-skicka]').onclick = () => {
     const f = Object.fromEntries([...pop.querySelectorAll('[data-f]')].map((t) => [t.dataset.f, t.value.trim()]));
     if (betyg == null && !f.kul && !f.trakigt && !f.annat) { pop.remove(); return; }
-    skickaData('feedback', { sort: 'formular', betyg, betygText: betyg == null ? null : BETYG[betyg][1], ...f, steg: S.steg, dag: S.dag, minuter: Math.round((Date.now() - sessionStart) / 60000) });
+    // B20: det som hände precis innan följer med automatiskt
+    const senaste = TEXTLOGG.slice(-30).map((e) => `${(e.t / 1000).toFixed(0)}s d${e.dag} ${e.kalla}${e.vem ? ' ' + e.vem : ''}: ${String(e.text).slice(0, 90)}${e.varfor ? ' (' + e.varfor + ')' : ''}`);
+    skickaData('feedback', { sort: 'formular', betyg, betygText: betyg == null ? null : BETYG[betyg][1], ...f, steg: S.steg, dag: S.dag, minuter: Math.round((Date.now() - sessionStart) / 60000), mal: (() => { try { return stegText(STEG[S.steg]) || ''; } catch { return ''; } })(), mynt: S.mynt, version: document.querySelector('script[type="importmap"]')?.textContent.match(/v=([0-9a-f]+)/)?.[1] || window.__bygg || '', textlogg: senaste });
     pop.querySelector('.br-bekrafta-ruta').innerHTML = '<b>Tack!</b><p>Jesper läser allt.</p>';
     setTimeout(() => pop.remove(), 1600);
   };
@@ -8233,7 +8241,7 @@ function samlaOchSpara(direkt = false) {
   S.placerade = placerade.map(sparbar);
   const nyPos = [+spelare.pos.x.toFixed(2), +spelare.pos.z.toFixed(2), +spelare.yaw.toFixed(3), +spelare.pitch.toFixed(3)];
   if (!S.pos || Math.hypot(nyPos[0] - S.pos[0], nyPos[1] - S.pos[1]) > 0.5 || Math.abs(nyPos[2] - S.pos[2]) > 0.3) { S.pos = nyPos; sparaFlagga = true; }
-  for (const sk of skrivare) S.skrivare[sk.id] = { jobb: sk.jobb, prog: sk.prog, klar: sk.klar, fil: sk.fil, spolNiva: sk.spolNiva || 0, upprepa: sk.upprepa || null, upprepaPa: !!sk.upprepaPa, mod: sk.mod || null, klarL: sk.klarL || null, ko: sk.ko || null };
+  for (const sk of skrivare) S.skrivare[sk.id] = { jobb: sk.jobb, prog: sk.prog, klar: sk.klar, fil: sk.fil, spolNiva: sk.spolNiva || 0, upprepa: sk.upprepa || null, upprepaPa: !!sk.upprepaPa, mod: sk.mod || null, klarL: sk.klarL || null, ko: sk.ko || [] };
   let p = null;
   if (direkt || sparaFlagga || skrivare.some((s) => s.jobb)) p = spar.spara(direkt);
   sparaFlagga = false;
