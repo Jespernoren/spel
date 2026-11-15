@@ -254,6 +254,7 @@ const nastaInred = () => {
 const gamerSaker = () => placerade.filter((p) => GAMER.includes(p.typ)).length;
 const harRecept = (id) => !VAROR[id]?.recept || S.ritningar.includes('recept:' + id);
 // Maskiner: köp ritningen hos Ali, printa delarna, bygg ihop
+const MAGNET_NIVA = 4;   // punkt AX: händer 0, grip 1, sopsäck 2, ryggkorg 3, magnet 4
 const MASKINER = {
   kvarnmotor: { namn: 'Kvarnmotor', ikon: '⚙️', beskr: 'Batteridriven – kvarnen mal själv, du slipper veva', monteras: true, syns: () => !!S.grip || S.dag > 1 },   // punkt AX: efter gripen
   // punkt AS: begagnat hos Ali – köps som saker, inte som 3D-modeller (ingen print)
@@ -400,7 +401,6 @@ const SPOL_NIVA = { spolhallare: 1, spolhallare2: 2, spolhallare3: 3 };
 const maxFil = (sk) => SPOL_MAX[sk.spolNiva || 0];
 
 // verktygsnivå för skräp: magnetpistolen gäller bara när den är vald i verktygsraden – annars gripen (sopsäcken ger mer plats)
-const MAGNET_NIVA = 4;   // punkt AX: händer 0, grip 1, sopsäck 2, ryggkorg 3, magnet 4
 const niva = () => (S.magnet && S.hotbar?.[S.vald]?.typ === 'magnet') ? MAGNET_NIVA : S.ryggkorg ? 3 : S.korg ? 2 : S.grip ? 1 : 0;
 const skrapLage = () => S.vald === 0 || S.hotbar?.[S.vald]?.typ === 'magnet';
 // Alis trimningar: oändliga uppgraderingar – varje nivå kostar mer (exponentiellt), effekten växer linjärt
