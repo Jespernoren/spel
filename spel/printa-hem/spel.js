@@ -7702,13 +7702,15 @@ function rostNyckel(t) {
 }
 // ElevenLabs-röster (punkt Y): förgenererade klipp i roster-el/, nyckel = samma som de gamla rösterna. Finns ett klipp används det, annars den gamla rösten.
 // Punkt AH: samma röst för en figur hela vägen – ElevenLabs bara för figurer där VARJE replik har ett klipp (räknas en gång när båda listorna laddats)
-let elIndex = null, elHel = null;
+let elIndex = null, elHel = null, introPagar = false, introElSvar = null;
+// punkt AW: har alla mammas och dina repliker i introt ElevenLabs-klipp? Då används de i introt (resten av spelet följer AH).
+const introElOk = () => { if (introElSvar == null && elIndex) introElSvar = INTRO_TAL().filter(([v]) => v === 'mamma' || v === 'du').every(([v, t]) => !!elIndex[`${v}-${rostNyckel(t)}`]); return !!introElSvar; };
 const elHelRakna = () => { if (!elIndex || !rostIndex || elHel) return; elHel = new Set(ROST_FIGURER.filter((f) => { const k = Object.keys(rostIndex).filter((x) => x.startsWith(f + '-')); return k.length > 0 && k.every((x) => elIndex[x]); })); };
 fetch('roster-el/index.json').then((x) => (x.ok ? x.json() : null)).then((a) => { elIndex = a; rostKlar.then(elHelRakna); }).catch(() => {});
 function elKlipp(vem, text) {
   if (!elIndex || !elHel) return null;
   const f = ROST_FIGURER.includes(vem) ? vem : 'berattare';
-  if (!elHel.has(f)) return null;
+  if (!elHel.has(f) && !(introPagar && (f === 'mamma' || f === 'du') && introElOk())) return null;   // punkt AW: introt är en egen scen
   return elIndex[`${f}-${rostNyckel(text)}`] || null;
 }
 // testkrok: __printahem.rostKoll() – per figur hur många repliker som har ElevenLabs, gammal röst eller saknas
@@ -8690,6 +8692,7 @@ function introLagerHtml(l) {
 }
 const introNyckel = (l) => l.id + '|' + (l.src || l.kal || (l.skjul ? 'skjul' : '')) + '|' + (l.cls || '');
 function visaIntro(klar) {
+  introPagar = true;
   const el = document.createElement('div'); el.className = 'ph-intro';
   document.body.appendChild(el);
   let i = 0, scenEl = null, textEl = null, timers = [];
@@ -8749,7 +8752,7 @@ function visaIntro(klar) {
   const nasta = () => { i++; if (i >= INTRO.length) slut(); else visa(); };
   forladdaIntro(0); forladdaIntro(1);
   const tangent = (e) => { if (['Space', 'Enter', 'ArrowRight', 'KeyE'].includes(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); nasta(); } else if (e.code === 'Escape') { e.stopImmediatePropagation(); slut(); } };
-  function slut() { avbryt(); introMusik.stopp(S.introSett ? 2 : 6); removeEventListener('keydown', tangent, true); el.remove(); S.introSett = true; sparaSnart(); klar?.(); }
+  function slut() { avbryt(); introPagar = false; introMusik.stopp(S.introSett ? 2 : 6); removeEventListener('keydown', tangent, true); el.remove(); S.introSett = true; sparaSnart(); klar?.(); }
   // en startruta först: webbläsaren spelar bara upp ljud efter ett klick
   el.innerHTML = `<div class="ph-intro-kort"><div class="ph-intro-titel" style="margin:0 0 18px">${logo({ bredd: 480 })}</div><div class="ph-intro-text">Slå på ljudet – berättaren läser upp historien.</div><button class="fp-knapp" style="margin-top:22px">Börja</button></div>`;
   rostKlar.then(() => { for (const [v, t] of INTRO_TAL()) { const k = rostKlipp(v, t); if (k) hamtaPack(k[0]); } });
