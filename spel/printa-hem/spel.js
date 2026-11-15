@@ -8446,13 +8446,23 @@ const JUL_REPLIK = [
   ['mamma', 'Mamma', 'Det är så STÄDAT!'],
   ['pappa', 'Pappa', 'Jaha.'],
 ];
+const JULSCEN_REPLIK = {
+  bordRosor: ['berattare', 'Julbordet', 'Skinkan från augusti. Birgittas rosor i en vas.'],
+  bordGran: ['berattare', 'Julbordet', 'Skinkan från augusti. Granris i en vas.'],
+  goran: ['berattare', 'Julbordet', 'Göran sitter på fönsterblecket och tittar på skinkan.'],
+  stockar: ['berattare', 'Rolfs Rockers', 'Rolf på trummor med trumstockarna från 1987. Lasse och Gunnar på printade elgitarrer. Det är högt. Det är bra.'],
+  kastruller: ['berattare', 'Rolfs Rockers', 'Rolf på trummor med två kastruller. Lasse och Gunnar på printade elgitarrer. Det är högt. Det är bra.'],
+  tal1: ['pappa', 'Pappas tal', 'Ja ska fatta mej kort.'],
+  tal2: ['pappa', 'Pappas tal', 'Scania byggde sin första lastbil nittonhundraelva.'],
+  tal3: ['pappa', 'Pappas tal', 'Djurgården har vunnit SM tolv gånger.'],
+  tal4: ['pappa', 'Pappas tal', 'Skinkan har legat i frysen sen augusti.'],
+  tal5: ['pappa', 'Pappas tal', 'Ja … är stolt över dej. Aha. Vad lugnt då.'],
+  grater: ['berattare', 'Mamma', 'Mamma gråter.'],
+};
 function julRader() {
-  const rosor = !!S.tradgard?.rosor, stockar = antalInv('trumstockar') > 0 || harPlacerat('trumstockar') || (S.lagerHittat || []).includes('trumstockar');
-  return [...JUL_REPLIK,
-    ['berattare', 'Julbordet', `Skinkan från augusti. ${rosor ? 'Birgittas rosor i en vas.' : 'Granris i en vas.'} ${S.goranMaskot ? 'Göran sitter på fönsterblecket och tittar på skinkan.' : ''}`.trim()],
-    ['berattare', 'Rolfs Rockers', `Rolf på trummor ${stockar ? 'med trumstockarna från 1987' : 'med två kastruller'}. Lasse och Gunnar på printade elgitarrer. Det är högt. Det är bra.`],
-    ...['Ja ska fatta mej kort.', 'Scania byggde sin första lastbil nittonhundraelva.', 'Djurgården har vunnit SM tolv gånger.', 'Skinkan har legat i frysen sen augusti.', 'Ja … är stolt över dej. Aha. Vad lugnt då.'].map((t) => ['pappa', 'Pappas tal', t, 'fyll']),
-    ['berattare', 'Mamma', 'Mamma gråter.']];
+  const J = JULSCEN_REPLIK, rosor = !!S.tradgard?.rosor, stockar = antalInv('trumstockar') > 0 || harPlacerat('trumstockar') || (S.lagerHittat || []).includes('trumstockar');
+  return [...JUL_REPLIK, rosor ? J.bordRosor : J.bordGran, ...(S.goranMaskot ? [J.goran] : []), stockar ? J.stockar : J.kastruller,
+    ...['tal1', 'tal2', 'tal3', 'tal4', 'tal5'].map((k) => [...J[k], 'fyll']), J.grater];
 }
 function julScen() {
   if (julPagar || S.julFirad) return; julPagar = true;

@@ -5385,34 +5385,64 @@
   "var": "U_REPLIK"
  },
  {
-  "id": "rolf-41b20d00",
+  "id": "rolf-bc64c6ef",
   "figur": "rolf",
-  "text": "Rolf och Kajsa",
+  "text": "Goddag … ja. Ja har kavaj. Fråga int.",
   "var": "U_REPLIK"
  },
  {
-  "id": "ali-eff0894a",
+  "id": "ali-bc269efb",
   "figur": "ali",
-  "text": "Ali (och hans fru)",
+  "text": "Habibi. Roboten säger god jul. Jag lärde den. Säg inget till min fru – hon är här.",
   "var": "U_REPLIK"
  },
  {
-  "id": "bror-a305e15f",
+  "id": "bror-2229dfac",
   "figur": "bror",
-  "text": "Storebror",
+  "text": "Den är inte från mig. Den låg utanför. Typ.",
   "var": "U_REPLIK"
  },
  {
-  "id": "mamma-8768ad54",
+  "id": "mamma-bf7abcb6",
   "figur": "mamma",
-  "text": "Mamma",
+  "text": "Det är så STÄDAT!",
   "var": "U_REPLIK"
  },
  {
-  "id": "pappa-4ddc3c61",
+  "id": "pappa-246088cf",
   "figur": "pappa",
-  "text": "Pappa",
+  "text": "Jaha.",
   "var": "U_REPLIK"
+ },
+ {
+  "id": "pappa-c9b662ed",
+  "figur": "pappa",
+  "text": "Ja ska fatta mej kort.",
+  "var": "JULSCEN_REPLIK"
+ },
+ {
+  "id": "pappa-acd86ecf",
+  "figur": "pappa",
+  "text": "Scania byggde sin första lastbil nittonhundraelva.",
+  "var": "JULSCEN_REPLIK"
+ },
+ {
+  "id": "pappa-ba7bd84b",
+  "figur": "pappa",
+  "text": "Djurgården har vunnit SM tolv gånger.",
+  "var": "JULSCEN_REPLIK"
+ },
+ {
+  "id": "pappa-4a44c5bc",
+  "figur": "pappa",
+  "text": "Skinkan har legat i frysen sen augusti.",
+  "var": "JULSCEN_REPLIK"
+ },
+ {
+  "id": "pappa-bade44bc",
+  "figur": "pappa",
+  "text": "Ja … är stolt över dej. Aha. Vad lugnt då.",
+  "var": "JULSCEN_REPLIK"
  },
  {
   "id": "mamma-148ebf0b",
