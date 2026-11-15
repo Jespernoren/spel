@@ -2787,6 +2787,30 @@
   "var": "Ali när du printat hans modell"
  },
  {
+  "id": "ali-b11d154a",
+  "figur": "ali",
+  "text": "Ali här. Du printade min ryggkorg. Den… FUNKAR? Jag har bara sett såna på YouTube. Okej. Jag gråter inte. Det är damm i butiken.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-08a57aea",
+  "figur": "ali",
+  "text": "ryggkorg – printad. På riktigt. Jag har visat bilden för min fru tre gånger. Hon säger \"ja ja\".",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-3ac3071e",
+  "figur": "ali",
+  "text": "Jag såg din ryggkorg på avstånd. Strecket på sidan blev lite snett. Mitt fel. Den är vacker ändå.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-6c1f7b94",
+  "figur": "ali",
+  "text": "Ali här. Ännu en ritning som blev på riktigt: ryggkorg. Semesterkassan växer. Livet växer.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
   "id": "ali-fd1bcd0d",
   "figur": "ali",
   "text": "Ali här. Du printade min turbomotor. Den… FUNKAR? Jag har bara sett såna på YouTube. Okej. Jag gråter inte. Det är damm i butiken.",
@@ -4563,6 +4587,30 @@
   "var": "Alis sms om nya 3D-modeller"
  },
  {
+  "id": "ali-f9fd1717",
+  "figur": "ali",
+  "text": "Ali här. Satt uppe med AI:n hela natten. Ryggkorg är klar. Kom innan nio, då stänger jag och promptar nästa.",
+  "var": "Alis sms om nya 3D-modeller"
+ },
+ {
+  "id": "ali-43bb2da4",
+  "figur": "ali",
+  "text": "Ali här. Ny instruktion inne: Ryggkorg. Kom innan nio. Jag stänger nio. Inte en minut senare.",
+  "var": "Alis sms om nya 3D-modeller"
+ },
+ {
+  "id": "ali-28ac7bcd",
+  "figur": "ali",
+  "text": "Ryggkorg har kommit. Jag bar in lådan själv. Ingen hjälpte mig. Som vanligt.",
+  "var": "Alis sms om nya 3D-modeller"
+ },
+ {
+  "id": "ali-40cf872d",
+  "figur": "ali",
+  "text": "Ny grej: Ryggkorg. Köp den så jag slipper titta på den.",
+  "var": "Alis sms om nya 3D-modeller"
+ },
+ {
   "id": "ali-6450e91c",
   "figur": "ali",
   "text": "Ali här. Satt uppe med AI:n hela natten. Stor spolhållare är klar. Kom innan nio, då stänger jag och promptar nästa.",
@@ -5485,15 +5533,27 @@
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-8265a398",
+  "id": "berattare-93adf01f",
   "figur": "berattare",
-  "text": "Printa en blomkruka på skrivaren.",
+  "text": "Köp sopsäcken hos Ali och printa den. Då bär du sex saker.",
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-debfc9d8",
+  "id": "berattare-6154c3cc",
   "figur": "berattare",
-  "text": "Sälj krukan hos Ali.",
+  "text": "Ali har ett recept åt dig. Printa en blomkruka.",
+  "var": "Berättaren läser målen"
+ },
+ {
+  "id": "berattare-5f499e7d",
+  "figur": "berattare",
+  "text": "Bygg ryggkorgen. Då bär du tio saker.",
+  "var": "Berättaren läser målen"
+ },
+ {
+  "id": "berattare-3fdaa028",
+  "figur": "berattare",
+  "text": "Köp receptet till pallen hos Ali och printa en.",
   "var": "Berättaren läser målen"
  },
  {

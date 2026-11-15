@@ -7719,12 +7719,64 @@ let elIndex = null, elHel = null, introPagar = false, introElSvar = null;
 // punkt AW: har alla mammas och dina repliker i introt ElevenLabs-klipp? Då används de i introt (resten av spelet följer AH).
 const introElOk = () => { if (introElSvar == null && elIndex) introElSvar = INTRO_TAL().filter(([v]) => v === 'mamma' || v === 'du').every(([v, t]) => !!elIndex[`${v}-${rostNyckel(t)}`]); return !!introElSvar; };
 const elHelRakna = () => { if (!elIndex || !rostIndex || elHel) return; elHel = new Set(ROST_FIGURER.filter((f) => { const k = Object.keys(rostIndex).filter((x) => x.startsWith(f + '-')); return k.length > 0 && k.every((x) => elIndex[x]); })); };
-fetch('roster-el/index.json').then((x) => (x.ok ? x.json() : null)).then((a) => { elIndex = a; rostKlar.then(elHelRakna); }).catch(() => {});
+const elKlar = fetch('roster-el/index.json').then((x) => (x.ok ? x.json() : null)).then((a) => { elIndex = a; return rostKlar.then(elHelRakna); }).catch(() => {});
+// punkt AZ: ElevenLabs-klippen ligger packade per figur (roster-el/pack/, samma format som roster/) och spelas från ett redan avkodat ljud
+let elPackIndex = null;
+const elPackKlar = fetch('roster-el/pack/index.json').then((x) => (x.ok ? x.json() : null)).then((a) => { elPackIndex = a; }).catch(() => {});
+const elPack = {};
+const hamtaElPack = (namn) => elPack[namn] || (elPack[namn] = fetch(`roster-el/pack/${namn}.mp3`).then((x) => x.arrayBuffer()));
+const avkodat = new Map(), avkodar = new Map();   // klippets id → AudioBuffer (klart) / Promise (pågår)
+// var finns repliken? { id, hamta, fran, langd } eller null
+function klippKalla(vem, text) {
+  const ek = elKlipp(vem, text);
+  if (ek && elPackIndex?.[ek]) { const [pk, fran, langd] = elPackIndex[ek]; return { id: `el:${pk}:${fran}`, hamta: () => hamtaElPack(pk), fran, langd }; }
+  if (ek) return { id: 'elfil:' + ek, fil: 'roster-el/' + elIndex[ek] };
+  const kl = rostKlipp(vem, text);
+  if (kl) { const [pk, fran, langd] = kl; return { id: `ko:${pk}:${fran}`, hamta: () => hamtaPack(pk), fran, langd }; }
+  return null;
+}
+function avkoda(k) {
+  if (avkodat.has(k.id)) return Promise.resolve(avkodat.get(k.id));
+  if (avkodar.has(k.id)) return avkodar.get(k.id);
+  const c = ljudCtx(); if (!c || !k.hamta) return Promise.resolve(null);
+  const p = k.hamta().then((buf) => c.decodeAudioData(buf.slice(k.fran, k.fran + k.langd))).then((ab) => { avkodat.set(k.id, ab); avkodar.delete(k.id); return ab; })
+    .catch(() => { avkodar.delete(k.id); return null; });
+  avkodar.set(k.id, p); return p;
+}
+// förladda en lista repliker [vem, text] (en i taget, så att spelet inte hackar)
+async function forladdaRepliker(lista) {
+  await Promise.all([rostKlar, elKlar, elPackKlar]);
+  for (const [vem, t] of lista) { const k = klippKalla(vem, t); if (k) await avkoda(k); }
+}
+// i spelet: alla klipp för figurerna som har ElevenLabs (nu pappa), i bakgrunden efter start
+function forladdaElFigurer() {
+  Promise.all([rostKlar, elKlar, elPackKlar]).then(() => {
+    if (!elHel?.size) return;
+    forladdaRepliker(rostManus().filter(([v]) => elHel.has(ROST_FIGURER.includes(v) ? v : 'berattare')));
+  });
+}
+// punkt AZ: mätning – tid från att en replik ska börja tills ljudet hörs (ms), läses av testet
+const rostMatning = [];
+let rostKalla = null;
+function spelaAvkodat(ab, vem, t0, text) {
+  const c = ljudCtx(); if (!c) return;
+  const s = c.createBufferSource(), g = c.createGain(); s.buffer = ab; g.gain.value = 0.95;
+  s.connect(g).connect(c.destination);
+  s.onended = () => { if (rostKalla === s) { rostKalla = null; if (pratarVem === vem) pratarTill = 0; } };
+  s.start(); rostKalla = s;
+  pratarTill = performance.now() + ab.duration * 1000;
+  if (rostMatning.length < 400) {
+    const d = ab.getChannelData(0), grans = 10 ** (-45 / 20); let i = 0; while (i < d.length && Math.abs(d[i]) < grans) i++;
+    const latens = ((c.outputLatency || 0) + (c.baseLatency || 0)) * 1000;
+    rostMatning.push({ vem, text: String(text).slice(0, 50), start: Math.round(performance.now() - t0), tyst: Math.round(i / ab.sampleRate * 1000), latens: Math.round(latens), ms: Math.round(performance.now() - t0 + i / ab.sampleRate * 1000 + latens) });
+  }
+}
 function elKlipp(vem, text) {
   if (!elIndex || !elHel) return null;
   const f = ROST_FIGURER.includes(vem) ? vem : 'berattare';
   if (!elHel.has(f) && !(introPagar && (f === 'mamma' || f === 'du') && introElOk())) return null;   // punkt AW: introt är en egen scen
-  return elIndex[`${f}-${rostNyckel(text)}`] || null;
+  const k = `${f}-${rostNyckel(text)}`;
+  return elIndex[k] ? k : null;
 }
 // testkrok: __printahem.rostKoll() – per figur hur många repliker som har ElevenLabs, gammal röst eller saknas
 function rostKoll() {
@@ -7750,23 +7802,18 @@ function prata(vem, text) {
   if (rostLage() === 'av' || !text || !/[\p{L}]/u.test(rens(text))) return;
   if (rostLage() === 'rost') {
     tystna();
-    const el = elKlipp(vem, text);
-    if (el) {
-      rostLjud = new Audio('roster-el/' + el); rostLjud.volume = 0.95; rostLjud.onended = () => { if (pratarVem === vem) pratarTill = 0; };
+    const t0 = prata.t0 || performance.now(); prata.t0 = 0;
+    const k = klippKalla(vem, text);
+    if (!k) return;   // ingen inspelad replik: tyst (texten syns ändå) – inget pip-babbel
+    if (k.fil) {   // reserv: paketet saknas
+      rostLjud = new Audio(k.fil); rostLjud.volume = 0.95; rostLjud.onended = () => { if (pratarVem === vem) pratarTill = 0; };
       { const lj = rostLjud; lj.onloadedmetadata = () => { if (pratarVem === vem && isFinite(lj.duration)) pratarTill = performance.now() + lj.duration * 1000; }; }
       rostLjud.play().catch(() => {});
       return;
     }
-    const klipp = rostKlipp(vem, text);
-    if (!klipp) return;   // ingen inspelad replik: tyst (texten syns ändå) – inget pip-babbel
-    const nr = pratStopp, [pk, fran, langd] = klipp;
-    hamtaPack(pk).then((buf) => {
-      if (nr !== pratStopp) return;   // något annat har börjat prata
-      const url = URL.createObjectURL(new Blob([buf.slice(fran, fran + langd)], { type: 'audio/mpeg' }));
-      rostLjud = new Audio(url); rostLjud.volume = 0.95; rostLjud.onended = () => { URL.revokeObjectURL(url); if (pratarVem === vem) pratarTill = 0; };
-      { const lj = rostLjud; lj.onloadedmetadata = () => { if (pratarVem === vem && isFinite(lj.duration)) pratarTill = performance.now() + lj.duration * 1000; }; }
-      rostLjud.play().catch(() => {});
-    }).catch(() => {});
+    if (avkodat.has(k.id)) { spelaAvkodat(avkodat.get(k.id), vem, t0, text); return; }
+    const nr = pratStopp;
+    avkoda(k).then((ab) => { if (ab && nr === pratStopp) spelaAvkodat(ab, vem, t0, text); });
     return;
   }
   if (rostLage() === 'prat') { tystna(); pratljud(vem, text); return; }
@@ -7780,7 +7827,7 @@ function prata(vem, text) {
     speechSynthesis.speak(u);
   } catch {}
 }
-const tystna = () => { pratStopp++; try { speechSynthesis.cancel(); } catch {} try { rostLjud?.pause(); } catch {} rostLjud = null; };
+const tystna = () => { pratStopp++; try { speechSynthesis.cancel(); } catch {} try { rostLjud?.pause(); } catch {} rostLjud = null; const s = rostKalla; rostKalla = null; try { s?.stop(); } catch {} };
 const vemAvTitel = (t = '') => /Rolf/.test(t) ? 'rolf' : /Ali/.test(t) ? 'ali' : /Mamma/.test(t) ? 'mamma' : /Storebror/.test(t) ? 'bror' : /Dagbok/.test(t) ? 'du' : 'berattare';
 addEventListener('keydown', (e) => {
   if (e.code !== 'KeyV' || !ui.igang && medEl2.hidden) return;
@@ -8706,6 +8753,7 @@ function introLagerHtml(l) {
 const introNyckel = (l) => l.id + '|' + (l.src || l.kal || (l.skjul ? 'skjul' : '')) + '|' + (l.cls || '');
 function visaIntro(klar) {
   introPagar = true;
+  forladdaRepliker(INTRO_TAL()).then(forladdaElFigurer);   // punkt AZ: introts alla repliker avkodas redan på startrutan
   const el = document.createElement('div'); el.className = 'ph-intro';
   document.body.appendChild(el);
   let i = 0, scenEl = null, textEl = null, timers = [];
@@ -8757,7 +8805,7 @@ function visaIntro(klar) {
         tid(vanta, 900);
       };
       rost.then(() => tid(nastaRad, 500));
-    } else rost.then(() => { if (INTRO[i] === p) prata(talare(p), p.bubbla || p.text); });
+    } else { const kortTid = performance.now(); rost.then(() => { if (INTRO[i] === p) { prata.t0 = kortTid; prata(talare(p), p.bubbla || p.text); } }); }
     forladdaIntro(i + 1);
     if (p.musik) introMusik.start();
     try { ljudCtx(); if (p.ljud === 'dorr') { tid(() => { ton(90, 0.25, 0.25, 'square'); ton(60, 0.35, 0.2, 'sawtooth', 0.05); }, 560); } else if (i > 0) ljud.plock(); } catch {}
@@ -8834,7 +8882,7 @@ function fragaNamn(klar, byt = false) {
   el.addEventListener('pointerdown', (e) => e.stopPropagation());
   setTimeout(() => { falt.focus(); falt.select(); }, 50);
 }
-if (!S.introSett) visaIntro();
+if (!S.introSett) visaIntro(); else setTimeout(forladdaElFigurer, 3000);
 
 // ---------- Kapitel 1 klart: fanfar, konfetti, en bild till mamma … och hennes svar ----------
 const kapCss = document.createElement('style');
@@ -10523,7 +10571,7 @@ function visaOmbyggt() {
   if (MOLN?.gammal) { MOLN.gammal.delete().catch(() => {}); for (let n = 1; n <= PLATSER; n++) MOLN.db.doc(`data/users/${MOLN.id}/printahem_plats${n}`).delete().catch(() => {}); }
 }
 if (GAMMALT_SPEL) visaOmbyggt();
-window.__printahem = { introLager, trampa: (sek) => { trampTest = sek; }, ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { rostMatning, prata, elHelFig: () => [...(elHel || [])], avkodat, forladdaRepliker, introLager, trampa: (sek) => { trampTest = sek; }, ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 

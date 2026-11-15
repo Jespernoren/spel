@@ -32,6 +32,10 @@ jobs:
         env:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
         run: node verktyg/roster_eleven.mjs "${{ inputs.fil }}" "${{ inputs.lage }}" "${{ inputs.figurer }}"
+      - name: Klipp tystnaden och packa klippen per figur (punkt AZ)
+        run: |
+          command -v ffmpeg || (sudo apt-get update -q && sudo apt-get install -y -q ffmpeg)
+          python3 verktyg/roster_el_pack.py spel/printa-hem/roster-el
       - name: Checka in ljudfilerna
         run: |
           git config user.name "github-actions[bot]"
