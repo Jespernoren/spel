@@ -227,6 +227,7 @@
   async function tjana(mal, varfor) {
     // printa och sälj den bästa saken du har recept på tills du har `mal` kr
     let varv = 0;
+    await webbJobb();   // CR: beställningar från webbshoppen först – de betalar mer
     while (S.mynt < mal && varv++ < 30) {
       const kand = Object.keys(H.VAROR).filter((t) => !/^(g_|h_|hf_|ra_|r_|p_|fynd|burk|rulle|n_)/.test(t) && H.VAROR[t].pris > 0 && !H.VAROR[t].lyx && !H.VAROR[t].niva && H.harRecept(t) && (H.VAROR[t].syns?.() ?? true) && !H.VAROR[t].gava && H.VAROR[t].gram > 0);
       kand.sort((a, b) => H.prisNu(b) / H.VAROR[b].tid - H.prisNu(a) / H.VAROR[a].tid);
@@ -237,7 +238,24 @@
       await ali(() => saljAllt(BEHALL().filter((x) => x !== t)), 'sälja');   // det som printades för pengar säljs (en pall/kruka får vara kvar till trivseln)
     }
   }
-  const BEHALL = () => ['sang', 'pall', 'kruka', 'lampskarm', 'fagelholk', ...(H.aktivGava() ? [H.aktivGava()] : [])].filter((t) => !(t === 'kruka' && H.antalInv('kruka') > 2));
+  // CR: printa det webbshoppen vill ha, packa vid datorn och lägg paketen i Rolfs postlåda
+  let webbDag = 0;
+  async function webbJobb() {
+    if (!H.webbOrdrar || !H.placerade.some((p) => p.typ === 'webbdator') || webbDag === S.dag) return;
+    webbDag = S.dag;
+    for (const o of H.webbOrdrar().filter((x) => !x.packad && !x.levererad && H.harRecept(x.typ))) {
+      let f = 0; while (H.antalInv(o.typ) < o.antal && f++ < 8) { if (!(await printa({ typ: o.typ }))) break; }
+    }
+    const dator = H.placerade.find((p) => p.typ === 'webbdator');
+    if (H.webbOrdrar().some((x) => !x.packad && !x.levererad && H.antalInv(x.typ) >= x.antal)) {
+      await klick(dator.mesh, 'datorn', 1.6); await vanta(0.5);
+      for (const b of [...document.querySelectorAll('[data-packa]')]) { if (!b.disabled) { b.click(); await vanta(0.4); } }
+      await stangPopups();
+    }
+    let n = 0; while (H.antalInv('paket') && n++ < 6) { valj('paket'); await klick(H.postlada, 'Rolfs postlåda (paket)'); }
+    handling(`webbshop: ${H.webbOrdrar().filter((x) => x.iLadan && !x.levererad).length} paket i postlådan`);
+  }
+  const BEHALL = () => [...(H.webbOrdrar ? H.webbOrdrar().filter((o) => !o.packad && !o.levererad).map((o) => o.typ) : []), 'sang', 'pall', 'kruka', 'lampskarm', 'fagelholk', ...(H.aktivGava() ? [H.aktivGava()] : [])].filter((t) => !(t === 'kruka' && H.antalInv('kruka') > 2));
   async function kopMaskin(id) {
     if (S.ritningar.includes(id)) return true;
     const pris = H.MASKINER[id].ritning; if (S.mynt < pris) await tjana(pris, H.MASKINER[id].namn.toLowerCase());

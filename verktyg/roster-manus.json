@@ -3761,6 +3761,12 @@
   "var": "Dina tankar, tips och varningar"
  },
  {
+  "id": "du-8e322ee0",
+  "figur": "du",
+  "text": "En webbshop. Från ett skjul. Med modem. Varför inte.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
   "id": "du-a5afd6f6",
   "figur": "du",
   "text": "Den röda tar jag med pirran.",
@@ -3830,6 +3836,39 @@
   "id": "ali-7f10f6cf",
   "figur": "ali",
   "text": "Den röda? Jag har aldrig vågat starta den. Ta den. Starta den långt bort från mig.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-2b7ccdfa",
+  "figur": "ali",
+  "text": "Pappas gamla dator. Den har ett modem. Det låter som en fax som gråter. Men du kommer ut på nätet.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-7687d43a",
+  "figur": "ali",
+  "text": "Du säljer på nätet nu? Bra. Ritningarna köper du här.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-64fed845",
+  "figur": "rolf",
+  "text": "ÖJ! Ja kör dina paket till posten. Ja ska ändå förbi. Ja tar en tia för bensinen. Eller för Kajsas lax. Mest för laxen. /Rolf",
+  "kalla": "Ja kör dina paket till posten. Ja ska ändå förbi. Ja tar en tia för bensinen. Eller för Kajsas lax. Mest för laxen. /Rolf",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-16f1a03e",
+  "figur": "rolf",
+  "text": "Kajsa har fått lax tre dar i rad. Tack vare dina paket. Hon ä otrevilg mot mej nu. /R\n*otrevlig",
+  "kalla": "Kajsa har fått lax tre dar i rad. Tack vare dina paket. Hon e otrevlig mot mej nu. /R",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-6a06c414",
+  "figur": "rolf",
+  "text": "Kajsa har fått lax tre dar i rad. Tack vare dina paket. Hon ä otrevlig mot mej nu. /R",
+  "kalla": "Kajsa har fått lax tre dar i rad. Tack vare dina paket. Hon e otrevlig mot mej nu. /R",
   "var": "Dina tankar, tips och varningar"
  },
  {

@@ -63,6 +63,9 @@ for (const e of r.logg.filter((x) => x.kalla === 'vara')) { const m = /([\d.]+) 
 { const k = r.logg.filter((x) => x.kalla === 'karraKlick'); if (k.length) { const tr = k.filter((x) => x.text === 'träff').length; console.log(`kärran: ${tr}/${k.length} klick plockade något`); if (tr / k.length < 0.9) flaggor.push({ dag: 0, t: 0, typ: 'KÄRRA', text: `bara ${tr}/${k.length} klick träffade` }); } }
 // CT: poolen tog slut (tystnad i stället för upprepning) – per figur
 { const t = {}; for (const e of r.logg.filter((x) => x.kalla === 'poolTom')) t[e.vem] = (t[e.vem] || 0) + 1; if (Object.keys(t).length) console.log('pool slut:', JSON.stringify(t)); }
+// CR: webbshoppen – hur mycket den gav
+{ const w = r.logg.filter((x) => x.kalla === 'webbBetalt'); if (w.length) console.log(`webbshop: ${w.reduce((a, x) => a + (+x.text || 0), 0)} kr på ${w.length} morgnar`); }
+{ const a = r.logg.filter((x) => x.kalla === 'aliSalt' && x.dag >= 6).reduce((t, x) => t + (+x.text || 0), 0), w = r.logg.filter((x) => x.kalla === 'webbBetalt' && x.dag >= 6).reduce((t, x) => t + (+x.text || 0), 0); console.log(`dag 6–10: Ali ${a} kr · webbshop ${w} kr (+${a ? Math.round(w / a * 100) : 0} %)`); }
 // BL: STEG – en sak från ett lägre steg köps efter ett högre. CG: SEKVENS ovan. CK: TIDIG – en målsak köps innan målet är aktivt. CI: FAST loggas av spelet.
 for (const e of r.logg.filter((x) => ['steg', 'tidig', 'fast', 'scen', 'upprepning'].includes(x.kalla))) flaggor.push({ dag: e.dag, t: e.t, typ: e.kalla.toUpperCase(), text: `${e.text} (${e.varfor || ''})` });
 // BV: lugn start – ingen text, röst eller sms de första 5 s efter BÖRJA DAGEN, och inget sms de första 30 s

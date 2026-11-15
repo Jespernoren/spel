@@ -1,0 +1,29 @@
+[
+ {
+  "id": "rolf-64fed845",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "ÖJ! Ja kör dina paket till posten. Ja ska ändå förbi. Ja tar en tia för bensinen. Eller för Kajsas lax. Mest för laxen. /Rolf",
+  "skickas": "[old, tired, thick Värmland accent, calm] ÖJ! [short pause] Ja kör dina paket till posten. Ja ska ändå förbi. Ja tar en tia för bensinen. Eller för Kajsas lax. Mest för laxen. /Rolf [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-16f1a03e",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Kajsa har fått lax tre dar i rad. Tack vare dina paket. Hon ä otrevilg mot mej nu. /R\n*otrevlig",
+  "skickas": "[old, tired, thick Värmland accent, calm] Kajsa har fått lax tre dar i rad. [softly] [short pause] Tack vare dina paket. Hon ä otrevilg mot mej nu. /R *otrevlig [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-6a06c414",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Kajsa har fått lax tre dar i rad. Tack vare dina paket. Hon ä otrevlig mot mej nu. /R",
+  "skickas": "[old, tired, thick Värmland accent, calm] Kajsa har fått lax tre dar i rad. [softly] [short pause] Tack vare dina paket. Hon ä otrevlig mot mej nu. /R [chuckles]",
+  "hand": false
+ }
+]
