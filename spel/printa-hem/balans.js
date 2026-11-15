@@ -27,7 +27,7 @@ export const TRIVSEL_MAX_BONUS = 0.4;    // taket: +40 %
 
 // ---------- Kapitel och belöningar ----------
 export const KAP1_BELONING = 1000;   // kr när kapitel 1 är klart – så kapitel 2 kommer igång direkt
-export const TRIVSEL_MAL = 150;   // trivselmålet i kapitel 1
+export const TRIVSEL_MAL = 130;   // trivselmålet i kapitel 1 (B42: 150 → 130)
 export const RESPEKT_NIVAER = [[25, 'Filament nivå 2 – röd PETG'], [60, 'Filament nivå 3 – grön kolfiber'], [110, 'Filament nivå 4 – guldkomposit'], [180, 'Filament nivå 5 – titanblandning']];
 
 // ---------- Rolf ----------
@@ -148,7 +148,7 @@ export const VARA_SIFFROR = {
   sang: { gram: 1200, tid: 20, pris: 0 },
   nyckelring: { gram: 100, tid: 4, pris: 15 },
   kruka: { gram: 400, tid: 18, pris: 60, recept: 40 },     // punkt AG: receptet är gratis från Ali vid första försäljningen
-  pall: { gram: 1000, tid: 32, pris: 170, recept: 80 },
+  pall: { gram: 1000, tid: 20, pris: 170, recept: 80 },   // B43: 32 → 20 s
   rulle: { gram: 1000, tid: 0, pris: 0 },
   mobilstall: { gram: 300, tid: 12, pris: 50, recept: 100 },
   fagelholk: { gram: 800, tid: 26, pris: 170, recept: 300 },
@@ -198,7 +198,7 @@ export const MASKIN_SIFFROR = {
   fonster: { ritning: 150, delar: 2, gram: 700, tid: 14 },
   golv: { ritning: 140, delar: 3, gram: 800, tid: 14 },
   taklampa: { ritning: 90, delar: 1, gram: 400, tid: 10 },
-  tapeter: { ritning: 1330, delar: 4, gram: 500, tid: 12 },
+  tapeter: { ritning: 1330, delar: 1, gram: 500, tid: 12 },   // punkt BG: en ritning, fyra tapetrullar – en per vägg (som isolerskivorna)
   gamingbod: { ritning: 20000, delar: 6, gram: 700, tid: 20 },
   grip: { ritning: 50, delar: 1, gram: 400, tid: 10 },
   bord: { ritning: 120, delar: 3, gram: 700, tid: 14 },

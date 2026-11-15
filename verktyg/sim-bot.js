@@ -244,6 +244,7 @@
     const m = MASKIN(id);
     if (m.hem) {
       if (id === 'fonster') { valj(bs); H.taBortInv(bs); await gaTill(H.skjulYta, 2, 'skjulet'); H.sattFonster(); handling('sätter ett fönster'); return true; }
+      if (id === 'vaggar') { const v = ['bak', 'vanster', 'hoger', 'fram'].find((x) => !H.vaggarKlara().includes(x)); H.siktaVagg(v); valj(bs); const ok = await klick(H.skjulYta, 'skjulet (' + v + ')', 2.5); H.siktaVagg(null); return ok; }
       valj(bs); return klick(H.skjulYta, 'skjulet', 2.5);
     }
     if (['kvarnmotor', 'stortratt', 'matarband'].includes(id)) { valj(bs); return klick(H.kvarn, 'kvarnen'); }
@@ -291,7 +292,8 @@
       case 'flaska': { const sk = H.skrivare.find((x) => x.id === 'g1'); await filament(sk, sk.fil + 900); return; }
       case 'kopGrip': await kopMaskin('grip'); return;
       case 'printGrip': if (!H.antalInv('byggsats:grip') && !S.grip) await printa({ maskin: 'grip' }); return;
-      case 'kopMotor': await kopMaskin('kvarnmotor'); await printa({ maskin: 'kvarnmotor' }); return;
+      case 'kopMotor': await kopMaskin('kvarnmotor'); return;
+      case 'monteraMotor': if (!S.kvarn.motor) await printa({ maskin: 'kvarnmotor' }); return;
       case 'kopSang': { if (S.ritningar.includes('sang')) return; if (S.mynt < 60) { await tjana(60, 'sängen'); return; } await ali(async () => { await kopHosAli('sang'); }, 'köpa sängen'); return; }
       case 'printSang': await printa({ typ: 'sang' }); return;
       case 'sov1': valj('sang'); await klick(H.sangSpoke, 'sängplatsen i skjulet', 2); await vantaPaMorgon(); return;

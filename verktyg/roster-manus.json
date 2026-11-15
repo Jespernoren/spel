@@ -635,6 +635,13 @@
   "var": "Rolfs sms om marken och säljlådan"
  },
  {
+  "id": "rolf-a586e99b",
+  "figur": "rolf",
+  "text": "Tjo. Lådan vid fabriken! Ali kömmer mä sin lilla bil varje morron. Ja vinkar. Han vinkar int. /R",
+  "kalla": "Lådan vid fabriken! Ali kommer mä sin lilla bil varje morron. Ja vinkar. Han vinkar int. /R",
+  "var": "Rolfs sms om marken och säljlådan"
+ },
+ {
   "id": "bror-376f44c4",
   "figur": "bror",
   "text": "VA?! Fick du igång den?? Jag försökte i typ ett år. Den bara pep. 😳",
@@ -2486,9 +2493,9 @@
   "var": "Ali i butiken"
  },
  {
-  "id": "ali-7ac220b6",
+  "id": "ali-cafe2f4a",
   "figur": "ali",
-  "text": "Ali här. 🗑️ Skräpcontainer med matarband. Jag frågade AI:n hur man slipper bära skräp. Den gjorde det här. Den har mer fritid än jag. Suck.",
+  "text": "Ali här. 🗑️ Sophållaren. Jag frågade AI:n hur man slipper bära skräp. Den gjorde det här. Den har mer fritid än jag. Suck.",
   "var": "Ali i butiken"
  },
  {
@@ -2897,6 +2904,12 @@
   "id": "du-e71a2d9f",
   "figur": "du",
   "text": "Tre åt gången. Men mina armar… Kvarnen borde veva själv.",
+  "var": "Storykedjan (punkt BE)"
+ },
+ {
+  "id": "du-e9b7dd91",
+  "figur": "du",
+  "text": "Motorn är min. Nu ska den printas och sitta på kvarnen. Slut på vevandet.",
   "var": "Storykedjan (punkt BE)"
  },
  {
@@ -3496,9 +3509,15 @@
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-0d49dcad",
+  "id": "berattare-f37b8fa9",
   "figur": "berattare",
-  "text": "Köp 3D-modellen till en säng hos Ali.",
+  "text": "Printa kvarnmotorn på skrivaren och ta ut den. Då sätter du den direkt på kvarnen.",
+  "var": "Berättaren läser målen"
+ },
+ {
+  "id": "berattare-11f909e1",
+  "figur": "berattare",
+  "text": "Köp 3D-modellen till sängen hos Ali.",
   "var": "Berättaren läser målen"
  },
  {
@@ -3511,6 +3530,24 @@
   "id": "berattare-d20ba676",
   "figur": "berattare",
   "text": "Ställ sängen i skjulet och sov.",
+  "var": "Berättaren läser målen"
+ },
+ {
+  "id": "berattare-6f77beca",
+  "figur": "berattare",
+  "text": "Printa och sälj nyckelringar tills du har femtio kronor till gripen.",
+  "var": "Berättaren läser målen"
+ },
+ {
+  "id": "berattare-6e7b39ff",
+  "figur": "berattare",
+  "text": "Printa och sälj mer tills du har femtio kronor till kvarnmotorn.",
+  "var": "Berättaren läser målen"
+ },
+ {
+  "id": "berattare-197adc55",
+  "figur": "berattare",
+  "text": "Printa och sälj mer tills du har sextio kronor till sängen.",
   "var": "Berättaren läser målen"
  },
  {
@@ -3538,9 +3575,9 @@
   "var": "Dina tankar, tips och varningar"
  },
  {
-  "id": "du-6f0fbcdc",
+  "id": "du-d46f9c38",
   "figur": "du",
-  "text": "En skottkärra! Jag väljer den med hjulet och kör fram till en tunna.",
+  "text": "En skottkärra! Jag väljer den med hjulet och kör den full med skräp.",
   "var": "Dina tankar, tips och varningar"
  },
  {
@@ -3565,12 +3602,6 @@
   "id": "du-70315a0e",
   "figur": "du",
   "text": "Shift-klick flyttar en hel hög mellan kistan och ryggsäcken.",
-  "var": "Dina tankar, tips och varningar"
- },
- {
-  "id": "du-9acb53c4",
-  "figur": "du",
-  "text": "3D-modellen till sängen kostar 60 spänn hos Ali. Okej – dags att starta printfabriken och tjäna stålar!",
   "var": "Dina tankar, tips och varningar"
  },
  {

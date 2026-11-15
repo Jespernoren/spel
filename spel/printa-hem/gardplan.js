@@ -20,7 +20,7 @@ export const LINJER = [
 
 // platserna i varje linje (x = mitten, b × d = storlek). Skrivarplatserna är stora nog för en L-skrivare.
 export const LINJE_PLATSER = [
-  { typ: 'container', namn: 'Skräpcontainer', x: -18.3, b: 1.8, d: 1.8 },
+  { typ: 'container', namn: 'Sophållare', x: -18.3, b: 1.8, d: 1.8 },
   { typ: 'kvarn', namn: 'Kvarn', x: -16.3, b: 2.0, d: 1.8 },
   { typ: 'extruder', namn: 'Extruder', x: -15.0, b: 1.0, d: 1.2 },
   { typ: 'spolhallare', namn: 'Spolhållare', x: -13.8, b: 1.0, d: 1.2 },
