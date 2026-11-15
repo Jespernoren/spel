@@ -3331,8 +3331,23 @@ const malPil = new THREE.Group();
   const kon = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.5, 4), gul); kon.rotation.x = Math.PI; kon.position.y = 0.25; malPil.add(kon);
   const stav = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.45, 0.12), gul); stav.position.y = 0.72; malPil.add(stav);
   malPil.traverse((o) => { o.renderOrder = 10; }); malPil.visible = false; scen.add(malPil); }
+// kapitel 1 efter dag 1: pilen visar postlådan (Rolfs brev och gåvor), gårdens skräp och tippen
+function postMal() {
+  const st = STEG[S.steg]; if (!st || st.sov || S.kapitel > 1) return null;
+  const t = stegText(st);
+  if (/postlåd/i.test(t) && (st.startPost || /^Lägg /.test(t) && aktivGava?.() && antalInv(aktivGava()) > 0)) return 'post';
+  if (/^Städa gården/.test(t)) return 'gard';
+  if (/skräp på soptippen/.test(t)) return 'tipp';
+  return null;
+}
 function malPunkt() {
-  if (S.steg > 12) return null;
+  if (S.steg > 12) {
+    const m = postMal(), v = new THREE.Vector3();
+    if (m === 'post') return postlada.getWorldPosition(v).setY(1.5);
+    if (m === 'gard') { const x = skrapLista.filter((x) => kanLyfta(x) && !paTippen(x.position.x, x.position.z) && Math.abs(x.position.x) <= TOMT && Math.abs(x.position.z) <= TOMT).sort((a, b) => a.position.distanceTo(spelare.pos) - b.position.distanceTo(spelare.pos))[0]; return x ? x.getWorldPosition(v).setY(0.3) : null; }
+    if (m === 'tipp' && !paTippen(spelare.pos.x, spelare.pos.z)) return new THREE.Vector3(TIPP.x, 1.2, TIPP.z);
+    return null;
+  }
   const v = new THREE.Vector3();
   const gripbart = () => skrapLista.filter((x) => !x.userData.tung && !paTippen(x.position.x, x.position.z)).sort((a, b) => a.position.distanceTo(spelare.pos) - b.position.distanceTo(spelare.pos))[0];
   if (!S.skyltUppe && S.steg <= 1) return bradhog.getWorldPosition(v).setY(0.2);
@@ -3367,7 +3382,7 @@ const DU_BYGG = 'Okej. Låt oss bygga. Först en skylt, så att alla vet vem som
 function uppdateraMalPil() {
   const p = malPunkt();
   if (!p || !ui.igang) { malPil.visible = false; }
-  else { const stor = !S.skyltUppe && S.steg <= 1; malPil.scale.setScalar(stor ? 1.3 : 1); malPil.visible = true; malPil.position.copy(p).add(new THREE.Vector3(stor ? 0.65 : 0, (stor ? 0.75 : 0.6) + Math.abs(Math.sin(performance.now() / 300)) * 0.35, 0)); malPil.rotation.y += 0.04; }
+  else { const stor = !S.skyltUppe && S.steg <= 1; malPil.scale.setScalar(stor ? 1.3 : Math.min(3, Math.max(1, Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z) / 9))); malPil.visible = true; malPil.position.copy(p).add(new THREE.Vector3(stor ? 0.65 : 0, (stor ? 0.75 : 0.6) + Math.abs(Math.sin(performance.now() / 300)) * 0.35, 0)); malPil.rotation.y += 0.04; }
   // din egen röst när dagboken är läst: dags att spika skylten
   if (!S.skyltUppe && S.steg <= 1 && !sagtBygg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas) { sagtBygg = true; bud(() => { if (!S.skyltUppe) { if (!S.kap1Visad) { S.kap1Visad = true; visaKapitelKort(1, KAP1_NAMN, KAP1_MAL); sparaSnart(); } prata('du', DU_BYGG); } }); }
   // instruktionen läses först när dagboken är läst och (i ett nytt spel) skylten är uppe
@@ -6331,10 +6346,11 @@ function nuTips(t) {
   if (/Dagens mål är klara/.test(t)) return 'Printa och sälj hos Ali tills det blir kväll';
   if (/Köp/.test(t)) return 'Gå till Ali över vägen';
   if (/Printa/.test(t)) return 'Gå till skrivaren och välj den';
-  if (/Rolf|postlåd|brev/i.test(t)) return 'Rolfs postlåda står vid tippens grind';
+  if (/Rolf|postlåd|brev/i.test(t)) { const d = Math.round(Math.hypot(postlada.position.x - spelare.pos.x, postlada.position.z - spelare.pos.z)); return d > 4 ? `Postlådan med flaggan står vid tippens grind · ${d} m – följ den gula pilen` : 'Klicka på postlådan'; }
   if (/Bygg|Lägg|Isolera|Tapetsera|dörr/i.test(t)) return 'Köp 3D-modellen hos Ali, printa och montera';
   if (/sov|Sov|kväll/.test(t)) return 'Gå till sängen i skjulet';
-  if (/Städa|Plocka|skräp/i.test(t)) return 'Plocka och lägg i kvarnen';
+  if (/skräp på soptippen/.test(t)) return 'Soptippen ligger bakom grinden till vänster – följ pilen';
+  if (/Städa|Plocka|skräp/i.test(t)) return 'Plocka skräpet på gården och lägg det i kvarnen – pilen visar närmaste';
   if (/trivsel|mysigt|Inred/i.test(t)) return 'Inredning hos Ali ger trivsel';
   if (/Sälj|Tjäna/.test(t)) return 'Printa saker och sälj hos Ali';
   return 'Följ pilen';
@@ -6354,6 +6370,7 @@ function ritaNasta() {
 // Blicken vänds dit, din röst säger vad du ska göra – en gång. Menyer får en liten pulserande hjälplapp första gången.
 const FORSTA = {
   gava: { rost: 'Klart! Nu lägger jag den i Rolfs brevlåda vid grinden.', titta: () => postlada.position, nar: () => { const g = aktivGava(); return g && antalInv(g) > 0 && !S.post.tillRolf; } },
+  brev: { rost: 'Flaggan är uppe på postlådan vid tippens grind. Där har Rolf lagt något till mig.', titta: () => postlada.position, nar: () => postMal() === 'post' && !!S.post.lapp && S.rolf.i === 0 },
   post: { rost: 'Rolf har lagt något i brevlådan. Jag går och hämtar det.', titta: () => postlada.position, nar: () => S.post.tillMig.length > 0 },
   uppgradera: { rost: 'Jag har pengar nu. Hos Ali kan jag köpa uppgraderingar – bära mer eller printa snabbare.', titta: () => ALI, nar: () => S.dag >= 3 && S.mynt >= 90 && Object.entries(MASKINER).some(([id, m]) => !m.hem && m.syns?.() !== false && m.ritning <= S.mynt && !S.ritningar.includes(id)) },
   karra: { rost: 'En skottkärra! Jag väljer den med hjulet och kör fram till en tunna.', nar: () => !!S.karra && antalInv('karra') > 0 },
@@ -6418,7 +6435,7 @@ function ritaHud() {
     if (mEl.style.left !== x) { mEl.style.left = x; mEl.style.width = w; mEl.style.top = ''; }
   }
   // tipsraden ("Nu: …", "Rolf har lämnat något") bara när den behövs: konkret nästa steg, ny uppgift, eller Rolf
-  mEl.classList.toggle('visa-tips', !!malText.querySelector('[data-konkret]') || performance.now() < tipsTill);
+  mEl.classList.toggle('visa-tips', !!malText.querySelector('[data-konkret]') || performance.now() < tipsTill || !!postMal());
   ritaLoop(mEl);
   // uppdragslistan: det som är klart (bockat), det du gör nu och vad som kommer
   const lista = mEl.querySelector('.hud-lista');
