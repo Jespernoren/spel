@@ -110,10 +110,12 @@
   function aliKnapp(pre, id) { return [...document.querySelectorAll(`[data-val^="${pre}:"]`)].find((e) => e.dataset.val.endsWith(':' + id)); }
   async function saljAllt(behall = []) {
     let tot = 0;
-    for (;;) {
-      const k = [...document.querySelectorAll('[data-val^="s:"]')].find((e) => !behall.some((b) => e.dataset.val.endsWith(':' + b)));
-      if (!k) break; const fore = S.mynt; k.click(); await vanta(0.6); tot += S.mynt - fore; if (S.mynt === fore) break;
+    // CO: markera det som ska säljas, sälj med knappen längst ned
+    for (let varv = 0; varv < 40; varv++) {
+      const k = [...document.querySelectorAll('[data-val^="s:"]')].find((e) => !behall.some((b) => e.dataset.val.endsWith(':' + b)) && !e.closest('.ali-markwrap')?.classList.contains('pa'));
+      if (!k) break; k.click(); await vanta(0.25);
     }
+    { const b = document.querySelector('[data-saljallt]'); if (b && !b.disabled) { const fore = S.mynt; b.click(); await vanta(0.6); tot += S.mynt - fore; } }
     if (tot) handling(`säljer hos Ali: +${tot} kr`);
     return tot;
   }

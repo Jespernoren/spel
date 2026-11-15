@@ -6693,7 +6693,7 @@ function trimBild(k) {
   return `<span class="ph-trimbild">${bild}<i>${txt}</i></span>`;
 }
 // bara rena säljvaror är förbockade – lyx, hemsaker, byggsatser och material säljs aldrig av misstag
-const saljMarkerad = (t) => S.saljVal?.[t] ?? (SALJ_KEDJA.includes(t) || !!VAROR[t]?.niva);
+const saljMarkerad = (t) => !!S.saljVal?.[t];   // CO: klick markerar, inget är markerat från början
 function aliSaljLista() {
   const ager = {};
   Object.assign(ager, allaAgda());
@@ -6811,9 +6811,10 @@ function oppnaMarknad() {
   let kropp = '', fot = '';
   // SÄLJ
   const markL = saljL.filter((x) => saljMarkerad(x.typ)), allt = markL.reduce((a, x) => a + summaFor(x.typ, x.n), 0);
-  let saljHtml = `<div class="ali-niva salj"><div class="ali-niva-rub"><span>${ik('salj')} Sälj till Ali</span><small>${markL.length ? 'bocka i det du vill sälja' : 'bocka i det du vill sälja – sen säljer du allt på en gång'}</small>${markL.length ? knapp({ text: `Sälj markerade (${markL.reduce((a, x) => a + x.n, 0)} st)  +${krT(allt)} kr`, typ: 'plus', attr: 'data-saljallt' }) : ''}</div>`
+  let saljHtml = `<div class="ali-niva salj"><div class="ali-niva-rub"><span>${ik('salj')} Sälj till Ali</span><small>klicka på det du vill sälja – sälj med knappen längst ned</small>${saljL.length ? `<button class="ali-markallt" data-markallt>${markL.length === saljL.length ? 'Avmarkera allt' : 'Markera allt som går att sälja'}</button>` : ''}</div>`
     + (saljL.length ? '<div class="ali-grupper">' + SALJ_GRUPPER.filter((gr) => saljL.some((x) => x.grupp === gr)).map((gr) => `<div class="ali-grupp"><b>${gr}</b>${grid(saljL.filter((x) => x.grupp === gr).map((x) => `<div class="ali-markwrap${saljMarkerad(x.typ) ? ' pa' : ''}">${uiRuta({ liten: true, bild: tumme(x.typ), attr: `data-val="s:${x.key}"`, vald: 's:' + x.key === aliVald, niva: nivaFor(x.typ), antal: x.n, pris: 'Sälj +' + summaFor(x.typ, x.n), prisTyp: 'plus', titel: namnFor(x.typ), etikett: true })}<button class="ali-mark" data-mark="${x.typ}" title="${saljMarkerad(x.typ) ? 'Markerad – säljs med Sälj markerade' : 'Inte markerad – klicka för att sälja den med de andra'}">${saljMarkerad(x.typ) ? ik('bock') : ''}</button></div>`))}</div>`).join('') + '</div>'
       : '<p class="ui-tom">Du har inget att sälja. Printa saker på skrivaren – de hamnar i din verktygsrad.</p>')
+    + (saljL.length ? `<button class="ali-saljknapp${markL.length ? '' : ' gra'}" data-saljallt ${markL.length ? '' : 'disabled'}>${markL.length ? `Sälj · ${krT(allt)} kr` : 'Sälj · markera något först'}</button>` : '')   // CO
     + (ejL.length ? `<div class="ali-grupp ej"><b>${ik('las')} Ali köper inte</b>${grid(ejL.map((x) => uiRuta({ liten: true, bild: tumme(x.typ), attr: `data-ej="${x.typ}"`, niva: nivaFor(x.typ), antal: x.n, pris: x.typ === aktivGava() ? 'Till Rolf' : x.typ === 'rulle' ? 'Från dag 3' : 'Säljs inte', prisTyp: 'minus', titel: namnFor(x.typ), etikett: true })))}</div>` : '') + '</div>';
   kropp += aliVillHtml();
   // Rolfs önskan finns inte hos Ali – den printar du själv
@@ -6855,9 +6856,9 @@ function oppnaMarknad() {
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { aliFlik = k.dataset.flik; aliVald = null; aliRepl = aliFlik === 'salj' ? 'Visa vad du har. Snabbt.' : 'Titta gärna. Rör inte.'; ljud.plock(); oppnaMarknad(); }; });
     el.querySelectorAll('[data-val]').forEach((k) => {
       // sälj-rutor: ett klick säljer allt av den saken direkt (inget bekräfta)
-      k.onclick = () => { const forra = aliVald; aliVald = k.dataset.val; if (aliVald.startsWith('s:')) { salj1(Infinity); return; } if (aliVald.startsWith('k:')) { const x = kopL.find((y) => 'k:' + y.key === aliVald); if (x?.las) { aliRepl = x.las; ljud.fel(); oppnaMarknad(); return; } 
+      k.onclick = (e) => { const forra = aliVald; aliVald = k.dataset.val; if (aliVald.startsWith('s:')) { const x = saljL.find((y) => 's:' + y.key === aliVald); if (x) { S.saljVal = { ...(S.saljVal || {}), [x.typ]: !saljMarkerad(x.typ) }; ljud.plock(); sparaSnart(); oppnaMarknad(); } return; } if (aliVald.startsWith('k:')) { const x = kopL.find((y) => 'k:' + y.key === aliVald); if (x?.las) { aliRepl = x.las; ljud.fel(); oppnaMarknad(); return; } 
         if (x && S.mynt >= x.pris) { kopDirekt(x); return; } if (x) { aliRepl = `Den kostar ${krT(x.pris)} kr. Kom tillbaka med mer, min vän.`; ljud.fel(); oppnaMarknad(); return; } } aliRepl = bubbla; ljud.plock(); oppnaMarknad(); };
-      k.ondblclick = () => el.querySelector('[data-kop],[data-salj1]')?.click();
+      k.ondblclick = () => { if (k.dataset.val.startsWith('s:')) return; el.querySelector('[data-kop],[data-salj1]')?.click(); };
       // håll musen över en köp-ruta: "Du får" syns i rutan till vänster innan du köper
       if (k.dataset.val.startsWith('k:')) k.onpointerenter = () => { const x = kopL.find((y) => 'k:' + y.key === k.dataset.val); if (!x) return; const box = el.querySelector('.ali-info'); const ny = aliKopInfo(x); if (box) box.outerHTML = ny; else el.querySelector('.ali-sida')?.insertAdjacentHTML('beforeend', ny); };
     });
@@ -6889,15 +6890,17 @@ function oppnaMarknad() {
     { const va = el.querySelector('[data-visaallt]'); if (va) va.onclick = () => { aliVisaAllt = !aliVisaAllt; oppnaMarknad(); }; }
     el.querySelectorAll('[data-ej]').forEach((k) => { k.onclick = () => { aliRepl = aliNejFor(k.dataset.ej); ljud.fel(); oppnaMarknad(); }; });
     const sx = el.querySelector('[data-saljallt]'); if (sx) sx.onclick = () => {
-      let summa = 0, antal = 0;
+      let summa = 0, antal = 0; const saljMarkeradFore = new Set(saljL.filter((x) => saljMarkerad(x.typ)).map((x) => x.typ));
       for (const x of saljL) { if (!saljMarkerad(x.typ)) continue; const n = antalInv(x.typ); if (!n) continue; const su = summaFor(x.typ, n); taBortInv(x.typ, n); if (!x.typ.startsWith('byggsats:') && !VAROR[x.typ]?.lyx) { S.saltIdag = { ...(S.saltIdag || {}), [x.typ]: saltIdag(x.typ) + n }; S.saltTot = { ...(S.saltTot || {}), [x.typ]: (S.saltTot?.[x.typ] || 0) + n }; } summa += su; antal += n; }
-      S.mynt += summa; S.stat.salt += antal; ljud.mynt(); myntRegn(summa);
+      S.mynt += summa; S.stat.salt += antal; ljud.mynt(); myntRegn(summa); S.saljVal = {};   // CO
       giAliBonus();
-      aliRepl = antal === 1 ? `Okej. ${summa} kr.` : `Allt?! ${antal} saker. Jag behöver ett större lager. Här: ${krT(summa)} kr.`;
+      { const typer = saljL.filter((x) => saljMarkeradFore.has(x.typ)).map((x) => x.typ), av = aliVill();   // CO: en replik för hela försäljningen
+        aliRepl = av && typer.includes(av) ? `Precis vad jag ville ha idag. ${krT(summa)} kr – med extra.` : mattnadPa() && S.dag > 1 && typer.some((t) => saltIdag(t) >= 5) ? `Vem ska köpa alla? Här, ${krT(summa)} kr. Gör nåt annat imorgon.` : antal >= 8 ? `Allt?! ${antal} saker. Jag behöver ett större lager. Här: ${krT(summa)} kr.` : `Okej. ${krT(summa)} kr.`; }
       if (aliBonus) { aliRepl = aliBonus; aliBonus = false; }
       ritaHotbar(); ritaHand(); sparaSnart(); oppnaMarknad();
     };
     const sa = el.querySelector('[data-saljalla]'); if (sa) sa.onclick = () => salj1(999);
+    { const ma = el.querySelector('[data-markallt]'); if (ma) ma.onclick = () => { const alla = saljL.every((x) => saljMarkerad(x.typ)); S.saljVal = {}; if (!alla) for (const x of saljL) S.saljVal[x.typ] = true; ljud.plock(); sparaSnart(); oppnaMarknad(); }; }   // CO
     el.querySelectorAll('[data-mark]').forEach((k) => { k.onclick = (e) => { e.stopPropagation(); const t = k.dataset.mark; S.saljVal = { ...(S.saljVal || {}), [t]: !saljMarkerad(t) }; ljud.plock(); sparaSnart(); oppnaMarknad(); }; });
   });
 }
