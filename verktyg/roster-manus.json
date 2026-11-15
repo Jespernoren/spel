@@ -2882,9 +2882,9 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-22b1207b",
+  "id": "du-da4ec593",
   "figur": "du",
-  "text": "Fem kronor kvar. Fler nyckelringar, alltså.",
+  "text": "Gripen kostar femtio. Fler nyckelringar, alltså.",
   "var": "Storykedjan (punkt BE)"
  },
  {
@@ -2948,9 +2948,15 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-28fa54fc",
+  "id": "du-784aa4ee",
   "figur": "du",
-  "text": "Att springa till Ali för varje sak… Kan han inte hämta själv?",
+  "text": "Kärran rymmer mer än tratten. Jag behöver nånstans att tippa.",
+  "var": "Storykedjan (punkt BE)"
+ },
+ {
+  "id": "du-30f0fb3c",
+  "figur": "du",
+  "text": "Nu kan jag tömma hela kärran på en gång.",
   "var": "Storykedjan (punkt BE)"
  },
  {
@@ -3008,6 +3014,18 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
+  "id": "du-22a86020",
+  "figur": "du",
+  "text": "Att springa till Ali med varenda vas… Kan han inte hämta själv?",
+  "var": "Storykedjan (punkt BE)"
+ },
+ {
+  "id": "ali-1040d0e7",
+  "figur": "ali",
+  "text": "Jag hämtar varje morgon. Du lägger i, jag betalar.",
+  "var": "Storykedjan (punkt BE)"
+ },
+ {
   "id": "du-c437e1d9",
   "figur": "du",
   "text": "En tunna i taget i kärran. Det måste gå fortare.",
@@ -3050,9 +3068,9 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-5a2cd23f",
+  "id": "du-01c6ecc7",
   "figur": "du",
-  "text": "Jag springer till Ali tio gånger om dagen. Han kan väl hämta själv?",
+  "text": "Säljlådan är full innan Ali hinner hämta. Och jag bär fortfarande dit allt.",
   "var": "Storykedjan (punkt BE)"
  },
  {

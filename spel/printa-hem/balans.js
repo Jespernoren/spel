@@ -206,7 +206,7 @@ export const MASKIN_SIFFROR = {
   rullband: { ritning: 12670, delar: 4, gram: 900, tid: 16 },
   lastarm: { ritning: 7500, delar: 4, gram: 1000, tid: 18 },
   robotarm: { ritning: 9170, delar: 4, gram: 1000, tid: 18 },
-  saljlada: { ritning: 250, delar: 2, gram: 500, tid: 12 },
+  saljlada: { ritning: 670, delar: 2, gram: 500, tid: 12 },
   utlada: { ritning: 15000, delar: 3, gram: 800, tid: 16 },
   skrivare3: { ritning: 8330, delar: 6, gram: 1200, tid: 20 },
   skrivare2: { ritning: 1330, delar: 5, gram: 900, tid: 18 },

@@ -100,12 +100,14 @@ for (let i = 1; i < saker.length; i++) {
   if (a.kalla === 'sak' && c.kalla === 'sak') flaggor.push({ dag: c.dag, t: c.t, typ: 'SAMTIDIGT', text: `"${a.text.slice(0, 40)}" och "${c.text.slice(0, 40)}"` });
   if (a.kalla === 'klar' && c.kalla === 'sak' && c.tot - a.tot < 1.95 && c.dag === a.dag) flaggor.push({ dag: c.dag, t: c.t, typ: 'PAUS', text: `${(c.tot - a.tot).toFixed(1)} s paus före "${c.text.slice(0, 50)}"` });
 }
+// punkt BF: nytt mål synligt i målrutan inom 4 s (aldrig mer än 8 s) efter att förra målet blev klart
 const malVantan = [];
 for (const h of r.logg.filter((e) => e.kalla === 'händelse' && e.vem === 'malKlart')) {
-  const m = r.logg.find((e) => e.kalla === 'sak' && e.vikt === undefined && false) || r.logg.find((e) => e.kalla === 'sak' && e.tot >= h.tot && /MÅL$/.test(e.varfor || '') );
+  const m = r.logg.find((e) => e.kalla === 'målruta' && e.tot >= h.tot - 0.05);
   if (!m) continue;
-  const v = m.tot - h.tot; malVantan.push({ dag: h.dag, t: h.t, v, text: m.text || m.steg });
-  if (v > 8) flaggor.push({ dag: h.dag, t: h.t, typ: 'MÅL VÄNTAR', text: `${v.toFixed(1)} s innan nästa mål ("${(m.text || m.steg).slice(0, 50)}")` });
+  const v = m.tot - h.tot; malVantan.push({ dag: h.dag, t: h.t, v, text: m.text });
+  if (v > 8) flaggor.push({ dag: h.dag, t: h.t, typ: 'MÅL > 8 s', text: `${v.toFixed(1)} s innan "${m.text.slice(0, 60)}" syntes` });
+  else if (v > 4) flaggor.push({ dag: h.dag, t: h.t, typ: 'MÅL > 4 s', text: `${v.toFixed(1)} s innan "${m.text.slice(0, 60)}" syntes` });
 }
 // tempo
 for (const d of r.dagar) {
@@ -119,7 +121,7 @@ md += `## Sammanfattning\n\n| Dag | Minuter | Prints (totalt) | Kr vid sömn | B
 for (const d of r.dagar) md += `| ${d.dag} | ${(d.sek / 60).toFixed(1)} | ${d.printat} | ${d.mynt} | ${d.bar} | ${d.trivsel} |\n`;
 md += `\n**Köp:**\n\n` + r.kop.map((k) => `- dag ${k.dag} ${fmt(k.t)} – ${k.id} (${k.pris} kr)`).join('\n') + '\n';
 md += `\n## Storykedjan (kvittens → varför → nytt mål)\n\n| Dag | Tid | Id | Kvittens | Varför | Nytt mål | Tid till målet |\n|---|---|---|---|---|---|---|\n` + kedjeRader.map((k) => `| ${k.dag} | ${fmt(k.t)} | ${k.id} | ${k.kv.slice(0, 60)} | ${k.va.slice(0, 60)} | ${k.mal.slice(0, 60)} | ${k.gap == null ? '–' : k.gap.toFixed(1) + ' s'} |`).join('\n') + '\n';
-md += `\n## Hur länge nya mål väntade (från att förra målet blev klart till att det nya lästes/visades)\n\n` + (malVantan.length ? `Snitt ${(malVantan.reduce((x, m) => x + m.v, 0) / malVantan.length).toFixed(1)} s · max ${Math.max(...malVantan.map((m) => m.v)).toFixed(1)} s · över 8 s: ${malVantan.filter((m) => m.v > 8).length} av ${malVantan.length}\n` : '-\n');
+md += `\n## Hur länge nya mål väntade (från att förra målet blev klart till att det nya syntes i målrutan)\n\n` + (malVantan.length ? `Snitt ${(malVantan.reduce((x, m) => x + m.v, 0) / malVantan.length).toFixed(1)} s · max ${Math.max(...malVantan.map((m) => m.v)).toFixed(1)} s · över 4 s: ${malVantan.filter((m) => m.v > 4).length} · över 8 s: ${malVantan.filter((m) => m.v > 8).length} av ${malVantan.length}\n` : '-\n');
 md += `\n## Flaggor (${flaggor.length})\n\n` + (flaggor.length ? flaggor.map((f) => `- **${f.typ}** dag ${f.dag} ${fmt(f.t)}: ${f.text}`).join('\n') : '- inga') + '\n';
 md += `\nSidfel: ${sidfel.length ? sidfel.slice(0, 5).join(' · ') : 'inga'}\n`;
 for (const dag of [...new Set(r.logg.map((e) => e.dag))]) {
