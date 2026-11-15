@@ -187,7 +187,7 @@ export const MASKIN_SIFFROR = {
   spolhallare: { ritning: 120, delar: 2, gram: 400, tid: 10 },
   spolhallare2: { ritning: 1170, delar: 3, gram: 700, tid: 12 },
   spolhallare3: { ritning: 1500, delar: 4, gram: 900, tid: 14 },
-  matarband: { ritning: 220, delar: 3, gram: 700, tid: 14 },
+  matarband: { ritning: 200, delar: 3, gram: 700, tid: 14 },
   rullstall: { ritning: 180, delar: 2, gram: 500, tid: 12 },
   hardkniv: { ritning: 1670, delar: 2, gram: 600, tid: 12 },
   diamantkniv: { ritning: 10000, delar: 3, gram: 1000, tid: 16 },

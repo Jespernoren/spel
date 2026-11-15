@@ -246,7 +246,7 @@
       if (id === 'fonster') { valj(bs); H.taBortInv(bs); await gaTill(H.skjulYta, 2, 'skjulet'); H.sattFonster(); handling('sätter ett fönster'); return true; }
       valj(bs); return klick(H.skjulYta, 'skjulet', 2.5);
     }
-    if (['kvarnmotor', 'stortratt'].includes(id)) { valj(bs); return klick(H.kvarn, 'kvarnen'); }
+    if (['kvarnmotor', 'stortratt', 'matarband'].includes(id)) { valj(bs); return klick(H.kvarn, 'kvarnen'); }
     return placera(bs);
   }
   async function placera(t) {

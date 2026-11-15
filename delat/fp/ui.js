@@ -125,6 +125,9 @@ export class FpUI {
     this.o.onStart?.();
   }
 
+  // släpp muslåset utan att pausmenyn visas (spelet gör det med flit)
+  slappMus() { this.medFlit = performance.now(); if (document.pointerLockElement) document.exitPointerLock(); }
+
   pausa() {
     if (!this.igang || !this.butiksOverlay.hidden) return;
     if (document.pointerLockElement) document.exitPointerLock();
@@ -191,6 +194,8 @@ export class FpUI {
     addEventListener('keyup', (e) => { if (e.code === 'KeyE') anvand(false); });
 
     document.addEventListener('pointerlockchange', () => {
+      // släppte spelet muslåset med flit (sömn, kapitelkort, scener) ska pausmenyn inte visas
+      if (!document.pointerLockElement && (performance.now() - (this.medFlit || -1e9) < 1500 || this.o.pausaInte?.())) return;
       if (!document.pointerLockElement && this.igang && this.butiksOverlay.hidden && !this.o.spelare?.arTouch) this.pausa();
     });
 
