@@ -3156,6 +3156,54 @@
   "var": "Ali när du printat hans modell"
  },
  {
+  "id": "ali-2e6a563c",
+  "figur": "ali",
+  "text": "Ali här. Du printade min blomkruka. Den… FUNKAR? Jag har bara sett såna på YouTube. Okej. Jag gråter inte. Det är damm i butiken.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-7827343c",
+  "figur": "ali",
+  "text": "blomkruka – printad. På riktigt. Jag har visat bilden för min fru tre gånger. Hon säger \"ja ja\".",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-d7f5b784",
+  "figur": "ali",
+  "text": "Jag såg din blomkruka på avstånd. Strecket på sidan blev lite snett. Mitt fel. Den är vacker ändå.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-be156d4a",
+  "figur": "ali",
+  "text": "Ali här. Ännu en ritning som blev på riktigt: blomkruka. Semesterkassan växer. Livet växer.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-4ac9f09f",
+  "figur": "ali",
+  "text": "Ali här. Du printade min pall. Den… FUNKAR? Jag har bara sett såna på YouTube. Okej. Jag gråter inte. Det är damm i butiken.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-f32a662d",
+  "figur": "ali",
+  "text": "pall – printad. På riktigt. Jag har visat bilden för min fru tre gånger. Hon säger \"ja ja\".",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-e549dcd9",
+  "figur": "ali",
+  "text": "Jag såg din pall på avstånd. Strecket på sidan blev lite snett. Mitt fel. Den är vacker ändå.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-7bcec1cf",
+  "figur": "ali",
+  "text": "Ali här. Ännu en ritning som blev på riktigt: pall. Semesterkassan växer. Livet växer.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
   "id": "ali-4d81f0e4",
   "figur": "ali",
   "text": "Ali här. Du printade min mobilställ. Den… FUNKAR? Jag har bara sett såna på YouTube. Okej. Jag gråter inte. Det är damm i butiken.",
@@ -4744,9 +4792,9 @@
   "var": "Lappar, brev och dagbok"
  },
  {
-  "id": "ali-7cd984d1",
+  "id": "ali-60042803",
   "figur": "ali",
-  "text": "Ali här. Nyckelringen sålde. Jag ville bli ingenjör, men fick ta över pappas butik. I natt lät jag en AI rita åt mig: en skräpgrip och en kvarnmotor. Kom och titta.",
+  "text": "Ali här. Nyckelringen sålde. Jag ville bli ingenjör, men fick ta över pappas butik. I natt lät jag en AI rita en skräpgrip åt mig. Kom och titta.",
   "var": "Lappar, brev och dagbok"
  },
  {
@@ -4906,15 +4954,33 @@
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-6d63976c",
+  "id": "berattare-8264824d",
   "figur": "berattare",
-  "text": "Tjäna femtio kronor. Köp sedan en gripklo eller en kvarnmotor hos Ali.",
+  "text": "Köp en skräpgrip hos Ali. Den kostar femtio kronor.",
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-298bc271",
+  "id": "berattare-fe68d990",
   "figur": "berattare",
-  "text": "Printa det du köpte på skrivaren.",
+  "text": "Printa skräpgripen på skrivaren.",
+  "var": "Berättaren läser målen"
+ },
+ {
+  "id": "berattare-8265a398",
+  "figur": "berattare",
+  "text": "Printa en blomkruka på skrivaren.",
+  "var": "Berättaren läser målen"
+ },
+ {
+  "id": "berattare-debfc9d8",
+  "figur": "berattare",
+  "text": "Sälj krukan hos Ali.",
+  "var": "Berättaren läser målen"
+ },
+ {
+  "id": "berattare-477b7647",
+  "figur": "berattare",
+  "text": "Köp kvarnmotorn hos Ali.",
   "var": "Berättaren läser målen"
  },
  {
@@ -5023,6 +5089,12 @@
   "id": "du-f02073c6",
   "figur": "du",
   "text": "För tung för kvarnen. Än.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-46c37bf0",
+  "figur": "du",
+  "text": "Du har en hand ledig. Den andra håller i allt du äger.",
   "var": "Dina tankar, tips och varningar"
  },
  {

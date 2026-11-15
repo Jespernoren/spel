@@ -3006,21 +3006,48 @@
   "hand": false
  },
  {
-  "id": "berattare-6d63976c",
+  "id": "berattare-8264824d",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Berättaren läser målen",
-  "visad": "Tjäna femtio kronor. Köp sedan en gripklo eller en kvarnmotor hos Ali.",
-  "skickas": "[warm storyteller, calm] Tjäna femtio kronor. Köp sedan en gripklo eller en kvarnmotor hos Ali.",
+  "visad": "Köp en skräpgrip hos Ali. Den kostar femtio kronor.",
+  "skickas": "[warm storyteller, calm] Köp en skräpgrip hos Ali. Den kostar femtio kronor.",
   "hand": false
  },
  {
-  "id": "berattare-298bc271",
+  "id": "berattare-fe68d990",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Berättaren läser målen",
-  "visad": "Printa det du köpte på skrivaren.",
-  "skickas": "[warm storyteller, calm] Printa det du köpte på skrivaren.",
+  "visad": "Printa skräpgripen på skrivaren.",
+  "skickas": "[warm storyteller, calm] Printa skräpgripen på skrivaren.",
+  "hand": false
+ },
+ {
+  "id": "berattare-8265a398",
+  "figur": "berattare",
+  "rost": "berattare",
+  "var": "Berättaren läser målen",
+  "visad": "Printa en blomkruka på skrivaren.",
+  "skickas": "[warm storyteller, calm] Printa en blomkruka på skrivaren.",
+  "hand": false
+ },
+ {
+  "id": "berattare-debfc9d8",
+  "figur": "berattare",
+  "rost": "berattare",
+  "var": "Berättaren läser målen",
+  "visad": "Sälj krukan hos Ali.",
+  "skickas": "[warm storyteller, calm] Sälj krukan hos Ali.",
+  "hand": false
+ },
+ {
+  "id": "berattare-477b7647",
+  "figur": "berattare",
+  "rost": "berattare",
+  "var": "Berättaren läser målen",
+  "visad": "Köp kvarnmotorn hos Ali.",
+  "skickas": "[warm storyteller, calm] Köp kvarnmotorn hos Ali.",
   "hand": false
  },
  {
@@ -3183,6 +3210,15 @@
   "var": "Dina tankar, tips och varningar",
   "visad": "För tung för kvarnen. Än.",
   "skickas": "[dry, deadpan] [quietly] [sighs] För tung för kvarnen. Än.",
+  "hand": false
+ },
+ {
+  "id": "du-46c37bf0",
+  "figur": "du",
+  "rost": "du",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Du har en hand ledig. Den andra håller i allt du äger.",
+  "skickas": "[dry, deadpan] [quietly] [sighs] Du har en hand ledig. Den andra håller i allt du äger.",
   "hand": false
  },
  {
