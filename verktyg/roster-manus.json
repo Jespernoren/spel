@@ -5391,44 +5391,29 @@
   "var": "SKYLT_REPLIK"
  },
  {
-  "id": "mamma-04acf923",
+  "id": "mamma-148ebf0b",
   "figur": "mamma",
-  "text": "Det står i tidningen att måsarna är AGGRESSIVA i år. Har du en MÖSSA?? De tar mat ur händerna på folk. Och glasögon. ❤️",
+  "text": "Det finns MÅSAR vid soptippar!! Dom tar MAT. Och SMÅ HUNDAR. Du är inte en liten hund men ÄNDÅ.",
   "var": "GORAN_REPLIK"
  },
  {
-  "id": "rolf-fe3877d9",
+  "id": "rolf-e794b122",
   "figur": "rolf",
-  "text": "Nämen. Dä sitter en mås på ditt skjul. Ja kallra han Göran. Han tar saker som glänser. Han tog min tändare 2014. /R\n*kallar",
-  "kalla": "Dä sitter en mås på ditt skjul. Ja kallar han Göran. Han tar saker som glänser. Han tog min tändare 2014. /R",
+  "text": "ÖJ! Dä ä Göran.. Han ä från 2014. Han tar int skräp, bara grejer som ä granna. MVH ROLF",
+  "kalla": "Dä ä Göran. Han ä från 2014. Han tar int skräp, bara grejer som e fina. MVH ROLF",
   "var": "GORAN_REPLIK"
  },
  {
-  "id": "rolf-56ac1e9c",
+  "id": "rolf-92747fd5",
   "figur": "rolf",
-  "text": "Nämen. Dä sitter en mås på ditt skjul. Ja kallar han Göran. Han tar saker som glänser. Han tog min tändare 2014. /R",
-  "kalla": "Dä sitter en mås på ditt skjul. Ja kallar han Göran. Han tar saker som glänser. Han tog min tändare 2014. /R",
+  "text": "Tjo. Göran tar dina grejer? Ali har fågelbad. Måsar ä enkla. Birgitta hade ett vid husvagnen. MVH ROLF",
+  "kalla": "Göran tar dina grejer? Ali har fågelbad. Måsar ä enkla. Birgitta hade ett vid husvagnen. MVH ROLF",
   "var": "GORAN_REPLIK"
  },
  {
-  "id": "rolf-63fa4080",
-  "figur": "rolf",
-  "text": "Göran tar dina grejer? Printa ett fågelbad.. Måsar ä enkla. Birgitta hade ett vid husvagnen. /R",
-  "kalla": "Göran tar dina grejer? Printa ett fågelbad. Måsar ä enkla. Birgitta hade ett vid husvagnen. /R",
-  "var": "GORAN_REPLIK"
- },
- {
-  "id": "rolf-3f632fe7",
-  "figur": "rolf",
-  "text": "Hörru. Såg din fågelskrämma. Göran sitter på hatten. Han gillar den. /R",
-  "kalla": "Såg din fågelskrämma. Göran sitter på hatten. Han gillar den. /R",
-  "var": "GORAN_REPLIK"
- },
- {
-  "id": "rolf-22f14c99",
-  "figur": "rolf",
-  "text": "Göran har flyttat in hos dej.. Han sitter på skylten nu. Grattis. Ni ä en familj. /R",
-  "kalla": "Göran har flyttat in hos dej. Han sitter på skylten nu. Grattis. Ni ä en familj. /R",
+  "id": "ali-7e78b272",
+  "figur": "ali",
+  "text": "Ali här. Din mås stod på min disk i morse. Han köpte inget.",
   "var": "GORAN_REPLIK"
  },
  {

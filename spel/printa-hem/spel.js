@@ -179,6 +179,8 @@ const VAROR = {
   t_spalje: { tradgard: true, namn: 'Spaljé till Birgittas rosor', ikon: '', syns: () => S.ritningar.includes('recept:t_spalje') && !S.tradgard?.spalje, beskr: 'Till trädgården bakom Rolfs husvagn. Rosorna behöver något att klättra på.' },
   t_bevattning: { tradgard: true, namn: 'Bevattning till trädgården', ikon: '', syns: () => S.ritningar.includes('recept:t_bevattning') && !S.tradgard?.vatten, beskr: 'Slang med droppare. Rolf glömmer att vattna.' },
   t_vaxthus: { tradgard: true, namn: 'Växthus till Birgittas rosor', ikon: '', syns: () => S.ritningar.includes('recept:t_vaxthus') && !S.tradgard?.vaxthus, beskr: 'Printat växthus. Så att rosorna klarar vintern.' },
+  g_kapsyl: { namn: 'Kapsyl från Göran', ikon: '', kop: true, beskr: 'Blank. Göran tyckte den var fin.' },
+  g_skruv: { namn: 'Blank skruv från Göran', ikon: '', kop: true, beskr: 'Rostfri. Göran har smak.' },
   fagelskramma: { namn: 'Fågelskrämma', ikon: '', trivsel: 3, placerbar: true, radie: 0.35, syns: () => S.dag >= 6 && !!S.goranSedd, lyx: 'Skrämmer fåglar. Enligt förpackningen.' },
   fagelbad: { namn: 'Fågelbad', ikon: '', trivsel: 8, placerbar: true, radie: 0.35, syns: () => S.dag >= 6 && !!S.goranSedd, lyx: 'Ett litet bad på en fot. Måsar gillar sånt. Tydligen.' },
   lampskarm: { namn: 'Lampskärm', ikon: '💡', syns: () => S.dag >= 3 || S.rolf.i >= 2 || harRecept('fagelholk') },
@@ -8379,11 +8381,10 @@ function kapitel2Slut() {
 // Dag 4: mamma sms:ar om måsar, Göran (döpt av Rolf) dyker upp och snor ibland en nyckelring.
 // Från dag 6: fågelskrämma (han struntar i den) eller fågelbad (han flyttar in och sitter på skylten).
 const GORAN_REPLIK = {
-  mamma: ['mamma', 'Det står i tidningen att måsarna är AGGRESSIVA i år. Har du en MÖSSA?? De tar mat ur händerna på folk. Och glasögon. ❤️'],
-  rolf: ['rolf', 'Dä sitter en mås på ditt skjul. Ja kallar han Göran. Han tar saker som glänser. Han tog min tändare 2014. /R'],
-  rad: ['rolf', 'Göran tar dina grejer? Printa ett fågelbad. Måsar ä enkla. Birgitta hade ett vid husvagnen. /R'],
-  skramma: ['rolf', 'Såg din fågelskrämma. Göran sitter på hatten. Han gillar den. /R'],
-  bad: ['rolf', 'Göran har flyttat in hos dej. Han sitter på skylten nu. Grattis. Ni ä en familj. /R'],
+  mamma: ['mamma', 'Det finns MÅSAR vid soptippar!! Dom tar MAT. Och SMÅ HUNDAR. Du är inte en liten hund men ÄNDÅ.'],
+  rolf: ['rolf', 'Dä ä Göran. Han ä från 2014. Han tar int skräp, bara grejer som e fina. MVH ROLF'],
+  rad: ['rolf', 'Göran tar dina grejer? Ali har fågelbad. Måsar ä enkla. Birgitta hade ett vid husvagnen. MVH ROLF'],
+  ali: ['ali', 'Ali här. Din mås stod på min disk i morse. Han köpte inget.'],
 };
 const goran = new THREE.Group();
 {
@@ -8402,6 +8403,11 @@ const goran = new THREE.Group();
 }
 const gor = { fas: 'borta', t: 0, vinkel: 0, nasta: 0, mal: null, last: null };
 const goranHem = () => new THREE.Vector3(SKJUL.x + Math.cos(gor.vinkel) * 7, 7 + Math.sin(gor.vinkel * 2) * 0.8, SKJUL.z + Math.sin(gor.vinkel) * 7);
+function goranByte() {
+  const mal = (() => { try { const st = STEG[S.steg]; const t = st && (typeof st.bild === 'function' ? st.bild() : st.bild); return t; } catch { return null; } })();
+  const kand = Object.entries(VAROR).filter(([id, v]) => v.pris > 0 && !v.gava && !v.rolf && !v.unik && !v.kop && !v.nBest && !v.tradgard && id !== mal && id !== aktivGava?.() && !/^rulle|^fynd/.test(id) && antalInv(id) > 0);
+  kand.sort((a, b) => a[1].pris - b[1].pris); return kand[0]?.[0] || null;
+}
 function goranSkri() { try { const v = 0.03 + 0.06 * (goran.position.distanceTo(spelare.pos) < 15 ? 1 : 0.3); ton(1500, 0.11, v, 'sawtooth'); ton(1200, 0.16, v, 'sawtooth', 0.12); ton(1350, 0.1, v * 0.7, 'sawtooth', 0.32); } catch {} }
 function goranSittplats() {
   const b = new THREE.Box3().setFromObject(adressSkylt); return new THREE.Vector3((b.min.x + b.max.x) / 2 + 0.35, b.max.y + 0.17, (b.min.z + b.max.z) / 2 + 0.05);
@@ -8415,7 +8421,7 @@ function uppdateraGoran(dt) {
   if (!S.goranSedd) return;
   const nu = performance.now() / 1000;
   goran.visible = true;
-  const flaxar = gor.fas !== 'sitter';
+  const flaxar = gor.fas !== 'sitter' && !(gor.fas === 'cirkel' && S.goranSkramma && goran.position.y < 2.2);
   const fl = flaxar ? Math.sin(nu * 14) * 0.7 : 0.05;
   goran.userData['v-1'].rotation.z = -fl; goran.userData['v1'].rotation.z = fl;
   goran.userData['v-1'].rotation.y = flaxar ? 0 : 1.35; goran.userData['v1'].rotation.y = flaxar ? 0 : -1.35;   // vingarna fälls ihop när han sitter
@@ -8428,15 +8434,18 @@ function uppdateraGoran(dt) {
     return;
   }
   if (gor.fas === 'borta' || gor.fas === 'sitter') { gor.fas = 'cirkel'; goran.position.copy(goranHem()); gor.nasta = nu + 60 + Math.random() * 60; }
+  const skr = S.goranSkramma && placerade.find((p) => p.typ === 'fagelskramma' && p.mesh);
   if (gor.fas === 'cirkel') {
-    gor.vinkel += dt * 0.35; flyg(dt, goranHem(), 6);
+    gor.vinkel += dt * 0.35;
+    if (skr) { const pl = skr.mesh.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 1.82, 0)); if (flyg(dt, pl, 6)) { goran.position.copy(pl); goran.rotation.y = Math.sin(nu * 0.6) * 0.8; } }   // han sitter på fågelskrämman
+    else flyg(dt, goranHem(), 6);
     // dags att sno något? bara om du har en nyckelring, aldrig i menyer eller på natten
-    if (nu > gor.nasta && ui.igang && !sover && ui.butiksOverlay.hidden && antalInv('nyckelring') > 0 && spelare.pos.distanceTo(new THREE.Vector3(SKJUL.x, 0, SKJUL.z)) < 30) { gor.fas = 'dyk'; goranSkri(); }
+    if (nu > gor.nasta && ui.igang && !sover && ui.butiksOverlay.hidden && S.goranSnoDag !== S.dag && goranByte() && spelare.pos.distanceTo(new THREE.Vector3(SKJUL.x, 0, SKJUL.z)) < 30) { gor.fas = 'dyk'; goranSkri(); }
     else if (nu > gor.nasta) gor.nasta = nu + 20;
   } else if (gor.fas === 'dyk') {
     const mal = spelare.pos.clone().add(new THREE.Vector3(0, 1.9, 0));
     if (flyg(dt, mal, 10)) {
-      if (antalInv('nyckelring') > 0) { taBortInv('nyckelring'); S.goranStulit = (S.goranStulit || 0) + 1; sparaSnart(); goranSkri(); ui.toast('Göran snodde en nyckelring!', 'fel'); }
+      const by = goranByte(); if (by && S.goranSnoDag !== S.dag) { taBortInv(by); S.goranSnoDag = S.dag; S.goranGods = [...(S.goranGods || []), by]; S.goranStulit = (S.goranStulit || 0) + 1; sparaSnart(); goranSkri(); ui.toast(`Göran snodde ${by === 'nyckelring' ? 'en nyckelring' : VAROR[by].namn.toLowerCase()}.`, 'fel'); }
       gor.fas = 'upp'; gor.t = 0;
     }
   } else if (gor.fas === 'upp') {
@@ -8447,10 +8456,25 @@ function uppdateraGoran(dt) {
 function kollaGoran() {
   if (!ui.igang || sover || pausad) return;
   if (S.dag >= 4 && !S.goranMamma) { S.goranMamma = true; sparaSnart(); sms(...GORAN_REPLIK.mamma); setTimeout(() => { S.goranSedd = true; sparaSnart(); goranSkri(); setTimeout(() => sms(...GORAN_REPLIK.rolf), 9000); }, 40000); return; }
-  if (!S.goranSedd || S.goranMaskot) return;
+  if (!S.goranSedd) return;
+  if (S.goranMaskot) {
+    // ungefär varannan dag lämnar han något – första gången allt han snott
+    if (S.dag >= (S.goranGavaDag ?? 0) + 2) { S.goranGavaDag = S.dag; const gods = S.goranGods || []; S.goranGods = []; const sak = S.dag % 2 ? 'g_kapsyl' : 'g_skruv';
+      for (const g of gods) laggTill(g); laggTill(sak);
+      ui.toast(gods.length ? `Göran lämnade tillbaka ${gods[0] === 'nyckelring' ? 'nyckelringen' : VAROR[gods[0]].namn.toLowerCase()}${gods.length > 1 ? ' och resten' : ''}. Och ${sak === 'g_kapsyl' ? 'en kapsyl' : 'en blank skruv'}.` : `Göran lämnade ${sak === 'g_kapsyl' ? 'en kapsyl' : 'en blank skruv'} på säljlådan.`, 'guld'); sparaSnart(); }
+    if (!S.goranAli && S.dag > (S.goranMaskotDag ?? 99)) { S.goranAli = true; sparaSnart(); sms(...GORAN_REPLIK.ali); }
+    return;
+  }
   if (S.dag >= 6 && !S.goranRad) { S.goranRad = true; sparaSnart(); sms(...GORAN_REPLIK.rad); return; }
-  if (harPlacerat('fagelskramma') && !S.goranSkramma) { S.goranSkramma = true; sparaSnart(); setTimeout(() => sms(...GORAN_REPLIK.skramma), 20000); }
-  if (harPlacerat('fagelbad')) { S.goranMaskot = true; sparaSnart(); gor.fas = 'flytt'; ui.toast('Göran har flyttat in. Han sitter på skylten nu.', 'guld'); setTimeout(() => sms(...GORAN_REPLIK.bad), 8000); }
+  if (harPlacerat('fagelskramma') && !S.goranSkramma) { S.goranSkramma = true; sparaSnart(); ui.toast('Göran tycker om fågelskrämman. Han sitter på den.', 'guld'); }
+  if (harPlacerat('fagelbad')) { S.goranMaskot = true; S.goranMaskotDag = S.dag; S.goranGavaDag = S.dag - 1; sparaSnart(); gor.fas = 'flytt'; ui.toast('Göran har flyttat in. Han sitter på skylten nu.', 'guld'); }
+}
+// testkrok: __printahem.goran('sno') snor direkt, ('bad') = fågelbadet finns
+function goranTest(v) {
+  S.goranSedd = true; S.goranMamma = true;
+  if (v === 'sno') { S.goranSnoDag = -1; if (!goranByte()) laggTill('nyckelring'); gor.fas = 'dyk'; return true; }
+  if (v === 'bad') { placerade.push({ typ: 'fagelbad' }); kollaGoran(); return S.goranMaskot; }
+  return false;
 }
 setInterval(kollaGoran, 2000);
 interaktor.registrera(goran, { text: () => S.goranMaskot ? 'Göran. Lägrets maskot.' : 'Göran. Han vill ha dina nyckelringar.', aktivera: () => goranSkri() });
@@ -8858,7 +8882,7 @@ function uppdateraLiv(dt) {
   if (bengt.visible && nu > bengtSynsTill) bengt.visible = false;
 }
 S.upprepaVald = true;   // issue #18: gamla sparfiler fick upprepa AV en gång (i skrivarnas laddning ovan)
-window.__printahem = { polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 

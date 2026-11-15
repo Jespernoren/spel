@@ -156,8 +156,10 @@ export const VARA_SIFFROR = {
   t_spalje: { gram: 1500, tid: 30, pris: 0, recept: 1 },       // punkt N: ritningen kommer från Rolf (recept: 1 = måste ha ritningen)
   t_bevattning: { gram: 1200, tid: 26, pris: 0, recept: 1 },
   t_vaxthus: { gram: 4000, tid: 60, pris: 0, recept: 1 },
-  fagelskramma: { gram: 600, tid: 20, pris: 60, recept: 250 },   // punkt I: Göran struntar i den
-  fagelbad: { gram: 900, tid: 28, pris: 90, recept: 330 },        // punkt I: Göran flyttar in
+  fagelskramma: { gram: 600, tid: 20, pris: 30, recept: 40 },    // punkt I: Göran sätter sig på den (under 150 kr – skalas inte)
+  fagelbad: { gram: 900, tid: 28, pris: 45, recept: 60 },         // punkt I: Göran flyttar in
+  g_kapsyl: { gram: 0, tid: 0, pris: 4 },                          // Görans gåvor – humor, inte ekonomi
+  g_skruv: { gram: 0, tid: 0, pris: 6 },
   lampskarm: { gram: 1200, tid: 34, pris: 320, recept: 600 },
   dronare: { gram: 1500, tid: 40, pris: 480, recept: 1000 },
   skateboard: { gram: 2000, tid: 50, pris: 780, recept: 1500 },
