@@ -27,7 +27,7 @@ const [L, D] = await p.evaluate((lit) => {
   // ett objekt per röstklipp: id = samma nyckel som spelet slår upp (figur-hash av den visade texten)
   const sedda = new Set(), rader = [];
   for (const [figur, text, kalla, var_] of D) {
-    const f = ['rolf', 'ali', 'pappa', 'bror', 'chefen', 'du', 'mamma', 'berattare'].includes(figur) ? figur : 'berattare', id = f + '-' + h.rostNyckel(text);
+    const f = ['rolf', 'ali', 'pappa', 'bror', 'chefen', 'du', 'mamma', 'berattare', 'helen'].includes(figur) ? figur : 'berattare', id = f + '-' + h.rostNyckel(text);
     if (sedda.has(id) || !/[\p{L}]/u.test(text)) continue; sedda.add(id);
     rader.push({ id, figur: f, text, ...(kalla !== text ? { kalla } : {}), var: var_ });
   }

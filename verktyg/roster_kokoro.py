@@ -17,6 +17,8 @@ ROSTER = {
     'du':        ('Viktor', 1.0,  'bass=g=1:f=150', -1.0, None),
     'chefen':    ('Björn+Lars:0.6', 1.06, 'acompressor=threshold=-24dB:ratio=6:attack=5:release=80:makeup=4,asoftclip=type=atan:param=1.6,highpass=f=220,lowpass=f=3800', -4.0, None),   # bastant, arg kommunchef – i telefon
     'berattare': ('Alice',  0.95, 'bass=g=2:f=180', -1.0, None),
+    # punkt AN: Haggan Helen – gammal, hes och låg, stockholmska
+    'helen':     ('Stina',  0.9,  'bass=g=3:f=160,highpass=f=90,lowpass=f=4200,asoftclip=type=atan:param=1.3,tremolo=f=5:d=0.05', -4.0, 'stockholm'),
 }
 # ren ton: bort med sus och brus (brusreducering + brusspärr i pauserna)
 REN = 'highpass=f=70,afftdn=nf=-28,agate=threshold=0.008:ratio=6:attack=3:release=150'
