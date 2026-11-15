@@ -11,6 +11,7 @@ import { INTRO_BILDER, kalender as kalenderSvg } from './intro-bilder.js';
 import { byggMiljo } from './miljo.js';
 import { IKON, ik, portratt, rens, knapp, ruta as uiRuta, grid, sektion, detalj, resurs, panel, rad, fakta, UI_CSS } from './ui-kit.js';
 import * as B from './balans.js';   // alla siffror som styr progressionen
+import * as PLAN from './gardplan.js';   // punkt AM: gårdens plan (förslag)
 const { PRIS_SKALA, MATTNAD, MATTNAD_GOLV, ALI_VILL_BONUS, GROSSIST, SALJ_TILLBAKA, FILAMENT_KOP, SLAPP_PER_DAG, KAP1_BELONING, TRIVSEL_MAL, RESPEKT_NIVAER, JOBB_VARV, JOBB_ANDEL, FYND_ANDEL, SMS_MELLAN, STROM_BAS, BANK_PLUS, TRAMP_PER_S, SOL_PER_S, SOLPARK_PER_S, MOTOR_STROM, BARA_SKRAP, HOTBAR, KISTA_PLATSER, STACK, RYGG_BAS, RYGG_STOR, UT_MAX, LASTARM_TID, LASTARM_MAX, BAND_BAS, TRIVSEL_PER_PROCENT, TRIVSEL_MAX_BONUS } = B;
 import { logo, BRAND_CSS, malaSkylt, NAMN, FARG, KOP_SLAG } from './brand.js';
 import { ansikte as hudAnsikte, hjarta as hudHjarta, HUD_CSS, matarFarg } from './hud.js';
@@ -3635,7 +3636,7 @@ function uppdateraMalPil() {
   // din egen röst när dagboken är läst: dags att spika skylten
   if (!S.skyltUppe && S.steg <= 1 && !sagtBygg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas) { sagtBygg = true; bud(() => { if (!S.skyltUppe) { if (!S.kap1Visad) { S.kap1Visad = true; visaKapitelKort(1, KAP1_NAMN, KAP1_MAL); sparaSnart(); } tittaMot(VAG_SKYLT.x, VAG_SKYLT.z, 1.8); setTimeout(() => prata('du', DU_BYGG), 700); } }); }
   // instruktionen läses först när dagboken är läst och (i ett nytt spel) skylten är uppe
-  if (STEG_TAL[S.steg] && senastTalSteg !== S.steg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas && ui.butiksOverlay.hidden && !spikar && (S.skyltUppe || S.steg > 1)) { senastTalSteg = S.steg; const st = S.steg; if (st === 7) bud(aliRopar); else if (st === 10) bud(() => { if (S.steg === st) prata('du', DU_SANG); }); else bud(() => { if (S.steg === st) prata('berattare', STEG_TAL[st]); }); }
+  if (STEG_TAL[S.steg] && senastTalSteg !== S.steg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas && ui.butiksOverlay.hidden && !spikar && (S.skyltUppe || S.steg > 1)) { senastTalSteg = S.steg; const st = S.steg; if (st === 7) bud(aliRopar); else if (st === 13) bud(() => { if (S.steg === st) prata('du', DU_SANG); }); else bud(() => { if (S.steg === st) prata('berattare', STEG_TAL[st]); }); }
 }
 function uppdateraMalSkylt(dt) {
   malInfo.t -= dt; if (malInfo.t > 0) return; malInfo.t = 0.5;
@@ -9370,7 +9371,43 @@ function uppdateraLiv(dt) {
   if (bengt.visible && nu > bengtSynsTill) bengt.visible = false;
 }
 S.upprepaVald = true;   // issue #18: gamla sparfiler fick upprepa AV en gång (i skrivarnas laddning ovan)
-window.__printahem = { rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+// ---------- Punkt AM (förslag): gårdsplanen ovanifrån – streckade rutor med text, för granskning ----------
+function gardPlanGrupp() {
+  const g = new THREE.Group(); g.name = 'gardplan';
+  const ruta = (r, farg, tjock = false) => {
+    const x0 = r.x - r.b / 2, x1 = r.x + r.b / 2, z0 = r.z - r.d / 2, z1 = r.z + r.d / 2;
+    const geo = new THREE.BufferGeometry().setFromPoints([[x0, z0], [x1, z0], [x1, z1], [x0, z1], [x0, z0]].map(([x, z]) => new THREE.Vector3(x, 0.08, z)));
+    const l = new THREE.Line(geo, new THREE.LineDashedMaterial({ color: farg, dashSize: tjock ? 0.6 : 0.3, gapSize: 0.2, depthTest: false })); l.computeLineDistances(); l.renderOrder = 998; g.add(l);
+    const yta = new THREE.Mesh(new THREE.PlaneGeometry(r.b, r.d), new THREE.MeshBasicMaterial({ color: farg, transparent: true, opacity: r.last ? 0.06 : 0.16, depthTest: false }));
+    yta.rotation.x = -Math.PI / 2; yta.position.set(r.x, 0.07, r.z); yta.renderOrder = 997; g.add(yta);
+  };
+  const text = (t, x, z, farg = '#fff', storlek = 1) => {
+    const c = document.createElement('canvas'), cx = c.getContext('2d'); c.width = 512; c.height = 64;
+    cx.font = 'bold 30px system-ui'; cx.fillStyle = 'rgba(0,0,0,.55)'; const w = Math.min(500, cx.measureText(t).width + 20); cx.fillRect((512 - w) / 2, 8, w, 48);
+    cx.fillStyle = farg; cx.textAlign = 'center'; cx.fillText(t, 256, 44);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(8 * storlek, 1 * storlek), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false }));
+    m.rotation.x = -Math.PI / 2; m.position.set(x, 0.1, z); m.renderOrder = 999; g.add(m);
+  };
+  ruta({ x: -11.5, z: 0, b: 18, d: 42 }, '#ffffff', true); text('FABRIKEN', -11.5, -20, '#fff', 1.4);
+  const hz = PLAN.HEM_ZON; ruta({ x: (hz.minX + hz.maxX) / 2, z: (hz.minZ + hz.maxZ) / 2, b: hz.maxX - hz.minX, d: hz.maxZ - hz.minZ }, '#f4ecd8', true); text('HEMMET', 12.5, -20, '#f4ecd8', 1.4);
+  for (const l of PLAN.LINJER) text(`${l.nr} · ${l.namn} · ${l.text}`, -11.5, l.z - 1.4, l.farg, 0.9);
+  for (const p of PLAN.FABRIK_PLATSER) { ruta(p, p.farg || '#fff'); if (!p.linje) text(p.text, p.x + (p.d > 10 ? 0 : 0), p.z + (p.d > 10 ? 0 : p.d / 2 + 0.4), p.farg, 0.75); }
+  for (const p of [...PLAN.HEM_PLATSER, ...PLAN.INFART]) { ruta(p, '#f4ecd8'); text(p.text, p.x, p.z + p.d / 2 + 0.4, '#f4ecd8', 0.75); }
+  // skrivarplatserna i linje 1 får namnen, så att ordningen syns
+  for (const p of PLAN.LINJE_PLATSER) text(p.namn.replace('Skrivarplats ', 'Skr ').replace('Skräpcontainer', 'Container').replace('Spolhållare', 'Spol'), p.x, PLAN.LINJER[0].z + (p.typ.startsWith('skrivare') && +p.typ.slice(-1) % 2 ? 1.5 : 2.2), '#fff', 0.3);
+  return g;
+}
+// testkrok: bild av planen ovanifrån (data-url). Spelet i övrigt rörs inte.
+function gardPlanBild(halv = 30) {
+  const g = gardPlanGrupp(); scen.add(g);
+  const W = renderer.domElement.width, H = renderer.domElement.height, a = W / H;
+  const kam = new THREE.OrthographicCamera(-halv * a, halv * a, halv, -halv, 1, 200); kam.position.set(-2, 100, 1); kam.up.set(0, 0, -1); kam.lookAt(-2, 0, 1);
+  const dimma = scen.fog; scen.fog = null; const pil = malPil.visible; malPil.visible = false;
+  renderer.render(scen, kam); const url = renderer.domElement.toDataURL('image/png');
+  scen.fog = dimma; malPil.visible = pil; scen.remove(g);
+  return url;
+}
+window.__printahem = { gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 
