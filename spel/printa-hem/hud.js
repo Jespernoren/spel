@@ -178,6 +178,7 @@ export const HUD_CSS = `
 .ph-mal-text.nasta{flex-direction:column!important;align-items:stretch!important;gap:6px!important}
 .nasta-rubrik{display:block;font:900 19px/1.2 system-ui;color:#fff}
 .nasta-rad{display:flex;align-items:center;gap:10px}.nasta-t{font:700 14px/1.3 system-ui;color:#c5ccda}.nasta-t small{display:inline!important;opacity:1!important;font:900 11px system-ui!important;letter-spacing:.06em;text-transform:uppercase;color:#7dffb0;margin-right:3px}
+.nasta-under{display:block;margin-top:4px;font:600 12.5px/1.3 system-ui;color:#9fb0c8}.nasta-under small{font:900 10.5px system-ui;letter-spacing:.04em;text-transform:uppercase;color:#ffd43b;margin-right:4px}
 .ph-mal-text.nasta .nasta-rad .nasta-ik{flex:0 0 32px;width:32px;height:32px}.ph-mal-text.nasta .nasta-rad .nasta-ik .ui-ik,.ph-mal-text.nasta .nasta-rad .nasta-ik svg{width:20px;height:20px}.ph-mal-text.nasta .nasta-ik.bild img{width:30px!important;height:30px!important}
 .ph-coach{display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:10px 14px;border-radius:10px;background:rgba(125,255,176,.13);border:2px dashed rgba(125,255,176,.55);color:#e9fff1;font:800 14px/1.3 system-ui;animation:coachPuls 1.4s ease-in-out infinite}
 .ph-coach .ui-ik{width:24px;height:24px;color:#7dffb0;flex:0 0 24px}

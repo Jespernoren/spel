@@ -59,6 +59,10 @@ const flaggor = [];
 for (const e of r.logg.filter((x) => x.kalla === 'sekvens')) flaggor.push({ dag: e.dag, t: e.t, typ: 'SEKVENS', text: `${e.vem}: "${String(e.text).slice(0, 60)}" (${e.varfor || ''})` });
 // CB: VARA – dagens vara ska ge minst lika mycket kr/s (med bonusen) som spelarens bästa recept
 for (const e of r.logg.filter((x) => x.kalla === 'vara')) { const m = /([\d.]+) kr\/s med bonus · bästa ([\d.]+)/.exec(e.varfor || ''); if (m && +m[1] < +m[2]) flaggor.push({ dag: e.dag, t: e.t, typ: 'VARA', text: `${e.text}: ${e.varfor}` }); }
+// CJ: kärrklick – minst 9 av 10 ska plocka något
+{ const k = r.logg.filter((x) => x.kalla === 'karraKlick'); if (k.length) { const tr = k.filter((x) => x.text === 'träff').length; console.log(`kärran: ${tr}/${k.length} klick plockade något`); if (tr / k.length < 0.9) flaggor.push({ dag: 0, t: 0, typ: 'KÄRRA', text: `bara ${tr}/${k.length} klick träffade` }); } }
+// BL: STEG – en sak från ett lägre steg köps efter ett högre. CG: SEKVENS ovan. CK: TIDIG – en målsak köps innan målet är aktivt. CI: FAST loggas av spelet.
+for (const e of r.logg.filter((x) => ['steg', 'tidig', 'fast', 'scen'].includes(x.kalla))) flaggor.push({ dag: e.dag, t: e.t, typ: e.kalla.toUpperCase(), text: `${e.text} (${e.varfor || ''})` });
 // BV: lugn start – ingen text, röst eller sms de första 5 s efter BÖRJA DAGEN, och inget sms de första 30 s
 for (const st of r.logg.filter((e) => e.kalla === 'händelse' && e.vem === 'morgonkortStangt')) {
   for (const e of r.logg) {

@@ -308,7 +308,7 @@
       case 'kopSang': { if (S.ritningar.includes('sang')) return; if (S.mynt < 60) { await tjana(60, 'sängen'); return; } await ali(async () => { await kopHosAli('sang'); }, 'köpa sängen'); return; }
       case 'printSang': await printa({ typ: 'sang' }); return;
       case 'sov1': valj('sang'); await klick(H.sangSpoke, 'sängplatsen i skjulet', 2); await vantaPaMorgon(); return;
-      case 'kopSack': await bygg('korg'); return;
+      case 'kopSack': if (H.sackRulle?.visible) { await klick(H.sackRulle, 'Rolfs sopsäck'); return; } { await plockaLass({}); await tomIKvarnen(); await mal(); } return;   // CH
       case 'kruka': if (!H.harRecept('kruka')) await ali(async () => {}, 'krukreceptet'); await printa({ typ: 'kruka' }); return;
       case 'ryggkorg': await bygg('ryggkorg'); return;
       case 'pall': await kopRecept('pall'); await printa({ typ: 'pall' }); if (H.antalInv('pall')) await placera('pall'); return;
@@ -328,14 +328,20 @@
     }
     if (/^Köp receptet på cykelhjälmen/.test(txt)) { await kopRecept('n2_hjalm'); return; }
     if (/^Printa en lampskärm att sälja/.test(txt)) { if (!H.harRecept('lampskarm')) await kopRecept('lampskarm'); await printa({ typ: 'lampskarm' }); return; }   // CF
+    if (/^(Hälsa på pappa|Pappa kommer förbi|Prata med pappa)/.test(txt)) {   // CM: vänta in pappa, klicka på honom, plocka säckkärran ur högen
+      if (H.pappaBesok.fas === 'vantar') { await klick(H.pappaGubbe, 'pappa', 1.6); return; }
+      if (H.pappaBesok.fas === 'pratar' || H.pappaBesok.fas === 'rolfKommer') { await gaTill(H.pappaGubbe, 2.5, 'pappa'); await vanta(2); return; }
+      await vanta(2); return;
+    }
+    if (/^Lyft en tunna/.test(txt) && !S.sackkarra) { const p = H.placerade.find((x) => x.typ === 'sackkarra'); if (p) { await klick(p.mesh, 'säckkärran i högen'); return; } }
     if (/^Lyft en tunna/.test(txt)) {
-      valj('karra'); const t = H.skrapLista.filter((x) => x.userData.tung && x.userData.interaktion).sort((a, b) => Math.hypot(a.position.x - H.spelare.pos.x, a.position.z - H.spelare.pos.z) - Math.hypot(b.position.x - H.spelare.pos.x, b.position.z - H.spelare.pos.z))[0];
+      valj('sackkarra'); const t = H.skrapLista.filter((x) => x.userData.tung && x.userData.interaktion).sort((a, b) => Math.hypot(a.position.x - H.spelare.pos.x, a.position.z - H.spelare.pos.z) - Math.hypot(b.position.x - H.spelare.pos.x, b.position.z - H.spelare.pos.z))[0];
       if (!t) { handling('ingen tunna att lyfta'); await vanta(5); return; }
-      await gaTill(t, 1.2, 'en tunna'); t.userData.interaktion.aktivera(); await vanta(1); handling('lyfter en tunna med kärran'); await klick(H.kvarn, 'kvarnen'); await mal(); H.byt(0); return;
+      await gaTill(t, 1.2, 'en tunna'); t.userData.interaktion.aktivera(); await vanta(1); handling('lyfter en tunna med säckkärran'); await klick(H.kvarn, 'kvarnen'); await mal(); H.byt(0); return;
     }
     if (/^Fyll kärran/.test(txt)) {
       valj('karra'); let n = 0;
-      while (!H.karraFull(200) && n < 8) { const l = gardsSkrap().length ? gardsSkrap() : tippSkrap(); if (!l.length) break; const p = H.spelare.pos; l.sort((a, b) => Math.hypot(a.position.x - p.x, a.position.z - p.z) - Math.hypot(b.position.x - p.x, b.position.z - p.z)); await gaTill(l[0], 1.0); l[0].userData.interaktion.aktivera(); await vanta(0.6); n++; }
+      while (!H.karraFull(200) && n < 8) { const l = gardsSkrap().length ? gardsSkrap() : tippSkrap(); if (!l.length) break; const p = H.spelare.pos; l.sort((a, b) => Math.hypot(a.position.x - p.x, a.position.z - p.z) - Math.hypot(b.position.x - p.x, b.position.z - p.z)); await gaTill(l[0], 1.6); { const q = H.spelare.pos, dx = l[0].position.x - q.x, dz = l[0].position.z - q.z; H.spelare.yaw = Math.atan2(-dx, -dz) + (Math.random() - 0.5) * 0.6; } await vanta(0.2); if (H.karraKlick) H.karraKlick(); else l[0].userData.interaktion.aktivera(); await vanta(0.6); n++; }   // CJ: slarvigt sikte
       handling(`fyller kärran med ${n} skräp`); await klick(H.kvarn, 'kvarnen'); await mal(); H.byt(0); return;
     }
     const bild = typeof st.bild === 'function' ? st.bild() : st.bild;
@@ -350,7 +356,7 @@
   }
   // kärran: lyft det närmaste tunga skräpet och tippa det i PETG-kvarnen (finns den inte: vid kvarnen, B51)
   async function tungtTillPetg() {
-    valj('karra'); const p0 = H.spelare.pos;
+    valj('sackkarra'); const p0 = H.spelare.pos;
     const t = H.skrapLista.filter((x) => x.userData.tung && x.userData.interaktion).sort((a, b) => Math.hypot(a.position.x - p0.x, a.position.z - p0.z) - Math.hypot(b.position.x - p0.x, b.position.z - p0.z))[0];
     if (!t) { handling('inget tungt skräp kvar'); await vanta(5); return false; }
     await gaTill(t, 1.2, 'en tunna'); t.userData.interaktion.aktivera(); await vanta(1);
