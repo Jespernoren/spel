@@ -154,7 +154,7 @@
     while (S.kvarn.tratt > 0 && !H.extruderFull() && varv++ < 400) {
       if (!S.kvarn.motor) { await gaTill(H.vevYta, 1.2); H.veva(1.2); }
       else if (S.strom < 1 && H.solEffekt() <= 0) { await strom(5); continue; }   // motorn behöver ström
-      await vanta(1);
+      vantanIdag += 1; await vanta(1);   // BM: VÄNTAN – står och väntar på printen utan annat att göra
     }
   }
   async function hamtaRulle() {
@@ -358,9 +358,10 @@
     else { await klick(H.kvarn, 'kvarnen'); }
     await vanta(1); H.byt(0); return true;
   }
+  let vantanIdag = 0;
   async function vantaPaMorgon() {
     const dag = S.dag; const slutDag = tid - dagStart;
-    dagar.push({ dag, sek: slutDag, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat });
+    dagar.push({ dag, sek: slutDag, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat, vantan: vantanIdag }); vantanIdag = 0;
     let n = 0; while (n++ < 400 && (S.dag === dag || !H.ui.igang)) { await vanta(0.5); }
     await vanta(1); dagStart = tid; handling(`— dag ${S.dag} börjar —`);
   }

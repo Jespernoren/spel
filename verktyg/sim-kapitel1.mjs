@@ -57,10 +57,12 @@ const synlig = (e) => ['sms-bubbla', 'notis', 'lapp', 'bubbla', 'meddelande', 'm
 const flaggor = [];
 // BZ: SEKVENS – spelet loggar själv när något levereras som redan är köpt eller gjort
 for (const e of r.logg.filter((x) => x.kalla === 'sekvens')) flaggor.push({ dag: e.dag, t: e.t, typ: 'SEKVENS', text: `${e.vem}: "${String(e.text).slice(0, 60)}" (${e.varfor || ''})` });
+// CB: VARA – dagens vara ska ge minst lika mycket kr/s (med bonusen) som spelarens bästa recept
+for (const e of r.logg.filter((x) => x.kalla === 'vara')) { const m = /([\d.]+) kr\/s med bonus · bästa ([\d.]+)/.exec(e.varfor || ''); if (m && +m[1] < +m[2]) flaggor.push({ dag: e.dag, t: e.t, typ: 'VARA', text: `${e.text}: ${e.varfor}` }); }
 // BV: lugn start – ingen text, röst eller sms de första 5 s efter BÖRJA DAGEN, och inget sms de första 30 s
 for (const st of r.logg.filter((e) => e.kalla === 'händelse' && e.vem === 'morgonkortStangt')) {
   for (const e of r.logg) {
-    if (e.dag !== st.dag || e.tot < st.tot || e.tot > st.tot + 30) continue;
+    if (e.dag !== st.dag || e.tot < st.tot || e.tot >= st.tot + 30) continue;
     const d = e.tot - st.tot;
     if (d < 5 && (synlig(e) || e.kalla === 'röst' || e.kalla === 'sms') && e.kalla !== 'morgonkort') flaggor.push({ dag: e.dag, t: e.t, typ: 'LUGN', text: `${d.toFixed(1)} s efter BÖRJA DAGEN: [${e.kalla}] "${String(e.text).slice(0, 60)}"` });
     else if (e.kalla === 'sms') flaggor.push({ dag: e.dag, t: e.t, typ: 'LUGN', text: `sms ${d.toFixed(1)} s efter BÖRJA DAGEN (minst 30 s): "${String(e.text).slice(0, 60)}"` });
@@ -128,8 +130,8 @@ for (const d of r.dagar) {
 const per = {};
 for (const d of r.dagar) per[d.dag] = d;
 let md = `# Simulering kapitel 1 – körning ${nr}\n\n*Gjord ${new Date().toISOString().slice(0, 16).replace('T', ' ')} med \`verktyg/sim-kapitel1.mjs\` + \`verktyg/sim-bot.js\` (punkt AX). Boten går 4,5 m/s, läser ${15} tecken/s, trampar, vevar, plockar, printar, köper och säljer via spelets egna funktioner. Tiderna är speltid.*\n\n`;
-md += `## Sammanfattning\n\n| Dag | Minuter | Prints (totalt) | Kr vid sömn | Bär | Trivsel |\n|---|---|---|---|---|---|\n`;
-for (const d of r.dagar) md += `| ${d.dag} | ${(d.sek / 60).toFixed(1)} | ${d.printat} | ${d.mynt} | ${d.bar} | ${d.trivsel} |\n`;
+md += `## Sammanfattning\n\n| Dag | Minuter | Väntan | Prints (totalt) | Kr vid sömn | Bär | Trivsel |\n|---|---|---|---|---|---|---|\n`;
+for (const d of r.dagar) md += `| ${d.dag} | ${(d.sek / 60).toFixed(1)} | ${d.sek ? Math.round((d.vantan || 0) / d.sek * 100) : 0} %${d.sek && (d.vantan || 0) / d.sek > 0.2 ? ' ⚠️' : ''} | ${d.printat} | ${d.mynt} | ${d.bar} | ${d.trivsel} |\n`;
 md += `\n**Köp:**\n\n` + r.kop.map((k) => `- dag ${k.dag} ${fmt(k.t)} – ${k.id} (${k.pris} kr)`).join('\n') + '\n';
 md += `\n## Storykedjan (kvittens → varför → nytt mål)\n\n| Dag | Tid | Id | Kvittens | Varför | Nytt mål | Tid till målet |\n|---|---|---|---|---|---|---|\n` + kedjeRader.map((k) => `| ${k.dag} | ${fmt(k.t)} | ${k.id} | ${k.kv.slice(0, 60)} | ${k.va.slice(0, 60)} | ${k.mal.slice(0, 60)} | ${k.gap == null ? '–' : k.gap.toFixed(1) + ' s'} |`).join('\n') + '\n';
 md += `\n## Hur länge nya mål väntade (från att förra målet blev klart till att det nya syntes i målrutan)\n\n` + (malVantan.length ? `Snitt ${(malVantan.reduce((x, m) => x + m.v, 0) / malVantan.length).toFixed(1)} s · max ${Math.max(...malVantan.map((m) => m.v)).toFixed(1)} s · över 4 s: ${malVantan.filter((m) => m.v > 4).length} · över 8 s: ${malVantan.filter((m) => m.v > 8).length} av ${malVantan.length}\n` : '-\n');
@@ -142,5 +144,5 @@ for (const dag of [...new Set(r.logg.map((e) => e.dag))]) {
 }
 fs.writeFileSync(ut, md);
 console.log(`klart: ${r.dagar.length} dagar, ${r.logg.length} textrader, ${flaggor.length} flaggor, sidfel ${sidfel.length} → ${ut}`);
-for (const d of r.dagar) console.log(`  dag ${d.dag}: ${(d.sek / 60).toFixed(1)} min, ${d.mynt} kr, trivsel ${d.trivsel}, bär ${d.bar}`);
+for (const d of r.dagar) console.log(`  dag ${d.dag}: ${(d.sek / 60).toFixed(1)} min, väntan ${d.sek ? Math.round((d.vantan || 0) / d.sek * 100) : 0} %, ${d.mynt} kr, trivsel ${d.trivsel}, bär ${d.bar}`);
 console.log('sista handlingar:', r.handlingar.slice(-6).map((h) => h.text).join(' | '));
