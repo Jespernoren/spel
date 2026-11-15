@@ -642,6 +642,20 @@
   "var": "Rolfs sms om marken och säljlådan"
  },
  {
+  "id": "rolf-6598a1aa",
+  "figur": "rolf",
+  "text": "Jo jo. La tre rullar röd plast i lådan. Malde backarna själv i natt. PETG, riktigt bra grejer. Mer sånt när fôlk börjar respektera dej. MVH ROLF",
+  "kalla": "La tre rullar röd plast i lådan. Malde backarna själv i natt. PETG, riktigt bra grejer. Mer sånt när folk börjar respektera dej. /R",
+  "var": "Rolfs sms om marken och säljlådan"
+ },
+ {
+  "id": "rolf-f26cf108",
+  "figur": "rolf",
+  "text": "Jo jo. La tre rullar röd plast i lådan. Malde backarna själv i natt. PETG, riktigt bra grejer. Mer sånt när fôlk börjar respektera dej. /R",
+  "kalla": "La tre rullar röd plast i lådan. Malde backarna själv i natt. PETG, riktigt bra grejer. Mer sånt när folk börjar respektera dej. /R",
+  "var": "Rolfs sms om marken och säljlådan"
+ },
+ {
   "id": "bror-376f44c4",
   "figur": "bror",
   "text": "VA?! Fick du igång den?? Jag försökte i typ ett år. Den bara pep. 😳",
@@ -3695,6 +3709,54 @@
   "var": "Dina tankar, tips och varningar"
  },
  {
+  "id": "ali-a59e49a1",
+  "figur": "ali",
+  "text": "Precis vad jag ville ha idag. Bra.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-a9d2cc5b",
+  "figur": "ali",
+  "text": "Vem ska köpa alla? Gör nåt annat imorgon.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-7e2e3286",
+  "figur": "ali",
+  "text": "Okej. Säljer de inte är det ditt fel.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-1189e9e6",
+  "figur": "ali",
+  "text": "Printa och sälj mer.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-6ec44ae9",
+  "figur": "ali",
+  "text": "Bra val. Folk köper sånt. Jag vet inte varför.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-f9987962",
+  "figur": "ali",
+  "text": "AI:n och jag gjorde den i natt. Printa den. Snälla.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-3f00e860",
+  "figur": "ali",
+  "text": "Röd. AI:n sa att röd säljer. AI:n har aldrig sålt något. Men okej.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-a020133b",
+  "figur": "ali",
+  "text": "Okej. Bra.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
   "id": "ali-16d59591",
   "figur": "ali",
   "text": "Du får bonus! Första kunden som printar själv på 25 år. 40 kr extra.",
@@ -3735,20 +3797,6 @@
   "figur": "du",
   "text": "Rullhållaren vid kvarnen är full. Jag borde ta rullarna innan kvarnen stannar.",
   "var": "Dina tankar, tips och varningar"
- },
- {
-  "id": "rolf-1afab0fa",
-  "figur": "rolf",
-  "text": "La en röd back i lådan. Hitta den i en tunna. Riktigt bra plast – PETG. Släng den i den röda kvarnen. Sen blir dä röd filament, bättre grejer. Mer sånt när fôlk börjar respektera dej. MVH ROLF",
-  "kalla": "La en röd back i lådan. Hitta den i en tunna. Riktigt bra plast – PETG. Släng den i den röda kvarnen. Sen blir det röd filament, bättre grejer. Mer sånt när folk börjar respektera dej. /R",
-  "var": "Sms i sov"
- },
- {
-  "id": "rolf-d7c352f8",
-  "figur": "rolf",
-  "text": "La en röd back i lådan. Hitta den i en tunna. Riktigt bra plast – PETG. Släng den i den röda kvarnen. Sen blir dä röd filament, bättre grejer. Mer sånt när fôlk börjar respektera dej. /R",
-  "kalla": "La en röd back i lådan. Hitta den i en tunna. Riktigt bra plast – PETG. Släng den i den röda kvarnen. Sen blir det röd filament, bättre grejer. Mer sånt när folk börjar respektera dej. /R",
-  "var": "Sms i sov"
  },
  {
   "id": "rolf-784abf5b",

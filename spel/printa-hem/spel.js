@@ -1541,7 +1541,8 @@ const HUMOR_SVG = {
   orolig: '<svg viewBox="0 0 20 20"><path d="M10 2C10 2 4 10 4 13a6 6 0 0012 0c0-3-6-11-6-11z" fill="#6fc3ff" stroke="#fff" stroke-width="1.5"/></svg>',
   glad: '<svg viewBox="0 0 20 20"><path d="M10 17s-7-4.4-7-9a4 4 0 017-2.6A4 4 0 0117 8c0 4.6-7 9-7 9z" fill="#ff5c8a" stroke="#fff" stroke-width="1.5"/></svg>',
 };
-const humorPortratt = (vem, text, st = 40) => { const h = humorAv(vem, text); return `<span class="ph-humor-ram" style="width:${st}px;height:${st}px">${portratt(vem, st)}${h ? `<i class="ph-humor ${h}">${HUMOR_SVG[h]}</i>` : ''}</span>`; };
+const humorPortratt = (vem, text, st = 40) => { const h = null; void humorAv;   // BK: inga humörikoner (svettdroppen förstod ingen)
+ return `<span class="ph-humor-ram" style="width:${st}px;height:${st}px">${portratt(vem, st)}${h ? `<i class="ph-humor ${h}">${HUMOR_SVG[h]}</i>` : ''}</span>`; };
 let figurFel = false;   // figurernas animation får aldrig stoppa spelet
 const FIGURER = [];   // { vem, huvud, ogon, mun, grupp } – animeras i uppdateraFigurer
 function ansikte(g, y, { bryn = 0, brynFarg = 0x222222, nasa = 0xb06a45, nasaStor = 0.045, vem = null, munFarg = 0x5a2a20 } = {}) {
@@ -2614,7 +2615,8 @@ function bpBild(typ, px = 160) {
     return (bpCache[nyckel] = url);
   } catch (e) { console.warn('blueprint', typ, e); return ikonBild(typ) || ''; }
 }
-const bpImg = (typ, st = 54) => `<span class="ph-bp"><img src="${bpBild(typ, st > 80 ? 256 : 128)}" width="${st}" height="${st}" alt=""></span>`;
+// BH2: blått rutat papper som bakgrund med den riktiga bilden ovanpå (bpBild med vita linjer finns kvar men används inte)
+const bpImg = (typ, st = 54) => `<span class="ph-bp">${tumme(typ, st)}</span>`;
 function renderaIkon(typ, px = 160) {
   if (!ikonR2) {
     ikonR2 = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true }); ikonR2.setPixelRatio(1); ikonR2.setClearColor(0x000000, 0);
@@ -5108,7 +5110,8 @@ function smsBubbla(vem, titel, text) {
   [...smsFack.children].slice(1).forEach((x) => { x.classList.add('ut'); setTimeout(() => x.remove(), 500); });   // en sak i taget
   textLogg('sms-bubbla', vem, text);
   const bort = () => { el.classList.add('ut'); setTimeout(() => el.remove(), 500); };
-  const t0 = performance.now(); const vanta = () => { if ((pratarVem === vem && performance.now() < pratarTill) || performance.now() - t0 < 2500) { setTimeout(vanta, 300); return; } setTimeout(bort, 4000); }; setTimeout(vanta, 300);
+  // BK: bubblan ligger kvar minst 6 s + 60 ms per tecken, och alltid tills rösten är klar
+  const t0 = performance.now(), minMs = 6000 + String(text).length * 60; const vanta = () => { if ((pratarVem === vem && performance.now() < pratarTill) || performance.now() - t0 < minMs) { setTimeout(vanta, 300); return; } setTimeout(bort, 1500); }; setTimeout(vanta, 300);
 }
 function triTon() {
   try { const c = ljudCtx(); if (!c) return; [[1318.5, 0], [1046.5, 0.13], [1568, 0.26]].forEach(([f, d]) => {
@@ -5927,7 +5930,7 @@ const bpWrap = (html) => `<span class="ph-bp">${html}</span>`;
 const printatEn = (k) => (S.printatEn || []).includes(k) || (S.printTot?.[k] || 0) > 0;
 paHandelse('printKlar', ({ sak }) => { if (!(S.printatEn || []).includes(sak)) S.printatEn = [...(S.printatEn || []), sak]; });
 { const st = document.createElement('style'); st.textContent = `.ph-bp{display:inline-grid;place-items:center;border-radius:6px;background:#1f5fae;background-image:linear-gradient(rgba(255,255,255,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.13) 1px,transparent 1px);background-size:9px 9px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
-.ph-bp img{filter:drop-shadow(0 0 1px rgba(255,255,255,.6))}
+.ph-bp img{filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
 .ph-bprulle{position:fixed;left:50%;top:42%;z-index:60;transform:translate(-50%,-50%);width:220px;height:220px;pointer-events:none}
 .ph-bprulle .ark{position:absolute;inset:0;transform-origin:50% 0;animation:phBpUpp .9s cubic-bezier(.2,.8,.2,1) both;display:grid;place-items:center;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
 .ph-bprulle .ark .ph-bp{width:100%;height:100%}.ph-bprulle .ark img{width:72%;height:72%}
@@ -6351,7 +6354,7 @@ function aliKopLista() {
   }
   // punkt AL: dag 1 visar Ali bara stegen i dagens mål – rullställ, dörr och resten kommer från dag 2
   if (S.dag <= 1) for (let i = L.length - 1; i >= 0; i--) if (!DAG1_ALI.includes(L[i].key)) L.splice(i, 1);
-  for (const x of L) { Object.assign(x, aliDuFar(x)); if (/^(m|r|g):|^sang$/.test(x.key)) x.bild = bpImg(x.key === 'sang' ? 'sang' : x.key.startsWith('m:') ? 'byggsats:' + x.key.slice(2) : x.key.slice(2)); }   // punkt BH: ritningar som blått papper
+  for (const x of L) { Object.assign(x, aliDuFar(x)); if (/^(m|r|g):|^sang$/.test(x.key)) { const typ = x.key === 'sang' ? 'sang' : x.key.startsWith('m:') ? 'byggsats:' + x.key.slice(2) : x.key.slice(2); if (!printatEn(typ)) x.bild = bpImg(typ); } }   // BH2: blått papper tills saken printats en gång   // punkt BH: ritningar som blått papper
   const { lista, dolda } = aliSalla(L); aliDolda = dolda;
   return lista;
 }
@@ -6425,16 +6428,28 @@ function aliMinns() {
 let aliPratVikt = '', aliTalDold = null;
 // B45: butikens egen kö – en replik i taget, aldrig i munnen på någon. En ny reaktion ersätter en reaktion som väntar,
 // men en STORY-replik (välkomsten, bonusen) ersätts aldrig. Max en replik per klick (oppnaMarknad säger bara en ny bubbla).
+// BJ: Alis repliker med belopp eller sakens namn har inget inspelat klipp. Rösten säger en fast del, bubblan visar hela texten.
+const ALI_FAST = [
+  [/Precis vad jag ville ha idag/, 'Precis vad jag ville ha idag. Bra.'],
+  [/Vem ska köpa alla\?/, 'Vem ska köpa alla? Gör nåt annat imorgon.'],
+  [/Säljer de inte är det ditt fel/, 'Okej. Säljer de inte är det ditt fel.'],
+  [/Printa och sälj mer\./, 'Printa och sälj mer.'],
+  [/Bra val\. Folk köper sånt\. Jag vet inte varför\./, 'Bra val. Folk köper sånt. Jag vet inte varför.'],
+  [/AI:n och jag gjorde den i natt\. Printa den\. Snälla\./, 'AI:n och jag gjorde den i natt. Printa den. Snälla.'],
+  [/Röd\. AI:n sa att röd säljer\./, 'Röd. AI:n sa att röd säljer. AI:n har aldrig sålt något. Men okej.'],
+  [/^[^.!?]+\. Okej\. [\d ]+ kr\.$/, 'Okej. Bra.'],
+];
+const aliTal = (t) => { if (rostKlipp('ali', t) || elKlipp('ali', t)) return t; for (const [re, f] of ALI_FAST) if (re.test(t)) return f; return t; };
 const aliButikKo = []; let aliButikTimer = 0;
 function aliSag(t, vikt) {
   if (vikt !== 'STORY') for (let i = aliButikKo.length - 1; i >= 0; i--) if (aliButikKo[i].vikt !== 'STORY') aliButikKo.splice(i, 1);
-  aliButikKo.push({ t, vikt, t0: performance.now() });
+  aliButikKo.push({ t, tal: aliTal(t), vikt, t0: performance.now() });
   if (!aliButikTimer) korAliButik();
 }
 function korAliButik() {
   aliButikTimer = 0;
   const f = aliButikKo[0]; if (!f) return;
-  const tillKanal = (x) => kanalLagg({ vikt: x.vikt, vem: 'ali', text: x.t, forst: x.vikt === 'STORY' });
+  const tillKanal = (x) => kanalLagg({ vikt: x.vikt, vem: 'ali', text: x.tal || x.t, forst: x.vikt === 'STORY' });
   if (ui.butiksOverlay.hidden && performance.now() - f.t0 > 400) {   // butiken stängd: kanalen tar STORY-replikerna, reaktionerna släpps
     aliTalDold = null; for (const x of aliButikKo.splice(0)) if (x.vikt === 'STORY') tillKanal(x); return;
   }
@@ -6447,7 +6462,7 @@ function korAliButik() {
   // B44: bubblan och rösten startar samtidigt – texten fylls i när rösten börjar
   const pe = document.querySelector('.ali-tal p'); if (pe && pe.textContent !== f.t) pe.textContent = f.t;
   aliTalDold = aliButikKo.length ? aliButikKo[aliButikKo.length - 1].t : null;
-  aliPratVikt = f.vikt; prata('ali', f.t, f.vikt, { direkt: true });
+  aliPratVikt = f.vikt; prata('ali', f.tal || f.t, f.vikt, { direkt: true });
   if (aliButikKo.length) aliButikTimer = setTimeout(korAliButik, 150);
 }
 function oppnaMarknad() {
@@ -6760,7 +6775,7 @@ function tipsFor(t) {
   return '';
 }
 
-const vemAvSms = (f) => ({ mamma: 'mamma', pappa: 'pappa', rolf: 'rolf', ali: 'ali', bror: 'bror' }[f] || 'du');
+const vemAvSms = (f) => ({ mamma: 'mamma', pappa: 'pappa', rolf: 'rolf', ali: 'ali', bror: 'bror', helen: 'helen', bengt: 'bengt' }[f] || 'du');
 // ett sms är läst: släpp nästa i kön från samma person
 function smsLast(fran) {
   S.olasta = S.sms.filter((m) => m.ny).length;
@@ -9210,7 +9225,7 @@ function rostManus() {
   vid('Lappar, brev och dagbok'); Object.entries(LAPPAR).forEach(([id, [titel, t]]) => add(vemAvTitel(titel), t));
   vid('Introt'); INTRO_TAL().forEach(([v, t]) => add(v, t));
   vid('Berättaren läser målen'); Object.values(STEG_TAL).forEach((t) => add('berattare', t)); Object.values(STEG_TAL_SPARA).forEach(([t]) => add('berattare', t));
-  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); TANKAR_INLINE.forEach((t) => add('du', t)); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
+  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); TANKAR_INLINE.forEach((t) => add('du', t)); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); ALI_FAST.forEach(([, f]) => add('ali', f)); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
   rostManus.detalj = D;
   return L;
 }

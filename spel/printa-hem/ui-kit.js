@@ -113,6 +113,37 @@ export const PORTRATT = {
     + oga(42, 50, { ry: 3.4, lock: 2.4, lockFarg: '#d9a888' }) + oga(58, 50, { ry: 3.4, lock: 2.4, lockFarg: '#d9a888' }) + `<path d="M37 44q5-2 9 0M54 44q5-2 9 0" stroke="#5a3a24" stroke-width="2.2" fill="none" stroke-linecap="round"/>`
     + `<path d="M50 54c-1 3-2 4 0 5" stroke="#b88a66" stroke-width="1.4" fill="none"/>` + kinder('#ff8f8f', 0.3)
     + `<path d="M44 63q6 4 12-1" stroke="#7a3a2a" stroke-width="2.2" fill="none" stroke-linecap="round"/>`),
+  // punkt BK – Haggan Helen: gammal, grinig men varm – stickad röd mössa, grå hårknut som sticker ut, lång brun rock med uppfälld krage, rynkor, smala kisande ögon
+  helen: P('helen', '#7a5a8a', '#2e2236',
+  `<path d="M10 100c3-22 18-30 40-30s37 8 40 30z" fill="#6b4a2e"/><path d="M31 74l-6 26M69 74l6 26" stroke="#4e341f" stroke-width="3"/><path d="M36 71l14 12 14-12-4 29H40z" fill="#8a5a36"/><path d="M42 74l8 7 8-7" fill="#c9b79a"/><path d="M10 100c3-22 18-30 40-30s37 8 40 30" fill="url(#pl-helen)"/>`
+  + hals('#e2b08f', '#a97a5c') + oron('#e8b896', '#a97a5c', 52) + huvud('#e8b896', '#a97a5c', 22, 25, 48)
+  // grått hår som sticker ut under mössan + hårknut
+  + `<path d="M27 44c-3 6-3 13 0 18M73 44c3 6 3 13 0 18" stroke="#c8c8c8" stroke-width="5" stroke-linecap="round" fill="none"/><circle cx="76" cy="30" r="7" fill="#c8c8c8"/><path d="M71 28c3-2 7-2 9 1" stroke="#9a9a9a" stroke-width="1.4" fill="none"/>`
+  // stickad mössa med vikt kant
+  + `<path d="M26 40c0-16 11-23 24-23s24 7 24 23z" fill="#b8323a"/><rect x="24" y="36" width="52" height="9" rx="4.5" fill="#8f2229"/><path d="M30 38v6M36 38v6M42 38v6M48 38v6M54 38v6M60 38v6M66 38v6M72 38v6" stroke="#6e1a20" stroke-width="1.2"/><circle cx="50" cy="15" r="5" fill="#8f2229"/>`
+  // kisande ögon + rynkor
+  + `<path d="M36 52q4-3 8 0M56 52q4-3 8 0" stroke="#2a1c12" stroke-width="2.4" stroke-linecap="round" fill="none"/><path d="M33 50l-3-1M33 53l-3 1M67 50l3-1M67 53l3 1" stroke="#a97a5c" stroke-width="1.1"/>`
+  + `<path d="M35 48l8-1M57 47l8 1" stroke="#9a9a9a" stroke-width="2.2" stroke-linecap="round"/>`
+  + `<path d="M50 54c-2 4-3 7-1 9h4" stroke="#a97a5c" stroke-width="1.6" fill="none"/>`
+  + kinder('#e07a6a', 0.4)
+  // snett halvleende
+  + `<path d="M42 66q6 2 14-2" stroke="#7a3a2a" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M38 60q-1 4 1 7M62 59q2 4 0 7" stroke="#a97a5c" stroke-width="1" fill="none"/>`),
+  // punkt BK – Bengt-Åke (N.): sur granne – grå sixpence-keps, buskiga ögonbryn, grå mustasch, kikare på bröstet, grön kofta
+  bengt: P('bengt', '#5b7a6a', '#1f2e27',
+  `<path d="M12 100c2-21 17-29 38-29s36 8 38 29z" fill="#3f5a3a"/><path d="M44 72l6 28 6-28" fill="#e9e4d8"/><path d="M40 72l10 10M60 72l-10 10" stroke="#2f4630" stroke-width="3"/><path d="M12 100c2-21 17-29 38-29s36 8 38 29" fill="url(#pl-bengt)"/>`
+  // kikaren på bröstet
+  + `<path d="M36 72q14 14 28 0" stroke="#3a2a1a" stroke-width="1.6" fill="none"/><rect x="38" y="82" width="10" height="13" rx="3" fill="#2b2b2b"/><rect x="52" y="82" width="10" height="13" rx="3" fill="#2b2b2b"/><rect x="47" y="85" width="6" height="5" fill="#444"/><circle cx="43" cy="94" r="3" fill="#6fa8c8"/><circle cx="57" cy="94" r="3" fill="#6fa8c8"/>`
+  + hals('#e2b08f', '#a97a5c') + oron('#e8b896', '#a97a5c', 51) + huvud('#e8b896', '#a97a5c', 23, 26, 47)
+  // grått hår i sidorna
+  + `<path d="M28 44c-2 5-2 10 0 14M72 44c2 5 2 10 0 14" stroke="#b9b9b9" stroke-width="5" stroke-linecap="round"/>`
+  // sixpence-keps
+  + `<path d="M25 40c1-14 12-20 25-20s25 6 26 18c-6-3-14-4-26-4s-19 2-25 6z" fill="#7a7f86"/><path d="M24 40c9-7 34-8 50-2l2 4c-16-5-38-4-52 2z" fill="#5c6168"/><path d="M33 28c6-3 16-4 24-2" stroke="#8d939b" stroke-width="1.4" fill="none"/>`
+  // buskiga arga ögonbryn
+  + `<path d="M33 43l12 3M67 43l-12 3" stroke="#d6d6d6" stroke-width="4.2" stroke-linecap="round"/>`
+  + oga(40, 50, { ry: 3, r: 2.2 }) + oga(60, 50, { ry: 3, r: 2.2 })
+  + `<path d="M50 52c-2 5-3 8-1 10h4" stroke="#a97a5c" stroke-width="1.6" fill="none"/><ellipse cx="50" cy="60" rx="5" ry="3.5" fill="#d99a7a" opacity=".5"/>`
+  // grå mustasch + sur mun
+  + `<path d="M37 65c4-4 9-4 13-2 4-2 9-2 13 2-4 1-8 1-13 0-5 1-9 1-13 0z" fill="#c9c9c9"/><path d="M43 70q7-3 14 0" stroke="#6a2a20" stroke-width="2" stroke-linecap="round" fill="none"/>`),
 };
 // chefen (också Rolf) och berättaren lånar ansikten tills de får egna
 PORTRATT.chefen = PORTRATT.rolf; PORTRATT.berattare = PORTRATT.du;

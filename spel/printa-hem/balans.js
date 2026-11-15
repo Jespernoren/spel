@@ -14,7 +14,8 @@
 // Under 150 kr (t.ex. dörr 120, grip 50) gäller siffran som den står.
 // Vill du sätta ett pris som det syns i spelet: dela med 0,6 (800 kr  →  skriv 1330).
 export const PRIS_SKALA = 0.6;
-export const MATTNAD = 0.9, MATTNAD_GOLV = 0.5;   // varje såld vara av samma sort samma dag sänker Alis pris 10 % (lägst 50 % av fullpris) – nollställs på morgonen
+export const MATTNAD = 0.95, MATTNAD_GOLV = 0.7;   // BI: mjukare mättnad (var 0,9 / 0,5)
+//   // varje såld vara av samma sort samma dag sänker Alis pris 10 % (lägst 50 % av fullpris) – nollställs på morgonen
 export const ALI_VILL_BONUS = 1.5;   // "Ali vill ha idag": en slumpad vara per morgon ger +50 % hela dagen
 export const GROSSIST = 0.7;   // leveranslådan: Ali köper till grossistpris
 export const SALJ_TILLBAKA = 0.1;       // kr per gram när man säljer tillbaka en byggsats till Ali
@@ -107,7 +108,7 @@ export const VARA_SIFFROR = {
   rulle3: { gram: 0, tid: 0, pris: 0 },
   rulle4: { gram: 0, tid: 0, pris: 0 },
   rulle5: { gram: 0, tid: 0, pris: 0 },
-  n2_vas: { gram: 600, tid: 24, pris: 320, recept: 600 },
+  n2_vas: { gram: 600, tid: 24, pris: 320, recept: 300 },   // BI: receptet 600 → 300 kr
   n2_hjalm: { gram: 900, tid: 30, pris: 560, recept: 1200 },
   n2_neon: { gram: 1200, tid: 40, pris: 900, recept: 2400 },
   n2_paddel: { gram: 2000, tid: 50, pris: 2300, recept: 4500 },
@@ -178,8 +179,8 @@ export const MASKIN_SIFFROR = {
   ryggkorg: { ritning: 120, delar: 2, gram: 500, tid: 12 },   // punkt AX: ryggkorgen dag 3
   ryggsack2: { ritning: 670, delar: 2, gram: 500, tid: 12 },
   karra: { ritning: 200, delar: 3, gram: 900, tid: 16 },
-  petgkvarn: { ritning: 3000, delar: 3, gram: 600, tid: 16 },
-  skrivarepetg: { ritning: 3000, delar: 5, gram: 900, tid: 18 },
+  petgkvarn: { ritning: 2000, delar: 3, gram: 600, tid: 16 },   // BI: 1 800 → 1 200 kr
+  skrivarepetg: { ritning: 2500, delar: 5, gram: 900, tid: 18 },   // BI: 1 800 → 1 500 kr
   petgband: { ritning: 900, delar: 3, gram: 1000, tid: 16 },
   magnet: { ritning: 4000, delar: 3, gram: 1000, tid: 16 },
   turbomotor: { ritning: 400, delar: 3, gram: 800, tid: 14 },
@@ -208,6 +209,6 @@ export const MASKIN_SIFFROR = {
   robotarm: { ritning: 9170, delar: 4, gram: 1000, tid: 18 },
   saljlada: { ritning: 670, delar: 2, gram: 500, tid: 12 },
   utlada: { ritning: 15000, delar: 3, gram: 800, tid: 16 },
-  skrivare3: { ritning: 8330, delar: 6, gram: 1200, tid: 20 },
+  skrivare3: { ritning: 5833, delar: 6, gram: 1200, tid: 20 },   // BI: 5 000 → 3 500 kr
   skrivare2: { ritning: 1330, delar: 5, gram: 900, tid: 18 },
 };
