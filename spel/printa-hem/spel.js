@@ -5476,7 +5476,9 @@ const aliOppen = () => !sovDags();
 // spelklockan: dagen går från 08:00 till 20:00 i takt med dagens mål – 21:00 stänger Ali och det är dags att sova
 // i det oändliga bygget går klockan på riktig tid: en dag = DAG_LANGD sekunder, 08:00 → 21:00, sedan natt
 const DAG_LANGD = 480;
+let klockTest = null;   // testkrok: __printahem.tidTest(min)
 function klockan() {
+  if (klockTest != null) return klockTest;
   const st = STEG[S.steg];
   if (!st) return Math.min(21 * 60, Math.round((8 * 60 + (S.dagTid || 0) / DAG_LANGD * 13 * 60) / 15) * 15);
   if (st.sov) return kvallKlar() ? 21 * 60 : Math.round((14 * 60 + (S.vakenTid || 0) / MIN_VAKEN * 7 * 60) / 15) * 15;
@@ -6479,7 +6481,7 @@ const respChip = document.querySelector('.ph-resp-chip'), respText = document.qu
 // ---------- Statuspanelen (hud.js): klocka, trivsel-gubbe, respekt-hjärta, uppdragslista ----------
 document.body.insertAdjacentHTML('beforeend', `<div class="hud-status">
   <div class="hud-klocka" title="Dagen är din nivå – klicka för bokmärken"><span class="dag">DAG 1</span><span class="tid">08:00</span><span class="arstid"></span></div>
-  <div class="hud-linje" title="Dagen: målen är prickarna, månen är kvällen"><div class="hud-linje-spar"><i class="hud-linje-fyll"></i><b class="hud-linje-nu"></b><span class="hud-linje-mal"></span><span class="hud-linje-mane">${ik('mane')}</span></div></div>
+  <div class="hud-linje" title="Dagen: himlakroppen är klockan, prickarna är dagens mål, sängen är kvällen"><div class="hud-linje-spar"><span class="hud-himmel"><i></i><i></i><i></i><i></i><i></i></span><b class="hud-linje-nu"><svg class="hk-sol" viewBox="0 0 24 24"><g stroke="#ffd43b" stroke-width="2.2" stroke-linecap="round"><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></g><circle cx="12" cy="12" r="5.2" fill="#ffd43b" stroke="#fff3b0" stroke-width="1.2"/></svg><svg class="hk-mane" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="#f4f1de"/></svg></b><span class="hud-linje-mal"></span><span class="hud-linje-mane"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 18v-8h2v4h7V9h7a4 4 0 0 1 4 4v5h-2v-2H4v2zm5-5a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg><em>z</em><em>z</em></span></div></div>
   <div class="hud-chip" data-hud="kr" title="Pengar">${ik('mynt')}<b>0 kr</b></div>
   <div class="hud-chip" data-hud="rullar" title="Rullar filament du bär">${ik('rulle')}<b>0 rullar</b></div>
   <div class="hud-matare" data-hud="trivsel" title="Trivsel – hur du har det hemma"><div class="hud-ikon"></div><div class="hud-m"><div class="rad"><span>Trivsel</span><b></b></div><div class="hud-bar"><i></i></div></div></div>
@@ -6699,15 +6701,29 @@ function coachLapp(el, id) {
 }
 // punkt AD: tidslinjen i toppbaren – 08:00 till kväll, markören är klockan, prickarna är dagens mål, månen är kvällen
 let hudPoster = [], linjeNyckel = '';
+// AD-tillägg: markören är en himlakropp – måne på morgonen, sol mitt på dagen, måne på kvällen – i en låg båge över en himmel som skiftar
+let linjeTid = 0, linjeDag = 0, linjeSover = false;
 function ritaLinje(k) {
   const L = hudEl.querySelector('.hud-linje'); if (!L) return;
+  const nu = performance.now(); if (nu < linjeTid) return; linjeTid = nu + 250;   // fyra gånger i sekunden räcker
   const f = k == null ? 0 : Math.max(0, Math.min(1, (k - 8 * 60) / (13 * 60)));
-  L.querySelector('.hud-linje-fyll').style.width = (f * 100).toFixed(1) + '%';
-  L.querySelector('.hud-linje-nu').style.left = (f * 100).toFixed(1) + '%';
-  L.querySelector('.hud-linje-mane').classList.toggle('pa', kvallKlar() || STEG[S.steg]?.sov);
+  const M = L.querySelector('.hud-linje-nu');
+  L.querySelector('.hud-linje-mane').classList.toggle('pa', sovDags());
+  if (linjeDag && S.dag !== linjeDag && !linjeSover) {
+    // natten: månen åker färdigt över himlen och kommer upp igen vid nästa morgon (ca 1 s)
+    linjeSover = true; M.classList.add('sover'); M.style.setProperty('--f', 1); M.style.setProperty('--sol', 0); M.style.setProperty('--y', '0px');
+    setTimeout(() => { M.classList.add('hopp'); M.style.setProperty('--f', 0); void M.offsetWidth; M.classList.remove('hopp'); }, 520);
+    setTimeout(() => { M.classList.remove('sover'); linjeSover = false; }, 1050);
+  }
+  linjeDag = S.dag;
+  if (!linjeSover) {
+    // solen: tänds 09:00–10:30, slocknar 17:30–19:00
+    const t = k == null ? 8 * 60 : k, sol = Math.max(0, Math.min(1, (t - 9 * 60) / 90, (19 * 60 - t) / 90));
+    M.style.setProperty('--f', f.toFixed(4)); M.style.setProperty('--sol', sol.toFixed(2)); M.style.setProperty('--y', (-Math.sin(f * Math.PI) * 7).toFixed(1) + 'px');
+  }
   const n = hudPoster.length, nyckel = hudPoster.map((p) => (p.klar ? 1 : p.nu ? 2 : 0)).join('');
   if (nyckel === linjeNyckel) return; linjeNyckel = nyckel;
-  L.querySelector('.hud-linje-mal').innerHTML = hudPoster.map((p, i) => `<i class="${p.klar ? 'klar' : p.nu ? 'nu' : ''}" style="left:${((i + 1) / (n + 1) * 92).toFixed(1)}%" title="${p.text.replace(/"/g, '')}"></i>`).join('');
+  L.querySelector('.hud-linje-mal').innerHTML = hudPoster.map((p, i) => `<i class="${p.klar ? 'klar' : p.nu ? 'nu' : ''}" style="left:${((i + 1) / (n + 1) * 90).toFixed(1)}%" title="${p.text.replace(/"/g, '')}"></i>`).join('');
   // baren kan bli högre (två rader på mobil) – notiser och kort hamnar under den
   requestAnimationFrame(() => document.documentElement.style.setProperty('--bar-h', Math.round(hudEl.getBoundingClientRect().bottom) + 'px'));
 }
@@ -9249,7 +9265,7 @@ function uppdateraLiv(dt) {
   if (bengt.visible && nu > bengtSynsTill) bengt.visible = false;
 }
 S.upprepaVald = true;   // issue #18: gamla sparfiler fick upprepa AV en gång (i skrivarnas laddning ovan)
-window.__printahem = { invDragInfo: () => invDrag, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 
@@ -9319,17 +9335,29 @@ body.ad .hud-status{position:fixed!important;left:max(8px,env(safe-area-inset-le
 body.ad .hud-status>*{margin:0!important;flex:0 0 auto}
 body.ad .hud-klocka{background:none!important;border:0!important;box-shadow:none!important;padding:2px 4px!important;cursor:pointer;flex-direction:column!important;align-items:flex-start!important;gap:0!important;line-height:1.05}
 body.ad .hud-klocka .dag{font:900 11px var(--rubrik,system-ui)!important;letter-spacing:.06em}body.ad .hud-klocka .tid{font-size:17px!important}
-body.ad .hud-linje{flex:1 1 220px!important;min-width:140px;padding:0 14px 0 6px}
-body.ad .hud-linje-spar{position:relative;height:6px;border-radius:99px;background:#343a4a}
-body.ad .hud-linje-fyll{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,#ffd27a,#ff9f43)}
-body.ad .hud-linje-nu{position:absolute;top:50%;width:4px;height:18px;margin-left:-2px;transform:translateY(-50%);border-radius:2px;background:#fff;box-shadow:0 0 6px #fff8;z-index:2}
-body.ad .hud-linje-mal i{position:absolute;top:50%;width:11px;height:11px;margin-left:-5.5px;transform:translateY(-50%);border-radius:50%;background:#191c24;border:2px solid #8a93a6;z-index:1}
-body.ad .hud-linje-mal i.klar{background:#7dffb0;border-color:#7dffb0}
-body.ad .hud-linje-mal i.nu{background:#ffd43b;border-color:#fff;box-shadow:0 0 0 3px #ffd43b55,0 0 10px #ffd43b;animation:adPuls 1.4s ease-in-out infinite}
+body.ad .hud-linje{flex:1 1 260px!important;min-width:180px;padding:0 14px 0 6px}
+body.ad .hud-linje-spar{position:relative;height:20px;border-radius:99px;margin-right:12px;
+  background:linear-gradient(90deg,#1d2b5a 0%,#3c5a9a 6%,#8cc8f0 16%,#a8dcff 45%,#8cc8f0 66%,#ffb36b 78%,#ff7a45 84%,#5a3a78 90%,#16204a 96%);box-shadow:inset 0 1px 3px rgba(0,0,0,.45);overflow:visible}
+body.ad .hud-himmel{position:absolute;inset:0;border-radius:99px;overflow:hidden;pointer-events:none}
+body.ad .hud-himmel i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:.85;box-shadow:0 0 3px #fff}
+body.ad .hud-himmel i:nth-child(1){left:91%;top:28%}body.ad .hud-himmel i:nth-child(2){left:94%;top:62%}body.ad .hud-himmel i:nth-child(3){left:97%;top:34%}body.ad .hud-himmel i:nth-child(4){left:2%;top:40%;opacity:.5}body.ad .hud-himmel i:nth-child(5){left:88%;top:70%;opacity:.6}
+body.ad .hud-linje-nu{--f:0;--sol:0;position:absolute;left:calc(var(--f) * 100%);top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;z-index:3;transform:translateY(var(--y,0px));transition:left .3s linear,transform .3s linear;pointer-events:none}
+body.ad .hud-linje-nu svg{position:absolute;inset:0;width:100%;height:100%;transition:opacity .6s}
+body.ad .hud-linje-nu .hk-sol{opacity:var(--sol);filter:drop-shadow(0 0 5px #ffd43b)}
+body.ad .hud-linje-nu .hk-mane{opacity:calc(1 - var(--sol));filter:drop-shadow(0 0 4px #c9d6ff)}
+body.ad .hud-linje-nu.sover{transition:left .5s ease-in,transform .5s ease-in,opacity .3s}
+body.ad .hud-linje-nu.hopp{transition:none!important;opacity:0}
+body.ad .hud-linje-mal i{position:absolute;top:50%;width:8px;height:8px;margin-left:-4px;transform:translateY(-50%);border-radius:50%;background:rgba(20,23,31,.55);border:1.5px solid #fff;z-index:2}
+body.ad .hud-linje-mal i.klar{background:#2fbf71;border-color:#eafff2}
+body.ad .hud-linje-mal i.nu{background:#ffd43b;border-color:#fff;box-shadow:0 0 0 3px #ffd43b66,0 0 10px #ffd43b;animation:adPuls 1.4s ease-in-out infinite}
 @keyframes adPuls{50%{box-shadow:0 0 0 6px #ffd43b22,0 0 14px #ffd43b}}
-body.ad .hud-linje-mane{position:absolute;right:-14px;top:50%;transform:translateY(-50%);width:18px;height:18px;opacity:.45;color:#c5ccda}
-body.ad .hud-linje-mane svg,body.ad .hud-linje-mane .ui-ik{width:18px!important;height:18px!important}
+body.ad .hud-linje-mane{position:absolute;right:-20px;top:50%;transform:translateY(-50%);width:22px;height:22px;opacity:.5;color:#c5ccda;transition:opacity .4s,color .4s}
+body.ad .hud-linje-mane svg{width:20px;height:20px}
+body.ad .hud-linje-mane em{position:absolute;font:900 9px/1 system-ui;font-style:normal;opacity:0;color:#cfe0ff}
+body.ad .hud-linje-mane em:nth-of-type(1){right:-2px;top:-5px}body.ad .hud-linje-mane em:nth-of-type(2){right:-8px;top:-12px;font-size:11px}
 body.ad .hud-linje-mane.pa{opacity:1;color:#ffd27a;filter:drop-shadow(0 0 5px #ffd27a)}
+body.ad .hud-linje-mane.pa em{animation:adZzz 2s ease-in-out infinite}body.ad .hud-linje-mane.pa em:nth-of-type(2){animation-delay:.6s}
+@keyframes adZzz{0%{opacity:0;transform:translateY(3px)}40%{opacity:1}100%{opacity:0;transform:translateY(-5px)}}
 body.ad .hud-chip{padding:4px 8px!important;border-radius:8px!important;background:rgba(255,255,255,.05)!important;border:0!important;box-shadow:none!important;min-height:34px;white-space:nowrap}
 body.ad .hud-chip b{font-size:13px!important}
 body.ad .hud-chip-sms b{display:none}
