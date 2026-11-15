@@ -152,6 +152,9 @@ export const VARA_SIFFROR = {
   rulle: { gram: 1000, tid: 0, pris: 0 },
   mobilstall: { gram: 300, tid: 12, pris: 50, recept: 100 },
   fagelholk: { gram: 800, tid: 26, pris: 170, recept: 300 },
+  t_spalje: { gram: 1500, tid: 30, pris: 0, recept: 1 },       // punkt N: ritningen kommer från Rolf (recept: 1 = måste ha ritningen)
+  t_bevattning: { gram: 1200, tid: 26, pris: 0, recept: 1 },
+  t_vaxthus: { gram: 4000, tid: 60, pris: 0, recept: 1 },
   fagelskramma: { gram: 600, tid: 20, pris: 60, recept: 250 },   // punkt I: Göran struntar i den
   fagelbad: { gram: 900, tid: 28, pris: 90, recept: 330 },        // punkt I: Göran flyttar in
   lampskarm: { gram: 1200, tid: 34, pris: 320, recept: 600 },
