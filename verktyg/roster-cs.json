@@ -1,0 +1,353 @@
+[
+ {
+  "id": "pappa-68f12c80",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Tjenare. Åkte förbi.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [clears throat] Tjenare. Åkte förbi.",
+  "hand": false
+ },
+ {
+  "id": "pappa-43964e52",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Djurgår'n har köpt en back.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Djurgår'n har köpt en back. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "pappa-89c9575e",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Ta en tupplur. Funkar för mej.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Ta en tupplur. Funkar för mej.",
+  "hand": false
+ },
+ {
+  "id": "pappa-13079501",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Rea. Sköna som tofflor.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Rea. Sköna som tofflor.",
+  "hand": false
+ },
+ {
+  "id": "pappa-393358aa",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Ja har cyklat hit.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Ja har cyklat hit.",
+  "hand": false
+ },
+ {
+  "id": "pappa-0652597f",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Mamma tycker ja ska röra mej.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Mamma tycker ja ska röra mej.",
+  "hand": false
+ },
+ {
+  "id": "pappa-8188b2a1",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Ingen motor. Trist.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Ingen motor. Trist.",
+  "hand": false
+ },
+ {
+  "id": "pappa-1e860637",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Mamma sa: kolla läget.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Mamma sa: kolla läget.",
+  "hand": false
+ },
+ {
+  "id": "pappa-813211ce",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Läget e bra. Kollat.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Läget e bra. Kollat.",
+  "hand": false
+ },
+ {
+  "id": "pappa-9ce23d70",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Fin väg hit. Nyasfalterad.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Fin väg hit. Nyasfalterad.",
+  "hand": false
+ },
+ {
+  "id": "pappa-866a6662",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Såg Formel 1 i natt.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Såg Formel 1 i natt.",
+  "hand": false
+ },
+ {
+  "id": "pappa-e0575c80",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Ställ de i skuggan.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Ställ de i skuggan.",
+  "hand": false
+ },
+ {
+  "id": "pappa-426c4879",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Ja har badat. Kallt.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Ja har badat. Kallt.",
+  "hand": false
+ },
+ {
+  "id": "pappa-180bf6f4",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Hon gråter på Bingolotto också.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Hon gråter på Bingolotto också.",
+  "hand": false
+ },
+ {
+  "id": "pappa-5de46abb",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Ska du bo här i vinter?",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] Ska du bo här i vinter?",
+  "hand": false
+ },
+ {
+  "id": "pappa-60395648",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Långkalsonger. Mamma köper.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Långkalsonger. [sighs] Mamma köper.",
+  "hand": false
+ },
+ {
+  "id": "pappa-b781e45e",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Tar du de lugnt, eller.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Tar du de lugnt, eller.",
+  "hand": false
+ },
+ {
+  "id": "pappa-ca8d9849",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Ny mössa. Rea. Fel lag.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Ny mössa. Rea. Fel lag.",
+  "hand": false
+ },
+ {
+  "id": "pappa-8cde0bfd",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Mamma skicka med grejer.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Mamma skicka med grejer.",
+  "hand": false
+ },
+ {
+  "id": "pappa-e33ec1eb",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Nä. Ja drar.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Nä. Ja drar.",
+  "hand": false
+ },
+ {
+  "id": "pappa-bf53dbce",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Tjenare.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [clears throat] Tjenare.",
+  "hand": false
+ },
+ {
+  "id": "pappa-952ab90b",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Varför har du inte kommit längre?",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] Varför har du inte kommit längre?",
+  "hand": false
+ },
+ {
+  "id": "pappa-ed1db08e",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Skjulet lutar, va.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Skjulet lutar, va.",
+  "hand": false
+ },
+ {
+  "id": "pappa-e036e81e",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Inget riktigt hus än?",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] Inget riktigt hus än?",
+  "hand": false
+ },
+ {
+  "id": "pappa-d249b9e0",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Ja hade Volvo vid din ålder.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Ja hade Volvo vid din ålder.",
+  "hand": false
+ },
+ {
+  "id": "pappa-14e3eeb2",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Mamma har kokat sylt i tre dar.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Mamma har kokat sylt i tre dar.",
+  "hand": false
+ },
+ {
+  "id": "pappa-d6e4f82e",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Aha, vad lugnt då. För dej.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [dismissive] Aha, vad lugnt då. För dej.",
+  "hand": false
+ },
+ {
+  "id": "pappa-6eb66a4c",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Missat hockeyn en vecka.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Missat hockeyn en vecka. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "pappa-8a5b6fd6",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Mamma pratar över den. Om grytvantar.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Mamma pratar över den. Om grytvantar.",
+  "hand": false
+ },
+ {
+  "id": "pappa-e5f11a4c",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Ja sover i garaget nu.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Ja sover i garaget nu.",
+  "hand": false
+ },
+ {
+  "id": "pappa-47e6e8ab",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Lugnare där. Bara så.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Lugnare där. Bara så.",
+  "hand": false
+ },
+ {
+  "id": "pappa-085dc498",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Hon har köpt en egen frys.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Hon har köpt en egen frys.",
+  "hand": false
+ },
+ {
+  "id": "pappa-3d75a651",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Till sylten.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Till sylten.",
+  "hand": false
+ },
+ {
+  "id": "rolf-7c0e6fb0",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Tjo.. Ta den. Birgitta hade velat att nån bodde i den.",
+  "skickas": "[old, tired, thick Värmland accent, calm] [sighs] Tjo.. Ta den. [sorrowful] [softly] Birgitta hade velat att nån bodde i den.",
+  "hand": false
+ },
+ {
+  "id": "rolf-09dc3702",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "ÖJ! Hon har int rullat sen 2009.. Hon klagar lite. Som ja.",
+  "skickas": "[old, tired, thick Värmland accent, calm] ÖJ! [short pause] Hon har int rullat sen 2009.. Hon klagar lite. Som ja. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-4754e741",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Tjo. Birgitta hade satt gardinerna dä. Precis dä. Jo jo. /R",
+  "skickas": "[old, tired, thick Värmland accent, calm] [sighs] Tjo. [softly] [short pause] Birgitta hade satt gardinerna dä. Precis dä. Jo jo. [sorrowful] /R",
+  "hand": false
+ },
+ {
+  "id": "rolf-e17f5eea",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "ÖJ! Ja sover i husvagnen. Som förr.",
+  "skickas": "[old, tired, thick Värmland accent, calm] ÖJ! [softly] Ja sover i husvagnen. [chuckles] [sorrowful] Som förr.",
+  "hand": false
+ },
+ {
+  "id": "rolf-c4b7c414",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Helen i Birgittas husvagn. Birgitta hade skrattat. Sen hade hon bujdit på kaffe. /R\n*bjudit",
+  "skickas": "[old, tired, thick Värmland accent, calm] [sighs] Helen i Birgittas husvagn. [softly] [short pause] Birgitta hade skrattat. Sen hade hon bujdit på kaffe. [sorrowful] /R *bjudit",
+  "hand": false
+ },
+ {
+  "id": "rolf-039852c2",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Helen i Birgittas husvagn. Birgitta hade skrattat. Sen hade hon bjudit på kaffe. /R",
+  "skickas": "[old, tired, thick Värmland accent, calm] [sighs] Helen i Birgittas husvagn. [softly] [short pause] Birgitta hade skrattat. Sen hade hon bjudit på kaffe. [sorrowful] /R",
+  "hand": false
+ }
+]

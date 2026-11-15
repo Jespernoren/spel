@@ -277,6 +277,9 @@ const MASKINER = {
   ryggsack2: { namn: 'Större ryggsäck', ikon: '🎒', syns: () => S.kapitel >= 2, beskr: `Ryggsäcken får ${RYGG_STOR} platser i stället för ${RYGG_BAS}`, verktyg: true },
   // karra och stortratt säljs inte hos Ali (syns: false): kärran kommer från Rolf
   webbdator: { namn: 'Alis pappas gamla dator', ikon: '🖥️', direkt: true, ritning: 500, delar: 1, gram: 0, tid: 0, syns: () => !S.datorKopt && S.dag >= 5 && harPlacerat('sol') && (!!S.hem?.vaggar || (S.hem?.vagg || 0) >= 4), flik: 'hem', beskr: 'En skruttig burk med modem. Ställ den i skjulet – sedan kommer webbshopens beställningar varje morgon. Kräver ström.' },   // CR
+  gs_tak: { namn: 'Tak till gäststugan', ikon: '🏠', direkt: true, ritning: 400, flik: 'hem', syns: () => !!S.gast?.hemma && !S.gast?.tak, beskr: 'Ett nytt plåttak på husvagnen. Det har läckt sedan 2009.' },   // CS
+  gs_isolering: { namn: 'Isolering till gäststugan', ikon: '🧱', direkt: true, ritning: 500, flik: 'hem', syns: () => !!S.gast?.hemma && !S.gast?.isolering, beskr: 'Isolering i väggarna – så den håller värmen.' },
+  gs_dorr: { namn: 'Dörr till gäststugan', ikon: '🚪', direkt: true, ritning: 300, flik: 'hem', syns: () => !!S.gast?.hemma && !S.gast?.dorr, beskr: 'En dörr som går att stänga.' },
   sackkarra: { namn: 'Pirran (säckkärra)', ikon: '🛒', syns: () => false, beskr: 'Pappas säckkärra från rean. Lyfter en tung sak i taget: regntunnor och kajaker – de blir röd PETG i den röda kvarnen', verktyg: true },   // CM
   karra: { namn: 'Skottkärra', ikon: '🛒', syns: () => false, beskr: 'Rymmer mycket mer skräp än famnen – kör den full och töm den i kvarnen', verktyg: true },
   petgkvarn: { namn: 'Röda kvarnen (PETG)', ikon: '', direkt: true, syns: () => S.kapitel >= 2 && !!S.pappaBesok && !S.rodKvarnKopt,   /* CM: Alis röda kvarn längst in i lagret, köps när pappa och Rolf berättat om den */ beskr: 'Röd kvarn för TUNGT skräp: regntunnor, kajaker och Rolfs röda backar blir röd PETG – filament nivå 2. Den vanliga kvarnen klarar inte tunga saker. Ställs på gården.', trivsel: 4, radie: 0.7, flik: 'petg' },
@@ -3914,7 +3917,7 @@ function uppdateraPetg(dt) {
 const TANKE_UTANFOR = 'Den här måste stå i linjen vid kvarnen, annars når inte slangen.';
 const ALI_KANNA = 'Rolf gav mig en kanna. Som min farmors. Jag ritade en sak åt honom. Säg inget, han gråter lätt.';   // CH
 const ALI_RODKVARN = 'Den röda? Jag har aldrig vågat starta den. Ta den. Starta den långt bort från mig.';   // CM
-const TANKAR_NYA = ['En webbshop. Från ett skjul. Med modem. Varför inte.', 'Den röda tar jag med pirran.', 'Det röda ska i den röda kvarnen.', 'Det blå skräpet går i den blå kvarnen.', 'Vad var det som flög över grinden?', 'En sopsäck. Från sopbilen. Logiskt.', 'Ali ritar åt Rolf. Rolf ritar inte. Det förklarar saken.', 'Lite närmare.', 'Den här är för tung. Jag behöver nåt med större hjul.', 'Pirran är för de röda sakerna. Skräpet tar jag med händerna.', 'Det börjar kännas som ett hem. På riktigt.'];   // CH, CJ, CL, CM
+const TANKAR_NYA = ['Gäststuga. Alltid bra att ha.', 'Helen. Det finns en gäststuga. Den är din om du vill.', 'Skåpet först.', 'En webbshop. Från ett skjul. Med modem. Varför inte.', 'Den röda tar jag med pirran.', 'Det röda ska i den röda kvarnen.', 'Det blå skräpet går i den blå kvarnen.', 'Vad var det som flög över grinden?', 'En sopsäck. Från sopbilen. Logiskt.', 'Ali ritar åt Rolf. Rolf ritar inte. Det förklarar saken.', 'Lite närmare.', 'Den här är för tung. Jag behöver nåt med större hjul.', 'Pirran är för de röda sakerna. Skräpet tar jag med händerna.', 'Det börjar kännas som ett hem. På riktigt.'];   // CH, CJ, CL, CM
 const TANKAR_INLINE = ['Det får inte plats. Jag behöver något att tippa i.', 'Den här är för tung för lilla kvarnen.'];
 function iTratten(gram, tung) {
   if (!S.kvarnStar) return false;   // B23: kvarnen och tratten finns inte i världen före köpet
@@ -5381,6 +5384,8 @@ function kopDirekt(id) {
     if (!harRumFor('byggsats:gammalkvarn')) { aliRepl = 'Var ska du bära den? Fickorna är fulla.'; return false; }
     S.kvarnKopt = true; const i = laggTill('byggsats:gammalkvarn'); if (typeof i === 'number') byt(i);
     aliRepl = ALI_GAMMALKVARN; ui.toast('⚙️ Kvarnen är din – ställ den på den lysande rutan i linje 1', 'guld');
+  } else if (id === 'gs_tak' || id === 'gs_isolering' || id === 'gs_dorr') {   // CS
+    gastDelKlar(id.slice(3)); aliRepl = 'Till Rolfs husvagn? Han har haft hål i taket sedan jag var ung. Och jag är inte ung.';
   } else if (id === 'webbdator') {   // CR
     if (!harRumFor('byggsats:webbdator')) { aliRepl = 'Var ska du bära den? Fickorna är fulla.'; return false; }
     S.datorKopt = true; const i = laggTill('byggsats:webbdator'); if (typeof i === 'number') byt(i);
@@ -5558,26 +5563,26 @@ const PAPPA_SCEN = [   // CQ: högst 6 repliker från pappa, högst ca 6 ord –
 ];
 // senare besök: pappa kommer ensam, kuckelurar lite, ställer ner burkar och bladar
 const PAPPA_KORT = [
-  [['pappa', 'Tjenare. Bara åkte förbi.', 'du'], ['pappa', 'Hört att Djurgår\'n köpt en ny back. Bra grej.'], ['du', 'Jag har inte sovit på två dagar.'], ['pappa', 'Jaha. Ta en tupplur. De gör ja.', 'du']],
-  [['pappa', 'Tjena. Nya dojor.', 'du'], ['pappa', 'Fick dom på rea. Sköna som tofflor.'], ['du', 'Jag saknar er ibland.'], ['pappa', 'Mm. Mamma har ditt foto på kylen.', 'du']],
-  [['pappa', 'Ja har cyklat hit. Mamma tycker ja ska röra på mej.', 'du'], ['pappa', 'Ingen motor. Trist. Men nyttigt, säger hon.'], ['du', 'Jag är lite ledsen idag.'], ['pappa', 'Aha, vad lugnt då. Käka en korv, så går de över.', 'du']],
-  [['pappa', 'Tjenare. Mamma sa att ja skulle kolla läget.', 'du'], ['pappa', 'Läget e bra. Nu har ja kollat.'], ['du', 'Har du saknat mig?'], ['pappa', 'Aha, vad lugnt då. Fin väg hit förresten. Nyasfalterad.', 'du']],
-  [['pappa', 'Tjena. Såg Formel 1 i natt. Långt race.', 'du'], ['pappa', 'Verstappen vann. Igen.'], ['du', 'Jag har inget kylskåp, pappa.'], ['pappa', 'Jaha. Ställ de i skuggan. Ja hade ölen i bäcken i lumpen.', 'du']],
-  [['pappa', 'Ja har badat i sjön. Kallt.', 'du'], ['du', 'Mamma grät i telefon.'], ['pappa', 'Aha, vad lugnt då. Hon gråter på Bingolotto också.', 'du']],
-  [['pappa', 'Tjena. Ska du bo här i vinter också?', 'du'], ['du', 'Jag vet inte, pappa.'], ['pappa', 'Långkalsonger. De e grejen. Mamma köper.', 'du']],
-  [['pappa', 'Tjena. Tar du de lugnt idag, eller.', 'du'], ['du', 'Ibland.'], ['pappa', 'Okej.', 'du'], ['pappa', 'Ny mössa. AIK-färger, fast ja e Djurgårdare. Den var på rea.']],
-];
+  [['pappa', 'Tjenare. Åkte förbi.', 'du'], ['pappa', 'Djurgår\'n har köpt en back.'], ['du', 'Jag har inte sovit på två dagar.'], ['pappa', 'Ta en tupplur. Funkar för mej.', 'du']],
+  [['pappa', 'Tjena. Nya dojor.', 'du'], ['pappa', 'Rea. Sköna som tofflor.'], ['du', 'Fina.'], ['pappa', 'Mm. Mamma har ditt foto på kylen.', 'du']],
+  [['pappa', 'Ja har cyklat hit.', 'du'], ['pappa', 'Mamma tycker ja ska röra mej.'], ['du', 'Och?'], ['pappa', 'Ingen motor. Trist.', 'du']],
+  [['pappa', 'Mamma sa: kolla läget.', 'du'], ['pappa', 'Läget e bra. Kollat.'], ['du', 'Toppen.'], ['pappa', 'Fin väg hit. Nyasfalterad.', 'du']],
+  [['pappa', 'Såg Formel 1 i natt.', 'du'], ['pappa', 'Verstappen vann. Igen.'], ['du', 'Jag har inget kylskåp, pappa.'], ['pappa', 'Ställ de i skuggan.', 'du']],
+  [['pappa', 'Ja har badat. Kallt.', 'du'], ['du', 'Mamma grät i telefon.'], ['pappa', 'Hon gråter på Bingolotto också.', 'du']],
+  [['pappa', 'Ska du bo här i vinter?', 'du'], ['du', 'Vet inte.'], ['pappa', 'Långkalsonger. Mamma köper.', 'du']],
+  [['pappa', 'Tar du de lugnt, eller.', 'du'], ['du', 'Ibland.'], ['pappa', 'Okej.', 'du'], ['pappa', 'Ny mössa. Rea. Fel lag.']],
+];   // CQ: korta, matta repliker (planeringschatten)
 // när man malt mammas saker: mamma tjatar hemma och pappa mår sämre. Han blir dryg.
-const PAPPA_DRYG = [   // punkt BD: "Varför har du inte kommit längre?" bara i bågen med mammas burkar
-  [['pappa', 'Tjenare. Bara åkte förbi.', 'du'], ['pappa', 'Du, en sak. Varför har du inte kommit längre?'], ['du', 'Va? Jag har byggt allt det här själv.'], ['pappa', 'Jaså. Grannens grabb har två lägenheter.', 'du']],
-  [['pappa', 'Skjulet lutar lite, va.', 'du'], ['pappa', 'Hade du inte tänkt ha ett riktigt hus vid det här laget?'], ['du', 'Jag gör så gott jag kan.'], ['pappa', 'Aha, vad lugnt då. Ja hade körkort och Volvo när ja var i din ålder.', 'du']],
-  [['pappa', 'Tjena.', 'du'], ['pappa', 'Mamma har kokat sylt i tre dagar. Hon tror att du äter upp allt.'], ['du', 'Förlåt, pappa.'], ['pappa', 'Aha, vad lugnt då. För dig.', 'du']],
-  [['pappa', 'Jaha. Här står du.', 'du'], ['pappa', 'Ja har inte sett hockeyn på en vecka. Mamma pratar över den.'], ['pappa', 'Om grytvantar.']],
-  [['pappa', 'Tjena.', 'du'], ['pappa', 'Ja sover i garaget nu. De e lugnare där.'], ['du', 'Är det så illa?'], ['pappa', 'Jaha. Säger du. Som maler sylt.', 'du']],
-  [['pappa', 'Hej.', 'du'], ['pappa', 'Hon har köpt en egen frys. Till sylten.'], ['pappa', 'Men vad vet ja. Ja e bara pappa.']],
-];
-const PAPPA_DRYG_SLUT = [['pappa', 'Mamma skicka med lite grejer.', 'burkar'], ['pappa', 'Nä. Ja drar nu.'], ['pappa', 'Mamma hälsar. Typ.', 'du']];
-const PAPPA_SLUT = [['pappa', 'Mamma skicka med lite grejer.', 'burkar'], ['pappa', 'Fint jobbat.', 'du'], ['pappa', 'Nä. Ja drar nu.'], ['pappa', 'Mamma hälsar.', 'du']];
+const PAPPA_DRYG = [
+  [['pappa', 'Tjenare.', 'du'], ['pappa', 'Varför har du inte kommit längre?'], ['du', 'Jag har byggt allt det här själv.'], ['pappa', 'Jaså. Grannens grabb har två lägenheter.', 'du']],
+  [['pappa', 'Skjulet lutar, va.', 'du'], ['pappa', 'Inget riktigt hus än?'], ['du', 'Jag gör så gott jag kan.'], ['pappa', 'Ja hade Volvo vid din ålder.', 'du']],
+  [['pappa', 'Tjena.', 'du'], ['pappa', 'Mamma har kokat sylt i tre dar.'], ['du', 'Förlåt.'], ['pappa', 'Aha, vad lugnt då. För dej.', 'du']],
+  [['pappa', 'Jaha. Här står du.', 'du'], ['pappa', 'Missat hockeyn en vecka.'], ['pappa', 'Mamma pratar över den. Om grytvantar.']],
+  [['pappa', 'Tjena.', 'du'], ['pappa', 'Ja sover i garaget nu.'], ['du', 'Är det så illa?'], ['pappa', 'Lugnare där. Bara så.', 'du']],
+  [['pappa', 'Hej.', 'du'], ['pappa', 'Hon har köpt en egen frys.'], ['pappa', 'Till sylten.']],
+];   // CQ
+const PAPPA_DRYG_SLUT = [['pappa', 'Mamma skicka med grejer.', 'burkar'], ['pappa', 'Nä. Ja drar.'], ['pappa', 'Mamma hälsar.', 'du']];
+const PAPPA_SLUT = [['pappa', 'Mamma skicka med grejer.', 'burkar'], ['pappa', 'Fint jobbat.', 'du'], ['pappa', 'Nä. Ja drar.'], ['pappa', 'Mamma hälsar.', 'du']];   // CQ
 const pappaBesok = { aktiv: false, t: 0, steg: 0, fas: '', scen: PAPPA_SCEN, medRolf: true };
 const menyOppen = () => !ui.butiksOverlay.hidden || !ui.overlay.hidden || !medEl2.hidden;
 interaktor.registrera(pappaGubbe, {   // CN: dialogen startar när spelaren klickar
@@ -9113,7 +9118,7 @@ function uppdatera(dt) {
   // matarbandet flyttar skräp från bingen till tratten (drar lite ström)
   if (!STEG[S.steg] && !sover) { const fore = S.dagTid || 0; S.dagTid = Math.min(DAG_LANGD, fore + dt); if (Math.floor(fore / 30) !== Math.floor(S.dagTid / 30)) sparaSnart(); }
   if (harProto('m_fusion')) S.strom = Math.min(stromMax(), S.strom + dt * 0.8);
-  uppdateraAuto(dt); try { uppdateraLampFinal(dt); } catch (e) { console.warn(e); lampFin = null; S.lampaFinal = true; } try { rolfSackKoll(dt); } catch (e) { console.warn(e); } uppdateraMalSkylt(dt); try { uppdateraFigurer(dt); uppdateraLiv(dt); } catch (e) { if (!figurFel) { figurFel = true; console.warn('figurer', e); } } uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraBlick(dt); uppdateraMalPil(); ritaStopp(); ritaSkrivBarer(); matFlaskhals(dt); ritaPlatsLappar(); korBud(); kollaPuffar(dt); visaRullstall(); kollaRaddning(dt); for (const sk of skrivare) visaSpolar(sk);
+  uppdateraAuto(dt); try { uppdateraGast(dt); } catch (e) { console.warn(e); gastScen.fas = ''; } try { uppdateraLampFinal(dt); } catch (e) { console.warn(e); lampFin = null; S.lampaFinal = true; } try { rolfSackKoll(dt); } catch (e) { console.warn(e); } uppdateraMalSkylt(dt); try { uppdateraFigurer(dt); uppdateraLiv(dt); } catch (e) { if (!figurFel) { figurFel = true; console.warn('figurer', e); } } uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraBlick(dt); uppdateraMalPil(); ritaStopp(); ritaSkrivBarer(); matFlaskhals(dt); ritaPlatsLappar(); korBud(); kollaPuffar(dt); visaRullstall(); kollaRaddning(dt); for (const sk of skrivare) visaSpolar(sk);
   if (S.kvarn.band) {
     const kor = S.kvarn.binge.length > 0 && S.kvarn.tratt < TRATT_MAX && S.strom > 0.5;
     if (kor) {
@@ -9436,10 +9441,65 @@ interaktor.registrera(sopbil, { text: () => S.resa === 'bjuden' && bil.fas !== '
 // fynd ute i skogen – den som utforskar hittar saker
 S.fynd = S.fynd || [];
 let oppnadGrans = '';
+// ---------- CS: husvagnen blir gäststuga – Rolf ger den till dig och drar hem den med sopbilen ----------
+let husvagnG = null;
+const GAST = { x: 16.5, z: 6.2, rot: Math.PI / 2 };   // egen plats vid skjulet
+const GAST_ROLF = ['Den här va vår första. Birgitta o ja bodde i den när vi kom hit. Ja har int kunnat gå in i den på sju år.', 'Ta den. Birgitta hade velat att nån bodde i den.'];
+const GAST_DRAR = 'Hon har int rullat sen 2009. Hon klagar lite. Som ja.';
+const GAST_KVITTENS = 'Gäststuga. Alltid bra att ha.';
+const GAST_KLAR_ROLF = 'Birgitta hade satt gardinerna där. Precis där. Jo jo. /R';
+const GAST_JUL = 'Ja sover i husvagnen. Som förr.';
+const gastScen = { fas: '', t: 0, steg: 0, fran: null };
+const gastDelar = () => ['tak', 'isolering', 'dorr'].filter((k) => S.gast?.[k]).length;
+function husvagnText() {
+  if (S.gast?.hemma) return gastDelar() < 3 ? `Gäststugan · ${gastDelar()}/3 – tak, isolering och dörr köper du hos Ali` : (S.helen?.skjul ? 'Gäststugan – Helen bor här' : 'Gäststugan');
+  if (!S.h78) return '🔍 En rostig husvagn från -78 – skåpet står öppet';
+  if (gastScen.fas === 'vantar') return 'Rolf står vid husvagnen';
+  return 'En rostig husvagn från -78';
+}
+function husvagnKlick() {
+  if (S.gast?.hemma || gastScen.fas) return;
+  if (!S.h78) { kortTanke('h78forst', 'Skåpet först.'); return; }
+  gastScen.fas = 'vantar'; startaRolfVidHusvagn();
+}
+function startaRolfVidHusvagn() {   // CN: Rolf kommer och väntar vid husvagnen tills du klickar på honom
+  const h = husvagnG.position; rolfBesok.position.set(h.x + 2.2, 0, h.z + 1.2); rolfBesok.visible = true; vand(rolfBesok, spelare.pos);
+  bubbla(rolfBesok, 'Rolf är här'); gastScen.fas = 'vantar'; textLogg('scenInfo', 'rolf', 'Rolf vid husvagnen', 'CS');
+}
+interaktor.registrera(rolfBesok, {
+  text: () => gastScen.fas === 'vantar' ? 'Prata med Rolf' : 'Rolf', kanAktivera: () => gastScen.fas === 'vantar',
+  aktivera: () => { if (gastScen.fas !== 'vantar') return; gastScen.fas = 'pratar'; gastScen.steg = 0; gastScen.t = 0.3; bubbla(rolfBesok, null); },
+});
+function uppdateraGast(dt) {
+  if (S.gast?.hemma && husvagnG && !gastScen.fas) { husvagnG.visible = true; husvagnG.position.set(GAST.x, 0, GAST.z); husvagnG.rotation.set(0, GAST.rot, 0); }
+  if (!gastScen.fas || gastScen.fas === 'vantar') return;
+  if (gastScen.fas === 'pratar') {
+    const d = Math.hypot(spelare.pos.x - rolfBesok.position.x, spelare.pos.z - rolfBesok.position.z);
+    if (d > 6 || menyOppen()) return;   // CN
+    gastScen.t -= dt; if (gastScen.t > 0) return;
+    const t = GAST_ROLF[gastScen.steg++];
+    if (!t) { gastScen.fas = 'drar'; gastScen.t = 0; gastScen.fran = husvagnG.position.clone(); tuta(); setTimeout(tuta, 600); ui.toast('🚛 Rolf backar fram sopbilen och kopplar på husvagnen', ''); bubbla(rolfBesok, rolfDialekt(GAST_DRAR, false)); prata('rolf', rolfDialekt(GAST_DRAR, false), 'STORY'); return; }
+    const sagt = rolfDialekt(t, false).replace('\u200b', ''); bubbla(rolfBesok, sagt.length > 60 ? sagt.slice(0, 58) + '…' : sagt); prata('rolf', sagt, 'STORY'); gastScen.t = 2.2 + t.length * 0.06;   // (paus) mellan replikerna
+  } else if (gastScen.fas === 'drar') {   // långsamt till din gård, med tutor
+    gastScen.t += dt; const k = Math.min(1, gastScen.t / 16), mal = new THREE.Vector3(GAST.x, 0, GAST.z);
+    husvagnG.position.lerpVectors(gastScen.fran, mal, k * k * (3 - 2 * k)); husvagnG.rotation.y += (GAST.rot - husvagnG.rotation.y) * Math.min(1, dt);
+    rolfBesok.position.set(husvagnG.position.x + 2.4, 0, husvagnG.position.z); if (Math.floor(gastScen.t / 5) !== Math.floor((gastScen.t - dt) / 5)) tuta();
+    if (k >= 1) { gastScen.fas = ''; rolfBesok.visible = false; bubbla(rolfBesok, null); S.gast = { ...(S.gast || {}), hemma: S.dag }; sparaSnart(); ljud.stor(); tanke(GAST_KVITTENS, 'CS: kvittens', 'STORY'); handelse('gaststuga'); }
+  }
+}
+function gastDelKlar(k) {
+  S.gast = { ...(S.gast || {}), [k]: true }; ritaGast(); sparaSnart(); ljud.stor();
+  if (gastDelar() >= 3 && !S.gast.klar) { S.gast.klar = S.dag; setTimeout(() => sms('rolf', GAST_KLAR_ROLF), 6000); try { helenKollaGast(); } catch (e) { console.warn(e); } }
+}
+function ritaGast() {   // tak, isolering och dörr syns på husvagnen
+  if (!husvagnG) return; const u = husvagnG.userData;
+  if (!u.tak) { u.tak = at(box(2.5, 0.12, 4.8, mat(0x6b6f78, { metalness: 0.5 })), 0, 2.26, 0); u.iso = at(box(2.28, 1.6, 4.58, mat(0xe9e1cf)), 0, 1.25, 0); u.dorr = at(box(0.05, 1.5, 0.75, mat(0x7a4a2a)), 1.13, 1.0, -0.8); husvagnG.add(u.tak, u.iso, u.dorr); }
+  u.tak.visible = !!S.gast?.tak; u.iso.visible = !!S.gast?.isolering; u.dorr.visible = !!S.gast?.dorr;
+}
 const FYND = [
   { id: 'volvo', mark: 'norr', x: 4, z: -TOMT - 14, namn: 'En gammal Volvo 240, halvt begravd', ger: () => { S.mynt += 2500; laggTill('rulle3', 2); }, text: 'I bakluckan: 2 500 kr i en kaffeburk och två rullar kolfiber. Bengt-Åke hade rätt!', sms: ['rolf', 'Hitta du VOLVON?? Bengt-Åke har letat i trettio år. Säj int nåt till honom. /R'] },
   { id: 'kallare', mark: 'oster', x: TOMT + 15, z: 9, namn: 'En övervuxen jordkällare', ger: () => { laggTill('r_radio'); S.mynt += 900; }, text: 'Inne i källaren: en gammal rörradio som fortfarande spelar dansband, och 900 kr i en syltburk.', sms: ['mamma', 'Pappa säger att du hittat en RADIO i en källare. Är den smittad?? Torka av den!'] },
-  { id: 'husvagn', mark: 'tippkant', x: TIPP.x - TIPP.r - 12, z: 2, namn: 'En rostig husvagn från -78', ger: () => { laggTill('rulle2', 3); S.mynt += 1200; }, text: 'Någon har bott här. I skåpet: tre rullar röd PETG, 1 200 kr och en stickad gardin.', sms: ['rolf', 'Husvagnen? De va vår första. Birgitta o ja bodde där när vi kom hit 2009. Gardinen stickade hon. Behåll pengarna. Gardinen me. /R'] },
+  { id: 'husvagn', mark: 'tippkant', x: TIPP.x - TIPP.r - 12, z: 2, namn: 'En rostig husvagn från -78', ger: () => {},   /* CS: ingen belöning – husvagnen blir gäststuga */ text: 'Någon har bott här. I skåpet: tre rullar röd PETG, 1 200 kr och en stickad gardin.', sms: ['rolf', 'Husvagnen? De va vår första. Birgitta o ja bodde där när vi kom hit 2009. Gardinen stickade hon. Behåll pengarna. Gardinen me. /R'] },
 ];
 function byggFynd(f) {
   const g = new THREE.Group();
@@ -9448,6 +9508,7 @@ function byggFynd(f) {
   else { g.add(at(box(2.2, 2, 4.5, mat(0xd8d0b8)), 0, 1.2, 0), at(box(2.25, 0.4, 4.55, mat(0x9a5a2a)), 0, 0.9, 0), at(box(0.9, 0.6, 0.05, mat(0x8ab0c8)), 0, 1.5, 2.26)); for (const z of [-1, 1]) g.add(at(cyl(0.35, 0.35, 0.2, mat(0x222222)), 1.15, 0.35, z * 1.2).rotateZ(Math.PI / 2)); g.rotation.set(0, 0.4, 0.05); }
   traffYta(g, 3, 2.2, 4.5);
   g.position.set(f.x, 0, f.z); g.visible = false; scen.add(g); f.g = g;
+  if (f.id === 'husvagn') { husvagnG = g; interaktor.registrera(g, { text: () => husvagnText(), kanAktivera: () => g.visible, aktivera: () => husvagnKlick() }); return; }   // CS
   interaktor.registrera(g, { text: () => g.visible ? `🔍 Undersök: ${f.namn}` : '', kanAktivera: () => g.visible, aktivera: () => {
     if (S.fynd.includes(f.id)) return; S.fynd.push(f.id); f.ger(); g.visible = false; konfetti(60); ljud.stor();
     oppnaRuta(panel({ ikon: 'stjarna', titel: 'Du hittade något!', sub: f.namn, kropp: `<div style="padding:14px 16px;font-size:16px;line-height:1.5">${f.text}</div>` }));
@@ -9625,6 +9686,7 @@ if (S.kapitel >= 4) { S.mark.tips = true; try { markTavla.visible = true; } catc
 if (S.kapitelKlart && S.steg < STEG.findIndex((x) => x.k1Slut)) S.steg = STEG.findIndex((x) => x.k1Slut);
 if (S.pappaBesok && !S.sackkarra) { S.sackkarra = true; setTimeout(() => { try { if (!antalInv('sackkarra')) laggTill('sackkarra'); } catch (e) { console.warn(e); } }, 1500); }   // CM: gamla sparfiler får pappas säckkärra
 if (S.hem?.taklampa && S.kapitelKlart) S.lampaFinal = true;   // CL
+setTimeout(() => { try { ritaGast(); flyttaHelen(); ritaHelen(); } catch (e) { console.warn(e); } }, 500);   // CS
 // ---------- Introt: varför bor du vid en soptipp? ----------
 const MAMMA_SVAR_K1 = ['HAHA träplankor?!', 'Vad är det där för nåt? Du har ju inte ens TAPETER på väggarna.', 'Och var är badrummet?? Du duschar väl??', 'Pappa säger "aha, vad lugnt då". Pappa säger det om allt.'];
 // sista raden: mamma säger något fint om det du faktiskt har
@@ -9662,7 +9724,7 @@ function rostManus() {
   vid('Lappar, brev och dagbok'); Object.entries(LAPPAR).forEach(([id, [titel, t]]) => add(vemAvTitel(titel), t));
   vid('Introt'); INTRO_TAL().forEach(([v, t]) => add(v, t));
   vid('Berättaren läser målen'); Object.values(STEG_TAL).forEach((t) => add('berattare', t)); Object.values(STEG_TAL_SPARA).forEach(([t]) => add('berattare', t));
-  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); TANKAR_INLINE.forEach((t) => add('du', t)); TANKAR_NYA.forEach((t) => add('du', t)); add('ali', ALI_KANNA); add('ali', ALI_RODKVARN); add('ali', ALI_DATOR); add('ali', ALI_DATOR_SEN); add('rolf', ROLF_PAKET_LAPP); add('rolf', ROLF_PAKET_SEN); add('rolf', ROLF_SACK_LAPP); add('du', TANKE_UTANFOR); GORAN_HALLA.forEach((t) => add('du', t)); add('du', GORAN_MAMMA); add('du', GORAN_FAGELBAD); MORGON_TANKAR.forEach((m) => add('du', m.text)); add('du', MORGON_BRA.text); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); ALI_FAST.forEach(([, f]) => add('ali', f)); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
+  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); TANKAR_INLINE.forEach((t) => add('du', t)); TANKAR_NYA.forEach((t) => add('du', t)); add('ali', ALI_KANNA); add('ali', ALI_RODKVARN); add('ali', ALI_DATOR); add('ali', ALI_DATOR_SEN); add('rolf', ROLF_PAKET_LAPP); add('rolf', ROLF_PAKET_SEN); GAST_ROLF.forEach((t) => add('rolf', t)); add('rolf', GAST_DRAR); add('rolf', GAST_KLAR_ROLF); add('rolf', GAST_JUL); add('rolf', HELEN_GAST_ROLF); add('helen', HELEN_GAST); add('rolf', ROLF_SACK_LAPP); add('du', TANKE_UTANFOR); GORAN_HALLA.forEach((t) => add('du', t)); add('du', GORAN_MAMMA); add('du', GORAN_FAGELBAD); MORGON_TANKAR.forEach((m) => add('du', m.text)); add('du', MORGON_BRA.text); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); ALI_FAST.forEach(([, f]) => add('ali', f)); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
   rostManus.detalj = D;
   return L;
 }
@@ -10099,6 +10161,7 @@ function julScen() {
     pausad = false; ui.igang = true; spelare.aktiv = true;
     konfetti(260); fanfar(); ljud.stor();
     S.julFirad = true; julPagar = false; sparaSnart(); kollaSkylt();   // sista polaroiden tas av polaroidväggen
+    if (S.gast?.hemma) setTimeout(() => replik('rolf', rolfDialekt(GAST_JUL, false), `Rolf: ”${GAST_JUL}”`, 'STORY'), 4000);   // CS
     // kvällen: gästerna går, flaggan är uppe – mammas brev ligger i postlådan
     ui.toast('Gästerna har gått. Flaggan på postlådan är uppe.', 'guld'); if (!S.lappar.includes('mammajul')) { S.post.lapp = 'mammajul'; visaPostInne(); sparaSnart(); }   // U012: när julscenen är slut
   }
@@ -10487,7 +10550,7 @@ const POLAROID = [
   { id: 'huset', text: 'Ett hus. Mamma kommer inte tro det.', nar: () => !!S.flyttatIn },
   { id: 'rosor', text: 'Birgittas rosor. Rolf var tyst länge.', nar: () => !!S.tradgard?.rosor },
   { id: 'jul', text: 'Alla.', nar: () => !!S.julFirad },
-  { id: 'helen', text: 'Helen, Bettan och Kajsa.', nar: () => !!S.helen?.skjul && !!S.helen?.tackSagt },
+  { id: 'helen', text: 'Helen, Bettan och Kajsa. Vid Birgittas husvagn.', nar: () => !!S.helen?.skjul && !!S.gast?.klar },   // CS: tas vid husvagnen
 ];
 const polaroidVagg = new THREE.Group();
 let polaroidNyckel = '', fotoVantar = null;
@@ -10853,9 +10916,9 @@ const helenHojd = (x, z) => tippHojd(x, z);
 function ritaHelen() {
   const H = S.helen, syns = !!H;
   helenFig.visible = syns; bettan.visible = syns; helenSits.visible = syns;
-  helenRuta.visible = !!H && H.steg >= 4 && !H.skjul;
+  helenRuta.visible = false;   // CS: ingen ruta för ett eget skjul
   helenRuta.position.set(HELEN_SKJUL.x, helenHojd(HELEN_SKJUL.x, HELEN_SKJUL.z) + 0.05, HELEN_SKJUL.z);
-  helenSkjul.visible = !!H?.skjul; helenSkjul.position.set(HELEN_SKJUL.x, helenHojd(HELEN_SKJUL.x, HELEN_SKJUL.z), HELEN_SKJUL.z);
+  helenSkjul.visible = false; /* CS: Helen bor i gäststugan */ helenSkjul.position.set(HELEN_SKJUL.x, helenHojd(HELEN_SKJUL.x, HELEN_SKJUL.z), HELEN_SKJUL.z);
   if (!H) return;
   // hon sitter på en back, vänd mot gården
   poseFigur(helenFig, { x: HELEN.x, z: HELEN.z, rot: 0.6 });
@@ -10889,13 +10952,19 @@ function helenNyDag() {
   if (lista.includes('kajsa')) H.kajsaDag = S.dag;
   if (helenDag() >= 4 && H.steg < 4) helenRitning();
 }
-function helenRitning() {
+function helenRitning() {   // CS: dag 4 – du erbjuder gäststugan (inget eget skjul längre)
   const H = S.helen; H.steg = 4;
-  if (!S.ritningar.includes('helenskjul')) S.ritningar.push('helenskjul');
   if (H.idag) H.idag.ingenPlats = true;
-  if (!(S.smsSkickat || []).includes('helenritning')) { S.smsSkickat = [...(S.smsSkickat || []), 'helenritning']; sms('rolf', HELEN_ROLF_RITNING, undefined, true); }
-  ritaHelen(); sparaSnart();
+  helenKollaGast(); ritaHelen(); sparaSnart();
 }
+const HELEN_GAST = 'En husvagn. Från -78. … Den drar säkert. Bra. Det ska dra.';
+const HELEN_GAST_ROLF = 'Helen i Birgittas husvagn. Birgitta hade skrattat. Sen hade hon bjudit på kaffe. /R';
+function helenKollaGast() {
+  const H = S.helen; if (!H || H.skjul || H.steg < 4 || !S.gast?.klar) return;
+  tanke('Helen. Det finns en gäststuga. Den är din om du vill.', 'CS: du erbjuder gäststugan', 'STORY');
+  setTimeout(() => { H.skjul = S.dag; H.steg = 5; flyttaHelen(); ritaHelen(); sparaSnart(); varldsBubbla(helenFig, HELEN_GAST, 4.5); prata('helen', HELEN_GAST, 'STORY'); setTimeout(() => sms('rolf', HELEN_GAST_ROLF), 12000); }, 4500);
+}
+function flyttaHelen() { if (!S.helen?.skjul || !S.gast?.klar) return; HELEN.x = GAST.x - 1.6; HELEN.z = GAST.z + 2.6; HELEN_SKJUL.x = GAST.x; HELEN_SKJUL.z = GAST.z; }
 function helenKommer() {
   S.helen = { kom: S.dag, steg: 1, hog: 0, quirkGjorda: [], minnen: [], fynd: 0 };
   sms('rolf', HELEN_ROLF_SMS, undefined, true);
@@ -11015,7 +11084,7 @@ function helenTest(steg = 0) {
   const H = S.helen;
   if (steg >= 1 && steg < 4) { H.kom = S.dag - steg + 1; helenNyDag(); }
   if (steg >= 4) { H.kom = Math.min(H.kom, S.dag - 3); helenNyDag(); }
-  if (steg >= 5 && !H.skjul) helenSkjulKlart();
+  if (steg >= 5 && !H.skjul) { S.gast = { ...(S.gast || {}), hemma: S.gast?.hemma || S.dag, tak: true, isolering: true, dorr: true, klar: S.gast?.klar || S.dag }; H.skjul = S.dag; H.steg = 5; flyttaHelen(); }   // CS
   ritaHelen(); return JSON.parse(JSON.stringify(S.helen));
 }
 // ---------- Punkt AM: fasta platser i fabriken, linjernas spolhållare och "Flytta om" ----------

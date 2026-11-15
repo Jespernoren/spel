@@ -1116,15 +1116,15 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-9d012c74",
+  "id": "pappa-68f12c80",
   "figur": "pappa",
-  "text": "Tjenare. Bara åkte förbi.",
+  "text": "Tjenare. Åkte förbi.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-63abd0c2",
+  "id": "pappa-43964e52",
   "figur": "pappa",
-  "text": "Hört att Djurgår'n köpt en ny back. Bra grej.",
+  "text": "Djurgår'n har köpt en back.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1134,9 +1134,9 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-343a9470",
+  "id": "pappa-89c9575e",
   "figur": "pappa",
-  "text": "Jaha. Ta en tupplur. De gör ja.",
+  "text": "Ta en tupplur. Funkar för mej.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1146,15 +1146,15 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-a8b53c4d",
+  "id": "pappa-13079501",
   "figur": "pappa",
-  "text": "Fick dom på rea. Sköna som tofflor.",
+  "text": "Rea. Sköna som tofflor.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "du-7d684a5a",
+  "id": "du-baf080a1",
   "figur": "du",
-  "text": "Jag saknar er ibland.",
+  "text": "Fina.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1164,57 +1164,57 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-470c97a3",
+  "id": "pappa-393358aa",
   "figur": "pappa",
-  "text": "Ja har cyklat hit. Mamma tycker ja ska röra på mej.",
+  "text": "Ja har cyklat hit.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-6b332aea",
+  "id": "pappa-0652597f",
   "figur": "pappa",
-  "text": "Ingen motor. Trist. Men nyttigt, säger hon.",
+  "text": "Mamma tycker ja ska röra mej.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "du-0ec00067",
+  "id": "du-ab4755fd",
   "figur": "du",
-  "text": "Jag är lite ledsen idag.",
+  "text": "Och?",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-18cb8e6d",
+  "id": "pappa-8188b2a1",
   "figur": "pappa",
-  "text": "Aha, vad lugnt då. Käka en korv, så går de över.",
+  "text": "Ingen motor. Trist.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-3301cb5e",
+  "id": "pappa-1e860637",
   "figur": "pappa",
-  "text": "Tjenare. Mamma sa att ja skulle kolla läget.",
+  "text": "Mamma sa: kolla läget.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-ea91e655",
+  "id": "pappa-813211ce",
   "figur": "pappa",
-  "text": "Läget e bra. Nu har ja kollat.",
+  "text": "Läget e bra. Kollat.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "du-c9f3f63e",
+  "id": "du-48896987",
   "figur": "du",
-  "text": "Har du saknat mig?",
+  "text": "Toppen.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-a143c8a9",
+  "id": "pappa-9ce23d70",
   "figur": "pappa",
-  "text": "Aha, vad lugnt då. Fin väg hit förresten. Nyasfalterad.",
+  "text": "Fin väg hit. Nyasfalterad.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-533deaa1",
+  "id": "pappa-866a6662",
   "figur": "pappa",
-  "text": "Tjena. Såg Formel 1 i natt. Långt race.",
+  "text": "Såg Formel 1 i natt.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1230,15 +1230,15 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-0865206c",
+  "id": "pappa-e0575c80",
   "figur": "pappa",
-  "text": "Jaha. Ställ de i skuggan. Ja hade ölen i bäcken i lumpen.",
+  "text": "Ställ de i skuggan.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-7ecb49f5",
+  "id": "pappa-426c4879",
   "figur": "pappa",
-  "text": "Ja har badat i sjön. Kallt.",
+  "text": "Ja har badat. Kallt.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1248,33 +1248,33 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-2319b7be",
+  "id": "pappa-180bf6f4",
   "figur": "pappa",
-  "text": "Aha, vad lugnt då. Hon gråter på Bingolotto också.",
+  "text": "Hon gråter på Bingolotto också.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-b077ff4c",
+  "id": "pappa-5de46abb",
   "figur": "pappa",
-  "text": "Tjena. Ska du bo här i vinter också?",
+  "text": "Ska du bo här i vinter?",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "du-cba68bc6",
+  "id": "du-7ba1898c",
   "figur": "du",
-  "text": "Jag vet inte, pappa.",
+  "text": "Vet inte.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-3d6c51bd",
+  "id": "pappa-60395648",
   "figur": "pappa",
-  "text": "Långkalsonger. De e grejen. Mamma köper.",
+  "text": "Långkalsonger. Mamma köper.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-6a3f59e3",
+  "id": "pappa-b781e45e",
   "figur": "pappa",
-  "text": "Tjena. Tar du de lugnt idag, eller.",
+  "text": "Tar du de lugnt, eller.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1290,15 +1290,15 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-262b9955",
+  "id": "pappa-ca8d9849",
   "figur": "pappa",
-  "text": "Ny mössa. AIK-färger, fast ja e Djurgårdare. Den var på rea.",
+  "text": "Ny mössa. Rea. Fel lag.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-189d5211",
+  "id": "pappa-8cde0bfd",
   "figur": "pappa",
-  "text": "Mamma skicka med lite grejer.",
+  "text": "Mamma skicka med grejer.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1308,9 +1308,9 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-29006e1e",
+  "id": "pappa-e33ec1eb",
   "figur": "pappa",
-  "text": "Nä. Ja drar nu.",
+  "text": "Nä. Ja drar.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1320,15 +1320,21 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-0761c10e",
+  "id": "pappa-bf53dbce",
   "figur": "pappa",
-  "text": "Du, en sak. Varför har du inte kommit längre?",
+  "text": "Tjenare.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "du-17c70663",
+  "id": "pappa-952ab90b",
+  "figur": "pappa",
+  "text": "Varför har du inte kommit längre?",
+  "var": "Pappas besök (med Rolf första gången)"
+ },
+ {
+  "id": "du-0d0e0bca",
   "figur": "du",
-  "text": "Va? Jag har byggt allt det här själv.",
+  "text": "Jag har byggt allt det här själv.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1338,15 +1344,15 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-4be23f12",
+  "id": "pappa-ed1db08e",
   "figur": "pappa",
-  "text": "Skjulet lutar lite, va.",
+  "text": "Skjulet lutar, va.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-de348de6",
+  "id": "pappa-e036e81e",
   "figur": "pappa",
-  "text": "Hade du inte tänkt ha ett riktigt hus vid det här laget?",
+  "text": "Inget riktigt hus än?",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1356,9 +1362,9 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-e52c5899",
+  "id": "pappa-d249b9e0",
   "figur": "pappa",
-  "text": "Aha, vad lugnt då. Ja hade körkort och Volvo när ja var i din ålder.",
+  "text": "Ja hade Volvo vid din ålder.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1368,21 +1374,21 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-5154d70f",
+  "id": "pappa-14e3eeb2",
   "figur": "pappa",
-  "text": "Mamma har kokat sylt i tre dagar. Hon tror att du äter upp allt.",
+  "text": "Mamma har kokat sylt i tre dar.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "du-26d35b04",
+  "id": "du-7d2a1832",
   "figur": "du",
-  "text": "Förlåt, pappa.",
+  "text": "Förlåt.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-d4030889",
+  "id": "pappa-d6e4f82e",
   "figur": "pappa",
-  "text": "Aha, vad lugnt då. För dig.",
+  "text": "Aha, vad lugnt då. För dej.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1392,21 +1398,21 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-b405db4d",
+  "id": "pappa-6eb66a4c",
   "figur": "pappa",
-  "text": "Ja har inte sett hockeyn på en vecka. Mamma pratar över den.",
+  "text": "Missat hockeyn en vecka.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-c0e351e1",
+  "id": "pappa-8a5b6fd6",
   "figur": "pappa",
-  "text": "Om grytvantar.",
+  "text": "Mamma pratar över den. Om grytvantar.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-9bf73bac",
+  "id": "pappa-e5f11a4c",
   "figur": "pappa",
-  "text": "Ja sover i garaget nu. De e lugnare där.",
+  "text": "Ja sover i garaget nu.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1416,9 +1422,9 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-68da2907",
+  "id": "pappa-47e6e8ab",
   "figur": "pappa",
-  "text": "Jaha. Säger du. Som maler sylt.",
+  "text": "Lugnare där. Bara så.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1428,21 +1434,15 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-9276a7a8",
+  "id": "pappa-085dc498",
   "figur": "pappa",
-  "text": "Hon har köpt en egen frys. Till sylten.",
+  "text": "Hon har köpt en egen frys.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-b7f3127e",
+  "id": "pappa-3d75a651",
   "figur": "pappa",
-  "text": "Men vad vet ja. Ja e bara pappa.",
-  "var": "Pappas besök (med Rolf första gången)"
- },
- {
-  "id": "pappa-1baa531b",
-  "figur": "pappa",
-  "text": "Mamma hälsar. Typ.",
+  "text": "Till sylten.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -3761,6 +3761,24 @@
   "var": "Dina tankar, tips och varningar"
  },
  {
+  "id": "du-ea299da8",
+  "figur": "du",
+  "text": "Gäststuga. Alltid bra att ha.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-0bd6a4dd",
+  "figur": "du",
+  "text": "Helen. Det finns en gäststuga. Den är din om du vill.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-12b4c8b0",
+  "figur": "du",
+  "text": "Skåpet först.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
   "id": "du-8e322ee0",
   "figur": "du",
   "text": "En webbshop. Från ett skjul. Med modem. Varför inte.",
@@ -3869,6 +3887,67 @@
   "figur": "rolf",
   "text": "Kajsa har fått lax tre dar i rad. Tack vare dina paket. Hon ä otrevlig mot mej nu. /R",
   "kalla": "Kajsa har fått lax tre dar i rad. Tack vare dina paket. Hon e otrevlig mot mej nu. /R",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-bb626db5",
+  "figur": "rolf",
+  "text": "Jo jo. Den hä va vår första. Birgitta o ja bodde i den när vi kom hit. Ja har int knunat gå in i den på sju år.\n*kunnat",
+  "kalla": "Den här va vår första. Birgitta o ja bodde i den när vi kom hit. Ja har int kunnat gå in i den på sju år.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-5d90f2c2",
+  "figur": "rolf",
+  "text": "Jo jo. Den hä va vår första. Birgitta o ja bodde i den när vi kom hit. Ja har int kunnat gå in i den på sju år.",
+  "kalla": "Den här va vår första. Birgitta o ja bodde i den när vi kom hit. Ja har int kunnat gå in i den på sju år.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-7c0e6fb0",
+  "figur": "rolf",
+  "text": "Tjo.. Ta den. Birgitta hade velat att nån bodde i den.",
+  "kalla": "Ta den. Birgitta hade velat att nån bodde i den.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-09dc3702",
+  "figur": "rolf",
+  "text": "ÖJ! Hon har int rullat sen 2009.. Hon klagar lite. Som ja.",
+  "kalla": "Hon har int rullat sen 2009. Hon klagar lite. Som ja.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-4754e741",
+  "figur": "rolf",
+  "text": "Tjo. Birgitta hade satt gardinerna dä. Precis dä. Jo jo. /R",
+  "kalla": "Birgitta hade satt gardinerna där. Precis där. Jo jo. /R",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-e17f5eea",
+  "figur": "rolf",
+  "text": "ÖJ! Ja sover i husvagnen. Som förr.",
+  "kalla": "Ja sover i husvagnen. Som förr.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-c4b7c414",
+  "figur": "rolf",
+  "text": "Helen i Birgittas husvagn. Birgitta hade skrattat. Sen hade hon bujdit på kaffe. /R\n*bjudit",
+  "kalla": "Helen i Birgittas husvagn. Birgitta hade skrattat. Sen hade hon bjudit på kaffe. /R",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-039852c2",
+  "figur": "rolf",
+  "text": "Helen i Birgittas husvagn. Birgitta hade skrattat. Sen hade hon bjudit på kaffe. /R",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "helen-895cf06b",
+  "figur": "helen",
+  "text": "En husvagn. Från -78. … Den drar säkert. Bra. Det ska dra.",
   "var": "Dina tankar, tips och varningar"
  },
  {
