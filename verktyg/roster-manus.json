@@ -5286,38 +5286,6 @@
   "var": "Sms i kapitelBorjar"
  },
  {
-  "id": "mamma-5525afe3",
-  "figur": "mamma",
-  "text": "Julskinkan har legat i frysen sen augusti. Vi kommer. Alla. Pappa tar med Wham!-skivan. Duka för MÅNGA. ❤️ /Mamma",
-  "var": "Sms i julEnkel"
- },
- {
-  "id": "rolf-f202345d",
-  "figur": "rolf",
-  "text": "Hörru.. Ja o Kajsa kömmer. Ja har tagit mä trumstockarna. Säj inget till Bengt-Åke. Han kömmer oxå. MVH ROLF",
-  "kalla": "Ja o Kajsa kommer. Ja har tagit me trumstockarna. Säj inget till Bengt-Åke. Han kommer oxå. /R",
-  "var": "Sms i julEnkel"
- },
- {
-  "id": "rolf-0bf6ceab",
-  "figur": "rolf",
-  "text": "Hörru. Ja o Kajsa kömmer. Ja har tagit mä trumstockarna. Säj inget till Bengt-Åke. Han kömmer oxå. /R",
-  "kalla": "Ja o Kajsa kommer. Ja har tagit me trumstockarna. Säj inget till Bengt-Åke. Han kommer oxå. /R",
-  "var": "Sms i julEnkel"
- },
- {
-  "id": "ali-36b3c420",
-  "figur": "ali",
-  "text": "Ali här. Jag stänger butiken i kväll. Första gången på tjugofem år. Jag tar med baklava. Det är inte julmat. Det är bättre.",
-  "var": "Sms i julEnkel"
- },
- {
-  "id": "bror-13d0a519",
-  "figur": "bror",
-  "text": "Pappa grät lite vid julbordet. Han sa att det var pepparroten. Det fanns ingen pepparrot. God jul brorsan.",
-  "var": "Sms i julEnkel"
- },
- {
   "id": "mamma-eff8ea94",
   "figur": "mamma",
   "text": "Pappa såg bilden. Han sa \"aha, vad lugnt då\". Det betyder att han är JÄTTESTOLT.",
@@ -5409,6 +5377,36 @@
   "figur": "rolf",
   "text": "Kommunen satt upp en RIKTI skylt. Ja grät int. Kajsa grät. MVH ROLF",
   "var": "SKYLT_REPLIK"
+ },
+ {
+  "id": "rolf-41b20d00",
+  "figur": "rolf",
+  "text": "Rolf och Kajsa",
+  "var": "JUL_REPLIK"
+ },
+ {
+  "id": "ali-eff0894a",
+  "figur": "ali",
+  "text": "Ali (och hans fru)",
+  "var": "JUL_REPLIK"
+ },
+ {
+  "id": "bror-a305e15f",
+  "figur": "bror",
+  "text": "Storebror",
+  "var": "JUL_REPLIK"
+ },
+ {
+  "id": "mamma-8768ad54",
+  "figur": "mamma",
+  "text": "Mamma",
+  "var": "JUL_REPLIK"
+ },
+ {
+  "id": "pappa-4ddc3c61",
+  "figur": "pappa",
+  "text": "Pappa",
+  "var": "JUL_REPLIK"
  },
  {
   "id": "mamma-148ebf0b",

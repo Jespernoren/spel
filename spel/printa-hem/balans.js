@@ -158,6 +158,7 @@ export const VARA_SIFFROR = {
   t_vaxthus: { gram: 4000, tid: 60, pris: 0, recept: 6670 },    // kolfiber, kapitel 4: ca 4 000 kr
   fagelskramma: { gram: 600, tid: 20, pris: 30, recept: 40 },    // punkt I: Göran sätter sig på den (under 150 kr – skalas inte)
   fagelbad: { gram: 900, tid: 28, pris: 45, recept: 60 },         // punkt I: Göran flyttar in
+  julbord: { gram: 500, tid: 20, pris: 0 },                        // punkt O: gratis, printas på ca 20 s
   g_kapsyl: { gram: 0, tid: 0, pris: 4 },                          // Görans gåvor – humor, inte ekonomi
   g_skruv: { gram: 0, tid: 0, pris: 6 },
   lampskarm: { gram: 1200, tid: 34, pris: 320, recept: 600 },
