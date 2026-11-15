@@ -21,6 +21,7 @@ ROSTER = {
     'du':        ('nst',    1.02, 0.75,  3.0, 'highpass=f=110'),
     'mamma':     ('alma',   1.02, 0.80,  0.0, 'equalizer=f=2500:t=q:w=1:g=1.5'),
     'berattare': ('lisa',   1.10, 0.70,  0.0, 'aecho=0.8:0.5:30:0.08'),
+    'bengt':     ('nst',    0.92, 0.6, -5.0, 'lowpass=f=3600'),   # reserv – Bengt-Åke görs med Kokoro (roster_kokoro.py)
     'helen':     ('alma',   1.15, 0.80, -3.0, 'lowpass=f=4200'),   # reserv – Helen görs med Kokoro (roster_kokoro.py)
 }
 

@@ -53,7 +53,7 @@ export const BARA_SKRAP = [1, 3, 6, 10, 22];   // punkt AX: händer 1 → skräp
 export const HOTBAR = 9;                // platser i verktygsraden (plats 1 = verktyget/famnen)
 export const KISTA_PLATSER = 27, STACK = 20;   // kistan har 27 platser, max 20 av samma sak per plats
 export const RYGG_BAS = 18, RYGG_STOR = 27;     // ryggsäcken: 18 platser, 27 med Större ryggsäck
-export const UT_MAX = 12;   // så många färdiga saker som får stå på skrivaren innan den slutar upprepa
+export const PLATTA = { 1: 1, 2: 2, 3: 4, 4: 2 };   // punkt 11: färdiga saker som får plats på byggplattan (S, M, L, PETG). Full platta = skrivaren väntar
 
 // ---------- Automation ----------
 export const LASTARM_TID = 2.5;   // sekunder per plock för lastarmen vid tippen (×0,85 per armtrim)
