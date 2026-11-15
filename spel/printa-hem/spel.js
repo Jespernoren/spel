@@ -7228,7 +7228,6 @@ const notisKo = [];
 const RUBRIK = { bra: 'Klart', guld: 'Nytt', fel: 'Obs', '': 'Info', sms: 'Meddelande', lapp: 'Dagbok' };
 const RUBRIK_IKON = { bra: 'bock', guld: 'stjarna', fel: 'varning', '': 'info', sms: 'telefon', lapp: 'bok' };
 function notis(text, typ = '', o = {}) {
-  textLogg('notis', typ, text);
   // samma text igen inom kort: förnya kortet i stället för att lägga ett nytt
   const el = typ === 'sms' || typ === 'lapp' ? medEl : notisEl;   // meddelanden till vänster, notiser till höger
   const finns = [...el.children].find((k) => k.dataset.text === text && !k.classList.contains('ut'));
@@ -7236,6 +7235,7 @@ function notis(text, typ = '', o = {}) {
   if (el === notisEl && [...el.children].some((x) => !x.classList.contains('ut'))) {   // en syns redan: köa (samma text bara en gång)
     if (!notisKo.some(([t]) => t === text)) notisKo.push([text, typ, o]); if (notisKo.length > 6) notisKo.shift(); return null;
   }
+  textLogg('notis', typ, text);   // loggas när den faktiskt visas (inte när den väntar i notiskön)
   const k = document.createElement('div');
   k.className = 'ph-notis ' + typ; k.dataset.text = text;
   k.innerHTML = `<div class="rubrik"><span>${ik(RUBRIK_IKON[typ] || 'info')} ${rens(o.titel || RUBRIK[typ] || 'Info')}</span><span>nu</span></div><div class="kropp">${rens(text)}</div>`;
