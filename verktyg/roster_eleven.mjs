@@ -53,7 +53,7 @@ for (const r of grupper.values()) {
   const svar = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ROST_ID[r.rost]}?output_format=mp3_44100_128`, {
     method: 'POST',
     headers: { 'xi-api-key': NYCKEL, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
-    body: JSON.stringify({ text: r.text, model_id: 'eleven_v3', voice_settings: { stability: 0.0 } }),   // v3 Creative: mest uttryck
+    body: JSON.stringify({ text: r.text, model_id: 'eleven_v3', voice_settings: { stability: 0.0, ...(r.speed ? { speed: r.speed } : {}) } }),   // speed: BJ, berättaren lite snabbare   // v3 Creative: mest uttryck
   });
   if (!svar.ok) {
     fel++; iRad++;

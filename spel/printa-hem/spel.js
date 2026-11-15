@@ -4439,7 +4439,7 @@ function sov() {
     const STORY_MORGON = [pappaForsta, kollaPolett, kollaSamtal, helenMorgon, kollaResa, kollaMarkTips];
     const enStory = () => { for (const f of STORY_MORGON) if (f()) return true; return false; };
     morgonKo = () => { morgonRolf(); enStory(); senareIdag(() => { familjSms(); enStory(); }); };   // B4 L4: Rolfs fynd ligger i lådan med morgonbrevet
-    const morgonRolf = () => { if (S.dag >= 6 && S.kapitel >= 2 && !(S.filGava || []).includes(0) && !(S.filGava || []).includes(2)) { S.filGava = [...(S.filGava || []), 0]; S.post.tillMig = [...S.post.tillMig, 'sak:fynd2']; visaPostInne(); setTimeout(() => sms('rolf', 'La en röd back i lådan. Hitta den i en tunna. Riktigt bra plast – PETG. Släng den i den röda kvarnen. Sen blir det röd filament, bättre grejer. Mer sånt när folk börjar respektera dej. /R'), 1500); } };
+    const morgonRolf = () => { if (S.dag >= 6 && S.kapitel >= 2 && !(S.filGava || []).includes(0) && !(S.filGava || []).includes(2)) { S.filGava = [...(S.filGava || []), 0]; S.post.tillMig = [...S.post.tillMig, 'sak:rulle2', 'sak:rulle2', 'sak:rulle2']; visaPostInne(); setTimeout(() => sms('rolf', ROLF_RODA), 1500); } };   // BI: tre rullar röd PETG direkt dag 6
     setTimeout(sparaDagBokmarke, 1500);
     skymning = 0; sover = false; sol.position.set(14, 24, 8); if (hemiLjus) hemiLjus.intensity = 1.4; if (skjulLampa) skjulLampa.intensity = skjulLampa.userData.bas || 4;
     satLjus(DAG); sl.innerHTML = `<div><svg viewBox="0 0 160 120" style="width:min(340px,70vw);display:block;margin:0 auto 10px">${kalenderSvg('DAG ' + S.dag, 40, 14, 'DAG ' + natt)}</svg>☀️ ${['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag'][(S.dag - 1) % 7]}</div>`; ljud.plock(); setTimeout(() => ljud.stor(), 900);
@@ -5575,6 +5575,8 @@ function motorLjud() {
     }
   }
 }
+const ROLF_RODA = 'La tre rullar röd plast i lådan. Malde backarna själv i natt. PETG, riktigt bra grejer. Mer sånt när folk börjar respektera dej. /R';
+const SOPBIL_TUNNOR = 2;   // BI: från kapitel 2 tippar sopbilen också två tunnor per last (röd PETG)
 function tippaLast() {
   ljud.borsta(); ljud.placera();
   const ggr = S.rolf.extra > 0 ? 2 : 1;
@@ -5589,6 +5591,7 @@ function tippaLast() {
     flygande.push({ s: sk, fran, till: sk.position.clone(), t: -i * 0.05 });
     sk.position.copy(fran);
   }
+  if ((S.kapitel || 1) >= 2) for (let i = 0; i < SOPBIL_TUNNOR && skrapLista.length < MAX_SKRAP + SOPBIL_TUNNOR; i++) { const [x, z] = tippPlats(); laggSkrap(x, z, variantFor('tunna'), Math.random() * 6.3); }
   if (Math.hypot(spelare.pos.x - TIPP.x, spelare.pos.z - TIPP.z) < 30) ui.toast(ggr > 1 ? '🚛 Rolf tippade DUBBEL last på soptippen!' : '🚛 Sopbilen tippade en ny last på soptippen!', 'guld');
   if (!S.lappar.includes('sopbil') && !S.tippNyckel) visaLapp('sopbil');
 }
@@ -8213,7 +8216,7 @@ function rostNyckel(t) {
 // Punkt AH: samma röst för en figur hela vägen – ElevenLabs bara för figurer där VARJE replik har ett klipp (räknas en gång när båda listorna laddats)
 let elIndex = null, elHel = null, introPagar = false, introElSvar = null;
 // punkt AW: har alla mammas och dina repliker i introt ElevenLabs-klipp? Då används de i introt (resten av spelet följer AH).
-const introElOk = () => { if (introElSvar == null && elIndex) introElSvar = INTRO_TAL().filter(([v]) => v === 'mamma' || v === 'du').every(([v, t]) => !!elIndex[`${v}-${rostNyckel(t)}`]); return !!introElSvar; };
+const introElOk = () => { if (introElSvar == null && elIndex) introElSvar = INTRO_TAL().filter(([v]) => v === 'mamma' || v === 'du' || v === 'berattare').every(([v, t]) => !!elIndex[`${v}-${rostNyckel(t)}`]); return !!introElSvar; };
 const elHelRakna = () => { if (!elIndex || !rostIndex || elHel) return; elHel = new Set(ROST_FIGURER.filter((f) => { const k = Object.keys(rostIndex).filter((x) => x.startsWith(f + '-')); return k.length > 0 && k.every((x) => elIndex[x]); })); };
 const elKlar = fetch('roster-el/index.json').then((x) => (x.ok ? x.json() : null)).then((a) => { elIndex = a; return rostKlar.then(elHelRakna); }).catch(() => {});
 // punkt AZ: ElevenLabs-klippen ligger packade per figur (roster-el/pack/, samma format som roster/) och spelas från ett redan avkodat ljud
@@ -8272,12 +8275,17 @@ function spelaAvkodat(ab, vem, t0, text, o = {}) {
 function elKlipp(vem, text) {
   if (!elIndex || !elHel) return null;
   const f = ROST_FIGURER.includes(vem) ? vem : 'berattare';
-  if (!elHel.has(f) && !(introPagar && (f === 'mamma' || f === 'du') && introElOk())) return null;   // punkt AW: introt är en egen scen
+  if (!elHel.has(f) && !(introPagar && (f === 'mamma' || f === 'du' || f === 'berattare') && introElOk())) return null;   // punkt AW/BJ: introt är en egen scen – mamma, du och berättaren i ElevenLabs, eller alla gamla
   const k = `${f}-${rostNyckel(text)}`;
   return elIndex[k] ? k : null;
 }
 // testkrok: __printahem.rostKoll() – per figur hur många repliker som har ElevenLabs, gammal röst eller saknas
 function rostKoll() {
+  // BJ: räknas som i spelet utanför introt (introt är en egen scen och kontrolleras med introElOk)
+  const iIntro = introPagar; introPagar = false;
+  try { return rostKollUtan(); } finally { introPagar = iIntro; }
+}
+function rostKollUtan() {
   const ut = {}, okand = [], sett = new Set();
   for (const [vem, t] of rostManus()) {
     if (!ROST_FIGURER.includes(vem)) { okand.push([vem, String(t).slice(0, 60)]); continue; }
@@ -8287,7 +8295,7 @@ function rostKoll() {
     if (elKlipp(vem, t)) r.el++; else if (rostKlipp(vem, t)) r.gammal++; else { r.saknas++; if (r.saknasText.length < 5) r.saknasText.push(String(t).slice(0, 70)); }
   }
   const blandade = Object.entries(ut).filter(([, r]) => r.el && (r.gammal || r.saknas)).map(([f]) => f);
-  return { figurer: ut, blandade, okandVem: okand, elHela: [...(elHel || [])] };
+  return { figurer: ut, blandade, okandVem: okand, elHela: [...(elHel || [])], introEl: introElOk() };
 }
 function rostKlipp(vem, text) {
   if (!rostIndex) return null;
@@ -9183,7 +9191,7 @@ function rostManus() {
   vid('Sopbilsresan med Rolf'); RESA.forEach((x) => add('rolf', x.rad));
   RESA.forEach((x) => (x.val || []).forEach((v) => (v[3] || []).forEach((t) => { L.push(['rolf', t]); D.push(['rolf', t, t, 'Sopbilsresan: konditoriet']); })));   // redan på värmländska – ingen rolfDialekt
   vid('Rolfs tack för presenter, jobblappar och fynd'); Object.values(ROLF_TACK).forEach((x) => add('rolf', x.text)); ROLF_JOBBLAPP.forEach((t) => add('rolf', t)); [2, 3, 4, 5].forEach((n) => add('rolf', rolfFyndSms(n)));
-  vid('Rolfs sms om marken och säljlådan'); Object.values(ROLF_MARK).forEach((t) => add('rolf', t)); LADAN_SMS.forEach((t) => add('rolf', t)); add('rolf', ROLF_SALJLADA);
+  vid('Rolfs sms om marken och säljlådan'); Object.values(ROLF_MARK).forEach((t) => add('rolf', t)); LADAN_SMS.forEach((t) => add('rolf', t)); add('rolf', ROLF_SALJLADA); add('rolf', ROLF_RODA);
   vid('Brorsans sms dag 1 (punkt AS)'); add('bror', BROR_SMS1); add('bror', BROR_SMS2);
   vid('Ali om det begagnade (punkt AS)'); add('ali', ALI_GAMMALKVARN); add('ali', ALI_BATTERI);
   vid('Haggan Helen i efterspelet (punkt AN)'); HELEN_RADER().forEach((t) => add('helen', t)); [HELEN_ROLF_SMS, HELEN_ROLF_RITNING, HELEN_ROLF_1987].forEach((t) => add('rolf', t));

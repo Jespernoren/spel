@@ -1,0 +1,128 @@
+[
+ {
+  "id": "intro-berattare-bdb5cba1",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Ditt rum. Ungefär som vanligt.",
+  "skickas": "[warm, hopeful, storyteller] [dry, slightly amused] Ditt rum. Ungefär som vanligt.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-657ddc36",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Hon sa det igen. Och igen. Och igen.",
+  "skickas": "[warm, hopeful, storyteller] [weary] Hon sa det igen. Och igen. Och igen.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-03f6db0e",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Du packar det viktigaste: en ryggsäck och storebrors gamla 3D-skrivare. Den är långsam och låter konstigt. Storebror fick aldrig igång den. Allt surras fast på cykeln.",
+  "skickas": "[warm, hopeful, storyteller] [calm] Du packar det viktigaste: en ryggsäck och storebrors gamla 3D-skrivare. Den är långsam och låter konstigt. Storebror fick aldrig igång den. Allt surras fast på cykeln.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-f7902287",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Du cyklar. Förbi skolan. Förbi affären. Förbi där husen tar slut.",
+  "skickas": "[warm, hopeful, storyteller] [calm] Du cyklar. Förbi skolan. Förbi affären. Förbi där husen tar slut.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-a1ec684c",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "I utkanten av stan ligger soptippen. Bredvid den: ett gammalt, tomt skjul och en gård full av skräp.",
+  "skickas": "[warm, hopeful, storyteller] [warm] I utkanten av stan ligger soptippen. Bredvid den: ett gammalt, tomt skjul och en gård full av skräp.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-7b12c991",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Cykeln har tagit dig hit. Nu får den jobba. Trampar du på cykeln, får skrivaren ström. Lite filament finns kvar på rullen.",
+  "skickas": "[warm, hopeful, storyteller] [friendly] Cykeln har tagit dig hit. Nu får den jobba. Trampar du på cykeln, får skrivaren ström. Lite filament finns kvar på rullen.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-98e4c76b",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Runt omkring: skräp.",
+  "skickas": "[warm, hopeful, storyteller] [calm] Runt omkring: skräp.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-d46c000b",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Och skräp är plast.",
+  "skickas": "[warm, hopeful, storyteller] [curious] Och skräp är plast.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-aa59d397",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Med en kvarn kan plast bli filament.",
+  "skickas": "[warm, hopeful, storyteller] [curious] Med en kvarn kan plast bli filament.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-499d739e",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Och med filament kan man printa… allt.",
+  "skickas": "[warm, hopeful, storyteller] [excited] Och med filament kan man printa… allt.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-a39e2828",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Tänk om man kunde bygga det här till ett riktigt hem?",
+  "skickas": "[warm, hopeful, storyteller] [dreamy] Tänk om man kunde bygga det här till ett riktigt hem?",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-0638f0a5",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Täta väggar. En riktig dörr. Plåttak.",
+  "skickas": "[warm, hopeful, storyteller] [dreamy] Täta väggar. En riktig dörr. Plåttak.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-e31932ac",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Och en gamingsetup.",
+  "skickas": "[warm, hopeful, storyteller] [playful] Och en gamingsetup.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-dec8c4d0",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "En lugn fristad. Utan mammas tjat.",
+  "skickas": "[warm, hopeful, storyteller] [soft] En lugn fristad. Utan mammas tjat.",
+  "hand": true,
+  "speed": 1.1
+ }
+]
