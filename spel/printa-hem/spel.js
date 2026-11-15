@@ -10025,38 +10025,10 @@ function planNasta() {
 // Hela planen finns som karta i dagboken (Fabriksplanen).
 const platsFylld = (p) => p.linje === 1 && ['kvarn', 'extruder', 'container', 'spolhallare'].includes(p.typ) ? !!S.kvarnStar : p.typ === 'cykel' ? !!S.cykelOmbyggd : platsUpptagen(p);
 function ritaPlan() {
-  const nasta = planNasta(), kap = S.kapitel || 1;
-  const svaga = PLAN.FABRIK_PLATSER.filter((p) => p.linje && p.kapitel >= 2 && p.kapitel <= kap && !platsFylld(p));
-  const nyckel = kap + ':' + (nasta?.id || '') + ':' + svaga.map((p) => p.id).join(',');
-  if (nyckel === planNyckel) return; planNyckel = nyckel;
-  const c = planCanvas.getContext('2d'), X = (x) => (x - planYta.minX) * PX, Z = (z) => (z - planYta.minZ) * PX;
-  c.clearRect(0, 0, planCanvas.width, planCanvas.height);
-  const ruta = (p, stark) => {
-    const x0 = X(p.x - p.b / 2), z0 = Z(p.z - p.d / 2), w = p.b * PX, h = p.d * PX;
-    c.globalAlpha = stark ? 0.95 : 0.35;
-    c.fillStyle = (p.farg || '#ffffff') + (stark ? '30' : '10'); c.fillRect(x0, z0, w, h);
-    c.setLineDash([9, 6]); c.lineWidth = stark ? 5 : 3; c.strokeStyle = p.farg || '#fff'; c.strokeRect(x0 + 2, z0 + 2, w - 4, h - 4);
-    const ikon = PLAN_IKON[p.typ] || (p.typ.startsWith('skrivare') ? '🖨️' : '▫️');
-    c.setLineDash([]); c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#fff';
-    if (h > 34 && w > 30) { c.font = `${Math.min(26, h * 0.4)}px system-ui`; c.fillText(ikon, x0 + w / 2, z0 + h / 2); }
-    c.globalAlpha = 1;
-  };
-  for (const p of svaga) if (p !== nasta) ruta(p, false);
-  // en textrad för linjerna som har börjat
-  c.font = 'bold 19px system-ui'; c.textAlign = 'left';
-  for (const l of PLAN.LINJER) {
-    if (l.kapitel > kap || (l.nr === 1 && !S.skrivareStar)) continue;
-    const t = `${l.nr} · ${l.namn}`;
-    c.fillStyle = 'rgba(0,0,0,.45)'; const tw = c.measureText(t).width; c.fillRect(X(-19.4) - 6, Z(l.z - 1.75) - 13, tw + 12, 26);
-    c.fillStyle = l.farg; c.fillText(t, X(-19.4), Z(l.z - 1.75));
-  }
-  if (nasta) {
-    // punkt BA: nästa plats visas som en ritning av maskinen (uppdateraRitning) – här bara texten
-    const t = nasta.text || 'Här'; c.font = 'bold 16px system-ui'; c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle';
-    const tx = Math.max(c.measureText(t).width / 2 + 4, Math.min(X(nasta.x), planCanvas.width - c.measureText(t).width / 2 - 4)), tz = Z(nasta.z + nasta.d / 2 + 0.45);
-    c.fillStyle = 'rgba(0,0,0,.5)'; c.fillRect(tx - c.measureText(t).width / 2 - 6, tz - 12, c.measureText(t).width + 12, 24); c.fillStyle = '#fff'; c.fillText(t, tx, tz);
-  }
-  planTex.needsUpdate = true;
+  // punkt BA (rättelse): gården visar ingen plan längre – bara nästa maskin som ritning (uppdateraRitning) och den gula rutan
+  // när man håller maskinen. Hela planen finns i Fabriksplanen i dagboken.
+  if (planNyckel === 'tom') return; planNyckel = 'tom';
+  planCanvas.getContext('2d').clearRect(0, 0, planCanvas.width, planCanvas.height); planTex.needsUpdate = true;
 }
 // ---------- Punkt BA: ritningen – nästa maskin som vita, lite skakiga linjer på sin plats ----------
 // Ingen solid modell syns förrän den är köpt och utställd. Då "printas" den fram ur ritningen nerifrån och upp (RITNING_PRINT_TID s).
@@ -10086,13 +10058,19 @@ function byggRitning(objekt) {
 function ritningMal() {
   if (S.skrivareLastad && !S.skrivareStar) return ['skrivareS', () => [gammal, ladGrupp]];
   if (S.cykelOmbyggd && !S.kvarnStar) return ['kvarn', () => [kvarn, ...(extruder.parent && extruder.parent !== kvarn ? [extruder] : [])]];
-  const pl = planNasta() || (() => {   // dagsmålet pekar på en maskin som inte är köpt än
-    const st = STEG[S.steg], b = st && !st.sov ? (typeof st.bild === 'function' ? st.bild() : st.bild) : null;
-    return b && b.startsWith('byggsats:') && fabrikSak(b.slice(9)) ? nastaPlats(b.slice(9)) : null;
+  // [plats, maskin]: det du håller, annars den första maskinen i dagens mål som inte är utställd (så syns en ny linjes första maskin när kapitlet börjar)
+  const valt = (() => { const t = valdTyp(), typ = t && arPlacerbar(t) ? placeringsTyp(t) : null; return typ && fabrikSak(typ) ? [nastaPlats(typ), typ] : null; })();
+  const fran = valt || (() => {
+    const del = STEG[S.steg]?.del;
+    for (let i = S.steg; i < STEG.length && STEG[i].del === del; i++) {
+      const st = STEG[i]; if (st.sov) break; let b = null; try { b = typeof st.bild === 'function' ? st.bild() : st.bild; } catch {}
+      if (b && b.startsWith('byggsats:') && fabrikSak(b.slice(9))) { const p2 = nastaPlats(b.slice(9)); if (p2) return [p2, b.slice(9)]; }
+    }
+    return null;
   })();
-  if (!pl || platsFylld(pl) || ['kvarn', 'extruder', 'container', 'spolhallare', 'cykel'].includes(pl.typ) && pl.linje === 1) return null;
-  const typ = pl.typ.startsWith('skrivare') && !SKRIVARTYP[pl.typ] ? null : pl.typ;
-  if (!typ || !(MASKINER[typ] || SKRIVARTYP[typ])) return null;
+  if (!fran) return null;
+  const [pl, typ] = fran;
+  if (!pl || platsFylld(pl) || !(MASKINER[typ] || SKRIVARTYP[typ])) return null;
   return [typ + '@' + pl.id, () => { const m = SKRIVARTYP[typ] ? skapaSkrivare(SKRIVARTYP[typ]) : skapaMaskin(typ); m.position.set(pl.x, 0, pl.z); m.updateMatrixWorld(true); return [m]; }];
 }
 function uppdateraRitning(dt) {
