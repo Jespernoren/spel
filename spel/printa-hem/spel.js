@@ -3937,10 +3937,10 @@ function sov() {
     while (S.steg < STEG.length && STEG[S.steg].klar()) S.steg++;
     const nasta = STEG[S.steg];
     if (nasta?.startPost && !S.lappar.includes(nasta.startPost)) { S.post.lapp = nasta.startPost; visaPostInne(); }
-    const del = nasta?.del || 'Fritt bygge';
+    const del = nasta?.del || (S.julFirad ? 'Efterspelet' : 'Fritt bygge');
     const ig = S.igar, rapport = ig ? `<span class="br-rapport">Igår: ${ig.printat} printat · ${ig.salt} sålt${ig.flask ? `<br>Flaskhals: ${ig.flask}${ig.fix ? ` → ${ig.fix}` : ''}` : ''}</span>` : '';
     const hoger = `${aliVillHtml()}${rapport}${[2, 4].includes(S.dag) && !(S.betygDag || []).includes(natt) ? snabbBetygHtml(natt) : ''}`;
-    ui.visaStart(`☀️ Dag ${S.dag}`, `<div class="br-morgon${hoger ? '' : ' en'}"><div class="br-morgon-v"><b>${del.replace(/^Dag \d+ – /, '')}</b>${dagensMalHtml(nasta?.del)}</div>${hoger ? `<div class="br-morgon-h">${hoger}</div>` : ''}</div>`, 'Börja dagen');
+    ui.visaStart(`☀️ Dag ${S.dag}`, `<div class="br-morgon${hoger ? '' : ' en'}"><div class="br-morgon-v"><b>${del.replace(/^Dag \d+ – /, '')}</b>${nasta ? dagensMalHtml(nasta.del) : S.julFirad ? efterspelHtml() : ''}</div>${hoger ? `<div class="br-morgon-h">${hoger}</div>` : ''}</div>`, 'Börja dagen');
     kopplaSnabbBetyg(natt);
     const vanta = setInterval(() => { if (!ui.igang) return; clearInterval(vanta); const f = morgonKo; morgonKo = null; if (f) setTimeout(f, 2500); }, 300);
   }, 5500);
@@ -6496,6 +6496,7 @@ function stegKonkret(st) {
 // när nästa handling är själva målet: en kort förklaring av hur man gör (vem/var)
 function nuTips(t) {
   if (/adresskylt/.test(t)) { const d = Math.round(Math.hypot(VAG_SKYLT.x - spelare.pos.x, VAG_SKYLT.z - spelare.pos.z)); return d > 4 ? `Brädhögen ligger vid vägen · ${d} m – följ den gula pilen` : 'Klicka på brädhögen'; }
+  if (/^Efterspelet/.test(t)) return /allt är klart/.test(t) ? 'Tippen på tid finns under Dagbok → Spelet' : 'Mark köper du på tavlan vid vägen · prototyper hos Ali';
   if (/Tänd skylten/.test(t)) return 'Skylten står vid vägen – klicka på den';
   if (/Öppna dörren/.test(t)) return S.flyttatIn ? 'Kransen sitter på husets dörr – klicka på den' : 'Kransen sitter på skjulets dörr – klicka på den';
   if (/Trimma/.test(t)) return 'Hos Ali: hyllan Fabriken → Trimning';
@@ -7691,8 +7692,8 @@ function uppdatera(dt) {
   // HUD
   // efter kapitel 2 tar det aldrig slut: nästa trivselmål ligger alltid 100 bort
   const evigtMal = Math.ceil((trivsel() + 1) / 100) * 100;
-  malRaw = S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? `Bli folkbokförd: tomten du bor på + ett riktigt hus (${['egen', 'huset'].filter(agerMark).length}/2) – tavlan vid vägen` : S.steg < STEG.length ? rens(stegText(STEG[S.steg])) : `Nästa mål: trivsel ${trivsel()}/${evigtMal} · trimma maskinerna hos Ali eller ta Rolfs jobb`;
-  malDel.textContent = (S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? 'Slutmålet' : S.steg < STEG.length ? (`Kapitel ${kapitelNu()} · ` + STEG[S.steg].del) : S.folkbokford ? 'Folkbokförd · fritt bygge' : 'Oändligt bygge').toUpperCase();
+  malRaw = S.julFirad && S.steg >= STEG.length ? (efterspelKvar()[0] ? `Efterspelet · kvar: ${efterspelKvar().slice(0, 2).join(', ')}${efterspelKvar().length > 2 ? ' …' : ''}` : 'Efterspelet · allt är klart – bygg fritt eller kör Tippen på tid') : S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? `Bli folkbokförd: tomten du bor på + ett riktigt hus (${['egen', 'huset'].filter(agerMark).length}/2) – tavlan vid vägen` : S.steg < STEG.length ? rens(stegText(STEG[S.steg])) : `Nästa mål: trivsel ${trivsel()}/${evigtMal} · trimma maskinerna hos Ali eller ta Rolfs jobb`;
+  malDel.textContent = (S.julFirad && S.steg >= STEG.length ? 'Efterspelet' : S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? 'Slutmålet' : S.steg < STEG.length ? (`Kapitel ${kapitelNu()} · ` + STEG[S.steg].del) : S.folkbokford ? 'Folkbokförd · fritt bygge' : 'Oändligt bygge').toUpperCase();
   if (STEG[S.steg]?.sov && !kvallKlar()) { malRaw = `Dagens mål är klara! Bygg, printa och sälj fritt – det blir kväll om ${Math.max(1, Math.ceil((MIN_VAKEN - (S.vakenTid || 0)) / 60))} min.`; }
   if (!S.skyltUppe && S.steg <= 1) { malDel.textContent = 'KAPITEL 1 · ETT HEM ATT BO I'; malRaw = 'Spika upp din adresskylt'; }
   ritaNasta();
@@ -7893,7 +7894,9 @@ function kopMark(id) {
   andraRespekt(id === 'egen' ? 10 : id === 'rolfhus' ? 25 : id === 'huset' ? 15 : 5, id === 'egen' ? 'Äger din egen mark' : id === 'rolfhus' ? 'Byggde ett hus åt Rolf' : 'Köpte ' + t.namn.toLowerCase());
   if (id === 'huset') { uppdateraHinder(); setTimeout(() => sms('mamma', 'Pappa säger att du har byggt ett HUS. Med TRAPPA. Är det säkert?? Har du räcke?? Jag skickar en brandvarnare. Och sylt.'), 9000); }
   ui.toast(id === 'huset' ? '🏡 Huset står klart på ängen! Två rum och en trappa upp till sovloftet.' : id === 'rolfhus' ? '🏠 Rolf har ett riktigt hus! Garaget står vid tippen.' : id === 'tippen' ? '🗑️ Tippen är din. Rolf kör åt dig nu.' : id === 'egen' ? '🏡 Du äger marken du bor på! Inte längre en hobo dweller.' : `🌲 ${t.namn} är din! Gärdesgården har flyttats – där får du ställa saker nu.`, 'guld');
-  setTimeout(() => sms('rolf', ROLF_MARK[id]), 2500);
+  if (id !== 'norr' || !S.julFirad) setTimeout(() => sms('rolf', ROLF_MARK[id]), 2500);
+  if (id === 'norr' && S.julFirad) setTimeout(() => visaBengt('HMPF. Backen. Den är brant. Den passar er.'), 1500);
+  if (id === 'rolfhus') { S.tippgodsagare = true; if (S.tradgard?.rosor) S.tradgard.rosorFlyttade = true; setTimeout(() => { kollaSkylt(); ritaRolfRosor(); }, 3000); }
   if (id === 'egen') setTimeout(() => sms('mamma', 'Pappa säger att du har KÖPT MARK?! Hur?? Vems?? Har du skrivit på något?? Skicka papperen till mig så läser jag.'), 9000);
   sparaSnart();
 }
@@ -8382,6 +8385,42 @@ setInterval(() => {
     setTimeout(() => sms('rolf', rolfFyndSms(4)), 800); sparaSnart();
   }
 }, 2500);
+// ---------- Punkt U: efterspelet (dag 23+) ----------
+// Inga dagsmål. Morgonkortet och remsan visar vad som finns kvar. Bengt-Åke säljer resten av marken, chefen erbjuder soptippen,
+// Rolfs hus byggs på tippkanten – Rolf flyttar in med Birgittas rosor och Kajsa → Tippgodsägare och skylten v6.
+const U_REPLIK = { chefen: ['chefen', 'Chefen. Soptippen är till salu. Någon har föreslagit dig. Det var inte jag. Inga böter.'] };
+function efterspelKvar() {
+  const kvar = [];
+  for (const id of ['norr', 'tippkant', 'tippen', 'rolfhus']) { if (!agerMark(id)) kvar.push({ norr: 'backen i norr', tippkant: 'marken runt tippen', tippen: 'Rolfs soptipp', rolfhus: 'ett hus åt Rolf och Kajsa' }[id]); }
+  const proto = Object.entries(VAROR).filter(([id, v]) => v.proto && !(S.proto || []).includes(id)).length; if (proto) kvar.push(`${proto} prototyper hos Ali`);
+  const pol = POLAROID.length - (S.polaroid || []).length; if (pol > 0) kvar.push(`${pol} polaroider`);
+  return kvar;
+}
+function efterspelHtml() {
+  const k = efterspelKvar();
+  return `<ul class="ph-efter">${(k.length ? k : ['Ingenting. Allt är ditt.']).map((x) => `<li>${rens(x[0].toUpperCase() + x.slice(1))}</li>`).join('')}<li>Tippen på tid (Dagbok → Spelet)</li></ul>`;
+}
+// Birgittas rosor på Rolfs veranda när han flyttat in
+const rolfRosor = new THREE.Group();
+function ritaRolfRosor() {
+  rolfRosor.clear(); if (!S.tradgard?.rosorFlyttade || !agerMark('rolfhus')) return;
+  for (let i = 0; i < 3; i++) { const kr = cyl(0.14, 0.11, 0.24, mat(0x9a5a3a), 10); kr.position.set(i * 0.45, 0.12, 0); rolfRosor.add(kr); rolfRosor.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 6), mat(0x3f7a3a)), i * 0.45, 0.38, 0)); for (let j = 0; j < 3; j++) rolfRosor.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 5), mat(0xc8213a)), i * 0.45 + Math.cos(j * 2) * 0.12, 0.48, Math.sin(j * 2) * 0.12)); }
+  if (!rolfRosor.parent) { rolfHus.add(rolfRosor); rolfRosor.position.set(-1.0, 0.3, 5.2); }
+}
+function kollaEfterspel() {
+  if (!S.julFirad || !ui.igang || sover || pausad) return;
+  if (S.dag >= 23 && !S.chefenTipp && !agerMark('tippen')) { S.chefenTipp = true; sparaSnart(); sms(...U_REPLIK.chefen); }
+  if (agerMark('rolfhus') && !S.tippgodsagare) { S.tippgodsagare = true; sparaSnart(); kollaSkylt(); }
+  if (S.tradgard?.rosorFlyttade && !rolfRosor.children.length) ritaRolfRosor();
+}
+setInterval(kollaEfterspel, 3000);
+// testkrok: __printahem.efterspel() hoppar till dag 23 med julen firad
+function efterspelTest() {
+  S.dag = Math.max(23, S.dag); S.kapitel = 4; S.folkbokford = true; S.julFirad = true; S.julSlutVisad = true; S.steg = STEG.length;
+  for (const id of ['egen', 'oster', 'huset']) if (!agerMark(id)) S.mark.agt.push(id);
+  S.flyttatIn = true; uppdateraMark(); sparaSnart(); return efterspelKvar();
+}
+{ const st = document.createElement('style'); st.textContent = '.ph-efter{margin:8px 0 0 18px;padding:0;text-align:left;font:500 15px/1.5 system-ui}'; document.head.appendChild(st); }
 // ---------- Punkt O: Jul på Soptippsvägen 1 (finalen, dag 22) ----------
 // Tre mål: printa julbordet, tänd skylten, öppna dörren. Sedan gästerna, scenen, sista polaroiden – och mammas brev på kvällen.
 let julPagar = false;
@@ -8716,7 +8755,7 @@ const rolfVagn = new THREE.Group(), tradgard = new THREE.Group();
 }
 function ritaTradgard() {
   const T = S.tradgard || {};
-  const nyckel = [T.spalje, T.vatten, T.vaxthus, T.rosor, T.rensad].map(Number).join('');
+  const nyckel = [T.spalje, T.vatten, T.vaxthus, T.rosor, T.rensad, T.rosorFlyttade].map(Number).join('');
   if (tradgard.userData.n === nyckel) return; tradgard.userData.n = nyckel;
   for (const o of [...tradgard.children]) tradgard.remove(o);
   const jord = mat(0x5b4330), ram = mat(0x7a5a3a);
@@ -8733,7 +8772,7 @@ function ritaTradgard() {
     const x = -1.2 + i * 0.6, z = -0.75;
     if (!T.vatten) { tradgard.add(at(box(0.03, 0.5, 0.03, mat(0x5a4a35)), x, 0.37, z)); continue; }
     tradgard.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 6), mat(0x3f7a3a)), x, 0.4, z));
-    if (T.rosor) for (let j = 0; j < 4; j++) tradgard.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 5), mat(0xc8213a)), x + Math.cos(j * 1.7) * 0.16, 0.5 + (j % 2) * 0.1, z + Math.sin(j * 1.7) * 0.16));
+    if (T.rosor && !T.rosorFlyttade) for (let j = 0; j < 4; j++) tradgard.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 5), mat(0xc8213a)), x + Math.cos(j * 1.7) * 0.16, 0.5 + (j % 2) * 0.1, z + Math.sin(j * 1.7) * 0.16));
   }
   if (T.vatten) { // gurkplantor och en printad slang med droppare
     for (let i = 0; i < 4; i++) tradgard.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.13, 7, 5), mat(0x5aa04a)), -1.1 + i * 0.7, 0.22, 0.45));
@@ -9050,7 +9089,7 @@ function uppdateraLiv(dt) {
   if (bengt.visible && nu > bengtSynsTill) bengt.visible = false;
 }
 S.upprepaVald = true;   // issue #18: gamla sparfiler fick upprepa AV en gång (i skrivarnas laddning ovan)
-window.__printahem = { jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { efterspel: efterspelTest, efterspelKvar, kopMark, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 

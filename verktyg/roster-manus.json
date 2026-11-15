@@ -5379,34 +5379,40 @@
   "var": "SKYLT_REPLIK"
  },
  {
+  "id": "chefen-77b78d17",
+  "figur": "chefen",
+  "text": "Chefen. Soptippen är till salu. Någon har föreslagit dig. Det var inte jag. Inga böter.",
+  "var": "U_REPLIK"
+ },
+ {
   "id": "rolf-41b20d00",
   "figur": "rolf",
   "text": "Rolf och Kajsa",
-  "var": "JUL_REPLIK"
+  "var": "U_REPLIK"
  },
  {
   "id": "ali-eff0894a",
   "figur": "ali",
   "text": "Ali (och hans fru)",
-  "var": "JUL_REPLIK"
+  "var": "U_REPLIK"
  },
  {
   "id": "bror-a305e15f",
   "figur": "bror",
   "text": "Storebror",
-  "var": "JUL_REPLIK"
+  "var": "U_REPLIK"
  },
  {
   "id": "mamma-8768ad54",
   "figur": "mamma",
   "text": "Mamma",
-  "var": "JUL_REPLIK"
+  "var": "U_REPLIK"
  },
  {
   "id": "pappa-4ddc3c61",
   "figur": "pappa",
   "text": "Pappa",
-  "var": "JUL_REPLIK"
+  "var": "U_REPLIK"
  },
  {
   "id": "mamma-148ebf0b",
