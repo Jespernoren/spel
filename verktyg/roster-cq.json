@@ -1,0 +1,30 @@
+[
+ {
+  "id": "pappa-8c73fc7d",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Tjenare. Här bor du alltså.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [clears throat] Tjenare. Här bor du alltså.",
+  "hand": false
+ },
+ {
+  "id": "pappa-c1dfa9cf",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Säckkärra. Den var på rea.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Säckkärra. Den var på rea. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "berattare-aa589ade",
+  "figur": "berattare",
+  "rost": "berattare",
+  "var": "Berättaren läser målen",
+  "visad": "Städa gården. Sopbilen brukar köra förbi vid den här tiden.",
+  "skickas": "[warm storyteller, calm] Städa gården. Sopbilen brukar köra förbi vid den här tiden.",
+  "hand": false,
+  "speed": 1.1
+ }
+]

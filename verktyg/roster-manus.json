@@ -1021,9 +1021,9 @@
   "var": "Haggan Helen i efterspelet (punkt AN)"
  },
  {
-  "id": "pappa-e7117567",
+  "id": "pappa-8c73fc7d",
   "figur": "pappa",
-  "text": "Tjenare. Jaha. Här bor du alltså.",
+  "text": "Tjenare. Här bor du alltså.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1039,39 +1039,15 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "du-cce17dc1",
-  "figur": "du",
-  "text": "Mamma är jätteorolig.",
-  "var": "Pappas besök (med Rolf första gången)"
- },
- {
-  "id": "pappa-d8ecc3e6",
+  "id": "pappa-c1dfa9cf",
   "figur": "pappa",
-  "text": "Jaha. Hon har alltid nåt.",
-  "var": "Pappas besök (med Rolf första gången)"
- },
- {
-  "id": "pappa-24a2235b",
-  "figur": "pappa",
-  "text": "Mm. Mamma skickade burkar. Och så köpte jag en sak på rea.",
-  "var": "Pappas besök (med Rolf första gången)"
- },
- {
-  "id": "pappa-f718655c",
-  "figur": "pappa",
-  "text": "Säckkärra. Vi har inga tunnor hemma. Den var billig.",
+  "text": "Säckkärra. Den var på rea.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
   "id": "du-1420185c",
   "figur": "du",
   "text": "…Tack?",
-  "var": "Pappas besök (med Rolf första gången)"
- },
- {
-  "id": "pappa-602e1e0f",
-  "figur": "pappa",
-  "text": "Mm.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1108,12 +1084,6 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-b83f4505",
-  "figur": "pappa",
-  "text": "Snygg.",
-  "var": "Pappas besök (med Rolf första gången)"
- },
- {
   "id": "rolf-c0ef3beb",
   "figur": "rolf",
   "text": "Hörru.. Mä en sån kan du ta tunnorna på tippen. Dôm ä av den hårda plasten. Den röda. Den klarar int en köttkvarn.",
@@ -1137,12 +1107,6 @@
   "figur": "rolf",
   "text": "Tjo. Ja ställer tunnorna vid grinden när ja tömmer. Du får dôm.",
   "kalla": "Ja ställer tunnorna vid grinden när ja tömmer. Du får dom.",
-  "var": "Pappas besök (med Rolf första gången)"
- },
- {
-  "id": "pappa-91c39a89",
-  "figur": "pappa",
-  "text": "Ja ska åka. Mamma undrar.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1480,30 +1444,6 @@
   "figur": "pappa",
   "text": "Mamma hälsar. Typ.",
   "var": "Pappas besök (med Rolf första gången)"
- },
- {
-  "id": "pappa-0d92e3f6",
-  "figur": "pappa",
-  "text": "Mamma undrar om du lever. Ja sa ja. Stämmer de?",
-  "var": "Sms med svarsalternativ och småprat"
- },
- {
-  "id": "pappa-b3d5ecf1",
-  "figur": "pappa",
-  "text": "Mamma sa att ja skulle skriva. Nu har ja skrivit.",
-  "var": "Sms med svarsalternativ och småprat"
- },
- {
-  "id": "pappa-663437af",
-  "figur": "pappa",
-  "text": "OK.",
-  "var": "Sms med svarsalternativ och småprat"
- },
- {
-  "id": "pappa-24d52506",
-  "figur": "pappa",
-  "text": "Hur skriver man å på denna",
-  "var": "Sms med svarsalternativ och småprat"
  },
  {
   "id": "mamma-54dd7582",
@@ -2043,12 +1983,6 @@
   "id": "mamma-1a7f2d2c",
   "figur": "mamma",
   "text": "Pappa hälsar. Han sa inte det, men jag såg på honom att han ville.",
-  "var": "Familjens sms dag för dag"
- },
- {
-  "id": "pappa-640ec13f",
-  "figur": "pappa",
-  "text": "Hej. Mamma sa att jag skulle skriva. Så. Hej. Allt bra? /Pappa",
   "var": "Familjens sms dag för dag"
  },
  {
@@ -3365,9 +3299,9 @@
   "var": "Lappar, brev och dagbok"
  },
  {
-  "id": "du-eafc4b0f",
+  "id": "du-cf6ac934",
   "figur": "du",
-  "text": "Det börjar kännas som ett hem. På riktigt. Pappa ska visst komma förbi.",
+  "text": "Lampan lyser. Pappa ska visst komma förbi i morgon.",
   "var": "Lappar, brev och dagbok"
  },
  {
@@ -3557,9 +3491,9 @@
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-c6d0b803",
+  "id": "berattare-aa589ade",
   "figur": "berattare",
-  "text": "Rolf slängde en sopsäck över grinden. Plocka upp den.",
+  "text": "Städa gården. Sopbilen brukar köra förbi vid den här tiden.",
   "var": "Berättaren läser målen"
  },
  {
@@ -3644,6 +3578,12 @@
   "id": "du-e1b3b151",
   "figur": "du",
   "text": "Den här är för tung för lilla kvarnen.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-3325e41a",
+  "figur": "du",
+  "text": "Vad var det som flög över grinden?",
   "var": "Dina tankar, tips och varningar"
  },
  {

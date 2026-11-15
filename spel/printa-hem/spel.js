@@ -260,7 +260,7 @@ const nastaInred = () => {
   const ej = Object.keys(VAROR).filter((g) => VAROR[g].lyx && VAROR[g].syns?.() !== false && !placerade.some((p) => p.typ === g)); return ej.find((g) => antalInv(g) || skrivare.some((x) => x.klar === g || x.jobb?.typ === g) || harRecept(g)) || ej.filter((g) => storlekFor(g) <= storstaSkrivare()).sort((a, b) => (VAROR[a].recept || 0) - (VAROR[b].recept || 0))[0] || null; };
 // CK: målsaker går att köpa först när målet är aktivt (eller redan passerat)
 const malAktiv = (id) => { const i = STEG.findIndex((x) => x.id === id); return i >= 0 && S.steg >= i; };
-const mysigtText = () => { const t = trivsel(); if (t >= TRIVSEL_MAL && !S.hem?.taklampa) return 'Sätt upp taklampan i skjulet'; return `Gör det mysigt · trivsel ${t}/${TRIVSEL_MAL}`; };
+const mysigtText = () => { const t = trivsel(); if (t >= TRIVSEL_MAL && !S.hem?.taklampa) return 'Sätt upp taklampan i skjulet'; if (S.hem?.taklampa && t < TRIVSEL_MAL) return `Lite till – gör det mysigt · trivsel ${t}/${TRIVSEL_MAL}`; return `Gör det mysigt · trivsel ${t}/${TRIVSEL_MAL}`; };
 const gamerSaker = () => placerade.filter((p) => GAMER.includes(p.typ)).length;
 const harRecept = (id) => !VAROR[id]?.recept || S.ritningar.includes('recept:' + id);
 // Maskiner: köp ritningen hos Ali, printa delarna, bygg ihop
@@ -476,7 +476,7 @@ const LAPPAR = {
   sol: ['📔 Dagbok', 'Slut på trampandet. Nästan.'],
   petg: ['📔 Dagbok', 'Tunnorna och kajakerna är för tunga för min lilla kvarn. Men Ali har en röd kvarn för sånt – PETG. Röd plast. Och en röd skrivare som bara äter den. Två fabriker. Jag har två fabriker. Snart.'],
   skrivare2: ['📱 Storebror', 'VA?! Du har byggt en skrivare TILL?? Du har typ en printfarm nu. Okej. Det är faktiskt ganska ballt. 🔥'],
-  klart: ['📔 Dagbok', 'Det börjar kännas som ett hem. På riktigt. Pappa ska visst komma förbi.'],
+  klart: ['📔 Dagbok', 'Lampan lyser. Pappa ska visst komma förbi i morgon.'],   // CL: själva repliken sägs när lampan tänds
   gard: ['📔 Dagbok', 'Gården är STÄDAD. Av mig. Frivilligt. Mamma skulle aldrig tro det.'],
 };
 
@@ -561,7 +561,7 @@ const STEG_TAL = {
   flaska: 'Plocka en flaska, lägg den i kvarnen och veva. Då blir det en hel rulle.',
   kopGrip: 'Köp en skräpgrip hos Ali. Den kostar femtio kronor.',
   printGrip: 'Printa skräpgripen på skrivaren.',
-  kopSack: 'Rolf slängde en sopsäck över grinden. Plocka upp den.',
+  kopSack: 'Städa gården. Sopbilen brukar köra förbi vid den här tiden.',   // CH: sägs innan Rolfs sopsäck kommer
   kruka: 'Ali har ett recept åt dig. Printa en blomkruka.',
   ryggkorg: 'Bygg ryggkorgen. Då bär du tio saker.',
   pall: 'Köp receptet till pallen hos Ali och printa en.',
@@ -625,8 +625,8 @@ const STEG = [
   ...rolfSteg(3, N4),
   { del: N4, bild: 'byggsats:vaggar', text: () => `Isolera de sista väggarna · ${S.hem?.vagg || 0}/4`, klar: () => S.hem?.vaggar || (S.hem?.vagg || 0) >= 4 || S.dag > 5 },
   { id: 'lampskarm', del: N4, bild: 'lampskarm', text: 'Printa en lampskärm att sälja', klar: () => printat('lampskarm') >= 1 || (S.saltTot?.lampskarm || 0) >= 1 || harPlacerat('lampskarm') },   // CF: ett nytt recept som gör M meningsfull
-  { id: 'mysigt', del: N4, bild: () => nastaInred(), text: () => mysigtText(), klar: () => trivsel() >= TRIVSEL_MAL && (!!S.hem?.taklampa || !!S.lampaFinal), lapp: 'klart' },   // CL: taklampan är finalen
-  { ...sovSteg(5, N4), k1Slut: true, sms: ['pappa', 'Kommer förbi i morgon. Mamma skickar burkar. /Pappa'] },   // CM: förvarning kvällen före   // B50: kapitel 1 slutar med telefonscenen och sömnen – kapitel 2 börjar morgonen dag 6
+  { id: 'mysigt', del: N4, bild: () => nastaInred(), text: () => mysigtText(), klar: () => !!S.lampaFinal || !!S.kapitelKlart, lapp: 'klart' },   // CL: taklampan är finalen
+  { ...sovSteg(5, N4), k1Slut: true, sms: ['mamma', 'Pappa kommer förbi i morgon. Han säger inget men han vill. ❤️'] },   // CM/CQ: förvarning kvällen före – pappa sms:ar aldrig själv   // B50: kapitel 1 slutar med telefonscenen och sömnen – kapitel 2 börjar morgonen dag 6
   // ---------- Kapitel 2 – Röda fabriken (dag 6–10) ----------
   { id: 'pappa6', del: R6, text: () => pappaBesok.fas === 'vantar' || pappaBesok.fas === 'kommer' ? 'Hälsa på pappa vid grinden' : pappaBesok.aktiv ? 'Prata med pappa' : 'Pappa kommer förbi idag', klar: () => !!S.pappaBesok || S.dag > 6 },   // CM
   { del: R6, bild: 'sackkarra', text: 'Lyft en tunna med säckkärran', klar: () => (S.stat.tunga || 0) >= 1 },
@@ -3871,7 +3871,7 @@ function uppdateraPetg(dt) {
 const TANKE_UTANFOR = 'Den här måste stå i linjen vid kvarnen, annars når inte slangen.';
 const ALI_KANNA = 'Rolf gav mig en kanna. Som min farmors. Jag ritade en sak åt honom. Säg inget, han gråter lätt.';   // CH
 const ALI_RODKVARN = 'Den röda? Jag har aldrig vågat starta den. Ta den. Starta den långt bort från mig.';   // CM
-const TANKAR_NYA = ['En sopsäck. Från sopbilen. Logiskt.', 'Ali ritar åt Rolf. Rolf ritar inte. Det förklarar saken.', 'Lite närmare.', 'Den här är för tung. Jag behöver nåt med större hjul.', 'Säckkärran är för tunga saker. Skräpet tar jag med händerna.', 'Det börjar kännas som ett hem. På riktigt.'];   // CH, CJ, CL, CM
+const TANKAR_NYA = ['Vad var det som flög över grinden?', 'En sopsäck. Från sopbilen. Logiskt.', 'Ali ritar åt Rolf. Rolf ritar inte. Det förklarar saken.', 'Lite närmare.', 'Den här är för tung. Jag behöver nåt med större hjul.', 'Säckkärran är för tunga saker. Skräpet tar jag med händerna.', 'Det börjar kännas som ett hem. På riktigt.'];   // CH, CJ, CL, CM
 const TANKAR_INLINE = ['Det får inte plats. Jag behöver något att tippa i.', 'Den här är för tung för lilla kvarnen.'];
 function iTratten(gram, tung) {
   if (!S.kvarnStar) return false;   // B23: kvarnen och tratten finns inte i världen före köpet
@@ -5484,19 +5484,17 @@ function bubbla(grupp, text) {
 // Pappa: matt, taktlös och oberörd. Punkt, inte utropstecken. Stockholmstalspråk med högst ett slangord per replik. Byter ämne till Scania, Djurgården, F1, rea.
 // "Aha, vad lugnt då!" bara när någon just sagt något känslosamt – högst en gång per besök (se claude/soptippsvagen-pappa-repliker.md).
 // CM: första besöket öppnar kapitel 2 – hälsningen och burkarna, säckkärran, sedan kommer Rolf och berättar om den röda kvarnen
-const PAPPA_SCEN = [
-  ['pappa', 'Tjenare. Jaha. Här bor du alltså.', 'du'], ['du', 'Pappa … jag bor på en soptipp.'], ['pappa', 'Aha, vad lugnt då.', 'du'],
-  ['du', 'Mamma är jätteorolig.'], ['pappa', 'Jaha. Hon har alltid nåt.', 'du'],
-  ['pappa', 'Mm. Mamma skickade burkar. Och så köpte jag en sak på rea.', 'burkar'],
-  ['pappa', 'Säckkärra. Vi har inga tunnor hemma. Den var billig.', 'sackkarra'], ['du', '…Tack?'], ['pappa', 'Mm.'],
+const PAPPA_SCEN = [   // CQ: högst 6 repliker från pappa, högst ca 6 ord – han visar med det han gör
+  ['pappa', 'Tjenare. Här bor du alltså.', 'du'], ['du', 'Pappa … jag bor på en soptipp.'], ['pappa', 'Aha, vad lugnt då.', 'burkar'],
+  ['pappa', 'Säckkärra. Den var på rea.', 'sackkarra'], ['du', '…Tack?'],
   ['rolf', null, 'kommer'],
   ['rolf', 'ÖJ! Vem är du då?', 'pappa'], ['pappa', 'Pappan.', 'rolf'], ['rolf', 'Jaså. Rolf. Ja kör bilen.', 'pappa'],
-  ['pappa', 'Scania. Trettiotvåa?', 'rolf'], ['rolf', 'Tjugoåtta. Men hon går som en klocka.', 'pappa'], ['pappa', 'Snygg.', 'rolf'],
+  ['pappa', 'Scania. Trettiotvåa?', 'rolf'], ['rolf', 'Tjugoåtta. Men hon går som en klocka.', 'pappa'],
   ['rolf', 'Hörru. Me en sån kan du ta tunnorna på tippen. Dom är av den hårda plasten. Den röda. Den klarar inte en köttkvarn.', 'du'],
   ['du', 'Var får man en kvarn som klarar den då?'],
-  ['rolf', 'Ali har en röd kvarn längst in i lagret. Han har aldrig vågat starta den.', 'du'], ['pappa', 'Aha. Vad lugnt då.'],
+  ['rolf', 'Ali har en röd kvarn längst in i lagret. Han har aldrig vågat starta den.', 'du'],
   ['rolf', 'Ja ställer tunnorna vid grinden när ja tömmer. Du får dom.', 'tunnor'],
-  ['pappa', 'Ja ska åka. Mamma undrar.', 'du'], ['pappa', 'Mm. Hej då då.', 'du'],
+  ['pappa', 'Mm. Hej då då.', 'du'],
 ];
 // senare besök: pappa kommer ensam, kuckelurar lite, ställer ner burkar och bladar
 const PAPPA_KORT = [
@@ -5837,11 +5835,11 @@ function rolfSackKoll(dt) {
     sackFlyg = Math.min(1, sackFlyg + dt / 1.3); const t = sackFlyg;
     sackRulle.position.lerpVectors(SACK_FRAN, SACK_TILL, t); sackRulle.position.y = SACK_FRAN.y * (1 - t) + SACK_TILL.y * t + Math.sin(t * Math.PI) * 3.2;
     sackRulle.rotation.x += dt * 9;
-    if (t >= 1) { sackFlyg = 0; sackRulle.rotation.x = 0; ljud.placera(); textLogg('sopsack', 'rolf', 'Sopsäcken landade på gården'); }
+    if (t >= 1) { sackFlyg = 0; sackRulle.rotation.x = 0; ljud.placera(); textLogg('sopsack', 'rolf', 'Sopsäcken landade på gården'); tanke('Vad var det som flög över grinden?', 'CH: sopsäcken landade', 'STORY'); }
     return;
   }
   if (S.sackLagd) { sackRulle.visible = !S.korg; if (!sackRulle.visible || sackRulle.position.y > 1) sackRulle.position.copy(SACK_TILL); return; }
-  if (S.dag !== 2 || S.korg || S.ryggkorg || !ui.igang || performance.now() - dagStartTid < SMS_TIDIGAST || scenPagar() || kanalPausad()) return;
+  if (S.dag !== 2 || S.korg || S.ryggkorg || !ui.igang || sover || (S.vakenTid || 0) < 35 || performance.now() - dagStartTid < SMS_TIDIGAST || scenPagar() || kanalPausad()) return;
   S.sackLagd = true; sparaSnart(); tuta(); setTimeout(tuta, 600);
   sackRulle.visible = true; sackRulle.position.copy(SACK_FRAN); sackFlyg = 0.0001;
 }
@@ -8333,18 +8331,13 @@ function visaLapp(id) {
 // ---------- Familjen sms:ar: mamma är arg och orolig, pappa skriver bara för att mamma tjatar, storebror bryr sig (men säger det inte) ----------
 const FAMILJ = {
   1: [['mamma', 'HUR KUNDE DU BARA GÅ?!?! Är du ok?? SVARA NÄR JAG RINGER!!'], ['mamma', 'Var är du??'], ['mamma', 'Pappa hälsar. Han sa inte det, men jag såg på honom att han ville.']],
-  2: [['pappa', 'Hej. Mamma sa att jag skulle skriva. Så. Hej. Allt bra? /Pappa'], ['bror', 'Mamma ringde mig fyra gånger förresten. Snyggt jobbat 😂']],   // punkt BD: T0989 borttagen
+  2: [['bror', 'Mamma ringde mig fyra gånger förresten. Snyggt jobbat 😂']],   // punkt BD: T0989 borttagen
 };
 // ---------- Levande sms: varje meddelande kommer bara en gång, en del beror på hur långt du kommit,
 // och på en del kan du svara – svaret styr vad som händer sen ----------
 const SMS_POOL = [
   // mamma: panik i alla former
   // pappa: kan inte riktigt mobilen. Skriver sällan, och nästan bara för att mamma säger åt honom
-  { id: 'p_lever', vem: 'pappa', nar: () => S.dag >= 6, text: 'Mamma undrar om du lever. Ja sa ja. Stämmer de?' },
-  { id: 'p_skrivit', vem: 'pappa', nar: () => S.dag >= 9, text: 'Mamma sa att ja skulle skriva. Nu har ja skrivit.' },
-  { id: 'p_ok', vem: 'pappa', nar: () => S.dag >= 11, text: 'OK.' },
-  { id: 'p_aa', vem: 'pappa', nar: () => S.dag >= 13, text: 'Hur skriver man å på denna' },
-  { id: 'p_tumme', vem: 'pappa', nar: () => S.dag >= 16, text: '👍' },
   { id: 'm_mack', vem: 'mamma', nar: () => S.dag >= 3, text: 'Jag har städat ditt rum. Det tog TRE DAGAR. Jag hittade en macka från i somras. EN MACKA.' },
   { id: 'm_strumpor', vem: 'mamma', nar: () => S.dag >= 9 && S.dag <= 10, text: 'Har du VARMA STRUMPOR?? Det ska bli kallt!!', svar: [['Ja mamma.', 'Bra. Vilka då? De bruna? De bruna har hål. Jag VET att de har hål.'], ['Nej.', 'Jag skickar ett paket. Med strumpor. Och en mössa. Och sju mackor.']] },
   { id: 'm_masar', vem: 'mamma', nar: () => S.dag >= 4, text: 'Jag läste om en man som bodde på en soptipp. Han blev attackerad av måsar. Finns det MÅSAR där??', svar: [['Bara en katt.', 'En KATT?! Är den vaccinerad? Rör den inte. Eller jo. Ge den en macka.'], ['Massor av måsar.', 'JAG KOMMER OCH HÄMTAR DIG. … Pappa vill inte köra. Pappa säger att måsar är ok.']] },
@@ -8942,8 +8935,8 @@ function uppdatera(dt) {
     // punkt AM: planen i marken
     if ((planT -= dt) <= 0) { planT = 0.5; ritaPlan(); }
     { const kNy = kapitelNu(); if (kNy > (S.kapitel || 1)) { const forra = S.kapitel || 1; S.kapitel = kNy; for (let k = forra + 1; k <= kNy; k++) kapitelBorjar(k); } }
-    if (S.steg >= STEG.findIndex((x) => x.k1Slut) && !S.kapitelKlart && !S.lampaFinal) { if (!lampFin) startaLampFinal(); }   // CL: lampan tänds först
-    else if (S.steg >= STEG.findIndex((x) => x.k1Slut) && !S.kapitelKlart) {   // B50: när trivselmålet är klart (före sömnen)
+    if (STEG[S.steg]?.id === 'mysigt' && !S.lampaFinal && !lampFin && S.hem?.taklampa && trivsel() >= TRIVSEL_MAL && kanalLedig() && !kanal.length && !menyOppen()) startaLampFinal();   // CL: lampan tänds först
+    if (S.steg >= STEG.findIndex((x) => x.k1Slut) && !S.kapitelKlart) {   // B50: när trivselmålet är klart (före sömnen)
       S.kapitelKlart = true; document.body.classList.remove('ph-tidig'); andraRespekt(10, 'Byggde en riktig fristad'); S.mynt += KAP1_BELONING; spar.spara(true);   // startkapital till kapitel 2
       setTimeout(() => sms('mamma', `Pappa och jag har lagt undan lite. ${krT(KAP1_BELONING)} kr. Till något fint i ditt HUS. Inte till chips. ❤️ /Mamma`), 9000);
       kapitelSlut();
@@ -10469,8 +10462,8 @@ function uppdateraLampFinal(dt) {
   if (skjulLampa) skjulLampa.intensity = f.tant ? Math.min(f.bas + 10, (f.bas + 10) * Math.min(1, (f.t - 0.9) / 1.6)) : 0;
   if (hemiLjus && f.tant) hemiLjus.intensity = Math.max(0.9, 1.4 - 0.5 * Math.min(1, (f.t - 0.9) / 1.6));   // lite mörkare runt lampan så skenet märks
   if (f.t > 1.6 && f.t < 8.6) spelare.yaw = f.yaw0 + ((f.t - 1.6) / 7) * Math.PI * 2;   // kameran vänder sig runt i skjulet
-  if (f.t >= 8.6 && !f.sagt) { f.sagt = true; lampFin = null; spelare.aktiv = true; tanke('Det börjar kännas som ett hem. På riktigt.', 'CL: finalen');
-    setTimeout(() => { S.lampaFinal = true; sparaSnart(); }, 4500); }
+  if (f.t >= 8.6 && !f.sagt) { f.sagt = true; const t = 'Det börjar kännas som ett hem. På riktigt.'; textLogg('tanke', 'du', t, 'CL: finalen'); notisVisa('💭 ' + t, 'tanke', { tid: 5000 }); prata('du', t); }
+  if (f.t >= 13) { lampFin = null; spelare.aktiv = true; S.lampaFinal = true; sparaSnart(); }
 }
 function kapitelSlut() {
   S.kapVisad = [...new Set([...(S.kapVisad || []), 2])];
