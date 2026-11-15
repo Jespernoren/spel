@@ -3204,6 +3204,54 @@
   "var": "Ali när du printat hans modell"
  },
  {
+  "id": "ali-fa044ca0",
+  "figur": "ali",
+  "text": "Ali här. Du printade min fågelskrämma. Den… FUNKAR? Jag har bara sett såna på YouTube. Okej. Jag gråter inte. Det är damm i butiken.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-517b25dc",
+  "figur": "ali",
+  "text": "fågelskrämma – printad. På riktigt. Jag har visat bilden för min fru tre gånger. Hon säger \"ja ja\".",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-6ed84164",
+  "figur": "ali",
+  "text": "Jag såg din fågelskrämma på avstånd. Strecket på sidan blev lite snett. Mitt fel. Den är vacker ändå.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-ee31e646",
+  "figur": "ali",
+  "text": "Ali här. Ännu en ritning som blev på riktigt: fågelskrämma. Semesterkassan växer. Livet växer.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-a665da56",
+  "figur": "ali",
+  "text": "Ali här. Du printade min fågelbad. Den… FUNKAR? Jag har bara sett såna på YouTube. Okej. Jag gråter inte. Det är damm i butiken.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-2948c87e",
+  "figur": "ali",
+  "text": "fågelbad – printad. På riktigt. Jag har visat bilden för min fru tre gånger. Hon säger \"ja ja\".",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-def8282a",
+  "figur": "ali",
+  "text": "Jag såg din fågelbad på avstånd. Strecket på sidan blev lite snett. Mitt fel. Den är vacker ändå.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-c69da800",
+  "figur": "ali",
+  "text": "Ali här. Ännu en ritning som blev på riktigt: fågelbad. Semesterkassan växer. Livet växer.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
   "id": "ali-aadc570b",
   "figur": "ali",
   "text": "Ali här. Du printade min lampskärm. Den… FUNKAR? Jag har bara sett såna på YouTube. Okej. Jag gråter inte. Det är damm i butiken.",
@@ -4945,17 +4993,17 @@
   "var": "Sms i geRolfNummer"
  },
  {
-  "id": "rolf-88fb116f",
+  "id": "rolf-ac7fdfbd",
   "figur": "rolf",
-  "text": "Nämen. Såg att du slnäger mat i skogen. Smart. Grävlingen äter va som helst. Han heter Göran. /R\n*slänger",
-  "kalla": "Såg att du slänger mat i skogen. Smart. Grävlingen äter vad som helst. Han heter Göran. /R",
+  "text": "Hörru. Såg att du slänger mat i skogen. Smart. Grävlingen äter va som helst. Han heter Bosse. MVH ROLF",
+  "kalla": "Såg att du slänger mat i skogen. Smart. Grävlingen äter vad som helst. Han heter Bosse. /R",
   "var": "Sms i kompostera"
  },
  {
-  "id": "rolf-382e2cda",
+  "id": "rolf-56a9800b",
   "figur": "rolf",
-  "text": "Nämen. Såg att du slänger mat i skogen. Smart. Grävlingen äter va som helst. Han heter Göran. /R",
-  "kalla": "Såg att du slänger mat i skogen. Smart. Grävlingen äter vad som helst. Han heter Göran. /R",
+  "text": "Hörru. Såg att du slänger mat i skogen. Smart. Grävlingen äter va som helst. Han heter Bosse. /R",
+  "kalla": "Såg att du slänger mat i skogen. Smart. Grävlingen äter vad som helst. Han heter Bosse. /R",
   "var": "Sms i kompostera"
  },
  {
@@ -5184,5 +5232,46 @@
   "figur": "ali",
   "text": "Din skylt lyser in i min butik hela natten. Jag sover sämre. Jag säljer mer. Tack, tror jag.",
   "var": "SKYLT_REPLIK"
+ },
+ {
+  "id": "mamma-04acf923",
+  "figur": "mamma",
+  "text": "Det står i tidningen att måsarna är AGGRESSIVA i år. Har du en MÖSSA?? De tar mat ur händerna på folk. Och glasögon. ❤️",
+  "var": "GORAN_REPLIK"
+ },
+ {
+  "id": "rolf-fe3877d9",
+  "figur": "rolf",
+  "text": "Nämen. Dä sitter en mås på ditt skjul. Ja kallra han Göran. Han tar saker som glänser. Han tog min tändare 2014. /R\n*kallar",
+  "kalla": "Dä sitter en mås på ditt skjul. Ja kallar han Göran. Han tar saker som glänser. Han tog min tändare 2014. /R",
+  "var": "GORAN_REPLIK"
+ },
+ {
+  "id": "rolf-56ac1e9c",
+  "figur": "rolf",
+  "text": "Nämen. Dä sitter en mås på ditt skjul. Ja kallar han Göran. Han tar saker som glänser. Han tog min tändare 2014. /R",
+  "kalla": "Dä sitter en mås på ditt skjul. Ja kallar han Göran. Han tar saker som glänser. Han tog min tändare 2014. /R",
+  "var": "GORAN_REPLIK"
+ },
+ {
+  "id": "rolf-63fa4080",
+  "figur": "rolf",
+  "text": "Göran tar dina grejer? Printa ett fågelbad.. Måsar ä enkla. Birgitta hade ett vid husvagnen. /R",
+  "kalla": "Göran tar dina grejer? Printa ett fågelbad. Måsar ä enkla. Birgitta hade ett vid husvagnen. /R",
+  "var": "GORAN_REPLIK"
+ },
+ {
+  "id": "rolf-3f632fe7",
+  "figur": "rolf",
+  "text": "Hörru. Såg din fågelskrämma. Göran sitter på hatten. Han gillar den. /R",
+  "kalla": "Såg din fågelskrämma. Göran sitter på hatten. Han gillar den. /R",
+  "var": "GORAN_REPLIK"
+ },
+ {
+  "id": "rolf-22f14c99",
+  "figur": "rolf",
+  "text": "Göran har flyttat in hos dej.. Han sitter på skylten nu. Grattis. Ni ä en familj. /R",
+  "kalla": "Göran har flyttat in hos dej. Han sitter på skylten nu. Grattis. Ni ä en familj. /R",
+  "var": "GORAN_REPLIK"
  }
 ]
