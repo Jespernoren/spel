@@ -224,6 +224,7 @@ export const HUD_CSS = `
 .ali-unik-rub{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}.ali-unik-rub span{font:900 15px var(--rubrik);color:#ffd166;letter-spacing:.05em;text-transform:uppercase;text-shadow:0 0 10px rgba(255,209,102,.4)}.ali-unik-rub small{color:#d9c79a;font-size:12.5px}
 .ali-unik-grupp{margin-top:6px}.ali-unik-grupp>b{display:block;font:800 11px system-ui;letter-spacing:.08em;text-transform:uppercase;color:#f3d9a0;margin-bottom:5px}
 .ali-unik .ui-ruta{border-color:#c9921f #ffe3a1 #ffe3a1 #c9921f;background:#b9a27a;box-shadow:0 0 0 1px rgba(255,209,102,.4),0 0 12px rgba(255,209,102,.35)}
+[data-linje="rod"].ui-ruta,[data-linje="rod"] .ui-ruta{box-shadow:0 0 0 3px #e5484d!important}[data-linje="bla"].ui-ruta,[data-linje="bla"] .ui-ruta{box-shadow:0 0 0 3px #4ea3ff!important}
 .ali-unik .ui-ruta.dyr{background:#5a4a3a}
 .ali-unik .ui-ruta::before{content:"★";position:absolute;right:3px;bottom:1px;font-size:12px;color:#ffd166;text-shadow:0 1px 2px #000}
 .hud-musfri{position:absolute;right:0;top:56px;white-space:nowrap;font:700 11px system-ui;color:#c5ccda;background:rgba(25,28,36,.75);padding:2px 7px;border-radius:6px}.hud-musfri kbd{font:900 10px system-ui;padding:0 4px;border-radius:3px;background:var(--papper);color:#191c24;margin-right:3px}
