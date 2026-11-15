@@ -188,10 +188,10 @@
   }
 
   // ---------- printa ----------
-  const skrivareAlla = () => H.skrivare.filter((x) => x.mesh?.visible !== false && x.gen !== 4);
+  const skrivareAlla = (petg = false) => H.skrivare.filter((x) => x.mesh?.visible !== false && (x.gen === 4) === petg);
   // kapitel 2: PETG-skrivaren (gen 4) tar bara röd PETG (nivå 2) – vanliga saker går på de vanliga skrivarna
   const arPetg = (val) => (val?.typ && H.VAROR[val.typ]?.niva === 2) || false;
-  const ledig = (val) => { const petg = arPetg(val); const l = skrivareAlla().filter((x) => (x.gen === 4) === petg); return l.filter((x) => !x.jobb && !x.klar).sort((a, b) => b.gen - a.gen)[0] || l[0] || skrivareAlla()[0]; };
+  const ledig = (val) => { const petg = arPetg(val); const l = skrivareAlla(petg); return l.filter((x) => !x.jobb && !x.klar).sort((a, b) => b.gen - a.gen)[0] || l[0] || skrivareAlla()[0]; };
   async function taUt(sk) { if (!sk.klar) return; const n = H.antalUt(sk); await klick(sk.mesh, 'skrivaren'); handling(`tar ut ${n} st ur skrivaren`); }
   async function printa(val, { vantaKlart = true } = {}) {
     const namn = val.maskin ? H.MASKINER[val.maskin].namn : H.VAROR[val.typ].namn;

@@ -327,7 +327,7 @@ const MASKIN_GER = {
   ryggsack2: () => [`${RYGG_STOR} pl`, `Ryggsäcken får ${RYGG_STOR} platser`],
   karra: () => ['Tungt', 'Lyft tunnor och kajaker'],
   petgkvarn: () => ['PETG', 'Tungt skräp blir röd PETG (filament nivå 2)'],
-  skrivarepetg: () => ['PETG', `Printar PETG-saker: vas ${saljPris('n2_vas').toLocaleString('sv-SE')} kr – paddel ${saljPris('n2_paddel').toLocaleString('sv-SE')} kr`],
+  skrivarepetg: () => ['PETG', `Printar PETG-saker: vas ${krT(saljPris('n2_vas'))} kr – paddel ${krT(saljPris('n2_paddel'))} kr`],
   petgband: () => ['Auto', 'Hämtar tunnor och kajaker till PETG-kvarnen åt dig'],
   magnet: () => [`${BARA_SKRAP[MAGNET_NIVA]} st`, `Bär ${BARA_SKRAP[MAGNET_NIVA]} skräp och suger till sig på avstånd`],
   ryggkorg: () => [`${BARA_SKRAP[3]} st`, `Bär ${BARA_SKRAP[3]} skräp`],
@@ -345,7 +345,7 @@ const MASKIN_GER = {
   bord: () => ['+1 skrivare', 'Bordsyta för en skrivare till'],
   sol: () => [`+${SOL_PER_S}/s`, `+${SOL_PER_S} ström/s av sig själv`],
   rullband: () => ['Auto', 'Skräp från tippen åker till kvarnen själv'],
-  lastarm: () => ['Auto', `Plockar skräp åt dig (var ${String(LASTARM_TID).replace('.', ',')} s, upp till ${LASTARM_MAX} g)`],
+  lastarm: () => ['Auto', `Plockar skräp åt dig (var ${String(LASTARM_TID).replace('.', ',')} s, upp till ${(LASTARM_MAX / 1000).toLocaleString('sv-SE', { maximumFractionDigits: 1 })} kg)`],
   robotarm: () => ['Auto', 'Laddar skrivarna med rullar åt dig'],
   saljlada: () => ['Ali hämtar', 'Lägg i – Ali hämtar varje morgon och betalar'],
   utlada: () => [`${Math.round(GROSSIST * 100)} %`, `Autoprint: allt hamnar i lådan, Ali betalar ${Math.round(GROSSIST * 100)} % nästa morgon`],
@@ -427,12 +427,17 @@ const harProto = (id) => (S.proto || []).includes(id);
 const STROM_UTAN_BATTERI = 12;   // punkt AS: utan cykelbatteriet räcker strömmen bara medan du trampar (ungefär en sekund)
 const stromMax = () => !S.batteriKopt ? STROM_UTAN_BATTERI : STROM_BAS + placerade.filter((p) => p.typ === 'bank').length * BANK_PLUS + trimNiva('batteri') * 100 + (harProto('m_fusion') ? 600 : 0);
 
-// filament visas som procent av en rulle: 20 %, 1 rulle 40 %, 3 rullar
+// punkt BH: filament visas alltid i rullar med en decimal ("1,8 rullar"), under en rulle i procent ("40 % av en rulle"). Aldrig gram.
 const rullar = (g) => {
-  const hela = Math.floor(g / RULLE + 1e-6), rest = Math.round((g - hela * RULLE) / (RULLE / 100));
-  if (!hela) return `${rest} % rulle`;
-  return `${hela} ${hela === 1 ? 'rulle' : 'rullar'}` + (rest ? ` ${rest} %` : '');
+  const v = Math.round(g / RULLE * 10) / 10;
+  if (g < RULLE - 1e-6) return `${Math.max(1, Math.round(g / RULLE * 100))} % av en rulle`;
+  return `${v.toLocaleString('sv-SE', { maximumFractionDigits: 1 })} ${v === 1 ? 'rulle' : 'rullar'}`;
 };
+// punkt BH: pengar – upp till 9 999 hela beloppet ("1 200"), från 10 000 k med en decimal ("12,5k"), från 100 000 hela tusental ("140k")
+const krT = (n) => { n = Math.round(n || 0); const a = Math.abs(n);
+  if (a < 10000) return n.toLocaleString('sv-SE');
+  if (a < 100000) return (Math.round(n / 100) / 10).toLocaleString('sv-SE', { maximumFractionDigits: 1 }) + 'k';
+  return Math.round(n / 1000).toLocaleString('sv-SE') + 'k'; };
 
 // ---------- Story-lappar ----------
 const LAPPAR = {
@@ -2590,6 +2595,26 @@ function ikonModell(typ) {
   return [skapaByggsats(id), true];
 }
 let ikonR2 = null, ikonScen2 = null, ikonKam2 = null;
+// punkt BH: ritningen som blueprint – samma 3D-modell som ikonen, men bara kanterna, vita linjer på blått papper
+const bpCache = {};
+function bpBild(typ, px = 160) {
+  const nyckel = typ + ':' + px; if (bpCache[nyckel]) return bpCache[nyckel];
+  try {
+    if (!ikonR2) renderaIkon('rulle', 32);
+    ikonR2.setSize(px, px, false);
+    const [m0] = ikonModell(typ); m0.updateMatrixWorld(true);
+    const lm = new THREE.LineBasicMaterial({ color: 0xffffff }), g = new THREE.Group(), geos = [];
+    const synlig = (o) => { for (let x = o; x && x !== m0.parent; x = x.parent) if (!x.visible) return false; return true; };
+    m0.traverse((o) => { if (!o.isMesh || !o.geometry || !synlig(o) || o.material === traffMat || o.material?.colorWrite === false) return;
+      const e = new THREE.EdgesGeometry(o.geometry, 28); geos.push(e); const l = new THREE.LineSegments(e, lm); o.matrixWorld.decompose(l.position, l.quaternion, l.scale); g.add(l); });
+    const m = new THREE.Group(); m.add(g); m.rotation.y = 0.65; passaIn(m, 1);
+    ikonScen2.add(m); ikonKam2.position.set(1.55, 1.15, 2.0); ikonKam2.lookAt(0, 0, 0);
+    ikonR2.render(ikonScen2, ikonKam2); ikonScen2.remove(m);
+    const url = ikonR2.domElement.toDataURL('image/png'); geos.forEach((x) => x.dispose()); lm.dispose();
+    return (bpCache[nyckel] = url);
+  } catch (e) { console.warn('blueprint', typ, e); return ikonBild(typ) || ''; }
+}
+const bpImg = (typ, st = 54) => `<span class="ph-bp"><img src="${bpBild(typ, st > 80 ? 256 : 128)}" width="${st}" height="${st}" alt=""></span>`;
 function renderaIkon(typ, px = 160) {
   if (!ikonR2) {
     ikonR2 = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true }); ikonR2.setPixelRatio(1); ikonR2.setClearColor(0x000000, 0);
@@ -3034,7 +3059,7 @@ function uppdateraSkrivare(sk, dt) {
         sk.jobb = null; laggUt(sk, 'byggsats:' + j.maskin);
         // ritningen är förbrukad – vill du ha en till får du köpa den igen (väggskivor och fönster räknas upp till max)
         if (!['vaggar', 'fonster', 'tapeter'].includes(j.maskin) || arKlar(j.maskin, 1)) S.ritningar = S.ritningar.filter((x) => x !== j.maskin);
-        aliStolt(j.maskin, m.namn, true);
+        handelse('printKlar', { sak: 'byggsats:' + j.maskin, n: 1 }); aliStolt(j.maskin, m.namn, true);
         visaPaBadd(sk, sk.klar, 1); ljud.klar(); skrivarNotis(sk, `${m.namn} är klar – ta ut den`, 'guld', true, 'klar'); nastaJobb(sk, null);
         
       }
@@ -3179,7 +3204,7 @@ function aliHamtarLadan() {
   // grossistpris: 70 % av fullpris, ingen mättnad, räknas inte in i dagens försäljning hos Ali
   for (const t of typer) { summa += Math.round(saljPris(t) * GROSSIST) * inn[t]; S.saltTot = { ...(S.saltTot || {}), [t]: (S.saltTot?.[t] || 0) + inn[t] }; antal += inn[t]; }
   S.mynt += summa; S.stat.salt += antal; S.auto.innehall = {};
-  setTimeout(() => sms('ali', `Ali här. Hämtade lådan klockan sex. ${antal} saker, ${summa.toLocaleString('sv-SE')} kr på ditt konto. Grossistpris. Jag har också en hyra.`), 2500);
+  setTimeout(() => sms('ali', `Ali här. Hämtade lådan klockan sex. ${antal} saker, ${krT(summa)} kr på ditt konto. Grossistpris. Jag har också en hyra.`), 2500);
 }
 function uppdateraAuto(dt) {
   if (!auto.byggd || (S.auto.band && !auto.band) || (S.auto.arm && !auto.arm) || (S.auto.lada && !auto.lada)) { if (S.auto.band || S.auto.arm || S.auto.lada) byggAuto(); }
@@ -4425,7 +4450,7 @@ function sov() {
     const nasta = STEG[S.steg];
     if (nasta?.startPost && !S.lappar.includes(nasta.startPost) && !S.post.lapp) { S.post.lapp = nasta.startPost; visaPostInne(); }
     const del = nasta?.del || (S.julFirad ? 'Efterspelet' : 'Fritt bygge');
-    const ig = S.igar, rapport = ig ? `<span class="br-rapport">${S.saljLadaIgar ? `📦 Ali hämtade säljlådan i natt: ${S.saljLadaIgar.n} st · +${S.saljLadaIgar.summa.toLocaleString('sv-SE')} kr<br>` : ''}Igår: ${ig.printat} printat · ${ig.salt} sålt${ig.flask ? `<br>Flaskhals: ${ig.flask}${ig.fix ? ` → ${ig.fix}` : ''}` : ''}</span>` : '';
+    const ig = S.igar, rapport = ig ? `<span class="br-rapport">${S.saljLadaIgar ? `📦 Ali hämtade säljlådan i natt: ${S.saljLadaIgar.n} st · +${krT(S.saljLadaIgar.summa)} kr<br>` : ''}Igår: ${ig.printat} printat · ${ig.salt} sålt${ig.flask ? `<br>Flaskhals: ${ig.flask}${ig.fix ? ` → ${ig.fix}` : ''}` : ''}</span>` : '';
     const hoger = `${aliVillHtml()}${rapport}${[2, 4].includes(S.dag) && !(S.betygDag || []).includes(natt) ? snabbBetygHtml(natt) : ''}`;
     ui.visaStart(`☀️ Dag ${S.dag}`, `<div class="br-morgon${hoger ? '' : ' en'}"><div class="br-morgon-v"><b>${del.replace(/^Dag \d+ – /, '')}</b>${nasta ? dagensMalHtml(nasta.del) : S.julFirad ? efterspelHtml() : ''}</div>${hoger ? `<div class="br-morgon-h">${hoger}</div>` : ''}</div>`, 'Börja dagen');
     kopplaSnabbBetyg(natt);
@@ -4821,7 +4846,7 @@ const aktivGava = () => (S.rolf.jobb != null ? jobbNu().vara : S.rolf.aktiv && R
 function oppnaJobbVal() {
   const j = jobbNu();
   const kropp = `<div class="ph-jobbbrev">${rens(j.brev)}</div>` + sektion('Vad gör du?') + `<div class="ph-jobbval">`
-    + rad({ bild: tumme(j.vara), titel: `Gör det – printa ${VAROR[j.vara].namn.toLowerCase()}`, text: `Lägg den i postlådan. Rolf betalar ${j.ja.toLocaleString('sv-SE')} kr.${j.ja > j.bas ? ' Lasse betalar. Fråga inte.' : ''} Chefen kan märka det.`, hoger: knapp({ text: `+${j.ja.toLocaleString('sv-SE')} kr`, typ: 'plus', attr: 'data-ja', ikon: 'mynt' }) })
+    + rad({ bild: tumme(j.vara), titel: `Gör det – printa ${VAROR[j.vara].namn.toLowerCase()}`, text: `Lägg den i postlådan. Rolf betalar ${krT(j.ja)} kr.${j.ja > j.bas ? ' Lasse betalar. Fråga inte.' : ''} Chefen kan märka det.`, hoger: knapp({ text: `+${krT(j.ja)} kr`, typ: 'plus', attr: 'data-ja', ikon: 'mynt' }) })
     + rad({ bild: `<span class="ui-headik" style="width:54px;height:54px">${IKON.hjarta}</span>`, titel: 'Säg nej', text: `Rolf blir besviken – men respekterar dig. Du får ${j.nej} kr direkt. Respekt +8.`, hoger: knapp({ text: `+${j.nej} kr`, typ: 'neutral', attr: 'data-nej', ikon: 'hjarta' }) })
     + '</div>';
   oppnaRuta(panel({ portrattVem: 'rolf', titel: 'En lapp från Rolf', sub: 'Lite olagligt. Bara lite.', resurser: resurserHtml() + resurs('hjarta', `Respekt ${S.respekt}`), kropp }), (el) => {
@@ -5854,7 +5879,7 @@ const procentFor = (n) => (n / TRIVSEL_PER_PROCENT).toLocaleString('sv-SE', { ma
 function trivselRad(n) {
   if (trivselBonus() >= TRIVSEL_MAX_BONUS) return `Trivsel +${n} (Ali betalar redan max +${Math.round(TRIVSEL_MAX_BONUS * 100)} %)`;
   const kr = Math.round((S.inkomstSnitt || 0) * n / TRIVSEL_PER_PROCENT / 100);
-  return `Trivsel +${n} → Ali betalar +${procentFor(n)} %${kr > 0 ? ` (≈ +${kr.toLocaleString('sv-SE')} kr per dag)` : ''}`;
+  return `Trivsel +${n} → Ali betalar +${procentFor(n)} %${kr > 0 ? ` (≈ +${krT(kr)} kr per dag)` : ''}`;
 }
 function trivselToast(namn, n) { return `${namn} på plats! Trivsel +${n} · Ali betalar nu +${bonusText()}`; }
 function trivsel() {
@@ -5891,7 +5916,26 @@ addEventListener('keydown', (e) => {
   if (ui.butiksOverlay.hidden || !medEl2.hidden) return;
   if ((e.code === 'Escape' || e.code === 'KeyE') && performance.now() - menyOppnad > 250) { e.preventDefault(); e.stopImmediatePropagation(); ui.stangButik(); }
 }, true);
-const resurserHtml = () => resurs('mynt', `${S.mynt.toLocaleString('sv-SE')} kr`) + resurs('rulle', `${antalInv('rulle')} ${antalInv('rulle') === 1 ? 'rulle' : 'rullar'}`);
+const resurserHtml = () => resurs('mynt', `${krT(S.mynt)} kr`) + resurs('rulle', `${antalInv('rulle')} ${antalInv('rulle') === 1 ? 'rulle' : 'rullar'}`);
+// punkt BH: det man köper hos Ali är en ritning – blått papper med vita linjer. I skrivarmenyn syns ritningen tills saken printats en gång.
+const bpWrap = (html) => `<span class="ph-bp">${html}</span>`;
+const printatEn = (k) => (S.printatEn || []).includes(k) || (S.printTot?.[k] || 0) > 0;
+paHandelse('printKlar', ({ sak }) => { if (!(S.printatEn || []).includes(sak)) S.printatEn = [...(S.printatEn || []), sak]; });
+{ const st = document.createElement('style'); st.textContent = `.ph-bp{display:inline-grid;place-items:center;border-radius:6px;background:#1f5fae;background-image:linear-gradient(rgba(255,255,255,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.13) 1px,transparent 1px);background-size:9px 9px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.ph-bp img{filter:drop-shadow(0 0 1px rgba(255,255,255,.6))}
+.ph-bprulle{position:fixed;left:50%;top:42%;z-index:60;transform:translate(-50%,-50%);width:220px;height:220px;pointer-events:none}
+.ph-bprulle .ark{position:absolute;inset:0;transform-origin:50% 0;animation:phBpUpp .9s cubic-bezier(.2,.8,.2,1) both;display:grid;place-items:center;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.ph-bprulle .ark .ph-bp{width:100%;height:100%}.ph-bprulle .ark img{width:72%;height:72%}
+.ph-bprulle .rulle{position:absolute;left:-6px;right:-6px;height:22px;border-radius:11px;background:linear-gradient(#5c93d6,#1f5fae 60%,#16467f);animation:phBpRulle .9s cubic-bezier(.2,.8,.2,1) both}
+.ph-bprulle.ut{transition:opacity .4s,transform .4s;opacity:0;transform:translate(-50%,-30%) scale(.6)}
+@keyframes phBpUpp{from{transform:scaleY(.04)}to{transform:scaleY(1)}}@keyframes phBpRulle{from{top:-11px}to{top:calc(100% - 11px)}}`; document.head.appendChild(st); }
+paHandelse('kopt', ({ sak }) => { const m = MASKINER[sak];
+  if (m && !m.direkt) ritningRullas('byggsats:' + sak); else if (VAROR[sak] && (VAROR[sak].recept || VAROR[sak].gava || sak === 'sang')) ritningRullas(sak); });
+// köp = ett hoprullat blått papper som rullas upp och visar saken
+function ritningRullas(typ) {
+  try { const d = document.createElement('div'); d.className = 'ph-bprulle'; d.innerHTML = `<div class="ark">${bpImg(typ, 160)}</div><div class="rulle"></div>`; document.body.appendChild(d);
+    setTimeout(() => d.classList.add('ut'), 1700); setTimeout(() => d.remove(), 2200); } catch {}
+}
 const tumme = (typ, st = 54) => ikonBild(typ) ? `<img src="${ikonBild(typ)}" width="${st}" height="${st}" alt="">` : ik('lada');
 const rullKort = (g) => (g / RULLE).toLocaleString('sv-SE', { maximumFractionDigits: 1 });
 const vara = (ik, namn, under, knapp, attr, av) =>
@@ -5943,7 +5987,7 @@ function oppnaPrintMeny(sk) {
     lagg(x.hem || x.flik === 'hem' ? 'hem' : 'maskin', m, `data-maskin="${m}"`, ikonHtml('byggsats:' + m, 54), x.namn, x.gram * x.delar, x.tid * x.delar,
       `${x.beskr}<br>Printas i ${x.delar} delar: ${(DEL_NAMN[m] || []).join(', ').toLowerCase()} (${rullar(x.gram)} per del)`);
   }
-  const FLIKAR = [['maskin', 'kugghjul', 'Maskiner'], ['hem', 'hus', 'Hemmet'], ['salj', 'salj', 'Att sälja'], ['gava', 'gava', 'Gåvor – Rolfs önskan']].filter(([f]) => saker.some((x) => x.flik === f));
+  const FLIKAR = [['maskin', 'kugghjul', 'Ritningar'], ['hem', 'hus', 'Hemmet'], ['salj', 'salj', 'Att sälja'], ['gava', 'gava', 'Gåvor – Rolfs önskan']].filter(([f]) => saker.some((x) => x.flik === f));
   // allt på en sida: maskiner, hemmet, att sälja och gåvor under varandra – ingen flik döljer något
   // punkt AL: dagens målsak står först och är förvald (en gång per mål – sedan väljer du själv)
   const malT = (() => { const st = STEG[S.steg]; const t = st && !st.sov && (typeof st.bild === 'function' ? st.bild() : st.bild); return t ? (t.startsWith('byggsats:') ? t.slice(9) : t) : null; })();
@@ -5961,7 +6005,7 @@ function oppnaPrintMeny(sk) {
   const printarNu = jNu ? `<div class="ph-saljallt ph-printarnu"><span><b>Printar: ${rens(jNamn)}</b> · ${Math.round((sk.prog || 0) * 100)} %${sk.upprepa ? ' · upprepar' : ''}</span>${sk.upprepa ? knapp({ text: 'Stoppa efter den här', typ: 'neutral', attr: 'data-stoppa', ikon: 'klocka' }) : ''}${knapp({ text: 'Avbryt', typ: 'minus', attr: 'data-avbryt', ikon: 'stang' })}</div>` : '';
   const koNamn = (v) => v.maskin ? MASKINER[v.maskin].namn : VAROR[v.typ]?.namn || '';
   const koHtml = sk.ko?.length ? `<div class="ph-saljallt ph-printarnu"><span><b>I kön:</b> ${sk.ko.map((v, i) => `${rens(koNamn(v))} <button class="ph-kobort" data-kobort="${i}" title="Ta bort ur kön">✕</button>`).join(' · ')}</span>${knapp({ text: 'Töm kön', typ: 'neutral', attr: 'data-kotom', ikon: 'stang' })}</div>` : '';
-  const kropp = printarNu + koHtml + taAv + (FLIKAR.length ? FLIKAR.map(([fl, , namn]) => sektion(namn, fl === 'salj' ? 'grön siffra = vad Ali betalar idag' : 'siffran = rullar filament') + grid(saker.filter((x) => x.flik === fl).sort((a, b) => (b === malSak) - (a === malSak) || (forStor(a) || kanInte(a)) - (forStor(b) || kanInte(b))).map((x) => uiRuta({ bild: tumme(x.attr.startsWith('data-maskin') ? 'byggsats:' + x.id : x.id), attr: `data-pval="${x.id}"`, vald: x === vald, dyr: !forStor(x) && kanInte(x), last: forStor(x), storlek: storlekRuta(x.id, x.attr.startsWith('data-maskin')), niva: x.attr.startsWith('data-maskin') ? 0 : (VAROR[x.id]?.niva || 0), pris: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? '+' + prisNu(x.id) : rullKort(x.gram), prisTyp: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? 'plus' : 'fil', titel: x.namn, etikett: true })))).join('')
+  const kropp = printarNu + koHtml + taAv + (FLIKAR.length ? FLIKAR.map(([fl, , namn]) => sektion(namn, fl === 'salj' ? 'grön siffra = vad Ali betalar idag' : 'siffran = rullar filament') + grid(saker.filter((x) => x.flik === fl).sort((a, b) => (b === malSak) - (a === malSak) || (forStor(a) || kanInte(a)) - (forStor(b) || kanInte(b))).map((x) => uiRuta({ bild: ((k) => printatEn(k) ? tumme(k) : bpImg(k))(x.attr.startsWith('data-maskin') ? 'byggsats:' + x.id : x.id), attr: `data-pval="${x.id}"`, vald: x === vald, dyr: !forStor(x) && kanInte(x), last: forStor(x), storlek: storlekRuta(x.id, x.attr.startsWith('data-maskin')), niva: x.attr.startsWith('data-maskin') ? 0 : (VAROR[x.id]?.niva || 0), pris: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? '+' + prisNu(x.id) : rullKort(x.gram), prisTyp: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? 'plus' : 'fil', titel: x.namn, etikett: true })))).join('')
     + (antalInv('rulle') ? `<p class="ui-tom">${ik('rulle')} Du bär ${antalInv('rulle')} ${antalInv('rulle') === 1 ? 'rulle' : 'rullar'} – välj den i verktygsraden och klicka på skrivaren för att ladda.</p>` : '')
     : `<p class="ui-tom">${petg ? 'Köp ett PETG-recept hos Ali (hyllan Röd PETG) – vas, hjälm, neonskylt, paddel.' : 'Inget att printa just nu – köp ritningar och recept hos Ali.'}</p>`);
   const fot = vald ? detalj({ bild: tumme(vald.attr.startsWith('data-maskin') ? 'byggsats:' + vald.id : vald.id, 72), titel: vald.namn, text: rens(vald.info).replace(/<br>/g, ' · '),
@@ -6190,7 +6234,7 @@ const slagChip = (slag, liten = false) => slag ? `<span class="kop-slag ${slag}$
 function slagRad(x) {
   const slag = kopSlag(x.key); if (!slag) return '';
   const [, id] = String(x.key).includes(':') ? String(x.key).split(/:(.*)/s) : ['', x.key];
-  if (slag === 'salj') { const v = VAROR[id]; return `Ger ${saljPris(id).toLocaleString('sv-SE')} kr st · ${v.gram.toLocaleString('sv-SE')} g`; }
+  if (slag === 'salj') { const v = VAROR[id]; return `Ger ${krT(saljPris(id))} kr st · ${rullar(v.gram)}`; }
   const tr = MASKINER[id]?.trivsel || VAROR[id]?.trivsel;
   const g = MASKINER[id]?.ger?.()?.[1];
   if (g) return `Du får: ${g.charAt(0).toLowerCase() + g.slice(1)}`;
@@ -6221,7 +6265,7 @@ function aliDuFar(x) {
     const v = VAROR[id];
     if (v.pris > 0) {
       const p = saljPris(id);
-      far.push(`Ali betalar ${p.toLocaleString('sv-SE')} kr styck`, `≈ ${Math.round(p / v.gram * RULLE).toLocaleString('sv-SE')} kr per rulle`, `Lönar sig efter ${Math.max(1, Math.ceil(x.pris / p))} st`);
+      far.push(`Ali betalar ${krT(p)} kr styck`, `≈ ${krT(Math.round(p / v.gram * RULLE))} kr per rulle`, `Lönar sig efter ${Math.max(1, Math.ceil(x.pris / p))} st`);
       bricka = `+${p} kr`;
     }
     if (v.trivsel) { far.push(trivselRad(v.trivsel)); if (!bricka) bricka = `+${v.trivsel} ♥`; }
@@ -6235,7 +6279,7 @@ function aliDuFar(x) {
 }
 function aliKopInfo(vald, medKnapp = false) {
   const sl = kopSlag(vald.key), sr = slagRad(vald);
-  return `<div class="ali-info">${sl ? `<div class="ali-slag">${slagChip(sl)}${sr ? `<span class="ali-slag-rad ${sl}">${rens(sr)}</span>` : ''}</div>` : ''}<b>${rens(vald.namn)}</b>${vald.far?.length ? `<div class="ali-far"><small>Du får</small>${vald.far.map((t) => `<span>${rens(t)}</span>`).join('')}</div>` : ''}<p>${rens(vald.text || '')}</p>${fakta([['kop', vald.las ? 'Låst' : S.mynt >= vald.pris ? `Kostar ${vald.pris.toLocaleString('sv-SE')} kr` : `Saknar ${(vald.pris - S.mynt).toLocaleString('sv-SE')} kr`, vald.las || S.mynt < vald.pris ? 'minus' : 'plus'], ...(vald.faktaLista || [])])}${medKnapp && !vald.las ? knapp({ text: `Köp · ${vald.pris.toLocaleString('sv-SE')} kr`, typ: S.mynt >= vald.pris ? 'plus' : 'neutral', attr: `data-kop${S.mynt >= vald.pris ? '' : ' disabled'}`, ikon: 'kop' }) : ''}</div>`;
+  return `<div class="ali-info">${sl ? `<div class="ali-slag">${slagChip(sl)}${sr ? `<span class="ali-slag-rad ${sl}">${rens(sr)}</span>` : ''}</div>` : ''}<b>${rens(vald.namn)}</b>${vald.far?.length ? `<div class="ali-far"><small>Du får</small>${vald.far.map((t) => `<span>${rens(t)}</span>`).join('')}</div>` : ''}<p>${rens(vald.text || '')}</p>${fakta([['kop', vald.las ? 'Låst' : S.mynt >= vald.pris ? `Kostar ${krT(vald.pris)} kr` : `Saknar ${krT((vald.pris - S.mynt))} kr`, vald.las || S.mynt < vald.pris ? 'minus' : 'plus'], ...(vald.faktaLista || [])])}${medKnapp && !vald.las ? knapp({ text: `Köp · ${krT(vald.pris)} kr`, typ: S.mynt >= vald.pris ? 'plus' : 'neutral', attr: `data-kop${S.mynt >= vald.pris ? '' : ' disabled'}`, ikon: 'kop' }) : ''}</div>`;
 }
 const DAG1_ALI = ['m:gammalkvarn', 'm:cykelbatteri', 'm:grip', 'm:kvarnmotor', 'sang', 'r:kruka', 'r:pall'];
 function aliKopLista() {
@@ -6302,7 +6346,7 @@ function aliKopLista() {
   }
   // punkt AL: dag 1 visar Ali bara stegen i dagens mål – rullställ, dörr och resten kommer från dag 2
   if (S.dag <= 1) for (let i = L.length - 1; i >= 0; i--) if (!DAG1_ALI.includes(L[i].key)) L.splice(i, 1);
-  for (const x of L) Object.assign(x, aliDuFar(x));
+  for (const x of L) { Object.assign(x, aliDuFar(x)); if (/^(m|r|g):|^sang$/.test(x.key)) x.bild = bpImg(x.key === 'sang' ? 'sang' : x.key.startsWith('m:') ? 'byggsats:' + x.key.slice(2) : x.key.slice(2)); }   // punkt BH: ritningar som blått papper
   const { lista, dolda } = aliSalla(L); aliDolda = dolda;
   return lista;
 }
@@ -6418,7 +6462,7 @@ function oppnaMarknad() {
   let kropp = '', fot = '';
   // SÄLJ
   const markL = saljL.filter((x) => saljMarkerad(x.typ)), allt = markL.reduce((a, x) => a + summaFor(x.typ, x.n), 0);
-  let saljHtml = `<div class="ali-niva salj"><div class="ali-niva-rub"><span>${ik('salj')} Sälj till Ali</span><small>${markL.length ? 'bocka i det du vill sälja' : 'bocka i det du vill sälja – sen säljer du allt på en gång'}</small>${markL.length ? knapp({ text: `Sälj markerade (${markL.reduce((a, x) => a + x.n, 0)} st)  +${allt.toLocaleString('sv-SE')} kr`, typ: 'plus', attr: 'data-saljallt' }) : ''}</div>`
+  let saljHtml = `<div class="ali-niva salj"><div class="ali-niva-rub"><span>${ik('salj')} Sälj till Ali</span><small>${markL.length ? 'bocka i det du vill sälja' : 'bocka i det du vill sälja – sen säljer du allt på en gång'}</small>${markL.length ? knapp({ text: `Sälj markerade (${markL.reduce((a, x) => a + x.n, 0)} st)  +${krT(allt)} kr`, typ: 'plus', attr: 'data-saljallt' }) : ''}</div>`
     + (saljL.length ? '<div class="ali-grupper">' + SALJ_GRUPPER.filter((gr) => saljL.some((x) => x.grupp === gr)).map((gr) => `<div class="ali-grupp"><b>${gr}</b>${grid(saljL.filter((x) => x.grupp === gr).map((x) => `<div class="ali-markwrap${saljMarkerad(x.typ) ? ' pa' : ''}">${uiRuta({ liten: true, bild: tumme(x.typ), attr: `data-val="s:${x.key}"`, vald: 's:' + x.key === aliVald, niva: nivaFor(x.typ), antal: x.n, pris: 'Sälj +' + summaFor(x.typ, x.n), prisTyp: 'plus', titel: namnFor(x.typ), etikett: true })}<button class="ali-mark" data-mark="${x.typ}" title="${saljMarkerad(x.typ) ? 'Markerad – säljs med Sälj markerade' : 'Inte markerad – klicka för att sälja den med de andra'}">${saljMarkerad(x.typ) ? ik('bock') : ''}</button></div>`))}</div>`).join('') + '</div>'
       : '<p class="ui-tom">Du har inget att sälja. Printa saker på skrivaren – de hamnar i din verktygsrad.</p>')
     + (ejL.length ? `<div class="ali-grupp ej"><b>${ik('las')} Ali köper inte</b>${grid(ejL.map((x) => uiRuta({ liten: true, bild: tumme(x.typ), attr: `data-ej="${x.typ}"`, niva: nivaFor(x.typ), antal: x.n, pris: x.typ === aktivGava() ? 'Till Rolf' : x.typ === 'rulle' ? 'Från dag 3' : 'Säljs inte', prisTyp: 'minus', titel: namnFor(x.typ), etikett: true })))}</div>` : '') + '</div>';
@@ -6429,7 +6473,7 @@ function oppnaMarknad() {
   kropp += `<div class="ali-niva kop"><div class="ali-niva-rub"><span>${ik('kop')} Köp av Ali</span><small>det kostar pengar</small></div>`;
   {
     // hyllorna sorteras efter vad sakerna är till för: Rolf · tjäna pengar · hemmet · fabriken
-    const rutaK = (x) => uiRutaSlag(kopSlag(x.key), x.bricka, { bild: x.bild, attr: `data-val="k:${x.key}"${tipsSet.has(x) ? ' data-tips' : ''}`, vald: 'k:' + x.key === aliVald, last: !!x.las, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', prisIkon: 'kop', titel: x.namn, storlek: x.storlek, etikett: true });
+    const rutaK = (x) => uiRutaSlag(kopSlag(x.key), x.bricka, { bild: x.bild, attr: `data-val="k:${x.key}"${tipsSet.has(x) ? ' data-tips' : ''}`, vald: 'k:' + x.key === aliVald, last: !!x.las, dyr: S.mynt < x.pris, pris: '−' + krT(x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', prisIkon: 'kop', titel: x.namn, storlek: x.storlek, etikett: true });
     // punkt AK: två delar – Saker att sälja (recept) och Uppgraderingar (allt annat, i hyllorna som förut)
     const saljK = kopL.filter((x) => kopSlag(x.key) === 'salj').sort(aliOrdning), uppK = kopL.filter((x) => kopSlag(x.key) !== 'salj');
     const hyllor = HYLLOR.map((h) => ({ ...h, grupper: h.grupper.map(([sekt, namn]) => ({ namn, saker: uppK.filter((x) => x.sekt === sekt).sort(aliOrdning) })).filter((g) => g.saker.length) })).filter((h) => h.grupper.length);
@@ -6500,7 +6544,7 @@ function oppnaMarknad() {
       for (const x of saljL) { if (!saljMarkerad(x.typ)) continue; const n = antalInv(x.typ); if (!n) continue; const su = summaFor(x.typ, n); taBortInv(x.typ, n); if (!x.typ.startsWith('byggsats:') && !VAROR[x.typ]?.lyx) { S.saltIdag = { ...(S.saltIdag || {}), [x.typ]: saltIdag(x.typ) + n }; S.saltTot = { ...(S.saltTot || {}), [x.typ]: (S.saltTot?.[x.typ] || 0) + n }; } summa += su; antal += n; }
       S.mynt += summa; S.stat.salt += antal; ljud.mynt(); myntRegn(summa);
       giAliBonus();
-      aliRepl = antal === 1 ? `Okej. ${summa} kr.` : `Allt?! ${antal} saker. Jag behöver ett större lager. Här: ${summa.toLocaleString('sv-SE')} kr.`;
+      aliRepl = antal === 1 ? `Okej. ${summa} kr.` : `Allt?! ${antal} saker. Jag behöver ett större lager. Här: ${krT(summa)} kr.`;
       if (aliBonus) { aliRepl = aliBonus; aliBonus = false; }
       ritaHotbar(); ritaHand(); sparaSnart(); oppnaMarknad();
     };
@@ -6603,7 +6647,7 @@ function oppnaInv({ salj = false } = {}) {
     ? uiRuta({ bild: verktygIkon(46), attr: 'data-s="h:0"', vald: S.vald === 0, antal: hand.saker.length || '', titel: 'Verktyget – sitter fast på plats 1' }) : i < fran ? '' : ruta(a, i, p)).join('')}</div>`;
   const rits = S.ritningar.filter((id) => MASKINER[id]).map((id) => uiRuta({ bild: tumme('byggsats:' + id), attr: `data-r="${id}"`, titel: MASKINER[id].namn }));
   let kropp = '';
-  if (invSalj) kropp += sektion(`Säljlådan · Ali swishar +${ladanSumma().toLocaleString('sv-SE')} kr`, 'lägg i det du vill sälja – det säljs när du stänger') + rad('s', invSalj);
+  if (invSalj) kropp += sektion(`Säljlådan · Ali swishar +${krT(ladanSumma())} kr`, 'lägg i det du vill sälja – det säljs när du stänger') + rad('s', invSalj);
   else if (nara) kropp += sektion(`Kistan · ${kistPlatser()}/${S.kistan.length} platser`, 'shift-klick eller dubbelklick flyttar en hel hög') + rad('k', S.kistan);
   kropp += sektion(`Ryggsäcken · ${S.ryggsack.filter(Boolean).length}/${S.ryggsack.length} platser`, invSalj || nara ? '' : 'klicka för att lyfta en sak, klicka igen för att lägga den · högerklick = halva') + rad('r', S.ryggsack)
     + sektion('Verktygsraden', 'det du har här når du med 1–9 och hjulet') + rad('h', S.hotbar)
@@ -6776,7 +6820,7 @@ async function oppnaSparplatser() {
   oppnaRuta(panel({ ikon: 'spara', titel: 'Sparplatser', sub: 'Läser in…', kropp: '' }));
   const info = [];
   for (let n = 1; n <= PLATSER; n++) info.push(await lasPlats(n));
-  const besk = (d) => d ? `Dag ${d.dag || 1} · ${(d.mynt || 0).toLocaleString('sv-SE')} kr · sparad ${new Date(d.sparadTid || 0).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : 'Tom plats';
+  const besk = (d) => d ? `Dag ${d.dag || 1} · ${krT((d.mynt || 0))} kr · sparad ${new Date(d.sparadTid || 0).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : 'Tom plats';
   const kropp = sektion('Dina sparplatser', 'spelet sparar alltid automatiskt – här kan du spara en kopia') + grid(info.map((d, i) => uiRuta({ bild: ik(d ? 'spara' : 'ny'), attr: `data-plats="${i + 1}"`, vald: platsVald === i + 1, antal: i + 1, titel: d ? platsTitel(d, i + 1) : `Plats ${i + 1}`, etikett: true })));
   const d = info[platsVald - 1];
   const namnFalt = `<span class="ph-platsnamn"><input data-namn maxlength="28" placeholder="Döp sparningen…" value="${rens(d?.platsNamn || '')}">${d ? '<button data-dop>Döp om</button>' : ''}</span>`;
@@ -6810,7 +6854,7 @@ function oppnaDagbok() {
     const iDel = STEG.map((x, i) => [x, i]).filter(([x]) => x.del === del);
     kropp = sektion(del || 'Oändligt bygge') + (st ? iDel.map(([x, i]) => rad({ bild: `<span class="ui-headik" style="width:30px;height:30px;color:${i < S.steg ? '#3ccf73' : i === S.steg ? '#ffb84d' : '#5d667a'}">${i < S.steg ? IKON.bock : i === S.steg ? IKON.pil : IKON.mal}</span>`, titel: rens(stegText(x)), text: i === S.steg ? 'Ditt mål just nu' : '' })).join('')
       : rad({ bild: `<span class="ui-headik" style="width:30px;height:30px">${IKON.oandlig}</span>`, titel: `Nästa mål: trivsel ${Math.ceil((trivsel() + 1) / 100) * 100}`, text: 'Trimma maskinerna hos Ali, printa inredning och bygg vidare. Det tar aldrig slut.' }))
-      + sektion('Trivsel') + `<div class="ui-fakta"><span>${ik('hjarta')}${trivsel()} trivsel</span><span>${ik('klocka')}Dag ${S.dag}</span><span>${ik('mynt')}${S.mynt.toLocaleString('sv-SE')} kr</span></div>`;
+      + sektion('Trivsel') + `<div class="ui-fakta"><span>${ik('hjarta')}${trivsel()} trivsel</span><span>${ik('klocka')}Dag ${S.dag}</span><span>${ik('mynt')}${krT(S.mynt)} kr</span></div>`;
   } else if (dagbokFlik === 'dagbok') {
     // det du själv har skrivit – nyast först, läses upp med din egen röst
     const mina = S.lappar.slice().reverse().filter((l) => /Dagbok/.test(lappInfo(l)[0]));
@@ -7246,7 +7290,7 @@ function nastaAtgard(text) {
         if (antalInv('rulle')) return ['rulle', 'Ladda en rulle i skrivaren', false, 'skrivare'];
         if (helaRullar() > 0) return ['rulle', 'Ta rullen vid kvarnen och ladda skrivaren', false, 'kvarn'];
         const har = Math.round(iSkrivare + (S.kvarn.ut || 0)), flaskor = Math.max(1, Math.ceil((behov - har) / SKRAP_SORTER.flaska.gram));
-        if (har < behov) return ['kvarn', `Skrivaren behöver ${behov.toLocaleString('sv-SE')} g. Du har ${har.toLocaleString('sv-SE')} g. Mal ${flaskor} flask${flaskor === 1 ? 'a' : 'or'} till.`, false, hand.saker.length || S.kvarn.tratt > 0 ? 'kvarn' : 'skrap'];
+        if (har < behov) return ['kvarn', `Skrivaren behöver ${rullar(behov)}. Du har ${rullar(har)}. Mal ${flaskor} flask${flaskor === 1 ? 'a' : 'or'} till.`, false, hand.saker.length || S.kvarn.tratt > 0 ? 'kvarn' : 'skrap'];
       }
     }
     return [konkret[0], konkret[1], false, konkret[3]];
@@ -8561,7 +8605,7 @@ function uppdatera(dt) {
     { const kNy = kapitelNu(); if (kNy > (S.kapitel || 1)) { const forra = S.kapitel || 1; S.kapitel = kNy; for (let k = forra + 1; k <= kNy; k++) kapitelBorjar(k); } }
     if (S.steg >= STEG.findIndex((x) => x.k1Slut) && !S.kapitelKlart) {   // B50: när trivselmålet är klart (före sömnen)
       S.kapitelKlart = true; document.body.classList.remove('ph-tidig'); andraRespekt(10, 'Byggde en riktig fristad'); S.mynt += KAP1_BELONING; spar.spara(true);   // startkapital till kapitel 2
-      setTimeout(() => sms('mamma', `Pappa och jag har lagt undan lite. ${KAP1_BELONING.toLocaleString('sv-SE')} kr. Till något fint i ditt HUS. Inte till chips. ❤️ /Mamma`), 9000);
+      setTimeout(() => sms('mamma', `Pappa och jag har lagt undan lite. ${krT(KAP1_BELONING)} kr. Till något fint i ditt HUS. Inte till chips. ❤️ /Mamma`), 9000);
       kapitelSlut();
     }
   }
@@ -8623,7 +8667,7 @@ function uppdatera(dt) {
       }
     }
     const status = !S.kvarn.binge.length ? ['tom – töm skräp här', '#9fb3c8'] : S.kvarn.tratt >= TRATT_MAX ? ['väntar på tratten', '#ffd43b'] : S.strom <= 0.5 ? ['ingen ström!', '#ff6b6b'] : ['▶ matar tratten', '#7dffb0'];
-    ritaBandSkylt(`CONTAINER ${S.kvarn.binge.length}/${BINGE_MAX}`, status[0], status[1]);
+    ritaBandSkylt(`SOPHÅLLAREN ${S.kvarn.binge.length}/${BINGE_MAX}`, status[0], status[1]);
     const synliga = Math.ceil(S.kvarn.binge.length / BINGE_MAX * 24);
     matarband.userData.hog.children.forEach((k, i) => { k.visible = i < synliga; });
   }
@@ -8658,7 +8702,7 @@ function uppdatera(dt) {
     {
       if (S.post.tillMig.length) r = '📬 Rolf har lämnat något i postlådan';
       else if (S.post.tillRolf) r = '📦 Gåvan ligger i lådan – Rolf kommer med sopbilen';
-      else if (S.rolf.jobb != null) r = `Rolfs jobb: printa ${VAROR[aktivGava()].namn.toLowerCase()} och lägg den i postlådan – ${jobbNu().ja.toLocaleString('sv-SE')} kr`;
+      else if (S.rolf.jobb != null) r = `Rolfs jobb: printa ${VAROR[aktivGava()].namn.toLowerCase()} och lägg den i postlådan – ${krT(jobbNu().ja)} kr`;
       else if (S.post.lapp === 'jobb') r = 'Rolf har lagt en hemlig lapp i postlådan';
       else if (aktivGava()) r = `Rolf önskar sig: ${VAROR[aktivGava()].namn.toLowerCase()} – printa och lägg i postlådan · Belöning: ${ROLF[S.rolf.i].belo.map(beloText).join(' + ')}`;
     }
@@ -8717,7 +8761,7 @@ function uppdatera(dt) {
   { const el = hudEl.querySelector('[data-hud="nasta"]'), x = nastaKop();
     el.hidden = !x;
     if (x && el.dataset.slag !== (x.slag || '')) { el.dataset.slag = x.slag || ''; el.querySelector('.hud-ikon').innerHTML = x.slag ? ik(KOP_SLAG[x.slag].ikon) : ik('mynt'); el.querySelector('.rad span').textContent = x.slag === 'salj' ? 'Säljvara' : x.slag === 'upp' ? 'Uppgradering' : 'Nästa'; }
-    if (x) { const andel = Math.min(1, S.mynt / x.pris), t = `${x.namn} ${Math.min(S.mynt, x.pris).toLocaleString('sv-SE')}/${x.pris.toLocaleString('sv-SE')} kr`, b = el.querySelector('b'), i = el.querySelector('i'), w = Math.round(Math.max(0.02, andel) * 100) + '%';
+    if (x) { const andel = Math.min(1, S.mynt / x.pris), t = `${x.namn} ${Math.min(S.mynt, x.pris).toLocaleString('sv-SE')}/${krT(x.pris)} kr`, b = el.querySelector('b'), i = el.querySelector('i'), w = Math.round(Math.max(0.02, andel) * 100) + '%';
       if (b.textContent !== t) b.textContent = t; if (i.style.width !== w) { i.style.width = w; i.style.backgroundColor = andel >= 1 ? '#3ccf73' : '#f5c542'; } el.classList.toggle('rad-klar', andel >= 1); } }
   { const el = hudEl.querySelector('[data-hud="el"]'), andel = S.strom / stromMax(), w = Math.round(Math.max(0.02, Math.min(1, andel)) * 100) + '%', i = el.querySelector('i'), b = el.querySelector('b'), t = Math.round(andel * 100) + ' %';
     if (i.style.width !== w) { i.style.width = w; i.style.backgroundColor = andel < 0.15 ? '#ff5c5c' : '#ffd43b'; }
@@ -8728,7 +8772,7 @@ function uppdatera(dt) {
   battFyll.material.color.set(S.strom < 15 ? 0xff5c5c : 0x7dffb0); battFyll.material.emissive.set(S.strom < 15 ? 0xff5c5c : 0x7dffb0);
   ui.mynt(S.mynt);
   { const sat = (id, t) => { const b = hudEl.querySelector(`[data-hud="${id}"] b`); if (b.textContent !== t) b.textContent = t; };
-    sat('kr', `${S.mynt.toLocaleString('sv-SE')} kr`); const nr = antalInv('rulle'); sat('rullar', `${nr} ${nr === 1 ? 'rulle' : 'rullar'}`);
+    sat('kr', `${krT(S.mynt)} kr`); const nr = antalInv('rulle'); sat('rullar', `${nr} ${nr === 1 ? 'rulle' : 'rullar'}`);
     const n = Math.max(S.olasta || 0, inkorgVantar), em = hudEl.querySelector('[data-hud="sms"] em');
     if (em.textContent !== String(n)) { em.textContent = n; em.hidden = !n; hudEl.querySelector('[data-hud="sms"]').classList.toggle('ny', n > 0); }
     // visa saker först när de behövs
@@ -8824,7 +8868,7 @@ function oppnaMark() {
       const knappen = ag ? knapp({ text: 'Din mark', typ: 'neutral', attr: 'disabled' })
         : las ? knapp({ text: 'Köp tomten först', typ: 'neutral', attr: 'disabled' })
         : resp ? knapp({ text: `Kräver ${t.respekt} respekt`, typ: 'neutral', attr: 'disabled', ikon: 'hjarta' })
-        : knapp({ text: `Köp · ${t.pris.toLocaleString('sv-SE')} kr`, typ: dyr ? 'neutral' : 'gron', attr: `data-kop="${t.id}"${dyr ? ' disabled' : ''}`, ikon: 'mynt' });
+        : knapp({ text: `Köp · ${krT(t.pris)} kr`, typ: dyr ? 'neutral' : 'gron', attr: `data-kop="${t.id}"${dyr ? ' disabled' : ''}`, ikon: 'mynt' });
       return rad({ bild: `<span class="ui-headik" style="width:54px;height:54px">${IKON.hus || IKON.kista}</span>`, titel: t.namn + (ag ? ' ✅' : ''), text: (t.ger && !ag ? `<b class="mark-ger">Du får: ${t.ger}.</b> ` : '') + t.text, hoger: knappen });
     }).join('')
     + (S.folkbokMal ? sektion('Folkbokföring') + rad({ bild: `<span class="ui-headik" style="width:54px;height:54px">${IKON.bok}</span>`, titel: S.folkbokford ? 'Du är folkbokförd här ✅' : 'Folkbokför dig på Soptippsvägen 1', text: S.folkbokford ? 'Posten hittar hit nu. Mamma också.' : `Köp tomten du bor på och bygg ett riktigt hus på ängen först (${['egen', 'huset'].filter(agerMark).length}/2).`, hoger: S.folkbokford ? '' : knapp({ text: 'Skicka in blanketten', typ: kanFolkbokfora() ? 'gron' : 'neutral', attr: `data-folkbok${kanFolkbokfora() ? '' : ' disabled'}`, ikon: 'bok' }) }) : '');
@@ -9098,7 +9142,7 @@ function sparaDagBokmarke() {
 function oppnaBokmarken() {
   const lista = lasBokmarken();
   const kropp = sektion('Varje ny dag sparas som ett bokmärke. Hoppa tillbaka för att se var du var i storyn – din nuvarande dag sparas först i en sparplats.')
-    + (lista.length ? lista.slice().reverse().map((b) => rad({ bild: `<span class="ui-headik" style="width:48px;height:48px;font:800 18px system-ui;display:grid;place-items:center;background:#2d5cbf;color:#fff;border-radius:12px">${b.dag}</span>`, titel: `Dag ${b.dag}` + (b.dag === S.dag ? ' (idag)' : ''), text: `${b.mal} · ${b.mynt.toLocaleString('sv-SE')} kr · respekt ${b.respekt} · ${new Date(b.tid).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`, hoger: knapp({ text: 'Hoppa hit', typ: 'neutral', attr: `data-dag="${b.dag}"` }) })).join('') : '<div class="ph-resp-rad">Inga bokmärken än. Sov en natt så sparas dag 2.</div>');
+    + (lista.length ? lista.slice().reverse().map((b) => rad({ bild: `<span class="ui-headik" style="width:48px;height:48px;font:800 18px system-ui;display:grid;place-items:center;background:#2d5cbf;color:#fff;border-radius:12px">${b.dag}</span>`, titel: `Dag ${b.dag}` + (b.dag === S.dag ? ' (idag)' : ''), text: `${b.mal} · ${krT(b.mynt)} kr · respekt ${b.respekt} · ${new Date(b.tid).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`, hoger: knapp({ text: 'Hoppa hit', typ: 'neutral', attr: `data-dag="${b.dag}"` }) })).join('') : '<div class="ph-resp-rad">Inga bokmärken än. Sov en natt så sparas dag 2.</div>');
   oppnaRuta(panel({ ikon: 'bok', titel: 'Dagar', sub: `Du är på dag ${S.dag}`, kropp }), (el) => {
     el.querySelectorAll('[data-dag]').forEach((k) => { k.onclick = async () => {
       const b = lasBokmarken().find((x) => x.dag === Number(k.dataset.dag)); if (!b) return;
