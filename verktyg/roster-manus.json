@@ -4632,6 +4632,12 @@
   "var": "Lappar, brev och dagbok"
  },
  {
+  "id": "berattare-1a5d30a7",
+  "figur": "berattare",
+  "text": "HMPF. … Ja. Det var jag. N. som i Nabon. … Undertecknad ville bara skriva till någon. … Ängen. Ni vill ha den till huset. Ta den. Till marknadspris. Det är ingen välgörenhet. … HMPF.",
+  "var": "Lappar, brev och dagbok"
+ },
+ {
   "id": "berattare-c5089356",
   "figur": "berattare",
   "text": "HMPF. … Ja. Det var jag. N. som i Nabon. … Ingen har gjort nåt åt mig sen nittonhundranittiotvå. … Ängen. Ni vill ha den till huset. Ta den. Till marknadspris. Det är ingen välgörenhet. … HMPF. Tack för koppen.",
@@ -5353,22 +5359,35 @@
   "var": "Mammas sms när du maler burkar"
  },
  {
-  "id": "ali-db6e0bf8",
+  "id": "ali-de1fe254",
   "figur": "ali",
-  "text": "Din skylt är printad nu. Den är rakare än mitt staket. Jag är inte avundsjuk. Lite.",
+  "text": "Ali här. Såg skylten. Stavningen är rätt. Det är mer än många.",
   "var": "SKYLT_REPLIK"
  },
  {
-  "id": "rolf-9247a4d0",
+  "id": "rolf-bd564369",
   "figur": "rolf",
-  "text": "Tjo. Såg din nya skylt när ja körde förbi. Röd. Grann. Ja tuta. Hörde du? /R",
-  "kalla": "Såg din nya skylt när ja körde förbi. Röd. Grann. Ja tuta. Hörde du? /R",
+  "text": "Jo jo. Tuta två gnåger när ja åkte förbi. Hörde du? Dä va ja. MVH ROLF\n*gånger",
+  "kalla": "Tuta två gånger när ja åkte förbi. Hörde du? Dä va ja. MVH ROLF",
   "var": "SKYLT_REPLIK"
  },
  {
-  "id": "ali-1fe5b01b",
-  "figur": "ali",
-  "text": "Din skylt lyser in i min butik hela natten. Jag sover sämre. Jag säljer mer. Tack, tror jag.",
+  "id": "rolf-8bc4a1a7",
+  "figur": "rolf",
+  "text": "Jo jo. Tuta två gånger när ja åkte förbi. Hörde du? Dä va ja. MVH ROLF",
+  "kalla": "Tuta två gånger när ja åkte förbi. Hörde du? Dä va ja. MVH ROLF",
+  "var": "SKYLT_REPLIK"
+ },
+ {
+  "id": "bror-0af6dc2a",
+  "figur": "bror",
+  "text": "Pappa körde förbi för att kolla. Två gånger. Han säger att han skulle åt det hållet ändå. Det ska han aldrig.",
+  "var": "SKYLT_REPLIK"
+ },
+ {
+  "id": "rolf-aedd6cab",
+  "figur": "rolf",
+  "text": "Kommunen satt upp en RIKTI skylt. Ja grät int. Kajsa grät. MVH ROLF",
   "var": "SKYLT_REPLIK"
  },
  {

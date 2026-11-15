@@ -402,6 +402,7 @@ const LAPPAR = {
   n3: ['📜 Lapp från N.', 'Undertecknad har sett era maskiner genom kikaren. Det är imponerande. Undertecknad önskar ett mobilställ, för att kunna se på väderleksrapporten och samtidigt ha händerna fria. Med vänlig hälsning, N.'],
   n4: ['📜 Lapp från N.', 'Undertecknad önskar en kaffekopp med namnet BENGT-ÅKE. Diskret paketerad. Med vänlig hälsning, B-Å N.'],
   n4tom: ['📜 Lapp från N.', 'Undertecknad önskar ingenting. Undertecknad ville bara skriva. B-Å N.'],
+  navsl2: ['📜 Bengt-Åke vid staketet', 'HMPF. … Ja. Det var jag. N. som i Nabon. … Undertecknad ville bara skriva till någon. … Ängen. Ni vill ha den till huset. Ta den. Till marknadspris. Det är ingen välgörenhet. … HMPF.'],
   navsl: ['📜 Bengt-Åke vid staketet', 'HMPF. … Ja. Det var jag. N. som i Nabon. … Ingen har gjort nåt åt mig sen nittonhundranittiotvå. … Ängen. Ni vill ha den till huset. Ta den. Till marknadspris. Det är ingen välgörenhet. … HMPF. Tack för koppen.'],
   skylt: ['📔 Dagbok', 'Spikade ihop en skylt av lösa bräder från tippen och målade på den. Soptippsvägen 1. Det är inte mycket för världen. Men det är MITT.'],
   start: ['📔 Dagbok', 'Dag 1. Inget mer tjat. Här står jag, vid soptippen, med storebrors gamla 3D-skrivare och ett skjul som luktar mus. Men skräp är plast – och plast är filament. Plan: 1) en säng. 2) städa gården. 3) bygga om skjulet till en riktig fristad – med gamingsetup.'],
@@ -1064,8 +1065,8 @@ function malaFarg(text, W, H, farg, storlek, { lut = 0, x = W / 2, y = H / 2 } =
 }
 // punkt F: skylten står vid vägen (där Ali, Rolf och alla som kör förbi ser den) och blir finare för varje kapitel
 const VAG_SKYLT = { x: -3.5, z: TOMT - 0.6 };
-const SKYLT_NAMN = [null, 'handmålad planka', 'printad', 'röd PETG', 'neon', 'kolfiber och plakett'];
-const skyltVersion = () => S.julFirad ? 5 : Math.max(1, Math.min(4, S.kapitel || 1));
+const SKYLT_NAMN = [null, 'handmålad planka', 'printad', 'röd PETG', 'neon', 'kolfiber och plakett', 'riktig gatuskylt'];
+const skyltVersion = () => S.tippgodsagare ? 6 : S.dag >= 22 || S.julFirad ? 5 : Math.max(1, Math.min(4, S.kapitel || 1));
 const adressSkylt = new THREE.Group();
 adressSkylt.position.set(VAG_SKYLT.x, 0, VAG_SKYLT.z); scen.add(adressSkylt);
 function neonTex(text, W, H, farg) {
@@ -1111,12 +1112,13 @@ function byggSkylt(v) {
   }
   // v2–v5: två stolpar och en platta, centrerad över x = 0.7 (där plankan satt)
   const X = 0.7, Y = 2.0;
-  const [stolpF, plattF, W, H] = v === 2 ? [0x2f7fd0, 0x2f7fd0, 1.7, 0.46] : v === 3 ? [0x8f1b26, 0xb5222f, 1.85, 0.5] : v === 4 ? [0x1c1c22, 0x14051a, 2.0, 0.56] : [0x2a2d33, 0x1d2025, 2.0, 0.56];
+  const [stolpF, plattF, W, H] = v === 2 ? [0x2f7fd0, 0x2f7fd0, 1.7, 0.46] : v === 3 ? [0x8f1b26, 0xb5222f, 1.85, 0.5] : v === 4 ? [0x1c1c22, 0x14051a, 2.0, 0.56] : v === 6 ? [0x9a9ea4, 0x1d4f9c, 2.0, 0.5] : [0x2a2d33, 0x1d2025, 2.0, 0.56];
   for (const sx of [-W / 2 + 0.15, W / 2 - 0.15]) adressSkylt.add(at(box(0.09, Y + H / 2, 0.09, mat(stolpF, v === 3 ? { roughness: 0.35 } : {})), X + sx, (Y + H / 2) / 2, -0.06));
   adressSkylt.add(at(box(W + 0.04, H + 0.04, 0.05, mat(plattF, v === 3 ? { roughness: 0.3, metalness: 0.05 } : v === 5 ? { roughness: 0.25, metalness: 0.4 } : {})), X, Y, -0.01));
   let plan;
   if (v === 2) plan = skylt('SOPTIPPSVÄGEN 1', W, H, '#2f7fd0', '#f4ecd8');
   else if (v === 3) plan = skylt('SOPTIPPSVÄGEN 1', W, H, '#b5222f', '#ffffff');
+  else if (v === 6) { const c = document.createElement('canvas'); c.width = 1024; c.height = 256; const g = c.getContext('2d'); g.fillStyle = '#1d4f9c'; g.fillRect(0, 0, 1024, 256); g.strokeStyle = '#fff'; g.lineWidth = 14; g.strokeRect(18, 18, 988, 220); g.fillStyle = '#fff'; g.font = '700 120px "Arial Narrow",Arial,system-ui'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('Soptippsvägen 1', 512, 134); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; plan = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: t })); }
   else if (v === 4) {
     plan = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: neonTex('SOPTIPPSVÄGEN 1', 1024, 288, '#3de3ff'), transparent: true, toneMapped: false }));
     const glod = new THREE.Mesh(new THREE.PlaneGeometry(W * 1.15, H * 1.5), new THREE.MeshBasicMaterial({ color: 0x3de3ff, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false }));
@@ -1136,9 +1138,11 @@ function byggSkylt(v) {
 }
 // varje gång ett kapitel blir klart: ny skylt, och någon säger något om den
 const SKYLT_REPLIK = {
-  2: ['ali', 'Din skylt är printad nu. Den är rakare än mitt staket. Jag är inte avundsjuk. Lite.'],
-  3: ['rolf', 'Såg din nya skylt när ja körde förbi. Röd. Grann. Ja tuta. Hörde du? /R'],
-  4: ['ali', 'Din skylt lyser in i min butik hela natten. Jag sover sämre. Jag säljer mer. Tack, tror jag.'],
+  1: ['ali', 'Ali här. Såg skylten. Stavningen är rätt. Det är mer än många.'],
+  2: ['rolf', 'Tuta två gånger när ja åkte förbi. Hörde du? Dä va ja. MVH ROLF'],
+  3: ['bengt', 'HMPF. RÖD.'],
+  4: ['bror', 'Pappa körde förbi för att kolla. Två gånger. Han säger att han skulle åt det hållet ändå. Det ska han aldrig.'],
+  6: ['rolf', 'Kommunen satt upp en RIKTI skylt. Ja grät int. Kajsa grät. MVH ROLF'],
 };
 function kollaSkylt() {
   if (!S.skyltUppe) return;
@@ -1146,13 +1150,13 @@ function kollaSkylt() {
   if (adressSkylt.userData.v === v) return;
   const forra = S.skyltV || 0; byggSkylt(v);
   if (forra && v > forra && ui.igang) {
-    ui.toast(`Skylten vid vägen är ny: ${SKYLT_NAMN[v]}`, 'guld'); spelaLjud('placera');
+    if (v !== 5) { ui.toast('Skylten vid vägen är uppgraderad.', 'guld'); spelaLjud('placera'); }   // v5 tänds i julscenen
     S.skyltTut = v;
-    const r = SKYLT_REPLIK[v]; if (r) setTimeout(() => sms(r[0], r[1]), 6000);
+    const r = SKYLT_REPLIK[v]; if (r) setTimeout(() => r[0] === 'bengt' ? visaBengt(r[1]) : sms(r[0], r[1]), 6000);
   }
   if (S.skyltV !== v) { S.skyltV = v; sparaSnart(); }
 }
-setInterval(kollaSkylt, 1500);
+setInterval(() => { kollaSkylt(); if (S.skyltUppe && S.dag >= 2 && !S.skyltAli && ui.igang && !sover) { S.skyltAli = true; sparaSnart(); sms(...SKYLT_REPLIK[1]); } }, 1500);
 // brädhögen + hammaren där skylten ska stå
 const bradhog = new THREE.Group();
 {
@@ -8493,13 +8497,13 @@ function kollaN() {
   // betalningen ligger i lådan nästa morgon
   if (n.betala && S.dag > n.betala.dag) { n.betalt = (n.betalt || 0) + n.betala.kr; if (n.betala.id === 'n_kopp') n.avslojaDag = S.dag; n.betala = null; sparaSnart(); ui.toast('Det ligger ett kuvert i lådan märkt N.', 'guld'); return; }
   // avslöjandet: morgonen efter koppen – eller dag 18 om man inte gjorde den
-  if (!n.avslojad && (n.avslojaDag != null || S.dag >= 18 && (n.senast ?? -1) >= 4)) {
-    n.avslojad = true; sparaSnart(); visaBengt('HMPF.'); visaLapp('navsl'); return;
+  if (!n.avslojad && (n.avslojaDag != null || (n.senast ?? -1) >= 4 && S.dag >= Math.max(18, (n.n4Dag ?? 99) + 1))) {
+    n.avslojad = true; sparaSnart(); visaBengt('HMPF.'); visaLapp((n.levererat || []).includes('n_kopp') ? 'navsl' : 'navsl2'); return;
   }
   if (n.avslojad || S.post.lapp) return;   // en lapp i taget i postlådan
   let i = -1; N_BEST.forEach((b, j) => { if (S.dag >= b.dag) i = j; });
   if (i > (n.senast ?? -1)) {
-    n.senast = i; n.vill = null;
+    n.senast = i; n.vill = null; if (i === 4) n.n4Dag = S.dag;
     // reserv: har man inte gjort någon beställning vill N. ingenting – han ville bara skriva
     S.post.lapp = i === 4 && !(n.levererat || []).length ? 'n4tom' : 'n' + i;
     visaPostInne(); sparaSnart(); ui.toast('Det ligger en prydlig lapp i postlådan…', 'guld');
