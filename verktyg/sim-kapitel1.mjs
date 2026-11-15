@@ -55,6 +55,8 @@ await b.close();
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const synlig = (e) => ['sms-bubbla', 'notis', 'lapp', 'bubbla', 'meddelande', 'morgonkort'].includes(e.kalla);   // det som syns på skärmen (toasts är svar på ett klick och räknas inte)
 const flaggor = [];
+// BZ: SEKVENS – spelet loggar själv när något levereras som redan är köpt eller gjort
+for (const e of r.logg.filter((x) => x.kalla === 'sekvens')) flaggor.push({ dag: e.dag, t: e.t, typ: 'SEKVENS', text: `${e.vem}: "${String(e.text).slice(0, 60)}" (${e.varfor || ''})` });
 // BV: lugn start – ingen text, röst eller sms de första 5 s efter BÖRJA DAGEN, och inget sms de första 30 s
 for (const st of r.logg.filter((e) => e.kalla === 'händelse' && e.vem === 'morgonkortStangt')) {
   for (const e of r.logg) {

@@ -3584,6 +3584,7 @@ function korKanal() {
     if (it.tidigast && nu < it.tidigast) { senare.push(it); continue; }   // BV: väntar på sin tid – nästa sak i kön får gå före
     kanalAktiv = it; it.slut = nu + (it.minMs ?? 2500);
     textLogg('sak', it.vem || '', it.text || '(nytt mål i rutan)', it.vikt);
+    if (it.vem === 'ali' && it.sms) sekvensKoll(it.text);
     if (it.delar) { it.delNr = 0; startaDel(it, nu); kanalRaknare(); return; }
     try { it.visa?.(); } catch (e) { console.warn(e); }
     if (it.rost !== false && it.text) { prataNu(it.vem, it.text, it.vikt, { start: it.start }); it.slut = Math.max(it.slut, pratarTill); }
@@ -5132,7 +5133,7 @@ function sms(fran, text, id, direkt = false, o = {}) {
   // B21: STORY-sms har 30 s spärr och stryks aldrig. Småprat har SMS_MELLAN och stryks först (och när dagen tar slut).
   const vikt = o.vikt || smsVikt(fran, id);
   if (!direkt && S.mobil && smsSparr(vikt)) {
-    S.smsTakt = [...(S.smsTakt || []), [fran, text, id, vikt]]; textLogg('väntar', fran, text, S.dag <= 1 && S.steg < SI.kop ? 'dag 1 före första köpet' : vikt === 'STORY' ? 'story-spärr 30 s' : 'max ett småprat-sms per ' + SMS_MELLAN + ' s');
+    S.smsTakt = [...(S.smsTakt || []), [fran, text, id, vikt]]; if (o.stryksOm) smsTaktVillkor.set(text, o.stryksOm); textLogg('väntar', fran, text, S.dag <= 1 && S.steg < SI.kop ? 'dag 1 före första köpet' : vikt === 'STORY' ? 'story-spärr 30 s' : 'max ett småprat-sms per ' + SMS_MELLAN + ' s');
     while (S.smsTakt.length > 8) { const j = S.smsTakt.findIndex((x) => taktVikt(x) === 'SMÅPRAT'); if (j < 0) break; S.smsTakt.splice(j, 1); }
     sparaSnart(); return;
   }
@@ -5147,6 +5148,7 @@ function sms(fran, text, id, direkt = false, o = {}) {
 }
 // punkt BD: vilken vikt har ett sms? Småprat ur poolen och Alis sms = SMÅPRAT, resten = STORY
 const taktVikt = (x) => x[3] || smsVikt(x[0], x[2]);
+const smsTaktVillkor = new Map();   // BZ: villkoret följer med sms:et i takten (kontrolleras vid leverans)
 const smsVikt = (fran, id) => (id && SMS_POOL.some((m) => m.id === id) && !SMS_POOL.find((m) => m.id === id)?.svar) || (fran === 'ali' && !id) ? 'SMÅPRAT' : 'STORY';
 const smsTrad = {};
 function smsFram(fran, text, id, o = {}) {
@@ -5233,9 +5235,13 @@ const aliStoltSaker = () => Object.entries(MASKINER).filter(([id, m]) => !ALI_IN
 // aldrig Ali-sms för: begagnat (inte printat), Rolfs ritningar, N.:s kopp, trädgården, fågelskrämman och fågelbadet – och inte sängen
 const ALI_INTE = new Set(['gammalkvarn', 'cykelbatteri', 'helenskjul', 'n_kopp', 't_spalje', 't_bevattning', 't_vaxthus', 'fagelskramma', 'fagelbad', 'sang']);
 // max ett Ali-sms per dag (utöver story)
-function aliSmsIdag(text, sek, vikt = 'SMÅPRAT') {
+// BZ: köpt = ritningen köpt, saken printad, placerad eller ligger i förrådet
+// BZ: loggar SEKVENS om Ali sms:ar om en ny sak som spelaren redan har (ska aldrig hända – villkoret stryker det)
+function sekvensKoll(text) { try { for (const id of Object.keys(MASKINER)) if ((text === ALI_SPECIAL[id] || text === ALI_NY_MALL(sakNamn(MASKINER[id].namn))) && kopt(id)) textLogg('sekvens', 'ali', text, 'redan köpt: ' + id); } catch {} }
+const kopt = (id) => S.ritningar.includes(id) || S.ritningar.includes('recept:' + id) || (MASKINER[id] && (arKlar(id) || harPlacerat(id) || antalInv('byggsats:' + id) > 0));
+function aliSmsIdag(text, sek, vikt = 'SMÅPRAT', stryksOm) {
   if (S.aliSmsDag === S.dag && vikt !== 'STORY') { textLogg('struken', 'ali', text, 'redan ett Ali-sms idag'); return; }
-  S.aliSmsDag = S.dag; S.aliKo.push({ text, nar: S.speltid + sek, vikt }); sparaSnart();
+  S.aliSmsDag = S.dag; S.aliKo.push({ text, nar: S.speltid + sek, vikt, stryksOm }); sparaSnart();
 }
 // Ali skriver inte direkt – han hör av sig efter 5–10 minuter, när det är lugnt (inget annat meddelande eller meny öppen)
 S.aliKo = S.aliKo || []; S.smsKo = S.smsKo || [];
@@ -5246,7 +5252,8 @@ function kollaAliKo() {
   if (S.dag <= 1 && S.steg < SI.kop) return;
   if (pausad || !ui.butiksOverlay.hidden || !medEl2.hidden || medKo.length || sovDags()) return;
   S.aliKo.shift(); if (S.aliKo[0]) S.aliKo[0].nar = Math.max(S.aliKo[0].nar, S.speltid + 120 + Math.random() * 180);
-  sms('ali', f.text, null, false, { vikt: f.vikt || 'SMÅPRAT' }); sparaSnart();   // B21: Alis berättelse är STORY
+  if (f.stryksOm?.()) { textLogg('struken', 'ali', f.text, 'redan köpt'); sparaSnart(); return; }   // BZ: kontrolleras vid leverans
+  sms('ali', f.text, null, false, { vikt: f.vikt || 'SMÅPRAT', stryksOm: f.stryksOm }); sparaSnart();   // B21: Alis berättelse är STORY
 }
 function kollaSmsKo() {
   const f = S.smsKo?.[0]; if (!f || S.speltid < f.nar) return;
@@ -5259,7 +5266,9 @@ function kollaSmsTakt() {
   // B21: story först
   const iSt = S.smsTakt.findIndex((x) => taktVikt(x) === 'STORY'); const k = iSt >= 0 ? iSt : 0;
   if (smsSparr(taktVikt(S.smsTakt[k])) || pausad || !ui.igang || !ui.butiksOverlay.hidden || !medEl2.hidden || medKo.length || sover) return;
-  const [f, t, id, v] = S.smsTakt.splice(k, 1)[0]; sparaSnart(); sms(f, t, id, true, v ? { vikt: v } : {});
+  const [f, t, id, v] = S.smsTakt.splice(k, 1)[0]; sparaSnart(); const so = smsTaktVillkor.get(t); smsTaktVillkor.delete(t);
+  if (so?.()) { textLogg('struken', f, t, 'gäller inte längre'); return; }   // BZ
+  sms(f, t, id, true, { ...(v ? { vikt: v } : {}), ...(so ? { stryksOm: so } : {}) });
 }
 setInterval(() => { slappNya(); kollaAliKo(); kollaSmsKo(); kollaSmsTakt(); }, 3000);
 function aliStolt() { /* punkt BD: ersatt av händelsen tagitUrPrint nedan */ }
@@ -5283,7 +5292,7 @@ paHandelse('morgonkortStangt', ({ dag }) => {
   const st = STEG[S.steg], hk = st ? HUVUDKOP[st.del] : null;
   const id = nya.find((x) => ALI_SPECIAL[x]) || (hk && nya.includes(hk) ? hk : null);
   if (!id) return;
-  setTimeout(() => { if (id === 'matarband' && (S.kvarn.band || S.ritningar.includes('matarband'))) { textLogg('struken', 'ali', ALI_SPECIAL[id], 'sophållaren finns redan'); return; } aliSmsIdag(ALI_SPECIAL[id] || ALI_NY_MALL(sakNamn(MASKINER[id].namn)), 0); }, 5000);   // B37
+  setTimeout(() => { if (kopt(id)) { textLogg('struken', 'ali', ALI_SPECIAL[id] || id, 'redan köpt'); return; } aliSmsIdag(ALI_SPECIAL[id] || ALI_NY_MALL(sakNamn(MASKINER[id].namn)), 0, 'SMÅPRAT', () => kopt(id)); }, 5000);   // BZ: stryks om saken redan är köpt när sms:et ska levereras   // B37
 });
 
 // ---------- Rolf själv ----------
@@ -7653,7 +7662,7 @@ const PUFFAR = [
 const puffTid = {}, puffSenast = {};
 const puffV = new THREE.Vector3();
 function kollaPuffar(dt) {
-  if (!ui.igang || pausad) return;
+  if (!ui.igang || pausad || sover || performance.now() - dagStartTid < 20000) return;   // BO/BZ: inga repliker om maskinernas läge de första 20 s av dagen
   for (const p of PUFFAR) {
     if (!p.villkor()) { puffTid[p.id] = 0; continue; }
     puffTid[p.id] = (puffTid[p.id] || 0) + dt;
