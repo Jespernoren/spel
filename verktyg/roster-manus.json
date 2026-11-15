@@ -5425,9 +5425,9 @@
   "var": "Introt"
  },
  {
-  "id": "berattare-318e1742",
+  "id": "berattare-03f6db0e",
   "figur": "berattare",
-  "text": "Du packar det viktigaste: en ryggsäck och storebrors gamla 3D-skrivare. Den är långsam, den låter konstigt – men den funkar. Allt surras fast på cykeln.",
+  "text": "Du packar det viktigaste: en ryggsäck och storebrors gamla 3D-skrivare. Den är långsam och låter konstigt. Storebror fick aldrig igång den. Allt surras fast på cykeln.",
   "var": "Introt"
  },
  {
@@ -5443,15 +5443,33 @@
   "var": "Introt"
  },
  {
-  "id": "berattare-ec476e9a",
+  "id": "berattare-7b12c991",
   "figur": "berattare",
-  "text": "Cykeln har tagit dig hit. Nu får den jobba. Storebrors skrivare har lite filament kvar. Dynamo + sladd = ström.",
+  "text": "Cykeln har tagit dig hit. Nu får den jobba. Trampar du på cykeln, får skrivaren ström. Lite filament finns kvar på rullen.",
   "var": "Introt"
  },
  {
-  "id": "berattare-615256f5",
+  "id": "berattare-98e4c76b",
   "figur": "berattare",
-  "text": "Men skräp är plast. Plast kan bli filament. Och med filament kan man printa… allt.",
+  "text": "Runt omkring: skräp.",
+  "var": "Introt"
+ },
+ {
+  "id": "berattare-d46c000b",
+  "figur": "berattare",
+  "text": "Och skräp är plast.",
+  "var": "Introt"
+ },
+ {
+  "id": "berattare-aa59d397",
+  "figur": "berattare",
+  "text": "Med en kvarn kan plast bli filament.",
+  "var": "Introt"
+ },
+ {
+  "id": "berattare-499d739e",
+  "figur": "berattare",
+  "text": "Och med filament kan man printa… allt.",
   "var": "Introt"
  },
  {
