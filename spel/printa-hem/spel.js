@@ -52,6 +52,10 @@ async function laddaMoln() {
 const MOLN = await laddaMoln();
 
 // ---------- Inställningar (lek fritt med dessa) ----------
+// ---------- Punkt 15: EN SAK I TAGET (claude/soptippsvagen-en-sak-i-taget.md) ----------
+const ROST_PAUS = 2000;     // ms paus mellan två olika saker som berättas (röst, sms, notis, nytt mål …)
+const DIALOG_PAUS = 800;    // ms mellan repliker inom samma samtal (pappas besök, telefonen, sopbilsresan, julen, Helen)
+const KANAL_GAMMAL = 20000; // REAKTION och småprat som väntat längre än så stryks
 const TOMT = 21;                 // tomten går från -TOMT till +TOMT (meter)
 const ANTAL_SKRAP = 50;          // skräp på själva tomten från start
 const GARD_KVAR = 3;             // så här få skräp får ligga kvar på gården när den räknas som städad
@@ -2938,7 +2942,7 @@ const PLATTA_TANKE = 'Den väntar på att jag tar ut grejerna.', PLATTA_BROR = '
 function plattanFull(sk) {
   if (!sk.plattaSedan) sk.plattaSedan = performance.now();
   if (S.plattaTanke) return; S.plattaTanke = true; sparaSnart();
-  textLogg('tanke', 'du', PLATTA_TANKE, 'plattanFull'); notis('💭 ' + PLATTA_TANKE, 'tanke', { tid: 5000 }); prata('du', PLATTA_TANKE, 'STORY');
+  tanke(PLATTA_TANKE, 'plattanFull');
 }
 setInterval(() => {
   if (S.plattaBror || pausad) return;
@@ -3456,24 +3460,55 @@ function textLogg(kalla, vem, text, varfor = '') {
 // ---------- Punkt BD: en gemensam kö för texter (sms och notiser från figurer) ----------
 // STORY > MÅL > REAKTION > SMÅPRAT. Max en text per TEXT_MELLAN ms från olika källor. "Stryks om" kontrolleras precis innan visning.
 // STORY kommer även med en meny öppen, småprat väntar tills menyn är stängd. Allt väntar under animationer och kapitelkort.
-const TEXT_MELLAN = 3000, VIKT_ORDNING = { STORY: 0, 'MÅL': 1, REAKTION: 2, 'SMÅPRAT': 3 };
-const textKo = []; let textSenast = -1e9, textSenastKalla = '';
-function koaText(kalla, vikt, visa, o = {}) { textKo.push({ kalla, vikt, visa, o, t: performance.now() }); textLogg('väntar', kalla, o.text || '', vikt); }
-const animationPagar = () => !!(spikar || cykelAnim || printarFram.size || document.querySelector('.ph-kapkort, .ph-kap') || sover);
-function korTextKo() {
-  if (!textKo.length) return;
-  const nu = performance.now();
-  if (animationPagar()) return;
-  textKo.sort((a, b) => VIKT_ORDNING[a.vikt] - VIKT_ORDNING[b.vikt] || a.t - b.t);
-  for (let i = 0; i < textKo.length; i++) {
-    const x = textKo[i];
-    if (x.o.stryksOm?.()) { textKo.splice(i, 1); textLogg('struken', x.kalla, x.o.text || '', 'pekar bakåt'); return; }
-    if (x.vikt === 'REAKTION' && nu - x.t > REAKTION_MAX_VANTAN) { textKo.splice(i, 1); textLogg('struken', x.kalla, x.o.text || '', 'väntade för länge'); return; }
-    if (x.vikt === 'SMÅPRAT' && (pausad || !ui.igang)) continue;   // punkt 10: sms syns även med en meny öppen
-    if (x.kalla !== textSenastKalla && nu - textSenast < TEXT_MELLAN) return;
-    textKo.splice(i, 1); textSenast = nu; textSenastKalla = x.kalla; x.visa(); return;
-  }
+const VIKT_ORDNING = { STORY: 0, 'MÅL': 1, REAKTION: 2, 'SMÅPRAT': 3 };
+// Punkt 15: EN kanal för allt som berättar något. Bara en sak åt gången syns och hörs; text och röst kommer tillsammans.
+// En sak: { vikt, vem, text, visa(), rost (false = bara text), minMs, stryksOm(), efter(), forst }. Efter varje sak: ROST_PAUS.
+const kanal = []; let kanalAktiv = null, kanalFri = 0;
+function kanalLagg(it) {
+  it.t = performance.now(); it.vikt = it.vikt || 'REAKTION';
+  // kön får inte växa: max en sak per figur i kön (STORY stryks aldrig – den väntar)
+  if (it.vikt !== 'STORY' && it.vem) { const i = kanal.findIndex((x) => x.vem === it.vem && x.vikt !== 'STORY'); if (i >= 0) { textLogg('struken', kanal[i].vem, kanal[i].text || '', 'en nyare från samma'); kanal.splice(i, 1); } }
+  kanal.push(it); textLogg('väntar', it.vem || '', it.text || '', it.vikt); kanalRaknare();
 }
+const animationPagar = () => !!(spikar || cykelAnim || printarFram.size || document.querySelector('.ph-kapkort, .ph-kap') || sover);
+const scenPagar = () => introPagar || julPagar || pappaBesok.aktiv || S.resa === 'pagar';
+const kanalPausad = () => pausad || !ui.igang || animationPagar() || scenPagar() || !medEl2.hidden || !ui.butiksOverlay.hidden || !ui.overlay.hidden;
+const kanalLedig = () => !kanalAktiv && performance.now() >= kanalFri;
+function korKanal() {
+  const nu = performance.now();
+  if (kanalAktiv) {
+    const a = kanalAktiv; if (nu < a.slut || (pratarVem === a.vem && nu < pratarTill)) return;
+    kanalAktiv = null; kanalFri = nu + ROST_PAUS; textLogg('klar', a.vem || '', a.text || '', a.vikt); try { a.efter?.(); } catch (e) { console.warn(e); } kanalRaknare();
+  }
+  if (!kanal.length || nu < kanalFri || kanalPausad()) return;
+  kanal.sort((a, b) => (b.forst ? 1 : 0) - (a.forst ? 1 : 0) || VIKT_ORDNING[a.vikt] - VIKT_ORDNING[b.vikt] || a.t - b.t);
+  while (kanal.length) {
+    const it = kanal.shift();
+    if (it.stryksOm?.()) { textLogg('struken', it.vem || '', it.text || '', 'pekar bakåt'); continue; }
+    if ((it.vikt === 'REAKTION' || it.vikt === 'SMÅPRAT') && nu - it.t > KANAL_GAMMAL) { textLogg('struken', it.vem || '', it.text || '', 'väntade för länge'); continue; }
+    if (it.tidigast && nu < it.tidigast) { kanal.unshift(it); return; }
+    kanalAktiv = it; it.slut = nu + (it.minMs ?? 2500);
+    textLogg('sak', it.vem || '', it.text || '(nytt mål i rutan)', it.vikt);
+    try { it.visa?.(); } catch (e) { console.warn(e); }
+    if (it.rost !== false && it.text) { prataNu(it.vem, it.text, it.vikt, { start: it.start }); it.slut = Math.max(it.slut, pratarTill); }
+    kanalRaknare(); return;
+  }
+  kanalRaknare();
+}
+// "2 väntar" vid meddelandeikonen
+function kanalRaknare() {
+  const n = kanal.length, k = document.querySelector('[data-hud="sms"]'); if (!k) return;
+  let b = k.querySelector('.hud-vantar'); if (!b) { b = document.createElement('em'); b.className = 'hud-vantar'; k.appendChild(b); }
+  b.textContent = n ? `${n} väntar` : ''; b.hidden = !n;
+}
+{ const st = document.createElement('style'); st.textContent = '.hud-vantar{position:absolute;left:50%;top:100%;transform:translate(-50%,3px);white-space:nowrap;font:700 10px system-ui;color:#ffd27a;background:rgba(20,22,30,.85);padding:1px 6px;border-radius:8px;font-style:normal;pointer-events:none}'; document.head.appendChild(st); }
+// en tanke (din röst + 💭-notis) som en sak i kanalen
+function tanke(t, varfor = '', vikt = 'STORY') { textLogg('tanke', 'du', t, varfor); kanalLagg({ vikt, vem: 'du', text: t, visa: () => notisVisa('💭 ' + t, 'tanke', { tid: 5000 }) }); }
+// en replik med en notis (Helen ropar …)
+function replik(vem, text, notisText, vikt = 'REAKTION') { kanalLagg({ vikt, vem, text, visa: () => notisText && notisVisa(notisText, '') }); }
+// gamla anrop: koaText lägger sms i kanalen
+function koaText(kalla, vikt, visa, o = {}) { kanalLagg({ vikt, vem: kalla, text: o.text || '', visa, rost: false, stryksOm: o.stryksOm }); }
+function korTextKo() {}
 function byggOmCykeln() {
   if (cykelAnim || S.cykelOmbyggd) return;
   const fran = vagCykel.position.clone(), mal = new THREE.Vector3(-12.6, 0, 13.9), r0 = vagCykel.rotation.y, t0 = performance.now();
@@ -3719,7 +3754,7 @@ interaktor.registrera(kvarn, {
       if (utanfor.length) {
         const b = kvarn.getWorldPosition(new THREE.Vector3());
         utanfor.forEach((v, i) => { const a = 0.9 + i * 0.55, rr = 1.3 + (i % 4) * 0.22; laggSkrap(b.x + Math.cos(a) * rr + 0.4, b.z + 1.2 + Math.sin(a) * rr * 0.6, v, a * 2); });
-        if (!S.sophallarTanke) { S.sophallarTanke = true; const t = 'Det får inte plats. Jag behöver något att tippa i.'; textLogg('tanke', 'du', t, 'sophållare'); notis('💭 ' + t, 'tanke', { tid: 5000 }); prata('du', t, 'STORY'); }
+        if (!S.sophallarTanke) { S.sophallarTanke = true; tanke('Det får inte plats. Jag behöver något att tippa i.', 'sophållare'); }
       }
       S.karraLast = kvar; ritaKarraLast();
       if (tung) varna('litenTratt');
@@ -3861,6 +3896,7 @@ function malPunkt() {
   return null;
 }
 let senastTalSteg = -1, sagtBygg = false;
+let malKoSteg = null, malVisasSteg = null, malBockText = '';   // punkt 15: vilket mål som visas i rutan just nu
 const ALI_ROP = 'Hallå! Du där borta med skrivaren! Kom över vägen, jag köper sånt där!';
 // blicken glider mot en punkt under en stund (tutorial: "titta, där är Ali")
 let blickMal = null;
@@ -3883,7 +3919,15 @@ function uppdateraMalPil() {
   // din egen röst när dagboken är läst: dags att spika skylten
   if (!S.skyltUppe && S.steg <= 1 && !sagtBygg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas) { sagtBygg = true; bud(() => { if (!S.skyltUppe) { if (!S.kap1Visad) { S.kap1Visad = true; visaKapitelKort(1, KAP1_NAMN, KAP1_MAL); sparaSnart(); } tittaMot(VAG_SKYLT.x, VAG_SKYLT.z, 1.8); setTimeout(() => prata('du', DU_BYGG, 'STORY'), 1000); } }); }
   // instruktionen läses först när dagboken är läst och (i ett nytt spel) skylten är uppe
-  if (STEG_TAL[stegId()] && senastTalSteg !== S.steg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas && ui.butiksOverlay.hidden && !spikar && (S.skyltUppe || S.steg > 1)) { senastTalSteg = S.steg; const st = S.steg, id = stegId(); if (id === 'salj') { /* brorsans sms säger det, och Ali ropar om man dröjer */ } else if (id === 'kopSang') bud(() => { if (S.steg === st) prata('du', DU_SANG, 'MÅL'); }); else setTimeout(() => { if (S.steg === st) prata('berattare', STEG_TAL[id], 'MÅL'); }, 300); }
+  // punkt 15: ett nytt mål är en sak i kanalen. Målrutan visar det klara målet med ✓ tills det nya målets tur kommer –
+  // då byts rutan och berättaren läser upp målet (finns ingen uppläsning byts rutan tyst).
+  if (malKoSteg !== S.steg && (S.skyltUppe || S.steg > 1)) {
+    const st = S.steg, id = stegId(); malKoSteg = st;
+    const tal = id === 'salj' ? '' : id === 'kopSang' ? DU_SANG : (STEG_TAL[id] || '');
+    kanalLagg({ vikt: 'MÅL', vem: id === 'kopSang' ? 'du' : 'berattare', text: tal, rost: !!tal, minMs: tal ? 1500 : 0, tidigast: performance.now() + 400,
+      stryksOm: () => S.steg !== st, visa: () => { malVisasSteg = st; } });
+  }
+  if (malVisasSteg !== S.steg && malKoSteg == null) malVisasSteg = S.steg;
 }
 function uppdateraMalSkylt(dt) {
   malInfo.t -= dt; if (malInfo.t > 0) return; malInfo.t = 0.5;
@@ -4353,7 +4397,7 @@ function visaSamtal(m) {
     radEl.classList.toggle('du', v === 'du');
     el.querySelector('.ph-samtal-bild').classList.toggle('pratar', v !== 'du');
     prata(v, t, 'STORY');
-    const vanta = () => { if (performance.now() < pratarTill) { vantar = setTimeout(vanta, 200); return; } vantar = setTimeout(nasta, 700); };
+    const vanta = () => { if (performance.now() < pratarTill) { vantar = setTimeout(vanta, 200); return; } vantar = setTimeout(nasta, DIALOG_PAUS); };
     vantar = setTimeout(vanta, 400);
   };
   const svara = () => {
@@ -4909,38 +4953,28 @@ function sms(fran, text, id, direkt = false, o = {}) {
 // punkt BD: vilken vikt har ett sms? Småprat ur poolen och Alis sms = SMÅPRAT, resten = STORY
 const smsVikt = (fran, id) => (id && SMS_POOL.some((m) => m.id === id) && !SMS_POOL.find((m) => m.id === id)?.svar) || (fran === 'ali' && !id) ? 'SMÅPRAT' : 'STORY';
 function smsFram(fran, text, id, o = {}) {
-  if (!o.direkt) { koaText(fran, o.vikt || smsVikt(fran, id), () => smsFram(fran, text, id, { ...o, direkt: true }), { text, stryksOm: o.stryksOm }); return; }
-  textLogg('sms', fran, text);
-  // syns direkt som en bubbla i inkorgen uppe till höger – uppläsningen väntar på sin tur i kön
-  const m = { fran, text, ny: true }; S.sms.push(m); S.sms = S.sms.slice(-40); S.olasta = S.sms.filter((x) => x.ny).length; sparaSnart();
-  smsBubbla(fran, AVSANDARE[fran]?.namn || fran, text, () => { m.ny = false; smsLast(fran); });
+  // punkt 15: sms:et är en sak i kanalen – bubblan och rösten kommer tillsammans när det är dess tur
+  const m = { fran, text, ny: true };
+  kanalLagg({ vikt: o.vikt || smsVikt(fran, id), vem: fran, text, stryksOm: o.stryksOm, visa: () => {
+    textLogg('sms', fran, text);
+    S.sms.push(m); S.sms = S.sms.slice(-40); S.olasta = S.sms.filter((x) => x.ny).length; sparaSnart();
+    smsBubbla(fran, AVSANDARE[fran]?.namn || fran, text);
+  }, efter: () => { m.ny = false; smsLast(fran); } });
 }
 // punkt 10: varje sms syns som en bubbla uppe till höger i samma ögonblick som rösten börjar – även när en meny är öppen.
 // Texten ligger kvar i Dagbok → Meddelanden (S.sms).
 const smsFack = document.createElement('div'); smsFack.className = 'hud-smsfack'; document.body.appendChild(smsFack);
-{ const st = document.createElement('style'); st.textContent = `.hud-smsfack{position:fixed;right:max(12px,env(safe-area-inset-right));top:calc(var(--bar-h,64px) + 10px);z-index:120;width:min(380px,92vw);display:flex;flex-direction:column;gap:8px;pointer-events:none}
+{ const st = document.createElement('style'); st.textContent = `.hud-smsfack{position:fixed;right:max(12px,env(safe-area-inset-right));top:calc(var(--bar-h,64px) + 10px);z-index:40;width:min(380px,92vw);display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .hud-smsfack .hud-ios{position:relative;right:auto;top:auto;width:auto}`; document.head.appendChild(st); }
-function smsBubbla(vem, titel, text, klar) {
+function smsBubbla(vem, titel, text) {
   const el = document.createElement('div'); el.className = 'hud-ios';
-  el.innerHTML = `<div class="app app-portratt">${humorPortratt(vemAvSms(vem), text, 38)}</div><div class="inne"><div class="topp"><span>MEDDELANDEN</span><span class="nu">nu</span></div><div class="fran"><b>${rens(titel)}</b></div><div class="txt">${rens(text)}</div><div class="hud-bubbla-bar"><i></i></div></div>`;
-  let visad = false, start = 0;
-  const visa = () => {
-    if (visad) return; visad = true; start = performance.now();
-    triTon(); hudEl.querySelector('[data-hud="sms"]')?.animate([{ transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 400 });
-    smsFack.prepend(el); requestAnimationFrame(() => el.classList.add('in'));
-    [...smsFack.children].slice(INKORG_MAX).forEach((x) => { x.classList.add('ut'); setTimeout(() => x.remove(), 500); });
-    textLogg('sms-bubbla', vem, text);
-    const bar = el.querySelector('.hud-bubbla-bar i');
-    const tick = () => {
-      const nu = performance.now(), slut = Math.max(start + 2500, pratarVem === vem ? pratarTill : 0);
-      bar.style.width = Math.min(100, (nu - start) / Math.max(1, slut - start) * 100) + '%';
-      if (nu < slut) { requestAnimationFrame(tick); return; }
-      klar?.(); setTimeout(() => { el.classList.add('ut'); setTimeout(() => el.remove(), 500); }, 6000);
-    };
-    requestAnimationFrame(tick);
-  };
-  prata(vem, text, 'STORY', { start: visa });
-  setTimeout(visa, 12000);   // reserv: rösten kom aldrig igång – bubblan visas ändå
+  el.innerHTML = `<div class="app app-portratt">${humorPortratt(vemAvSms(vem), text, 38)}</div><div class="inne"><div class="topp"><span>MEDDELANDEN</span><span class="nu">nu</span></div><div class="fran"><b>${rens(titel)}</b></div><div class="txt">${rens(text)}</div></div>`;
+  triTon(); hudEl.querySelector('[data-hud="sms"]')?.animate([{ transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 400 });
+  smsFack.prepend(el); requestAnimationFrame(() => el.classList.add('in'));
+  [...smsFack.children].slice(1).forEach((x) => { x.classList.add('ut'); setTimeout(() => x.remove(), 500); });   // en sak i taget
+  textLogg('sms-bubbla', vem, text);
+  const bort = () => { el.classList.add('ut'); setTimeout(() => el.remove(), 500); };
+  const t0 = performance.now(); const vanta = () => { if ((pratarVem === vem && performance.now() < pratarTill) || performance.now() - t0 < 2500) { setTimeout(vanta, 300); return; } setTimeout(bort, 4000); }; setTimeout(vanta, 300);
 }
 function triTon() {
   try { const c = ljudCtx(); if (!c) return; [[1318.5, 0], [1046.5, 0.13], [1568, 0.26]].forEach(([f, d]) => {
@@ -6504,7 +6538,7 @@ function invIntro(varfor) {
   S.forsta = S.forsta || [];
   if (S.forsta.includes('inv:e') || (S.dag === 1 && S.steg < SI.kop)) return;
   S.forsta.push('inv:e'); sparaSnart();
-  setTimeout(() => { notis(varfor === 'full' ? '🎒 Ryggsäcken är full – tryck E för att se vad du har' : '🎒 Du har en ryggsäck nu. Tryck E (eller 🎒-knappen) för att öppna den', 'guld', { tid: 6000 }); prata('du', VARN.ryggsack); }, 400);
+  setTimeout(() => replik('du', VARN.ryggsack, varfor === 'full' ? '🎒 Ryggsäcken är full – tryck E för att se vad du har' : '🎒 Du har en ryggsäck nu. Tryck E (eller 🎒-knappen) för att öppna den'), 400);
 }
 // en kort förklaring om vad man gör med en sak
 function tipsFor(t) {
@@ -6678,6 +6712,18 @@ const ui = new FpUI({
     // Alis bakgrund – även till den som redan sålt sin första sak innan storyn fanns
  if (!S.lappar.includes('start')) visaLapp('start'); else { const st = STEG[S.steg]; if (st?.startLapp && !S.lappar.includes(st.startLapp)) visaLapp(st.startLapp); } },
 });
+// punkt 15: en toast inom 0,6 s efter ett klick/en tangent är direkt återkoppling (regel 4) och visas direkt.
+// Felmeddelanden också. Allt annat (sådant som händer av sig självt) är en sak i kanalen.
+{
+  let senastInput = -1e9; const in0 = () => { senastInput = performance.now(); };
+  addEventListener('pointerdown', in0, true); addEventListener('keydown', in0, true);
+  const toast0 = ui.toast.bind(ui);
+  ui.toastDirekt = toast0;
+  ui.toast = (t, typ = '') => {
+    if (typ === 'fel' || performance.now() - senastInput < 600 || !ui.igang || pausad || !ui.butiksOverlay.hidden) return toast0(t, typ);
+    kanalLagg({ vikt: 'REAKTION', vem: 'toast:' + String(t).slice(0, 40), text: String(t), rost: false, minMs: 2500, visa: () => toast0(t, typ) });
+  };
+}
 // inventoryt städar efter sig när en meny stängs (musens hög tillbaka, säljlådan säljs)
 { const _stang = ui.stangButik.bind(ui); ui.stangButik = () => { if (!ui.butiksOverlay.hidden) spelaLjud('meny-stang'); invAvsluta(); _stang(); }; }
 
@@ -7264,6 +7310,11 @@ const notisKo = [];
 const RUBRIK = { bra: 'Klart', guld: 'Nytt', fel: 'Obs', '': 'Info', sms: 'Meddelande', lapp: 'Dagbok' };
 const RUBRIK_IKON = { bra: 'bock', guld: 'stjarna', fel: 'varning', '': 'info', sms: 'telefon', lapp: 'bok' };
 function notis(text, typ = '', o = {}) {
+  if (typ === 'sms' || typ === 'lapp' || o.direkt) return notisVisa(text, typ, o);
+  kanalLagg({ vikt: o.vikt || 'REAKTION', vem: 'notis:' + text.slice(0, 40), text, rost: false, minMs: 2500, visa: () => notisVisa(text, typ, o) });
+  return null;
+}
+function notisVisa(text, typ = '', o = {}) {
   // samma text igen inom kort: förnya kortet i stället för att lägga ett nytt
   const el = typ === 'sms' || typ === 'lapp' ? medEl : notisEl;   // meddelanden till vänster, notiser till höger
   const finns = [...el.children].find((k) => k.dataset.text === text && !k.classList.contains('ut'));
@@ -7280,7 +7331,7 @@ function notis(text, typ = '', o = {}) {
   requestAnimationFrame(() => k.classList.add('in'));
   const ut = [...el.children].filter((x) => !x.classList.contains('ut'));
   ut.slice(el === medEl ? 3 : NOTIS_MAX).forEach(taBort);
-  k._t = setTimeout(() => { taBort(k); if (el === notisEl) setTimeout(() => { const n = notisKo.shift(); if (n) notis(...n); }, 450); }, el === notisEl ? NOTIS_TID : o.tid || 7000);
+  k._t = setTimeout(() => { taBort(k); if (el === notisEl) setTimeout(() => { const n = notisKo.shift(); if (n) notisVisa(...n); }, 450); }, el === notisEl ? NOTIS_TID : o.tid || 7000);
   return k;
 }
 // fasta varningar: ligger kvar tills problemet är löst
@@ -7711,39 +7762,18 @@ ui.toast = (text, typ) => {
 // block = du kan gå och titta men inte använda något förrän den är uppläst (dag 1 och skylten)
 let dagbokLas = false, dagbokPrat = false;   // dagboken läses alltid klart – du kan spela under tiden, men inget annat pratar eller dyker upp
 const INKORG_MAX = 3; let inkorgVantar = 0;
-function inkorg({ vem, titel, text, lapp = false, block = false, klar, fore, smsId }) {
-  const lista = document.querySelector('.hud-inkorg');
-  // sms ser ut som en iPhone-notis högst upp i mitten; dagbok och tankar som bubblor till höger
-  const ios = !lapp && titel !== 'Tanke';
-  const el = document.createElement('div'); el.className = ios ? 'hud-ios' : 'hud-bubbla' + (lapp ? ' lapp' : '') + ' vantar';
-  el.innerHTML = ios
-    ? `<div class="app app-portratt">${humorPortratt(vemAvSms(vem), text, 38)}</div><div class="inne"><div class="topp"><span>MEDDELANDEN</span><span class="nu">nu</span></div><div class="fran"><b>${rens(titel)}</b></div><div class="txt">${rens(text)}</div><div class="hud-bubbla-bar"><i></i></div></div>`
-    : `<div class="rub">${portratt(lapp ? "du" : vemAvSms(vem), 28)}<b>${rens(titel)}</b><em>i kö</em></div><div class="txt">${rens(text)}</div><div class="hud-bubbla-bar"><i></i></div>`;
-  inkorgVantar++;
-  const lasUpp = () => {
-    inkorgVantar--; fore?.();
-    // sms: iPhone-notis högst upp som läses upp direkt – en i taget, i den ordning de kom
-    if (ios) triTon(); else ljud.plock();
-    hudEl.querySelector('[data-hud="sms"]')?.animate([{ transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 400 });
-    lista.prepend(el);   // (dold med CSS i punkt AA – texten finns i Meddelanden)   // sms och dagbok i samma hörn uppe till höger
-    requestAnimationFrame(() => el.classList.add('in'));
-    [...lista.children].slice(INKORG_MAX).forEach((x) => { x.classList.add('ut'); setTimeout(() => x.remove(), 500); });
-    el.classList.remove('vantar'); el.classList.add('laser'); const em = el.querySelector('em'); if (em) em.textContent = 'läser…';
-    const skydda = lapp || block;   // dagboken får aldrig avbrytas
-    if (skydda) dagbokLas = true;
-    const start = performance.now(); dagbokPrat = skydda; prata(lapp ? 'du' : vem, text, 'STORY'); dagbokPrat = false;
-    const bar = el.querySelector('.hud-bubbla-bar i');
-    const tick = () => {
-      const nu = performance.now(), slut = Math.max(start + 2500, pratarTill || 0);
-      bar.style.width = Math.min(100, (nu - start) / Math.max(1, slut - start) * 100) + '%';
-      if (nu < slut) { requestAnimationFrame(tick); return; }
-      if (skydda) dagbokLas = false;
-      el.classList.remove('laser'); const em2 = el.querySelector('em'); if (em2) em2.textContent = ''; klar?.();
-      setTimeout(() => { el.classList.add('ut'); setTimeout(() => el.remove(), 500); }, ios ? 6000 : 14000);
-    };
-    requestAnimationFrame(tick);
-  };
-  if (block) budKo.unshift(lasUpp); else bud(lasUpp);
+function inkorg({ vem, titel, text, lapp = false, block = false, klar, fore }) {
+  // punkt 15: dagboken och tankarna är saker i kanalen – bubblan och rösten kommer tillsammans när det är deras tur
+  const el = document.createElement('div'); el.className = 'hud-bubbla' + (lapp ? ' lapp' : '');
+  el.innerHTML = `<div class="rub">${portratt(lapp ? 'du' : vemAvSms(vem), 28)}<b>${rens(titel)}</b></div><div class="txt">${rens(text)}</div>`;
+  kanalLagg({ vikt: lapp || block ? 'STORY' : 'REAKTION', forst: block, vem: lapp ? 'du' : vem, text, minMs: 2500,
+    visa: () => {
+      fore?.(); ljud.plock();
+      smsFack.prepend(el); requestAnimationFrame(() => el.classList.add('in'));
+      [...smsFack.children].slice(1).forEach((x) => { x.classList.add('ut'); setTimeout(() => x.remove(), 500); });
+      if (lapp || block) dagbokLas = true;
+    },
+    efter: () => { if (lapp || block) dagbokLas = false; klar?.(); setTimeout(() => { el.classList.add('ut'); setTimeout(() => el.remove(), 500); }, 5000); } });
 }
 // punkt 12: fördröjda toasts kopplas till händelser
 const efterBrevKo = {};
@@ -8063,8 +8093,11 @@ const REAKTION_MAX_VANTAN = 4000;
 let pratVikt = '';
 const pratKo = [];
 function prata(vem, text, vikt = 'REAKTION', o = {}) {
-  // dagboken läses (en STORY) eller en annan STORY pratar: den här väntar i kön i stället för att avbryta eller försvinna
-  if ((dagbokLas && !dagbokPrat) || (pratVikt === 'STORY' && performance.now() < pratarTill)) {
+  // punkt 15: i scener (samtal, besök, julen, introt), i menyer (svar på det man gör) och i öppna meddelanden pratar man direkt.
+  // Allt annat är en sak i kanalen och väntar på sin tur.
+  const direkt = o.direkt || scenPagar() || pausad || !ui.igang || !ui.butiksOverlay.hidden || !medEl2.hidden || dagbokPrat;
+  if (!direkt) { kanalLagg({ vikt, vem, text, start: o.start, efter: o.slut }); return; }
+  if (false) {
     if (vikt === 'REAKTION') { const i = pratKo.findIndex((x) => x.vikt === 'REAKTION'); if (i >= 0) { textLogg('röst-struken', pratKo[i].vem, pratKo[i].text + ' · en nyare reaktion'); pratKo.splice(i, 1); } }
     pratKo.push({ vem, text, vikt, o, t: performance.now() }); textLogg('röst-väntar', vem, text + ' · ' + vikt); return;
   }
@@ -8196,7 +8229,7 @@ function visaNastaMeddelande() {
 document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement && !medEl2.hidden) ui.slappMus(); });
 function stangMeddelande() {
   const k = medEl2.querySelector('button.fp-knapp'); if (!k || k.disabled || k.hidden) return;
-  medEl2.hidden = true; medEl2.innerHTML = ''; tystna();
+  medEl2.hidden = true; medEl2.innerHTML = ''; tystna(); kanalFri = performance.now() + ROST_PAUS;
   pausad = false; ui.igang = true;
   if (medKo.length) { setTimeout(visaNastaMeddelande, 250); return; }
   spelare.aktiv = true; spelare.lasMus();
@@ -8263,9 +8296,8 @@ document.addEventListener('click', (e) => {
 let bandTid = 0;
 let anvandNere = false, skrapTimer = 0, trampTid = 0, fullVarnad = false;
 function uppdatera(dt) {
-  korPratKo();   // punkt BC
-  korTextKo();   // punkt BD
-  if (!pausad && !dagbokLas && medKo.length && ui.igang && ui.butiksOverlay.hidden && ui.overlay.hidden) visaNastaMeddelande();
+  korKanal();   // punkt 15: en sak i taget
+  if (!pausad && !dagbokLas && medKo.length && ui.igang && ui.butiksOverlay.hidden && ui.overlay.hidden && kanalLedig()) visaNastaMeddelande();   // punkt 15: brev och lappar är också en sak i taget
   if (pausad) return;
   spelare.uppdatera(dt);
   uppdateraGoran(dt);
@@ -8351,7 +8383,7 @@ function uppdatera(dt) {
     // mål-guiden
     while (S.steg < STEG.length && STEG[S.steg].klar()) {
       const st = STEG[S.steg]; S.steg++;
-      ljud.klar(); handelse('malKlart', { id: st.id || 'steg' + (S.steg - 1), del: st.del, nasta: STEG[S.steg]?.id || 'steg' + S.steg });
+      malBockText = malRaw; ljud.klar(); handelse('malKlart', { id: st.id || 'steg' + (S.steg - 1), del: st.del, nasta: STEG[S.steg]?.id || 'steg' + S.steg });
       if (st.lapp && !S.lappar.includes(st.lapp)) visaLapp(st.lapp);
       if (st.sms && !(S.smsSkickat || []).includes(st.lapp || st.sms[1])) { S.smsSkickat = [...(S.smsSkickat || []), st.lapp || st.sms[1]]; sms(st.sms[0], st.sms[1]); }
       const nasta = STEG[S.steg];
@@ -8449,6 +8481,7 @@ function uppdatera(dt) {
   malDel.textContent = (S.julFirad && S.steg >= STEG.length ? 'Efterspelet' : S.folkbokMal && !S.folkbokford && S.steg >= STEG.length ? 'Slutmålet' : S.steg < STEG.length ? (`Kapitel ${kapitelNu()} · ` + STEG[S.steg].del) : S.folkbokford ? 'Folkbokförd · fritt bygge' : 'Oändligt bygge').toUpperCase();
   if (STEG[S.steg]?.sov && !kvallKlar()) { malRaw = `Dagens mål är klara! Bygg, printa och sälj fritt – det blir kväll om ${Math.max(1, Math.ceil((MIN_VAKEN - (S.vakenTid || 0)) / 60))} min.`; }
   if (!S.skyltUppe && S.steg <= 1) { malDel.textContent = 'KAPITEL 1 · ETT HEM ATT BO I'; malRaw = 'Spika upp din adresskylt'; }
+  if (malVisasSteg != null && malVisasSteg !== S.steg && malBockText && !/^✓/.test(malBockText)) malRaw = '✓ ' + malBockText;   // punkt 15: det klara målet tills det nya är på tur
   ritaNasta();
   if (S.steg >= STEG.length && S.julFirad && !S.kapitel2Klart) { S.kapitel2Klart = true; sparaSnart(); }   // efterspelet (Tippen på tid) öppnas
   {
@@ -8667,7 +8700,7 @@ function kollaResa() {
 function sagaIOrdning(vem, rader, i = 0) {
   if (i >= rader.length) return;
   prata(vem, rader[i], 'STORY');
-  const vanta = () => { if (performance.now() < pratarTill) { setTimeout(vanta, 250); return; } setTimeout(() => sagaIOrdning(vem, rader, i + 1), 450); };
+  const vanta = () => { if (performance.now() < pratarTill) { setTimeout(vanta, 250); return; } setTimeout(() => sagaIOrdning(vem, rader, i + 1), DIALOG_PAUS); };
   setTimeout(vanta, 600);
 }
 function rolfSager(text) { const t = rolfDialekt(text, false).replace('​', ''); prata('rolf', t); return t; }
@@ -8761,7 +8794,7 @@ function kollaBengt(dt) {
   S.bengtSkrik = (S.bengtSkrik || 0) + 1;
   const t = BENGT_SKRIK[(S.bengtSkrik - 1) % BENGT_SKRIK.length];
   ui.toast(`😡 Bengt-Åke skriker från skogen: "${t}"`, 'fel'); argtSkrik(); try { visaBengt(t); } catch {}
-  if (S.helen) setTimeout(() => { notis(`Helen: ”${HELEN_BENGT}”`, ''); prata('helen', HELEN_BENGT); varldsBubbla(helenFig, HELEN_BENGT, 3.5); setTimeout(() => ui.toast('Det blir tyst i skogen.', 'bra'), 3500); }, 2200);   // punkt AN
+  if (S.helen) setTimeout(() => { replik('helen', HELEN_BENGT, `Helen: ”${HELEN_BENGT}”`, 'STORY'); varldsBubbla(helenFig, HELEN_BENGT, 3.5); setTimeout(() => ui.toast('Det blir tyst i skogen.', 'bra'), 3500); }, 2200);   // punkt AN
 }
 function argtSkrik() {   // ett grovt, argt vrål långt borta
   const c = lac; if (!c) return;
@@ -8963,7 +8996,7 @@ function rostManus() {
 const SKJUL_PTS = {"tak":[[0.2273,0.2665],[0.3387,0.2101],[0.7586,0.181],[0.7778,0.2417],[0.2273,0.2665]],"dorr":[[0.4176,0.7275],[0.4135,0.3365],[0.5517,0.3352],[0.5491,0.7497]],"fonster":[[0.3103,0.4923],[0.3078,0.3865],[0.3794,0.3876],[0.381,0.4969],[0.3103,0.4923]],"dorrMitt":[0.481,0.5442]};
 const KORT12_PTS = {"stall":[[49.3,44.6,39.9,42.7],[49.3,43.7,49.3,44.6],[49.3,44.6,49.8,44.3],[40.5,42.5,49.8,44.3],[49.8,44.3,49.8,43.4],[39.9,41.9,49.3,43.7],[49.8,43.4,49.3,43.7],[43.3,43.4,42.5,43.3],[43.1,35.7,43.3,43.4],[43.3,43.4,43.8,43.1],[49.8,43.4,40.5,41.6],[43.1,43,42.5,43.3],[42.5,43.3,42.4,35.6],[43.1,43,43.8,43.1],[43.8,43.1,43.7,35.6],[42.9,35.5,43.1,43],[40.5,42.5,39.9,42.7],[39.9,42.7,39.9,41.9],[40.5,41.6,40.5,42.5],[53.8,42,45,40.4],[53.8,41.1,53.8,42],[53.8,42,54.2,41.7],[39.9,41.9,40.5,41.6],[45.5,40.2,54.2,41.7],[54.2,41.7,54.2,40.9],[45,39.7,53.8,41.1],[54.2,40.9,53.8,41.1],[48.2,41,47.4,40.9],[48.1,34.1,48.2,41],[48.2,41,48.6,40.8],[47.9,40.7,47.4,40.9],[47.4,40.9,47.4,34],[54.2,40.9,45.5,39.5],[47.9,40.7,48.6,40.8],[48.6,40.8,48.6,33.9],[47.9,33.9,47.9,40.7],[45.5,40.2,45,40.4],[45,40.4,45,39.7],[45.5,39.5,45.5,40.2],[45,39.7,45.5,39.5],[43.2,36.2,42.4,36.1],[43.1,35.3,43.2,36.2],[43.2,36.2,48.6,34.4],[47.9,34.3,42.4,36.1],[42.4,36.1,42.4,35.2],[42.4,35.6,43.1,35.7],[43.7,35.6,43.1,35.7],[43.7,35.6,42.9,35.5],[42.4,35.6,42.9,35.5],[42.4,35.2,43.1,35.3],[48.6,33.5,43.1,35.3],[42.4,35.2,47.9,33.4],[47.9,34.3,48.6,34.4],[48.6,34.4,48.6,33.5],[47.9,33.4,47.9,34.3],[47.4,34,48.1,34.1],[48.6,33.9,48.1,34.1],[47.4,34,47.9,33.9],[48.6,33.9,47.9,33.9],[48.6,33.5,47.9,33.4]],"kabel":[[45.6,34.7],[46,35.3],[46.3,35.9],[46.6,36.5],[46.9,37.1],[47.2,37.7],[47.5,38.3],[47.8,38.8],[48,39.1],[48.3,39.3],[48.6,39.4],[48.9,39.3],[49.2,39.1],[49.5,38.7],[49.8,38.3],[50.1,37.9],[50.4,37.3],[50.7,36.8],[50.9,36.2],[51.2,35.7],[51.5,35.1],[51.7,34.5],[52,33.8],[52.3,33.1],[52.5,32.3],[52.7,31.5],[52.9,30.7],[53.2,29.9],[53.4,29.1],[53.6,28.4],[53.8,27.6]]}
 const KORT13_PTS = {"kvarn":[[73.1,53,69.9,48.6],[58.9,48.6,60.3,53],[73.1,51.9,73.1,53],[73.1,53,60.3,53],[60.3,53,60.4,51.9],[69.9,47.6,73.1,51.9],[60.4,51.9,58.9,47.6],[60.4,51.9,73.1,51.9],[58.9,47.6,58.9,48.6],[58.9,48.6,69.9,48.6],[69.9,48.6,69.9,47.6],[41.1,47.8,42.9,42.2],[28.8,42.2,23.3,47.8],[40.6,27.5,41.1,47.8],[41.1,47.8,23.3,47.8],[23.3,47.8,21.9,27.5],[69.9,47.6,58.9,47.6],[43.2,42.4,43.6,40.8],[39.7,40.8,38.9,42.4],[43.1,39.3,43.2,42.4],[43.2,42.4,38.9,42.4],[38.9,42.4,38.9,39.3],[28,26.1,28.8,42.2],[28.8,42.2,42.9,42.2],[42.9,42.2,42.7,26.1],[26.4,41.5,25.5,41.3],[27.1,41.3,26.4,41.5],[25.5,41.3,24.9,40.8],[27.8,40.8,27.1,41.3],[26.7,40.2,25.3,41.3],[25.3,41.3,24.7,41.1],[25.9,41.1,25.3,41.3],[25.9,41,26.7,41.2],[26.7,41.2,27.5,41],[26,41.2,26.3,40.9],[24.7,40.9,24.3,41.2],[25.5,33,26,41.2],[26,41.2,24.3,41.2],[24.3,41.2,23.8,33],[24.7,41.1,26.1,40],[25.9,41.1,27.2,40],[24.7,41.1,24.5,40.5],[26.1,40.5,25.9,41.1],[25.3,40.5,25.9,41],[27.5,41,28.1,40.5],[24.2,32.8,24.7,40.9],[24.7,40.9,26.3,40.9],[26.3,40.9,25.9,32.8],[24.9,40.8,24.5,40.1],[28.1,40.1,27.8,40.8],[26.1,40.8,27.4,39.7],[39.7,37.9,39.7,40.8],[39.7,40.8,43.6,40.8],[43.6,40.8,43.6,37.9],[40.6,40.8,41.5,39.9],[40.6,40.8,40.3,40.7],[40.4,40.4,40.6,40.8],[40.3,40.7,41.2,39.8],[40.3,40.7,39.8,40.3],[24.9,39.8,25.3,40.5],[28.1,40.5,28.4,39.8],[24.5,40.5,25.8,39.4],[26.1,40.5,27.4,39.4],[24.5,40.5,24.7,39.9],[25.8,39.9,26.1,40.5],[24.5,40.5,25.8,39.4],[40.4,40.4,41.3,39.5],[39.9,39.9,40.4,40.4],[40.7,39.3,39.8,40.3],[39.8,40.3,39.3,39.7],[26.1,40,26.7,40.2],[26.7,40.2,27.2,40],[24.5,40.1,24.4,39.3],[28,39.3,28.1,40.1],[28.1,40.1,28.4,39.8],[25.8,39.4,26.1,40],[27.2,40,27.4,39.4],[24.7,39.9,26,38.9],[25.8,39.9,27.1,38.9],[24.7,39.9,25.2,39.7],[25.2,39.7,25.8,39.9],[39.9,39.9,40.8,38.9],[41.5,39.9,42.4,38.9],[39.3,39.5,39.9,39.9],[24.8,39,24.9,39.8],[28.4,39.8,28.4,39],[41.2,39.8,42.2,38.9],[24.4,39.7,24.8,39.4],[25.2,39.7,26.6,38.7],[39.3,39.7,40.2,38.8],[39.3,39.7,39.1,39.4],[39.3,39.5,40.3,38.5],[41.3,39.5,42.3,38.6],[26,38.9,25.8,39.4],[27.4,39.4,27.1,38.9],[39.1,39.4,40,38.4],[24.4,39.3,24.7,38.6],[27.6,38.6,28,39.3],[43.6,37.9,43.1,39.3],[38.9,39.3,39.7,37.9],[38.9,39.3,43.1,39.3],[41.7,38.4,40.7,39.3],[25.1,38.3,24.8,39],[28.4,39,28,38.3],[26.6,38.7,26,38.9],[27.1,38.9,26.6,38.7],[40.8,38.9,41.8,38],[42.2,38.9,43.1,37.9],[42.4,38.9,43.4,38],[40.2,38.8,41.2,37.9],[24.7,38.6,25.4,38.1],[27,38.1,27.6,38.6],[42.3,38.6,43.2,37.7],[40.3,38.5,41.3,37.6],[40,38.4,41,37.5],[42.6,37.5,41.7,38.4],[25.7,37.8,25.1,38.3],[28,38.3,27.3,37.8],[25.4,38.1,26.2,37.9],[26.2,37.9,27,38.1],[41.8,38,42.7,37.1],[43.4,38,44.3,37.1],[43.6,37.9,39.7,37.9],[41.2,37.9,42.1,36.9],[43.1,37.9,44.1,37],[26.5,37.7,25.7,37.8],[27.3,37.8,26.5,37.7],[43.2,37.7,44.1,36.8],[41.3,37.6,42.2,36.7],[41,37.5,41.9,36.6],[43.6,36.5,42.6,37.5],[42.7,37.1,43.6,36.2],[44.3,37.1,45.3,36.1],[44.1,37,45.1,36],[42.1,36.9,43.1,36],[44.1,36.8,45,35.9],[42.2,36.7,43.1,35.8],[41.9,36.6,42.9,35.7],[44.6,35.5,43.6,36.5],[43.6,36.2,44.5,35.3],[45.3,36.1,46.2,35.1],[43.1,36,44,35],[45.1,36,46,35],[45,35.9,45.9,34.9],[43.1,35.8,44,34.9],[42.9,35.7,43.8,34.7],[45.5,34.5,44.6,35.5],[44.5,35.3,45.4,34.4],[24.8,34.2,23,35.2],[23,35.2,22.4,35],[23.6,35,23,35.2],[46.2,35.1,47.1,34.1],[22.4,35,24.2,34],[23.6,35,25.4,34],[22.4,35,22,34.5],[24,34.5,23.6,35],[22.8,34.5,22.8,35],[21.9,34.5,22,35],[44,35,45,34],[46,35,46.9,33.9],[23.6,34.4,23.6,34.9],[21.4,34.4,21.6,34.9],[44,34.9,44.8,34],[45.9,34.9,46.7,33.9],[21.5,34.2,21.6,34.7],[24.1,34.7,24.2,34.2],[43.8,34.7,44.7,33.8],[22.1,34,22.2,34.6],[24.3,34,24.2,34.6],[22,34.5,23.8,33.6],[24,34.5,25.7,33.6],[22,34.5,22,33.8],[24,33.8,24,34.5],[24,34.5,25.7,33.6],[22.7,33.9,22.8,34.5],[21.9,33.9,21.9,34.5],[22.9,34,23,34.5],[23.8,34,23.7,34.5],[46.4,33.5,45.5,34.5],[23.5,33.8,23.6,34.4],[21.5,33.8,21.4,34.4],[45.4,34.4,46.2,33.5],[24.2,34,24.8,34.2],[24.8,34.2,25.4,34],[21.6,33.7,21.5,34.2],[24.2,34.2,24.1,33.7],[21.9,34.1,23.8,33.3],[47.1,34.1,47.9,33],[23.8,33.6,24.2,34],[25.4,34,25.7,33.6],[22.1,33.6,22.1,34],[22.9,33.5,22.9,34],[23.7,33.5,23.8,34],[24.1,33.6,24.3,34],[44.8,34,45.7,33],[45,34,45.8,33],[46.9,33.9,47.8,32.8],[46.7,33.9,47.5,32.9],[22,33.8,23.8,33],[24,33.8,25.7,33],[22,33.8,22.3,33.3],[23.5,33.3,24,33.8],[44.7,33.8,45.5,32.8],[23.8,33,23.8,33.6],[25.7,33.6,25.7,33],[23.3,28.9,23.6,33.6],[23.6,33.6,39.4,33.6],[39.4,33.6,39.3,28.9],[46.2,33.5,46.9,32.5],[47.2,32.4,46.4,33.5],[22.3,33.3,24.1,32.5],[23.5,33.3,25.3,32.5],[22.3,33.3,22.9,33.1],[22.9,33.1,23.5,33.3],[22.9,33.1,24.7,32.3],[25.9,32.8,25.5,33],[23.8,33,24.2,32.8],[23.8,33,25.5,33],[24.1,32.5,23.8,33],[25.7,33,25.3,32.5],[45.7,33,46.4,32.1],[45.8,33,46.6,32],[47.9,33,48.6,31.9],[47.5,32.9,48.2,31.8],[25.9,32.8,24.2,32.8],[45.5,32.8,46.3,31.8],[47.8,32.8,48.5,31.7],[24.7,32.3,24.1,32.5],[25.3,32.5,24.7,32.3],[46.9,32.5,47.6,31.4],[48,31.3,47.2,32.4],[46.4,32.1,47.1,31],[46.6,32,47.3,30.9],[48.6,31.9,49.3,30.8],[46.3,31.8,47,30.8],[48.2,31.8,48.9,30.7],[48.5,31.7,49.2,30.6],[47.6,31.4,48.3,30.4],[48.7,30.1,48,31.3],[47.1,31,47.7,30],[47.3,30.9,48,29.8],[47,30.8,47.6,29.7],[49.3,30.8,49.9,29.7],[48.9,30.7,49.5,29.6],[49.2,30.6,49.9,29.5],[48.3,30.4,48.9,29.3],[49.3,29,48.7,30.1],[47.7,30,48.4,28.9],[48,29.8,48.7,28.7],[47.6,29.7,48.3,28.6],[49.9,29.7,50.6,28.6],[49.5,29.6,50.2,28.6],[49.9,29.5,50.5,28.4],[48.9,29.3,49.5,28.3],[50,27.9,49.3,29],[39.3,28.9,23.3,28.9],[48.4,28.9,49,27.8],[48.7,28.7,49.3,27.6],[48.3,28.6,48.9,27.6],[50.6,28.6,51.2,27.6],[50.2,28.6,50.8,27.6],[50.5,28.4,51.1,27.3],[49.5,28.3,50.1,27.2],[50.6,26.8,50,27.9],[49,27.8,49.6,26.8],[48.9,27.6,49.6,26.5],[49.3,27.6,50,26.5],[51.2,27.6,51.8,26.6],[50.8,27.6,51.4,26.6],[42.7,26.1,40.6,27.5],[21.9,27.5,28,26.1],[21.9,27.5,40.6,27.5],[51.1,27.3,51.8,26.2],[32.7,27.2,31,27.1],[34.6,27.1,32.7,27.2],[50.1,27.2,50.8,26.2],[31,27.1,30,27],[36.3,27,34.6,27.1],[37.1,26.8,36.3,27],[21.4,15.7,29.9,26.9],[30,26.8,31,26.7],[44,16,37.2,26.8],[49.6,26.8,50.3,25.8],[51.3,25.8,50.6,26.8],[31,26.7,32.6,26.6],[36,26.6,37,26.7],[32.6,26.6,34.4,26.5],[34.4,26.5,36,26.6],[51.8,26.6,52.5,25.6],[51.4,26.6,52,25.6],[49.6,26.5,50.2,25.4],[50,26.5,50.6,25.5],[51.8,26.2,52.4,25.3],[50.8,26.2,51.4,25.3],[42.7,26.1,28,26.1],[50.3,25.8,50.9,24.8],[52,24.8,51.3,25.8],[52.5,25.6,53.1,24.8],[52,25.6,52.7,24.8],[54.8,24.7,55.7,25.6],[54.4,24.7,55.3,25.6],[56.2,25.2,55.7,25.6],[55.7,25.6,55.3,25.6],[55.3,25.6,55.3,25.1],[50.6,25.5,51.3,24.4],[50.2,25.4,50.9,24.4],[52.4,25.3,53.1,24.4],[51.4,25.3,52.1,24.4],[55.4,24.3,56.2,25.2],[56.5,24.5,56.2,25.2],[54.4,24.3,55.3,25.1],[55.3,25.1,55.6,24.5],[50.9,24.8,51.7,23.8],[52.7,23.8,52,24.8],[53.1,24.8,53.8,24.2],[52.7,24.8,53.3,24.2],[54.1,24.1,54.8,24.7],[53.7,24.1,54.4,24.7],[54.8,23.8,55.6,24.5],[56.5,24.5,55.8,23.8],[55.6,24.5,56.1,24.1],[56.5,24.1,56.5,24.5],[50.9,24.4,51.7,23.4],[51.3,24.4,52.1,23.4],[53.1,24.4,53.9,23.7],[52.1,24.4,52.9,23.7],[54.6,23.7,55.4,24.3],[53.7,23.7,54.4,24.3],[53.8,24.2,54.1,24.1],[53.3,24.2,53.7,24.1],[53.7,24.1,54.1,24.1],[55.4,23.4,56.1,24.1],[55.8,23.4,56.5,24.1],[56.1,24.1,56.5,24.1],[51.7,23.8,52.6,23],[53.6,23,52.7,23.8],[53.9,23,54.8,23.8],[55.8,23.8,54.9,23],[53.9,23.7,54.6,23.7],[52.9,23.7,53.7,23.7],[51.7,23.4,52.7,22.5],[52.1,23.4,53.1,22.5],[54.4,22.5,55.4,23.4],[54.8,22.5,55.8,23.4],[52.6,23,53.9,23],[54.9,23,53.6,23],[52.7,22.5,54.4,22.5],[53.1,22.5,54.8,22.5],[54.8,22.5,54.4,22.5],[35.5,16.7,30.4,16.6],[40,16.6,35.5,16.7],[30.4,16.6,25.7,16.4],[43.1,16.4,40,16.6],[25.7,16.4,22.3,16],[44,16,43.1,16.4],[22.3,16,21.5,15.6],[41.9,15.6,44,16],[21.5,15.6,24.2,15.3],[36.7,15.3,41.9,15.6],[24.2,15.3,30,15.1],[30,15.1,36.7,15.3]],"extruder":[[65.6,47.3,63.2,43.2],[51.6,43.2,51.9,47.3],[66.2,32.1,65.6,47.3],[65.6,47.3,51.9,47.3],[51.9,47.3,51.9,32.1],[52.8,40.5,52.8,43.6],[52.8,43.6,64.9,43.6],[64.9,43.6,65,40.5],[51.6,30.2,51.6,43.2],[51.6,43.2,63.2,43.2],[63.2,43.2,63.6,30.2],[65,40.5,52.8,40.5],[62.7,38.1,62.9,38.7],[63.1,38.7,63.3,38.1],[61.4,38.7,61.2,38.1],[61.7,38.1,61.6,38.7],[58.4,38.1,58.5,38.7],[58.7,38.7,58.8,38.1],[57,38.7,56.9,38.1],[57.2,38.1,57.1,38.7],[65.3,37.8,65.5,38.3],[65.7,38.3,65.9,37.8],[52.6,38.3,52.6,37.8],[52.7,37.8,52.6,38.3],[62.6,37.1,62.7,38.1],[63.3,38.1,63.4,37.1],[61.2,38.1,61.1,37.1],[61.8,37.1,61.7,38.1],[58.3,37.1,58.4,38.1],[58.8,38.1,58.9,37.1],[56.9,38.1,56.8,37.1],[57.2,37.1,57.2,38.1],[65.2,37,65.3,37.8],[65.9,37.8,66,37],[52.6,37.8,52.5,37],[52.7,37,52.7,37.8],[66,37.8,66.6,37.8],[66.6,37.8,66,37.6],[67.1,37.6,66.6,37.8],[65.1,37.4,66,37.8],[66,37.8,67,37.4],[65.2,37.5,52.5,37.7],[62.6,37.7,61.1,37.7],[58.3,37.7,56.8,37.7],[66,37.6,65.1,37.4],[66,37.6,65.8,37],[67.4,37,67.1,37.6],[64.8,36.5,65.1,37.4],[67,37.4,67.4,36.5],[67.4,37.2,67.4,36.8],[63.4,37.1,63.4,35.9],[62.6,36,62.6,37.1],[61.8,35.9,61.8,37.1],[61.1,37.1,61.1,36],[58.9,37.1,58.8,35.9],[58.3,36,58.3,37.1],[57.2,35.9,57.2,37.1],[56.8,37.1,56.8,36],[66,37,66,36],[65.2,36.1,65.2,37],[52.7,36,52.7,37],[52.5,37,52.5,36.1],[65.8,37,64.8,36.5],[67.4,37,67.4,36.5],[65.8,37,66.1,36.5],[67.2,36.5,67.4,37],[65.8,37,64.8,36.5],[58.9,36.6,57.2,35],[66.1,36.5,65.2,35.6],[67.2,36.5,67,35.6],[66.1,36.5,66.6,36.2],[66.6,36.2,67.2,36.5],[65.2,35.6,64.8,36.5],[67.4,36.5,67,35.6],[66.6,36.2,66.1,35.3],[65.2,35.3,65.2,36.1],[52.5,36.1,52.5,35.3],[66,36,65.8,35.2],[52.6,35.2,52.7,36],[62.7,35,62.6,36],[61.1,36,61.1,35],[58.3,35,58.3,36],[56.8,36,56.8,35],[66,35.9,52.7,35.6],[63.4,35.9,63.2,34.9],[61.7,34.9,61.8,35.9],[58.8,35.9,58.7,34.9],[57.2,34.9,57.2,35.9],[63.4,35.7,61.8,35.7],[66.1,35.3,65.2,35.6],[67,35.6,66.1,35.3],[65.4,34.8,65.2,35.3],[52.5,35.3,52.6,34.8],[65.8,35.2,65.6,34.8],[52.6,34.8,52.6,35.2],[62.8,34.4,62.7,35],[61.1,35,61.3,34.4],[58.5,34.4,58.3,35],[56.8,35,56.9,34.4],[63.2,34.9,63,34.4],[61.5,34.4,61.7,34.9],[58.7,34.9,58.6,34.4],[57,34.4,57.2,34.9],[66.5,32.2,63.8,30.3],[51.4,30.3,51.7,32.2],[66.6,30.9,66.5,32.2],[66.5,32.2,51.7,32.2],[51.7,32.2,51.7,30.9],[63.6,30.2,66.2,32.1],[51.9,32.1,51.6,30.2],[51.9,32.1,66.2,32.1],[63.8,29.2,66.6,30.9],[51.7,30.9,51.4,29.2],[51.7,30.9,66.6,30.9],[51.4,29.2,51.4,30.3],[51.4,30.3,63.8,30.3],[63.8,30.3,63.8,29.2],[63.6,30.2,51.6,30.2],[55.9,30.2,55.1,30.1],[56.8,30.1,55.9,30.2],[55.1,30.1,54.5,30],[57.2,30,56.8,30.1],[52.1,25.3,54.4,30],[59.7,25.4,57.2,30],[54.5,29.9,54.9,29.8],[56.5,29.8,57.1,29.9],[54.9,29.8,55.7,29.8],[55.7,29.8,56.5,29.8],[63.8,29.2,51.4,29.2],[53.8,25.5,56.2,25.6],[56.2,25.6,58.5,25.5],[52.3,25.4,53.8,25.5],[58.5,25.5,59.6,25.4],[59.6,25.4,59.3,25.2],[53.5,25.1,52.3,25.2],[59.3,25.2,57.8,25.1],[55.6,25.1,53.5,25.1],[57.8,25.1,55.6,25.1]],"rulle":[[66,50.8,64.4,50.6],[67.5,50.6,66,50.8],[64.4,50.5,65.9,50.7],[65.9,50.7,67.5,50.5],[64.4,50.6,63.1,49.9],[69,49.9,67.5,50.6],[63,49.8,64.4,50.5],[67.5,50.5,68.9,49.8],[63.1,49.9,62,48.9],[70.1,48.9,69,49.9],[61.9,48.8,63,49.8],[68.9,49.8,70,48.8],[65.9,49.5,64.8,49.3],[67.1,49.3,65.9,49.5],[64.8,49.3,63.8,48.8],[68.1,48.8,67.1,49.3],[65.1,49.1,63.6,48.9],[66.5,48.9,65.1,49.1],[63.6,48.8,65,49],[65,49,66.5,48.8],[63.6,48.9,62.3,48.3],[67.9,48.3,66.5,48.9],[62,48.9,61.3,47.5],[70.9,47.5,70.1,48.9],[62.3,48.2,63.6,48.8],[66.5,48.8,67.8,48.2],[61.3,47.4,61.9,48.8],[70,48.8,70.8,47.4],[63.8,48.8,63,48],[69,48,68.1,48.8],[62.3,48.3,61.3,47.3],[69,47.3,67.9,48.3],[61.3,47.2,62.3,48.2],[67.8,48.2,68.9,47.2],[63,48,62.5,47],[69.6,47,69,48],[64,47.8,65.1,48],[65.1,48,66.2,47.8],[63.1,47.3,64,47.8],[66.2,47.8,67.2,47.3],[66.1,47.6,65.3,47.3],[66.9,47.3,66.1,47.6],[61.3,47.5,61.1,46],[71.2,46,70.9,47.5],[61,45.9,61.3,47.4],[70.8,47.4,71.1,45.9],[61.3,47.3,60.7,46],[69.7,46,69,47.3],[62.3,46.6,63.1,47.3],[67.2,47.3,68,46.6],[65.3,47.3,64.7,46.8],[67.5,46.8,66.9,47.3],[60.6,45.9,61.3,47.2],[68.9,47.2,69.7,45.9],[62.5,47,62.4,45.9],[69.8,45.9,69.6,47],[64.7,46.8,64.5,46],[67.8,46,67.5,46.8],[65.2,45.2,66.1,46.7],[66.1,46.7,65.7,46.6],[66.6,46.6,66.1,46.7],[61.9,45.7,62.3,46.6],[68,46.6,68.6,45.7],[65.7,46.6,64.8,45],[66.6,46.6,65.6,45],[65.7,46.6,65.5,46.3],[66.8,46.3,66.6,46.6],[65.5,46.3,64.5,44.7],[66.8,46.3,65.8,44.7],[65.5,46.3,65.5,45.8],[66.8,45.8,66.8,46.3],[66.9,46.2,65.8,44.8],[65.5,46.1,64.5,44.5],[60.7,46,60.5,44.6],[70,44.6,69.7,46],[61.1,46,61.4,44.5],[71,44.5,71.2,46],[61.1,46,61,45.9],[71.2,46,71.1,45.9],[64.5,46,64.8,45.2],[67.6,45.2,67.8,46],[64.4,45.8,65.1,46],[65.1,46,65.9,45.8],[64.5,46,63.7,44.5],[67.8,46,66.7,44.8],[60.4,44.5,60.6,45.9],[69.7,45.9,69.9,44.5],[61.3,44.4,61,45.9],[71.1,45.9,71,44.4],[62.4,45.9,62.6,44.8],[69.7,44.8,69.8,45.9],[62.4,45.9,61.7,44.6],[69.8,45.9,68.8,44.6],[63.9,45.3,64.4,45.8],[65.9,45.8,66.5,45.3],[65.5,45.8,64.6,44.3],[66.8,45.8,65.8,44.3],[65.5,45.8,65.8,45.5],[66.6,45.5,66.8,45.8],[61.7,44.6,61.9,45.7],[68.6,45.7,68.8,44.6],[65.8,45.5,64.8,44],[66.6,45.5,65.6,44],[65.8,45.5,66.2,45.4],[66.2,45.4,66.6,45.5],[66.2,45.4,65.2,43.9],[63.7,44.5,63.9,45.3],[66.5,45.3,66.7,44.5],[64.8,45.2,65.4,44.7],[67,44.7,67.6,45.2],[64.8,45,65.2,45.2],[65.2,45.2,65.6,45],[64.5,44.7,64.8,45],[65.6,45,65.8,44.7],[62.6,44.8,63.1,43.8],[69.2,43.8,69.7,44.8],[65.4,44.7,66.2,44.5],[66.2,44.5,67,44.7],[64.6,44.3,64.5,44.7],[65.8,44.7,65.8,44.3],[60.5,44.6,60.7,43.2],[69.9,43.2,70,44.6],[60.5,44.6,60.4,44.5],[70,44.6,69.9,44.5],[61.9,43.6,61.7,44.6],[68.8,44.6,68.7,43.6],[60.7,43.1,60.4,44.5],[69.9,44.5,69.8,43.1],[61.4,44.5,62.1,43.2],[70.4,43.2,71,44.5],[63.9,43.8,63.7,44.5],[66.7,44.5,66.6,43.8],[62.1,43.1,61.3,44.4],[71,44.4,70.3,43.1],[64.8,44,64.6,44.3],[65.8,44.3,65.6,44],[65.2,43.9,64.8,44],[65.6,44,65.2,43.9],[63.1,43.8,64,43],[68.4,43,69.2,43.8],[64.5,43.3,63.9,43.8],[66.6,43.8,66,43.3],[62.4,42.6,61.9,43.6],[68.7,43.6,68.2,42.6],[65.3,43.1,64.5,43.3],[66,43.3,65.3,43.1],[60.7,43.2,61.5,41.9],[69.2,41.9,69.9,43.2],[62.1,43.2,63.3,42.1],[69.3,42.1,70.4,43.2],[61.4,41.8,60.7,43.1],[69.8,43.1,69.2,41.8],[63.2,42,62.1,43.1],[70.3,43.1,69.2,42],[64,43,65.1,42.5],[67.4,42.5,68.4,43],[63.3,41.9,62.4,42.6],[68.2,42.6,67.4,41.9],[65.1,42.5,66.2,42.3],[66.2,42.3,67.4,42.5],[63.3,42.1,64.8,41.4],[67.9,41.4,69.3,42.1],[64.7,41.3,63.2,42],[69.2,42,67.8,41.3],[61.5,41.9,62.5,40.9],[68.2,40.9,69.2,41.9],[64.3,41.4,63.3,41.9],[67.4,41.9,66.5,41.4],[62.5,40.8,61.4,41.8],[69.2,41.8,68.1,40.8],[64.8,41.4,66.3,41.2],[66.3,41.2,67.9,41.4],[65.4,41.2,64.3,41.4],[66.5,41.4,65.4,41.2],[66.3,41.1,64.7,41.3],[67.8,41.3,66.3,41.1],[62.5,40.9,63.9,40.2],[66.9,40.2,68.2,40.9],[63.9,40.1,62.5,40.8],[68.1,40.8,66.8,40.1],[63.9,40.2,65.4,40],[65.4,40,66.9,40.2],[65.4,39.9,63.9,40.1],[66.8,40.1,65.4,39.9]],"slang":[[65.7,43.9],[66.2,44.3],[66.7,44.7],[67.1,45.2],[67.6,45.7],[68.1,46.1],[68.5,46.5],[69,46.9],[69.4,47.1],[69.9,47.4],[70.4,47.5],[71.1,47.5],[71.7,47.5],[72.4,47.4],[73.1,47.3],[73.8,47.1],[74.4,46.8],[75.1,46.5],[75.7,46.1],[76.3,45.7],[76.8,45.1],[77.2,44.5],[77.7,43.8],[78.1,43],[78.5,42.1],[78.9,41.1],[79.2,40.2],[79.6,39.2],[79.9,38.2],[80.1,37.1],[80.4,36.2],[80.6,35],[80.8,33.8],[80.9,32.6],[81,31.3],[81.1,30],[81.1,28.6],[81.1,27.3],[81.2,25.9],[81.2,24.6],[81.3,23.2]]};   // punkt BA: ritningslinjerna i kort 13 (räknas fram av verktyg/ai3.mjs)
-const INTRO_PAUS = 400;   // punkt BC: ms efter att rösten är klar innan nästa rad eller kort kommer
+const INTRO_PAUS = 1500;   // punkt 15: ms efter att rösten är klar innan nästa rad eller kort kommer i introt
 const IB = (namn, extra = {}) => ({ id: extra.id || namn, src: `intro/${namn}.webp`, ...extra });
 const RUM = (stok) => [IB('rum', { id: 'bg' }), ...['stok1', 'stok2', 'stok3'].slice(0, stok).map((n) => IB(n))];
 const KAL = (dag, fore, cls = '') => ({ id: 'kal', kal: dag, fore, cls });
@@ -9380,7 +9413,7 @@ function julScen() {
     const tidigare = []; if (fyll) for (let j = i - 1; j >= 0 && rader[j][3] === 'fyll' && rader[j][1] === namn; j--) tidigare.unshift(rader[j][2]);
     el.innerHTML = `<div class="ph-jul-kort"><small>${i < JUL_REPLIK.length ? 'Gästerna kommer' : 'Jul på Soptippsvägen 1'}</small><b>${rens(namn)}</b>${tidigare.map((t) => `<p class="ph-jul-forra">${rens(t)}</p>`).join('')}<p>${rens(text)}</p><span class="ph-jul-vidare">Klicka för att fortsätta</span></div>`;
     tystna(); setTimeout(() => prata(vem, text, 'STORY'), 150);
-    const vanta = () => { if (performance.now() < pratarTill + 400) { auto = setTimeout(vanta, 300); return; } auto = setTimeout(nasta, fyll ? 2600 : 1800); };
+    const vanta = () => { if (performance.now() < pratarTill + DIALOG_PAUS) { auto = setTimeout(vanta, 300); return; } auto = setTimeout(nasta, fyll ? 2600 : 1800); };
     auto = setTimeout(vanta, 1200);
   };
   const tangent = (e) => { if (['Space', 'Enter', 'KeyE'].includes(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); nasta(); } };
@@ -10127,7 +10160,7 @@ function helenSag(rader) {
   const nasta = () => {
     if (i >= rader.length) return;
     prata('helen', rader[i++], 'STORY');
-    const vanta = () => { if (pratarVem !== 'helen') return; if (performance.now() > pratarTill + 300) nasta(); else setTimeout(vanta, 200); };
+    const vanta = () => { if (pratarVem !== 'helen') return; if (performance.now() > pratarTill + DIALOG_PAUS) nasta(); else setTimeout(vanta, 200); };
     setTimeout(vanta, 500);
   };
   nasta();
@@ -10259,7 +10292,7 @@ function kollaHelen() {
   for (const [x, z, t] of HELEN_MINNEN) {
     if ((H.minnen || []).includes(t) || Math.hypot(p.x - x, p.z - z) > 2.2) continue;
     H.minnen = [...(H.minnen || []), t]; H.minneDag = S.dag; sparaSnart();
-    notis(`Helen ropar: ”${t}”`, ''); prata('helen', t); return;
+    replik('helen', t, `Helen ropar: ”${t}”`); return;
   }
 }
 setInterval(kollaHelen, 1000);
@@ -11103,8 +11136,8 @@ function kedja(id) {
   for (const [typ, t] of [['kvittens', kv], ['varför', va]]) {
     if (!t) continue;
     textLogg(typ, vem, t, id);
-    let visad = false; const visa = () => { if (visad) return; visad = true; notis((vem === 'du' ? '💭 ' : '') + t, vem === 'du' ? 'tanke' : '', { tid: 5000 }); };
-    prata(vem, t, 'STORY', { start: visa }); setTimeout(visa, 12000);   // texten syns när rösten börjar – varför-raden alltså efter kvittensen
+    const st0 = S.steg;   // det som pekar bakåt stryks: varför-raden när målet den förklarar redan är klart, kvittensen när spelaren hunnit två mål till
+    kanalLagg({ vikt: 'STORY', vem, text: t, stryksOm: () => typ === 'varför' ? S.steg !== st0 : S.steg > st0 + 1, visa: () => notisVisa((vem === 'du' ? '💭 ' : '') + t, vem === 'du' ? 'tanke' : '', { tid: 5000 }) });   // punkt 15: kvittens, sedan varför – i den ordningen
   }
 }
 paHandelse('skyltKlar', () => kedja('skylt'));
@@ -11145,7 +11178,7 @@ setInterval(() => {
   if (S.kvarn.motor && klockan() >= 18 * 60) kedja('morkt');
 }, 500);
 window.__printahem = {
-  textLogg: () => TEXTLOGG.slice(), pratar: () => performance.now() < pratarTill || pratKo.length > 0, rostMatning, renderaIkon, ikonLista, handelseLogg, ritningInfo: () => { const c = ritning ? new THREE.Box3().setFromObject(ritning).getCenter(new THREE.Vector3()) : null; return { nyckel: ritningNyckel, linjer: ritning?.children.length || 0, printar: printarFram.size, mitt: c && [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(2)] }; }, prata, elHelFig: () => [...(elHel || [])], avkodat, forladdaRepliker, introLager, trampa: (sek) => { trampTest = sek; }, veva: (sek) => { vevTest = sek; }, nastaInred, prisNu, helaRullar, extruderFull, gardMal, kanLyfta, karraFull, harGava, valdKarra, BARA_SKRAP, SKRAP_RACKVIDD, utlagerKap, startPlats, sattFonster: () => { const n = fonsterLista().length; S.hem = { ...(S.hem || {}), fonster: [...fonsterLista(), { vagg: Object.keys(VAGGAR).filter((k) => !/dorr|fram/i.test(k))[n % 3] || Object.keys(VAGGAR)[0], u: 0.5 }] }; ritaFonster(); uppdateraSkjul(); sparaSnart(); }, medKo, medEl2, uppdatera, stegText: () => { const st = STEG[S.steg]; return st ? (typeof st.text === 'function' ? st.text() : st.text) : ''; }, valdTyp: () => valdTyp(), ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+  textLogg: () => TEXTLOGG.slice(), pratar: () => !!kanalAktiv || kanal.length > 0 || performance.now() < pratarTill || performance.now() < kanalFri, kanal: () => ({ aktiv: kanalAktiv && { vem: kanalAktiv.vem, text: kanalAktiv.text, vikt: kanalAktiv.vikt }, ko: kanal.map((x) => ({ vem: x.vem, text: x.text, vikt: x.vikt })) }), rostMatning, renderaIkon, ikonLista, handelseLogg, ritningInfo: () => { const c = ritning ? new THREE.Box3().setFromObject(ritning).getCenter(new THREE.Vector3()) : null; return { nyckel: ritningNyckel, linjer: ritning?.children.length || 0, printar: printarFram.size, mitt: c && [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(2)] }; }, prata, elHelFig: () => [...(elHel || [])], avkodat, forladdaRepliker, introLager, trampa: (sek) => { trampTest = sek; }, veva: (sek) => { vevTest = sek; }, nastaInred, prisNu, helaRullar, extruderFull, gardMal, kanLyfta, karraFull, harGava, valdKarra, BARA_SKRAP, SKRAP_RACKVIDD, utlagerKap, startPlats, sattFonster: () => { const n = fonsterLista().length; S.hem = { ...(S.hem || {}), fonster: [...fonsterLista(), { vagg: Object.keys(VAGGAR).filter((k) => !/dorr|fram/i.test(k))[n % 3] || Object.keys(VAGGAR)[0], u: 0.5 }] }; ritaFonster(); uppdateraSkjul(); sparaSnart(); }, medKo, medEl2, uppdatera, stegText: () => { const st = STEG[S.steg]; return st ? (typeof st.text === 'function' ? st.text() : st.text) : ''; }, valdTyp: () => valdTyp(), ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 
