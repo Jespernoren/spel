@@ -108,8 +108,8 @@ export const VARA_SIFFROR = {
   rulle3: { gram: 0, tid: 0, pris: 0 },
   rulle4: { gram: 0, tid: 0, pris: 0 },
   rulle5: { gram: 0, tid: 0, pris: 0 },
-  n2_vas: { gram: 600, tid: 24, pris: 320, recept: 300 },   // BI: receptet 600 → 300 kr
-  n2_hjalm: { gram: 900, tid: 30, pris: 560, recept: 1200 },
+  n2_vas: { gram: 600, tid: 24, pris: 400, recept: 300 },   // BI steg 5: +25 %   // BI: receptet 600 → 300 kr
+  n2_hjalm: { gram: 900, tid: 30, pris: 700, recept: 1200 },   // BI steg 5: +25 %
   n2_neon: { gram: 1200, tid: 40, pris: 900, recept: 2400 },
   n2_paddel: { gram: 2000, tid: 50, pris: 2300, recept: 4500 },
   n3_stol: { gram: 2000, tid: 60, pris: 5200 },
