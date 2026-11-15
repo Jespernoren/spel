@@ -49,7 +49,7 @@ export const SOLPARK_PER_S = 14;        // en solcellspark: sex paneler – mer 
 export const MOTOR_STROM = 1;           // ström per sekund när motorn mal
 
 // ---------- Bära och förvara ----------
-export const BARA_SKRAP = [4, 8, 14, 22];      // händer, grip, grip + sopsäck, magnet
+export const BARA_SKRAP = [1, 8, 14, 22];      // händer (punkt AG: en hand ledig), grip, grip + sopsäck, magnet
 export const HOTBAR = 9;                // platser i verktygsraden (plats 1 = verktyget/famnen)
 export const KISTA_PLATSER = 27, STACK = 20;   // kistan har 27 platser, max 20 av samma sak per plats
 export const RYGG_BAS = 18, RYGG_STOR = 27;     // ryggsäcken: 18 platser, 27 med Större ryggsäck
@@ -147,8 +147,8 @@ export const VARA_SIFFROR = {
   tillstand: { gram: 250, tid: 10, pris: 0 },
   sang: { gram: 1200, tid: 20, pris: 0 },
   nyckelring: { gram: 100, tid: 4, pris: 15 },
-  kruka: { gram: 400, tid: 18, pris: 60 },
-  pall: { gram: 1000, tid: 32, pris: 170 },
+  kruka: { gram: 400, tid: 18, pris: 60, recept: 40 },     // punkt AG: receptet är gratis från Ali vid första försäljningen
+  pall: { gram: 1000, tid: 32, pris: 170, recept: 80 },
   rulle: { gram: 1000, tid: 0, pris: 0 },
   mobilstall: { gram: 300, tid: 12, pris: 50, recept: 100 },
   fagelholk: { gram: 800, tid: 26, pris: 170, recept: 300 },

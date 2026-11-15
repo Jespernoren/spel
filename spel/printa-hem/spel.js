@@ -168,8 +168,8 @@ const VAROR = {
   tillstand: { namn: 'Parkeringstillstånd för husvagn', ikon: '', gava: true },
   sang: { storlek: 1, namn: 'Säng', ikon: '🛏️', hem: true },          // 2 rullar. Kräver instruktionen hos Ali. Säljs inte.
   nyckelring: { namn: 'Nyckelring', ikon: '🔑' },      // 10 % rulle = en halv flaska
-  kruka: { namn: 'Blomkruka', ikon: '🪴', trivsel: 5, placerbar: true, radie: 0.3 },
-  pall: { namn: 'Pall', ikon: '🪑', trivsel: 10, placerbar: true, radie: 0.35 },
+  kruka: { namn: 'Blomkruka', ikon: '🪴', trivsel: 5, placerbar: true, radie: 0.3, syns: () => (S.stat.salt || 0) >= 1 || S.dag > 1 },   // punkt AG: receptet får man av Ali vid första försäljningen
+  pall: { namn: 'Pall', ikon: '🪑', trivsel: 10, placerbar: true, radie: 0.35, syns: () => (S.stat.salt || 0) >= 2 || S.dag > 1 },
   rulle: { namn: 'Filamentrulle', ikon: '🧵', rulle: true },   // bärs från extrudern till skrivaren
   // recept: köps hos Ali – dyra, men betalar mer per rulle ju längre man kommer
   mobilstall: { namn: 'Mobilställ', ikon: '📱', syns: () => S.sang },
@@ -237,7 +237,7 @@ const gamerSaker = () => placerade.filter((p) => GAMER.includes(p.typ)).length;
 const harRecept = (id) => !VAROR[id]?.recept || S.ritningar.includes('recept:' + id);
 // Maskiner: köp ritningen hos Ali, printa delarna, bygg ihop
 const MASKINER = {
-  kvarnmotor: { namn: 'Kvarnmotor', ikon: '⚙️', beskr: 'Batteridriven – kvarnen mal själv, du slipper veva', monteras: true, syns: () => true },
+  kvarnmotor: { namn: 'Kvarnmotor', ikon: '⚙️', beskr: 'Batteridriven – kvarnen mal själv, du slipper veva', monteras: true, syns: () => (S.stat.salt || 0) >= 2 || S.dag > 1 },
   solpark: { namn: 'Solcellspark', ikon: '☀️', syns: () => S.kapitel >= 2, beskr: `Sex paneler på rad – ger ${SOLPARK_PER_S} ström/s, mer än du hinner trampa. Stora skrivare behöver en park`, trivsel: 4, radie: 1.5 },
   bank: { namn: 'Batteribank', ikon: '🔋', syns: () => S.kapitel >= 2 && harPlacerat('sol'), beskr: `Lagrar ${BANK_PLUS} ström till – första banken fördubblar batteriet. Bygg flera när solen inte räcker`, trivsel: 2, radie: 0.45 },
   korg: { namn: 'Sopsäck', ikon: '🗑️', syns: () => S.grip && S.sang, beskr: `En svart sopsäck över axeln – bär ${BARA_SKRAP[2]} skräp i stället för ${BARA_SKRAP[1]}`, verktyg: true },
@@ -267,7 +267,7 @@ const MASKINER = {
   taklampa: { namn: 'Taklampa', ikon: '💡', hem: true, monteras: true, syns: () => S.rolf.i >= 2, trivsel: 6, beskr: 'Mysigt gult ljus om kvällarna' },
   tapeter: { namn: 'Tapeter', ikon: '🧻', hem: true, monteras: true, syns: () => S.kapitelKlart, trivsel: 20, beskr: 'Riktiga tapeter på insidan – mamma kan inte klaga längre. Kräver tätade väggar' },
   gamingbod: { namn: 'Gamingbod (tillbyggnad)', ikon: '', flik: 'hem', monteras: true, syns: () => S.kapitel >= 3, trivsel: 25, beskr: 'En egen bod bredvid skjulet – med RGB i taket. Plats för hela gamingsetupen' },
-  grip: { namn: 'Skräpgrip', ikon: '🦾', syns: () => true, beskr: `Bär ${BARA_SKRAP[1]} skräp, lättare att sikta, plockar upp när du går nära`, verktyg: true },
+  grip: { namn: 'Skräpgrip', ikon: '🦾', syns: () => (S.stat.salt || 0) >= 1 || S.dag > 1, beskr: `Bär ${BARA_SKRAP[1]} skräp, lättare att sikta, plockar upp när du går nära`, verktyg: true },
   bord: { namn: 'Arbetsbord', ikon: '🪵', syns: () => S.rolf.i >= 2 && S.dag >= 4, beskr: 'Bordsyta för en skrivare till', trivsel: 8, radie: 1.0 },
   sol: { namn: 'Solpanel', ikon: '☀️', syns: () => S.rolf.i >= 2 && S.dag >= 4, beskr: `Ger ${SOL_PER_S} ström/s av sig själv – en panel driver Skrivare S utan att du trampar`, trivsel: 6, radie: 0.8 },
   rullband: { namn: 'Rullband från tippen', ikon: '', syns: () => S.kapitel >= 3 && S.kvarn.band, monteras: true, beskr: 'Går från tippen till containern bakom kvarnen. Lägg skräp på bandets inmatning vid tippen – du slipper gå hela vägen. Drar lite ström.' },
@@ -428,7 +428,7 @@ const LAPPAR = {
   malt: ['📔 Dagbok', 'Kvarnen funkar. Soptippen är en gruva.'],
   motor: ['📔 Dagbok', 'Grip OCH motor. Nu går det undan.'],
   printat: ['📱 Storebror', 'VA?! SERIÖST?! Fick du den att FUNKA?? Jag gav upp efter två veckor, det var alldeles för krångligt att installera allt. Grym du är 🤙 Gå och visa butiken över vägen. Ali köper allt som är printat.'],
-  salt: ['🧺 Ali', 'Ali här. Nyckelringen sålde. Jag ville bli ingenjör, men fick ta över pappas butik. I natt lät jag en AI rita åt mig: en skräpgrip och en kvarnmotor. Kom och titta.'],
+  salt: ['🧺 Ali', 'Ali här. Nyckelringen sålde. Jag ville bli ingenjör, men fick ta över pappas butik. I natt lät jag en AI rita en skräpgrip åt mig. Kom och titta.'],
   ritning: ['📔 Dagbok', 'Min första 3D-modell! Nu ska den bara printas. Jag printar inte bara saker – jag printar maskiner.'],
   sol: ['📔 Dagbok', 'Slut på trampandet. Nästan.'],
   petg: ['📔 Dagbok', 'Tunnorna och kajakerna är för tunga för min lilla kvarn. Men Ali har en röd kvarn för sånt – PETG. Röd plast. Och en röd skrivare som bara äter den. Två fabriker. Jag har två fabriker. Snart.'],
@@ -508,11 +508,14 @@ const STEG_TAL = {
   5: 'Trampa cykeln för att få ström – klicka på pedalerna och håll inne.',
   6: 'Klicka på skrivaren och printa en nyckelring.',
   7: 'Gå över vägen till Ali och sälj nyckelringen.',
-  8: 'Tjäna femtio kronor. Köp sedan en gripklo eller en kvarnmotor hos Ali.',
-  9: 'Printa det du köpte på skrivaren.',
-  10: 'Köp 3D-modellen till en säng hos Ali.',
-  11: 'Printa sängen på skrivaren.',
-  12: 'Ställ sängen i skjulet och sov.',
+  8: 'Köp en skräpgrip hos Ali. Den kostar femtio kronor.',
+  9: 'Printa skräpgripen på skrivaren.',
+  10: 'Printa en blomkruka på skrivaren.',
+  11: 'Sälj krukan hos Ali.',
+  12: 'Köp kvarnmotorn hos Ali.',
+  13: 'Köp 3D-modellen till en säng hos Ali.',
+  14: 'Printa sängen på skrivaren.',
+  15: 'Ställ sängen i skjulet och sov.',
 };
 const STEG = [
   { del: D1, text: 'Plocka upp skräp', klar: () => S.stat.plockat >= 1 },
@@ -523,8 +526,12 @@ const STEG = [
   { del: D1, text: 'Trampa cykeln för ström', klar: () => S.stat.trampat >= 20 || S.stat.printat >= 1 },
   { del: D1, text: 'Printa en nyckelring', klar: () => S.stat.printat >= 1, lapp: 'printat' },
   { del: D1, text: 'Sälj den hos Ali, över vägen', klar: () => S.stat.salt >= 1, lapp: 'salt' },
-  { del: D1, text: () => `Tjäna 50 kr (${Math.min(S.mynt, 50)}/50) · köp grip eller motor`, klar: () => S.ritningar.includes('grip') || S.ritningar.includes('kvarnmotor') || forstaUpp(), lapp: 'ritning' },
-  { del: D1, text: () => { const n = S.ritningar.includes('grip') && !S.grip ? 'skräpgrip' : 'kvarnmotor'; return skrivare.some((x) => x.klar === 'byggsats:' + (n === 'skräpgrip' ? 'grip' : 'kvarnmotor')) ? `Ta ${n === 'skräpgrip' ? 'skräpgripen' : 'kvarnmotorn'} ur skrivaren` : `Printa din ${n}`; }, klar: () => forstaUpp() },
+  // punkt AG: en sak i taget – gripen, en kruka, motorn, sedan sängen (gamla sparfiler: allt efter dag 1 räknas som klart)
+  { del: D1, bild: 'byggsats:grip', text: () => S.mynt >= 50 ? 'Köp skräpgripen hos Ali (50 kr)' : `Tjäna 50 kr (${S.mynt}/50) · köp skräpgripen`, klar: () => S.ritningar.includes('grip') || forstaUpp() || S.dag > 1, lapp: 'ritning' },
+  { del: D1, text: () => skrivare.some((x) => x.klar === 'byggsats:grip') ? 'Ta skräpgripen ur skrivaren' : 'Printa din skräpgrip', klar: () => forstaUpp() || S.dag > 1 },
+  { del: D1, bild: 'kruka', text: 'Printa en blomkruka', klar: () => printat('kruka') >= 1 || (S.stat.salt || 0) >= 2 || S.dag > 1 },
+  { del: D1, text: 'Sälj krukan hos Ali', klar: () => (S.stat.salt || 0) >= 2 || S.dag > 1 },
+  { del: D1, bild: 'byggsats:kvarnmotor', text: () => S.mynt >= 50 ? 'Köp kvarnmotorn hos Ali (50 kr)' : `Printa och sälj mer · ${S.mynt}/50 kr till kvarnmotorn`, klar: () => S.ritningar.includes('kvarnmotor') || S.kvarn.motor || S.dag > 1 },
   { del: D1, text: () => S.mynt >= SANG_INSTRUKTION ? `Köp sängens 3D-modell hos Ali (${SANG_INSTRUKTION} kr)` : `Printa och sälj mer · ${S.mynt}/${SANG_INSTRUKTION} kr till sängen`, klar: () => S.ritningar.includes('sang') || S.sang, startLapp: 'hem' },
   { del: D1, bild: 'sang', text: 'Printa sängen', klar: () => antalInv('sang') > 0 || S.sang },
   { del: D1, text: 'Ställ sängen i skjulet och sov', klar: () => S.sang && S.dag >= 2, lapp: 'sang',
@@ -629,7 +636,7 @@ const SPAR_VERSION = 7;
 let sparaFlagga = false;
 function sparaSnart() { sparaFlagga = true; }   // sparas i nästa ruta (inte direkt – sparning är dyr)
 const spar = new Sparning(SPEL_ID, {
-  kvarn: { tratt: 0, trattGram: 0, prog: 0, ut: 600, motor: false }, forrad: {},
+  kvarn: { tratt: 0, trattGram: 0, prog: 0, ut: 800, motor: false }, forrad: {},   // punkt AG: nytt spel börjar med kvarnen på 80 %
   mynt: 0, filament: 0, strom: 0, ritningar: [], grip: false, steg: 0,
   stat: { plockat: 0, malt: 0, trampat: 0, printat: 0, salt: 0 },
   lappar: [], placerade: [], skrap: null, hand: [], skrivare: {}, nastaId: 1, kapitelKlart: false,
@@ -687,6 +694,10 @@ if (S.rolf.aktiv && S.rolf.jobb == null && S.rolf.i <= 3) {
 if (S.post.lapp === 'rolf') S.post.lapp = 'rolf:0';
 // migrering: städa bort sånt som inte finns längre så att gamla sparningar fungerar efter uppdateringar
 (function migrera() {
+  // punkt AG: krukan och pallen kräver recept – gamla sparfiler som redan sålt/har en pall får dem
+  S.ritningar = S.ritningar || [];
+  if ((S.stat?.salt || 0) > 0 && !S.ritningar.includes('recept:kruka')) S.ritningar.push('recept:kruka');
+  if (((S.printTot || {}).pall || (S.placerade || []).some((x) => x.typ === 'pall') || [...(S.hotbar || []), ...(S.ryggsack || []), ...(Array.isArray(S.kistan) ? S.kistan : [])].some((x) => x?.typ === 'pall')) && !S.ritningar.includes('recept:pall')) S.ritningar.push('recept:pall');
   // punkt AB i gamla sparfiler: sms och köer som redan sparats med de gamla orden
   const AB_BYT = [['VA FAN?!', 'VA?! SERIÖST?!'], ['det var för jävla krångligt', 'det var alldeles för krångligt'], ['Dom e fina. Fan. /R', 'Dom e fina. Jaja. /R'], ['Sån skit köper', 'Sånt köper']];
   const abRens = (x) => { if (x && typeof x.text === 'string') for (const [g, n] of AB_BYT) x.text = x.text.split(g).join(n); };
@@ -2363,7 +2374,7 @@ function plockaSkrap(s, tyst = false) {
   }
   if (!skrapLage()) { if (tyst) return; byt(0); }
   hand.kapacitet = BARA_SKRAP[niva()];
-  if (hand.full) { if (!tyst) varna('full'); return; }
+  if (hand.full) { if (!tyst) varna(niva() === 0 ? 'enHand' : 'full'); return; }
   scen.remove(s); interaktor.avregistrera(s);
   skrapLista.splice(skrapLista.indexOf(s), 1);
   if (paTippen(s.position.x, s.position.z)) S.stat.tipp++;
@@ -3559,7 +3570,7 @@ function postMal() {
 }
 function malPunkt() {
   if (spikAnim) return null;   // ingen pil medan du spikar
-  if (S.steg > 12) {
+  if (S.steg > 15) {
     const m = postMal(), v = new THREE.Vector3();
     if (m === 'post') return postlada.getWorldPosition(v).setY(1.5);
     if (m === 'gard') { const x = skrapLista.filter((x) => kanLyfta(x) && !paTippen(x.position.x, x.position.z) && Math.abs(x.position.x) <= TOMT && Math.abs(x.position.z) <= TOMT).sort((a, b) => a.position.distanceTo(spelare.pos) - b.position.distanceTo(spelare.pos))[0]; return x ? x.getWorldPosition(v).setY(0.3) : null; }
@@ -3574,10 +3585,10 @@ function malPunkt() {
     case 1: return hand.saker.length ? trattTopp().clone() : (gripbart()?.getWorldPosition(v).setY(0.3) || null);
     case 2: return vevYta.getWorldPosition(v);
     case 3: return rulle.getWorldPosition(v);
-    case 4: case 6: case 9: case 11: return skrivare[0]?.mesh.getWorldPosition(v).setY(0.9) || null;
+    case 4: case 6: case 9: case 10: case 14: return skrivare[0]?.mesh.getWorldPosition(v).setY(0.9) || null;
     case 5: return cykel.getWorldPosition(v).setY(1.0);
-    case 7: case 8: case 10: return new THREE.Vector3(ALI.x, 1.4, ALI.z - 1.2);
-    case 12: return new THREE.Vector3(SANG_PLATS.x, 0.6, SANG_PLATS.z);
+    case 7: case 8: case 11: case 12: case 13: return new THREE.Vector3(ALI.x, 1.4, ALI.z - 1.2);
+    case 15: return new THREE.Vector3(SANG_PLATS.x, 0.6, SANG_PLATS.z);
   }
   return null;
 }
@@ -3934,7 +3945,7 @@ interaktor.registrera(sangSpoke, {
     S.sang = true; visaSangPlats(); ljud.placera(); sparaSnart(); sov();
   },
 });
-const sangKvall = () => !S.sang && STEG[S.steg] && S.steg >= 10 && STEG[S.steg].del === STEG[0].del && (skrivare.some((x) => x.jobb?.typ === 'sang' || x.klar === 'sang') || antalInv('sang') > 0);
+const sangKvall = () => !S.sang && STEG[S.steg] && S.steg >= 13 && STEG[S.steg].del === STEG[0].del && (skrivare.some((x) => x.jobb?.typ === 'sang' || x.klar === 'sang') || antalInv('sang') > 0);
 const MIN_VAKEN = 210;   // sekunder du måste ha varit vaken innan kvällen kommer (dag 2+)
 const kvallKlar = () => (S.vakenTid || 0) >= MIN_VAKEN;
 const sovDags = () => (!!STEG[S.steg]?.sov && kvallKlar()) || (!STEG[S.steg] && (S.dagTid || 0) >= DAG_LANGD);
@@ -5177,11 +5188,12 @@ function flytSiffra(matare, text) {
 // plocka: "+20 %" poppar vid siktet, snabba plock i rad ger kombo med stigande ton
 let komboN = 0, komboT = 0, aliBonus = false;
 // Ali ger lite extra ibland: alltid första gången, sen slumpvis upp till tre gånger dag 1 – en liten kick
-const ALI_BONUS_FORSTA = 'Du får bonus! Första kunden som printar själv på 25 år. 40 kr extra.';
+const ALI_BONUS_FORSTA = 'Du får bonus! Första kunden som printar själv på 25 år. 40 kr extra.', ALI_KRUKA = 'Prova en kruka. Folk köper krukor. Ingen vet varför.';
 const ALI_BONUS_RAD = [[10, 'Du får bonus! 10 kr extra. Du ser hungrig ut.'], [15, 'Du får bonus! 15 kr extra. Pappa hade gillat dig.'], [20, 'Du får bonus! 20 kr extra. Säg inget till min fru.'], [25, 'Du får bonus! 25 kr extra. Kvalitet. Nästan.']];
 function giAliBonus() {
   let kr = 0, rad = '';
-  if (!S.valkomst) { S.valkomst = true; kr = 40; rad = ALI_BONUS_FORSTA; }
+  if (!S.valkomst) { S.valkomst = true; kr = 40; rad = ALI_BONUS_FORSTA + ' ' + ALI_KRUKA;
+    if (!S.ritningar.includes('recept:kruka')) { S.ritningar.push('recept:kruka'); setTimeout(() => ui.toast('Ali gav dig receptet till blomkrukan – gratis', 'guld'), 1600); } }
   else if (S.dag === 1 && (S.aliBonusDag1 || 0) < 3 && Math.random() < 0.4) { S.aliBonusDag1 = (S.aliBonusDag1 || 0) + 1; [kr, rad] = ALI_BONUS_RAD[Math.floor(Math.random() * ALI_BONUS_RAD.length)]; }
   if (!kr) return;
   S.mynt += kr; setTimeout(() => myntRegn(kr), 700); aliBonus = rad;
@@ -5220,6 +5232,7 @@ function myntRegn(summa) {
 const VARN = { ryggsack: 'Ryggsäcken. Tryck E så öppnar jag den.', vrid: 'Tryck R för att vrida.',
   full: 'Fullt i händerna.',
   tung: 'För tung för kvarnen. Än.',
+  enHand: 'Du har en hand ledig. Den andra håller i allt du äger.',   // punkt AG: utan grip bär du en sak i taget
   karra: 'Kärran är full.',
   tratt: 'Tratten är full. Veva först.',
   rulle: 'Rullen är full. Ta den först.',
@@ -5520,6 +5533,7 @@ function aliVillVal() {
   S.aliVill = { dag: S.dag, typ: urval.length ? urval[Math.floor(Math.random() * urval.length)] : null };
 }
 function aliVill() {
+  if (S.dag <= 1) return null;   // punkt AG: dag 1 är stegen exakta (nyckelringen 15 kr + välkomstbonus 40 kr)
   if (!S.aliVill || S.aliVill.dag !== S.dag || !S.aliVill.typ) aliVillVal();
   return S.aliVill.typ;
 }
@@ -5654,7 +5668,7 @@ function aliKopLista() {
     const v = VAROR[gv], pris = gavaRitningPris(gv);
     add('Rolfs önskan', 'g:' + gv, tumme(gv), '3D-modell: ' + v.namn, `Det Rolf bad om. Printa den och lägg den i hans brevlåda vid grinden.`, pris, [['rulle', rullar(v.gram)]], () => { S.ritningar.push('gava:' + gv); aliRepl = gv === 'olhallare' ? 'Ölhållare? Till sopgubben? Ja ja. Den är bra. Kylklampen var min idé.' : 'Till Rolf igen? Han borde betala mig direkt.'; return true; });
   } }
-  if ((forstaUpp() || S.ritningar.includes('sang')) && !S.ritningar.includes('sang') && !harSang())
+  if ((S.ritningar.includes('kvarnmotor') || S.kvarn.motor || S.dag > 1) && !S.ritningar.includes('sang') && !harSang())
     add('Bygg ut hemmet', 'sang', tumme('sang'), '3D-modell: Säng', 'En riktig säng till skjulet. Slut på det kalla golvet.', SANG_INSTRUKTION, [['rulle', '2 rullar']], () => { S.ritningar.push('sang'); aliRepl = 'Sov gott, min vän.'; return true; });
   if (S.hem?.tapeter || S.bod) for (let i = 0; i < TAPETER.length; i++) {
     const id = 'tapet_' + i, pris = TAPETER[i].pris || 200;
