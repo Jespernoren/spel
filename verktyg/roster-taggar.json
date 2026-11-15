@@ -513,13 +513,13 @@
   "hand": false
  },
  {
-  "id": "rolf-21d9a842",
+  "id": "rolf-bd0b8d17",
   "figur": "rolf",
   "rost": "rolf",
   "var": "Rolfs tack för presenter, jobblappar och fynd",
-  "visad": "Kajsa spinner som en motor. Ja la Birgittas gardiner i lådan. Hon stickade dôm i husvagnen. Ja har int kunnat titta på dôm sen hon dog. Du får dôm. Dôm ä granna. Fan. /R",
-  "skickas": "[old, tired, thick Värmland accent, calm] [chuckles] Kajsa spinner som en motor. [short pause] [softly] Ja la Birgittas gardiner i lådan. Hon stickade dom i husvagnen. [sorrowful] Ja har inte kunnat titta på dom sen hon dog. [softly] Du får dom. Dom är fina. [sighs] Fan.",
-  "hand": true
+  "visad": "Nämen.. Kajsa spinner som en motor. Ja la Birgittas gardiner i lådan. Hon stickade dôm i husvagnen. Ja har int kunnat titta på dôm sen hon dog. Du får dôm. Dôm ä granna. Jaja. /R",
+  "skickas": "[old, tired, thick Värmland accent, calm] [sighs] Kajsa spinner som en motor. [softly] [short pause] Ja la Birgittas gardiner i lådan. [softly] Hon stickade dom i husvagnen. [softly] Ja har inte kunnat titta på dom sen hon dog. Du får dom. Dom är fina. [sorrowful] Jaja.",
+  "hand": false
  },
  {
   "id": "rolf-e66a8343",
@@ -2466,12 +2466,12 @@
   "hand": false
  },
  {
-  "id": "mamma-1d59f40d",
+  "id": "mamma-fa22f22f",
   "figur": "mamma",
   "rost": "mamma",
   "var": "Mammas svar om burkarna",
-  "visad": "Vad är det för skit? Du har ju inte ens TAPETER på väggarna.",
-  "skickas": "[thick Småland accent, fast, shrill, worried] [rushed] [worried] Vad är det för skit? [upset] Du har ju inte ens TAPETER på väggarna.",
+  "visad": "Vad är det där för nåt? Du har ju inte ens TAPETER på väggarna.",
+  "skickas": "[thick Småland accent, fast, shrill, worried] [rushed] [worried] Vad är det där för nåt? [upset] Du har ju inte ens TAPETER på väggarna.",
   "hand": false
  },
  {
@@ -2553,6 +2553,105 @@
   "var": "Mammas svar om burkarna",
   "visad": "Kan jag komma och bada på söndag? Pappa tar med korv.",
   "skickas": "[thick Småland accent, fast, shrill, worried] [rushed] [worried] Kan jag komma och bada på söndag? Pappa tar med korv.",
+  "hand": false
+ },
+ {
+  "id": "rolf-322b258d",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Lappar, brev och dagbok",
+  "visad": "ÖJ.. Ja va int mä mej själv på konditoriet. Förlåt att ja prata så mycke. Bakom husvagnen fanns Birgittas trädgård. Nu ä dä bara nässlor. Ja har int rört den på sju år. Ja kan int. Men om nån annan började … Ja vet int. Du ä ju bra på skräp. MVH ROLF",
+  "skickas": "[old, tired, thick Värmland accent, calm] ÖJ. [short pause] Ja var inte med mej själv på konditoriet. Förlåt att ja prata så mycket. [softly] Bakom husvagnen fanns Birgittas trädgård. Nu är det bara nässlor. Ja har inte rört den på sju år. Ja kan inte. Men om nån annan började … Ja vet inte. Du är ju bra på skräp. [sorrowful] Med vänlig hälsning, Rolf.",
+  "hand": false
+ },
+ {
+  "id": "rolf-f3c5e48b",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Lappar, brev och dagbok",
+  "visad": "Hon hade gillat dä. Ja plantreade rosorna i natt. Kajsa höll ficklampan. Hon ä int bra på att hålla ficklampa. MVH ROLF\n*planterade",
+  "skickas": "[old, tired, thick Värmland accent, calm] [sighs] Hon hade gillat det. [softly] [short pause] Ja planterade rosorna i natt. Kajsa höll ficklampan. Hon är inte bra på att hålla ficklampa. [sorrowful] Med vänlig hälsning, Rolf.",
+  "hand": false
+ },
+ {
+  "id": "rolf-bdb71253",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Lappar, brev och dagbok",
+  "visad": "Hon hade gillat dä. Ja planterade rosorna i natt. Kajsa höll ficklampan. Hon ä int bra på att hålla ficklampa. MVH ROLF",
+  "skickas": "[old, tired, thick Värmland accent, calm] [sighs] Hon hade gillat det. [softly] [short pause] Ja planterade rosorna i natt. Kajsa höll ficklampan. Hon är inte bra på att hålla ficklampa. [sorrowful] Med vänlig hälsning, Rolf.",
+  "hand": false
+ },
+ {
+  "id": "berattare-68861b71",
+  "figur": "berattare",
+  "rost": "berattare",
+  "var": "Lappar, brev och dagbok",
+  "visad": "Undertecknad önskar beställa en fågelholk. Fåglarna i trakten har ingenstans att bo. Det har undertecknad i viss mening inte heller. Lämnas i lådan vid staketet. Med vänlig hälsning, N.",
+  "skickas": "[warm storyteller, calm] Undertecknad önskar beställa en fågelholk. Fåglarna i trakten har ingenstans att bo. Det har undertecknad i viss mening inte heller. Lämnas i lådan vid staketet. Med vänlig hälsning, N.",
+  "hand": false
+ },
+ {
+  "id": "berattare-69aaa74c",
+  "figur": "berattare",
+  "rost": "berattare",
+  "var": "Lappar, brev och dagbok",
+  "visad": "Tack för holken. Den är bebodd. Undertecknad önskar nu en lampskärm, helst i en lugn färg. Det är mörkt om kvällarna här ute. Med vänlig hälsning, N.",
+  "skickas": "[warm storyteller, calm] Tack för holken. Den är bebodd. Undertecknad önskar nu en lampskärm, helst i en lugn färg. Det är mörkt om kvällarna här ute. Med vänlig hälsning, N.",
+  "hand": false
+ },
+ {
+  "id": "berattare-1742827b",
+  "figur": "berattare",
+  "rost": "berattare",
+  "var": "Lappar, brev och dagbok",
+  "visad": "Undertecknad önskar en vas. Röd. Till en blomma som undertecknad tänker köpa sig själv. Det är tillåtet. Med vänlig hälsning, N.",
+  "skickas": "[warm storyteller, calm] Undertecknad önskar en vas. Röd. Till en blomma som undertecknad tänker köpa sig själv. Det är tillåtet. Med vänlig hälsning, N.",
+  "hand": false
+ },
+ {
+  "id": "berattare-1241cabe",
+  "figur": "berattare",
+  "rost": "berattare",
+  "var": "Lappar, brev och dagbok",
+  "visad": "Undertecknad har sett era maskiner genom kikaren. Det är imponerande. Undertecknad önskar ett mobilställ, för att kunna se på väderleksrapporten och samtidigt ha händerna fria. Med vänlig hälsning, N.",
+  "skickas": "[warm storyteller, calm] Undertecknad har sett era maskiner genom kikaren. Det är imponerande. Undertecknad önskar ett mobilställ, för att kunna se på väderleksrapporten och samtidigt ha händerna fria. Med vänlig hälsning, N.",
+  "hand": false
+ },
+ {
+  "id": "berattare-580dbb3b",
+  "figur": "berattare",
+  "rost": "berattare",
+  "var": "Lappar, brev och dagbok",
+  "visad": "Undertecknad önskar en kaffekopp med namnet BENGT-ÅKE. Diskret paketerad. Med vänlig hälsning, B-Å N.",
+  "skickas": "[warm storyteller, calm] Undertecknad önskar en kaffekopp med namnet BENGT-ÅKE. Diskret paketerad. Med vänlig hälsning, B-Å N.",
+  "hand": false
+ },
+ {
+  "id": "berattare-bbb5755c",
+  "figur": "berattare",
+  "rost": "berattare",
+  "var": "Lappar, brev och dagbok",
+  "visad": "Undertecknad önskar ingenting. Undertecknad ville bara skriva. B-Å N.",
+  "skickas": "[warm storyteller, calm] Undertecknad önskar ingenting. Undertecknad ville bara skriva. B-Å N.",
+  "hand": false
+ },
+ {
+  "id": "berattare-1a5d30a7",
+  "figur": "berattare",
+  "rost": "berattare",
+  "var": "Lappar, brev och dagbok",
+  "visad": "HMPF. … Ja. Det var jag. N. som i Nabon. … Undertecknad ville bara skriva till någon. … Ängen. Ni vill ha den till huset. Ta den. Till marknadspris. Det är ingen välgörenhet. … HMPF.",
+  "skickas": "[warm storyteller, calm] HMPF. [pause] … Ja. Det var jag. N. Som i Nabon. [pause] … Undertecknad ville bara skriva till någon. [pause] … Ängen. Ni vill ha den till huset. Ta den. Till marknadspris. Det är ingen välgörenhet. [pause] … HMPF.",
+  "hand": false
+ },
+ {
+  "id": "berattare-c5089356",
+  "figur": "berattare",
+  "rost": "berattare",
+  "var": "Lappar, brev och dagbok",
+  "visad": "HMPF. … Ja. Det var jag. N. som i Nabon. … Ingen har gjort nåt åt mig sen nittonhundranittiotvå. … Ängen. Ni vill ha den till huset. Ta den. Till marknadspris. Det är ingen välgörenhet. … HMPF. Tack för koppen.",
+  "skickas": "[warm storyteller, calm] HMPF. [pause] … Ja. Det var jag. N. Som i Nabon. [pause] … Ingen har gjort nåt åt mig sen nittonhundranittiotvå. [pause] … Ängen. Ni vill ha den till huset. Ta den. Till marknadspris. Det är ingen välgörenhet. [pause] … HMPF. Tack för koppen.",
   "hand": false
  },
  {
@@ -2664,12 +2763,12 @@
   "hand": false
  },
  {
-  "id": "bror-e7181635",
+  "id": "bror-a32b75d7",
   "figur": "bror",
   "rost": "bror",
   "var": "Lappar, brev och dagbok",
-  "visad": "VA FAN?! Fick du den att FUNKA?? Jag gav upp efter två veckor, det var för jävla krångligt att installera allt. Grym du är 🤙 Gå och visa butiken över vägen. Ali köper allt som är printat.",
-  "skickas": "[relaxed, cool, mumbling] [excited] VA FAN?! [excited] Fick du den att FUNKA?? Jag gav upp efter två veckor, det var för jävla krångligt att installera allt. Grym du är Gå och visa butiken över vägen. Ali köper allt som är printat. [laughs]",
+  "visad": "VA?! SERIÖST?! Fick du den att FUNKA?? Jag gav upp efter två veckor, det var alldeles för krångligt att installera allt. Grym du är 🤙 Gå och visa butiken över vägen. Ali köper allt som är printat.",
+  "skickas": "[relaxed, cool, mumbling] VA?! [excited] SERIÖST?! [excited] Fick du den att FUNKA?? Jag gav upp efter två veckor, det var alldeles för krångligt att installera allt. Grym du är Gå och visa butiken över vägen. Ali köper allt som är printat. [laughs]",
   "hand": false
  },
  {
@@ -2952,12 +3051,12 @@
   "hand": false
  },
  {
-  "id": "du-367dfaff",
+  "id": "du-0773b03c",
   "figur": "du",
   "rost": "du",
   "var": "Dina tankar, tips och varningar",
-  "visad": "Okej. Låt oss bygga. Först en skylt, så att alla vet vem som bor här.",
-  "skickas": "[dry, deadpan] [quietly] [sighs] Okej. Låt oss bygga. Först en skylt, så att alla vet vem som bor här.",
+  "visad": "Okej. Först en skylt vid vägen, så att alla vet vem som bor här.",
+  "skickas": "[dry, deadpan] [quietly] [sighs] Okej. Först en skylt vid vägen, så att alla vet vem som bor här.",
   "hand": false
  },
  {
@@ -2967,6 +3066,15 @@
   "var": "Dina tankar, tips och varningar",
   "visad": "Klart! Nu lägger jag den i Rolfs brevlåda vid grinden.",
   "skickas": "[dry, deadpan] [sighs] [pleased] Klart! Nu lägger jag den i Rolfs brevlåda vid grinden.",
+  "hand": false
+ },
+ {
+  "id": "du-d9d4f257",
+  "figur": "du",
+  "rost": "du",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Flaggan är uppe på postlådan vid tippens grind. Där har Rolf lagt något till mig.",
+  "skickas": "[dry, deadpan] [quietly] [sighs] Flaggan är uppe på postlådan vid tippens grind. Där har Rolf lagt något till mig.",
   "hand": false
  },
  {
@@ -3213,21 +3321,21 @@
   "hand": false
  },
  {
-  "id": "rolf-88fb116f",
+  "id": "rolf-ac7fdfbd",
   "figur": "rolf",
   "rost": "rolf",
   "var": "Sms i kompostera",
-  "visad": "Nämen. Såg att du slnäger mat i skogen. Smart. Grävlingen äter va som helst. Han heter Göran. /R\n*slänger",
-  "skickas": "[old, tired, thick Värmland accent, calm] Såg att du slänger mat i skogen. [short pause] Smart. Grävlingen äter vad som helst. Han heter Göran. [chuckles]",
+  "visad": "Hörru. Såg att du slänger mat i skogen. Smart. Grävlingen äter va som helst. Han heter Bosse. MVH ROLF",
+  "skickas": "[old, tired, thick Värmland accent, calm] Såg att du slänger mat i skogen. [short pause] Smart. Grävlingen äter vad som helst. Han heter Bosse. [chuckles]",
   "hand": false
  },
  {
-  "id": "rolf-382e2cda",
+  "id": "rolf-56a9800b",
   "figur": "rolf",
   "rost": "rolf",
   "var": "Sms i kompostera",
-  "visad": "Nämen. Såg att du slänger mat i skogen. Smart. Grävlingen äter va som helst. Han heter Göran. /R",
-  "skickas": "[old, tired, thick Värmland accent, calm] Såg att du slänger mat i skogen. [short pause] Smart. Grävlingen äter vad som helst. Han heter Göran. [chuckles]",
+  "visad": "Hörru. Såg att du slänger mat i skogen. Smart. Grävlingen äter va som helst. Han heter Bosse. /R",
+  "skickas": "[old, tired, thick Värmland accent, calm] Såg att du slänger mat i skogen. [short pause] Smart. Grävlingen äter vad som helst. Han heter Bosse. [chuckles]",
   "hand": false
  },
  {
@@ -3384,42 +3492,6 @@
   "hand": false
  },
  {
-  "id": "mamma-5525afe3",
-  "figur": "mamma",
-  "rost": "mamma",
-  "var": "Sms i julEnkel",
-  "visad": "Julskinkan har legat i frysen sen augusti. Vi kommer. Alla. Pappa tar med Wham!-skivan. Duka för MÅNGA. ❤️ /Mamma",
-  "skickas": "[thick Småland accent, fast, shrill, worried] [rushed] Julskinkan har legat i frysen sen augusti. Vi kommer. Alla. Pappa tar med Wham!-skivan. [upset] Duka för MÅNGA. Mamma.",
-  "hand": false
- },
- {
-  "id": "rolf-f202345d",
-  "figur": "rolf",
-  "rost": "rolf",
-  "var": "Sms i julEnkel",
-  "visad": "Hörru.. Ja o Kajsa kömmer. Ja har tagit mä trumstockarna. Säj inget till Bengt-Åke. Han kömmer oxå. MVH ROLF",
-  "skickas": "[old, tired, thick Värmland accent, calm] Ja och Kajsa kommer. [short pause] Ja har tagit med trumstockarna. Säj inget till Bengt-Åke. Han kommer också. [chuckles]",
-  "hand": false
- },
- {
-  "id": "rolf-0bf6ceab",
-  "figur": "rolf",
-  "rost": "rolf",
-  "var": "Sms i julEnkel",
-  "visad": "Hörru. Ja o Kajsa kömmer. Ja har tagit mä trumstockarna. Säj inget till Bengt-Åke. Han kömmer oxå. /R",
-  "skickas": "[old, tired, thick Värmland accent, calm] Ja och Kajsa kommer. [short pause] Ja har tagit med trumstockarna. Säj inget till Bengt-Åke. Han kommer också. [chuckles]",
-  "hand": false
- },
- {
-  "id": "bror-13d0a519",
-  "figur": "bror",
-  "rost": "bror",
-  "var": "Sms i julEnkel",
-  "visad": "Pappa grät lite vid julbordet. Han sa att det var pepparroten. Det fanns ingen pepparrot. God jul brorsan.",
-  "skickas": "[relaxed, cool, mumbling] [dismissive] Pappa grät lite vid julbordet. Han sa att det var pepparroten. Det fanns ingen pepparrot. God jul brorsan. [laughs]",
-  "hand": false
- },
- {
   "id": "mamma-eff8ea94",
   "figur": "mamma",
   "rost": "mamma",
@@ -3489,6 +3561,231 @@
   "var": "Mammas sms när du maler burkar",
   "visad": "Jag har gjort en lista: 30 burkar lingon, 20 honung, 15 saft, 12 par grytvantar. Pappa får köra två vändor.",
   "skickas": "[thick Småland accent, fast, shrill, worried] [softly] [rushed] Jag har gjort en lista: trettio burkar lingon, tjugo honung, femton saft, tolv par grytvantar. Pappa får köra två vändor.",
+  "hand": false
+ },
+ {
+  "id": "rolf-bd564369",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "SKYLT_REPLIK",
+  "visad": "Jo jo. Tuta två gnåger när ja åkte förbi. Hörde du? Dä va ja. MVH ROLF\n*gånger",
+  "skickas": "[old, tired, thick Värmland accent, calm] Tuta två gånger när ja åkte förbi. [short pause] Hörde du? Det var ja. Med vänlig hälsning, Rolf. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-8bc4a1a7",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "SKYLT_REPLIK",
+  "visad": "Jo jo. Tuta två gånger när ja åkte förbi. Hörde du? Dä va ja. MVH ROLF",
+  "skickas": "[old, tired, thick Värmland accent, calm] Tuta två gånger när ja åkte förbi. [short pause] Hörde du? Det var ja. Med vänlig hälsning, Rolf. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "bror-0af6dc2a",
+  "figur": "bror",
+  "rost": "bror",
+  "var": "SKYLT_REPLIK",
+  "visad": "Pappa körde förbi för att kolla. Två gånger. Han säger att han skulle åt det hållet ändå. Det ska han aldrig.",
+  "skickas": "[relaxed, cool, mumbling] [dismissive] Pappa körde förbi för att kolla. Två gånger. Han säger att han skulle åt det hållet ändå. Det ska han aldrig. [laughs]",
+  "hand": false
+ },
+ {
+  "id": "rolf-aedd6cab",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "SKYLT_REPLIK",
+  "visad": "Kommunen satt upp en RIKTI skylt. Ja grät int. Kajsa grät. MVH ROLF",
+  "skickas": "[old, tired, thick Värmland accent, calm] Kommunen satt upp en RIKTI skylt. [short pause] Ja grät inte. Kajsa grät. Med vänlig hälsning, Rolf. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "chefen-77b78d17",
+  "figur": "chefen",
+  "rost": "chefen",
+  "var": "U_REPLIK",
+  "visad": "Chefen. Soptippen är till salu. Någon har föreslagit dig. Det var inte jag. Inga böter.",
+  "skickas": "[curt, cold, bored] Chefen. Soptippen är till salu. Någon har föreslagit dig. Det var inte jag. Inga böter.",
+  "hand": false
+ },
+ {
+  "id": "rolf-bc64c6ef",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "U_REPLIK",
+  "visad": "Goddag … ja. Ja har kavaj. Fråga int.",
+  "skickas": "[old, tired, thick Värmland accent, calm] Goddag … [short pause] Ja. Ja har kavaj. Fråga inte. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "bror-2229dfac",
+  "figur": "bror",
+  "rost": "bror",
+  "var": "U_REPLIK",
+  "visad": "Den är inte från mig. Den låg utanför. Typ.",
+  "skickas": "[relaxed, cool, mumbling] Den är inte från mig. Den låg utanför. [mumbles] Typ. [laughs]",
+  "hand": false
+ },
+ {
+  "id": "mamma-bf7abcb6",
+  "figur": "mamma",
+  "rost": "mamma",
+  "var": "U_REPLIK",
+  "visad": "Det är så STÄDAT!",
+  "skickas": "[thick Småland accent, fast, shrill, worried] [rushed] [upset] Det är så STÄDAT!",
+  "hand": false
+ },
+ {
+  "id": "pappa-246088cf",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "U_REPLIK",
+  "visad": "Jaha.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] [clears throat] Jaha.",
+  "hand": false
+ },
+ {
+  "id": "pappa-c9b662ed",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "JULSCEN_REPLIK",
+  "visad": "Ja ska fatta mej kort.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Ja ska fatta mej kort.",
+  "hand": false
+ },
+ {
+  "id": "pappa-acd86ecf",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "JULSCEN_REPLIK",
+  "visad": "Scania byggde sin första lastbil nittonhundraelva.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] Scania byggde sin första lastbil nittonhundraelva. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "pappa-ba7bd84b",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "JULSCEN_REPLIK",
+  "visad": "Djurgården har vunnit SM tolv gånger.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [sighs] Djurgården har vunnit SM tolv gånger. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "pappa-4a44c5bc",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "JULSCEN_REPLIK",
+  "visad": "Skinkan har legat i frysen sen augusti.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Skinkan har legat i frysen sen augusti.",
+  "hand": false
+ },
+ {
+  "id": "pappa-bade44bc",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "JULSCEN_REPLIK",
+  "visad": "Ja … är stolt över dej. Aha. Vad lugnt då.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] [quietly] [sighs] Ja … Är stolt över dej. Aha. Vad lugnt då.",
+  "hand": false
+ },
+ {
+  "id": "mamma-148ebf0b",
+  "figur": "mamma",
+  "rost": "mamma",
+  "var": "GORAN_REPLIK",
+  "visad": "Det finns MÅSAR vid soptippar!! Dom tar MAT. Och SMÅ HUNDAR. Du är inte en liten hund men ÄNDÅ.",
+  "skickas": "[thick Småland accent, fast, shrill, worried] [rushed] [upset] Det finns MÅSAR vid soptippar!! [upset] Dom tar MAT. [upset] Och SMÅ HUNDAR. [upset] Du är inte en liten hund men ÄNDÅ.",
+  "hand": false
+ },
+ {
+  "id": "rolf-e794b122",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "GORAN_REPLIK",
+  "visad": "ÖJ! Dä ä Göran.. Han ä från 2014. Han tar int skräp, bara grejer som ä granna. MVH ROLF",
+  "skickas": "[old, tired, thick Värmland accent, calm] Det är Göran. [short pause] Han är från tvåtusenfjorton. Han tar inte skräp, bara grejer som är fina. Med vänlig hälsning, Rolf. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-92747fd5",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "GORAN_REPLIK",
+  "visad": "Tjo. Göran tar dina grejer? Ali har fågelbad. Måsar ä enkla. Birgitta hade ett vid husvagnen. MVH ROLF",
+  "skickas": "[old, tired, thick Värmland accent, calm] [sighs] Göran tar dina grejer? [short pause] Ali har fågelbad. Måsar är enkla. [softly] Birgitta hade ett vid husvagnen. [sorrowful] Med vänlig hälsning, Rolf.",
+  "hand": false
+ },
+ {
+  "id": "rolf-82ae5cc6",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "LAGER_REPLIK",
+  "visad": "Tjock-TV:n. Ja tittade på Melodifestivalen på en sån. Birgitta röstade på alla. MVH ROLF",
+  "skickas": "[old, tired, thick Värmland accent, calm] [sighs] Tjock-TV:n. [short pause] Ja tittade på Melodifestivalen på en sån. [softly] Birgitta röstade på alla. [sorrowful] Med vänlig hälsning, Rolf.",
+  "hand": false
+ },
+ {
+  "id": "rolf-a9216723",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "LAGER_REPLIK",
+  "visad": "Nämen.. ROLFS ROCKERS. Nittonhundraåttiosju. Vi va STORA i Hudiksvall. En spelning. MVH ROLF",
+  "skickas": "[old, tired, thick Värmland accent, calm] ROLFS ROCKERS. [short pause] Nittonhundraåttiosju. Vi var STORA i Hudiksvall. En spelning. Med vänlig hälsning, Rolf. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-19bc1fda",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "LAGER_REPLIK",
+  "visad": "Tjo.. Sextitvå. Då fanns int ja. Men kaffepannan, den ha ja sett förut. Hos mor. MVH ROLF",
+  "skickas": "[old, tired, thick Värmland accent, calm] Sextitvå. [short pause] Då fanns inte ja. Men kaffepannan, den ha ja sett förut. Hos mor. Med vänlig hälsning, Rolf. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-97a36850",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "LAGER_REPLIK",
+  "visad": "Va hitta du dä? … Hon ha på sej den gula klänningen. Ja hade hår. MVH ROLF",
+  "skickas": "[old, tired, thick Värmland accent, calm] Va hitta du det? [short pause] … Hon ha på sej den gula klänningen. Ja hade hår. Med vänlig hälsning, Rolf. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-cb694cf1",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "LAGER_REPLIK",
+  "visad": "Hon hann int.. Ja ska be Kajsa. Hon ä int bra på att sticka. MVH ROLF",
+  "skickas": "[old, tired, thick Värmland accent, calm] Hon hann inte. [short pause] Ja ska be Kajsa. Hon är inte bra på att sticka. Med vänlig hälsning, Rolf. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-c4ee0308",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "TRADGARD_REPLIK",
+  "visad": "Ja såg. Ja stod vid fönstrte länge. Tack. MVH ROLF\n*fönstret",
+  "skickas": "[old, tired, thick Värmland accent, calm] Ja såg. [short pause] Ja stod vid fönstret länge. [softly] Tack. Med vänlig hälsning, Rolf. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-ef7c65ee",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "TRADGARD_REPLIK",
+  "visad": "Ja såg. Ja stod vid fönstret länge. Tack. MVH ROLF",
+  "skickas": "[old, tired, thick Värmland accent, calm] Ja såg. [short pause] Ja stod vid fönstret länge. [softly] Tack. Med vänlig hälsning, Rolf. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-ec697dda",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "TRADGARD_REPLIK",
+  "visad": "ÖJ! Trädgårn står kvar.. Ingen brådska. Nässlorna har inga planer. MVH ROLF",
+  "skickas": "[old, tired, thick Värmland accent, calm] Trädgårn står kvar. [short pause] Ingen brådska. Nässlorna har inga planer. Med vänlig hälsning, Rolf. [chuckles]",
   "hand": false
  },
  {
