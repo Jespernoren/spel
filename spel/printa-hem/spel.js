@@ -1048,21 +1048,97 @@ function malaFarg(text, W, H, farg, storlek, { lut = 0, x = W / 2, y = H / 2 } =
   }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
+// punkt F: skylten står vid vägen (där Ali, Rolf och alla som kör förbi ser den) och blir finare för varje kapitel
+const VAG_SKYLT = { x: -3.5, z: TOMT - 0.6 };
+const SKYLT_NAMN = [null, 'handmålad planka', 'printad', 'röd PETG', 'neon', 'kolfiber och plakett'];
+const skyltVersion = () => S.julFirad ? 5 : Math.max(1, Math.min(4, S.kapitel || 1));
 const adressSkylt = new THREE.Group();
-{
-  const brada = (w, h, f) => box(w, h, 0.035, mat(f));
-  const stolpe = brada(0.1, 2.25, 0x6d5434); stolpe.position.set(0, 1.12, -0.03); stolpe.rotation.z = 0.035; adressSkylt.add(stolpe);
-  const B = [[1.3, 0.2, 0x8a6a3f, 0.62, 2.08, -0.03], [1.18, 0.18, 0x7a5c36, 0.55, 1.88, 0.025], [0.42, 0.36, 0x9a7a4a, 1.32, 1.98, -0.06]];
-  for (const [w, h, f, x, y, rz] of B) {
-    const m = brada(w, h, f); m.position.set(x, y, 0.02); m.rotation.z = rz; adressSkylt.add(m);
-    for (const sx of [-w / 2 + 0.05, w / 2 - 0.05]) { const sp = cyl(0.012, 0.012, 0.01, mat(0x3a3a3a), 6); sp.rotation.x = Math.PI / 2; sp.position.set(x + sx * Math.cos(rz), y + sx * Math.sin(rz), 0.04); adressSkylt.add(sp); }
-  }
-  const text = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 0.4), new THREE.MeshBasicMaterial({ map: malaFarg('SOPTIPPSVÄGEN', 1024, 328, FARG.papper, 120, { lut: -0.01 }), transparent: true }));
-  text.position.set(0.6, 1.98, 0.045); adressSkylt.add(text);
-  const ett = new THREE.Mesh(new THREE.PlaneGeometry(0.38, 0.38), new THREE.MeshBasicMaterial({ map: malaFarg('1', 256, 256, FARG.falu, 210, { lut: 0.1 }), transparent: true }));
-  ett.position.set(1.32, 1.98, 0.045); adressSkylt.add(ett);
-  adressSkylt.position.set(SKYLT_POS[0] - 0.4, 0, SKYLT_POS[1]); talt.add(adressSkylt);
+adressSkylt.position.set(VAG_SKYLT.x, 0, VAG_SKYLT.z); scen.add(adressSkylt);
+function neonTex(text, W, H, farg) {
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  let fs = H * 0.62; g.font = `900 ${fs}px "Arial Black",Impact,system-ui`;
+  while (g.measureText(text).width > W * 0.9) { fs -= 4; g.font = `900 ${fs}px "Arial Black",Impact,system-ui`; }
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  g.shadowColor = farg; g.shadowBlur = H * 0.12; g.strokeStyle = farg; g.lineWidth = H * 0.05;
+  for (let i = 0; i < 3; i++) g.strokeText(text, W / 2, H / 2);
+  g.shadowBlur = H * 0.04; g.lineWidth = H * 0.018; g.strokeStyle = '#ffffff'; g.strokeText(text, W / 2, H / 2);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
+function kolfiberTex(text, W, H) {
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  const r = 14; for (let y = 0; y < H; y += r) for (let x = 0; x < W; x += r) {
+    const upp = ((x + y) / r) % 2 === 0, gr = upp ? g.createLinearGradient(x, y, x + r, y) : g.createLinearGradient(x, y, x, y + r);
+    gr.addColorStop(0, '#15171b'); gr.addColorStop(0.5, '#3a3e46'); gr.addColorStop(1, '#15171b'); g.fillStyle = gr; g.fillRect(x, y, r, r);
+  }
+  g.strokeStyle = '#9aa3ad'; g.lineWidth = 6; g.strokeRect(3, 3, W - 6, H - 6);
+  let fs = H * 0.5; g.font = `900 ${fs}px "Arial Black",Impact,system-ui`;
+  while (g.measureText(text).width > W * 0.88) { fs -= 4; g.font = `900 ${fs}px "Arial Black",Impact,system-ui`; }
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  const m = g.createLinearGradient(0, H * 0.25, 0, H * 0.75); m.addColorStop(0, '#f4f6f8'); m.addColorStop(0.5, '#a9b1ba'); m.addColorStop(1, '#e6e9ec');
+  g.fillStyle = 'rgba(0,0,0,.5)'; g.fillText(text, W / 2 + 3, H / 2 + 5); g.fillStyle = m; g.fillText(text, W / 2, H / 2);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function byggSkylt(v) {
+  for (const o of [...adressSkylt.children]) { adressSkylt.remove(o); o.traverse?.((x) => { x.geometry?.dispose?.(); }); }
+  adressSkylt.userData.v = v;
+  const brada = (w, h, f) => box(w, h, 0.035, mat(f));
+  if (v === 1) {
+    const stolpe = brada(0.1, 2.25, 0x6d5434); stolpe.position.set(0, 1.12, -0.03); stolpe.rotation.z = 0.035; adressSkylt.add(stolpe);
+    const B = [[1.3, 0.2, 0x8a6a3f, 0.62, 2.08, -0.03], [1.18, 0.18, 0x7a5c36, 0.55, 1.88, 0.025], [0.42, 0.36, 0x9a7a4a, 1.32, 1.98, -0.06]];
+    for (const [w, h, f, x, y, rz] of B) {
+      const m = brada(w, h, f); m.position.set(x, y, 0.02); m.rotation.z = rz; adressSkylt.add(m);
+      for (const sx of [-w / 2 + 0.05, w / 2 - 0.05]) { const sp = cyl(0.012, 0.012, 0.01, mat(0x3a3a3a), 6); sp.rotation.x = Math.PI / 2; sp.position.set(x + sx * Math.cos(rz), y + sx * Math.sin(rz), 0.04); adressSkylt.add(sp); }
+    }
+    const text = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 0.4), new THREE.MeshBasicMaterial({ map: malaFarg('SOPTIPPSVÄGEN', 1024, 328, FARG.papper, 120, { lut: -0.01 }), transparent: true }));
+    text.position.set(0.6, 1.98, 0.045); adressSkylt.add(text);
+    const ett = new THREE.Mesh(new THREE.PlaneGeometry(0.38, 0.38), new THREE.MeshBasicMaterial({ map: malaFarg('1', 256, 256, FARG.falu, 210, { lut: 0.1 }), transparent: true }));
+    ett.position.set(1.32, 1.98, 0.045); adressSkylt.add(ett);
+    return;
+  }
+  // v2–v5: två stolpar och en platta, centrerad över x = 0.7 (där plankan satt)
+  const X = 0.7, Y = 2.0;
+  const [stolpF, plattF, W, H] = v === 2 ? [0x2f7fd0, 0x2f7fd0, 1.7, 0.46] : v === 3 ? [0x8f1b26, 0xb5222f, 1.85, 0.5] : v === 4 ? [0x1c1c22, 0x14051a, 2.0, 0.56] : [0x2a2d33, 0x1d2025, 2.0, 0.56];
+  for (const sx of [-W / 2 + 0.15, W / 2 - 0.15]) adressSkylt.add(at(box(0.09, Y + H / 2, 0.09, mat(stolpF, v === 3 ? { roughness: 0.35 } : {})), X + sx, (Y + H / 2) / 2, -0.06));
+  adressSkylt.add(at(box(W + 0.04, H + 0.04, 0.05, mat(plattF, v === 3 ? { roughness: 0.3, metalness: 0.05 } : v === 5 ? { roughness: 0.25, metalness: 0.4 } : {})), X, Y, -0.01));
+  let plan;
+  if (v === 2) plan = skylt('SOPTIPPSVÄGEN 1', W, H, '#2f7fd0', '#f4ecd8');
+  else if (v === 3) plan = skylt('SOPTIPPSVÄGEN 1', W, H, '#b5222f', '#ffffff');
+  else if (v === 4) {
+    plan = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: neonTex('SOPTIPPSVÄGEN 1', 1024, 288, '#3de3ff'), transparent: true, toneMapped: false }));
+    const glod = new THREE.Mesh(new THREE.PlaneGeometry(W * 1.15, H * 1.5), new THREE.MeshBasicMaterial({ color: 0x3de3ff, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false }));
+    glod.position.set(X, Y, 0.035); adressSkylt.add(glod);
+    const ram = (w, h, x, y) => adressSkylt.add(at(new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.02), new THREE.MeshBasicMaterial({ color: 0xff4dd2, toneMapped: false })), x, y, 0.03));
+    ram(W, 0.02, X, Y + H / 2 - 0.03); ram(W, 0.02, X, Y - H / 2 + 0.03); ram(0.02, H, X - W / 2 + 0.03, Y); ram(0.02, H, X + W / 2 - 0.03, Y);
+  } else {
+    plan = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: kolfiberTex('SOPTIPPSVÄGEN 1', 1024, 288) }));
+    // plaketten under – mässing
+    const pl = skylt('FOLKBOKFÖRD', 0.95, 0.2, '#b8892d', '#2a1c08'); pl.position.set(X, Y - H / 2 - 0.17, 0.03); adressSkylt.add(pl);
+    adressSkylt.add(at(box(0.99, 0.24, 0.03, mat(0x8a6420, { metalness: 0.6, roughness: 0.35 })), X, Y - H / 2 - 0.17, 0.005));
+    // en tunn cyan neonlist runt – skylten tänds på julen
+    const list = (w, h, x, y) => adressSkylt.add(at(new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.015), new THREE.MeshBasicMaterial({ color: 0x3de3ff, toneMapped: false })), x, y, 0.03));
+    list(W + 0.06, 0.018, X, Y + H / 2 + 0.03); list(W + 0.06, 0.018, X, Y - H / 2 - 0.03);
+  }
+  plan.position.set(X, Y, 0.02); adressSkylt.add(plan);
+}
+// varje gång ett kapitel blir klart: ny skylt, och någon säger något om den
+const SKYLT_REPLIK = {
+  2: ['ali', 'Din skylt är printad nu. Den är rakare än mitt staket. Jag är inte avundsjuk. Lite.'],
+  3: ['rolf', 'Såg din nya skylt när ja körde förbi. Röd. Grann. Ja tuta. Hörde du? /R'],
+  4: ['ali', 'Din skylt lyser in i min butik hela natten. Jag sover sämre. Jag säljer mer. Tack, tror jag.'],
+};
+function kollaSkylt() {
+  if (!S.skyltUppe) return;
+  const v = skyltVersion();
+  if (adressSkylt.userData.v === v) return;
+  const forra = S.skyltV || 0; byggSkylt(v);
+  if (forra && v > forra && ui.igang) {
+    ui.toast(`Skylten vid vägen är ny: ${SKYLT_NAMN[v]}`, 'guld'); spelaLjud('placera');
+    S.skyltTut = v;
+    const r = SKYLT_REPLIK[v]; if (r) setTimeout(() => sms(r[0], r[1]), 6000);
+  }
+  if (S.skyltV !== v) { S.skyltV = v; sparaSnart(); }
+}
+setInterval(kollaSkylt, 1500);
 // brädhögen + hammaren där skylten ska stå
 const bradhog = new THREE.Group();
 {
@@ -1073,7 +1149,7 @@ const bradhog = new THREE.Group();
   for (const [x, rz] of [[1.45, 0.35], [1.6, 0.5]]) { const m = box(0.2, 1.3, 0.04, mat(0x8a6a3f)); m.position.set(x, 0.6, -0.1); m.rotation.z = rz; bradhog.add(m); }
   const skaft = box(0.03, 0.03, 0.32, mat(0x6b4a2a)); skaft.position.set(1.05, 0.2, 0.2); skaft.rotation.y = 0.5; bradhog.add(skaft);
   const huvud = box(0.12, 0.05, 0.05, mat(0x444444)); huvud.position.set(1.12, 0.2, 0.34); huvud.rotation.y = 0.5; bradhog.add(huvud);
-  bradhog.position.set(SKYLT_POS[0] - 0.3, 0, SKYLT_POS[1]); talt.add(bradhog);
+  bradhog.position.set(VAG_SKYLT.x + 0.1, 0, VAG_SKYLT.z - 0.4); scen.add(bradhog);
 }
 // kapitelkort: stor rubrik mitt i bild några sekunder – säger vad kapitlet går ut på, inget mer
 function visaKapitelKort(nr, namn, mal) {
@@ -1083,7 +1159,7 @@ function visaKapitelKort(nr, namn, mal) {
   d.innerHTML = `<small>KAPITEL ${nr}</small><b>${rens(namn)}</b><span>${rens(mal)}</span>`;
   document.body.appendChild(d); setTimeout(() => d.classList.add('ut'), 5200); setTimeout(() => d.remove(), 6000);
 }
-function visaAdressSkylt() { adressSkylt.visible = !!S.skyltUppe; bradhog.visible = !S.skyltUppe; }
+function visaAdressSkylt() { adressSkylt.visible = !!S.skyltUppe; bradhog.visible = !S.skyltUppe; if (S.skyltUppe && adressSkylt.userData.v == null) { byggSkylt(skyltVersion()); if (!S.skyltV) S.skyltV = skyltVersion(); } }
 let spikar = false;
 function spikaSkylt() {
   if (S.skyltUppe || spikar) return; spikar = true;
@@ -1094,7 +1170,7 @@ function spikaSkylt() {
     visaLapp('skylt'); sparaSnart();
   }, 1800);
 }
-interaktor.registrera(bradhog, { text: () => 'Spika ihop en skylt av brädorna – det här är MITT', aktivera: spikaSkylt });
+interaktor.registrera(bradhog, { text: () => 'Spika ihop en skylt av brädorna vid vägen – det här är MITT', aktivera: spikaSkylt });
 
 // kvarnen (plast → filament)
 const plastFargerTidig = [0x7fc8f8, 0x6ad48a, 0xf5f5f5];
@@ -3382,7 +3458,7 @@ const DU_BYGG = 'Okej. Låt oss bygga. Först en skylt, så att alla vet vem som
 function uppdateraMalPil() {
   const p = malPunkt();
   if (!p || !ui.igang) { malPil.visible = false; }
-  else { const stor = !S.skyltUppe && S.steg <= 1; malPil.scale.setScalar(stor ? 1.3 : Math.min(3, Math.max(1, Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z) / 9))); malPil.visible = true; malPil.position.copy(p).add(new THREE.Vector3(stor ? 0.65 : 0, (stor ? 0.75 : 0.6) + Math.abs(Math.sin(performance.now() / 300)) * 0.35, 0)); malPil.rotation.y += 0.04; }
+  else { const stor = !S.skyltUppe && S.steg <= 1; malPil.scale.setScalar(stor ? Math.max(1.3, Math.min(3, Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z) / 9)) : Math.min(3, Math.max(1, Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z) / 9))); malPil.visible = true; malPil.position.copy(p).add(new THREE.Vector3(stor ? 0.65 : 0, (stor ? 0.75 : 0.6) + Math.abs(Math.sin(performance.now() / 300)) * 0.35, 0)); malPil.rotation.y += 0.04; }
   // din egen röst när dagboken är läst: dags att spika skylten
   if (!S.skyltUppe && S.steg <= 1 && !sagtBygg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas) { sagtBygg = true; bud(() => { if (!S.skyltUppe) { if (!S.kap1Visad) { S.kap1Visad = true; visaKapitelKort(1, KAP1_NAMN, KAP1_MAL); sparaSnart(); } prata('du', DU_BYGG); } }); }
   // instruktionen läses först när dagboken är läst och (i ett nytt spel) skylten är uppe
@@ -4748,7 +4824,7 @@ function ton(f, d, vol, typ = 'square', fordrojning = 0) {
   o.connect(g).connect(c.destination); o.start(t); o.stop(t + d + 0.02);
 }
 const bilVolym = () => Math.max(0, 1 - sopbil.position.distanceTo(kamera.position) / 70) ** 2;
-function tuta() { const v = 0.02 + 0.12 * bilVolym(); ton(392, 0.25, v); ton(330, 0.25, v, 'square', 0.28); try { if (S.dag >= 2 && sopbil.position.distanceTo(spelare.pos) < 30) varldsBubbla(sopbil, ['TUUT! Tjena!', 'TUUT! Hej grannen!', 'TUUT TUUT!'][Math.floor(Math.random() * 3)], 3, 3.2); } catch {} }
+function tuta() { const v = 0.02 + 0.12 * bilVolym(); ton(392, 0.25, v); ton(330, 0.25, v, 'square', 0.28); try { if (S.dag >= 2 && sopbil.position.distanceTo(spelare.pos) < 30) { varldsBubbla(sopbil, S.skyltTut ? 'TUUT! Grann skylt!' : ['TUUT! Tjena!', 'TUUT! Hej grannen!', 'TUUT TUUT!'][Math.floor(Math.random() * 3)], 3, 3.2); S.skyltTut = 0; } } catch {} }
 // motorljud: en gammal diesel som brummar, skakar och spruttar – hörs tydligare ju närmare bilen är
 let bilMotor = null, bilPutt = 0;
 function brunBrus(c, sek = 2) {   // mörkt brus (som ett avgasrör)
@@ -8403,7 +8479,7 @@ function uppdateraLiv(dt) {
   if (bengt.visible && nu > bengtSynsTill) bengt.visible = false;
 }
 S.upprepaVald = true;   // issue #18: gamla sparfiler fick upprepa AV en gång (i skrivarnas laddning ovan)
-window.__printahem = { rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+window.__printahem = { byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 

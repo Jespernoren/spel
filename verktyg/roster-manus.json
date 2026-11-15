@@ -5165,5 +5165,24 @@
   "figur": "mamma",
   "text": "Jag har gjort en lista: 30 burkar lingon, 20 honung, 15 saft, 12 par grytvantar. Pappa får köra två vändor.",
   "var": "Mammas sms när du maler burkar"
+ },
+ {
+  "id": "ali-db6e0bf8",
+  "figur": "ali",
+  "text": "Din skylt är printad nu. Den är rakare än mitt staket. Jag är inte avundsjuk. Lite.",
+  "var": "SKYLT_REPLIK"
+ },
+ {
+  "id": "rolf-9247a4d0",
+  "figur": "rolf",
+  "text": "Tjo. Såg din nya skylt när ja körde förbi. Röd. Grann. Ja tuta. Hörde du? /R",
+  "kalla": "Såg din nya skylt när ja körde förbi. Röd. Grann. Ja tuta. Hörde du? /R",
+  "var": "SKYLT_REPLIK"
+ },
+ {
+  "id": "ali-1fe5b01b",
+  "figur": "ali",
+  "text": "Din skylt lyser in i min butik hela natten. Jag sover sämre. Jag säljer mer. Tack, tror jag.",
+  "var": "SKYLT_REPLIK"
  }
 ]

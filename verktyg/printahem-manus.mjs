@@ -11,6 +11,8 @@ for (const name of ['MAMMA_BURK_ARG', 'LADAN_SMS']) {
   const i = src.indexOf('const ' + name), j = src.indexOf('];', i);
   for (const m of src.slice(i, j).matchAll(/'((?:[^'\\]|\\.)*)'/g)) lit.push([name === 'LADAN_SMS' ? 'rolf' : 'mamma', m[1], name === 'LADAN_SMS' ? 'Rolfs sms om säljlådan' : 'Mammas sms när du maler burkar']);
 }
+// tabeller som heter *_REPLIK: ['figur', 'text'] (fas 2: skylten, Göran, N. …)
+for (const t of src.matchAll(/const (\w+_REPLIK) = [\[{]/g)) { const i = t.index, j = src.indexOf('\n};', i) > 0 && src.indexOf('\n};', i) < src.indexOf('\n];', i) || src.indexOf('\n];', i) < 0 ? src.indexOf('\n};', i) : src.indexOf('\n];', i); for (const m of src.slice(i, j).matchAll(/\['(\w+)',\s*'((?:[^'\\]|\\.)*)'/g)) lit.push([m[1], m[2].replace(/\\'/g, "'"), t[1]]); }
 { const i = src.indexOf('const ROLF_MARK'), j = src.indexOf('};', i); for (const m of src.slice(i, j).matchAll(/: '((?:[^'\\]|\\.)*)'/g)) lit.push(['rolf', m[1], 'Rolfs sms om marken']); }
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const p = await b.newPage();
