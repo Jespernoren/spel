@@ -12,7 +12,7 @@ import { byggMiljo } from './miljo.js';
 import { IKON, ik, portratt, rens, knapp, ruta as uiRuta, grid, sektion, detalj, resurs, panel, rad, fakta, UI_CSS } from './ui-kit.js';
 import * as B from './balans.js';   // alla siffror som styr progressionen
 const { PRIS_SKALA, MATTNAD, MATTNAD_GOLV, ALI_VILL_BONUS, GROSSIST, SALJ_TILLBAKA, FILAMENT_KOP, SLAPP_PER_DAG, KAP1_BELONING, TRIVSEL_MAL, RESPEKT_NIVAER, JOBB_VARV, JOBB_ANDEL, FYND_ANDEL, SMS_MELLAN, STROM_BAS, BANK_PLUS, TRAMP_PER_S, SOL_PER_S, SOLPARK_PER_S, MOTOR_STROM, BARA_SKRAP, HOTBAR, KISTA_PLATSER, STACK, RYGG_BAS, RYGG_STOR, UT_MAX, LASTARM_TID, LASTARM_MAX, BAND_BAS, TRIVSEL_PER_PROCENT, TRIVSEL_MAX_BONUS } = B;
-import { logo, BRAND_CSS, malaSkylt, NAMN, FARG } from './brand.js';
+import { logo, BRAND_CSS, malaSkylt, NAMN, FARG, KOP_SLAG } from './brand.js';
 import { ansikte as hudAnsikte, hjarta as hudHjarta, HUD_CSS, matarFarg } from './hud.js';
 { const st = document.createElement('style'); st.textContent = UI_CSS; document.head.appendChild(st); }
 const SPEL_ID = 'printa-hem';
@@ -4090,10 +4090,10 @@ function dagensMalHtml(del) {
     if (st.del !== del || st.sov) continue;
     const t = typeof st.text === 'function' ? (() => { try { return st.text(); } catch { return ''; } })() : st.text;
     if (st.startPost || /Rolf|postlåda|sopbil|Sopbil/i.test(t)) { if (!rolf) { rolf = true; rader.push(['brev', 'Hjälp Rolf – läs brevet i postlådan']); } continue; }
-    rader.push([malIkon(t), t.replace(/ · .*$/, '')]);
+    rader.push([malIkon(t), t.replace(/ · .*$/, ''), /^Köp /.test(t) ? slagForTyp(st.bild) : null]);
   }
   rader.push(['klocka', 'Sov när allt är klart']);
-  return `<ul class="br-dagmal">${rader.slice(0, 6).map(([i, t]) => `<li>${ik(i)}<span>${rens(t)}</span></li>`).join('')}</ul>`;   // Ali vill ha idag står i högerkolumnen (AA)
+  return `<ul class="br-dagmal">${rader.slice(0, 6).map(([i, t, sl]) => `<li>${ik(i)}<span>${rens(t)}</span>${slagChip(sl, true)}</li>`).join('')}</ul>`;   // Ali vill ha idag står i högerkolumnen (AA)
 }
 
 // ---------- Spökbild för att placera saker ----------
@@ -5580,12 +5580,12 @@ function nastaKop() {
   nastaKopT = performance.now();
   const h = HUVUDKOP[STEG[S.steg]?.del];
   const klar = (id) => S.ritningar.includes(id) || arKlar(id) || harPlacerat(id) || antalInv('byggsats:' + id) || (MASKINER[id].hem && S.hem?.[id]) || skrivare.some((x) => x.jobb?.maskin === id || x.klar === 'byggsats:' + id);
-  if (h?.startsWith('mark:')) { const t = MARK_TOMTER.find((x) => x.id === h.slice(5)); if (t && !agerMark(t.id)) return (nastaKopCache = { namn: t.namn.replace(/^Ett riktigt hus.*/, 'Riktigt hus'), pris: t.pris }); }
-  else if (h?.startsWith('recept:')) { const id = h.slice(7); if (VAROR[id] && !harRecept(id) && !harPlacerat(id)) return (nastaKopCache = { namn: VAROR[id].namn, pris: VAROR[id].recept }); }
-  else if (h && MASKINER[h].syns() && !klar(h)) return (nastaKopCache = { namn: MASKINER[h].namn, pris: ritPris(h) });
+  if (h?.startsWith('mark:')) { const t = MARK_TOMTER.find((x) => x.id === h.slice(5)); if (t && !agerMark(t.id)) return (nastaKopCache = { namn: t.namn.replace(/^Ett riktigt hus.*/, 'Riktigt hus'), pris: t.pris, slag: 'upp' }); }
+  else if (h?.startsWith('recept:')) { const id = h.slice(7); if (VAROR[id] && !harRecept(id) && !harPlacerat(id)) return (nastaKopCache = { namn: VAROR[id].namn, pris: VAROR[id].recept, slag: kopSlag('r:' + id) }); }
+  else if (h && MASKINER[h].syns() && !klar(h)) return (nastaKopCache = { namn: MASKINER[h].namn, pris: ritPris(h), slag: 'upp' });
   try {
     const L = aliKopLista().filter((x) => x.pris > 0 && !x.las && x.key !== 'filament' && !String(x.key).startsWith('pr:')).sort((a, b) => a.pris - b.pris);
-    nastaKopCache = L[0] ? { namn: L[0].namn.replace(/^(3D-modell|Recept|PETG-recept): /, ''), pris: L[0].pris } : null;
+    nastaKopCache = L[0] ? { namn: L[0].namn.replace(/^(3D-modell|Recept|PETG-recept): /, ''), pris: L[0].pris, slag: kopSlag(L[0].key) } : null;
   } catch { nastaKopCache = null; }
   return nastaKopCache;
 }
@@ -5616,6 +5616,29 @@ const hyllKlass = (sk) => /^Röd PETG/.test(sk) ? 'h-petg' : /^Recept/.test(sk) 
 const HYLL_IKON = { 'h-recept': 'recept', 'h-hem': 'hus', 'h-upp': 'kugghjul', 'h-inred': 'soffa', 'h-tapet': 'hus', 'h-mat': 'rulle', 'h-trim': 'trim' };
 const HYLL_SUB = { 'h-recept': 'printa och sälj – tjäna pengar', 'h-hem': 'bygg ditt hem', 'h-inred': 'mysigt – ger trivsel', 'h-mat': 'filament att printa med' };
 const ALI_MAX = { 'Inredning': 3, 'Uppgraderingar – bär mer, gör snabbare': 3, 'Tapeter – för skjulet och boden': 2, 'Alis prototyper – en av varje': 2, 'Trimning – tar aldrig slut': 3 };
+// ---------- Punkt AK: säljvara eller uppgradering ----------
+// säljvara = ett recept du printar och säljer till Ali · uppgradering = allt som gör dig snabbare, starkare eller trivsammare
+function kopSlag(key) {
+  const k = String(key || ''), [sl, id] = k.includes(':') ? k.split(/:(.*)/s) : ['', k];
+  if (k === 'filament' || sl === 'pr' || sl === 'g' || sl === 'pt') return null;   // material, presenter och prototyper är varken eller
+  const v = VAROR[id];
+  if ((sl === 'r' || (!sl && v)) && v?.pris > 0 && !v.lyx && !v.hem) return 'salj';
+  return 'upp';
+}
+// slaget för en sak i ryggsäcken eller ett dagsmål (typ som 'kruka', 'byggsats:grip', 'sang')
+const slagForTyp = (typ) => !typ ? null : String(typ).startsWith('byggsats:') ? 'upp' : VAROR[typ]?.pris > 0 && !VAROR[typ].lyx && !VAROR[typ].hem && !VAROR[typ].niva ? 'salj' : VAROR[typ]?.pris > 0 && VAROR[typ].niva ? 'salj' : (VAROR[typ]?.hem || VAROR[typ]?.lyx || MASKINER[typ]) ? 'upp' : null;
+const slagChip = (slag, liten = false) => slag ? `<span class="kop-slag ${slag}${liten ? ' liten' : ''}" title="${KOP_SLAG[slag].namn === 'SÄLJVARA' ? 'Säljvara – printa och sälj till Ali' : 'Uppgradering – gör dig snabbare, starkare eller trivsammare'}">${ik(KOP_SLAG[slag].ikon)}${liten ? '' : `<b>${KOP_SLAG[slag].namn}</b>`}</span>` : '';
+// raden under märket: "Ger 60 kr st · 400 g" eller "Du får …" / "+12 trivsel"
+function slagRad(x) {
+  const slag = kopSlag(x.key); if (!slag) return '';
+  const [, id] = String(x.key).includes(':') ? String(x.key).split(/:(.*)/s) : ['', x.key];
+  if (slag === 'salj') { const v = VAROR[id]; return `Ger ${saljPris(id).toLocaleString('sv-SE')} kr st · ${v.gram.toLocaleString('sv-SE')} g`; }
+  const tr = MASKINER[id]?.trivsel || VAROR[id]?.trivsel;
+  const g = MASKINER[id]?.ger?.()?.[1];
+  if (g) return `Du får: ${g.charAt(0).toLowerCase() + g.slice(1)}`;
+  if (tr) return `+${tr} trivsel`;
+  return x.far?.[0] ? `Du får: ${String(x.far[0]).replace(/^Du får:? /, '')}` : '';
+}
 function aliSalla(L) {
   const recept = L.filter((x) => x.sekt === 'Recept att sälja');
   const kedjaNasta = SALJ_KEDJA.find((id) => !harKedja(id));
@@ -5626,6 +5649,7 @@ function aliSalla(L) {
 }
 // "Du får": vad köpet ger, först på varje kort hos Ali, och en liten grön bricka på rutan
 const uiRutaBricka = (bricka, o) => { const h = uiRuta(o); return bricka ? h.replace('</button>', `<span class="ali-bricka">${rens(bricka)}</span></button>`) : h; };
+const uiRutaSlag = (slag, bricka, o) => { const h = uiRutaBricka(bricka, o); return slag ? h.replace('</button>', `${slagChip(slag, true)}</button>`) : h; };
 function aliDuFar(x) {
   const [slag, id] = String(x.key).split(/:(.*)/s), far = []; let bricka = '';
   const st = STEG[S.steg], malT = st ? stegText(st) : '';
@@ -5653,7 +5677,8 @@ function aliDuFar(x) {
 }
 const arTouchSkarm = () => matchMedia('(pointer:coarse)').matches || !!spelare.arTouch;
 function aliKopInfo(vald, medKnapp = false) {
-  return `<div class="ali-info"><b>${rens(vald.namn)}</b>${vald.far?.length ? `<div class="ali-far"><small>Du får</small>${vald.far.map((t) => `<span>${rens(t)}</span>`).join('')}</div>` : ''}<p>${rens(vald.text || '')}</p>${fakta([['kop', vald.las ? 'Låst' : S.mynt >= vald.pris ? `Kostar ${vald.pris.toLocaleString('sv-SE')} kr` : `Saknar ${(vald.pris - S.mynt).toLocaleString('sv-SE')} kr`, vald.las || S.mynt < vald.pris ? 'minus' : 'plus'], ...(vald.faktaLista || [])])}${medKnapp && !vald.las ? knapp({ text: `Köp · ${vald.pris.toLocaleString('sv-SE')} kr`, typ: S.mynt >= vald.pris ? 'plus' : 'neutral', attr: `data-kop${S.mynt >= vald.pris ? '' : ' disabled'}`, ikon: 'kop' }) : ''}</div>`;
+  const sl = kopSlag(vald.key), sr = slagRad(vald);
+  return `<div class="ali-info">${sl ? `<div class="ali-slag">${slagChip(sl)}${sr ? `<span class="ali-slag-rad ${sl}">${rens(sr)}</span>` : ''}</div>` : ''}<b>${rens(vald.namn)}</b>${vald.far?.length ? `<div class="ali-far"><small>Du får</small>${vald.far.map((t) => `<span>${rens(t)}</span>`).join('')}</div>` : ''}<p>${rens(vald.text || '')}</p>${fakta([['kop', vald.las ? 'Låst' : S.mynt >= vald.pris ? `Kostar ${vald.pris.toLocaleString('sv-SE')} kr` : `Saknar ${(vald.pris - S.mynt).toLocaleString('sv-SE')} kr`, vald.las || S.mynt < vald.pris ? 'minus' : 'plus'], ...(vald.faktaLista || [])])}${medKnapp && !vald.las ? knapp({ text: `Köp · ${vald.pris.toLocaleString('sv-SE')} kr`, typ: S.mynt >= vald.pris ? 'plus' : 'neutral', attr: `data-kop${S.mynt >= vald.pris ? '' : ' disabled'}`, ikon: 'kop' }) : ''}</div>`;
 }
 function aliKopLista() {
   const L = [];
@@ -5809,12 +5834,15 @@ function oppnaMarknad() {
   kropp += `<div class="ali-niva kop"><div class="ali-niva-rub"><span>${ik('kop')} Köp av Ali</span><small>det kostar pengar</small></div>`;
   {
     // hyllorna sorteras efter vad sakerna är till för: Rolf · tjäna pengar · hemmet · fabriken
-    const rutaK = (x) => uiRutaBricka(x.bricka, { bild: x.bild, attr: `data-val="k:${x.key}"${tipsSet.has(x) ? ' data-tips' : ''}`, vald: 'k:' + x.key === aliVald, last: !!x.las, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', prisIkon: 'kop', titel: x.namn, storlek: x.storlek, etikett: true });
-    const hyllor = HYLLOR.map((h) => ({ ...h, grupper: h.grupper.map(([sekt, namn]) => ({ namn, saker: kopL.filter((x) => x.sekt === sekt).sort(aliOrdning) })).filter((g) => g.saker.length) })).filter((h) => h.grupper.length);
+    const rutaK = (x) => uiRutaSlag(kopSlag(x.key), x.bricka, { bild: x.bild, attr: `data-val="k:${x.key}"${tipsSet.has(x) ? ' data-tips' : ''}`, vald: 'k:' + x.key === aliVald, last: !!x.las, dyr: S.mynt < x.pris, pris: '−' + (x.pris >= 1000 ? Math.round(x.pris / 100) / 10 + 'k' : x.pris), prisTyp: S.mynt < x.pris ? 'minus' : 'plus', prisIkon: 'kop', titel: x.namn, storlek: x.storlek, etikett: true });
+    // punkt AK: två delar – Saker att sälja (recept) och Uppgraderingar (allt annat, i hyllorna som förut)
+    const saljK = kopL.filter((x) => kopSlag(x.key) === 'salj').sort(aliOrdning), uppK = kopL.filter((x) => kopSlag(x.key) !== 'salj');
+    const hyllor = HYLLOR.map((h) => ({ ...h, grupper: h.grupper.map(([sekt, namn]) => ({ namn, saker: uppK.filter((x) => x.sekt === sekt).sort(aliOrdning) })).filter((g) => g.saker.length) })).filter((h) => h.grupper.length);
     // en "Köp nästa"-markering per hylla: första saken du har råd med och som inte är låst
-    const tipsSet = new Set(hyllor.map((h) => h.grupper.flatMap((g) => g.saker).find((x) => !x.las && S.mynt >= x.pris)).filter(Boolean));
-    kropp += '<div class="ali-hyllor">' + hyllor.map((h) => `<div class="ali-hylla ${h.klass}"><div class="ali-hylla-rub">${ik(h.ikon)}<b>${h.namn}</b><small>${h.sub}</small></div><div class="ali-hylla-grupper">${h.grupper.map((g) => `<div class="ali-hylla-grupp">${h.grupper.length > 1 || g.namn !== h.namn ? `<em>${g.namn}</em>` : ''}${grid(g.saker.map(rutaK))}</div>`).join('')}</div></div>`).join('') + '</div>'
-      + (Object.values(MASKINER).some((m) => !m.syns()) ? `<p class="ui-tom">${ik('las')} Fler 3D-modeller dyker upp när du kommer vidare – Ali sitter uppe med AI:n varje natt.</p>` : '');
+    const tipsSet = new Set([saljK.find((x) => !x.las && S.mynt >= x.pris), ...hyllor.map((h) => h.grupper.flatMap((g) => g.saker).find((x) => !x.las && S.mynt >= x.pris))].filter(Boolean));
+    kropp += '<div class="ali-tva">' + (saljK.length ? `<div class="ali-del salj"><div class="ali-del-rub">${slagChip('salj')}<b>Saker att sälja</b><small>printa och sälj till Ali</small></div>${grid(saljK.map(rutaK))}</div>` : '')
+      + `<div class="ali-del upp"><div class="ali-del-rub">${slagChip('upp')}<b>Uppgraderingar</b><small>bär mer, gör snabbare, bo bättre</small></div>` + '<div class="ali-hyllor">' + hyllor.map((h) => `<div class="ali-hylla ${h.klass}"><div class="ali-hylla-rub">${ik(h.ikon)}<b>${h.namn}</b><small>${h.sub}</small></div><div class="ali-hylla-grupper">${h.grupper.map((g) => `<div class="ali-hylla-grupp">${h.grupper.length > 1 || g.namn !== h.namn ? `<em>${g.namn}</em>` : ''}${grid(g.saker.map(rutaK))}</div>`).join('')}</div></div>`).join('') + '</div>'
+      + (Object.values(MASKINER).some((m) => !m.syns()) ? `<p class="ui-tom">${ik('las')} Fler 3D-modeller dyker upp när du kommer vidare – Ali sitter uppe med AI:n varje natt.</p>` : '') + '</div></div>';
   }
   kropp += '</div>' + saljHtml;
   // ett klick på en sak = köp eller sälj direkt. Info om den senast valda visas under Ali (inga knappar längst ner).
@@ -5970,7 +5998,8 @@ function oppnaInv({ salj = false } = {}) {
     : id === 'kvarnmotor' ? (S.kvarn.motor ? 'Monterad på kvarnen' : 'Köpt – printa den')
     : id === 'vaggar' ? `${S.hem?.vagg || 0} av 4 väggar monterade` : id === 'fonster' ? `${fonsterLista().length} av ${FONSTER.max} fönster uppsatta`
     : antalInv('byggsats:' + id) ? 'Printad – välj den och montera' : 'Köpt – printa den';
-  const ruta = (a, i, p) => p ? uiRuta({ bild: tumme(p.typ), attr: `data-s="${a}:${i}"`, vald: a === 'h' && S.vald === i, antal: p.n, titel: namnFor(p.typ), pris: a === 's' ? '+' + summaFor(p.typ, p.n) : '', prisTyp: 'plus' }) : uiRuta({ tom: true, attr: `data-s="${a}:${i}"` });
+  const prick = (h, typ) => { const sl = slagForTyp(typ); return sl ? h.replace('</button>', `<i class="inv-slag ${sl}" title="${sl === 'salj' ? 'Säljvara' : 'Uppgradering'}"></i></button>`) : h; };   // punkt AK
+  const ruta = (a, i, p) => p ? prick(uiRuta({ bild: tumme(p.typ), attr: `data-s="${a}:${i}"`, vald: a === 'h' && S.vald === i, antal: p.n, titel: namnFor(p.typ), pris: a === 's' ? '+' + summaFor(p.typ, p.n) : '', prisTyp: 'plus' }), p.typ) : uiRuta({ tom: true, attr: `data-s="${a}:${i}"` });
   const rad = (a, arr, fran = 0) => `<div class="inv-grid">${arr.map((p, i) => a === 'h' && i === 0
     ? uiRuta({ bild: verktygIkon(46), attr: 'data-s="h:0"', vald: S.vald === 0, antal: hand.saker.length || '', titel: 'Verktyget – sitter fast på plats 1' }) : i < fran ? '' : ruta(a, i, p)).join('')}</div>`;
   const rits = S.ritningar.filter((id) => MASKINER[id]).map((id) => uiRuta({ bild: tumme('byggsats:' + id), attr: `data-r="${id}"`, titel: MASKINER[id].namn }));
@@ -6666,12 +6695,13 @@ function nuTips(t) {
 function ritaNasta() {
   const text = malRaw; const [ikon, t] = nastaAtgard(text);
   const bild = t === text ? stegBild(text) : null;
+  const sl = /^Köp /.test(text) ? slagForTyp(STEG[S.steg]?.bild || stegBild(text)) : null;   // punkt AK: köpmålen har samma märke som hos Ali
   // storylinen syns alltid: är nästa handling något annat (ta ut, ladda …) står kapitelmålet under
   // tre nivåer: kapitel/dag (rubriken ovanför) → dagens mål (stor rad) → nästa sak att göra nu (med ikon)
   const ikonHtml2 = `<span class="nasta-ik${bild ? ' bild' : ''}">${bild ? ikonHtml(bild, 36) : ik(ikon)}</span>`;
   const h = t !== text && text
-    ? `<span class="nasta-rubrik">${rens(text)}</span><span class="nasta-rad" data-konkret>${ikonHtml2}<span class="nasta-t"><small>Nu:</small> ${rens(t)}</span></span>`
-    : `<span class="nasta-rubrik">${rens(t)}</span><span class="nasta-rad">${ikonHtml2}<span class="nasta-t">${rens(nuTips(t))}</span></span>`;
+    ? `<span class="nasta-rubrik">${rens(text)}${slagChip(sl, true)}</span><span class="nasta-rad" data-konkret>${ikonHtml2}<span class="nasta-t"><small>Nu:</small> ${rens(t)}</span></span>`
+    : `<span class="nasta-rubrik">${rens(t)}${slagChip(sl, true)}</span><span class="nasta-rad">${ikonHtml2}<span class="nasta-t">${rens(nuTips(t))}</span></span>`;
   if (malText.dataset.h !== h || !malText.firstElementChild) { malText.dataset.h = h; malText.innerHTML = h; malText.classList.add('nasta'); }
 }
 // ---------- Första gången: kort genomgång av varje nytt moment ----------
@@ -7960,6 +7990,7 @@ function uppdatera(dt) {
   stromChip.classList.toggle('ph-larm', stromSlut || S.strom < 5);
   { const el = hudEl.querySelector('[data-hud="nasta"]'), x = nastaKop();
     el.hidden = !x;
+    if (x && el.dataset.slag !== (x.slag || '')) { el.dataset.slag = x.slag || ''; el.querySelector('.hud-ikon').innerHTML = x.slag ? ik(KOP_SLAG[x.slag].ikon) : ik('mynt'); el.querySelector('.rad span').textContent = x.slag === 'salj' ? 'Säljvara' : x.slag === 'upp' ? 'Uppgradering' : 'Nästa'; }
     if (x) { const andel = Math.min(1, S.mynt / x.pris), t = `${x.namn} ${Math.min(S.mynt, x.pris).toLocaleString('sv-SE')}/${x.pris.toLocaleString('sv-SE')} kr`, b = el.querySelector('b'), i = el.querySelector('i'), w = Math.round(Math.max(0.02, andel) * 100) + '%';
       if (b.textContent !== t) b.textContent = t; if (i.style.width !== w) { i.style.width = w; i.style.backgroundColor = andel >= 1 ? '#3ccf73' : '#f5c542'; } el.classList.toggle('rad-klar', andel >= 1); } }
   { const el = hudEl.querySelector('[data-hud="el"]'), andel = S.strom / stromMax(), w = Math.round(Math.max(0.02, Math.min(1, andel)) * 100) + '%', i = el.querySelector('i'), b = el.querySelector('b'), t = Math.round(andel * 100) + ' %';
@@ -9419,6 +9450,26 @@ body.ad .fp-toast{top:max(22%,calc(var(--bar-h,64px) + 24px))!important}
   body.ad .hud-chip,body.ad .hud-status .hud-matare{min-height:40px}
   body.ad .hud-status .hud-nasta{width:178px}
 }
+/* punkt AK: säljvara (guld, mynt) och uppgradering (filamentcyan, pil) */
+.kop-slag{display:inline-flex;align-items:center;gap:4px;padding:2px 7px 2px 5px;border-radius:6px;font:900 10px/1.1 var(--rubrik,system-ui);letter-spacing:.06em;vertical-align:middle;white-space:nowrap}
+.kop-slag svg,.kop-slag .ui-ik{width:13px!important;height:13px!important}
+.kop-slag.salj{background:#e9b949;color:#3a2a06}.kop-slag.upp{background:#4cc9f0;color:#0b3242}
+.kop-slag.upp svg{transform:rotate(-90deg)}
+.kop-slag.liten{padding:2px;border-radius:50%;width:19px;height:19px;justify-content:center;margin-left:6px;box-shadow:0 0 0 2px rgba(0,0,0,.35)}
+.ui-ruta>.kop-slag.liten{position:absolute;left:4px;top:4px;margin:0;z-index:2}
+.ali-slag{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:6px}
+.ali-slag-rad{font:800 12.5px/1.25 system-ui}.ali-slag-rad.salj{color:#f5d27a}.ali-slag-rad.upp{color:#8fe0ff}
+.ali-tva{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:12px;align-items:start}
+.ali-del{border-radius:12px;padding:8px 8px 10px;background:rgba(255,255,255,.03)}
+.ali-del.salj{border:2px solid #e9b94966;background:linear-gradient(180deg,#e9b94914,transparent 60%)}
+.ali-del.upp{border:2px solid #4cc9f055;background:linear-gradient(180deg,#4cc9f010,transparent 60%)}
+.ali-del-rub{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 2px 8px}.ali-del-rub b{font:900 15px var(--rubrik,system-ui)}.ali-del-rub small{color:#9aa3b5;font-size:11.5px}
+.ali-del.salj .ui-grid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+.inv-slag{position:absolute;right:5px;top:5px;width:9px;height:9px;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,.45);z-index:2}
+.inv-slag.salj{background:#e9b949}.inv-slag.upp{background:#4cc9f0}
+.hud-nasta[data-slag="salj"] .hud-ikon{color:#e9b949}.hud-nasta[data-slag="upp"] .hud-ikon{color:#4cc9f0}.hud-nasta[data-slag="upp"] .hud-ikon svg{transform:rotate(-90deg)}
+.br-dagmal li .kop-slag{margin-left:auto}
+@media (max-width:900px){.ali-tva{grid-template-columns:1fr}}
 @media (max-width:640px){.br-morgon{grid-template-columns:1fr}body.aa .hud-status{width:132px}body.aa .hud-chip{font-size:11.5px;padding:4px 7px}body.aa .hud-chip-sms b{display:none}body.aa .ph-hoger{width:min(240px,60vw)}}
 `;
   document.head.appendChild(st);

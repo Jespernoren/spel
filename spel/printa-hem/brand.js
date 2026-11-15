@@ -17,6 +17,11 @@ export const FARG = {
   natt: '#191c24', natt2: '#232733', kant: '#343a4a',
   bark: '#2b2118', grus: '#9aa3b5',
 };
+// Punkt AK: två sorters köp hos Ali – samma märke överallt (hyllan, NÄSTA, dagsmålen, ryggsäcken)
+export const KOP_SLAG = {
+  salj: { namn: 'SÄLJVARA', ikon: 'mynt', farg: '#e9b949', mork: '#5a4310' },        // printa och sälj – ger pengar
+  upp: { namn: 'UPPGRADERING', ikon: 'pil', farg: FARG.fil, mork: FARG.filMork },     // gör dig snabbare, starkare eller trivsammare
+};
 export const NAMN = 'Soptippsvägen 1';
 export const RUBRIK_FONT = `"Arial Black","Archivo Black","Helvetica Neue",Impact,system-ui,sans-serif`;
 
