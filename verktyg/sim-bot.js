@@ -62,6 +62,8 @@
           const k = bo.querySelector('[data-fynd-ok], .fp-knapp.primar, button.primar'); handling(`panel: "${(bo.innerText || '').trim().slice(0, 30)}"`);
           if (k) k.click(); else H.ui.stangButik(); await lasTid(0.3); continue;
         }
+        // B55: telefonscenen när kapitel 1 är klart (.ph-kap) – vänta tills knappen går att trycka på
+        const tel = document.querySelector('.ph-kap'); if (tel) { const k = tel.querySelector('button'); if (k && !k.disabled) { await lasTid(1.5); handling(`telefonscen: "${k.textContent.trim().slice(0, 30)}"`); k.click(); } else await lasTid(1); continue; }
         const kap = document.querySelector('.ph-kapkort button, .ph-rangkort button');
         if (kap) { await lasTid(3); kap.click(); continue; }
         break;
@@ -163,6 +165,12 @@
   async function filament(sk, gram, varfor = '') {
     let varv = 0;
     while (sk.fil < gram && varv++ < 40) {
+      if (sk.gen === 4) {   // röd PETG: tunga saker i PETG-kvarnen → ta rullarna → ladda
+        if (H.antalInv('rulle2')) { valj('rulle2'); await klick(sk.mesh, 'PETG-skrivaren'); handling(`laddar röd PETG (${Math.round(sk.fil)} g)`); continue; }
+        if (S.petg.rullar) { const p = H.petgKvarn(); await gaTill(p.mesh, 1.6, 'PETG-kvarnen'); H.byt(0); H.petgAktivera(p); handling('tar röd PETG ur PETG-kvarnen'); continue; }
+        if (S.petg.ko > 1) { await vanta(3); continue; }
+        if (!(await tungtTillPetg())) return false; continue;
+      }
       if (H.antalInv('rulle')) { valj('rulle'); await klick(sk.mesh, 'skrivaren'); handling(`laddar rulle i skrivaren (${Math.round(sk.fil)} g)`); continue; }
       if (H.helaRullar()) { await hamtaRulle(); continue; }
       const tipp = S.tippNyckel && gardsSkrap().length <= H.gardMal();
@@ -181,11 +189,13 @@
 
   // ---------- printa ----------
   const skrivareAlla = () => H.skrivare.filter((x) => x.mesh?.visible !== false && x.gen !== 4);
-  const ledig = () => skrivareAlla().filter((x) => !x.jobb && !x.klar).sort((a, b) => b.gen - a.gen)[0] || skrivareAlla()[0];
+  // kapitel 2: PETG-skrivaren (gen 4) tar bara röd PETG (nivå 2) – vanliga saker går på de vanliga skrivarna
+  const arPetg = (val) => (val?.typ && H.VAROR[val.typ]?.niva === 2) || false;
+  const ledig = (val) => { const petg = arPetg(val); const l = skrivareAlla().filter((x) => (x.gen === 4) === petg); return l.filter((x) => !x.jobb && !x.klar).sort((a, b) => b.gen - a.gen)[0] || l[0] || skrivareAlla()[0]; };
   async function taUt(sk) { if (!sk.klar) return; const n = H.antalUt(sk); await klick(sk.mesh, 'skrivaren'); handling(`tar ut ${n} st ur skrivaren`); }
   async function printa(val, { vantaKlart = true } = {}) {
     const namn = val.maskin ? H.MASKINER[val.maskin].namn : H.VAROR[val.typ].namn;
-    const sk = ledig(); if (!sk) return false;
+    const sk = ledig(val); if (!sk) return false;
     if (sk.klar) await taUt(sk);
     const delar = val.maskin ? (H.MASKINER[val.maskin].delar || 1) : 1;
     const gram = (val.maskin ? H.MASKINER[val.maskin].gram : H.VAROR[val.typ].gram) * delar;
@@ -307,6 +317,15 @@
     if (/^Printa /.test(txt) && H.aktivGava()) { const v = H.aktivGava(); if (!H.antalInv(v)) await printa({ typ: v }); return; }
     if (/^Lägg .* i Rolfs postlåda/.test(txt)) { await gePresent(H.aktivGava()); return; }
     if (/^Hämta 5 skräp på soptippen/.test(txt)) { await plockaLass({ tippen: true }); await tomIKvarnen(); await mal(); return; }
+    if (/^Mal tunnan i PETG-kvarnen|^Mal tunga saker i PETG-kvarnen/.test(txt)) { await tungtTillPetg(); return; }
+    if (/^Printa en designvas/.test(txt)) { if (!H.harRecept('n2_vas')) await kopRecept('n2_vas'); await printa({ typ: 'n2_vas' }); return; }
+    if (/^Sälj designvasen/.test(txt)) { if (!H.antalInv('n2_vas')) await printa({ typ: 'n2_vas' }); await ali(() => saljAllt(), 'sälja vasen'); return; }
+    if (/^Lägg 3 vaser i säljlådan/.test(txt)) {
+      if (!H.antalInv('n2_vas')) { await printa({ typ: 'n2_vas' }); return; }
+      const l = H.placerade.find((p) => p.typ === 'saljlada'); if (!l) { handling('ingen säljlåda'); await vanta(3); return; }
+      valj('n2_vas'); await gaTill(l.mesh, 1.4, 'säljlådan'); H.saljladaAktivera(l); handling('lägger en vas i säljlådan'); await vanta(1); return;
+    }
+    if (/^Köp receptet på cykelhjälmen/.test(txt)) { await kopRecept('n2_hjalm'); return; }
     if (/^Lyft en tunna/.test(txt)) {
       valj('karra'); const t = H.skrapLista.filter((x) => x.userData.tung && x.userData.interaktion).sort((a, b) => Math.hypot(a.position.x - H.spelare.pos.x, a.position.z - H.spelare.pos.z) - Math.hypot(b.position.x - H.spelare.pos.x, b.position.z - H.spelare.pos.z))[0];
       if (!t) { handling('ingen tunna att lyfta'); await vanta(5); return; }
@@ -327,6 +346,17 @@
     }
     handling(`vet inte vad jag ska göra: "${txt}"`); await vanta(5);
   }
+  // kärran: lyft det närmaste tunga skräpet och tippa det i PETG-kvarnen (finns den inte: vid kvarnen, B51)
+  async function tungtTillPetg() {
+    valj('karra'); const p0 = H.spelare.pos;
+    const t = H.skrapLista.filter((x) => x.userData.tung && x.userData.interaktion).sort((a, b) => Math.hypot(a.position.x - p0.x, a.position.z - p0.z) - Math.hypot(b.position.x - p0.x, b.position.z - p0.z))[0];
+    if (!t) { handling('inget tungt skräp kvar'); await vanta(5); return false; }
+    await gaTill(t, 1.2, 'en tunna'); t.userData.interaktion.aktivera(); await vanta(1);
+    const p = H.petgKvarn();
+    if (p) { await gaTill(p.mesh, 1.6, 'PETG-kvarnen'); H.petgAktivera(p); handling('tömmer det tunga i PETG-kvarnen'); }
+    else { await klick(H.kvarn, 'kvarnen'); }
+    await vanta(1); H.byt(0); return true;
+  }
   async function vantaPaMorgon() {
     const dag = S.dag; const slutDag = tid - dagStart;
     dagar.push({ dag, sek: slutDag, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat });
@@ -338,7 +368,7 @@
     async kor(tillDag = 6, maxMin = 120) {
       dagStart = tid; window.__textLogg('MÅL', '', H.stegText());
       const stopp = tid + maxMin * 60; let sista = -1, samma = 0;
-      while (S.dag < tillDag && tid < stopp && !(tillDag <= 6 && (S.kapitel || 1) >= 2)) {   // kapitel 1 är klart när kapitel 2 börjar
+      while (S.dag < tillDag && tid < stopp) {   // B55: boten kör vidare in i kapitel 2
         { let w = 0; while (H.pratar?.() && w++ < 120) await vanta(0.1); }   // en spelare lyssnar klart innan hen gör nästa sak
         const fore = S.steg + ':' + S.dag; console.log(`[sim] dag ${S.dag} ${fmt(tid - dagStart)} ${S.mynt} kr · ${H.stegId?.() || ''} · ${(H.stegText() || '').slice(0, 50)}`); await gorSteg();
         if (fore === sista) { await vanta(1); if (++samma > 60) { handling('fastnade: ' + H.stegText()); break; } } else { sista = fore; samma = 0; }
