@@ -55,7 +55,7 @@ export class Spelare {
     });
     document.addEventListener('pointerlockerror', () => this.#lasMisslyckades());
     document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement === this.dom) this.harLast = true; });
-    this.#touchStyrning();
+    if (opt.touch !== false) this.#touchStyrning();   // touch: false = bara tangentbord och mus
   }
 
   /** Fånga musen (anropa från ett klick). */

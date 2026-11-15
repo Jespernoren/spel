@@ -130,7 +130,6 @@ export const HUD_CSS = `
 .ali-grupp{margin-top:8px}.ali-grupp>b{display:flex;align-items:center;gap:6px;font:800 11px system-ui;letter-spacing:.08em;text-transform:uppercase;color:#a6f3c1;margin:4px 0 6px}
 .ali-grupp.ej{margin-top:14px;padding:10px;border-radius:10px;background:rgba(0,0,0,.25);border:1px dashed rgba(255,255,255,.18)}.ali-grupp.ej>b{color:#c5ccda}.ali-grupp.ej .ui-ruta{filter:grayscale(.85) brightness(.8);cursor:pointer}
 
-@media (max-width:900px){.ali-split{flex-direction:column}.ali-sida{flex:none;flex-direction:row;padding:10px 12px;border-right:0;border-bottom:1px solid #343a4a}.ali-huvud,.ali-huvud .ui-portratt{width:70px!important;height:70px!important}.ali-tal::before{left:-10px;top:50%;margin:-10px 0 0;border:10px solid transparent;border-left:0;border-right-color:#fff}}
 
 .hud-skrivbar{position:absolute;left:0;top:0;transform-origin:50% 100%;width:190px;padding:6px 10px 8px;border-radius:9px;background:${LAGER_SVAG},rgba(25,28,36,.88);color:#fff;font:800 13px/1.2 system-ui;box-shadow:0 6px 14px rgba(0,0,0,.3)}
 .hud-skrivbar .rad{display:flex;justify-content:space-between;gap:8px;margin-bottom:5px}.hud-skrivbar b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hud-skrivbar span{color:#9fe8ff;font-variant-numeric:tabular-nums}
@@ -289,7 +288,6 @@ body.mus-fri .hud-flik{box-shadow:0 0 0 2px var(--fil);animation:hudPuls 1.2s ea
 .fp-topp{left:auto!important;right:80px;transform:none!important;max-width:none!important;flex-wrap:nowrap!important;justify-content:flex-end}
 .hud-sms-knapp{width:auto!important;display:flex!important;align-items:center;gap:8px;padding:0 14px 0 12px;font:800 14px system-ui}.hud-sms-knapp .sms-txt{white-space:nowrap}.hud-sms-knapp .ui-ik,.hud-sms-knapp svg{flex:none;width:24px;height:24px}
 .hud-sms-knapp kbd{position:static!important;transform:none!important;margin-left:2px}
-@media (max-width:1250px){.hud-sms-knapp .sms-txt{display:none}}
 .ph-mal.hud-uppdrag:not(.smal){top:max(12px,env(safe-area-inset-top))!important;text-align:left}
 .ph-prest{top:150px!important}.ph-kapkort{top:24%!important}
 .ph-vrid{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);z-index:23;display:flex;align-items:center;gap:10px;padding:8px 16px 8px 10px;border:0;border-radius:12px;background:${LAGER},var(--fil);color:#0d1a22;font:900 16px var(--rubrik);text-transform:uppercase;letter-spacing:.04em;box-shadow:0 8px 20px rgba(0,0,0,.35);cursor:pointer;animation:vridPuls 1.4s ease-in-out infinite}

@@ -58,11 +58,11 @@ export class FpUI {
       </div>
       <div class="fp-toast"></div>
       <div class="fp-hjalp">${o.hjalp || 'WASD gå · Mus titta · Klick/E använd · Shift spring · Space hopp · B butik'}</div>
-      <div class="fp-touchknappar">
+      ${o.touch === false ? '' : `<div class="fp-touchknappar">
         <button class="fp-tk" data-k="butik">🛒</button>
         <button class="fp-tk" data-k="hopp">⤴️</button>
         <button class="fp-tk stor" data-k="anvand">✋</button>
-      </div>`;
+      </div>`}`;
     document.body.appendChild(ui);
     this.el = (s) => ui.querySelector(s);
     this.ui = ui;
