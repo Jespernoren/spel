@@ -8,6 +8,7 @@
 // ---------- Ikoner: 24×24, linje 2 px, rundade ändar, currentColor ----------
 const S = (inre, fyll = 'none') => `<svg viewBox="0 0 24 24" fill="${fyll}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inre}</svg>`;
 export const IKON = {
+  mane: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>',
   mynt: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#ffb84d" stroke="#b8781a" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="none" stroke="#b8781a" stroke-width="1.6"/></svg>`,
   rulle: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#1d2230" stroke="#4cc9f0" stroke-width="2"/><circle cx="12" cy="12" r="6" fill="#4cc9f0" opacity=".55"/><circle cx="12" cy="12" r="2.2" fill="#1d2230"/></svg>`,
   blixt: `<svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z" fill="#ffd43b" stroke="#b39012" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
