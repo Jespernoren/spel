@@ -532,7 +532,7 @@ const STEG = [
   { del: D1, bild: 'kruka', text: 'Printa en blomkruka', klar: () => printat('kruka') >= 1 || (S.stat.salt || 0) >= 2 || S.dag > 1 },
   { del: D1, text: 'Sälj krukan hos Ali', klar: () => (S.stat.salt || 0) >= 2 || S.dag > 1 },
   { del: D1, bild: 'byggsats:kvarnmotor', text: () => S.mynt >= 50 ? 'Köp kvarnmotorn hos Ali (50 kr)' : `Printa och sälj mer · ${S.mynt}/50 kr till kvarnmotorn`, klar: () => S.ritningar.includes('kvarnmotor') || S.kvarn.motor || S.dag > 1 },
-  { del: D1, text: () => S.mynt >= SANG_INSTRUKTION ? `Köp sängens 3D-modell hos Ali (${SANG_INSTRUKTION} kr)` : `Printa och sälj mer · ${S.mynt}/${SANG_INSTRUKTION} kr till sängen`, klar: () => S.ritningar.includes('sang') || S.sang, startLapp: 'hem' },
+  { del: D1, bild: 'sang', text: () => S.mynt >= SANG_INSTRUKTION ? `Köp sängens 3D-modell hos Ali (${SANG_INSTRUKTION} kr)` : `Printa och sälj mer · ${S.mynt}/${SANG_INSTRUKTION} kr till sängen`, klar: () => S.ritningar.includes('sang') || S.sang, startLapp: 'hem' },
   { del: D1, bild: 'sang', text: 'Printa sängen', klar: () => antalInv('sang') > 0 || S.sang },
   { del: D1, text: 'Ställ sängen i skjulet och sov', klar: () => S.sang && S.dag >= 2, lapp: 'sang',
     sms: ['mamma', 'Har du sovit nåt? Du har väl tandborste?? Och äter du?? Svara inte, jag vet att du är arg. ❤️ /Mamma'] },
@@ -3568,8 +3568,28 @@ function postMal() {
   if (/skräp på soptippen/.test(t)) return 'tipp';
   return null;
 }
+// punkt AL: mätningen 'fast' – samma mål i mer än 3 minuter speltid (en gång per mål)
+let fastSteg = -1, fastStart = 0;
+function kollaFast() {
+  if (S.steg !== fastSteg) { fastSteg = S.steg; fastStart = S.speltid || 0; return; }
+  if (fastStart < 0 || (S.speltid || 0) - fastStart < 180 || S.steg >= STEG.length) return;
+  fastStart = -1;
+  const st = STEG[S.steg], na = nastaAtgard(stegText(st)), p = malPil.visible ? malPil.position : null;
+  const filament = Math.round(skrivare.reduce((a, x) => a + (x.fil || 0), 0) + antalInv('rulle') * RULLE + (S.kvarn.ut || 0));
+  skickaData('fast', { steg: S.steg, stegText: String(stegText(st)).slice(0, 60), nu: String(na?.[1] || '').slice(0, 80), dag: S.dag, mynt: S.mynt, filament, pil: na?.[3] || (S.steg <= 15 ? 'dag1' : postMal() || 'ingen'), pilSyns: !!p, pilPos: p ? [+p.x.toFixed(1), +p.z.toFixed(1)] : null, minuter: 3 });
+}
+function alPil() {
+  const st = STEG[S.steg]; if (!st || st.sov || !S.skyltUppe) return null;
+  const k = nastaAtgard(stegText(st))?.[3], v = new THREE.Vector3();
+  if (k === 'ali') return new THREE.Vector3(ALI.x, 1.4, ALI.z - 1.2);
+  if (k === 'skrivare') { const sk = skrivare.find((x) => x.gen !== PETG_GEN && !x.jobb) || skrivare[0]; return sk?.mesh.getWorldPosition(v).setY(0.9) || null; }
+  if (k === 'kvarn') return trattTopp().clone();
+  if (k === 'skrap') { const x = skrapLista.filter((y) => kanLyfta(y) && !y.userData.tung).sort((a, b) => a.position.distanceTo(spelare.pos) - b.position.distanceTo(spelare.pos))[0]; return x ? x.getWorldPosition(v).setY(0.3) : null; }
+  return null;
+}
 function malPunkt() {
   if (spikAnim) return null;   // ingen pil medan du spikar
+  { const a = alPil(); if (a) return a; }   // punkt AL: köp, printa och filament pekar dit du ska
   if (S.steg > 15) {
     const m = postMal(), v = new THREE.Vector3();
     if (m === 'post') return postlada.getWorldPosition(v).setY(1.5);
@@ -5382,6 +5402,7 @@ function arKlar(m, extra = 0) {
     || (m === 'vaggar' && (S.hem?.vagg || 0) + antalInv('byggsats:vaggar') + extra >= 4)
     || (!!MASKINER[m]?.monteras && antalInv('byggsats:' + m) > 0 && !m.startsWith('spolhallare'));
 }
+let printMalVisad = '';
 function oppnaPrintMeny(sk) {
   const g = GEN[sk.gen];
   // alla saker skrivaren kan göra, sorterade i flikar – som Minecrafts creative-meny
@@ -5411,6 +5432,11 @@ function oppnaPrintMeny(sk) {
   }
   const FLIKAR = [['maskin', 'kugghjul', 'Maskiner'], ['hem', 'hus', 'Hemmet'], ['salj', 'salj', 'Att sälja'], ['gava', 'gava', 'Gåvor – Rolfs önskan']].filter(([f]) => saker.some((x) => x.flik === f));
   // allt på en sida: maskiner, hemmet, att sälja och gåvor under varandra – ingen flik döljer något
+  // punkt AL: dagens målsak står först och är förvald (en gång per mål – sedan väljer du själv)
+  const malT = (() => { const st = STEG[S.steg]; const t = st && !st.sov && (typeof st.bild === 'function' ? st.bild() : st.bild); return t ? (t.startsWith('byggsats:') ? t.slice(9) : t) : null; })();
+  const malSak = malT ? saker.find((x) => x.id === malT) : null;
+  if (malSak && printMalVisad !== malT + ':' + S.steg) { printMalVisad = malT + ':' + S.steg; printVald = malT; }
+  if (malSak) FLIKAR.sort((a, b) => (b[0] === malSak.flik) - (a[0] === malSak.flik));
   const vald = saker.find((x) => x.id === printVald) || saker[0];
   const behov = (x) => (x.attr.startsWith('data-maskin') ? MASKINER[x.id].gram : x.gram);
   const forStor = (x) => !x.attr.startsWith('data-maskin') && storlekFor(x.id) > skrivStorlek(sk);
@@ -5420,7 +5446,7 @@ function oppnaPrintMeny(sk) {
   const taAv = helaISkrivare >= 1 && !sk.jobb ? `<div class="ph-saljallt">${knapp({ text: `Ta av en rulle (${helaISkrivare} hel${helaISkrivare > 1 ? 'a' : ''} i skrivaren)`, typ: 'neutral', attr: 'data-taav', ikon: 'rulle' })}<span>Hamnar i verktygsraden – bra om du vill flytta filament till en annan skrivare</span></div>` : '';
   const jNu = sk.jobb, jNamn = jNu ? (jNu.maskin ? MASKINER[jNu.maskin].namn : VAROR[jNu.typ]?.namn || '') : '';
   const printarNu = jNu ? `<div class="ph-saljallt ph-printarnu"><span><b>Printar: ${rens(jNamn)}</b> · ${Math.round((sk.prog || 0) * 100)} %${sk.upprepa ? ' · upprepar' : ''}</span>${sk.upprepa ? knapp({ text: 'Stoppa efter den här', typ: 'neutral', attr: 'data-stoppa', ikon: 'klocka' }) : ''}${knapp({ text: 'Avbryt', typ: 'minus', attr: 'data-avbryt', ikon: 'stang' })}</div>` : '';
-  const kropp = printarNu + taAv + (FLIKAR.length ? FLIKAR.map(([fl, , namn]) => sektion(namn, fl === 'salj' ? 'grön siffra = vad Ali betalar idag' : 'siffran = rullar filament') + grid(saker.filter((x) => x.flik === fl).sort((a, b) => (forStor(a) || kanInte(a)) - (forStor(b) || kanInte(b))).map((x) => uiRuta({ bild: tumme(x.attr.startsWith('data-maskin') ? 'byggsats:' + x.id : x.id), attr: `data-pval="${x.id}"`, vald: x === vald, dyr: !forStor(x) && kanInte(x), last: forStor(x), storlek: storlekRuta(x.id, x.attr.startsWith('data-maskin')), niva: x.attr.startsWith('data-maskin') ? 0 : (VAROR[x.id]?.niva || 0), pris: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? '+' + prisNu(x.id) : rullKort(x.gram), prisTyp: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? 'plus' : 'fil', titel: x.namn, etikett: true })))).join('')
+  const kropp = printarNu + taAv + (FLIKAR.length ? FLIKAR.map(([fl, , namn]) => sektion(namn, fl === 'salj' ? 'grön siffra = vad Ali betalar idag' : 'siffran = rullar filament') + grid(saker.filter((x) => x.flik === fl).sort((a, b) => (b === malSak) - (a === malSak) || (forStor(a) || kanInte(a)) - (forStor(b) || kanInte(b))).map((x) => uiRuta({ bild: tumme(x.attr.startsWith('data-maskin') ? 'byggsats:' + x.id : x.id), attr: `data-pval="${x.id}"`, vald: x === vald, dyr: !forStor(x) && kanInte(x), last: forStor(x), storlek: storlekRuta(x.id, x.attr.startsWith('data-maskin')), niva: x.attr.startsWith('data-maskin') ? 0 : (VAROR[x.id]?.niva || 0), pris: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? '+' + prisNu(x.id) : rullKort(x.gram), prisTyp: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? 'plus' : 'fil', titel: x.namn, etikett: true })))).join('')
     + (antalInv('rulle') ? `<p class="ui-tom">${ik('rulle')} Du bär ${antalInv('rulle')} ${antalInv('rulle') === 1 ? 'rulle' : 'rullar'} – välj den i verktygsraden och klicka på skrivaren för att ladda.</p>` : '')
     : `<p class="ui-tom">${petg ? 'Köp ett PETG-recept hos Ali (hyllan Röd PETG) – vas, hjälm, neonskylt, paddel.' : 'Inget att printa just nu – köp ritningar och recept hos Ali.'}</p>`);
   const fot = vald ? detalj({ bild: tumme(vald.attr.startsWith('data-maskin') ? 'byggsats:' + vald.id : vald.id, 72), titel: vald.namn, text: rens(vald.info).replace(/<br>/g, ' · '),
@@ -5680,6 +5706,7 @@ function aliKopInfo(vald, medKnapp = false) {
   const sl = kopSlag(vald.key), sr = slagRad(vald);
   return `<div class="ali-info">${sl ? `<div class="ali-slag">${slagChip(sl)}${sr ? `<span class="ali-slag-rad ${sl}">${rens(sr)}</span>` : ''}</div>` : ''}<b>${rens(vald.namn)}</b>${vald.far?.length ? `<div class="ali-far"><small>Du får</small>${vald.far.map((t) => `<span>${rens(t)}</span>`).join('')}</div>` : ''}<p>${rens(vald.text || '')}</p>${fakta([['kop', vald.las ? 'Låst' : S.mynt >= vald.pris ? `Kostar ${vald.pris.toLocaleString('sv-SE')} kr` : `Saknar ${(vald.pris - S.mynt).toLocaleString('sv-SE')} kr`, vald.las || S.mynt < vald.pris ? 'minus' : 'plus'], ...(vald.faktaLista || [])])}${medKnapp && !vald.las ? knapp({ text: `Köp · ${vald.pris.toLocaleString('sv-SE')} kr`, typ: S.mynt >= vald.pris ? 'plus' : 'neutral', attr: `data-kop${S.mynt >= vald.pris ? '' : ' disabled'}`, ikon: 'kop' }) : ''}</div>`;
 }
+const DAG1_ALI = ['m:grip', 'm:kvarnmotor', 'sang', 'r:kruka', 'r:pall'];
 function aliKopLista() {
   const L = [];
   const add = (sekt, key, bild, namn, text, pris, faktaLista, kop) => L.push({ sekt, key, bild, namn, text, pris, faktaLista, kop, storlek: key.startsWith('m:') ? storlekRuta(key.slice(2), true) : key.startsWith('r:') ? storlekFor(key.slice(2)) : key === 'sang' ? 1 : 0 });
@@ -5741,6 +5768,8 @@ function aliKopLista() {
     add('Trimning – tar aldrig slut', 't:' + k, trimBild(k), `${t.namn} nivå ${trimNiva(k) + 1}`, t.beskr(trimNiva(k) + 1) + (trimNiva(k) ? ` (nu: ${t.beskr(trimNiva(k)).toLowerCase()})` : ''), trimPris(k), [['oandlig', `Nivå ${trimNiva(k)} → ${trimNiva(k) + 1}`]],
       () => { S.trim = { ...(S.trim || {}), [k]: trimNiva(k) + 1 }; aliRepl = ['AI:n och jag optimerade hela natten. Ingen sömn. Värt det.', 'Trimmad. Snabbare än min pappa någonsin var.', 'Nästa nivå kostar mer. Så funkar teknik. Och mitt liv.'][Math.floor(Math.random() * 3)]; ui.toast(`${t.namn} nivå ${trimNiva(k)}: ${t.beskr(trimNiva(k))}`, 'guld'); return true; });
   }
+  // punkt AL: dag 1 visar Ali bara stegen i dagens mål – rullställ, dörr och resten kommer från dag 2
+  if (S.dag <= 1) for (let i = L.length - 1; i >= 0; i--) if (!DAG1_ALI.includes(L[i].key)) L.splice(i, 1);
   for (const x of L) Object.assign(x, aliDuFar(x));
   const { lista, dolda } = aliSalla(L); aliDolda = dolda;
   return lista;
@@ -6623,12 +6652,18 @@ function nastaAtgard(text) {
   // konkret nästa steg mot målet (köp → printa → ta ut → ställ ut). "Ta ut ur skrivaren" visas bara när det gäller målets sak.
   const konkret = stegKonkret(st);
   if (konkret) {
-    if (konkret[2] && !skrivare.some((x) => x.fil >= 100 || x.jobb)) {
-      if (antalInv('rulle')) return ['rulle', 'Ladda en rulle i skrivaren'];
-      if (helaRullar() > 0) return ['rulle', 'Ta rullen vid kvarnen och ladda skrivaren'];
-      return ['kvarn', 'Mal skräp till filament – skrivaren är tom'];
+    if (konkret[2]) {
+      // punkt AL: räcker filamentet till målsaken? Säg i gram och flaskor vad som fattas
+      const t = typeof st.bild === 'function' ? st.bild() : st.bild, ar = String(t).startsWith('byggsats:'), id = ar ? t.slice(9) : t;
+      const behov = ar ? (MASKINER[id]?.gram || 0) : (VAROR[id]?.gram || 0), iSkrivare = Math.max(0, ...skrivare.filter((x) => x.gen !== PETG_GEN).map((x) => x.fil || 0));
+      if (behov && !skrivare.some((x) => x.jobb) && iSkrivare < behov) {
+        if (antalInv('rulle')) return ['rulle', 'Ladda en rulle i skrivaren', false, 'skrivare'];
+        if (helaRullar() > 0) return ['rulle', 'Ta rullen vid kvarnen och ladda skrivaren', false, 'kvarn'];
+        const har = Math.round(iSkrivare + (S.kvarn.ut || 0)), flaskor = Math.max(1, Math.ceil((behov - har) / SKRAP_SORTER.flaska.gram));
+        if (har < behov) return ['kvarn', `Skrivaren behöver ${behov.toLocaleString('sv-SE')} g. Du har ${har.toLocaleString('sv-SE')} g. Mal ${flaskor} flask${flaskor === 1 ? 'a' : 'or'} till.`, false, hand.saker.length || S.kvarn.tratt > 0 ? 'kvarn' : 'skrap'];
+      }
     }
-    return [konkret[0], konkret[1]];
+    return [konkret[0], konkret[1], false, konkret[3]];
   }
   const vilPrinta = /^(Printa|Gör det mysigt|Inred|Isolera|Bygg|Lägg plåttak|Tapetsera)/i.test(text) || /^Printa/.test(text);
   const harFil = skrivare.some((x) => x.fil >= 100 || x.jobb);
@@ -6666,10 +6701,11 @@ function stegKonkret(st) {
   if (antalInv(t)) return ['hand', id === 'gamingbod' ? 'Välj boden i verktygsraden och ställ den bredvid skjulet' : MASKINER[id]?.hem ? `Välj ${namn} i verktygsraden och klicka på skjulet` : VAROR[id]?.gava ? `Lägg ${namn} i Rolfs postlåda vid grinden` : MASKINER[id]?.kraverBord ? `Välj ${namn} i verktygsraden och klicka på arbetsbordet` : `Välj ${namn} i verktygsraden och ställ ut`];
   if (skrivare.some((x) => x.klar === t)) return ['bock', `${namn[0].toUpperCase() + namn.slice(1)} är klar – ta ut den ur skrivaren`];
   if (skrivare.some((x) => (ar ? x.jobb?.maskin === id : x.jobb?.typ === id))) return ['klocka', `Skrivaren printar ${namn} – trampa om strömmen tar slut`];
-  const harModell = ar ? S.ritningar.includes(id) : VAROR[id]?.gava ? S.ritningar.includes('gava:' + id) || harGava(id) : harRecept(id);
-  if (harModell) return ['skrivare', `Printa ${namn} på skrivaren`, true];
+  const harModell = id === 'sang' ? S.ritningar.includes('sang') || S.sang : ar ? S.ritningar.includes(id) : VAROR[id]?.gava ? S.ritningar.includes('gava:' + id) || harGava(id) : harRecept(id);
+  if (harModell) return ['skrivare', `Gå till skrivaren och printa ${namn}`, true, 'skrivare'];   // punkt AL
   if (ar && MASKINER[id]?.syns && !MASKINER[id].syns()) return ['las', id === 'tapeter' && !S.hem?.vaggar ? 'Isolera alla 4 väggar först – sen säljer Ali tapeter' : `Ali har inte 3D-modellen till ${namn} än – kom tillbaka imorgon`];
-  const pris = ar ? (MASKINER[id] ? ritPris(id) : 0) : VAROR[id]?.gava ? null : VAROR[id]?.recept;
+  const pris = id === 'sang' ? SANG_INSTRUKTION : ar ? (MASKINER[id] ? ritPris(id) : 0) : VAROR[id]?.gava ? null : VAROR[id]?.recept;
+  if (pris && S.mynt >= pris) return ['kop', `Du har råd! Gå till Ali och köp ${id === 'sang' ? 'sängen' : namn}`, false, 'ali'];   // punkt AL
   return ['kop', `Köp 3D-modellen till ${namn} hos Ali (${VAROR[id]?.gava ? 'Unika fynd' : HYLLA_FOR(id)}${pris ? ' · ' + pris.toLocaleString('sv-SE') + ' kr' : ''})`];
 }
 // när nästa handling är själva målet: en kort förklaring av hur man gör (vem/var)
@@ -6969,7 +7005,7 @@ const sessionStart = Date.now();
 let dbP = null;
 const hamtaDb = () => dbP || (dbP = (async () => { try { return window.claude?.use ? await window.claude.use('db') : null; } catch { return null; } })());
 async function skickaData(typ, data, id) {
-  if (navigator.webdriver && typ !== 'test') return;   // automatiska tester ska inte fylla svarsarket
+  if (navigator.webdriver && typ !== 'test') { (window.__testData ||= []).push([typ, data]); return; }   // automatiska tester ska inte fylla svarsarket (men testerna kan läsa vad som skulle skickats)
   const rad = { ...data, spelare: spelarId, namn: S.spelarNamn || '', tid: new Date().toISOString(), version: 'v' + (document.querySelector('script[src*="spel.js"]')?.src.split('v=')[1] || 'artifact') };
   try { const db = await hamtaDb(); if (db) await db.collection(typ).doc(id || (spelarId + '_' + Date.now().toString(36))).set(rad); } catch {}
   try { if (FEEDBACK_FORM) { const f = new FormData(); f.append(FEEDBACK_FORM.typ, typ); f.append(FEEDBACK_FORM.data, JSON.stringify(rad)); fetch(FEEDBACK_FORM.url, { method: 'POST', mode: 'no-cors', body: f }).catch(() => {}); } } catch {}
@@ -7838,6 +7874,7 @@ function uppdatera(dt) {
       if (nasta?.startPost && !S.lappar.includes(nasta.startPost)) { S.post.lapp = nasta.startPost; visaPostInne(); ui.toast('✉️ Något har hamnat i postlådan vid soptippen…', 'guld'); }
       sparaSnart();
     }
+    kollaFast();
     { const kNy = kapitelNu(); if (kNy > (S.kapitel || 1)) { const forra = S.kapitel || 1; S.kapitel = kNy; for (let k = forra + 1; k <= kNy; k++) kapitelBorjar(k); } }
     if (S.steg >= STEG.findIndex((x) => x.del === K2) && !S.kapitelKlart) {
       S.kapitelKlart = true; document.body.classList.remove('ph-tidig'); andraRespekt(10, 'Byggde en riktig fristad'); S.mynt += KAP1_BELONING; spar.spara(true);   // startkapital till kapitel 2
@@ -8008,7 +8045,7 @@ function uppdatera(dt) {
     // visa saker först när de behövs
     hudEl.querySelector('[data-hud="trivsel"]').hidden = trivsel() <= 0 && !S.sang;
     hudEl.querySelector('[data-hud="el"]').hidden = !((S.stat.trampat || 0) > 0 || S.strom > 0 || S.dag > 1 || harPlacerat('sol'));
-    const nk = hudEl.querySelector('[data-hud="nasta"]'), x = nastaKop(); if (x && S.mynt >= x.pris) nk.hidden = true; }
+    }   // punkt AL: NÄSTA syns även när du har råd – då blinkar den grönt
   // rullmätaren vid kvarnen
   {
     const nara = Math.hypot(spelare.pos.x - kvarn.position.x, spelare.pos.z - kvarn.position.z) < 4.5;
@@ -8511,23 +8548,25 @@ const introMusik = (() => {
   };
 })();
 // vad heter du? – efter introt, innan spelet startar (gamla sparfiler får frågan en gång)
+// punkt AL: samma spelar-id (samma enhet) får sitt namn ifyllt igen efter Börja om
+const sparatNamn = () => { try { return localStorage.getItem('printa-hem:namn:' + spelarId) || ''; } catch { return ''; } };
 function fragaNamn(klar, byt = false) {
   document.querySelector('.ph-namn')?.remove();
   const el = document.createElement('div'); el.className = 'ph-namn';
   el.innerHTML = `<form class="fp-ruta ph-namn-ruta" autocomplete="off"><h2>${byt ? 'Byt namn' : 'Vad heter du?'}</h2>
-    <input class="ph-namn-falt" maxlength="20" placeholder="Ditt namn eller smeknamn" value="${byt ? rens(S.spelarNamn || '') : ''}" enterkeyhint="go" aria-label="Ditt namn eller smeknamn">
+    <input class="ph-namn-falt" maxlength="20" placeholder="Ditt namn eller smeknamn" value="${rens(byt ? S.spelarNamn || '' : sparatNamn())}" enterkeyhint="go" aria-label="Ditt namn eller smeknamn">
     <button class="fp-knapp" type="submit">Kör!</button>
     ${byt ? '<button type="button" class="ph-namn-hoppa" data-avbryt>Avbryt</button>' : '<button type="button" class="ph-namn-hoppa" data-hoppa>Hoppa över</button>'}</form>`;
   document.body.appendChild(el);
   const falt = el.querySelector('input'), form = el.querySelector('form');
-  const klart = (namn) => { if (namn != null) { S.spelarNamn = namn; sparaSnart(); } el.remove(); klar?.(); };
+  const klart = (namn) => { if (namn != null) { S.spelarNamn = namn; sparaSnart(); if (namn !== 'Anonym') try { localStorage.setItem('printa-hem:namn:' + spelarId, namn); } catch {} } el.remove(); klar?.(); };
   form.onsubmit = (e) => { e.preventDefault(); const v = falt.value.replace(/\s+/g, ' ').trim().slice(0, 20); if (!v) { falt.classList.remove('skak'); void falt.offsetWidth; falt.classList.add('skak'); falt.focus(); return; } klart(v); };
   el.querySelector('[data-hoppa]')?.addEventListener('click', () => klart('Anonym'));
   el.querySelector('[data-avbryt]')?.addEventListener('click', () => klart(null));
   // tangenterna hör till fältet, inte spelet
   for (const t of ['keydown', 'keyup', 'keypress']) el.addEventListener(t, (e) => e.stopPropagation());
   el.addEventListener('pointerdown', (e) => e.stopPropagation());
-  setTimeout(() => falt.focus(), 50);
+  setTimeout(() => { falt.focus(); falt.select(); }, 50);
 }
 function visaIntro(klar) {
   const el = document.createElement('div'); el.className = 'ph-intro';
@@ -9469,6 +9508,9 @@ body.ad .fp-toast{top:max(22%,calc(var(--bar-h,64px) + 24px))!important}
 .inv-slag.salj{background:#e9b949}.inv-slag.upp{background:#4cc9f0}
 .hud-nasta[data-slag="salj"] .hud-ikon{color:#e9b949}.hud-nasta[data-slag="upp"] .hud-ikon{color:#4cc9f0}.hud-nasta[data-slag="upp"] .hud-ikon svg{transform:rotate(-90deg)}
 .br-dagmal li .kop-slag{margin-left:auto}
+/* punkt AL: du har råd – NÄSTA blinkar grönt */
+body .hud-nasta.rad-klar{animation:alRad 1.1s ease-in-out infinite}
+@keyframes alRad{50%{box-shadow:0 0 0 3px #3ccf73,0 0 16px #3ccf73;background:rgba(60,207,115,.22)!important}}
 @media (max-width:900px){.ali-tva{grid-template-columns:1fr}}
 @media (max-width:640px){.br-morgon{grid-template-columns:1fr}body.aa .hud-status{width:132px}body.aa .hud-chip{font-size:11.5px;padding:4px 7px}body.aa .hud-chip-sms b{display:none}body.aa .ph-hoger{width:min(240px,60vw)}}
 `;
