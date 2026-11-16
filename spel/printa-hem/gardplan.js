@@ -18,16 +18,16 @@ export const LINJER = [
   { nr: 5, namn: 'Titanlinjen', filament: 'Titan', farg: '#b8c4d6', z: -10.5, kapitel: 4, text: 'Kapitel 4 / efterspelet' },
 ];
 
-// platserna i varje linje (x = mitten, b × d = storlek). Skrivarplatserna är stora nog för en L-skrivare.
+// platserna i varje linje (x = mitten, b × d = storlek). DT: kvarn, torn och första skrivaren står inom ca 2–3 m. Skrivarplatserna är stora nog för en L-skrivare.
 export const LINJE_PLATSER = [
   { typ: 'container', namn: 'Sophållare', x: -18.3, b: 1.8, d: 1.8 },
   { typ: 'kvarn', namn: 'Kvarn', x: -16.3, b: 2.0, d: 1.8 },
   { typ: 'extruder', namn: 'Extruder', x: -15.0, b: 1.0, d: 1.2 },
-  { typ: 'spolhallare', namn: 'Spolhållare', x: -13.8, b: 1.0, d: 1.2 },
-  { typ: 'skrivare1', namn: 'Skrivarplats 1', x: -10.5, b: 1.6, d: 1.6 },
-  { typ: 'skrivare2', namn: 'Skrivarplats 2', x: -8.7, b: 1.6, d: 1.6 },
-  { typ: 'skrivare3', namn: 'Skrivarplats 3', x: -6.9, b: 1.6, d: 1.6 },
-  { typ: 'skrivare4', namn: 'Skrivarplats 4', x: -5.1, b: 1.6, d: 1.6 },
+  { typ: 'spolhallare', namn: 'Spolhållare', x: -14.3, b: 1.0, d: 1.2 },
+  { typ: 'skrivare1', namn: 'Skrivarplats 1', x: -12.8, b: 1.6, d: 1.6 },
+  { typ: 'skrivare2', namn: 'Skrivarplats 2', x: -11.0, b: 1.6, d: 1.6 },
+  { typ: 'skrivare3', namn: 'Skrivarplats 3', x: -9.2, b: 1.6, d: 1.6 },
+  { typ: 'skrivare4', namn: 'Skrivarplats 4', x: -7.4, b: 1.6, d: 1.6 },
   { typ: 'utband', namn: 'Utband', x: -3.85, b: 0.7, d: 0.8 },
 ];
 

@@ -3402,33 +3402,6 @@
   "hand": false
  },
  {
-  "id": "mamma-ba6b1b4e",
-  "figur": "mamma",
-  "rost": "mamma",
-  "var": "Introt",
-  "visad": "Har du städat? Jag sa ju STÄDA!",
-  "skickas": "[thick Småland accent, fast, shrill, worried] [rushed] [worried] Har du städat? [upset] Jag sa ju STÄDA!",
-  "hand": false
- },
- {
-  "id": "mamma-3bcfb608",
-  "figur": "mamma",
-  "rost": "mamma",
-  "var": "Introt",
-  "visad": "Det LUKTAR härifrån! Jag säger det inte igen!",
-  "skickas": "[thick Småland accent, fast, shrill, worried] [rushed] [upset] Det LUKTAR härifrån! Jag säger det inte igen!",
-  "hand": false
- },
- {
-  "id": "berattare-657ddc36",
-  "figur": "berattare",
-  "rost": "berattare",
-  "var": "Introt",
-  "visad": "Hon sa det igen. Och igen. Och igen.",
-  "skickas": "[warm storyteller, calm] Hon sa det igen. Och igen. Och igen.",
-  "hand": false
- },
- {
   "id": "mamma-2183ecae",
   "figur": "mamma",
   "rost": "mamma",
@@ -3438,12 +3411,12 @@
   "hand": false
  },
  {
-  "id": "mamma-5d1f2570",
+  "id": "mamma-6bab860d",
   "figur": "mamma",
   "rost": "mamma",
   "var": "Introt",
-  "visad": "Vet du vad? Du kan lika gärna BO på en soptipp!",
-  "skickas": "[thick Småland accent, fast, shrill, worried] [rushed] [worried] Vet du vad? Du kan lika gärna BO på en soptipp!",
+  "visad": "Du kan lika gärna BO på en soptipp!",
+  "skickas": "[thick Småland accent, fast, shrill, worried] [softly] [rushed] Du kan lika gärna BO på en soptipp!",
   "hand": false
  },
  {
@@ -3456,66 +3429,57 @@
   "hand": false
  },
  {
-  "id": "berattare-03f6db0e",
+  "id": "berattare-9a1fc39a",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Introt",
-  "visad": "Du packar det viktigaste: en ryggsäck och storebrors gamla 3D-skrivare. Den är långsam och låter konstigt. Storebror fick aldrig igång den. Allt surras fast på cykeln.",
-  "skickas": "[warm storyteller, calm] Du packar det viktigaste: en ryggsäck och storebrors gamla tre-D-skrivare. Den är långsam och låter konstigt. Storebror fick aldrig igång den. Allt surras fast på cykeln.",
+  "visad": "Du packar ryggsäcken och storebrors gamla 3D-skrivare. Allt surras fast på cykeln.",
+  "skickas": "[warm storyteller, calm] Du packar ryggsäcken och storebrors gamla tre-D-skrivare. Allt surras fast på cykeln.",
   "hand": false
  },
  {
-  "id": "berattare-f7902287",
+  "id": "berattare-8a744072",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Introt",
-  "visad": "Du cyklar. Förbi skolan. Förbi affären. Förbi där husen tar slut.",
-  "skickas": "[warm storyteller, calm] Du cyklar. Förbi skolan. Förbi affären. Förbi där husen tar slut.",
+  "visad": "Förbi skolan. Förbi affären. Förbi där husen tar slut.",
+  "skickas": "[warm storyteller, calm] Förbi skolan. Förbi affären. Förbi där husen tar slut.",
   "hand": false
  },
  {
-  "id": "berattare-a1ec684c",
+  "id": "berattare-c354b839",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Introt",
-  "visad": "I utkanten av stan ligger soptippen. Bredvid den: ett gammalt, tomt skjul och en gård full av skräp.",
-  "skickas": "[warm storyteller, calm] I utkanten av stan ligger soptippen. Bredvid den: ett gammalt, tomt skjul och en gård full av skräp.",
+  "visad": "Vid soptippen står ett tomt skjul och en gård full av skräp.",
+  "skickas": "[warm storyteller, calm] Vid soptippen står ett tomt skjul och en gård full av skräp.",
   "hand": false
  },
  {
-  "id": "berattare-7b12c991",
+  "id": "berattare-800d0430",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Introt",
-  "visad": "Cykeln har tagit dig hit. Nu får den jobba. Trampar du på cykeln, får skrivaren ström. Lite filament finns kvar på rullen.",
-  "skickas": "[warm storyteller, calm] Cykeln har tagit dig hit. Nu får den jobba. Trampar du på cykeln, får skrivaren ström. Lite filament finns kvar på rullen.",
+  "visad": "Trampar du på cykeln får skrivaren ström.",
+  "skickas": "[warm storyteller, calm] Trampar du på cykeln får skrivaren ström.",
   "hand": false
  },
  {
-  "id": "berattare-98e4c76b",
+  "id": "berattare-400944d3",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Introt",
-  "visad": "Runt omkring: skräp.",
-  "skickas": "[warm storyteller, calm] Runt omkring: skräp.",
+  "visad": "Skräp är plast.",
+  "skickas": "[warm storyteller, calm] Skräp är plast.",
   "hand": false
  },
  {
-  "id": "berattare-d46c000b",
+  "id": "berattare-e1fce648",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Introt",
-  "visad": "Och skräp är plast.",
-  "skickas": "[warm storyteller, calm] Och skräp är plast.",
-  "hand": false
- },
- {
-  "id": "berattare-aa59d397",
-  "figur": "berattare",
-  "rost": "berattare",
-  "var": "Introt",
-  "visad": "Med en kvarn kan plast bli filament.",
-  "skickas": "[warm storyteller, calm] Med en kvarn kan plast bli filament.",
+  "visad": "Plast blir filament.",
+  "skickas": "[warm storyteller, calm] Plast blir filament.",
   "hand": false
  },
  {
@@ -3528,39 +3492,21 @@
   "hand": false
  },
  {
-  "id": "berattare-a39e2828",
+  "id": "berattare-3fc8efb0",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Introt",
-  "visad": "Tänk om man kunde bygga det här till ett riktigt hem?",
-  "skickas": "[warm storyteller, calm] Tänk om man kunde bygga det här till ett riktigt hem?",
+  "visad": "Tänk om det här kunde bli ett riktigt hem?",
+  "skickas": "[warm storyteller, calm] Tänk om det här kunde bli ett riktigt hem?",
   "hand": false
  },
  {
-  "id": "berattare-0638f0a5",
+  "id": "berattare-1ee2eaac",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Introt",
-  "visad": "Täta väggar. En riktig dörr. Plåttak.",
-  "skickas": "[warm storyteller, calm] Täta väggar. En riktig dörr. Plåttak.",
-  "hand": false
- },
- {
-  "id": "berattare-e31932ac",
-  "figur": "berattare",
-  "rost": "berattare",
-  "var": "Introt",
-  "visad": "Och en gamingsetup.",
-  "skickas": "[warm storyteller, calm] Och en gamingsetup.",
-  "hand": false
- },
- {
-  "id": "berattare-dec8c4d0",
-  "figur": "berattare",
-  "rost": "berattare",
-  "var": "Introt",
-  "visad": "En lugn fristad. Utan mammas tjat.",
-  "skickas": "[warm storyteller, calm] En lugn fristad. Utan mammas tjat.",
+  "visad": "Utan mammas tjat.",
+  "skickas": "[warm storyteller, calm] Utan mammas tjat.",
   "hand": false
  },
  {
@@ -3591,48 +3537,66 @@
   "hand": false
  },
  {
-  "id": "berattare-98a99bbf",
+  "id": "berattare-a1250bfc",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Berättaren läser målen",
-  "visad": "Trampa cykeln för ström och printa en nyckelring på skrivaren.",
-  "skickas": "[warm storyteller, calm] Trampa cykeln för ström och printa en nyckelring på skrivaren.",
+  "visad": "Plocka upp en bit skräp.",
+  "skickas": "[warm storyteller, calm] Plocka upp en bit skräp.",
   "hand": false
  },
  {
-  "id": "berattare-95aa4eea",
+  "id": "berattare-7fbb97dd",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Berättaren läser målen",
-  "visad": "Gå över vägen till Ali och sälj nyckelringen. Eller printa två till först – filamentet räcker till tre.",
-  "skickas": "[warm storyteller, calm] Gå över vägen till Ali och sälj nyckelringen. Eller printa två till först – filamentet räcker till tre.",
+  "visad": "Trampa och printa en nyckelring.",
+  "skickas": "[warm storyteller, calm] Trampa och printa en nyckelring.",
   "hand": false
  },
  {
-  "id": "berattare-740e4908",
+  "id": "berattare-a09f9c79",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Berättaren läser målen",
-  "visad": "Köp kvarnen hos Ali. Och cykelbatteriet, om pengarna räcker.",
-  "skickas": "[warm storyteller, calm] Köp kvarnen hos Ali. Och cykelbatteriet, om pengarna räcker.",
+  "visad": "Sälj nyckelringen hos Ali.",
+  "skickas": "[warm storyteller, calm] Sälj nyckelringen hos Ali.",
   "hand": false
  },
  {
-  "id": "berattare-be4deb29",
+  "id": "berattare-ca8312e9",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Berättaren läser målen",
-  "visad": "Ställ kvarnen på den lysande rutan i linje ett.",
-  "skickas": "[warm storyteller, calm] Ställ kvarnen på den lysande rutan i linje ett.",
+  "visad": "Fråga Ali om en kvarn.",
+  "skickas": "[warm storyteller, calm] Fråga Ali om en kvarn.",
   "hand": false
  },
  {
-  "id": "berattare-7ead3104",
+  "id": "berattare-545cd68c",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Berättaren läser målen",
-  "visad": "Plocka en flaska, lägg den i kvarnen och veva. Då blir det en hel rulle.",
-  "skickas": "[warm storyteller, calm] Plocka en flaska, lägg den i kvarnen och veva. Då blir det en hel rulle.",
+  "visad": "Ställ kvarnen vid tornet.",
+  "skickas": "[warm storyteller, calm] Ställ kvarnen vid tornet.",
+  "hand": false
+ },
+ {
+  "id": "berattare-2329b608",
+  "figur": "berattare",
+  "rost": "berattare",
+  "var": "Berättaren läser målen",
+  "visad": "Lägg skräpet i kvarnen och veva.",
+  "skickas": "[warm storyteller, calm] Lägg skräpet i kvarnen och veva.",
+  "hand": false
+ },
+ {
+  "id": "berattare-98bf63df",
+  "figur": "berattare",
+  "rost": "berattare",
+  "var": "Berättaren läser målen",
+  "visad": "Köp Alis gamla bilbatteri.",
+  "skickas": "[warm storyteller, calm] Köp Alis gamla bilbatteri.",
   "hand": false
  },
  {
@@ -4023,6 +3987,33 @@
   "hand": false
  },
  {
+  "id": "du-4215d761",
+  "figur": "du",
+  "rost": "du",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Den stannar när jag slutar trampa. Ström som sparas hade varit nåt.",
+  "skickas": "[dry, deadpan] [quietly] [sighs] Den stannar när jag slutar trampa. Ström som sparas hade varit nåt.",
+  "hand": false
+ },
+ {
+  "id": "du-bae37362",
+  "figur": "du",
+  "rost": "du",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Jag behöver nånstans att göra av det här.",
+  "skickas": "[dry, deadpan] [quietly] [sighs] Jag behöver nånstans att göra av det här.",
+  "hand": false
+ },
+ {
+  "id": "du-0a125afe",
+  "figur": "du",
+  "rost": "du",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Storebrors rulle. Den räcker inte länge.",
+  "skickas": "[dry, deadpan] [quietly] [sighs] Storebrors rulle. Den räcker inte länge.",
+  "hand": false
+ },
+ {
   "id": "du-9cac3af7",
   "figur": "du",
   "rost": "du",
@@ -4110,6 +4101,15 @@
   "var": "Dina tankar, tips och varningar",
   "visad": "ÖJ! Båtklubben skulle rensa förrådet. Ja hjälpte till. Fråga int hur. /R",
   "skickas": "[old, tired, thick Värmland accent, calm] [sighs] Båtklubben skulle rensa förrådet. Ja hjälpte till. Fråga inte hur. [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "du-1eb547ba",
+  "figur": "du",
+  "rost": "du",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Hmm. Plast. Skulle jag kunna göra filament av det här?!",
+  "skickas": "[dry, deadpan] [sighs] [cautiously] Hmm. Plast. Skulle jag kunna göra filament av det här?!",
   "hand": false
  },
  {

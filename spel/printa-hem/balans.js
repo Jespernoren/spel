@@ -220,3 +220,6 @@ export const MASKIN_SIFFROR = {
   skrivare2: { ritning: 833, delar: 5, gram: 900, tid: 18 },   // CF: 800 → 500 kr, dag 4
 };
 export const ROST_FART = { berattare: 1.25 };   // DT: berättaren läses 25 % snabbare (ffmpeg atempo i verktyg/roster_el_pack.py – samma tonhöjd), gäller introt och spelet
+export const STROM_INGEN = 4;           // DT steg 0: ingen lagring – ungefär en sekunds print, skrivaren går bara medan man trampar
+export const STROM_POWERBANK = 20;      // DT steg 1: powerbanken från Ali – ungefär en nyckelring (5 s × 4/s)
+export const FORSTA_PRINT_S = 5;        // DT: de tre första printarna tar ca 5 s (lagom att trampa)

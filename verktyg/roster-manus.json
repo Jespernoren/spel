@@ -707,15 +707,21 @@
   "var": "Brorsans sms dag 1 (punkt AS)"
  },
  {
-  "id": "ali-b1c9fcea",
+  "id": "ali-0599d721",
   "figur": "ali",
-  "text": "Pappas gamla köttkvarn. Han byggde om den. Den gör korv av plast. Jag vet inte varför.",
+  "text": "Ali här. En kvarn? Jag har en. Den har legat i lagret sen 2011. Den luktar korv, men den funkar.",
   "var": "Ali om det begagnade (punkt AS)"
  },
  {
-  "id": "ali-7442aa2b",
+  "id": "ali-43f9455e",
   "figur": "ali",
-  "text": "Elcykelbatteri. Från en elcykel. Som inte finns längre.",
+  "text": "Ali här. Batteriet ur min gamla Volvo. Bilen dog 2016. Batteriet vägrade.",
+  "var": "Ali om det begagnade (punkt AS)"
+ },
+ {
+  "id": "ali-e96dea45",
+  "figur": "ali",
+  "text": "Ali här. Jag såg dig cykla. Det ser jobbigt ut. Testa koppla på den här. Bra kunder får bonus.",
   "var": "Ali om det begagnade (punkt AS)"
  },
  {
@@ -3625,33 +3631,15 @@
   "var": "Introt"
  },
  {
-  "id": "mamma-ba6b1b4e",
-  "figur": "mamma",
-  "text": "Har du städat? Jag sa ju STÄDA!",
-  "var": "Introt"
- },
- {
-  "id": "mamma-3bcfb608",
-  "figur": "mamma",
-  "text": "Det LUKTAR härifrån! Jag säger det inte igen!",
-  "var": "Introt"
- },
- {
-  "id": "berattare-657ddc36",
-  "figur": "berattare",
-  "text": "Hon sa det igen. Och igen. Och igen.",
-  "var": "Introt"
- },
- {
   "id": "mamma-2183ecae",
   "figur": "mamma",
   "text": "Det ser ut som en SOPTIPP här inne!",
   "var": "Introt"
  },
  {
-  "id": "mamma-5d1f2570",
+  "id": "mamma-6bab860d",
   "figur": "mamma",
-  "text": "Vet du vad? Du kan lika gärna BO på en soptipp!",
+  "text": "Du kan lika gärna BO på en soptipp!",
   "var": "Introt"
  },
  {
@@ -3661,45 +3649,39 @@
   "var": "Introt"
  },
  {
-  "id": "berattare-03f6db0e",
+  "id": "berattare-9a1fc39a",
   "figur": "berattare",
-  "text": "Du packar det viktigaste: en ryggsäck och storebrors gamla 3D-skrivare. Den är långsam och låter konstigt. Storebror fick aldrig igång den. Allt surras fast på cykeln.",
+  "text": "Du packar ryggsäcken och storebrors gamla 3D-skrivare. Allt surras fast på cykeln.",
   "var": "Introt"
  },
  {
-  "id": "berattare-f7902287",
+  "id": "berattare-8a744072",
   "figur": "berattare",
-  "text": "Du cyklar. Förbi skolan. Förbi affären. Förbi där husen tar slut.",
+  "text": "Förbi skolan. Förbi affären. Förbi där husen tar slut.",
   "var": "Introt"
  },
  {
-  "id": "berattare-a1ec684c",
+  "id": "berattare-c354b839",
   "figur": "berattare",
-  "text": "I utkanten av stan ligger soptippen. Bredvid den: ett gammalt, tomt skjul och en gård full av skräp.",
+  "text": "Vid soptippen står ett tomt skjul och en gård full av skräp.",
   "var": "Introt"
  },
  {
-  "id": "berattare-7b12c991",
+  "id": "berattare-800d0430",
   "figur": "berattare",
-  "text": "Cykeln har tagit dig hit. Nu får den jobba. Trampar du på cykeln, får skrivaren ström. Lite filament finns kvar på rullen.",
+  "text": "Trampar du på cykeln får skrivaren ström.",
   "var": "Introt"
  },
  {
-  "id": "berattare-98e4c76b",
+  "id": "berattare-400944d3",
   "figur": "berattare",
-  "text": "Runt omkring: skräp.",
+  "text": "Skräp är plast.",
   "var": "Introt"
  },
  {
-  "id": "berattare-d46c000b",
+  "id": "berattare-e1fce648",
   "figur": "berattare",
-  "text": "Och skräp är plast.",
-  "var": "Introt"
- },
- {
-  "id": "berattare-aa59d397",
-  "figur": "berattare",
-  "text": "Med en kvarn kan plast bli filament.",
+  "text": "Plast blir filament.",
   "var": "Introt"
  },
  {
@@ -3709,27 +3691,15 @@
   "var": "Introt"
  },
  {
-  "id": "berattare-a39e2828",
+  "id": "berattare-3fc8efb0",
   "figur": "berattare",
-  "text": "Tänk om man kunde bygga det här till ett riktigt hem?",
+  "text": "Tänk om det här kunde bli ett riktigt hem?",
   "var": "Introt"
  },
  {
-  "id": "berattare-0638f0a5",
+  "id": "berattare-1ee2eaac",
   "figur": "berattare",
-  "text": "Täta väggar. En riktig dörr. Plåttak.",
-  "var": "Introt"
- },
- {
-  "id": "berattare-e31932ac",
-  "figur": "berattare",
-  "text": "Och en gamingsetup.",
-  "var": "Introt"
- },
- {
-  "id": "berattare-dec8c4d0",
-  "figur": "berattare",
-  "text": "En lugn fristad. Utan mammas tjat.",
+  "text": "Utan mammas tjat.",
   "var": "Introt"
  },
  {
@@ -3751,33 +3721,45 @@
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-98a99bbf",
+  "id": "berattare-a1250bfc",
   "figur": "berattare",
-  "text": "Trampa cykeln för ström och printa en nyckelring på skrivaren.",
+  "text": "Plocka upp en bit skräp.",
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-95aa4eea",
+  "id": "berattare-7fbb97dd",
   "figur": "berattare",
-  "text": "Gå över vägen till Ali och sälj nyckelringen. Eller printa två till först – filamentet räcker till tre.",
+  "text": "Trampa och printa en nyckelring.",
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-740e4908",
+  "id": "berattare-a09f9c79",
   "figur": "berattare",
-  "text": "Köp kvarnen hos Ali. Och cykelbatteriet, om pengarna räcker.",
+  "text": "Sälj nyckelringen hos Ali.",
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-be4deb29",
+  "id": "berattare-ca8312e9",
   "figur": "berattare",
-  "text": "Ställ kvarnen på den lysande rutan i linje ett.",
+  "text": "Fråga Ali om en kvarn.",
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-7ead3104",
+  "id": "berattare-545cd68c",
   "figur": "berattare",
-  "text": "Plocka en flaska, lägg den i kvarnen och veva. Då blir det en hel rulle.",
+  "text": "Ställ kvarnen vid tornet.",
+  "var": "Berättaren läser målen"
+ },
+ {
+  "id": "berattare-2329b608",
+  "figur": "berattare",
+  "text": "Lägg skräpet i kvarnen och veva.",
+  "var": "Berättaren läser målen"
+ },
+ {
+  "id": "berattare-98bf63df",
+  "figur": "berattare",
+  "text": "Köp Alis gamla bilbatteri.",
   "var": "Berättaren läser målen"
  },
  {
@@ -4039,6 +4021,24 @@
   "var": "Dina tankar, tips och varningar"
  },
  {
+  "id": "du-4215d761",
+  "figur": "du",
+  "text": "Den stannar när jag slutar trampa. Ström som sparas hade varit nåt.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-bae37362",
+  "figur": "du",
+  "text": "Jag behöver nånstans att göra av det här.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-0a125afe",
+  "figur": "du",
+  "text": "Storebrors rulle. Den räcker inte länge.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
   "id": "du-9cac3af7",
   "figur": "du",
   "text": "Den här skrivaren tar bara blå plast.",
@@ -4099,6 +4099,12 @@
   "figur": "rolf",
   "text": "ÖJ! Båtklubben skulle rensa förrådet. Ja hjälpte till. Fråga int hur. /R",
   "kalla": "Båtklubben skulle rensa förrådet. Ja hjälpte till. Fråga inte hur. /R",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-1eb547ba",
+  "figur": "du",
+  "text": "Hmm. Plast. Skulle jag kunna göra filament av det här?!",
   "var": "Dina tankar, tips och varningar"
  },
  {
