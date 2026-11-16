@@ -2882,6 +2882,30 @@
   "var": "Ali när du printat hans modell"
  },
  {
+  "id": "ali-2d3150ed",
+  "figur": "ali",
+  "text": "Ali här. Jag såg Kolfiberkvarnen på avstånd. Ett streck blev lite snett. Mitt fel. Vackert ändå.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-33d8c03d",
+  "figur": "ali",
+  "text": "Ali här. Rullband från tippen – printad. På riktigt. Jag har visat bilden för min fru tre gånger.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-dde6c23e",
+  "figur": "ali",
+  "text": "Ali här. Slangfördelare – printad. På riktigt. Jag har visat bilden för min fru tre gånger.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
+  "id": "ali-8dc77b87",
+  "figur": "ali",
+  "text": "Ali här. Ännu en ritning som blev på riktigt: Kolfiberskrivare. Semesterkassan växer. Livet växer.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
   "id": "ali-4fbd49b3",
   "figur": "ali",
   "text": "Ali här. Ännu en ritning som blev på riktigt: Stor spolhållare. Semesterkassan växer. Livet växer.",
@@ -3002,9 +3026,9 @@
   "var": "Ali när du printat hans modell"
  },
  {
-  "id": "ali-18e96059",
+  "id": "ali-59d56206",
   "figur": "ali",
-  "text": "Ali här. Du printade Rullband från tippen från min ritning. Och det FUNKAR? Jag har bara sett sånt på YouTube.",
+  "text": "Ali här. Du printade Rullband till sophållaren från min ritning. Och det FUNKAR? Jag har bara sett sånt på YouTube.",
   "var": "Ali när du printat hans modell"
  },
  {
@@ -3068,21 +3092,15 @@
   "var": "Alis sms om nya 3D-modeller"
  },
  {
-  "id": "ali-471bef96",
+  "id": "ali-728b015c",
   "figur": "ali",
-  "text": "Ali här. Satt uppe med AI:n hela natten. Ritningen till Rullband från tippen är klar. Kom innan nio, då stänger jag.",
+  "text": "Ali här. Satt uppe med AI:n hela natten. Ritningen till Kolfiberkvarnen är klar. Kom innan nio, då stänger jag.",
   "var": "Alis sms om nya 3D-modeller"
  },
  {
-  "id": "ali-6ade20c3",
+  "id": "ali-42a54054",
   "figur": "ali",
-  "text": "Ali här. Satt uppe med AI:n hela natten. Ritningen till Slangfördelare till rulltornet är klar. Kom innan nio, då stänger jag.",
-  "var": "Alis sms om nya 3D-modeller"
- },
- {
-  "id": "ali-cae595e3",
-  "figur": "ali",
-  "text": "Ali här. Satt uppe med AI:n hela natten. Ritningen till Leveranslåda + autoprint är klar. Kom innan nio, då stänger jag.",
+  "text": "Ali här. Satt uppe med AI:n hela natten. Ritningen till Kolfiberskrivare är klar. Kom innan nio, då stänger jag.",
   "var": "Alis sms om nya 3D-modeller"
  },
  {
@@ -3865,6 +3883,24 @@
   "id": "du-0773b03c",
   "figur": "du",
   "text": "Okej. Först en skylt vid vägen, så att alla vet vem som bor här.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-f35a0e58",
+  "figur": "du",
+  "text": "För lång. Den måste med bandet.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-34f89085",
+  "figur": "du",
+  "text": "Den åker själv. Jag står bara och tittar. Det här är framtiden.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-05fa27bb",
+  "figur": "du",
+  "text": "Den här är för stor för lilla kvarnen. Den ska till kolfiberkvarnen.",
   "var": "Dina tankar, tips och varningar"
  },
  {

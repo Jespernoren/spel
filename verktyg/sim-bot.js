@@ -167,6 +167,11 @@
   async function filament(sk, gram, varfor = '') {
     let varv = 0;
     while (sk.fil < gram && varv++ < 40) {
+      if (sk.gen === 5) {   // DF: kolfiber – slangfördelaren eller rullar från kolfiberkvarnen
+        if (H.antalInv('rulle3')) { valj('rulle3'); await klick(sk.mesh, 'kolfiberskrivaren'); handling(`laddar kolfiber (${Math.round(sk.fil)} g)`); continue; }
+        if (S.kolf.rullar && !S.kolf.slang) { const p = H.kolfKvarn(); await gaTill(p.mesh, 1.6, 'kolfiberkvarnen'); H.byt(0); H.kolfAktivera(p); handling('tar kolfiber ur kolfiberkvarnen'); continue; }
+        await tjana(S.mynt + 100, 'väntar på kolfiber'); await vanta(3); continue;
+      }
       if (sk.gen === 4) {   // röd PETG: tunga saker i PETG-kvarnen → ta rullarna → ladda
         if (H.antalInv('rulle2')) { valj('rulle2'); await klick(sk.mesh, 'PETG-skrivaren'); handling(`laddar röd PETG (${Math.round(sk.fil)} g)`); continue; }
         if (S.petg.rullar) { const p = H.petgKvarn(); await gaTill(p.mesh, 1.6, 'PETG-kvarnen'); H.byt(0); H.petgAktivera(p); handling('tar röd PETG ur PETG-kvarnen'); continue; }
@@ -190,9 +195,9 @@
   }
 
   // ---------- printa ----------
-  const skrivareAlla = (petg = false) => H.skrivare.filter((x) => x.mesh?.visible !== false && (x.gen === 4) === petg);
+  const skrivareAlla = (petg = false) => H.skrivare.filter((x) => x.mesh?.visible !== false && (petg === 3 ? x.gen === 5 : (x.gen === 4) === petg && x.gen !== 5));
   // kapitel 2: PETG-skrivaren (gen 4) tar bara röd PETG (nivå 2) – vanliga saker går på de vanliga skrivarna
-  const arPetg = (val) => (val?.typ && H.VAROR[val.typ]?.niva === 2) || false;
+  const arPetg = (val) => (val?.typ && H.VAROR[val.typ]?.niva === 3) ? 3 : (val?.typ && H.VAROR[val.typ]?.niva === 2) || false;
   const ledig = (val) => { const petg = arPetg(val); const l = skrivareAlla(petg); return l.filter((x) => !x.jobb && !x.klar).sort((a, b) => b.gen - a.gen)[0] || l[0] || skrivareAlla()[0]; };
   async function taUt(sk) { if (!sk.klar) return; const n = H.antalUt(sk); await klick(sk.mesh, 'skrivaren'); handling(`tar ut ${n} st ur skrivaren`); }
   async function printa(val, { vantaKlart = true } = {}) {
@@ -224,17 +229,20 @@
 
   // ---------- köp + printa + använd ----------
   const MASKIN = (id) => H.MASKINER[id];
+  const tjanaFel = new Set();   /* saker som inte gick att printa (slut på röd PETG) – prövas igen nästa dag */
   async function tjana(mal, varfor) {
+    if (tjanaFel.dag !== S.dag) { tjanaFel.clear(); tjanaFel.dag = S.dag; }
     // printa och sälj den bästa saken du har recept på tills du har `mal` kr
     let varv = 0;
     await webbJobb();   // CR: beställningar från webbshoppen först – de betalar mer
     while (S.mynt < mal && varv++ < 30) {
-      const kand = Object.keys(H.VAROR).filter((t) => !/^(g_|h_|hf_|ra_|r_|p_|fynd|burk|rulle|n_)/.test(t) && H.VAROR[t].pris > 0 && !H.VAROR[t].lyx && (!H.VAROR[t].niva || (H.VAROR[t].niva === 2 && H.harPlacerat('skrivarepetg'))) && H.harRecept(t) && (H.VAROR[t].syns?.() ?? true) && !H.VAROR[t].gava && H.VAROR[t].gram > 0);
+      const kand = Object.keys(H.VAROR).filter((t) => !tjanaFel.has(t) && !/^(g_|h_|hf_|ra_|r_|p_|fynd|burk|rulle|n_)/.test(t) && H.VAROR[t].pris > 0 && !H.VAROR[t].lyx && (!H.VAROR[t].niva || (H.VAROR[t].niva === 2 && H.harPlacerat('skrivarepetg'))) && H.harRecept(t) && (H.VAROR[t].syns?.() ?? true) && !H.VAROR[t].gava && H.VAROR[t].gram > 0);
       kand.sort((a, b) => H.prisNu(b) / H.VAROR[b].tid - H.prisNu(a) / H.VAROR[a].tid);
       const t = kand[0]; if (!t) { handling('inget att printa och sälja!'); return; }
       handling(`tjänar pengar${varfor ? ' till ' + varfor : ''}: ${S.mynt}/${mal} kr → printar ${H.VAROR[t].namn.toLowerCase()} (${H.prisNu(t)} kr)`);
       const sk = ledig({ typ: t }); const antal = Math.max(1, Math.min(4, Math.floor((sk.fil || 0) / H.VAROR[t].gram)));   // BP: även röd PETG
-      for (let i = 0; i < antal && S.mynt + i * H.prisNu(t) < mal; i++) { if (!(await printa({ typ: t }))) break; }
+      let gick = 0; for (let i = 0; i < antal && S.mynt + i * H.prisNu(t) < mal; i++) { if (!(await printa({ typ: t }))) break; gick++; }
+      if (!gick && !H.antalInv(t)) { tjanaFel.add(t); handling(`${H.VAROR[t].namn.toLowerCase()} gick inte att printa – tar nästa`); }
       await ali(() => saljAllt(BEHALL().filter((x) => x !== t)), 'sälja');   // det som printades för pengar säljs (en pall/kruka får vara kvar till trivseln)
     }
   }
@@ -278,6 +286,7 @@
       valj(bs); return klick(H.skjulYta, 'skjulet', 2.5);
     }
     if (['kvarnmotor', 'stortratt', 'matarband'].includes(id)) { valj(bs); return klick(H.kvarn, 'kvarnen'); }
+    if (['kolfband', 'kolfslang', 'jetmotor'].includes(id)) { const pk = H.placerade.find((p) => p.typ === 'kolfkvarn'); valj(bs); return klick(pk.mesh, 'kolfiberkvarnen'); }
     if (['petgtorn', 'petgcontainer'].includes(id)) { const pk = H.placerade.find((p) => p.typ === 'petgkvarn'); valj(bs); return klick(pk.mesh, 'röda kvarnen'); }
     if (id.startsWith('spolhallare')) { const sk = skrivareAlla().find((x) => (x.spolNiva || 0) < (id === 'spolhallare' ? 1 : id === 'spolhallare2' ? 2 : 3)) || skrivareAlla()[0]; valj(bs); return klick(sk.mesh, 'skrivaren (spolhållare)'); }
     return placera(bs);
@@ -349,6 +358,10 @@
       const b = Object.keys(H.MAT_VARDE || {}).find((t) => t.startsWith('burk_') && H.antalInv(t)); if (b) { H.ata(b); handling('lagar ' + b + ' på spisen'); } await vanta(1); return;
     }
     if (/^Ge Göran ett eget ställe/.test(txt)) { if (!H.harRecept('fagelskramma')) await kopRecept('fagelskramma'); if (!H.antalInv('fagelskramma')) await printa({ typ: 'fagelskramma' }); if (H.antalInv('fagelskramma')) await placera('fagelskramma'); return; }   // dag 6
+    if (/^Mata in kajaker med bandet|^Vänta på den första svartgrå rullen/.test(txt)) { await tjana(S.mynt + 150, 'bandet hämtar kajaker'); await vanta(2); return; }   // DF
+    if (/^Printa en kolfiberstol/.test(txt)) { await printa({ typ: 'n3_stol' }); return; }
+    if (/^Ställ in en gamersak i boden|^Inred boden/.test(txt)) { const t = H.nastaGamer?.(); if (t && !t.startsWith('byggsats:')) { if (!H.harRecept(t)) await kopRecept(t); if (!H.antalInv(t)) await printa({ typ: t }); if (H.antalInv(t)) await placera(t); } else await tjana(S.mynt + 300); return; }
+    if (/^Bjud Rolf på fika/.test(txt)) { const ok = await ali(async () => { const k = [...document.querySelectorAll('[data-trim],[data-val]')].find((b) => /sopbil|fika/i.test(b.dataset.trim || b.dataset.val || '')); if (k) { k.click(); await vanta(0.6); } }, 'bjuda Rolf på fika'); if ((H.trimNiva?.('sopbil') || 0) < 1) await tjana(S.mynt + 1500, 'fikat'); return; }
     if (/^Printa en designvas/.test(txt)) { if (!H.harRecept('n2_vas')) await kopRecept('n2_vas'); await printa({ typ: 'n2_vas' }); return; }
     if (/^Sälj designvasen/.test(txt)) { if (!H.antalInv('n2_vas')) await printa({ typ: 'n2_vas' }); await ali(() => saljAllt(), 'sälja vasen'); return; }
     if (/^Lägg 3 vaser i säljlådan/.test(txt)) {

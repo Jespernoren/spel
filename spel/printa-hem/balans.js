@@ -208,6 +208,10 @@ export const MASKIN_SIFFROR = {
   bord: { ritning: 120, delar: 3, gram: 700, tid: 14 },
   sol: { ritning: 670, delar: 3, gram: 800, tid: 14 },
   rullband: { ritning: 12670, delar: 4, gram: 900, tid: 16 },
+  kolfkvarn: { ritning: 10000, delar: 4, gram: 900, tid: 18 },     // DF: linje 3, ca 6 000 kr
+  kolfband: { ritning: 12670, delar: 4, gram: 900, tid: 16 },      // DF: rullbandet från tippen till kolfiberkvarnen, ca 7 600 kr
+  kolfskrivare: { ritning: 8330, delar: 5, gram: 1000, tid: 18 },  // DF: ca 5 000 kr
+  kolfslang: { ritning: 9170, delar: 3, gram: 800, tid: 16 },      // DF: slangfördelaren, ca 5 500 kr
   lastarm: { ritning: 7500, delar: 4, gram: 1000, tid: 18 },
   robotarm: { ritning: 9170, delar: 4, gram: 1000, tid: 18 },
   saljlada: { ritning: 670, delar: 2, gram: 500, tid: 12 },
