@@ -193,7 +193,7 @@
   async function strom(behov = 3) {
     if (H.solEffekt() > 0 || S.strom >= behov) return;
     await gaTill(H.cykel, 1.2, 'cykeln'); let n = 0;
-    while (S.strom < Math.min(behov + 4, 11.5) && n++ < 60) { H.trampa(1.1); await vanta(1); }
+    while (S.strom < Math.min(behov + 4, 11.5, H.stromMax() - 0.2) && n++ < 60) { H.trampa(1.1); await vanta(1); }
   }
 
   // ---------- printa ----------
@@ -221,6 +221,7 @@
     let varv = 0;
     while (sk.jobb && varv++ < 2000) {
       if (fil(sk) < 5 && sk.jobb) { await filament(sk, 300); continue; }
+      if (!S.batteriKopt && !S.powerbank && sk.jobb && H.solEffekt() <= 0) { await gaTill(H.cykel, 1.2, 'cykeln'); H.trampa(1.1); await vanta(1); continue; }   // DT: utan lagring går skrivaren bara medan man trampar
       if (H.solEffekt() <= 0 && S.strom < 1.5) { await strom(4); continue; }
       if (S.strom > 6 || H.solEffekt() > 0) {
         if (!H.extruderFull() && S.kvarn.tratt < 3 && gardsSkrap().length) { await plockaLass({}); await tomIKvarnen(); if (!S.kvarn.motor) await mal(); continue; }
@@ -331,7 +332,9 @@
         if (H.antalInv('nyckelring') < 3 && fil(sk) >= 100) { await strom(6); await printa({ typ: 'nyckelring' }); return; }
         await ali(() => saljAllt(), 'sälja nyckelringar'); return;
       }
-      case 'kop': await ali(async () => { await kopHosAli('gammalkvarn'); if (S.mynt >= 30) await kopHosAli('cykelbatteri'); }, 'kvarnen'); return;
+      case 'skrap': await plockaLass({}); return;   // DT
+      case 'kop': await ali(async () => { await kopHosAli('gammalkvarn'); }, 'kvarnen'); return;
+      case 'kopBatteri': await ali(async () => { await kopHosAli('cykelbatteri'); }, 'bilbatteriet'); if (!S.batteriKopt) await tjana(60, 'bilbatteriet'); return;
       case 'kvarn': valj('byggsats:gammalkvarn'); await klick(H.startYta, 'kvarnens ruta'); return;
       case 'flaska': { const sk = H.skrivare.find((x) => x.id === 'g1'); await filament(sk, fil(sk) + 900); return; }
       case 'kopGrip': await kopMaskin('grip'); return;
