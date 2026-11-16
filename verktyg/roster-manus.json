@@ -3586,9 +3586,9 @@
   "var": "Lappar, brev och dagbok"
  },
  {
-  "id": "du-935627e1",
+  "id": "du-83c72d5a",
   "figur": "du",
-  "text": "Tunnorna och kajakerna är för tunga för min lilla kvarn. Men Ali har en röd kvarn för sånt – PETG. Röd plast. Och en röd skrivare som bara äter den. Två fabriker. Jag har två fabriker. Snart.",
+  "text": "Tunnorna och de röda backarna är för tunga för min lilla kvarn. Men Ali har en röd kvarn för sånt – PETG. Röd plast. Och en röd skrivare som bara äter den. Två fabriker. Jag har två fabriker. Snart.",
   "var": "Lappar, brev och dagbok"
  },
  {
@@ -3865,6 +3865,18 @@
   "id": "du-0773b03c",
   "figur": "du",
   "text": "Okej. Först en skylt vid vägen, så att alla vet vem som bor här.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-b6fbb8ba",
+  "figur": "du",
+  "text": "Fickorna är fulla. Jag får lägga något i ryggsäcken först.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-d5b083b2",
+  "figur": "du",
+  "text": "Allt är fullt. Sälj något eller ställ ut det.",
   "var": "Dina tankar, tips och varningar"
  },
  {

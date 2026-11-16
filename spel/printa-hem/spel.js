@@ -82,7 +82,7 @@ const SKRAP_SORTER = {
   dunk: { namn: 'Plastdunk', gram: 500, andel: 13 },
   back: { namn: 'Ölback', gram: 1000, andel: 5 },   // sällsynt fynd – en hel rulle!
   tunna: { namn: 'Regntunna', gram: 1500, andel: 3, tung: true },   // tungt – kräver skottkärra
-  kajak: { namn: 'Plastkajak', gram: 2500, andel: 2, tung: true },
+  kajak: { namn: 'Kolfiberkajak', gram: 2500, andel: 2, tung: true, niva: 3 },   /* DE: kajaker och kanoter är kolfiber (nivå 3) – på tippen från kapitel 3, mals i kolfiberkvarnen */
 };
 const TRATT_MAX = 12;             // hur många skräp kvarnens tratt rymmer
 const BINGE_MAX = 60;            // matarbandets binge rymmer så här många skräp
@@ -133,7 +133,7 @@ const VAROR = {
   p_konsert: { namn: 'Biljetter till dansbandskonsert', ikon: '' },
   p_resa: { namn: 'Resa till Kanarieöarna', ikon: '' },
   // Rolfs tacksamhetssaker – kan inte köpas, bara få
-  // filament nivå 2–5: låses upp med respekt. Kommer från tungt skräp (tunnor, kajaker) och från Rolf.
+  // filament nivå 2–5: låses upp med respekt. Kommer från tungt skräp (tunnor; kajaker och kanoter för kolfiber) och från Rolf.
   rulle2: { namn: 'Filament nivå 2 – röd PETG', ikon: '', fil: 2, beskr: 'Från PETG-kvarnen. Laddas i den röda PETG-skrivaren.' },
   fynd2: { namn: 'Fynd nivå 2: röd PETG-back', ikon: '', malTill: 2, beskr: 'Råmaterial: riktigt bra plast. Lägg den i den röda PETG-kvarnen – den blir en rulle röd PETG, filament nivå 2.' },
   fynd3: { namn: 'Fynd nivå 3: kolfiberrester', ikon: '', malTill: 3, beskr: 'Råmaterial. Kräver härdade kvarnknivar – blir en rulle kolfiber, nivå 3.' },
@@ -283,13 +283,13 @@ const MASKINER = {
   gs_tak: { namn: 'Tak till gäststugan', ikon: '🏠', direkt: true, ritning: 400, flik: 'hem', syns: () => !!S.gast?.hemma && !S.gast?.tak, beskr: 'Ett nytt plåttak på husvagnen. Det har läckt sedan 2009.' },   // CS
   gs_isolering: { namn: 'Isolering till gäststugan', ikon: '🧱', direkt: true, ritning: 500, flik: 'hem', syns: () => !!S.gast?.hemma && !S.gast?.isolering, beskr: 'Isolering i väggarna – så den håller värmen.' },
   gs_dorr: { namn: 'Dörr till gäststugan', ikon: '🚪', direkt: true, ritning: 300, flik: 'hem', syns: () => !!S.gast?.hemma && !S.gast?.dorr, beskr: 'En dörr som går att stänga.' },
-  sackkarra: { namn: 'Pirran (säckkärra)', ikon: '🛒', syns: () => false, beskr: 'Pappas säckkärra från rean. Lyfter en tung sak i taget: regntunnor och kajaker – de blir röd PETG i den röda kvarnen', verktyg: true },   // CM
+  sackkarra: { namn: 'Pirran (säckkärra)', ikon: '🛒', syns: () => false, beskr: 'Pappas säckkärra från rean. Lyfter en tung sak i taget: regntunnor och röda backar – de blir röd PETG i den röda kvarnen', verktyg: true },   // CM
   karra: { namn: 'Skottkärra', ikon: '🛒', syns: () => false, beskr: 'Rymmer mycket mer skräp än famnen – kör den full och töm den i kvarnen', verktyg: true },
-  petgkvarn: { namn: 'Röda kvarnen (PETG)', ikon: '', direkt: true, syns: () => S.kapitel >= 2 && !!S.pappaBesok && !S.rodKvarnKopt,   /* CM: Alis röda kvarn längst in i lagret, köps när pappa och Rolf berättat om den */ beskr: 'Röd kvarn för TUNGT skräp: regntunnor, kajaker och Rolfs röda backar blir röd PETG – filament nivå 2. Den vanliga kvarnen klarar inte tunga saker. Ställs på gården.', trivsel: 4, radie: 0.7, flik: 'petg' },
+  petgkvarn: { namn: 'Röda kvarnen (PETG)', ikon: '', direkt: true, syns: () => S.kapitel >= 2 && !!S.pappaBesok && !S.rodKvarnKopt,   /* CM: Alis röda kvarn längst in i lagret, köps när pappa och Rolf berättat om den */ beskr: 'Röd kvarn för TUNGT skräp: regntunnor och Rolfs röda backar blir röd PETG – filament nivå 2. Den vanliga kvarnen klarar inte tunga saker. Ställs på gården.', trivsel: 4, radie: 0.7, flik: 'petg' },
   skrivarepetg: { namn: 'PETG-skrivare', ikon: '', syns: () => S.kapitel >= 2, beskr: 'Röd skrivare som BARA tar röd PETG. Den printar de dyra PETG-sakerna: vas, cykelhjälm, neonskylt, paddel. Står på golvet.', trivsel: 12, flik: 'petg' },
   petgcontainer: { namn: 'Stor container', ikon: '', syns: () => harPlacerat('petgkvarn') && !S.petg.container, monteras: true, beskr: 'En stor container vid röda kvarnen. Pirran tar tre tunga saker i stället för en, du tippar allt på en gång, och kvarnen tar en sak i taget. Montera: välj den och klicka på röda kvarnen.', flik: 'petg' },   /* linje 2: ersätter det tunga rullbandet */
   petgtorn: { namn: 'Rulltorn XL', ikon: '', syns: () => harPlacerat('petgkvarn') && !S.petg.torn, monteras: true, beskr: 'Dubbelt så brett rulltorn vid röda kvarnen: 12 rullar röd PETG i stället för 4. Montera: välj det och klicka på röda kvarnen.', flik: 'petg' },
-  petgband: { namn: 'Tungt rullband', ikon: '', syns: () => false,   /* ersatt av containern – gamla sparfiler behåller sitt band */ monteras: true, beskr: 'PETG-kvarnens eget rullband: hämtar tunnor och kajaker från tippen själv och matar kvarnen. Montera: välj det och klicka på PETG-kvarnen.', flik: 'petg' },
+  petgband: { namn: 'Tungt rullband', ikon: '', syns: () => false,   /* ersatt av containern – gamla sparfiler behåller sitt band */ monteras: true, beskr: 'PETG-kvarnens eget rullband: hämtar tunnor och röda backar från tippen själv och matar kvarnen. Montera: välj det och klicka på PETG-kvarnen.', flik: 'petg' },
   magnet: { namn: 'Magnetpistol', ikon: '🧲', syns: () => S.kapitel >= 2 && S.karra, beskr: `Klicka och håll, sikta – suger till sig skräp. Bär ${BARA_SKRAP[MAGNET_NIVA]}`, verktyg: true },
   ryggkorg: { namn: 'Ryggkorg', ikon: '🧺', syns: () => S.dag >= 3 && !!S.korg, beskr: `En korg på ryggen – bär ${BARA_SKRAP[3]} skräp i stället för ${BARA_SKRAP[2]}`, verktyg: true },   // punkt AX
   turbomotor: { namn: 'Turbomotor', ikon: '🔥', syns: () => (S.kapitel || 1) >= 2 && ((S.kvarn.motor && !S.kvarn.turbo && !S.kvarn.jet) || (harPlacerat('petgkvarn') && !S.petg.turbo)), monteras: true, beskr: 'Kvarnen mal 2,5× snabbare. Passar i båda kvarnarna – välj den och klicka på den kvarn du vill ha den i. Drar lite mer ström. Röda ränder ingår' },
@@ -302,7 +302,7 @@ const MASKINER = {
   rullstall: { namn: 'Rullställ till rulltornet', ikon: '', syns: () => { const l = S.rullstall || 0; return l === 0 ? ((S.stat.hamtat || 0) >= 3 || S.rolf.i >= 1) : l === 1 ? S.dag >= 4 : (S.kapitel || 1) >= 3; }, beskr: 'Rulltornet vid kvarnen växer ett steg – fler färdiga rullar får plats innan kvarnen stannar. Skrivarna tar plasten direkt från tornet genom slangen.', monteras: true },   // CA: ett steg i taget
   hardkniv: { namn: 'Härdade kvarnknivar', ikon: '', syns: () => S.kapitel >= 4, monteras: true, beskr: 'Knivar av härdat stål. Utan dem klarar kvarnen inte Rolfs svartgrå kolfiberrester – med dem blir de filament nivå 3.' },
   diamantkniv: { namn: 'Diamantkvarn', ikon: '', syns: () => S.kapitel >= 4 && (S.kvarn.kniv || 0) >= 1, monteras: true, beskr: 'Diamantbelagda knivar. Klarar guldkomposit och titanspån – filament nivå 4 och 5.' },
-  stortratt: { namn: 'Stor kvarntratt', ikon: '🪣', syns: () => false, beskr: 'Bred tratt med kross – nu får regntunnor och kajaker plats i kvarnen', monteras: true },
+  stortratt: { namn: 'Stor kvarntratt', ikon: '🪣', syns: () => false, beskr: 'Bred tratt med kross – nu får regntunnor och röda backar plats i kvarnen', monteras: true },
   // bygg ut skjulet till ett riktigt hem – printa delarna, välj dem och klicka på skjulet för att montera
   dorr: { namn: 'Dörr', ikon: '🚪', hem: true, monteras: true, syns: () => S.sang, trivsel: 8, beskr: 'En riktig dörr – slut på drag och nyfikna katter' },
   vaggar: { namn: 'Isolerskiva (vägg)', ikon: '🧱', hem: true, monteras: true, syns: () => S.sang, trivsel: 4, beskr: 'En vägg i taget – fyra skivor behövs (bak, vänster, höger, fram). Sen läcker kylan inte in längre' },
@@ -346,7 +346,7 @@ const MASKIN_GER = {
   karra: () => ['Mycket', 'Kör full och töm i kvarnen'],
   petgkvarn: () => ['PETG', 'Tungt skräp blir röd PETG (filament nivå 2)'],
   skrivarepetg: () => ['PETG', `Printar PETG-saker: vas ${krT(saljPris('n2_vas'))} kr – paddel ${krT(saljPris('n2_paddel'))} kr`],
-  petgband: () => ['Auto', 'Hämtar tunnor och kajaker till PETG-kvarnen åt dig'],
+  petgband: () => ['Auto', 'Hämtar tunnor och röda backar till PETG-kvarnen åt dig'],
   magnet: () => [`${BARA_SKRAP[MAGNET_NIVA]} st`, `Bär ${BARA_SKRAP[MAGNET_NIVA]} skräp och suger till sig på avstånd`],
   ryggkorg: () => [`${BARA_SKRAP[3]} st`, `Bär ${BARA_SKRAP[3]} skräp`],
   turbomotor: () => ['2,5×', 'Kvarnen mal 2,5× snabbare'],
@@ -358,7 +358,7 @@ const MASKIN_GER = {
   rullstall: () => [`${utlagerKap()} → ${TORN_KAP[Math.min(4, (S.rullstall || 0) + 1)]} rullar`, 'Rulltornet vid kvarnen växer ett steg'],
   hardkniv: () => ['Nivå 3', 'Kvarnen klarar kolfiber (filament nivå 3)'],
   diamantkniv: () => ['Nivå 4–5', 'Kvarnen klarar guld och titan (filament nivå 4–5)'],
-  stortratt: () => ['Tungt', 'Tunnor och kajaker får plats i kvarnen'],
+  stortratt: () => ['Tungt', 'Tunnor och röda backar får plats i kvarnen'],
   grip: () => [`${BARA_SKRAP[1]} st`, `Bär ${BARA_SKRAP[1]} skräp och plockar när du går nära`],
   bord: () => ['+1 skrivare', 'Bordsyta för en skrivare till'],
   sol: () => [`+${SOL_PER_S}/s`, `+${SOL_PER_S} ström/s av sig själv`],
@@ -415,7 +415,7 @@ const storlekFor = (typ) => { const v = VAROR[typ]; if (!v) return 1; if (v.stor
 // filamentnivåer: 1 vanlig plast → 2 röd PETG → 3 svartgrå kolfiber → 4 guldkomposit → 5 titan. Varje nivå kommer från ett fynd av samma nivå.
 const NIVA_FARG = { 1: 'blå', 2: 'röd', 3: 'svartgrå', 4: 'guld', 5: 'titan' };
 const nivaFor = (id) => VAROR[id]?.niva || VAROR[id]?.fil || VAROR[id]?.malTill || 0;
-const nivaText = (n) => n === 2 ? `Printas på PETG-skrivaren med röd PETG – den kommer från PETG-kvarnen (tunnor, kajaker, Rolfs röda backar)` : `Kräver 1 rulle filament nivå ${n} (${NIVA_FARG[n]}) – du har ${antalInv('rulle' + n)}. Mal ett fynd nivå ${n} från Rolf i kvarnen (${n <= 3 ? 'härdade knivar' : 'diamantknivar'}).`;
+const nivaText = (n) => n === 2 ? `Printas på PETG-skrivaren med röd PETG – den kommer från PETG-kvarnen (tunnor och Rolfs röda backar)` : `Kräver 1 rulle filament nivå ${n} (${NIVA_FARG[n]}) – du har ${antalInv('rulle' + n)}. Mal ett fynd nivå ${n} från Rolf i kvarnen (${n <= 3 ? 'härdade knivar' : 'diamantknivar'}).`;
 const storlekRuta = (id, maskin) => (maskin ? (MASKINER[id]?.storlek || 1) : storlekFor(id));
 const storstaSkrivare = () => Math.max(1, ...skrivare.filter((x) => x.gen !== 4).map((x) => x.gen));  // strom = ström per sekund när den printar
 const SANG_INSTRUKTION = 60;    // kr – sängen låses upp efter första uppgraderingen
@@ -484,7 +484,7 @@ const LAPPAR = {
   salt: ['🧺 Ali', 'Ali här. Nyckelringen sålde. Jag ville bli ingenjör, men fick ta över pappas butik. I natt lät jag en AI rita en skräpgrip åt mig. Kom och titta.'],
   ritning: ['📔 Dagbok', 'Min första 3D-modell! Nu ska den bara printas. Jag printar inte bara saker – jag printar maskiner.'],
   sol: ['📔 Dagbok', 'Slut på trampandet. Nästan.'],
-  petg: ['📔 Dagbok', 'Tunnorna och kajakerna är för tunga för min lilla kvarn. Men Ali har en röd kvarn för sånt – PETG. Röd plast. Och en röd skrivare som bara äter den. Två fabriker. Jag har två fabriker. Snart.'],
+  petg: ['📔 Dagbok', 'Tunnorna och de röda backarna är för tunga för min lilla kvarn. Men Ali har en röd kvarn för sånt – PETG. Röd plast. Och en röd skrivare som bara äter den. Två fabriker. Jag har två fabriker. Snart.'],
   skrivare2: ['📱 Storebror', 'VA?! Du har byggt en skrivare TILL?? Du har typ en printfarm nu. Okej. Det är faktiskt ganska ballt. 🔥'],
   klart: ['📔 Dagbok', 'Lampan lyser. Pappa ska visst komma förbi i morgon.'],   // CL: själva repliken sägs när lampan tänds
   gard: ['📔 Dagbok', 'Gården är STÄDAD. Av mig. Frivilligt. Mamma skulle aldrig tro det.'],
@@ -1775,7 +1775,7 @@ function skapaSkrap(variant) {
     const t = cyl(0.32, 0.32, 0.9, tm, 18); t.rotation.z = Math.PI / 2; t.position.y = 0.32; lagg(t);
     for (const x of [-0.3, 0.3]) { const r = cyl(0.335, 0.335, 0.05, mat(0x1c2833), 18); r.rotation.z = Math.PI / 2; r.position.set(x, 0.32, 0); lagg(r); }
   } else if (sort === 'kajak') {
-    const km = nivaMat(2, 'k' + variant, { emissive: 0x3a0a08 });   // CY/CZ
+    const km = nivaMat(3, 'k' + variant);   // DE: svartgrå kolfiber
     const k = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 12), km); k.scale.set(1.35, 0.22, 0.33); k.position.y = 0.2; lagg(k);
     const sits = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.06, 16), mat(0x222222)); sits.scale.set(1.6, 1, 1); sits.position.set(0, 0.42, 0); lagg(sits);
   } else {
@@ -2466,12 +2466,12 @@ function laggSkrap(x, z, variant, rot) {
   s.userData.skrap = [x, z, variant, rot];
   scen.add(s); skrapLista.push(s); skalaTraff(s);
   interaktor.registrera(s, {
-    text: () => !kanLyfta(s) ? `🔒 ${SKRAP_SORTER[s.userData.sort].namn} – för tung. Den behöver något med större hjul.` : s.userData.tung ? (valdKarra() && karraFull(s.userData.gram) ? 'Kärran är full' : `🛒 Lasta ${SKRAP_SORTER[s.userData.sort].namn.toLowerCase()} i skottkärran (${rullar(s.userData.gram)})`) : valdKarra() ? (karraFull(s.userData.gram) ? 'Kärran är full' : `🛒 Lasta i kärran (${rullar(s.userData.gram)})`) : (hand.full ? 'Fullt i famnen' : niva() === MAGNET_NIVA ? 'Håll inne – magneten drar' : `Plocka ${SKRAP_SORTER[s.userData.sort].namn.toLowerCase()} (${rullar(s.userData.gram)})`),
+    text: () => s.userData.sort === 'kajak' ? '🔒 Kolfiberkajak – den kvarnen har jag inte än' : !kanLyfta(s) ? `🔒 ${SKRAP_SORTER[s.userData.sort].namn} – för tung. Den behöver något med större hjul.` : s.userData.tung ? (valdSack() && S.karraLast.length >= pirraKap() ? 'Pirran är full – tippa vid röda kvarnen' : valdTyp() === 'karra' ? 'Den här tar du med pirran' : `Lasta ${bestamd(SKRAP_SORTER[s.userData.sort].namn)} på pirran`) : valdSack() ? 'Pirran tar bara det tunga' : valdKarra() ? (karraFull(s.userData.gram) ? 'Skottkärran är full' : `Lasta ${bestamd(SKRAP_SORTER[s.userData.sort].namn)} i skottkärran (${rullar(s.userData.gram)})`) : (hand.full ? 'Fullt i famnen' : niva() === MAGNET_NIVA ? 'Håll inne – magneten drar' : `Plocka ${SKRAP_SORTER[s.userData.sort].namn.toLowerCase()} (${rullar(s.userData.gram)})`),
     kanAktivera: () => (S.tippNyckel || !paTippen(s.position.x, s.position.z)) && kamera.position.distanceTo(s.position) <= SKRAP_RACKVIDD[niva()] + 1.6,
     aktivera: () => plockaSkrap(s),
   });
 }
-const slumpVariant = () => Math.floor(Math.random() * 1000);
+function slumpVariant() { for (;;) { const v = Math.floor(Math.random() * 1000); if (skrapSort(v) !== 'kajak' || (S.kapitel || 1) >= 3) return v; } }   /* DE: inga kajaker före kapitel 3 */
 function slumpPlats() {
   for (let f = 0; f < 50; f++) {
     const x = (Math.random() * 2 - 1) * (TOMT - 1), z = (Math.random() * 2 - 1) * (TOMT - 1);
@@ -2518,7 +2518,7 @@ function autoPlock() {
 }
 const karraGram = () => S.karraLast.reduce((a, v) => a + SKRAP_SORTER[skrapSort(v)].gram, 0);
 const karraFull = (g = 0) => karraGram() + Math.max(g, 1) > KARRA_KAP;
-const kanLyfta = (s) => !s.userData.tung || !!S.sackkarra;   // CM: tunga saker lyfts bara med säckkärran (pappas, dag 6)
+const kanLyfta = (s) => s.userData.sort !== 'kajak' && (!s.userData.tung || !!S.sackkarra);   /* DE: kajaken väntar på kolfiberlinjen */   // CM: tunga saker lyfts bara med säckkärran (pappas, dag 6)
 function plockaSkrap(s, tyst = false) {
   if (!kanLyfta(s)) { if (!tyst) tungMiss(); return; }
   if (s.userData.tung && !valdSack()) {   // CM: tunga saker tar man med säckkärran
@@ -2633,7 +2633,7 @@ function byt(i) {
   if (valdKarra() && hand.saker.length) {
     let n = 0;
     while (hand.saker.length && !karraFull(hand.overst.userData.gram)) { const x = hand.lagg(); S.karraLast.push(x.userData.variant ?? 0); n++; }
-    if (n) ui.toast(`🛒 ${n} skräp från famnen i kärran`, 'bra');
+    if (n) ui.toast(`🛒 ${n} skräp från famnen i skottkärran`, 'bra');
   }
   ritaHand(); ritaHotbar(); ljud.plock(); sparaSnart();
   visaHotbarNamn();
@@ -2677,6 +2677,7 @@ function uppdateraKarra(dt) {
   karraHjul.copy(hander).addScaledVector(d, KARRA_LANGD);
   const rull = karraHjul.distanceTo(forut);
   karraFP.userData.hjul.rotation.x += rull / 0.2 * Math.sign(d.dot(karraHjul.clone().sub(forut)) || 1);
+  if (pirraFP.visible && S.karraLast.length) { pirraGung += rull; const L = pirraFP.userData.last; L.rotation.z = Math.sin(pirraGung * 5) * 0.05 * Math.min(1, spelare.rorelse + 0.15); L.rotation.x = Math.sin(pirraGung * 3.7) * 0.03; }   /* DE: tunnan gungar när du går */
   karraPivot.position.set(karraHjul.x, 0.2, karraHjul.z);
   karraPivot.rotation.y = Math.atan2(-d.x, -d.z);
   karraPivot.rotation.x = KARRA_LYFT + Math.sin(performance.now() / 180) * 0.012 * spelare.rorelse;
@@ -2697,7 +2698,7 @@ function ritaHand() {
   const t = tomhant ? null : valdTyp();
   hand.grupp.visible = skrapLage() && !tomhant;
   karraFP.visible = t === 'karra' || t === 'sackkarra'; pirraFP.visible = t === 'sackkarra'; karraBla.visible = t !== 'sackkarra';
-  if (t && t !== 'karra' && t !== 'magnet') {
+  if (t && t !== 'karra' && t !== 'sackkarra' && t !== 'magnet') {   /* DE: pirran syns bara som den du kör */
     // storleken i famnen följer sakens riktiga storlek – stora saker skymmer sikten och får bökas runt
     const sak = skapaSak(t); sak.updateMatrixWorld(true);
     const v = new THREE.Box3().setFromObject(sak).getSize(new THREE.Vector3()), dim = Math.max(v.x, v.y, v.z);
@@ -2711,13 +2712,17 @@ function ritaHand() {
 const KARRA_RACK = 2.2, KARRA_RACK_TUNG = 2.8, KARRA_VINKEL = 0.65;
 const karraRing = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.045, 8, 28), new THREE.MeshBasicMaterial({ color: 0xffd43b, transparent: true, opacity: 0.9, depthTest: false }));
 karraRing.rotation.x = -Math.PI / 2; karraRing.renderOrder = 9; karraRing.visible = false; scen.add(karraRing);
+let pirraGung = 0;
 let karraKand = null, karraPuls = 0, karraMissTanke = false, karraGenom = null;
+const bestamd = (n) => { const t = n.toLowerCase(); return /a$/.test(t) ? t + 'n' : /[ei]$/.test(t) ? t + 'n' : t + 'en'; };   /* regntunna → regntunnan */
+const karraPassar = (x) => !!x && x.userData?.typ === 'skrap' && kanLyfta(x) && (valdSack() ? !!x.userData.tung : !x.userData.tung);   /* DE: pirran tar det tunga, skottkärran det lätta */
+const traffMitt = (x) => (x.userData.traff || x).getWorldPosition(new THREE.Vector3());
 function karraMal() {
   if (!valdKarra() || tomhant) return null;
   const fram = spelare.riktning(new THREE.Vector3()); fram.y = 0; fram.normalize();
   let bast = null, bp = 1e9;
   for (const x of skrapLista) {
-    if (!kanLyfta(x)) continue;
+    if (!kanLyfta(x) || !karraPassar(x)) continue;
     const dx = x.position.x - spelare.pos.x, dz = x.position.z - spelare.pos.z, d = Math.hypot(dx, dz);
     if (d > (x.userData.tung ? KARRA_RACK_TUNG : KARRA_RACK)) continue;
     const v = d < 0.4 ? 0 : Math.acos(Math.max(-1, Math.min(1, (dx * fram.x + dz * fram.z) / d)));
@@ -2727,10 +2732,10 @@ function karraMal() {
   return bast;
 }
 function uppdateraKarraMal(dt) {
-  karraKand = karraMal();
+  karraKand = valdKarra() && !tomhant && karraPassar(interaktor.hovrad) ? interaktor.hovrad : karraMal();   /* DE: det etiketten visar är det du lastar */
   const ring = karraKand || (interaktor.hovrad?.userData.typ === 'skrap' ? interaktor.hovrad : null);   // CY: det du siktar på får linjens färg
   karraRing.visible = !!ring;
-  if (ring) { const r = ring.userData.tung ? 0.75 : 0.42, k = 1 + Math.sin(performance.now() / 160) * 0.08; karraRing.position.set(ring.position.x, 0.06, ring.position.z); karraRing.scale.set(r / 0.42 * k, r / 0.42 * k, 1); karraRing.material.color.set(karraKand && valdKarra() && karraFull(ring.userData.gram) ? 0xffa53b : nivaHex(ring.userData.tung ? 2 : 1, 'ring')); /* CZ: ringen i linjens spann */ }
+  if (ring) { const r = ring.userData.tung ? 0.75 : 0.42, k = 1 + Math.sin(performance.now() / 160) * 0.08; { const c = traffMitt(ring); karraRing.position.set(c.x, 0.06, c.z); }   /* DE: ringen och träffytan har samma mitt */ karraRing.scale.set(r / 0.42 * k, r / 0.42 * k, 1); karraRing.material.color.set(karraKand && valdKarra() && karraFull(ring.userData.gram) ? 0xffa53b : nivaHex(SKRAP_SORTER[ring.userData.sort]?.niva || (ring.userData.tung ? 2 : 1), 'ring')); /* CZ: ringen i linjens spann */ }
   // kärran blir halvgenomskinlig när du siktar på något, så att du ser vad du tar
   if (!karraGenom) { karraGenom = []; karraFP.traverse((o) => { if (o.isMesh && o.material) { o.material = o.material.clone(); o.material.transparent = true; karraGenom.push(o.material); } }); }
   const op = karraKand ? 0.5 : 1; for (const m of karraGenom) m.opacity += (op - m.opacity) * Math.min(1, dt * 10);
@@ -2762,7 +2767,10 @@ function ritaKarraLast() {
     // verklig storlek – en kajak sticker ut ordentligt
     const m = skapaSkrap(v), tung = SKRAP_SORTER[skrapSort(v)].tung;
     m.traverse((o) => { if (o.material === traffMat) o.visible = false; });
-    if (tung) { m.position.set(0, 0.05 + i * 0.03, 0); m.rotation.y = Math.PI / 2 + (i % 2) * 0.3; }
+    if (tung && valdSack()) {   /* DE: tunnan står upprätt på pirrans platta, framför dig */
+      m.rotation.z = -Math.PI / 2; m.scale.setScalar(0.62); m.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(m), c = bb.getCenter(new THREE.Vector3());
+      m.position.set(-c.x + (i - (S.karraLast.length - 1) / 2) * 0.24, -bb.min.y - 0.33, -c.z - 0.12);
+    } else if (tung) { m.position.set(0, 0.05 + i * 0.03, 0); m.rotation.y = Math.PI / 2 + (i % 2) * 0.3; }
     else { m.position.set((i % 3 - 1) * 0.17, 0.02 + Math.floor(i / 9) * 0.1, (Math.floor(i / 3) % 3 - 1) * 0.22); m.rotation.y = i * 1.3; }
     g.add(m);
   });
@@ -3961,7 +3969,7 @@ function petgText() {
   if (valdTyp() === 'byggsats:petgtorn') return S.petg.torn ? 'Rulltorn XL står redan här' : 'Bygg Rulltorn XL vid röda kvarnen';
   if (valdTyp() === 'byggsats:turbomotor') return S.petg.turbo ? 'Den röda kvarnen har redan turbo' : '🔥 Skruva fast turbon på röda kvarnen';
   if (S.petg.rullar) return `Ta ${S.petg.rullar === 1 ? 'en rulle' : S.petg.rullar + ' rullar'} röd PETG`;
-  const mal = S.petg.ko > 1 ? `mal ${rullar(S.petg.ko)}${S.strom < PETG_STROM ? ' – ingen ström!' : ''}` : 'tom – kör hit tunnor och kajaker med säckkärran';
+  const mal = S.petg.ko > 1 ? `mal ${rullar(S.petg.ko)}${S.strom < PETG_STROM ? ' – ingen ström!' : ''}` : 'tom – kör hit tunnor och röda backar med pirran';
   return `PETG-kvarnen · ${mal}${S.petg.turbo ? ' · turbo' : ''}${S.petg.band ? ' · rullbandet hämtar själv' : ''}`;
 }
 function petgAktivera(p) {
@@ -3973,7 +3981,7 @@ function petgAktivera(p) {
   }
   if (valdTyp() === 'byggsats:petgband') {
     if (S.petg.band) { ui.toast('Rullbandet sitter redan', 'fel'); return; }
-    taBortVald(); S.petg.band = true; ritaPetgBand(p); ljudH('montera'); ui.toast('Det tunga rullbandet går! Det hämtar tunnor och kajaker från tippen och matar PETG-kvarnen.', 'guld'); sparaSnart(); return;
+    taBortVald(); S.petg.band = true; ritaPetgBand(p); ljudH('montera'); ui.toast('Det tunga rullbandet går! Det hämtar tunnor och röda backar från tippen och matar PETG-kvarnen.', 'guld'); sparaSnart(); return;
   }
   if (valdKarra() && S.karraLast.length) {
     const kvar = [], fran = karraPivot.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0.6, 0)); let n = 0;
@@ -4032,7 +4040,7 @@ function uppdateraPetg(dt) {
     petgBandT += dt;
     if (petgBandT >= PETGBAND_TID && S.petg.ko < 3 * RULLE) {
       petgBandT = 0;
-      const x = skrapLista.filter((s) => s.userData.tung && paTippen(s.position.x, s.position.z))[0] || skrapLista.filter((s) => s.userData.tung)[0];
+      const x = skrapLista.filter((s) => s.userData.tung && kanLyfta(s) && paTippen(s.position.x, s.position.z))[0] || skrapLista.filter((s) => s.userData.tung && kanLyfta(s))[0];
       if (x) {
         scen.remove(x); interaktor.avregistrera(x); skrapLista.splice(skrapLista.indexOf(x), 1);
         const m = skapaSkrap(x.userData.variant ?? 0); m.scale.multiplyScalar(0.6);
@@ -4104,7 +4112,7 @@ interaktor.registrera(kvarn, {
     if (valdTyp() === 'byggsats:turbomotor') return S.kvarn.motor ? '🔥 Skruva fast turbon på motorn' : 'Kvarnen behöver en vanlig motor först';
     if (valdTyp() === 'byggsats:jetmotor') return S.kvarn.turbo ? '🚀 Montera JETMOTORN' : 'Jetmotorn kräver turbon först';
     if (valdTyp()?.startsWith('burk_')) return `Mal ${VAROR[valdTyp()].namn.toLowerCase()} till filament`;   // CN: ingen förvarning
-    if (valdKarra() && S.karraLast.length) return `Töm kärran i tratten (${S.karraLast.length} st ≈ ${rullar(S.karraLast.reduce((a, v) => a + SKRAP_SORTER[skrapSort(v)].gram, 0))})`;
+    if (valdKarra() && S.karraLast.length) return `Töm ${valdSack() ? 'pirran' : 'skottkärran'} i tratten (${S.karraLast.length} st ≈ ${rullar(S.karraLast.reduce((a, v) => a + SKRAP_SORTER[skrapSort(v)].gram, 0))})`;
     const n = hand.saker.filter((s) => s.userData.typ === 'skrap').length;
     if (n) return `Lägg i tratten (${n} st ≈ ${rullar(hand.saker.reduce((a, x) => a + (x.userData.gram || 0), 0))})`;
     return `Kvarnen · tratten: ${S.kvarn.tratt}/${TRATT_MAX}` + (S.kvarn.band ? ` · sophållaren: ${S.kvarn.binge.length}/${BINGE_MAX}` : '');
@@ -4200,7 +4208,7 @@ const motorKabel = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCur
 motorKabel.visible = !!S.kvarn.motor; scen.add(motorKabel);
 function monteraTratt() {
   S.kvarn.stor = true; storTratt.visible = true;
-  ljudH('montera'); ui.toast('🪣 Stora tratten sitter! Nu får tunnor och kajaker plats.', 'guld'); sparaSnart();
+  ljudH('montera'); ui.toast('🪣 Stora tratten sitter! Nu får tunnor och röda backar plats.', 'guld'); sparaSnart();
 }
 function monteraMotor() {
   motorKabel.visible = true;
@@ -6376,7 +6384,7 @@ const senaSystem = () => !!S.kapitelKlart;   // respekt, rang, prestationer, vä
 const FIL_FARG = { 1: FIL1, 2: 0xd63a2f, 3: 0x3a3d42, 4: 0xd4a017, 5: 0xc4cad2 };   // CZ: mitten av varje spann (UI)
 const nivaUpplast = (n) => n <= 1 || (n === 2 ? S.kapitel >= 2 : S.kapitel >= 4);   // röd PETG i kapitel 2, nivå 3–5 i kapitel 4
 const hogstaNiva = () => [5, 4, 3, 2].find((n) => nivaUpplast(n)) || 1;
-// tungt skräp (tunnor, kajaker) kan ge filament av högre nivå när kvarnen mal det
+// tungt skräp (tunnor) kan ge filament av högre nivå när kvarnen mal det
 function tungtFilament() {
   for (const [n, chans] of [[5, 0.03], [4, 0.07], [3, 0.15], [2, 0.35]]) {
     if (!nivaUpplast(n) || Math.random() > chans) continue;
@@ -8246,7 +8254,7 @@ document.querySelector('.ph-dag-chip').onclick = () => oppnaBokmarken();
 function oppnaRespekt() {
   const nasta = RESPEKT_NIVAER.find(([g]) => S.respekt < g);
   const kropp = sektion('Respekt är hur andra ser på dig. Trivsel är hur du själv mår.')
-    + RESPEKT_NIVAER.map(([g, namn], i) => rad({ bild: `<span class="ui-headik" style="width:44px;height:44px;opacity:${S.respekt >= g ? 1 : 0.35}">${IKON.hjarta}</span>`, titel: namn, text: (S.respekt >= g ? 'Upplåst' : `Kräver ${g} i respekt (${g - S.respekt} kvar)`) + ` · ${['tunnor och kajaker ger sånt filament', 'Rolfs kolfiberrester ger det', 'guldglittriga dunkar ger det', 'titanspån ger det'][i]} · printa ${VAROR[['n2_neon', 'n3_stol', 'n4_staty', 'n5_drake'][i]].namn.toLowerCase()} · du har ${antalInv('rulle' + (i + 2))} rullar` })).join('')
+    + RESPEKT_NIVAER.map(([g, namn], i) => rad({ bild: `<span class="ui-headik" style="width:44px;height:44px;opacity:${S.respekt >= g ? 1 : 0.35}">${IKON.hjarta}</span>`, titel: namn, text: (S.respekt >= g ? 'Upplåst' : `Kräver ${g} i respekt (${g - S.respekt} kvar)`) + ` · ${['tunnor och röda backar ger sånt filament', 'kajaker, kanoter och Rolfs kolfiberrester ger det', 'guldglittriga dunkar ger det', 'titanspån ger det'][i]} · printa ${VAROR[['n2_neon', 'n3_stol', 'n4_staty', 'n5_drake'][i]].namn.toLowerCase()} · du har ${antalInv('rulle' + (i + 2))} rullar` })).join('')
     + sektion('Senast') + ((S.respektLogg || []).map(([d, v, dag]) => `<div class="ph-resp-rad"><b class="${d > 0 ? 'plus' : 'minus'}">${d > 0 ? '+' : ''}${d}</b> ${v} <small>dag ${dag}</small></div>`).join('') || '<div class="ph-resp-rad">Inget än. Ge Rolf något, säg nej till skumma jobb.</div>');
   oppnaRuta(panel({ ikon: 'hjarta', titel: `Respekt ${S.respekt}`, sub: nasta ? `Nästa: ${nasta[1]} vid ${nasta[0]}` : 'Alla nivåer upplåsta', kropp }));
 }
@@ -12349,7 +12357,7 @@ setInterval(() => {
 window.__printahem = {
   framsteg, skrivarText, framstegKvarn,
   dbgKanal: () => ({ nu: performance.now(), pratarTill, pratarVem, kanalFri, aktiv: kanalAktiv && kanalAktiv.text, n: kanal.length, pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: medEl2.hidden, butik: ui.butiksOverlay.hidden, ov: ui.overlay.hidden }),
-  textLogg: () => TEXTLOGG.slice(), pratar: () => !!kanalAktiv || kanal.length > 0 || performance.now() < pratarTill || performance.now() < kanalFri, kanal: () => ({ aktiv: kanalAktiv && { vem: kanalAktiv.vem, text: kanalAktiv.text, vikt: kanalAktiv.vikt }, ko: kanal.map((x) => ({ vem: x.vem, text: x.text, vikt: x.vikt })) }), rostMatning, renderaIkon, ikonLista, handelseLogg, ritningInfo: () => { const c = ritning ? new THREE.Box3().setFromObject(ritning).getCenter(new THREE.Vector3()) : null; return { nyckel: ritningNyckel, linjer: ritning?.children.length || 0, printar: printarFram.size, mitt: c && [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(2)] }; }, prata, elHelFig: () => [...(elHel || [])], avkodat, forladdaRepliker, introLager, trampa: (sek) => { trampTest = sek; }, veva: (sek) => { vevTest = sek; }, siktaVagg: (v) => { vaggTest = v; }, vaggarKlara: () => vaggarKlara(), tapetKlara: () => tapetKlara(), nastaInred, prisNu, helaRullar, extruderFull, gardMal, kanLyfta, karraFull, harGava, valdKarra, BARA_SKRAP, SKRAP_RACKVIDD, utlagerKap, startPlats, sattFonster: () => { const n = fonsterLista().length; S.hem = { ...(S.hem || {}), fonster: [...fonsterLista(), { vagg: Object.keys(VAGGAR).filter((k) => !/dorr|fram/i.test(k))[n % 3] || Object.keys(VAGGAR)[0], u: 0.5 }] }; ritaFonster(); uppdateraSkjul(); sparaSnart(); }, medKo, medEl2, uppdatera, stegText: () => { const st = STEG[S.steg]; return st ? (typeof st.text === 'function' ? st.text() : st.text) : ''; }, valdTyp: () => valdTyp(), ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, webbOrdrar, oppnaDator, BESOK, besok, startaBesok, ata, MAT_VARDE, plockaUppPlacerad, plockaSkrap, husvagnKlick, gastScen, gastDelKlar, husvagn: () => husvagnG, rolfBesok, sackRulle, karraKlick, karraMal, pappaGubbe, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
+  textLogg: () => TEXTLOGG.slice(), pratar: () => !!kanalAktiv || kanal.length > 0 || performance.now() < pratarTill || performance.now() < kanalFri, kanal: () => ({ aktiv: kanalAktiv && { vem: kanalAktiv.vem, text: kanalAktiv.text, vikt: kanalAktiv.vikt }, ko: kanal.map((x) => ({ vem: x.vem, text: x.text, vikt: x.vikt })) }), rostMatning, renderaIkon, ikonLista, handelseLogg, ritningInfo: () => { const c = ritning ? new THREE.Box3().setFromObject(ritning).getCenter(new THREE.Vector3()) : null; return { nyckel: ritningNyckel, linjer: ritning?.children.length || 0, printar: printarFram.size, mitt: c && [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(2)] }; }, prata, elHelFig: () => [...(elHel || [])], avkodat, forladdaRepliker, introLager, trampa: (sek) => { trampTest = sek; }, veva: (sek) => { vevTest = sek; }, siktaVagg: (v) => { vaggTest = v; }, vaggarKlara: () => vaggarKlara(), tapetKlara: () => tapetKlara(), nastaInred, prisNu, helaRullar, extruderFull, gardMal, kanLyfta, karraFull, harGava, valdKarra, BARA_SKRAP, SKRAP_RACKVIDD, utlagerKap, startPlats, sattFonster: () => { const n = fonsterLista().length; S.hem = { ...(S.hem || {}), fonster: [...fonsterLista(), { vagg: Object.keys(VAGGAR).filter((k) => !/dorr|fram/i.test(k))[n % 3] || Object.keys(VAGGAR)[0], u: 0.5 }] }; ritaFonster(); uppdateraSkjul(); sparaSnart(); }, medKo, medEl2, uppdatera, stegText: () => { const st = STEG[S.steg]; return st ? (typeof st.text === 'function' ? st.text() : st.text) : ''; }, valdTyp: () => valdTyp(), ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, webbOrdrar, oppnaDator, BESOK, besok, startaBesok, ata, MAT_VARDE, plockaUppPlacerad, plockaSkrap, karraRing, foremal, variantFor, valjTyp, husvagnKlick, gastScen, gastDelKlar, husvagn: () => husvagnG, rolfBesok, sackRulle, karraKlick, karraMal, pappaGubbe, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 
