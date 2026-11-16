@@ -29,7 +29,7 @@ export const TRIVSEL_MAX_BONUS = 0.4;    // taket: +40 %
 // ---------- Kapitel och belöningar ----------
 export const KAP1_BELONING = 1000;   // kr när kapitel 1 är klart – så kapitel 2 kommer igång direkt
 export const TRIVSEL_MAL = 130;   // trivselmålet i kapitel 1 (B42: 150 → 130)
-export const RESPEKT_NIVAER = [[25, 'Filament nivå 2 – röd PETG'], [60, 'Filament nivå 3 – grön kolfiber'], [110, 'Filament nivå 4 – guldkomposit'], [180, 'Filament nivå 5 – titanblandning']];
+export const RESPEKT_NIVAER = [[25, 'Filament nivå 2 – röd PETG'], [60, 'Filament nivå 3 – svartgrå kolfiber'], [110, 'Filament nivå 4 – guldkomposit'], [180, 'Filament nivå 5 – titanblandning']];
 
 // ---------- Rolf ----------
 // Belöningen i postlådan för gåva 1–4 (kapitel 1). 'mynt:N' = kronor, 'extra' = Rolf lägger fler fynd på tippen.

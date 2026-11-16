@@ -13,7 +13,7 @@
 export const LINJER = [
   { nr: 1, namn: 'Blå linjen', filament: 'Blå plast', farg: '#4cc9f0', z: 11.5, kapitel: 1, text: 'Dag 1' },
   { nr: 2, namn: 'Röda linjen', filament: 'Röd PETG', farg: '#e5484d', z: 6, kapitel: 2, text: 'Kapitel 2' },
-  { nr: 3, namn: 'Gröna linjen', filament: 'Grön kolfiber', farg: '#3ccf73', z: 0.5, kapitel: 4, text: 'Kapitel 4' },
+  { nr: 3, namn: 'Svartgrå linjen', filament: 'Svartgrå kolfiber', farg: '#4a4e55', z: 0.5, kapitel: 4, text: 'Kapitel 4' },
   { nr: 4, namn: 'Guldlinjen', filament: 'Guldkomposit', farg: '#e9b949', z: -5, kapitel: 4, text: 'Kapitel 4' },
   { nr: 5, namn: 'Titanlinjen', filament: 'Titan', farg: '#b8c4d6', z: -10.5, kapitel: 4, text: 'Kapitel 4 / efterspelet' },
 ];

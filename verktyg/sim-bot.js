@@ -341,6 +341,12 @@
     if (/^Lägg .* i Rolfs postlåda/.test(txt)) { await gePresent(H.aktivGava()); return; }
     if (/^Hämta 5 skräp på soptippen/.test(txt)) { await plockaLass({ tippen: true }); await tomIKvarnen(); await mal(); return; }
     if (/^Mal tunnan i PETG-kvarnen|^Mal tunga saker i PETG-kvarnen/.test(txt)) { await tungtTillPetg(); return; }
+    if (/^Printa och sälj en sak i röd PETG/.test(txt)) { if (!H.harPlacerat('skrivarepetg')) { await bygg('skrivarepetg'); return; } if (!H.harRecept('n2_vas')) await kopRecept('n2_vas'); if (!H.antalInv('n2_vas')) await printa({ typ: 'n2_vas' }); await ali(() => saljAllt(), 'sälja PETG'); return; }   // dag 6
+    if (/^Bygg hyllan|^Bygg spisen och laga/.test(txt)) {   // dag 8 och 10: direktköp hos Ali, sedan laga mat
+      const id = /hyllan/.test(txt) ? 'hylla' : 'spis', har = id === 'hylla' ? S.hylla : S.spis;
+      if (!har) { const pris = H.MASKINER[id].ritning; if (S.mynt < pris) { await tjana(pris, id); return; } await ali(async () => { await kopHosAli(id); }, 'köpa ' + id); return; }
+      const b = Object.keys(H.MAT_VARDE || {}).find((t) => t.startsWith('burk_') && H.antalInv(t)); if (b) { H.ata(b); handling('lagar ' + b + ' på spisen'); } await vanta(1); return;
+    }
     if (/^Printa en designvas/.test(txt)) { if (!H.harRecept('n2_vas')) await kopRecept('n2_vas'); await printa({ typ: 'n2_vas' }); return; }
     if (/^Sälj designvasen/.test(txt)) { if (!H.antalInv('n2_vas')) await printa({ typ: 'n2_vas' }); await ali(() => saljAllt(), 'sälja vasen'); return; }
     if (/^Lägg 3 vaser i säljlådan/.test(txt)) {
