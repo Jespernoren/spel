@@ -120,8 +120,7 @@ Mobilspelhallen för barnens Android-telefoner: **jespernoren.github.io/spel/mob
 - 🏠-knappen i spelen leder till `index.html`, som skickar tillbaka till appen om man kom därifrån.
 
 ### Mobilvänliga spel (granskat 2026-11-16)
-✅ I appen: Majistos Torn, Sudoku-äventyret, Charlies Magiska Lärospel, Charlies Popcorn-Äventyr.
-🟡 Nästan: Krangs Bajsmaskin (vrida delar kräver piltangenter, behöver vrid-knappar).
+✅ I appen (alla med topplista): Majistos Torn (högsta tornet), Sudoku-äventyret (lösta sudokun), Charlies Magiska Lärospel (flest stjärnor på en omgång), Charlies Popcorn-Äventyr (flest popcorn), Krangs Bajsmaskin (klarade banor).
 ❌ 3D med styrning (för svårt på mobil): Trollskattornet, Charlies Kalas, Rädda Barnen, Strandjakten, Trollstaven, Slalom, Poolparty 2. Simons CNC-Maskin är Simons spel.
 Ta bort `mobil: false` i `spel-lista.js` när ett spel blivit mobilvänligt.
 

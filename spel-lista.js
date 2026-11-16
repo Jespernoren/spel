@@ -104,7 +104,6 @@ window.SPEL = [
   },
   {
     mapp: "krangs-bajsmaskin",
-    mobil: false, // inte helt mobilvänligt än (granskat 2026-11-16) – syns inte i Familjens Spel
     namn: "Krangs Bajsmaskin",
     ikon: "💩",
     beskrivning: "Bygg en galen maskin som leder bajset ner i tunnan.",

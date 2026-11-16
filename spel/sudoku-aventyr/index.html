@@ -349,6 +349,8 @@
   }
   function winLevel(){
     sndWin(); setMsg(''); confettiBurst();
+    // rekord = antal lösta sudokun (familjens topplista)
+    try{ localStorage.setItem('rekord:sudoku-aventyr', (+localStorage.getItem('rekord:sudoku-aventyr')||0)+1); }catch(e){}
     completed[current]=true;
     const wasLast = current===WORLDS.length-1;
     if(current===unlocked && !wasLast) unlocked=current+1;

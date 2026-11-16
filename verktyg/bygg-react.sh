@@ -18,6 +18,7 @@ cat <<H
 <!DOCTYPE html>
 <html lang="sv">
 <head>
+<script src="../../delat/rost.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -29,6 +30,6 @@ cat <<H
 <script>
 H
 cat out.js
-printf '\n</script>\n</body>\n</html>\n'
+printf '\n</script>\n<script src="../../delat/hem.js"></script>\n</body>\n</html>\n'
 } > $REPO/spel/$MAPP/index.html
 ls -la $REPO/spel/$MAPP/index.html

@@ -73,6 +73,18 @@ react/cjs/react-jsx-runtime.production.min.js:
 */
 
 </script>
+<script>
+// Rekord till familjens topplista: flest stjärnor under en spelomgång (läses från ⭐-knappen)
+(function(){
+  const NYCKEL='rekord:charlies-magiska-larospel';
+  new MutationObserver(function(){
+    const k=[...document.querySelectorAll('button')].find(b=>/^⭐\s*\d+$/.test(b.textContent.trim()));
+    if(!k) return;
+    const n=parseInt(k.textContent.replace(/\D/g,''),10)||0;
+    try{ if(n>(+localStorage.getItem(NYCKEL)||0)) localStorage.setItem(NYCKEL,n); }catch(e){}
+  }).observe(document.body,{childList:true,subtree:true,characterData:true});
+})();
+</script>
 <script src="../../delat/hem.js"></script>
 </body>
 </html>
