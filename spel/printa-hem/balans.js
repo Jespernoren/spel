@@ -148,7 +148,7 @@ export const VARA_SIFFROR = {
   tillstand: { gram: 250, tid: 10, pris: 0 },
   sang: { gram: 1200, tid: 20, pris: 0 },
   nyckelring: { gram: 100, tid: 4, pris: 15 },
-  kruka: { gram: 400, tid: 11, pris: 70, recept: 40 },     // punkt AG: receptet är gratis från Ali vid första försäljningen   // BP: varje nytt recept tjänar mer
+  kruka: { gram: 400, tid: 11, pris: 70, recept: 40 },     // ED: receptet köps hos Ali för 40 kr   // BP: varje nytt recept tjänar mer
   pall: { gram: 1000, tid: 21, pris: 180, recept: 80 },   // B43: 32 → 20 s   // BP: varje nytt recept tjänar mer
   rulle: { gram: 1000, tid: 0, pris: 0 },
   mobilstall: { gram: 300, tid: 10, pris: 50, recept: 100 },   // BP: varje nytt recept tjänar mer

@@ -301,6 +301,7 @@
     const bs = 'byggsats:' + id;
     if (!H.antalInv(bs)) { if (!(await kopMaskin(id))) return false; if (!(await printa({ maskin: id }))) return false; }
     if (!H.antalInv(bs)) return true;   // verktyg och motorer används när de tas ut
+    if (H.TA_PA?.[bs] || H.MONTERA?.[bs]) return true;   /* ED13: tas på eller monteras i början av nästa steg */
     const m = MASKIN(id);
     if (m.hem) {
       if (id === 'fonster') { valj(bs); H.taBortInv(bs); await gaTill(H.skjulYta, 2, 'skjulet'); H.sattFonster(); handling('sätter ett fönster'); return true; }
@@ -329,6 +330,7 @@
   }
 
   // ---------- ett steg ----------
+  const foreSett = new Set();
   async function gorSteg() {
     await stangPopups();
     /* EA: som en riktig spelare – boten gör nästa mål först när det syns i målrutan (högst 60 s) */
@@ -336,6 +338,18 @@
     if (S.post.tillMig?.length || S.post.lapp) { await klick(H.postlada, 'Rolfs postlåda'); await stangPopups(); }
     if (H.vantarPaNummer?.()) { await klick(H.postlada, 'Rolfs postlåda (telefonnumret)'); }
     for (const sk of skrivareAlla()) if (sk.klar && !sk.jobb) await taUt(sk);
+    /* ED4: FÖRE – AX:s egna villkor (oberoende av spelets finns()): syns något innan det finns? */
+    { const syns = (sel) => { const e = document.querySelector(sel); return !!e && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden'; };
+      const fore = [];
+      if (syns('[data-dn="el"]') && !S.cykelOmbyggd && S.dag === 1) fore.push('EL-mätaren före den ombyggda cykeln');
+      if (syns('[data-dn="trivsel"]') && !S.sang && S.dag === 1 && !H.placerade.some((p) => (H.VAROR[p.typ]?.trivsel || H.MASKINER[p.typ]?.trivsel))) fore.push('TRIVSEL före första trivselsaken');
+      if (H.vevEl?.classList.contains('syns') && !S.kvarnStar) fore.push('rullmätaren vid kvarnen före kvarnen');
+      if (H.startTorn?.visible && !S.skrivareStar && S.dag === 1) fore.push('storebrors rulle i tornet före skrivaren');
+      for (const f of fore) if (!foreSett.has(f)) { foreSett.add(f); window.__textLogg('före', '', f); } }
+    /* ED13: det som ligger i handen ska på plats – ta på det man bär, montera resten */
+    if (H.TA_PA) for (const t of Object.keys(H.TA_PA)) if (H.antalInv(t)) { valj(t); H.taPaVald(); handling('tar på ' + t.replace('byggsats:', '')); await vanta(0.5); }
+    if (H.MONTERA) for (const t of Object.keys(H.MONTERA)) { if (!H.antalInv(t)) continue; const m = H.MONTERA[t], mal = m.mal()[0]; if (!mal || m.hinder?.()) continue; valj(t); await klick(mal, m.namn.toLowerCase()); return; }
+    if (H.antalInv('korv')) { valj('korv'); H.ata('korv'); }
     if (!S.skyltUppe && S.dag === 1) { await klick(H.bradhog, 'brädhögen'); await vanta(4); return; }
     const id = H.stegId(), txt = H.stegText() || '', st = H.STEG[S.steg];
     if (!st) return 'slut';
@@ -355,19 +369,20 @@
       }
       case 'rullSlut': { const sk = H.skrivare.find((x) => x.id === 'g1'); if (fil(sk) >= 100) { await strom(4); await printa({ typ: 'nyckelring' }); return; } await ali(() => saljAllt(), 'sälja nyckelringar'); return; }   // DT
       case 'kop': await ali(async () => { await kopHosAli('gammalkvarn'); }, 'kvarnen'); return;
-      case 'kopBatteri': await ali(async () => { await kopHosAli('cykelbatteri'); }, 'bilbatteriet'); if (!S.batteriKopt) await tjana(60, 'bilbatteriet'); return;
+      case 'kopBatteri': await ali(async () => { await kopHosAli('cykelbatteri'); }, 'bilbatteriet'); if (!S.batteriKopt && !H.antalInv('byggsats:cykelbatteri')) await tjana(60, 'bilbatteriet'); return;
       case 'kvarn': valj('byggsats:gammalkvarn'); await klick(H.startYta, 'kvarnens ruta'); return;
       case 'flaska': { const sk = H.skrivare.find((x) => x.id === 'g1'); await filament(sk, fil(sk) + 900); return; }
+      case 'powerbank': await ali(async () => { await vanta(4); }, 'Ali (powerbanken)'); return;   /* ED8 */
       case 'kopGrip': await kopMaskin('grip'); return;
       case 'printGrip': if (!H.antalInv('byggsats:grip') && !S.grip) await printa({ maskin: 'grip' }); return;
-      case 'krukaD1': if (H.harRecept('kruka')) { await printa({ typ: 'kruka' }); return; } await tjana(S.mynt + 15, 'krukan (Ali ger receptet vid försäljningen)'); return;   // EA
+      case 'krukaD1': if (H.harRecept('kruka')) { await printa({ typ: 'kruka' }); return; } if (S.krukaErbjuden) { await kopRecept('kruka'); return; } await tjana(S.mynt + 15, 'krukan (Ali erbjuder receptet vid försäljningen)'); return;   // ED
       case 'kopMotor': await kopMaskin('kvarnmotor'); return;
       case 'monteraMotor': if (!S.kvarn.motor) await printa({ maskin: 'kvarnmotor' }); return;
       case 'kopSang': { if (S.ritningar.includes('sang')) return; if (S.mynt < 60) { await tjana(60, 'sängen'); return; } await ali(async () => { await kopHosAli('sang'); }, 'köpa sängen'); return; }
       case 'printSang': await printa({ typ: 'sang' }); return;
       case 'sov1': valj('sang'); await klick(H.sangSpoke, 'sängplatsen i skjulet', 2); await vantaPaMorgon(); return;
       case 'kopSack': if (H.sackRulle?.visible) { await klick(H.sackRulle, 'Rolfs sopsäck'); return; } { await plockaLass({}); await tomIKvarnen(); await mal(); } return;   // CH
-      case 'kruka': if (!H.harRecept('kruka')) await ali(async () => {}, 'krukreceptet'); await printa({ typ: 'kruka' }); return;
+      case 'kruka': if (!H.harRecept('kruka')) await kopRecept('kruka'); await printa({ typ: 'kruka' }); return;
       case 'ryggkorg': await bygg('ryggkorg'); return;
       case 'pall': await kopRecept('pall'); await printa({ typ: 'pall' }); if (H.antalInv('pall')) await placera('pall'); return;
     }

@@ -2,7 +2,7 @@
 // Kör: node verktyg/sim-kapitel1.mjs <url> <ut.md> [körning-nr]
 //   url: t.ex. http://127.0.0.1:8765/printa-hem.html (det byggda spelet)
 // Loggen visar per dag: minuter, prints, kr, köp, bärförmåga, trivsel och ALL text (tid, källa, vem).
-// Flaggor: SPAM (samma notis inom 2 min), TOM RUTA (inget mål i rutan efter 10 s), UPPREPNING (samma text inom 5 dagar), INAKTUELL (text visas fast villkoret inte gäller), SEN (reaktion > 10 s efter händelsen), BONUS DAG 1, KROCK (två texter inom 5 s), RÖST AVBRUTEN (ny röst innan den förra pratat klart),
+// Flaggor: FÖRE, OSYNLIG, OSYNLIG GÅVA, TYST NEJ (ED), SPAM (samma notis inom 2 min), TOM RUTA (inget mål i rutan efter 10 s), UPPREPNING (samma text inom 5 dagar), INAKTUELL (text visas fast villkoret inte gäller), SEN (reaktion > 10 s efter händelsen), BONUS DAG 1, KROCK (två texter inom 5 s), RÖST AVBRUTEN (ny röst innan den förra pratat klart),
 // FÖR TIDIGT (texten nämner en sak som inte finns hos Ali än), TEMPO (dagen utanför 10–15 min, dag 1 10–12).
 import fs from 'fs';
 import { chromium } from '/home/claude/verktyg/node_modules/playwright-core/index.mjs';
@@ -174,6 +174,16 @@ for (const h of r.logg.filter((e) => e.kalla === 'händelse' && e.vem === 'malKl
     if (e.kalla === 'sak') sett.set(e.text, e.dag);
   }
 }
+// ED4/ED7/ED9/ED13: FÖRE, OSYNLIG, OSYNLIG GÅVA, TYST NEJ
+for (const e of r.logg.filter((x) => x.kalla === 'före')) flaggor.push({ dag: e.dag, t: e.t, typ: 'FÖRE', text: e.text });
+for (const e of r.logg.filter((x) => x.kalla === 'osynlig')) flaggor.push({ dag: e.dag, t: e.t, typ: 'OSYNLIG', text: `${e.vem}: "${e.text.slice(0, 60)}" – ${e.varfor}` });
+for (const e of r.logg.filter((x) => x.kalla === 'osynlig gåva')) flaggor.push({ dag: e.dag, t: e.t, typ: 'OSYNLIG GÅVA', text: `${e.text} ${e.varfor}` });
+{ const forklarat = new Set(), syns = ['notis', 'toast', 'sak', 'bubbla', 'butiksbubbla', 'kvittens', 'lapp', 'sms-bubbla'];
+  for (const e of r.logg.filter((x) => x.kalla === 'nej')) {
+    const har = r.logg.some((x) => syns.includes(x.kalla) && x.tot >= e.tot - 1 && x.tot <= e.tot + 0.6);
+    if (har) { forklarat.add(e.text); continue; }
+    if (!forklarat.has(e.text)) flaggor.push({ dag: e.dag, t: e.t, typ: 'TYST NEJ', text: `nej-ljud utan förklaring (${e.text.slice(0, 60) || 'inget i handen'})` });
+  } }
 // tempo
 for (const d of r.dagar) {
   const min = d.sek / 60, [lo, hi] = d.dag === 1 ? [10, 12] : [10, 15];
