@@ -92,7 +92,7 @@ const FART_UTAN = 5.2, FART_KARRA = 3.2, FART_KARRA_FULL = 2.3;   // gångfart (
 const KISTA_RACKVIDD = 3.2;      // så nära kistan måste man stå för att flytta saker i den
 const VEV_TID = 0.7;             // sekunder att veva per flaska (0,2 rulle) – större skräp tar längre
 const MOTOR_TID = 1.6;           // sekunder per flaska när motorn mal
-const motorFart = () => S.kvarn.jet ? 6 : S.kvarn.turbo ? 2.5 : 1;     // turbo 2,5× · jet 6×
+const motorFart = () => S.kvarn.jet ? 6 : S.kvarn.turbo ? 2.5 : 1.6;   // kvarnmotorn 1,6× · turbo 2,5× · jet 6×
 const motorStrom = () => S.kvarn.jet ? 8 : S.kvarn.turbo ? 3 : 1;           // turbon och jeten drar mer ström
 // Verktygsnivåer för skräp: 0 = händer, 1 = skräpgrip, 2 = magnetpistol.
 // Varje nivå: bär mer, behöver sikta mindre noga, och plockar på längre håll.
@@ -276,7 +276,7 @@ const MASKINER = {
   korg: { namn: 'Sopsäck', ikon: '🗑️', syns: () => false,   /* CH: sopsäcken kommer från Rolf */ beskr: `En svart sopsäck över axeln – bär ${BARA_SKRAP[2]} skräp i stället för ${BARA_SKRAP[1]}`, verktyg: true },
   ryggsack2: { namn: 'Större ryggsäck', ikon: '🎒', syns: () => S.kapitel >= 2, beskr: `Ryggsäcken får ${RYGG_STOR} platser i stället för ${RYGG_BAS}`, verktyg: true },
   // karra och stortratt säljs inte hos Ali (syns: false): kärran kommer från Rolf
-  webbdator: { namn: 'Alis pappas gamla dator', ikon: '🖥️', direkt: true, ritning: 500, delar: 1, gram: 0, tid: 0, syns: () => !S.datorKopt && S.dag >= 5 && harPlacerat('sol') && (!!S.hem?.vaggar || (S.hem?.vagg || 0) >= 4), flik: 'hem', beskr: 'En skruttig burk med modem. Ställ den i skjulet – sedan kommer webbshopens beställningar varje morgon. Kräver ström.' },   // CR
+  webbdator: { namn: 'Alis pappas gamla dator', ikon: '🖥️', direkt: true, ritning: 500, delar: 1, gram: 0, tid: 0, syns: () => !S.datorKopt && S.dag >= 5 && (antalSnurror() >= 2 || harPlacerat('sol')) && (!!S.hem?.vaggar || (S.hem?.vagg || 0) >= 4), flik: 'hem', beskr: 'En skruttig burk med modem. Ställ den i skjulet – sedan kommer webbshopens beställningar varje morgon. Kräver ström.' },   // CR
   hylla: { namn: 'Hylla i skjulet', ikon: '🗄️', direkt: true, ritning: 250, flik: 'hem', syns: () => !!S.kapitelKlart && !S.hylla, beskr: 'Fler platser i förrådet – mammas saker behöver inte ligga i fickorna.' },   // CV
   spis: { namn: 'Spis', ikon: '🍳', direkt: true, ritning: 600, flik: 'hem', syns: () => !!S.kapitelKlart && !S.spis, beskr: 'Mat lagad på spisen mättar mer.' },
   korv: { namn: 'Korv med bröd', ikon: '🌭', direkt: true, ritning: 34, flik: 'hem', syns: () => !!S.kapitelKlart, beskr: 'Alis korv. Äts på stället.' },
@@ -287,17 +287,19 @@ const MASKINER = {
   karra: { namn: 'Skottkärra', ikon: '🛒', syns: () => false, beskr: 'Rymmer mycket mer skräp än famnen – kör den full och töm den i kvarnen', verktyg: true },
   petgkvarn: { namn: 'Röda kvarnen (PETG)', ikon: '', direkt: true, syns: () => S.kapitel >= 2 && !!S.pappaBesok && !S.rodKvarnKopt,   /* CM: Alis röda kvarn längst in i lagret, köps när pappa och Rolf berättat om den */ beskr: 'Röd kvarn för TUNGT skräp: regntunnor, kajaker och Rolfs röda backar blir röd PETG – filament nivå 2. Den vanliga kvarnen klarar inte tunga saker. Ställs på gården.', trivsel: 4, radie: 0.7, flik: 'petg' },
   skrivarepetg: { namn: 'PETG-skrivare', ikon: '', syns: () => S.kapitel >= 2, beskr: 'Röd skrivare som BARA tar röd PETG. Den printar de dyra PETG-sakerna: vas, cykelhjälm, neonskylt, paddel. Står på golvet.', trivsel: 12, flik: 'petg' },
-  petgband: { namn: 'Tungt rullband', ikon: '', syns: () => harPlacerat('petgkvarn') && (S.stat.tungMalt || 0) >= 3, monteras: true, beskr: 'PETG-kvarnens eget rullband: hämtar tunnor och kajaker från tippen själv och matar kvarnen. Montera: välj det och klicka på PETG-kvarnen.', flik: 'petg' },
+  petgcontainer: { namn: 'Stor container', ikon: '', syns: () => harPlacerat('petgkvarn') && !S.petg.container, monteras: true, beskr: 'En stor container vid röda kvarnen. Pirran tar tre tunga saker i stället för en, du tippar allt på en gång, och kvarnen tar en sak i taget. Montera: välj den och klicka på röda kvarnen.', flik: 'petg' },   /* linje 2: ersätter det tunga rullbandet */
+  petgtorn: { namn: 'Rulltorn XL', ikon: '', syns: () => harPlacerat('petgkvarn') && !S.petg.torn, monteras: true, beskr: 'Dubbelt så brett rulltorn vid röda kvarnen: 12 rullar röd PETG i stället för 4. Montera: välj det och klicka på röda kvarnen.', flik: 'petg' },
+  petgband: { namn: 'Tungt rullband', ikon: '', syns: () => false,   /* ersatt av containern – gamla sparfiler behåller sitt band */ monteras: true, beskr: 'PETG-kvarnens eget rullband: hämtar tunnor och kajaker från tippen själv och matar kvarnen. Montera: välj det och klicka på PETG-kvarnen.', flik: 'petg' },
   magnet: { namn: 'Magnetpistol', ikon: '🧲', syns: () => S.kapitel >= 2 && S.karra, beskr: `Klicka och håll, sikta – suger till sig skräp. Bär ${BARA_SKRAP[MAGNET_NIVA]}`, verktyg: true },
   ryggkorg: { namn: 'Ryggkorg', ikon: '🧺', syns: () => S.dag >= 3 && !!S.korg, beskr: `En korg på ryggen – bär ${BARA_SKRAP[3]} skräp i stället för ${BARA_SKRAP[2]}`, verktyg: true },   // punkt AX
-  turbomotor: { namn: 'Turbomotor', ikon: '🔥', syns: () => S.kvarn.motor && S.dag >= 5, monteras: true, beskr: 'Kvarnen mal 2,5× snabbare. Drar lite mer ström. Röda ränder ingår' },
+  turbomotor: { namn: 'Turbomotor', ikon: '🔥', syns: () => (S.kapitel || 1) >= 2 && ((S.kvarn.motor && !S.kvarn.turbo && !S.kvarn.jet) || (harPlacerat('petgkvarn') && !S.petg.turbo)), monteras: true, beskr: 'Kvarnen mal 2,5× snabbare. Passar i båda kvarnarna – välj den och klicka på den kvarn du vill ha den i. Drar lite mer ström. Röda ränder ingår' },
   jetmotor: { namn: 'Jetmotor med efterbrännare', ikon: '🚀', syns: () => S.kapitel >= 3 && S.kvarn.turbo, monteras: true, beskr: 'Kvarnen mal 6× snabbare. Med ELD. Drar mycket ström' },
   spolhallare: { namn: 'Stor spolhållare', ikon: '', syns: () => false, /* CA: borttagen – rullarna lagras i rulltornet */ monteras: true, beskr: 'Monteras på en skrivare – rymmer 7 rullar i stället för 3. Välj den och klicka på skrivaren' },
   spolhallare2: { namn: 'Spolhållare XL', ikon: '', syns: () => false, monteras: true, beskr: 'Bygger på den stora spolhållaren: 12 rullar' },
   spolhallare3: { namn: 'Spoltorn', ikon: '', syns: () => false, monteras: true, beskr: 'Ett torn med 20 rullar – behövs för riktigt stora prints som biljardbord och jacuzzi' },
   matarband: { namn: 'Sophållare', ikon: '🗑️', syns: () => !!S.karra, beskr: `Sophållaren står bakom kvarnen. Töm hela kärran i den (${BINGE_MAX} st) – den matar tratten själv i kvarnens takt. Montera: välj den och klicka på kvarnen`, monteras: true },
-  vindsnurra: { namn: 'Vindsnurra till skjultaket', ikon: '', syns: () => S.dag >= 3 && !harPlacerat('sol'), monteras: true, beskr: 'En liten propeller på taket med en rem ner till cykeln. Den trampar åt dig när det blåser – långsamt, men hela tiden.' },   // BL
-  rullstall: { namn: 'Rullställ till rulltornet', ikon: '', syns: () => { const l = S.rullstall || 0; return l === 0 ? ((S.stat.hamtat || 0) >= 3 || S.rolf.i >= 1) : l === 1 ? (S.kapitel || 1) >= 2 && S.dag >= 9 : (S.kapitel || 1) >= 3; }, beskr: 'Rulltornet vid kvarnen växer ett steg – fler färdiga rullar får plats innan kvarnen stannar. Skrivarna tar plasten direkt från tornet genom slangen.', monteras: true },   // CA: ett steg i taget
+  vindsnurra: { namn: 'Vindsnurra till skjultaket', ikon: '', syns: () => S.dag >= 3 && antalSnurror() < VIND_MAX, monteras: true, beskr: 'En propeller på taket med en rem ner till cykeln. Den trampar åt dig när det blåser – ungefär halva din fart, hela tiden. Två snurror driver Skrivare S och nästan M.' },   // BL
+  rullstall: { namn: 'Rullställ till rulltornet', ikon: '', syns: () => { const l = S.rullstall || 0; return l === 0 ? ((S.stat.hamtat || 0) >= 3 || S.rolf.i >= 1) : l === 1 ? S.dag >= 4 : (S.kapitel || 1) >= 3; }, beskr: 'Rulltornet vid kvarnen växer ett steg – fler färdiga rullar får plats innan kvarnen stannar. Skrivarna tar plasten direkt från tornet genom slangen.', monteras: true },   // CA: ett steg i taget
   hardkniv: { namn: 'Härdade kvarnknivar', ikon: '', syns: () => S.kapitel >= 4, monteras: true, beskr: 'Knivar av härdat stål. Utan dem klarar kvarnen inte Rolfs svartgrå kolfiberrester – med dem blir de filament nivå 3.' },
   diamantkniv: { namn: 'Diamantkvarn', ikon: '', syns: () => S.kapitel >= 4 && (S.kvarn.kniv || 0) >= 1, monteras: true, beskr: 'Diamantbelagda knivar. Klarar guldkomposit och titanspån – filament nivå 4 och 5.' },
   stortratt: { namn: 'Stor kvarntratt', ikon: '🪣', syns: () => false, beskr: 'Bred tratt med kross – nu får regntunnor och kajaker plats i kvarnen', monteras: true },
@@ -312,7 +314,7 @@ const MASKINER = {
   gamingbod: { namn: 'Gamingbod (tillbyggnad)', ikon: '', flik: 'hem', monteras: true, syns: () => S.kapitel >= 3, trivsel: 25, beskr: 'En egen bod bredvid skjulet – med RGB i taket. Plats för hela gamingsetupen' },
   grip: { namn: 'Skräpgrip', ikon: '🦾', syns: () => !!S.kvarnStar || S.dag > 1, beskr: `Bär ${BARA_SKRAP[1]} skräp, lättare att sikta, plockar upp när du går nära`, verktyg: true },
   bord: { namn: 'Arbetsbord', ikon: '🪵', syns: () => S.rolf.i >= 2 && S.dag >= 4, beskr: 'Bordsyta för en skrivare till', trivsel: 8, radie: 1.0 },
-  sol: { namn: 'Solpanel', ikon: '☀️', syns: () => S.rolf.i >= 2 && S.dag >= 4, beskr: `Ger ${SOL_PER_S} ström/s av sig själv – en panel driver Skrivare S utan att du trampar`, trivsel: 6, radie: 0.8 },
+  sol: { namn: 'Solpanel', ikon: '☀️', syns: () => (S.kapitel || 1) >= 2 || !!S.kapitelKlart,   /* linje 2 */ beskr: `Ger ${SOL_PER_S} ström/s av sig själv – en panel driver Skrivare S utan att du trampar`, trivsel: 6, radie: 0.8 },
   rullband: { namn: 'Rullband från tippen', ikon: '', syns: () => S.kapitel >= 3 && S.kvarn.band, monteras: true, beskr: 'Går från tippen till sophållaren bakom kvarnen. Lägg skräp på bandets inmatning vid tippen – du slipper gå hela vägen. Drar lite ström.' },
   lastarm: { namn: 'Lastarm vid tippen', ikon: '', syns: () => !!S.auto?.band, monteras: true, beskr: 'Plockar skräp från tippen och lägger det på bandet åt dig. Orkar bara lätta saker i början – trimma den hos Ali för att lyfta tyngre.' },
   robotarm: { namn: 'Slangfördelare till rulltornet', ikon: '', syns: () => !!S.auto?.lastarm, monteras: true, beskr: 'Delar slangen från rulltornet så att alla skrivare i linjen får plast samtidigt, i stället för en i taget.' },   // CA
@@ -321,7 +323,7 @@ const MASKINER = {
   skrivare3: { namn: 'Skrivare L', ikon: '', syns: () => S.kapitel >= 2 && harPlacerat('skrivare2'), beskr: 'Stor byggvolym: soffa, kajak, arkadmaskin, jacuzzi. 4× snabbare än S, två jobb i kö. Står på golvet.', trivsel: 25 },
   // punkt AN: Helens skjul – ritningen kommer från Rolf, säljs aldrig hos Ali. Monteras på den streckade rutan i tippkanten.
   helenskjul: { namn: 'Helens skjul', ikon: '🏚️', flik: 'hem', monteras: true, syns: () => false, ritning: 0, delar: 3, gram: 1000, tid: 20, beskr: 'Rolfs ritning: som ditt första skjul, fast sämre. Ställs på den streckade rutan i tippkanten' },
-  skrivare2: { namn: 'Skrivare M', ikon: '🖨️', syns: () => harPlacerat('bord') && harPlacerat('sol'), beskr: 'Skalhoppet: dubbelt så stor byggvolym, 2,5× snabbare och en kö – lägg upp till tre saker i kö medan den printar. Printar drönare, gitarr och gamingstol. Måste stå på ett arbetsbord.', trivsel: 15, kraverBord: true },
+  skrivare2: { namn: 'Skrivare M', ikon: '🖨️', syns: () => harPlacerat('bord') && (antalSnurror() >= 1 || harPlacerat('sol')), beskr: 'Skalhoppet: dubbelt så stor byggvolym, 2,5× snabbare och en kö – lägg upp till tre saker i kö medan den printar. Printar drönare, gitarr och gamingstol. Måste stå på ett arbetsbord.', trivsel: 15, kraverBord: true },
 };
 // vad varje del heter – det är de här som printas en i taget
 const DEL_NAMN = {
@@ -375,7 +377,7 @@ for (const v of Object.values(VAROR)) if (v.lyx && v.recept >= 150) v.recept = M
 // ---------- Ali får in nytt i lagom takt: högst två nyheter per dag ----------
 // Saker som behövs för dagens uppdrag släpps alltid direkt (annars kan man fastna).
 // Övrigt (uppgraderingar, recept, lyx) släpps billigast först, två om dagen – en naturlig progression.
-const SLAPP_FRI = new Set(['vindsnurra', 'korg', 'ryggkorg', 'matarband', 'saljlada', 'petgkvarn', 'skrivarepetg', 'petgband', 'solpark', 'n2_vas', 'n2_hjalm', 'n2_neon', 'n2_paddel', 'fagelholk', 'lampskarm', 'dronare', 'skateboard', 'gitarr', 'cykelram', 'pkajak', 'grip', 'kvarnmotor', 'sang', 'dorr', 'vaggar', 'tak', 'fonster', 'golv', 'taklampa', 'tapeter', 'stortratt', 'bord', 'sol', 'skrivare2', 'gamingbod', 'karra', 'hardkniv', 'diamantkniv', 'mobilstall', 'skrivare3', 'jacuzzi', 'gamingstol', 'hogtalare', 'ledpinne']);
+const SLAPP_FRI = new Set(['petgcontainer', 'petgtorn', 'vindsnurra', 'korg', 'ryggkorg', 'matarband', 'saljlada', 'petgkvarn', 'skrivarepetg', 'petgband', 'solpark', 'n2_vas', 'n2_hjalm', 'n2_neon', 'n2_paddel', 'fagelholk', 'lampskarm', 'dronare', 'skateboard', 'gitarr', 'cykelram', 'pkajak', 'grip', 'kvarnmotor', 'sang', 'dorr', 'vaggar', 'tak', 'fonster', 'golv', 'taklampa', 'tapeter', 'stortratt', 'bord', 'sol', 'skrivare2', 'gamingbod', 'karra', 'hardkniv', 'diamantkniv', 'mobilstall', 'skrivare3', 'jacuzzi', 'gamingstol', 'hogtalare', 'ledpinne']);
 const SLAPP_ORIG = {};
 const stegKraver = (id) => { try { const st = STEG[S.steg]; if (st?.id === 'kop' && id === 'cykelbatteri') return true; /* B24 */ const b = typeof st?.bild === 'function' ? st.bild() : st?.bild; return b === 'byggsats:' + id || b === id; } catch { return false; } };
 const slappPris = (id) => MASKINER[id]?.ritning ?? VAROR[id]?.recept ?? 0;
@@ -627,7 +629,7 @@ const STEG = [
   sovSteg(3, N2),
   ...rolfSteg(2, N3),
   { del: N3, bild: 'byggsats:bord', text: 'Bygg ett arbetsbord', klar: () => harPlacerat('bord') },
-  { del: N3, bild: 'byggsats:sol', text: 'Bygg en solpanel', klar: () => harPlacerat('sol'), lapp: 'sol' },
+  { id: 'vind4', del: N3, bild: 'byggsats:vindsnurra', text: 'Bygg en vindsnurra till', klar: () => antalSnurror() >= 2 || harPlacerat('sol') || S.dag > 4, lapp: 'sol' },   /* linje 1: två snurror driver S och nästan M */
   { del: N3, bild: 'byggsats:skrivare2', text: 'Bygg Skrivare M på bordet', klar: () => harPlacerat('skrivare2'), lapp: 'skrivare2' },   // CF: en dag tidigare
   { del: N3, bild: 'byggsats:vaggar', text: () => `Isolera två väggar · ${Math.min(2, S.hem?.vagg || 0)}/2`, klar: () => (S.hem?.vagg || 0) >= 2 || S.hem?.vaggar || S.dag > 4 },
   sovSteg(4, N3),
@@ -640,9 +642,9 @@ const STEG = [
   // ---------- Kapitel 2 – Röda fabriken (dag 6–10) ----------
   { id: 'pappa6', del: R6, text: () => pappaBesok.fas === 'vantar' || pappaBesok.fas === 'kommer' ? 'Hälsa på pappa vid grinden' : pappaBesok.aktiv ? 'Prata med pappa' : 'Pappa kommer förbi idag', klar: () => !!S.pappaBesok || S.dag > 6 },   // CM
   { del: R6, bild: 'sackkarra', text: 'Lyft en tunna med säckkärran', klar: () => (S.stat.tunga || 0) >= 1 },
+  { id: 'sol6', del: R6, bild: 'byggsats:sol', text: 'Bygg en solpanel', klar: () => harPlacerat('sol'), tanke: 'Den röda kvarnen drar mer än vinden orkar. Solen får hjälpa till.' },   /* linje 2: solpanelen flyttad hit */
   { del: R6, bild: 'byggsats:petgkvarn', text: () => S.rodKvarnKopt ? 'Ställ den röda kvarnen i röda linjen' : 'Köp den röda kvarnen hos Ali', klar: () => harPlacerat('petgkvarn') },
   { del: R6, text: 'Mal tunnan i PETG-kvarnen', klar: () => (S.stat.tungMalt || 0) >= 1 },
-  { id: 'petg6', del: R6, bild: () => harPlacerat('skrivarepetg') ? 'n2_vas' : 'byggsats:skrivarepetg', text: 'Printa och sälj en sak i röd PETG', klar: () => Object.keys(S.saltTot || {}).some((t) => VAROR[t]?.niva === 2), tanke: 'Rött. Det säljer sig nästan självt.' },   // dag 6: se vad PETG är värt
   sovSteg(6, R6),
   { del: R7, bild: 'byggsats:skrivarepetg', text: 'Bygg PETG-skrivaren', klar: () => harPlacerat('skrivarepetg') },
   { del: R7, bild: 'n2_vas', text: 'Printa en designvas i röd PETG', klar: () => printat('n2_vas') >= 1 || (S.saltTot?.n2_vas || 0) >= 1 },
@@ -658,7 +660,7 @@ const STEG = [
   { del: R9, bild: 'n2_hjalm', text: 'Köp receptet på cykelhjälmen hos Ali', klar: () => harRecept('n2_hjalm') },
   { del: R9, bild: 'byggsats:solpark', text: 'Bygg en solcellspark', klar: () => harPlacerat('solpark') },
   { id: 'paket9', del: R9, bild: 'paket', text: () => `Skicka två paket från datorn · ${Math.min(2, S.webbDag9 || 0)}/2`, klar: () => (S.webbDag9 || 0) >= 2 || !harPlacerat('webbdator') },   // dag 9: webbshoppen på riktigt
-  { del: R9, bild: 'byggsats:rullstall', text: 'Bygg rulltornets andra våning', klar: () => (S.rullstall || 0) >= 2 || (S.dag > 9) || skrivare.some((x) => (x.spolNiva || 0) >= 2) },
+  { id: 'petgtorn9', del: R9, bild: 'byggsats:petgtorn', text: 'Bygg Rulltorn XL vid röda kvarnen', klar: () => !!S.petg.torn || S.dag > 9 },   /* linje 2: rullarna – andra våningen kom redan i kapitel 1 */
   sovSteg(9, R9),
   { del: R10, bild: 'byggsats:skrivare3', text: 'Bygg Skrivare L', klar: () => harPlacerat('skrivare3') },
   { id: 'tapeter', del: R10, bild: 'byggsats:tapeter', text: () => `Tapetsera skjulet · ${tapetKlara().length}/4`, klar: () => !!S.hem?.tapeter },
@@ -1139,7 +1141,7 @@ const VAGGAR = {
   { const gl = g('golv'); for (let z = -D / 2 + 0.12; z < D / 2 - 0.05; z += 0.2) gl.add(at(box(B - 0.18, 0.03, 0.19, mat([0xc8955a, 0xb9844b, 0xd4a26a][Math.round(z * 10) % 3 >= 0 ? Math.abs(Math.round(z * 10)) % 3 : 0])), 0, 0.055, z)); }
   // taklampa
   { const l = g('taklampa'); l.add(at(cyl(0.006, 0.006, 0.45, mat(0x222222), 4), 0, H - 0.25, 0.2));
-    const skarm = skapaVara('lampskarm'); skarm.rotation.x = Math.PI; skarm.position.set(0, H - 0.36, 0.2); skarm.visible = true; l.add(skarm);   /* CL: taklampan har skärm direkt */ l.userData.skarm = skarm;
+    const skarm = skapaVaraGrund('lampskarm'); skarm.rotation.x = Math.PI; skarm.position.set(0, H - 0.36, 0.2); skarm.visible = true; l.add(skarm);   /* CL: taklampan har skärm direkt */ l.userData.skarm = skarm;
     const sk = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.16, 16, 1, true), mat(0x2f6b4f, { side: THREE.DoubleSide })); sk.position.set(0, H - 0.52, 0.2); sk.visible = false; l.add(sk); l.userData.kon = sk;
     l.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), mat(0xfff3c4, { emissive: 0xffd27a, emissiveIntensity: 2 })), 0, H - 0.58, 0.2)); }
   for (const [id, grupp] of Object.entries(HEM_DELAR)) {
@@ -1151,7 +1153,9 @@ const VAGGAR = {
   }
 }
 // BL: vindsnurran på skjultaket – mast + tre blad som snurrar
-const VIND_ANDEL = 0.25;
+const VIND_ANDEL = 0.5, VIND_MAX = 2;   /* varje snurra trampar ca halva farten – två driver S och nästan M */
+const antalSnurror = () => typeof S.vindsnurra === 'number' ? S.vindsnurra : S.vindsnurra ? 1 : 0;
+const vindEffekt = () => antalSnurror() * TRAMP_PER_S * VIND_ANDEL;
 const vindsnurra = new THREE.Group();
 { const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.7, 8), new THREE.MeshStandardMaterial({ color: 0x8a8f96, metalness: 0.5 })); mast.position.y = 0.35; vindsnurra.add(mast);
   const blad = new THREE.Group(); blad.position.set(0, 0.72, 0.06); vindsnurra.add(blad); vindsnurra.userData.blad = blad;
@@ -1159,6 +1163,7 @@ const vindsnurra = new THREE.Group();
   for (let i = 0; i < 3; i++) { const b = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.38, 0.015), bm); b.position.y = 0.19; const piv = new THREE.Group(); piv.rotation.z = i * Math.PI * 2 / 3; piv.add(b); blad.add(piv); }
   blad.add(new THREE.Mesh(new THREE.SphereGeometry(0.04, 10, 8), new THREE.MeshStandardMaterial({ color: 0xffd43b })));
   vindsnurra.position.set(SKJUL.b / 2 - 0.35, SKJUL.h + 0.15, -SKJUL.d / 2 + 0.4); vindsnurra.visible = !!S.vindsnurra; talt.add(vindsnurra); }
+const vindsnurra2 = vindsnurra.clone(true); vindsnurra2.userData.blad = vindsnurra2.children[1]; vindsnurra2.position.x = -SKJUL.b / 2 + 0.35; vindsnurra2.visible = antalSnurror() >= 2; talt.add(vindsnurra2);
 const skjulSkylt = skylt('MITT SKJUL', 0.9, 0.22, '#5e5246', '#ffe9b0'); skjulSkylt.position.set(0, 2.2, SKJUL.d / 2 + 0.06); skjulSkylt.rotation.z = -0.06; talt.add(skjulSkylt);
 // adressen: Soptippsvägen 1 – du spikar själv ihop skylten av lösa bräder från tippen.
 // Inte mycket för världen, men det är MITT. (S.skyltUppe)
@@ -1787,7 +1792,19 @@ function skapaSkrap(variant) {
   return g;
 }
 const printFarg = { nyckelring: 0xff6b6b, kruka: 0xe07a3f, pall: 0x4ea3ff, del: 0xb0b8c4 };
-function skapaVara(typ) {
+// CZ nivå 1: säljvaror och recept blir matt blå inom det blå spannet, med egen nyans per sak. Hemmet och möblerna behåller sina färger.
+function blaSaljvara(typ) { const v = VAROR[typ]; return !!v && !v.niva && !v.lyx && !v.burk && (v.pris || 0) > 0 && (v.gram || 0) > 0; }
+function tintaBla(g, fro) {
+  const bas = nivaFarg(1, fro), hsl = {}; bas.getHSL(hsl); const o = {};
+  g.traverse((m) => {
+    if (!m.isMesh || !m.material?.color || (m.material.emissive?.getHex() && m.material.emissiveIntensity > 0.5)) return;
+    m.material.color.getHSL(o); if ((o.s < 0.18 && o.l < 0.22) || (o.h > 0.22 && o.h < 0.45 && o.s > 0.3 && m.geometry?.type === 'SphereGeometry')) return;   /* svarta detaljer (gummi, skruvar) och växter får vara kvar */
+    m.material = m.material.clone(); m.material.color.setHSL(hsl.h, hsl.s, Math.min(0.58, Math.max(0.2, hsl.l - 0.06 + (o.l - 0.5) * 0.22))); m.material.roughness = NIVA_SPANN[1].rough; m.material.metalness = 0;
+  });
+  return g;
+}
+function skapaVara(typ) { const g = skapaVaraGrund(typ); return blaSaljvara(typ) ? tintaBla(g, varaFro ?? typ) : g; }
+function skapaVaraGrund(typ) {
   if (typ === 'skrivareS') { const sk = skapaSkrivare(1); sk.scale.setScalar(0.7); return sk; }   // punkt AS
   const g = new THREE.Group();
   if (typ === 'nyckelkopia') {
@@ -2286,7 +2303,7 @@ function skapaRiktig(m) {
     const s3 = skylt('ALI', 0.26, 0.1, '#2f8a52', '#fff'); s3.position.set(0, 0.17, 0.195); g.add(s3);
   } else if (m === 'tapeter') {   // tapetrulle
     g = new THREE.Group(); const t = cyl(0.07, 0.07, 0.5, mat(0xd9b48a)); t.rotation.z = Math.PI / 2; t.position.y = 0.08; g.add(t);
-  } else if (m === 'karra' || m === 'sackkarra' || m === 'bord' || m === 'sol' || m === 'solpark' || m === 'bank' || m === 'petgkvarn' || m === 'petgband' || m === 'saljlada' || SKRIVARTYP[m]) g = skapaMaskin(m);
+  } else if (m === 'karra' || m === 'sackkarra' || m === 'bord' || m === 'sol' || m === 'solpark' || m === 'bank' || m === 'petgkvarn' || m === 'petgband' || m === 'petgcontainer' || m === 'petgtorn' || m === 'saljlada' || SKRIVARTYP[m]) g = skapaMaskin(m);
   return g;
 }
 function skapaSkrivare(gen) {
@@ -2337,6 +2354,16 @@ function skapaMaskin(m) {
     g.add(at(box(0.04, 0.04, 0.72, stal), 0.5, 0.42, 0));
     g.userData.spolar = [];
     for (let i = 0; i < 4; i++) { const sp = filamentSpole(0xd63a2f, 0.1, 0.08); sp.position.set(0.5, 0.42, -0.25 + i * 0.165); sp.rotation.y = 0; g.add(sp); g.userData.spolar.push(sp); }
+  } else if (m === 'petgcontainer') {   /* linje 2: stor öppen container */
+    const rod = mat(0xa93226, { roughness: 0.7 }), kant = mat(0x6e1d17);
+    g.add(at(box(1.3, 0.06, 0.8, kant), 0, 0.03, 0)); for (const [x, z, w, d] of [[0, 0.38, 1.3, 0.05], [0, -0.38, 1.3, 0.05], [0.63, 0, 0.05, 0.8], [-0.63, 0, 0.05, 0.8]]) g.add(at(box(w, 0.7, d, rod), x, 0.38, z));
+    for (const x of [-0.45, 0, 0.45]) g.add(at(box(0.04, 0.72, 0.84, kant), x, 0.38, 0));
+    g.userData.last = []; for (let i = 0; i < 4; i++) { const t = cyl(0.17, 0.17, 0.45, mat(0xc0392b), 12); t.rotation.z = Math.PI / 2; t.position.set(-0.4 + (i % 2) * 0.5, 0.25 + Math.floor(i / 2) * 0.3, (i % 2 ? 0.12 : -0.12)); t.visible = false; g.add(t); g.userData.last.push(t); }
+  } else if (m === 'petgtorn') {   /* linje 2: Rulltorn XL, dubbelt så brett */
+    const ram = mat(0x7a1c16), stal = mat(0x8a949e, { metalness: 0.5, roughness: 0.5 });
+    for (const x of [-0.5, 0.5]) for (const z of [-0.2, 0.2]) g.add(at(box(0.05, 1.5, 0.05, ram), x, 0.75, z));
+    g.userData.spolar = [];
+    for (let r = 0; r < 4; r++) { g.add(at(box(1.05, 0.03, 0.44, stal), 0, 0.3 + r * 0.36, 0)); for (let i = 0; i < 2; i++) { const sp = filamentSpole(0xd63a2f, 0.13, 0.1); sp.rotation.y = Math.PI / 2; sp.position.set(-0.25 + i * 0.5, 0.45 + r * 0.36, 0); sp.visible = false; g.add(sp); g.userData.spolar.push(sp); } }
   } else if (m === 'petgband') {
     const rod = mat(0xd63a2f), gummi = mat(0x1e1e1e);
     g.add(at(box(1.3, 0.06, 0.42, gummi), 0, 0.5, 0));
@@ -2499,7 +2526,7 @@ function plockaSkrap(s, tyst = false) {
     if (valdTyp() === 'karra') { if (!varnadTid.rodPirra) { varnadTid.rodPirra = 1; tanke('Den röda tar jag med pirran.', 'CY', 'REAKTION'); } else ljud.fel(); return; }
     if (!valjTyp('sackkarra')) { ui.toast('Säckkärran ligger i förrådet – lägg den i verktygsraden', 'fel'); ljud.fel(); return; }
   }
-  if (valdSack() && (!s.userData.tung || S.karraLast.length)) { if (!tyst) { ljud.fel(); if (!s.userData.tung && !varnadTid.sackLatt) { varnadTid.sackLatt = 1; tanke('Pirran är för de röda sakerna. Skräpet tar jag med händerna.', 'CM', 'REAKTION'); } else karraPuls = 0.5; } return; }
+  if (valdSack() && (!s.userData.tung || S.karraLast.length >= pirraKap())) { if (!tyst) { ljud.fel(); if (!s.userData.tung && !varnadTid.sackLatt) { varnadTid.sackLatt = 1; tanke('Pirran är för de röda sakerna. Skräpet tar jag med händerna.', 'CM', 'REAKTION'); } else karraPuls = 0.5; } return; }
   if (valdKarra()) {
     if (karraFull(s.userData.gram)) { if (!tyst) karraOverfull(); return; }   // CJ: syns på kärran, ljudet fel
     helenArkiv(s);
@@ -2688,7 +2715,7 @@ function uppdateraKarraMal(dt) {
   if (karraPuls > 0) { karraPuls = Math.max(0, karraPuls - dt); const g = karraFP.userData.last; if (g) { const k = 1 + Math.sin(karraPuls * 30) * 0.12 * (karraPuls / 0.5); g.scale.setScalar(k); } }
 }
 // CY: varje filamentlinje har en färg – blå PLA (kapitel 1), röd PETG (kapitel 2)
-const ROD_MASKIN = new Set(['petgkvarn', 'skrivarepetg', 'petgband', 'sackkarra']);
+const ROD_MASKIN = new Set(['petgkvarn', 'skrivarepetg', 'petgband', 'petgcontainer', 'petgtorn', 'sackkarra']);
 function linjeFor(key) {
   const id = String(key || '').replace(/^[a-z]+:/, '');
   if (ROD_MASKIN.has(id) || VAROR[id]?.niva === 2) return 'rod';
@@ -3084,7 +3111,7 @@ function taUt(typ, n = 1) {
     } else if (typ === 'byggsats:stortratt') {
       monteraTratt();
     } else if (typ === 'byggsats:vindsnurra') {   // BL: sitter direkt på taket
-      S.vindsnurra = true; vindsnurra.visible = true; ljud.stor(); sparaSnart(); handelse('placerat', { sak: 'vindsnurra' });
+      S.vindsnurra = Math.min(VIND_MAX, antalSnurror() + 1); vindsnurra.visible = true; vindsnurra2.visible = antalSnurror() >= 2; ljud.stor(); sparaSnart(); handelse('placerat', { sak: 'vindsnurra' });
       ui.toast('🌬️ Vindsnurran sitter på taket – den trampar cykeln åt dig när det blåser', 'guld');
     } else if (typ === 'byggsats:rullstall') {
       S.rullstall = Math.min(4, (S.rullstall || 0) + 1); ritaRullstall(); ljud.stor(); sparaSnart();
@@ -3205,7 +3232,7 @@ function uppdateraSkrivare(sk, dt) {
   if (S.strom < behov || (sk.vantar === 'ingen ström!' && S.strom < Math.min(stromMax() * 0.5, g.strom * 3))) {
     if (sk.vantar !== 'ingen ström!' && performance.now() > (sk.stromNotis || 0)) {
       sk.stromNotis = performance.now() + 60000;
-      const forMycket = stromBehov() > TRAMP_PER_S + solEffekt();
+      const forMycket = stromBehov() > TRAMP_PER_S + solEffekt() + vindEffekt();
       skrivarNotis(sk, forMycket ? `Ingen ström – skrivarna drar ${Math.round(stromBehov())}/s, cykeln ger ${TRAMP_PER_S}. ${stromFix()}` : 'Ingen ström – trampa cykeln', 'fel');
     }
     sk.vantar = 'ingen ström!';
@@ -3886,7 +3913,9 @@ const bandTyp = () => valdTyp() === 'byggsats:matarband';
 // ---------- PETG-linjen: tungt skräp → röd PETG (nivå 2) i en egen röd kvarn – ett eget flöde bredvid det vanliga ----------
 const PETG_FART = 220;      // gram per sekund kvarnen mal
 const PETG_STROM = 3;       // ström per sekund medan den mal
-const PETG_MAX = 4;         // klara rullar som får plats på spolhållaren
+const PETG_BAS = 4, PETG_XL = 12;   /* klara rullar på spolhållaren – 12 med Rulltorn XL */
+const petgMax = () => S.petg.torn ? PETG_XL : PETG_BAS;
+const pirraKap = () => S.petg.container ? 3 : 1;   /* containern: pirran tar tre tunga, du tippar allt på en gång */
 const PETGBAND_TID = 16;    // sekunder mellan varje tungt fynd bandet hämtar från tippen
 S.petg = Object.assign({ ko: 0, ut: 0, rullar: 0, band: false }, S.petg || {});
 let petgBandT = 0;
@@ -3899,11 +3928,20 @@ function petgText() {
   if (tunga.length) return `Töm ${tunga.length} tunga i PETG-kvarnen (≈ ${rullar(tunga.reduce((a, v) => a + SKRAP_SORTER[skrapSort(v)].gram, 0))} röd PETG)`;
   if (valdTyp() === 'fynd2') return 'Mal den röda backen till röd PETG';
   if (valdTyp() === 'byggsats:petgband') return 'Montera det tunga rullbandet på PETG-kvarnen';
+  if (valdTyp() === 'byggsats:petgcontainer') return S.petg.container ? 'Containern står redan här' : 'Ställ containern vid röda kvarnen';
+  if (valdTyp() === 'byggsats:petgtorn') return S.petg.torn ? 'Rulltorn XL står redan här' : 'Bygg Rulltorn XL vid röda kvarnen';
+  if (valdTyp() === 'byggsats:turbomotor') return S.petg.turbo ? 'Den röda kvarnen har redan turbo' : '🔥 Skruva fast turbon på röda kvarnen';
   if (S.petg.rullar) return `Ta ${S.petg.rullar === 1 ? 'en rulle' : S.petg.rullar + ' rullar'} röd PETG`;
   const mal = S.petg.ko > 1 ? `mal ${rullar(S.petg.ko)}${S.strom < PETG_STROM ? ' – ingen ström!' : ''}` : 'tom – kör hit tunnor och kajaker med säckkärran';
-  return `PETG-kvarnen · ${mal}${S.petg.band ? ' · rullbandet hämtar själv' : ''}`;
+  return `PETG-kvarnen · ${mal}${S.petg.turbo ? ' · turbo' : ''}${S.petg.band ? ' · rullbandet hämtar själv' : ''}`;
 }
 function petgAktivera(p) {
+  if (valdTyp() === 'byggsats:petgcontainer' || valdTyp() === 'byggsats:petgtorn' || valdTyp() === 'byggsats:turbomotor') {
+    const t = valdTyp().slice(9), nyckel = t === 'petgcontainer' ? 'container' : t === 'petgtorn' ? 'torn' : 'turbo';
+    if (S.petg[nyckel]) { ljud.fel(); return; }
+    taBortVald(); S.petg[nyckel] = true; ritaPetgExtra(p); ljud.stor(); sparaSnart(); handelse('placerat', { sak: t });
+    ui.toast(nyckel === 'container' ? 'Containern står vid röda kvarnen – pirran tar tre tunga nu' : nyckel === 'torn' ? 'Rulltorn XL – 12 rullar röd PETG får plats' : '🔥 TURBO i röda kvarnen! Den mal 2,5× snabbare.', 'guld'); return;
+  }
   if (valdTyp() === 'byggsats:petgband') {
     if (S.petg.band) { ui.toast('Rullbandet sitter redan', 'fel'); return; }
     taBortVald(); S.petg.band = true; ritaPetgBand(p); ljud.stor(); ui.toast('Det tunga rullbandet går! Det hämtar tunnor och kajaker från tippen och matar PETG-kvarnen.', 'guld'); sparaSnart(); return;
@@ -3932,25 +3970,34 @@ function ritaPetgBand(p) {
   if (!p || p.mesh.userData.band) return;
   const b = skapaMaskin('petgband'); b.position.set(-1.05, 0, 0); b.rotation.y = 0; p.mesh.add(b); p.mesh.userData.band = b;
 }
+function ritaPetgExtra(p) {
+  const ud = p.mesh.userData;
+  if (S.petg.container && !ud.container) { const c = skapaMaskin('petgcontainer'); c.position.set(0, 0, 1.15); p.mesh.add(c); ud.container = c; }
+  if (S.petg.torn && !ud.torn) { const t = skapaMaskin('petgtorn'); t.position.set(1.15, 0, 0); p.mesh.add(t); ud.torn = t; }
+  if (S.petg.turbo && !ud.turbo) { const t = new THREE.Group(); t.add(at(cyl(0.16, 0.16, 0.34, mat(0x222222, { metalness: 0.5 }), 14), 0, 0, 0)); for (const y of [-0.08, 0.08]) t.add(at(cyl(0.165, 0.165, 0.04, mat(0xd63a2f), 14), 0, y, 0)); t.rotation.z = Math.PI / 2; t.position.set(-0.55, 0.75, 0); p.mesh.add(t); ud.turbo = t; }
+}
 function laggTillPetg(p) {
   interaktor.registrera(p.mesh, { text: petgText, aktivera: () => petgAktivera(p) });
   if (S.petg.band) ritaPetgBand(p);
+  ritaPetgExtra(p);
 }
 function uppdateraPetg(dt) {
   const p = petgKvarn(); if (!p) return;
   const ud = p.mesh.userData;
-  const kor = S.petg.ko > 0 && S.petg.rullar < PETG_MAX && S.strom >= PETG_STROM * dt;
+  const kor = S.petg.ko > 0 && S.petg.rullar < petgMax() && S.strom >= PETG_STROM * dt;
   if (kor) {
-    const g = Math.min(S.petg.ko, PETG_FART * dt); S.petg.ko -= g; S.petg.ut += g; S.strom -= PETG_STROM * dt;
+    const g = Math.min(S.petg.ko, PETG_FART * (S.petg.turbo ? 2.5 : 1) * dt); S.petg.ko -= g; S.petg.ut += g; S.strom -= PETG_STROM * dt;
     if (S.petg.ko < 1) { S.petg.ut += S.petg.ko; S.petg.ko = 0; }
-    while (S.petg.ut >= RULLE - 1 && S.petg.rullar < PETG_MAX) {
+    while (S.petg.ut >= RULLE - 1 && S.petg.rullar < petgMax()) {
       S.petg.ut = Math.max(0, S.petg.ut - RULLE); S.petg.rullar++; ljud.klar();
-      notis(`PETG-kvarnen: ${S.petg.rullar === 1 ? 'en rulle' : S.petg.rullar + ' rullar'} röd PETG klar${S.petg.rullar >= PETG_MAX ? ' – spolhållaren är full, hämta dem' : ''}`, 'guld', { tid: 4000 });
+      notis(`PETG-kvarnen: ${S.petg.rullar === 1 ? 'en rulle' : S.petg.rullar + ' rullar'} röd PETG klar${S.petg.rullar >= petgMax() ? ' – spolhållaren är full, hämta dem' : ''}`, 'guld', { tid: 4000 });
       sparaSnart();
     }
   }
   if (ud.trumma) ud.trumma.rotation.x += kor ? dt * 10 : 0;
-  ud.spolar?.forEach((sp, i) => { sp.visible = i < S.petg.rullar; });
+  ud.spolar?.forEach((sp, i) => { sp.visible = i < Math.min(PETG_BAS, S.petg.rullar); });
+  ud.torn?.userData.spolar?.forEach((sp, i) => { sp.visible = i < S.petg.rullar - PETG_BAS; });
+  if (ud.container) ud.container.userData.last?.forEach((m, i) => { m.visible = i < Math.ceil(S.petg.ko / 1500); });
   // eget rullband: hämtar tungt från tippen och matar kvarnen
   if (S.petg.band && S.strom > 1) {
     petgBandT += dt;
@@ -4038,7 +4085,7 @@ interaktor.registrera(kvarn, {
       taBortVald(); monteraMotor(); return;
     }
     if (trattTyp()) { taBortVald(); monteraTratt(); return; }
-    if (valdTyp() === 'byggsats:turbomotor' && S.kvarn.motor) { taBortVald(); S.kvarn.turbo = true; turboDel.visible = true; ljud.stor(); ui.toast('🔥 TURBO! Kvarnen mal 2,5× snabbare.', 'guld'); sparaSnart(); return; }
+    if (valdTyp() === 'byggsats:turbomotor' && S.kvarn.motor && !S.kvarn.turbo) { taBortVald(); S.kvarn.turbo = true; turboDel.visible = true; ljud.stor(); ui.toast('🔥 TURBO! Kvarnen mal 2,5× snabbare.', 'guld'); sparaSnart(); return; }
     if (valdTyp() === 'byggsats:jetmotor' && S.kvarn.turbo) { taBortVald(); S.kvarn.jet = true; jetDel.visible = true; ljud.stor(); ui.toast('🚀 JETMOTOR MED EFTERBRÄNNARE! Kvarnen mal 6× snabbare.', 'guld'); sparaSnart(); return; }
     if (valdTyp()?.startsWith('burk_')) { malBurk(); return; }
     if (valdTyp() === 'byggsats:hardkniv' || valdTyp() === 'byggsats:diamantkniv') {
@@ -6536,11 +6583,11 @@ function arKlar(m, extra = 0) {
   return (m === 'grip' && S.grip) || (m === 'magnet' && S.magnet) || (m === 'korg' && S.korg) || (m === 'ryggkorg' && S.ryggkorg) || (m === 'ryggsack2' && S.storRyggsack) || (m === 'karra' && S.karra) || (m === 'kvarnmotor' && S.kvarn.motor)
     || (m === 'rullband' && S.auto?.band) || (m === 'lastarm' && S.auto?.lastarm) || (m === 'robotarm' && S.auto?.arm) || (m === 'utlada' && S.auto?.lada)
     || (m === 'saljlada' && (harPlacerat('saljlada') || antalInv('byggsats:saljlada'))) || (m === 'petgkvarn' && (harPlacerat('petgkvarn') || antalInv('byggsats:petgkvarn'))) || (m === 'skrivarepetg' && (harPlacerat('skrivarepetg') || antalInv('byggsats:skrivarepetg'))) || (m === 'petgband' && (S.petg?.band || antalInv('byggsats:petgband')))
-    || (m === 'rullstall' && (S.rullstall || 0) >= 4) || (m === 'vindsnurra' && !!S.vindsnurra) || (m === 'stortratt' && S.kvarn.stor) || (m === 'hardkniv' && (S.kvarn.kniv || 0) >= 1) || (m === 'diamantkniv' && (S.kvarn.kniv || 0) >= 2) || (m === 'matarband' && S.kvarn.band) || (m === 'turbomotor' && S.kvarn.turbo) || (m === 'jetmotor' && S.kvarn.jet) || (m === 'gamingbod' && S.bod)
+    || (m === 'rullstall' && (S.rullstall || 0) >= 4) || (m === 'vindsnurra' && antalSnurror() >= VIND_MAX) || (m === 'stortratt' && S.kvarn.stor) || (m === 'hardkniv' && (S.kvarn.kniv || 0) >= 1) || (m === 'diamantkniv' && (S.kvarn.kniv || 0) >= 2) || (m === 'matarband' && S.kvarn.band) || (m === 'turbomotor' && S.kvarn.turbo) || (m === 'jetmotor' && S.kvarn.jet) || (m === 'gamingbod' && S.bod)
     || (m === 'spolhallare' && skrivare.every((x) => (x.spolNiva || 0) >= 1)) || (m === 'spolhallare2' && skrivare.every((x) => (x.spolNiva || 0) >= 2)) || (m === 'spolhallare3' && skrivare.every((x) => (x.spolNiva || 0) >= 3))
     || (m === 'helenskjul' && !!S.helen?.skjul) || (m === 'gammalkvarn' && !!S.kvarnKopt) || (m === 'cykelbatteri' && !!S.batteriKopt)
     || (MASKINER[m]?.hem && m !== 'fonster' && m !== 'vaggar' && m !== 'tapeter' && !!S.hem?.[m])
-    || (m === 'turbomotor' && S.kvarn.jet) || (m === 'kvarnmotor' && (S.kvarn.turbo || S.kvarn.jet))   // sämre än det du redan har
+    || (m === 'turbomotor' && (S.kvarn.turbo || S.kvarn.jet) && (S.petg.turbo || !harPlacerat('petgkvarn'))) || (m === 'petgcontainer' && S.petg.container) || (m === 'petgtorn' && S.petg.torn) || (m === 'kvarnmotor' && (S.kvarn.turbo || S.kvarn.jet))   // sämre än det du redan har
     || (m === 'fonster' && fonsterLista().length + antalInv('byggsats:fonster') + extra >= FONSTER.max)
     || (m === 'vaggar' && (S.hem?.vagg || 0) + antalInv('byggsats:vaggar') + extra >= 4)
     || (m === 'tapeter' && tapetKlara().length + antalInv('byggsats:tapeter') + extra >= 4)
@@ -8473,7 +8520,7 @@ function prestHtml() {
 // ---------- Flaskhalsen: vad stoppar oftast? ----------
 // Varje sekund en maskin står still räknas på orsaken. Det som stoppar mest idag visas under uppdragen,
 // med vad du kan bygga för att slippa det – så du vet vad som är värt att fixa härnäst.
-const stromFix = () => stromBehov() > TRAMP_PER_S + solEffekt() && (harPlacerat('skrivare2') || harPlacerat('skrivare3')) ? (harPlacerat('solpark') ? 'Fler solcellsparker' : 'Bygg en solcellspark (Ali)') : harPlacerat('sol') ? 'Fler solpaneler' : 'Bygg en solpanel';
+const stromFix = () => stromBehov() > TRAMP_PER_S + solEffekt() + vindEffekt() && (harPlacerat('skrivare2') || harPlacerat('skrivare3')) ? (harPlacerat('solpark') ? 'Fler solcellsparker' : 'Bygg en solcellspark (Ali)') : harPlacerat('sol') ? 'Fler solpaneler' : 'Bygg en solpanel';
 const FLASK_FIX = {
   'Batteriet är tomt': stromFix,
   'Motorn har ingen ström': stromFix,
@@ -9222,10 +9269,11 @@ function uppdatera(dt) {
       pedaler.rotation.x += dt * 9; hjul.rotation.x += dt * 14; cykel.userData.hjul?.forEach((h) => { h.rotation.x += dt * 14; });
       if (trampTid > 0.25) { trampTid = 0; ljud.borsta(); }
     } else if (S.vindsnurra && cykel.visible && S.strom < stromMax() - 0.01) {   // BL: vindsnurran trampar själv, ca 25 % av farten
-      S.strom = Math.min(stromMax(), S.strom + TRAMP_PER_S * VIND_ANDEL * (S.dag <= 2 ? 2 : 1) * dt);
+      S.strom = Math.min(stromMax(), S.strom + vindEffekt() * (S.dag <= 2 ? 2 : 1) * dt);
       pedaler.rotation.x += dt * 9 * VIND_ANDEL; hjul.rotation.x += dt * 14 * VIND_ANDEL;
     }
     if (S.vindsnurra) vindsnurra.userData.blad.rotation.z += dt * 4;
+    if (antalSnurror() >= 2) vindsnurra2.userData.blad.rotation.z += dt * 4.4;
 
     autoPlock();
     // håll inne gripklon och svep över skräpet
@@ -12166,7 +12214,7 @@ const KEDJA_MAL = {
   morkt: () => S.ritningar.includes('sang') || !!S.sang || antalInv('sang') > 0,
   dag2: () => !!S.korg || !!S.ryggkorg, kruka: () => gardSkrap() <= gardMal(), rolf0: () => (S.stat.tipp || 0) >= 5, tippen: () => !!S.hem?.dorr,
   rolf1: () => !!S.ryggkorg, karra: () => !!S.kvarn.band, sophallare: () => printat('pall') >= 1,
-  pall: () => !!S.vindsnurra || harPlacerat('sol'), vindsnurra: () => !!S.hem?.tak, rolf2: () => harPlacerat('sol'),
+  pall: () => !!S.vindsnurra || harPlacerat('sol'), vindsnurra: () => !!S.hem?.tak, rolf2: () => antalSnurror() >= 2 || harPlacerat('sol'),
   sol: () => harPlacerat('skrivare2'), skrivareM: fyraVaggar, rolf3: fyraVaggar, samtal4: fyraVaggar, vaggar: () => trivsel() >= TRIVSEL_MAL,
   d6: () => harPlacerat('petgkvarn'), d7: () => harPlacerat('skrivarepetg'), vasSald: () => harPlacerat('saljlada') || !!S.auto?.lada,
   d8: () => !!S.magnet, magnet: () => harPlacerat('bank'), d9: () => harPlacerat('solpark'), solpark: () => (S.rullstall || 0) >= 2,

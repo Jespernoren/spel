@@ -182,6 +182,8 @@ export const MASKIN_SIFFROR = {
   petgkvarn: { ritning: 2000, delar: 3, gram: 600, tid: 16 },   // BI: 1 800 → 1 200 kr
   skrivarepetg: { ritning: 2500, delar: 5, gram: 900, tid: 18 },   // BI: 1 800 → 1 500 kr
   petgband: { ritning: 900, delar: 3, gram: 1000, tid: 16 },
+  petgcontainer: { ritning: 900, delar: 3, gram: 1000, tid: 16 },   // linje 2: ersätter det tunga rullbandet
+  petgtorn: { ritning: 1000, delar: 3, gram: 1000, tid: 16 },        // linje 2: Rulltorn XL, 12 rullar
   magnet: { ritning: 4000, delar: 3, gram: 1000, tid: 16 },
   turbomotor: { ritning: 400, delar: 3, gram: 800, tid: 14 },
   jetmotor: { ritning: 13330, delar: 4, gram: 1200, tid: 18 },
