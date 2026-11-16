@@ -14,23 +14,17 @@ const H = (f, a) => p.evaluate(f, a); const ut = [];
 await p.waitForTimeout(2500);
 await H(() => { document.querySelectorAll('.ph-kap').forEach((x) => x.remove()); const h = window.__printahem, S = h.S; S.dag = 4; S.kapitel = 1; S.skyltUppe = true; S.mynt = 40; S.aliVill = { dag: 4, typ: 'pall' }; h.laggTill('kruka', 4); h.laggTill('nyckelring', 3); h.laggTill('pall', 2); h.oppnaMarknad(); });
 await p.waitForTimeout(500);
-const a = await H(() => ({ kort: document.querySelectorAll('.dc-kort').length, ny: document.querySelectorAll('.dc-ny').length, salj: [...document.querySelectorAll('.dc-skort')].map((x) => x.dataset.dcs), vill: document.querySelector('.dc-skort.vill')?.dataset.dcs, info: !!document.querySelector('.dc-info h3'), bubbla: document.querySelector('.dc-bubbla')?.textContent.length }));
-ut.push([`köpdelen har kort (${a.kort}) med Ny-etiketter (${a.ny}) och ett infokort`, a.kort > 2 && a.ny > 0 && a.info]);
-ut.push([`dagens vara först i säljraden med +50 % (${a.salj.join(', ')})`, a.vill === 'pall' && a.salj[0] === 'pall']);
+const a = await H(() => ({ kort: document.querySelectorAll('.dc-k2 [data-kopnu]').length, ny: document.querySelectorAll('.dc-k2-lapp.ny').length, salj: [...document.querySelectorAll('[data-saljen]')].map((x) => x.dataset.saljen), vill: document.querySelector('.dc-s2.ali [data-saljen]')?.dataset.saljen, allt: !!document.querySelector('[data-saljallt]'), bubbla: (document.querySelector('.dc-bubbla')?.textContent || '').length }));
+ut.push([`EM 33: varje köpkort har en egen knapp (${a.kort}) och Ny-lappar (${a.ny})`, a.kort >= 2 && a.ny > 0]);
+ut.push([`dagens vara först med Alis gula list (${a.salj.join(', ')}), och ett Sälj allt-kort`, a.vill === 'pall' && a.salj[0] === 'pall' && a.allt]);
 ut.push(['Ali har en pratbubbla', a.bubbla > 3]);
-// sälja: klick markerar alla av sorten, − ändrar antalet, Sälj säljer
-await H(() => document.querySelector('[data-dcs="kruka"]').click()); await p.waitForTimeout(200);
-await H(() => document.querySelector('[data-dcminus="kruka"]').click()); await p.waitForTimeout(200);
-const b2 = await H(() => ({ antal: document.querySelector('[data-dcs="kruka"] .dc-antal b')?.textContent, sum: document.querySelectorAll('.dc-sum')[1]?.textContent }));
-ut.push([`klick markerar alla krukor, − ger 3 (${b2.antal}, "${b2.sum}")`, b2.antal === '3' && /3 markerade/.test(b2.sum)]);
-const c = await H(() => { const h = window.__printahem, S = h.S, fore = S.mynt; document.querySelector('[data-dcsalj]').click(); return { kvar: h.antalInv('kruka'), mer: S.mynt - fore }; });
-ut.push([`Sälj säljer 3 krukor (1 kvar, +${c.mer} kr)`, c.kvar === 1 && c.mer > 0]);
-// köpa: välj två, för lite pengar → Ali säger vad som saknas, en replik
+const c = await H(() => { const h = window.__printahem, S = h.S, fore = S.mynt, f0 = h.antalInv('kruka'); document.querySelector('[data-saljen="kruka"]').click(); return { kvar: f0 - h.antalInv('kruka'), mer: S.mynt - fore }; });
+ut.push([`Sälj en säljer en kruka (+${c.mer} kr)`, c.kvar === 1 && c.mer > 0]);
 await p.waitForTimeout(300);
-const d = await H(() => { const h = window.__printahem, S = h.S; S.mynt = 10; h.oppnaMarknad(); const ks = [...document.querySelectorAll('.dc-kort:not(.last)')].slice(0, 2); ks[0].click(); document.querySelectorAll('.dc-kort:not(.last)')[1].click(); const sum = document.querySelector('.dc-sum').textContent; document.querySelector('[data-dckopa]').click(); return { sum, bubbla: document.querySelector('.dc-bubbla').textContent, saknar: !!document.querySelector('.dc-saknar') }; });
-ut.push([`två valda (${d.sum}) och Ali säger vad som saknas`, /2 valda/.test(d.sum) && /Du saknar/.test(d.bubbla)]);
-const e = await H(() => { const h = window.__printahem, S = h.S; S.mynt = 5000; h.oppnaMarknad(); const fore = S.mynt; document.querySelector('[data-dckopa]').click(); return { betalt: fore - S.mynt, bubbla: document.querySelector('.dc-bubbla').textContent }; });
-ut.push([`Köp köper de valda (${e.betalt} kr), högst en köpreplik per besök`, e.betalt > 0 && !/Du saknar/.test(e.bubbla)]);
+const d = await H(() => { const h = window.__printahem, S = h.S; S.mynt = 1; h.oppnaMarknad(); const k = [...document.querySelectorAll('.dc-k2:not(.last) [data-kopnu]')][0]; const txt = k.textContent; k.click(); return { txt, bubbla: document.querySelector('.dc-bubbla').textContent, mynt: S.mynt }; });
+ut.push([`har man inte råd heter knappen "${d.txt}" och Ali säger vad som saknas`, /^Saknar/.test(d.txt) && /Du saknar/.test(d.bubbla) && d.mynt === 1]);
+const e = await H(() => { const h = window.__printahem, S = h.S; S.mynt = 5000; h.oppnaMarknad(); const fore = S.mynt; document.querySelector('.dc-k2:not(.last) [data-kopnu]').click(); return { betalt: fore - S.mynt, bubbla: document.querySelector('.dc-bubbla').textContent }; });
+ut.push([`Köp-knappen köper just det kortet (${e.betalt} kr)`, e.betalt > 0 && !/Du saknar/.test(e.bubbla)]);
 // säljlådan: samma rad
 const f = await H(() => { const h = window.__printahem; h.ui.stangButik(); h.laggTill('nyckelring', 2); window.__printahem.oppnaSaljlada?.() ; return !!document.querySelector('.dc-rad .dc-skort'); });
 ut.push(['säljlådan använder samma säljrad', f]);

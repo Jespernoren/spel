@@ -127,20 +127,18 @@
     try { await gor(); await vanta(0.5); } finally { H.ui.stangButik(); iButik = false; } await vanta(0.3);
   }
   /* DC: Alis butik på en sida – köpkort [data-dckop=key], säljkort [data-dcs=typ] */
-  function aliKnapp(pre, id) { return [...document.querySelectorAll('[data-dckop]')].find((e) => e.dataset.dckop === id || e.dataset.dckop.endsWith(':' + id)); }
-  async function saljAllt(behall = []) {
-    let tot = 0;
-    for (let varv = 0; varv < 40; varv++) {
-      const k = [...document.querySelectorAll('.dc-salj [data-dcs]')].find((e) => !behall.includes(e.dataset.dcs) && !e.classList.contains('mark'));
-      if (!k) break; k.click(); await vanta(0.25);
-    }
-    { const b = document.querySelector('[data-dcsalj]'); if (b && !b.disabled) { const fore = S.mynt; b.click(); await vanta(0.6); tot += S.mynt - fore; } }
+  function aliKnapp(pre, id) { return [...document.querySelectorAll('[data-kopnu]')].find((e) => e.dataset.kopnu === id || e.dataset.kopnu.endsWith(':' + id)); }   /* EM 33: köpknappen sitter på kortet */
+  async function saljAllt(behall = []) {   /* EM 33: Sälj en / Sälj allt på korten */
+    let tot = 0; const fore = S.mynt;
+    if (!behall.length && document.querySelector('[data-saljallt]')) { document.querySelector('[data-saljallt]').click(); await vanta(0.6); }
+    else for (let varv = 0; varv < 80; varv++) { const k = [...document.querySelectorAll('[data-saljen]')].find((e) => !behall.includes(e.dataset.saljen)); if (!k) break; k.click(); await vanta(0.2); }
+    tot = S.mynt - fore;
     if (tot) handling(`säljer hos Ali: +${tot} kr`);
     return tot;
   }
   async function kopHosAli(id) {
     const k = aliKnapp('k', id); if (!k) { handling(`Ali har inte ${id}`); return false; }
-    const fore = S.mynt; if (!k.classList.contains('vald')) { k.click(); await vanta(0.4); } document.querySelector('[data-dckopa]')?.click(); await vanta(0.8);
+    const fore = S.mynt; k.click(); await vanta(0.8);
     if (S.mynt < fore) { handling(`köper ${id} för ${fore - S.mynt} kr`); kop.push({ dag: S.dag, t: tid - dagStart, id, pris: fore - S.mynt }); return true; }
     handling(`kunde inte köpa ${id} (${S.mynt} kr)`); return false;
   }
@@ -357,7 +355,10 @@
       if (H.sovDags()) { await klick(H.taltSang, 'sängen'); await vantaPaMorgon(); return; }
       handling(`väntar på kvällen (vaken ${Math.round(S.vakenTid || 0)} s)`); await tjana(S.mynt + 60, 'kvällen'); return;
     }
+    /* EE: målet väntar på sin flaskhals – gör det man gör under tiden (plocka, mala, printa, sälja) */
+    if (st.las && H.upplast && !H.upplast(st.las)) { await tjana(S.mynt + 40, `väntar på flaskhalsen för ${st.las}`); return; }
     switch (id) {
+      case 'saljKruka': if (!H.antalInv('kruka')) { await printa({ typ: 'kruka' }); return; } await ali(() => saljAllt(), 'sälja krukan'); return;   /* EF17 */
       case 'lasta': await klick(H.vagCykel, 'cykeln vid vägen'); return;
       case 'stall': valj('skrivareS'); await klick(H.startYta, 'rutan i linje 1'); return;
       case 'bygg': await klick(H.vagCykel, 'cykeln'); await vanta(3); return;
@@ -386,7 +387,7 @@
       case 'ryggkorg': await bygg('ryggkorg'); return;
       case 'pall': await kopRecept('pall'); await printa({ typ: 'pall' }); if (H.antalInv('pall')) await placera('pall'); return;
     }
-    if (/^Städa gården/.test(txt)) { if (H.extruderFull() && S.kvarn.tratt >= H.TRATT_MAX - 1) { await tjana(S.mynt + 60, 'kvarnen är full – printa av filamentet'); return; } const sk = ledig(); await plockaLass({}); await tomIKvarnen(); await mal(); return; }
+    if (/^Städa (klart )?gården/.test(txt)) { if (H.extruderFull() && S.kvarn.tratt >= H.TRATT_MAX - 1) { await tjana(S.mynt + 60, 'kvarnen är full – printa av filamentet'); return; } const sk = ledig(); await plockaLass({}); await tomIKvarnen(); await mal(); return; }
     if (/^Skicka två paket från datorn/.test(txt)) { webbDag = 0; await webbJobb(); await tjana(S.mynt + 60, 'väntar på fler beställningar'); await vanta(2); return; }   // dag 9-målet
     if (/^Sopbilen kommer förbi under dagen/.test(txt)) { await tjana(S.mynt + 60, 'väntar på sopbilen (BO)'); await vanta(1); return; }   // BO: gör något vettigt medan brevet är på väg
     if (/^Läs brevet i Rolfs postlåda/.test(txt)) { await klick(H.postlada, 'Rolfs postlåda'); await stangPopups(); return; }
@@ -408,7 +409,7 @@
     }
     if (/^Printa en kolfiberstol/.test(txt)) { await printa({ typ: 'n3_stol' }); return; }
     if (/^Ställ in en gamersak i boden|^Inred boden/.test(txt)) { const t = H.nastaGamer?.(); if (t && !t.startsWith('byggsats:')) { if (!H.harRecept(t)) await kopRecept(t); if (!H.antalInv(t)) await printa({ typ: t }); if (H.antalInv(t)) await placera(t); } else await tjana(S.mynt + 300); return; }
-    if (/^Bjud Rolf på fika/.test(txt)) { const ok = await ali(async () => { const k = [...document.querySelectorAll('[data-dckop]')].find((b) => /sopbil|fika/i.test(b.dataset.dckop)); if (k) { k.click(); await vanta(0.4); document.querySelector('[data-dckopa]')?.click(); await vanta(0.6); } }, 'bjuda Rolf på fika'); if ((H.trimNiva?.('sopbil') || 0) < 1) await tjana(S.mynt + 1500, 'fikat'); return; }
+    if (/^Bjud Rolf på fika/.test(txt)) { const ok = await ali(async () => { const k = [...document.querySelectorAll('[data-kopnu]')].find((b) => /sopbil|fika/i.test(b.dataset.kopnu)); if (k) { k.click(); await vanta(0.6); } }, 'bjuda Rolf på fika'); if ((H.trimNiva?.('sopbil') || 0) < 1) await tjana(S.mynt + 1500, 'fikat'); return; }
     if (/^Printa en designvas/.test(txt)) { if (!H.harRecept('n2_vas')) await kopRecept('n2_vas'); await printa({ typ: 'n2_vas' }); return; }
     if (/^Sälj designvasen/.test(txt)) { if (!H.antalInv('n2_vas')) await printa({ typ: 'n2_vas' }); await ali(() => saljAllt(), 'sälja vasen'); return; }
     if (/^Lägg 3 vaser i säljlådan/.test(txt)) {
@@ -458,7 +459,7 @@
   let vantanIdag = 0;
   async function vantaPaMorgon() {
     const dag = S.dag; const slutDag = tid - dagStart;
-    dagar.push({ dag, sek: slutDag, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat, vantan: vantanIdag }); vantanIdag = 0;
+    dagar.push({ dag, sek: slutDag, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat, vantan: vantanIdag, flask: { ...(S.fh?.dag?.[dag] || {}) } }); vantanIdag = 0;
     let n = 0; while (n++ < 400 && (S.dag === dag || !H.ui.igang)) { await vanta(0.5); }
     await vanta(1); dagStart = tid; handling(`— dag ${S.dag} börjar —`);
   }

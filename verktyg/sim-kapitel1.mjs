@@ -155,6 +155,7 @@ for (const h of r.logg.filter((e) => e.kalla === 'händelse' && e.vem === 'malKl
   const fore = [...r.logg].reverse().find((e) => e.kalla === 'målruta' && e.tot < h.tot - 0.05);   // räkna från första mål som klarades sedan rutan senast byttes
   if (fore && r.logg.some((e) => e.kalla === 'händelse' && e.vem === 'malKlart' && e.tot > fore.tot && e.tot < h.tot - 0.05)) continue;
   const mk = r.logg.find((e) => e.kalla === 'händelse' && e.vem === 'morgonkortStangt' && e.tot >= h.tot && e.tot <= m.tot);
+  if (r.logg.some((e) => e.kalla === 'meddelande' && e.tot >= h.tot - 0.05 && e.tot <= m.tot)) continue;   /* EK 25: en pausad dagbokssida räknas inte */
   const v2 = m.tot - (mk ? mk.tot : h.tot);
   if (v2 > 10.5) flaggor.push({ dag: h.dag, t: h.t, typ: 'TOM RUTA', text: `${v2.toFixed(1)} s innan "${m.text.slice(0, 60)}" syntes` });
 }
@@ -174,6 +175,8 @@ for (const h of r.logg.filter((e) => e.kalla === 'händelse' && e.vem === 'malKl
     if (e.kalla === 'sak') sett.set(e.text, e.dag);
   }
 }
+// EL 29: regelvaktens brott (spelet loggar dem som kalla 'brott', vem = flaggan)
+for (const e of r.logg.filter((x) => x.kalla === 'brott' && !['UPPLÅST', 'RESERV'].includes(x.vem))) flaggor.push({ dag: e.dag, t: e.t, typ: e.vem, text: e.text });
 // ED4/ED7/ED9/ED13: FÖRE, OSYNLIG, OSYNLIG GÅVA, TYST NEJ
 for (const e of r.logg.filter((x) => x.kalla === 'före')) flaggor.push({ dag: e.dag, t: e.t, typ: 'FÖRE', text: e.text });
 for (const e of r.logg.filter((x) => x.kalla === 'osynlig')) flaggor.push({ dag: e.dag, t: e.t, typ: 'OSYNLIG', text: `${e.vem}: "${e.text.slice(0, 60)}" – ${e.varfor}` });
@@ -194,6 +197,11 @@ for (const d of r.dagar) per[d.dag] = d;
 let md = `# Simulering kapitel 1 – körning ${nr}\n\n*Gjord ${new Date().toISOString().slice(0, 16).replace('T', ' ')} med \`verktyg/sim-kapitel1.mjs\` + \`verktyg/sim-bot.js\` (punkt AX). Boten går 4,5 m/s, läser ${15} tecken/s, trampar, vevar, plockar, printar, köper och säljer via spelets egna funktioner. Tiderna är speltid.*\n\n`;
 md += `## Sammanfattning\n\n| Dag | Minuter | Väntan | Prints (totalt) | Kr vid sömn | Bär | Trivsel |\n|---|---|---|---|---|---|---|\n`;
 for (const d of r.dagar) md += `| ${d.dag} | ${(d.sek / 60).toFixed(1)} | ${d.sek ? Math.round((d.vantan || 0) / d.sek * 100) : 0} %${d.sek && (d.vantan || 0) / d.sek > 0.2 ? ' ⚠️' : ''} | ${d.printat} | ${d.mynt} | ${d.bar} | ${d.trivsel} |\n`;
+// EE: flaskhalskartan – sekunder (bara/inkomst: antal) per flaskhals och dag, och när kapacitetssakerna låstes upp
+{ const K = ['bara', 'mala', 'trampa', 'strom', 'skrivare', 'inkomst'];
+  md += `\n## Flaskhalskartan (EE)\n\n| Dag | ${K.join(' | ')} | Upplåst |\n|---|${K.map(() => '---').join('|')}|---|\n`;
+  for (const d of r.dagar) md += `| ${d.dag} | ${K.map((k) => Math.round(d.flask?.[k] || 0)).join(' | ')} | ${r.logg.filter((e) => e.kalla === 'upplåst' && e.dag === d.dag).map((e) => `${e.text} (${e.vem}, ${fmt(e.t)}${/reserv/.test(e.varfor) ? ', reserv' : ''})`).join(', ')} |\n`;
+  const kl = r.logg.filter((e) => e.kalla === 'brott' && ['TIDIG', 'FAST', 'RESERV'].includes(e.vem)); md += `\nTIDIG: ${kl.filter((e) => e.vem === 'TIDIG').length} · FAST: ${kl.filter((e) => e.vem === 'FAST').length} · upplåst av reserven (målet väntade 3 min): ${kl.filter((e) => e.vem === 'RESERV').length}\n`; }
 md += `\n**Köp:**\n\n` + r.kop.map((k) => `- dag ${k.dag} ${fmt(k.t)} – ${k.id} (${k.pris} kr)`).join('\n') + '\n';
 md += `\n## Storykedjan (kvittens → varför → nytt mål)\n\n| Dag | Tid | Id | Kvittens | Varför | Nytt mål | Tid till målet |\n|---|---|---|---|---|---|---|\n` + kedjeRader.map((k) => `| ${k.dag} | ${fmt(k.t)} | ${k.id} | ${k.kv.slice(0, 60)} | ${k.va.slice(0, 60)} | ${k.mal.slice(0, 60)} | ${k.gap == null ? '–' : k.gap.toFixed(1) + ' s'} |`).join('\n') + '\n';
 md += `\n## Hur länge nya mål väntade (från att förra målet blev klart till att det nya syntes i målrutan)\n\n` + (malVantan.length ? `Snitt ${(malVantan.reduce((x, m) => x + m.v, 0) / malVantan.length).toFixed(1)} s · max ${Math.max(...malVantan.map((m) => m.v)).toFixed(1)} s · över 4 s: ${malVantan.filter((m) => m.v > 4).length} · över 8 s: ${malVantan.filter((m) => m.v > 8).length} av ${malVantan.length}\n` : '-\n');

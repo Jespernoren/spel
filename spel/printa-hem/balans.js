@@ -148,7 +148,7 @@ export const VARA_SIFFROR = {
   tillstand: { gram: 250, tid: 10, pris: 0 },
   sang: { gram: 1200, tid: 20, pris: 0 },
   nyckelring: { gram: 100, tid: 4, pris: 15 },
-  kruka: { gram: 400, tid: 11, pris: 70, recept: 40 },     // ED: receptet köps hos Ali för 40 kr   // BP: varje nytt recept tjänar mer
+  kruka: { gram: 400, tid: 11, pris: 70, recept: 40 },     // ED: receptet köps hos Ali för 40 kr (EE: erbjuds när nyckelringarna tar stopp som inkomst)   // BP: varje nytt recept tjänar mer
   pall: { gram: 1000, tid: 21, pris: 180, recept: 80 },   // B43: 32 → 20 s   // BP: varje nytt recept tjänar mer
   rulle: { gram: 1000, tid: 0, pris: 0 },
   mobilstall: { gram: 300, tid: 10, pris: 50, recept: 100 },   // BP: varje nytt recept tjänar mer
@@ -223,3 +223,18 @@ export const ROST_FART = { rolf: 1.5, pappa: 1.4, mamma: 1.35, du: 1.85, beratta
 export const STROM_INGEN = 4;           // DT steg 0: ingen lagring – ungefär en sekunds print, skrivaren går bara medan man trampar
 export const STROM_POWERBANK = 20;      // DT steg 1: powerbanken från Ali – ungefär en nyckelring (5 s × 4/s)
 export const FORSTA_PRINT_S = 5;        // DT: de tre första printarna tar ca 5 s (lagom att trampa)
+
+// ---------- EE: flaskhalsstyrd upplåsning ----------
+// Nästa sak i en kedja låses upp när kedjans flaskhals har tagit stopp så här länge (s) eller så många gånger (bara: turer med fulla händer, inkomst: sålda nyckelringar)
+export const FLASK_GRANS = { bara: 6, mala: 25, trampa: 20, strom: 15, skrivare: 75, inkomst: 6 };   // efter AX 17/11: boten vevar och trampar mycket snabbare än ett barn – ett barn når gränsen senare, ordningen är densamma
+// ordningen i varje kedja – en i taget
+export const FLASK_KEDJA = {
+  bara: ['grip', 'ryggkorg', 'magnet'],               // sopsäcken kommer från Rolf (EL 28), kärran från Rolfs brev
+  mala: ['kvarnmotor', 'matarband', 'turbomotor'],
+  trampa: ['vindsnurra'],
+  strom: ['cykelbatteri', 'vindsnurra2', 'sol', 'bank', 'solpark'],
+  skrivare: ['rullstall', 'skrivare2', 'skrivare3'],
+  inkomst: ['kruka'],
+};
+// reserv: står ett mål och väntar på sin flaskhals så här länge (s spelad tid) låses det upp ändå, så att ingen fastnar
+export const FLASK_RESERV = 180;

@@ -2813,6 +2813,12 @@
   "var": "Ali när du printat hans modell"
  },
  {
+  "id": "ali-8ed76895",
+  "figur": "ali",
+  "text": "Ali här. Ännu en ritning som blev på riktigt: Nyckeln till tippen. Semesterkassan växer. Livet växer.",
+  "var": "Ali när du printat hans modell"
+ },
+ {
   "id": "ali-a9b60749",
   "figur": "ali",
   "text": "Ali här. Powerbank – printad. På riktigt. Jag har visat bilden för min fru tre gånger.",
@@ -3233,12 +3239,6 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-e71a2d9f",
-  "figur": "du",
-  "text": "Tre åt gången. Men mina armar… Kvarnen borde veva själv.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
   "id": "du-e9b7dd91",
   "figur": "du",
   "text": "Motorn är min. Nu ska den printas och sitta på kvarnen. Slut på vevandet.",
@@ -3263,12 +3263,6 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-6ed5d5fa",
-  "figur": "du",
-  "text": "Gården är full av skräp. Tre i taget räcker inte.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
   "id": "du-2f0ca324",
   "figur": "du",
   "text": "Nu städar jag gården. Frivilligt. Säg inget.",
@@ -3287,18 +3281,6 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-c7e9e132",
-  "figur": "du",
-  "text": "Tippen är full av grejer. Jag behöver något att bära mer i.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
-  "id": "du-784aa4ee",
-  "figur": "du",
-  "text": "Kärran rymmer mer än tratten. Jag behöver nånstans att tippa.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
   "id": "du-30f0fb3c",
   "figur": "du",
   "text": "Nu kan jag tömma hela kärran på en gång.",
@@ -3311,12 +3293,6 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-d9a97ec6",
-  "figur": "du",
-  "text": "Mina ben är slut. Det blåser hela tiden här ute. Tänk om vinden kunde trampa åt mig.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
   "id": "du-fb998744",
   "figur": "du",
   "text": "Den snurrar! Långsamt. Men den snurrar.",
@@ -3326,12 +3302,6 @@
   "id": "du-e8b0d1d1",
   "figur": "du",
   "text": "Om det regnar i natt drunknar jag. Ett tak.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
-  "id": "du-7b66188a",
-  "figur": "du",
-  "text": "Vindsnurran är för långsam. Och när det är stilla står allt. Solen är gratis.",
   "var": "Storykedjan (punkt BE)"
  },
  {
@@ -3377,30 +3347,6 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-0c86e70e",
-  "figur": "du",
-  "text": "En tunna i taget på säckkärran. Det måste gå fortare.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
-  "id": "du-7c8a0c7d",
-  "figur": "du",
-  "text": "Tre skrivare drar mer ström än solen ger.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
-  "id": "du-32a22b87",
-  "figur": "du",
-  "text": "Hjälmar säljer bra, säger Ali. Och solen räcker inte.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
-  "id": "du-56d0cec1",
-  "figur": "du",
-  "text": "Skrivarna står och väntar på rullar. Tornet behöver en våning till.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
   "id": "du-1f6303af",
   "figur": "du",
   "text": "Tornet är fullt, men bara en skrivare får plast åt gången. Slangen måste delas.",
@@ -3413,12 +3359,6 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-f3af353b",
-  "figur": "du",
-  "text": "Jag bär skräp hela dagarna. Tänk om det bara kom av sig självt.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
   "id": "du-0c5a3f95",
   "figur": "du",
   "text": "Bandet går. Men någon måste lasta det. Och ladda skrivarna.",
@@ -3428,12 +3368,6 @@
   "id": "du-01c6ecc7",
   "figur": "du",
   "text": "Säljlådan är full innan Ali hinner hämta. Och jag bär fortfarande dit allt.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
-  "id": "du-5e0f5b72",
-  "figur": "du",
-  "text": "Kvarnen hinner inte med. Den behöver något… större.",
   "var": "Storykedjan (punkt BE)"
  },
  {
@@ -3676,6 +3610,18 @@
   "id": "mamma-b41da67e",
   "figur": "mamma",
   "text": "Städa ditt rum!",
+  "var": "Introt"
+ },
+ {
+  "id": "berattare-0484f928",
+  "figur": "berattare",
+  "text": "Hon sa det igen.",
+  "var": "Introt"
+ },
+ {
+  "id": "berattare-56c6db26",
+  "figur": "berattare",
+  "text": "Och igen.",
   "var": "Introt"
  },
  {
@@ -4072,6 +4018,282 @@
   "id": "du-647f07a8",
   "figur": "du",
   "text": "Storebrors gamla generator. Kopplar jag den till bakhjulet blir det el när jag trampar.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-4ca9dc6f",
+  "figur": "du",
+  "text": "Motorn sitter där veven satt. Mina armar tackar.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-c4f00198",
+  "figur": "du",
+  "text": "Den lysande rutan. Där ska skrivaren stå.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-129d15a2",
+  "figur": "du",
+  "text": "Storebror hade en generator till cykeln. Den gör el av trampandet.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-8484dc84",
+  "figur": "du",
+  "text": "Affären på andra sidan vägen kanske köper sånt här.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-4291016a",
+  "figur": "du",
+  "text": "Ali har allt möjligt i lagret. Han kanske har en kvarn.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-7a45b991",
+  "figur": "du",
+  "text": "Kvarnen gör rullar. Den ska stå där rullarna ska.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-31e7ba79",
+  "figur": "du",
+  "text": "Ali gillar krukor. Han sa det själv.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-b7266aa2",
+  "figur": "du",
+  "text": "Sängen ska in i skjulet. Sen sover jag.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-f4c53d13",
+  "figur": "du",
+  "text": "Halva gården är ren. Tar jag resten blir det fint på riktigt.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-fc92de22",
+  "figur": "du",
+  "text": "Nyckeln till tippen. Där ligger plasten i högar.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-3041f9e1",
+  "figur": "du",
+  "text": "Det drar från dörrhålet. En dörr kan jag printa.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-5beb4913",
+  "figur": "du",
+  "text": "Kärran rymmer massor. Fyll den och tippa allt i kvarnen.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-9ce36978",
+  "figur": "du",
+  "text": "Ett skräp i taget. Jag springer ihjäl mig.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-e085477d",
+  "figur": "du",
+  "text": "Säcken är full igen. Jag behöver något att bära mer i.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-0c86e70e",
+  "figur": "du",
+  "text": "En tunna i taget på säckkärran. Det måste gå fortare.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-f368ce03",
+  "figur": "du",
+  "text": "Mina armar… Kvarnen borde veva själv.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-784aa4ee",
+  "figur": "du",
+  "text": "Kärran rymmer mer än tratten. Jag behöver nånstans att tippa.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-5e0f5b72",
+  "figur": "du",
+  "text": "Kvarnen hinner inte med. Den behöver något… större.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-d9a97ec6",
+  "figur": "du",
+  "text": "Mina ben är slut. Det blåser hela tiden här ute. Tänk om vinden kunde trampa åt mig.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-ae82cb0d",
+  "figur": "du",
+  "text": "Powerbanken räcker till en nyckelring. Sen är det trampa igen.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-84ddc8bf",
+  "figur": "du",
+  "text": "En snurra räcker inte. Skrivarna står still så fort det blir stilla.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-7b66188a",
+  "figur": "du",
+  "text": "Vindsnurran är för långsam. Och när det är stilla står allt. Solen är gratis.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-7c8a0c7d",
+  "figur": "du",
+  "text": "Tre skrivare drar mer ström än solen ger.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-aa242a0f",
+  "figur": "du",
+  "text": "Solen räcker inte till alla skrivare.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-aafd4922",
+  "figur": "du",
+  "text": "Kvarnen står och väntar för att hållaren är full. Om den rymde fler rullar kunde den mala hela tiden.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-baff9308",
+  "figur": "du",
+  "text": "Kvarnen hinner mer än skrivaren. Jag behöver en skrivare till.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-9ab5b61a",
+  "figur": "du",
+  "text": "Skrivarna står aldrig still. Jag behöver en större.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-5e28bea5",
+  "figur": "du",
+  "text": "Nyckelringar, nyckelringar. Ali kan inte vilja ha fler.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-77c84b6d",
+  "figur": "du",
+  "text": "Hmm, vad kastade gubben ut ur sopbilen? Jag går och kollar.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-a61154c1",
+  "figur": "du",
+  "text": "Rolf… gubben i sopbilen. Han har tippen bredvid. Han verkar schysst.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-68301937",
+  "figur": "du",
+  "text": "Någon köpte nåt jag gjort. Det här kan funka.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-6b42250a",
+  "figur": "du",
+  "text": "Tänk att jag ska få sova i min egen säng.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-8f3c78a6",
+  "figur": "du",
+  "text": "I natt somnar jag torr. Det börjar bli ett hem.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-33422113",
+  "figur": "du",
+  "text": "Okej, Göran. Nästa gång är jag beredd.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-c57c34ff",
+  "figur": "du",
+  "text": "Pappa var här. Han såg vad jag har byggt.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-cde2ba2f",
+  "figur": "du",
+  "text": "Två fabriker. Och det blir fler.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-719d00e5",
+  "figur": "du",
+  "text": "Nu kommer allt till mig i stället.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-7cd06383",
+  "figur": "du",
+  "text": "Rolf lät mig tuta. Jag tror han gillar mig.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-28d50332",
+  "figur": "du",
+  "text": "Den jobbar medan jag tar det lugnt. Det här är framtiden.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-182c5814",
+  "figur": "du",
+  "text": "Min egen bod. Här är det ingen som tjatar.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-57483099",
+  "figur": "du",
+  "text": "Det luktar bränt. Men herregud vad det går.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-63f9136d",
+  "figur": "du",
+  "text": "Nu kan ingen säga att jag inte hör hemma här.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-d9269481",
+  "figur": "du",
+  "text": "Ett riktigt hus. Vänta bara tills mamma ser det.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-9c35dcd9",
+  "figur": "du",
+  "text": "Rosorna blommar igen. Det känns rätt.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-a73b2a10",
+  "figur": "du",
+  "text": "Alla är här. Hos mig.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-084d287d",
+  "figur": "du",
+  "text": "Fler grannar. Soptippsvägen lever.",
   "var": "Dina tankar, tips och varningar"
  },
  {
@@ -4674,17 +4896,10 @@
   "var": "Dina tankar, tips och varningar"
  },
  {
-  "id": "rolf-50c195c3",
+  "id": "rolf-4e03962d",
   "figur": "rolf",
-  "text": "Nämen. Du ser ut som en som behöevr nåt å bära i. Sopsäckar har ja. /Rolf (sopbilen)\n*behöver",
-  "kalla": "Du ser ut som en som behöver nåt å bära i. Sopsäckar har ja. /Rolf (sopbilen)",
-  "var": "Dina tankar, tips och varningar"
- },
- {
-  "id": "rolf-4263875b",
-  "figur": "rolf",
-  "text": "Nämen. Du ser ut som en som behöver nåt å bära i. Sopsäckar har ja. /Rolf (sopbilen)",
-  "kalla": "Du ser ut som en som behöver nåt å bära i. Sopsäckar har ja. /Rolf (sopbilen)",
+  "text": "Du sliter ju.. Ingen gör så nuförtin. Ta dessa så går dä lättare. / Rolf – ja kör sopbilen å har hand om tippen bredvid. MVH ROLF",
+  "kalla": "Du sliter ju. Ingen gör så nuförtin. Ta dessa så går det lättare. / Rolf – ja kör sopbilen å har hand om tippen bredvid. MVH ROLF",
   "var": "Dina tankar, tips och varningar"
  },
  {
@@ -4715,12 +4930,6 @@
   "id": "du-c8ed16cb",
   "figur": "du",
   "text": "Göran tar mina saker. Kanske han vill ha något eget?",
-  "var": "Dina tankar, tips och varningar"
- },
- {
-  "id": "du-e39048ae",
-  "figur": "du",
-  "text": "Rullarna låg och väntade vid kvarnen hela dagen. Kanske ett rullställ vore bra?",
   "var": "Dina tankar, tips och varningar"
  },
  {
@@ -4967,12 +5176,6 @@
   "id": "du-c52b4cf8",
   "figur": "du",
   "text": "Hmm… flaggan är uppe på Rolfs brevlåda vid grinden. Har det kommit ett brev?",
-  "var": "Dina tankar, tips och varningar"
- },
- {
-  "id": "du-d00e6950",
-  "figur": "du",
-  "text": "Rullhållaren vid kvarnen är full. Jag borde ta rullarna innan kvarnen stannar.",
   "var": "Dina tankar, tips och varningar"
  },
  {
