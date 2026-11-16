@@ -37,23 +37,31 @@ def main():
         if trimmat.get(f) == sha(p):
             continue
         trimma(p); trimmat[f] = sha(p); nya += 1
-    # DT: ROST_FART i balans.js – berättaren läses snabbare med atempo (samma tonhöjd). Varje fil bara en gång.
+    # ROST_FART i balans.js: tempo per figur. Bearbetningen är icke-förstörande – originalklippen ligger kvar, paketen byggs av
+    # bearbetade kopior: tystnaden bort i början/slutet, pauser inne i repliken högst ca 0,2 s, sedan atempo (samma tonhöjd).
+    # Klipp som tidigare snabbats på plats har 'fart:<fil>' = '<tempo>:…' i trimmat.json – det tempot räknas bort.
     import re
+    from concurrent.futures import ThreadPoolExecutor
     balans = os.path.join(os.path.dirname(os.path.abspath(MAPP)), 'balans.js')
     m = re.search(r'ROST_FART\s*=\s*\{([^}]*)\}', open(balans).read()) if os.path.exists(balans) else None
     fart = {k: float(v) for k, v in re.findall(r'(\w+)\s*:\s*([\d.]+)', m.group(1))} if m else {}
-    snabbade = 0
-    for f in filer:
-        fig = f[6:] if f.startswith('intro-') else f
-        fig = fig.split('-')[0]
-        if fig not in fart or fart[fig] == 1: continue
-        p = os.path.join(MAPP, f); nyckel = f'fart:{f}'
-        if trimmat.get(nyckel) == f'{fart[fig]}:{sha(p)}': continue
-        tmp = p + '.tmp.mp3'
-        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', p, '-af', f'atempo={fart[fig]}', '-ac', '1', '-ar', '44100', '-b:a', '128k', tmp], check=True)
-        os.replace(tmp, p); trimmat[f] = sha(p); trimmat[nyckel] = f'{fart[fig]}:{sha(p)}'; snabbade += 1
+    TYST = 'silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.04:stop_periods=-1:stop_duration=0.3:stop_threshold=-45dB:stop_silence=0.18'
+    cache = os.path.join('/tmp', 'roster-el-bearb'); os.makedirs(cache, exist_ok=True)
+    def bearbeta(f):
+        p = os.path.join(MAPP, f)
+        fig = (f[6:] if f.startswith('intro-') else f).split('-')
+        fig = fig[1] if fig[0] == 'NY' else fig[0]
+        bakad = float(str(trimmat.get(f'fart:{f}', '1:')).split(':')[0] or 1)
+        tempo = round(fart.get(fig, 1.0) / bakad, 4)
+        af = TYST + (f',atempo={tempo}' if abs(tempo - 1) > 0.001 else '')
+        ut = os.path.join(cache, hashlib.sha1((sha(p) + af).encode()).hexdigest()[:16] + '.mp3')
+        if not os.path.exists(ut):
+            subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', p, '-af', af, '-ac', '1', '-ar', '44100', '-b:a', '128k', ut + '.tmp.mp3'], check=True)
+            os.replace(ut + '.tmp.mp3', ut)
+        return f, ut
+    with ThreadPoolExecutor(8) as ex: bearbetad = dict(ex.map(bearbeta, filer))
     json.dump(trimmat, open(trimfil, 'w'), indent=0, sort_keys=True)
-    print(f'klippta nu: {nya} av {len(filer)}, snabbare: {snabbade}')
+    print(f'klippta nu: {nya} av {len(filer)}, bearbetade: {len(bearbetad)} (tempo {fart})')
 
     index = json.load(open(os.path.join(MAPP, 'index.json')))
     packmapp = os.path.join(MAPP, 'pack'); os.makedirs(packmapp, exist_ok=True)
@@ -62,7 +70,7 @@ def main():
     for fil in sorted(set(index.values())):
         if not os.path.exists(os.path.join(MAPP, fil)):
             continue
-        b = open(os.path.join(MAPP, fil), 'rb').read()
+        b = open(bearbetad.get(fil) or os.path.join(MAPP, fil), 'rb').read()
         bas = packnamn(fil); n = 1; pk = bas
         while len(data.get(pk, b'')) + len(b) > MAX_PACK:   # stora paket delas (artifacts tar högst 20 MiB per fil)
             n += 1; pk = f'{bas}{n}'
