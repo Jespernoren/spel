@@ -9412,7 +9412,8 @@ function rostNyckel(t) {
 let elIndex = null, elHel = null, introPagar = false, introElSvar = null;
 // punkt AW: har alla mammas och dina repliker i introt ElevenLabs-klipp? Då används de i introt (resten av spelet följer AH).
 const introElOk = () => { if (introElSvar == null && elIndex) introElSvar = INTRO_TAL().filter(([v]) => v === 'mamma' || v === 'du' || v === 'berattare').every(([v, t]) => !!elIndex[`${v}-${rostNyckel(t)}`]); return !!introElSvar; };
-const elHelRakna = () => { if (!elIndex || !rostIndex || elHel) return; elHel = new Set(ROST_FIGURER.filter((f) => { const k = Object.keys(rostIndex).filter((x) => x.startsWith(f + '-')); return k.length > 0 && k.every((x) => elIndex[x]); })); };
+const EL_SAKNAS_MAX = 4;   // EA: ett fåtal nya repliker utan ElevenLabs-klipp (kreditgränsen) får läsas med den gamla rösten – resten av figuren behåller sin EL-röst
+const elHelRakna = () => { if (!elIndex || !rostIndex || elHel) return; elHel = new Set(ROST_FIGURER.filter((f) => { const k = Object.keys(rostIndex).filter((x) => x.startsWith(f + '-')); return k.length > 0 && k.filter((x) => !elIndex[x]).length <= Math.min(EL_SAKNAS_MAX, Math.floor(k.length * 0.03)); })); };
 const elKlar = fetch('roster-el/index.json').then((x) => (x.ok ? x.json() : null)).then((a) => { elIndex = a; return rostKlar.then(elHelRakna); }).catch(() => {});
 // punkt AZ: ElevenLabs-klippen ligger packade per figur (roster-el/pack/, samma format som roster/) och spelas från ett redan avkodat ljud
 let elPackIndex = null;
