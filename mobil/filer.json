@@ -24,6 +24,8 @@
 "../delat/fp/spelare.js",
 "../delat/fp/system.js",
 "../delat/fp/ui.js",
+"../spel/ballongsmallen/index.html",
+"../spel/ballongsmallen/spel.js",
 "../spel/mattekampen/index.html",
 "../spel/mattekampen/spel.js",
 "../spel/majistos-torn/index.html",

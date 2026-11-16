@@ -9,6 +9,17 @@
 // =============================================================
 window.SPEL = [
   {
+    mapp: "ballongsmallen",
+    namn: "Ballongsmällen",
+    ikon: "🎈",
+    beskrivning: "Smäll rätt ballonger på 60 sekunder! Beppe smäller rätt färg, Charlie rätt bokstav och mamma och pappa rätt svar på ett tal. Se upp för guldballongen!",
+    typ: "Tryck · Snabbhet · Mobil",
+    spelare: ["Alla"],
+    farg: ["#ff4a8d", "#7fd0ff"],
+    status: "klar",
+    ny: true,
+  },
+  {
     mapp: "mattekampen",
     namn: "Mattekampen",
     ikon: "🚀",

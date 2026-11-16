@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script src="../../delat/rost.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#7fd0ff">
+<title>Ballongsmällen</title>
+<style>
+  :root { --text:#1d1550; --gul:#ffd43b; --f:#ffd43b; }
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
+  html,body { height:100%; overflow:hidden; overscroll-behavior:none; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--text); touch-action:none;
+    background: linear-gradient(#7fd0ff 0%, #bfe9ff 55%, #fff1c9 100%); }
+  [hidden] { display:none !important; }
+  button { font:inherit; color:inherit; border:0; background:none; cursor:pointer; touch-action:manipulation; }
+  #duk { position:fixed; inset:0; width:100%; height:100%; display:block; }
+
+  /* ---------- Topp ---------- */
+  .hud { position:fixed; left:0; right:0; top:0; z-index:3; padding: max(10px, env(safe-area-inset-top)) 12px 0; pointer-events:none; }
+  .rad { display:flex; align-items:center; gap:10px; }
+  .avatar { position:relative; display:inline-grid; place-items:center; flex:0 0 auto; border-radius:50%; overflow:hidden; background:var(--f); box-shadow:0 0 0 3px #fff, 0 3px 8px rgba(0,0,0,.2); }
+  .avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .poang { font-size:30px; font-weight:900; color:#fff; text-shadow:0 2px 0 #1d1550, 0 0 10px rgba(29,21,80,.4); }
+  .tid { margin-left:auto; position:relative; width:56px; height:56px; }
+  .tid svg { width:56px; height:56px; transform:rotate(-90deg); }
+  .tid b { position:absolute; inset:0; display:grid; place-items:center; font-size:19px; font-weight:900; color:#fff; text-shadow:0 2px 0 #1d1550; }
+  .uppdrag { margin:10px auto 0; width:max-content; max-width:94vw; display:flex; align-items:center; gap:10px; padding:8px 18px; border-radius:22px;
+    background:#fff; box-shadow:0 5px 0 rgba(29,21,80,.25); font-weight:900; font-size:clamp(20px, 6vw, 28px); }
+  .uppdrag .malprick { width:34px; height:34px; border-radius:50%; box-shadow: inset -4px -6px 0 rgba(0,0,0,.15); }
+  .uppdrag .malbokstav { font-size:34px; color:#e2338f; }
+  .uppdrag.nytt { animation: studs .5s; }
+  @keyframes studs { 30% { transform: scale(1.18); } }
+  .serie { text-align:center; margin-top:6px; height:24px; font-weight:900; font-size:18px; color:#fff; text-shadow:0 2px 0 #e2338f; }
+
+  /* ---------- Menyer ---------- */
+  .meny { position:fixed; inset:0; z-index:5; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px; text-align:center;
+    background:rgba(255,255,255,.55); backdrop-filter: blur(4px); }
+  .meny h1 { font-size:clamp(30px, 9vw, 46px); white-space:nowrap; font-weight:900; line-height:1.05; color:#e2338f; text-shadow:0 4px 0 #fff, 0 6px 12px rgba(226,51,143,.35); }
+  .meny p { font-size:17px; max-width:320px; font-weight:600; }
+  .stor { padding:18px 40px; border-radius:22px; font-size:26px; font-weight:900; background:#e2338f; color:#fff; box-shadow:0 7px 0 #9c1a5c; }
+  .stor:active { transform:translateY(4px); box-shadow:0 3px 0 #9c1a5c; }
+  .lank { font-weight:800; font-size:16px; padding:8px 14px; border-radius:14px; background:rgba(255,255,255,.8); }
+  .familj { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .familj button { display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px; border-radius:22px; background:#fff; font-weight:800; font-size:18px; box-shadow:0 5px 0 rgba(29,21,80,.15); }
+  .stort { font-size:76px; font-weight:900; color:#e2338f; line-height:1; text-shadow:0 4px 0 #fff; }
+  .nytt-rekord { font-size:24px; font-weight:900; color:#e2338f; animation: studs 1s infinite; }
+  .topplista { width:100%; max-width:320px; display:flex; flex-direction:column; gap:6px; }
+  .topplista div { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:16px; background:#fff; font-weight:800; }
+  .topplista div b { margin-left:auto; color:#e2338f; }
+  .topplista div.jag { box-shadow:0 0 0 3px #e2338f; }
+</style>
+</head>
+<body>
+  <canvas id="duk"></canvas>
+
+  <div class="hud" id="hud" hidden>
+    <div class="rad">
+      <span id="spelare"></span>
+      <div class="poang" id="poang">0</div>
+      <div class="tid">
+        <svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="rgba(255,255,255,.5)" stroke="rgba(29,21,80,.15)" stroke-width="6"/>
+          <circle id="tidRing" cx="28" cy="28" r="24" fill="none" stroke="#e2338f" stroke-width="6" stroke-linecap="round" stroke-dasharray="151" stroke-dashoffset="0"/></svg>
+        <b id="tid">60</b>
+      </div>
+    </div>
+    <div class="uppdrag" id="uppdrag"></div>
+    <div class="serie" id="serie"></div>
+  </div>
+
+  <section class="meny" id="start" hidden>
+    <h1>Ballongsmällen 🎈</h1>
+    <div id="startSpelare"></div>
+    <p id="startText"></p>
+    <button class="stor" id="startKnapp">Starta!</button>
+    <button class="lank" id="bytKnapp">🔄 Byt spelare</button>
+  </section>
+
+  <section class="meny" id="vem" hidden>
+    <h1>Vem spelar?</h1>
+    <div class="familj" id="familj"></div>
+  </section>
+
+  <section class="meny" id="slut" hidden>
+    <p>Tiden är slut!</p>
+    <div class="stort" id="slutPoang">0</div>
+    <div id="slutNytt"></div>
+    <p id="slutText"></p>
+    <div class="topplista" id="topplista"></div>
+    <button class="stor" id="igenKnapp">Igen! 🎈</button>
+  </section>
+
+  <script type="module" src="spel.js"></script>
+  <script src="../../delat/hem.js"></script>
+</body>
+</html>
