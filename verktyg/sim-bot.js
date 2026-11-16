@@ -425,7 +425,7 @@
       while (S.dag < tillDag && tid < stopp) {   // B55: boten kör vidare in i kapitel 2
         { let w = 0; while (H.pratar?.() && w++ < 120) await vanta(0.1); }   // en spelare lyssnar klart innan hen gör nästa sak
         const fore = S.steg + ':' + S.dag; console.log(`[sim] dag ${S.dag} ${fmt(tid - dagStart)} ${S.mynt} kr · ${H.stegId?.() || ''} · ${(H.stegText() || '').slice(0, 50)}`); await gorSteg();
-        if (fore === sista) { await vanta(1); if (++samma > 60 || tid - stegT > 15 * 60) { handling('fastnade: ' + H.stegText()); break; } } else { sista = fore; samma = 0; stegT = tid; }
+        if (fore === sista) { await vanta(1); if (++samma > 60 || tid - stegT > (+(window.__simStegMax || 15)) * 60) { handling('fastnade: ' + H.stegText()); break; } } else { sista = fore; samma = 0; stegT = tid; }
       }
       if (!dagar.some((d) => d.dag === S.dag)) dagar.push({ dag: S.dag, sek: tid - dagStart, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat, ofardig: true });
       return { logg, handlingar, dagar, kop, tid };
