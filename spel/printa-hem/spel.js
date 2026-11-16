@@ -3868,8 +3868,10 @@ interaktor.registrera(vagCykel, {
   aktivera: () => {
     if (!S.skrivareLastad) {
       if (!harRumFor('skrivareS')) { ui.toast('Verktygsraden är full', 'fel'); return; }
+      { const o = vagCykel.userData.skrivare, c = o.clone(true), fran = o.getWorldPosition(new THREE.Vector3()), t0 = performance.now(); c.position.copy(fran); c.scale.setScalar(0.82); scen.add(c);   /* DT: kort lyft-animation upp i famnen */
+        const steg = () => { const k = Math.min(1, (performance.now() - t0) / 450), mal = new THREE.Vector3(0.25, -0.35, -0.8).applyMatrix4(kamera.matrixWorld); c.position.lerpVectors(fran, mal, k).y += Math.sin(k * Math.PI) * 0.5; c.scale.setScalar(0.82 * (1 - k * 0.6)); if (k < 1) requestAnimationFrame(steg); else scen.remove(c); }; steg(); }
       S.skrivareLastad = true; handelse('lastatAv', { sak: 'skrivare' }); const i = laggTill('skrivareS'); if (typeof i === 'number') byt(i);
-      ljud.plock(); ui.toast('🖨️ Du har skrivaren. Ställ den på den lysande rutan i linje 1.', 'bra'); ritaStart(); sparaSnart(); return;
+      ljudH('utrustning'); ui.toast('🖨️ Du har skrivaren. Ställ den på den lysande rutan i linje 1.', 'bra'); ritaStart(); sparaSnart(); return;
     }
     byggOmCykeln();
   },
@@ -9708,7 +9710,7 @@ function uppdatera(dt) {
 
     // mål-guiden
     while (S.steg < STEG.length && STEG[S.steg].klar()) {
-      const st = STEG[S.steg]; const sags = st.tanke && stegVisat === S.steg; S.steg++;
+      const st = STEG[S.steg]; const sags = st.tanke && (stegVisat === S.steg || st.tankeForst); S.steg++;
       if (sags && !harSagt(st.tanke)) { if (st.tankeForst) tanke(st.tanke, 'mål klart', 'STORY'); else setTimeout(() => tanke(st.tanke, 'mål klart', 'REAKTION'), 1200); }   /* DT: skräptanken kommer före nästa mål */   /* högst en tanke per mål, en gång */
       malBockText = malRaw; malKlartTid = performance.now(); /* nytt-mal spelas när målet visas */; handelse('malKlart', { id: st.id || 'steg' + (S.steg - 1), del: st.del, nasta: STEG[S.steg]?.id || 'steg' + S.steg });
       if (st.lapp && !S.lappar.includes(st.lapp)) visaLapp(st.lapp);
@@ -12545,7 +12547,7 @@ const VAGG_KVAR_TEXT = ['Det är redan tätt. Då kan pengarna gå till en stör
 const KEDJA_TEXT = {
   skylt: ['Soptippsvägen 1. Nu bor jag här. Officiellt. Typ.', 'Skrivaren står kvar på cykeln. Den ska av.'],
   lastat: ['Tung. Den har storebror aldrig burit så långt.'],
-  skrivareStar: [null, 'Den behöver ström. Och det enda här som rör sig är jag.'],
+  skrivareStar: [null, null],   // DT: de tre första stegen ska gå på ca 30 s
   cykel: [null, 'Okej. Trampa. Och välj nåt litet att printa.'],
   printStart: ['Den piper. Den GÖR något.'],
   printKlar: ['Klar! Ta ut den innan den ändrar sig.'],
