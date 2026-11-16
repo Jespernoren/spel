@@ -106,3 +106,15 @@ Spelen använder JavaScript-moduler, så de fungerar inte om man bara dubbelklic
 ## Publicera (en gång)
 
 Repo → **Settings → Pages** → Source: *Deploy from a branch* → Branch: `main` / `(root)` → Save.
+
+## 📱 Appen "Familjens Spel" (mobil/)
+
+Mobilspelhallen för barnens Android-telefoner: **jespernoren.github.io/spel/mobil/**
+Öppna adressen i Chrome → meny ⋮ → *Lägg till på startskärmen* (eller ⚙️ → *Installera* i appen).
+
+- **Alla spel i `spel-lista.js` med `status: "klar"` syns automatiskt.** Spel som bara funkar på dator får `mobil: false`.
+- **Vem är du?** Mamma, Pappa, Beppe och Charlie. Profilbilder: lägg `mobil/bilder/mamma.jpg`, `pappa.jpg`, `beppe.jpg`, `charlie.jpg` (fyrkantiga, ca 400×400 px). Saknas en bild visas en emoji.
+- **Familjeligan:** appen läser `rekord:<mapp>` före och efter varje spelomgång. Blev rekordet högre får den inloggade poängen. Spelen behöver inte ändras, men bara spel som sparar `rekord:<mapp>` får en topplista.
+- **Gemensam topplista för alla telefoner:** fyll i `DATABAS_URL` i `mobil/moln.js` (Firebase Realtime Database). Tom = poängen syns bara på den egna telefonen.
+- **Offline:** `sw.js` (i roten) sparar spelen på telefonen. Kör `python3 verktyg/mobil-filer.py` när du lagt till ett spel, så kommer det med i knappen *Spara alla spel*.
+- 🏠-knappen i spelen leder till `index.html`, som skickar tillbaka till appen om man kom därifrån.

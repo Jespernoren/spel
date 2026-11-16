@@ -7,6 +7,13 @@
   <meta name="apple-mobile-web-app-title" content="Spelhallen">
   <meta name="theme-color" content="#0a0f24">
   <title>Noréns Spelhall</title>
+  <script>
+    // Kom man hit från appen Familjens Spel (mobil/) skickas man tillbaka dit efter spelet
+    try {
+      const iApp = matchMedia('(display-mode: standalone)').matches && localStorage.getItem('familjens-spel:installerad');
+      if (sessionStorage.getItem('familjens-spel') === '1' || iApp) location.replace('mobil/');
+    } catch {}
+  </script>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
   <style>
     :root {

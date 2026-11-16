@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#140d33">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Familjens Spel">
+  <title>Familjens Spel</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="ikon-192.png">
+  <link rel="apple-touch-icon" href="ikon-192.png">
+  <link rel="stylesheet" href="stil.css">
+</head>
+<body>
+  <!-- ========== Vem är du? ========== -->
+  <section id="vem" class="skarm" hidden>
+    <div class="logga">
+      <img src="ikon-192.png" alt="">
+      <h1>Familjens <span>Spel</span></h1>
+    </div>
+    <p class="fraga">Vem är du?</p>
+    <div class="familj" id="familj"></div>
+  </section>
+
+  <!-- ========== Appen ========== -->
+  <section id="app" class="skarm" hidden>
+    <header class="topp">
+      <button class="jag" id="jag" aria-label="Byt spelare"></button>
+      <div class="ledare" id="ledare"></div>
+      <button class="rund" id="installningar" aria-label="Inställningar">⚙️</button>
+    </header>
+
+    <main>
+      <!-- Spel -->
+      <div id="flik-spel" class="flik">
+        <div class="chips" id="chips"></div>
+        <div class="rutnat" id="lista"></div>
+      </div>
+
+      <!-- Topplista -->
+      <div id="flik-topp" class="flik" hidden>
+        <h2 class="rubrik">🏆 Familjeligan</h2>
+        <p class="forklaring">Bäst i ett spel = ⭐⭐⭐, tvåa = ⭐⭐, trea = ⭐</p>
+        <div class="pall" id="pall"></div>
+        <div id="perSpel"></div>
+        <p class="molnstatus" id="molnstatus"></p>
+      </div>
+    </main>
+
+    <nav class="botten">
+      <button data-flik="spel" class="vald"><span>🎮</span>Spel</button>
+      <button data-flik="topp"><span>🏆</span>Topplista</button>
+    </nav>
+  </section>
+
+  <!-- ========== Inställningar ========== -->
+  <dialog id="meny">
+    <h2>⚙️ Inställningar</h2>
+    <div class="rad-instal" id="installRad" hidden>
+      <p>Lägg appen på hemskärmen</p>
+      <button class="knapp" id="installera">📲 Installera</button>
+    </div>
+    <div class="rad-instal">
+      <p id="offlineText">Spel sparade för offline: …</p>
+      <div class="stapel"><div id="offlineStapel"></div></div>
+      <button class="knapp" id="laddaNer">⬇️ Spara alla spel på telefonen</button>
+    </div>
+    <div class="rad-instal">
+      <p>Röst som läser upp</p>
+      <button class="knapp" id="rostKnapp">🔊 På</button>
+    </div>
+    <button class="knapp stang" id="stangMeny">Klar</button>
+  </dialog>
+
+  <div id="firande" hidden></div>
+  <canvas id="konfetti"></canvas>
+
+  <script src="../spel-lista.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

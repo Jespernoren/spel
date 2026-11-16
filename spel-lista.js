@@ -5,6 +5,7 @@
 //  status:    "klar" = spelbart, "snart" = filen är inte uppladdad än
 //  spelare:   vilka filterknappar spelet syns under
 //  farg:      två färger för kortets bakgrund
+//  mobil:     false = syns inte i mobilappen Familjens Spel (mobil/). Utelämna = syns.
 // =============================================================
 window.SPEL = [
   {
@@ -53,6 +54,7 @@ window.SPEL = [
   },
   {
     mapp: "printa-hem",
+    mobil: false, // bara dator – syns inte i appen Familjens Spel
     namn: "Soptippsvägen 1",
     ikon: "🏚️",
     beskrivning: "Mamma kastade ut dig. Nu bor du vid soptippen – mal skräp till filament och printa dig ett hem.",
@@ -106,6 +108,7 @@ window.SPEL = [
   },
   {
     mapp: "charlies-poolparty",
+    mobil: false, // bara dator – syns inte i appen Familjens Spel
     namn: "Charlies Poolparty",
     ikon: "🏊‍♀️",
     beskrivning: "Samla badankor och ta dig till poolpartyt.",

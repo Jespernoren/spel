@@ -1,0 +1,163 @@
+/* =============================================================
+   Familjens Spel – stil (mobil först)
+   ============================================================= */
+:root {
+  --bg: #140d33;
+  --bg2: #241256;
+  --panel: rgba(255, 255, 255, 0.08);
+  --kant: rgba(255, 255, 255, 0.14);
+  --text: #f6f4ff;
+  --dimmad: #b6addf;
+  --gul: #ffd43b;
+  --rosa: #ff4fa3;
+  --cyan: #3de3ff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { min-height: 100%; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: radial-gradient(120% 80% at 10% 0%, #3b1d8f 0%, transparent 55%),
+              radial-gradient(100% 70% at 100% 100%, #7a1a5c 0%, transparent 55%), var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  overscroll-behavior: none;
+  user-select: none;
+}
+[hidden] { display: none !important; }
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+
+/* ---------- Avatar (bild eller emoji) ---------- */
+.avatar {
+  position: relative; display: inline-grid; place-items: center; flex: 0 0 auto;
+  border-radius: 50%; overflow: hidden; vertical-align: middle;
+  background: radial-gradient(circle at 35% 30%, #fff6 0, transparent 60%), var(--f);
+  box-shadow: 0 0 0 3px var(--f), 0 4px 14px rgba(0,0,0,.35);
+}
+.avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* ---------- Vem är du? ---------- */
+#vem {
+  min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+  gap: 22px;
+}
+.logga { text-align: center; }
+.logga img { width: 84px; height: 84px; border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.4); animation: gunga 3s ease-in-out infinite; }
+.logga h1 { margin-top: 10px; font-size: 34px; font-weight: 900; letter-spacing: .5px; text-shadow: 0 0 18px rgba(255,79,163,.6); }
+.logga h1 span { color: var(--gul); }
+@keyframes gunga { 50% { transform: translateY(-6px) rotate(-3deg); } }
+.fraga { font-size: 22px; font-weight: 800; color: var(--dimmad); }
+.familj { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; width: 100%; max-width: 380px; }
+.medlem {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 18px 8px 14px; border-radius: 26px; background: var(--panel); border: 1px solid var(--kant);
+  transition: transform .15s cubic-bezier(.3,1.6,.5,1); animation: in .4s both;
+}
+.medlem:nth-child(2) { animation-delay: .06s } .medlem:nth-child(3) { animation-delay: .12s } .medlem:nth-child(4) { animation-delay: .18s }
+.medlem:active { transform: scale(.94); }
+.medlem b { font-size: 20px; }
+.krona { position: absolute; top: -14px; left: 50%; transform: translateX(-50%) rotate(-8deg); font-size: 34px; z-index: 2; filter: drop-shadow(0 3px 4px rgba(0,0,0,.4)); animation: gunga 2s ease-in-out infinite; }
+@keyframes in { from { opacity: 0; transform: translateY(14px) scale(.96); } }
+
+/* ---------- Appen ---------- */
+#app { min-height: 100dvh; padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+.topp {
+  position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 10px;
+  padding: max(12px, env(safe-area-inset-top)) 14px 12px;
+  background: linear-gradient(var(--bg) 70%, transparent);
+}
+.jag { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; padding: 4px 12px 4px 4px; border-radius: 999px; background: var(--panel); }
+.ledare { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; color: var(--dimmad); text-align: center; }
+.ledare b { color: var(--gul); }
+.rund { width: 44px; height: 44px; border-radius: 50%; background: var(--panel); font-size: 20px; }
+
+main { padding: 0 14px; max-width: 900px; margin: 0 auto; }
+
+.chips { display: flex; gap: 8px; margin: 4px 0 14px; overflow-x: auto; scrollbar-width: none; }
+.chips button {
+  flex: 0 0 auto; padding: 10px 16px; border-radius: 999px; font-weight: 800; font-size: 15px;
+  background: var(--panel); border: 1px solid var(--kant);
+}
+.chips button.vald { background: var(--gul); color: #1a1530; border-color: var(--gul); box-shadow: 0 0 16px rgba(255,212,59,.5); }
+
+.rutnat { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.kort {
+  position: relative; display: flex; flex-direction: column; border-radius: 22px; overflow: hidden;
+  text-decoration: none; color: inherit; background: var(--panel); border: 1px solid var(--kant);
+  animation: in .4s both; transition: transform .15s cubic-bezier(.3,1.6,.5,1);
+}
+.kort:active { transform: scale(.95); }
+.omslag { height: 110px; display: grid; place-items: center; background: linear-gradient(135deg, var(--g1), var(--g2)); }
+.ikon { font-size: 60px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.35)); }
+.info { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.info h3 { font-size: 16px; line-height: 1.2; }
+.fot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: auto; font-size: 13px; font-weight: 800; }
+.led { display: inline-flex; align-items: center; gap: 4px; color: var(--gul); }
+.mitt { color: var(--cyan); }
+.ny { position: absolute; top: 8px; right: 8px; z-index: 2; font-size: 11px; font-weight: 900; text-transform: uppercase; padding: 4px 8px; border-radius: 999px; background: var(--gul); color: #1a1530; }
+.tom { color: var(--dimmad); padding: 20px 4px; }
+
+/* ---------- Topplista ---------- */
+.rubrik { font-size: 26px; text-align: center; margin-top: 6px; }
+.forklaring { text-align: center; color: var(--dimmad); font-size: 13px; margin: 6px 0 14px; }
+.pall { display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: end; gap: 8px; margin: 26px 0 18px; }
+.plats { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.plats b { font-size: 16px; }
+.plats .stj { font-size: 14px; font-weight: 800; color: var(--gul); }
+.plats .krona { top: -30px; }
+.block {
+  width: 100%; border-radius: 14px 14px 4px 4px; display: grid; place-items: center;
+  font-size: 30px; font-weight: 900; color: #1a1530;
+  background: linear-gradient(var(--f), color-mix(in srgb, var(--f) 55%, #000));
+}
+.p1 .block { height: 110px; } .p2 .block { height: 80px; } .p3 .block { height: 60px; }
+.fyra { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 16px; background: var(--panel); font-size: 15px; }
+.fyra span:last-child { margin-left: auto; color: var(--gul); font-weight: 800; }
+
+.spelrad { margin: 12px 0; padding: 12px; border-radius: 20px; background: var(--panel); border: 1px solid var(--kant); }
+.spelnamn { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 17px; margin-bottom: 8px; }
+.miniikon { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; background: linear-gradient(135deg, var(--g1, #6d3cff), var(--g2, #ff4fa3)); }
+.placering { display: flex; align-items: center; gap: 10px; padding: 6px 4px; font-size: 16px; }
+.placering b { margin-left: auto; color: var(--gul); font-size: 18px; }
+.molnstatus { text-align: center; color: var(--dimmad); font-size: 13px; margin: 18px 0 8px; }
+
+/* ---------- Bottenmeny ---------- */
+.botten {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex;
+  padding: 8px 14px max(10px, env(safe-area-inset-bottom));
+  background: rgba(20, 13, 51, .92); backdrop-filter: blur(12px); border-top: 1px solid var(--kant);
+}
+.botten button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px; border-radius: 16px; font-size: 13px; font-weight: 800; color: var(--dimmad); }
+.botten button span { font-size: 26px; }
+.botten button.vald { color: var(--text); background: var(--panel); }
+
+/* ---------- Dialog och firande ---------- */
+dialog {
+  margin: auto; width: min(92vw, 420px); border: 1px solid var(--kant); border-radius: 26px; padding: 22px;
+  background: var(--bg2); color: var(--text);
+}
+dialog::backdrop { background: rgba(0,0,0,.6); }
+dialog h2 { margin-bottom: 14px; }
+.rad-instal { display: flex; flex-direction: column; gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--kant); }
+.rad-instal p { color: var(--dimmad); }
+.stapel { height: 10px; border-radius: 999px; background: var(--panel); overflow: hidden; }
+.stapel div { height: 100%; width: 0; background: linear-gradient(90deg, var(--cyan), var(--gul)); transition: width .2s; }
+.knapp { padding: 14px 18px; border-radius: 16px; font-weight: 900; font-size: 17px; background: var(--gul); color: #1a1530; }
+.knapp:disabled { opacity: .7; }
+.knapp.stang { width: 100%; margin-top: 16px; background: var(--panel); color: var(--text); }
+
+#firande { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(10, 5, 30, .75); padding: 20px; }
+#firande .ruta {
+  width: min(90vw, 360px); text-align: center; padding: 30px 20px 22px; border-radius: 30px;
+  background: linear-gradient(160deg, var(--bg2), #3a1670); border: 2px solid var(--f);
+  box-shadow: 0 0 40px color-mix(in srgb, var(--f) 60%, transparent);
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  animation: hoppa .5s cubic-bezier(.3,1.6,.5,1);
+}
+#firande h2 { font-size: 30px; }
+#firande p { font-size: 18px; color: var(--dimmad); }
+#firande p b { color: var(--gul); font-size: 24px; }
+@keyframes hoppa { from { transform: scale(.5); opacity: 0; } }
+#konfetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 60; display: none; }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
