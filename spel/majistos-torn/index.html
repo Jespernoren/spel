@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
+<script src="../../delat/rost.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Majistos Torn</title>
@@ -289,6 +290,15 @@
   #win .crown { font-size:84px; animation:cbounce 1s infinite; }
   @keyframes cbounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-18px);} }
   #win h1 { color:#fff; font-size:clamp(28px,7vw,52px); text-align:center; text-shadow:3px 3px 0 #2a4fb0; margin:12px; }
+
+  /* Mobil på höjden: klossarna under tornbygget i stället för bredvid */
+  @media (max-width:600px){
+    .build-stage { flex-direction:column; align-items:center; gap:12px; margin-top:6px; }
+    .build-area { transform-origin:top center; }
+    .tray { flex-direction:row; flex-wrap:wrap; justify-content:center; align-items:flex-end; max-width:calc(100vw - 155px); padding:10px; }
+    .count-box { width:calc(100vw - 165px); }
+    .pattern-row, .palette, .shapes-row, .numrow { gap:10px; }
+  }
 </style>
 </head>
 <body>
@@ -490,7 +500,9 @@ const LEVELS=['build','pattern','odd','count','sort'];
 const FLOOR_COLORS=['#e84d4d','#4caf50','#42a5f5','#ffce3a','#ab47bc','#ff9800','#26c6da','#ec407a','#9ccc65','#5c6bc0'];
 const FLOOR_H=32, BASE_H=60, SKY_MAX=6200, STATIC_FLOORS=5;
 
-function setFloors(n){ floors=n; document.getElementById('floorCount').textContent='🏰 '+n; }
+function setFloors(n){ floors=n; document.getElementById('floorCount').textContent='🏰 '+n;
+  // rekord = högsta tornet (visas i spelhallen och familjens topplista)
+  try{ if(n>(+localStorage.getItem('rekord:majistos-torn')||0)) localStorage.setItem('rekord:majistos-torn',n); }catch(e){} }
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active');
   const playing=(id==='play'||id==='scene');
   const tp=document.getElementById('towerPanel'); if(tp) tp.style.display=playing?'block':'none';

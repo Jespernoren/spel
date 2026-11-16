@@ -118,3 +118,12 @@ Mobilspelhallen för barnens Android-telefoner: **jespernoren.github.io/spel/mob
 - **Gemensam topplista för alla telefoner:** fyll i `DATABAS_URL` i `mobil/moln.js` (Firebase Realtime Database). Tom = poängen syns bara på den egna telefonen.
 - **Offline:** `sw.js` (i roten) sparar spelen på telefonen. Kör `python3 verktyg/mobil-filer.py` när du lagt till ett spel, så kommer det med i knappen *Spara alla spel*.
 - 🏠-knappen i spelen leder till `index.html`, som skickar tillbaka till appen om man kom därifrån.
+
+### Mobilvänliga spel (granskat 2026-11-16)
+✅ I appen: Majistos Torn, Sudoku-äventyret, Charlies Magiska Lärospel, Charlies Popcorn-Äventyr.
+🟡 Nästan: Krangs Bajsmaskin (vrida delar kräver piltangenter, behöver vrid-knappar).
+❌ 3D med styrning (för svårt på mobil): Trollskattornet, Charlies Kalas, Rädda Barnen, Strandjakten, Trollstaven, Slalom, Poolparty 2. Simons CNC-Maskin är Simons spel.
+Ta bort `mobil: false` i `spel-lista.js` när ett spel blivit mobilvänligt.
+
+### Uppläsning: `delat/rost.js`
+Läggs först i `<head>` i alla spel. Gör om ensamma stora bokstäver till små innan rösten läser, så att den säger "ö" och inte "versal Ö".

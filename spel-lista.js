@@ -10,6 +10,7 @@
 window.SPEL = [
   {
     mapp: "trollskattornet",
+    mobil: false, // inte helt mobilvänligt än (granskat 2026-11-16) – syns inte i Familjens Spel
     namn: "Trollskattornet",
     ikon: "🏰",
     beskrivning: "Du är en trollkarl! Trolla fram plattor och klättra upp i det höga tornet. Lura ner den elaka trollkarlen från trollcirkeln, skjut trollformler och ta skatten. Köp magiska trollstavar i butiken. Idé: Beppe.",
@@ -21,6 +22,7 @@ window.SPEL = [
   },
   {
     mapp: "charlies-kalas",
+    mobil: false, // inte helt mobilvänligt än (granskat 2026-11-16) – syns inte i Familjens Spel
     namn: "Charlies Kalas",
     ikon: "🎂",
     beskrivning: "Charlie fyller 7 år, men Beppe och tårtan är borta! Fråga grupperna, hoppa uppför regnbågstrappan, blås såpbubblor på tjuven och bjud kungen på kalaset. Hitta alla presenter för en hemlig överraskning! Idé: Charlie.",
@@ -32,6 +34,7 @@ window.SPEL = [
   },
   {
     mapp: "radda-barnen",
+    mobil: false, // inte helt mobilvänligt än (granskat 2026-11-16) – syns inte i Familjens Spel
     namn: "Rädda Barnen",
     ikon: "🌈",
     beskrivning: "Tjuven har tagit mammas tre barn på förskolan! Hitta barnen i regnbågspyjamas, hoppa över lavan och fira med disco hemma med hela familjen. Idé: Charlie.",
@@ -43,6 +46,7 @@ window.SPEL = [
   },
   {
     mapp: "strandjakten",
+    mobil: false, // inte helt mobilvänligt än (granskat 2026-11-16) – syns inte i Familjens Spel
     namn: "Strandjakten",
     ikon: "🏖️",
     beskrivning: "Mamma, barnet och bebisen i barnvagnen letar efter sina kläder på stranden. Slå tjuven i hänga gubbe så att han inte tar bebisen, och fira med poolparty! Idé: Charlie.",
@@ -66,6 +70,7 @@ window.SPEL = [
   },
   {
     mapp: "testrummet",
+    mobil: false, // inte helt mobilvänligt än (granskat 2026-11-16) – syns inte i Familjens Spel
     namn: "Trollstaven",
     ikon: "🪄",
     beskrivning: "Ett magiskt bibliotek som en labyrint! Lyft böckerna med trollstaven och sortera dem på rätt färghylla. Följ golvets färg till rätt hylla, öppna högar, kistor, vaser och skåp och hitta 3 trollkristaller så blir staven starkare. Idé: Beppe.",
@@ -77,6 +82,7 @@ window.SPEL = [
   },
   {
     mapp: "slalom",
+    mobil: false, // inte helt mobilvänligt än (granskat 2026-11-16) – syns inte i Familjens Spel
     namn: "Slalom",
     ikon: "⛷️",
     beskrivning: "Skicross mot tre datoråkare! Börja med träningsåket: lär dig svänga, pumpa i kullarna och poppa vid hoppen.",
@@ -98,6 +104,7 @@ window.SPEL = [
   },
   {
     mapp: "krangs-bajsmaskin",
+    mobil: false, // inte helt mobilvänligt än (granskat 2026-11-16) – syns inte i Familjens Spel
     namn: "Krangs Bajsmaskin",
     ikon: "💩",
     beskrivning: "Bygg en galen maskin som leder bajset ner i tunnan.",
@@ -119,6 +126,7 @@ window.SPEL = [
   },
   {
     mapp: "charlies-poolparty-2",
+    mobil: false, // inte helt mobilvänligt än (granskat 2026-11-16) – syns inte i Familjens Spel
     namn: "Charlies Poolparty 2",
     ikon: "🏖️",
     beskrivning: "Nu i 3D! Sex banor till STORA poolpartyt: badringar, flottar, krabbor och en hemlig guldanka på varje bana.",
@@ -160,6 +168,7 @@ window.SPEL = [
   },
   {
     mapp: "simons-cnc-maskin",
+    mobil: false, // inte helt mobilvänligt än (granskat 2026-11-16) – syns inte i Familjens Spel
     namn: "Simons CNC-Maskin",
     ikon: "⚔️",
     beskrivning: "Fräs fram riddarens sköld och svärd och bryt förbannelsen.",
