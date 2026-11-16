@@ -1068,9 +1068,9 @@
   "var": "Haggan Helen i efterspelet (punkt AN)"
  },
  {
-  "id": "pappa-8c73fc7d",
+  "id": "pappa-143d5163",
   "figur": "pappa",
-  "text": "Tjenare. Här bor du alltså.",
+  "text": "Jaså. Här bor du alltså.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -1080,9 +1080,9 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
-  "id": "pappa-07f6ddeb",
+  "id": "pappa-45de4e33",
   "figur": "pappa",
-  "text": "Aha, vad lugnt då.",
+  "text": "Mamma skickade burkar. Jag bar dem.",
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
@@ -3868,6 +3868,12 @@
   "var": "Dina tankar, tips och varningar"
  },
  {
+  "id": "du-5e7d2568",
+  "figur": "du",
+  "text": "Grinden. Det är Helen, hör jag på stegen.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
   "id": "du-ea299da8",
   "figur": "du",
   "text": "Gäststuga. Alltid bra att ha.",
@@ -4069,6 +4075,172 @@
   "id": "ali-424482ec",
   "figur": "ali",
   "text": "Gå inte förbi för fort. Jag hinner inte vinka.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-cfab7789",
+  "figur": "rolf",
+  "text": "ÖJ! Dä ä kaffe nu. Ja tog mä en bulle. Den ä från i går, men dä märks int.",
+  "kalla": "Dä ä kaffe nu. Jag tog med en bulle. Den ä från i går, men dä märks inte.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-b9329452",
+  "figur": "rolf",
+  "text": "Birgitta hade aldrig trott att nån sklule bo hä frivilligt.\n*skulle",
+  "kalla": "Birgitta hade aldrig trott att nån skulle bo här frivilligt.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-98efc0d8",
+  "figur": "rolf",
+  "text": "Birgitta hade aldrig trott att nån skulle bo hä frivilligt.",
+  "kalla": "Birgitta hade aldrig trott att nån skulle bo här frivilligt.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-310e1986",
+  "figur": "rolf",
+  "text": "ÖJ! Ja htitade den hä. Tänkte på dej. Fråga int varför.\n*hittade",
+  "kalla": "Jag hittade den här. Tänkte på dig. Fråga inte varför.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-158d59af",
+  "figur": "rolf",
+  "text": "ÖJ! Ja hittade den hä. Tänkte på dej. Fråga int varför.",
+  "kalla": "Jag hittade den här. Tänkte på dig. Fråga inte varför.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-8e7b4c12",
+  "figur": "ali",
+  "text": "Jag har lunch i fyrtio minuter. Jag tar trettio här.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-6de27f23",
+  "figur": "ali",
+  "text": "Stolen är bra. Min fru skulle säga att den är för bra för dig. Ta det som en komplimang.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-13c3a353",
+  "figur": "ali",
+  "text": "Jag ritade nåt i natt. Du får det. Säg inte till min pappa.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "mamma-bf7abcb6",
+  "figur": "mamma",
+  "text": "Det är så STÄDAT!",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "mamma-367d5e49",
+  "figur": "mamma",
+  "text": "Jag fyllde frysen. Säg inget.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "mamma-517d07ce",
+  "figur": "mamma",
+  "text": "Strumporna. Du kommer tacka mig i januari.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "berattare-843087ab",
+  "figur": "berattare",
+  "text": "Jag skulle bara förbi. Det här var inte vad jag väntat mig.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "berattare-326dca57",
+  "figur": "berattare",
+  "text": "Ängen, ja. Vi kanske kan prata om den.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-e60b6c5b",
+  "figur": "du",
+  "text": "Magen låter som kvarnen.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-582ecd08",
+  "figur": "du",
+  "text": "Jag fryser om tårna.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-acba0f1d",
+  "figur": "rolf",
+  "text": "ÖJ! Hon kalldae den Humlan. Ta hand om den. /R\n*kallade",
+  "kalla": "Hon kallade den Humlan. Ta hand om den. /R",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-96c9ff5d",
+  "figur": "rolf",
+  "text": "ÖJ! Hon kallade den Humlan. Ta hand om den. /R",
+  "kalla": "Hon kallade den Humlan. Ta hand om den. /R",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "mamma-c6f51987",
+  "figur": "mamma",
+  "text": "Jag kommer. Säg inget. ❤️",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "mamma-b15c9b10",
+  "figur": "mamma",
+  "text": "Vi kommer kl 3. Pappa tar med granen. Den är för stor.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-ae74df0e",
+  "figur": "rolf",
+  "text": "Hörru. Hoppa in. Ja väntar. Nåja, två minuter. MVH ROLF",
+  "kalla": "Hoppa in. Jag väntar. Nåja, två minuter. /R",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-5d768a54",
+  "figur": "rolf",
+  "text": "Hörru. Hoppa in. Ja väntar. Nåja, två minuter. /R",
+  "kalla": "Hoppa in. Jag väntar. Nåja, två minuter. /R",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-fb13ca4e",
+  "figur": "rolf",
+  "text": "Hörru. Vill du följa mä på rundan? Morgonkontoret, konditoriet o ett ställe ja aldrig visat nån. Ja tutar två gånger vid tippen. /R",
+  "kalla": "Hörru. Vill du följa me på rundan? Morgonkontoret, konditoriet o ett ställe ja aldrig visat nån. Ja tutar två gånger vid tippen. /R",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-8862b6ae",
+  "figur": "ali",
+  "text": "En hylla. Den lutar lite. Det är karaktär.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-d9439e1d",
+  "figur": "ali",
+  "text": "Laga inget som luktar fisk. Rolf kommer då.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-ac19741f",
+  "figur": "ali",
+  "text": "Med senap. Det ingår. Allt annat kostar.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-b4d371b9",
+  "figur": "du",
+  "text": "Kostym. På Soptippsvägen?",
   "var": "Dina tankar, tips och varningar"
  },
  {
@@ -4533,12 +4705,6 @@
   "var": "Sms i malBurk"
  },
  {
-  "id": "ali-d7ce5504",
-  "figur": "ali",
-  "text": "Folk köper mer av någon som har det fint. Jag vet inte varför. Jag har det inte fint.",
-  "var": "Sms i ritaHud"
- },
- {
   "id": "rolf-7dcf6069",
   "figur": "rolf",
   "text": "ÖJ! Ja har snackat mä Bengt-Åke. Han ä fortfarande förbannad på hela världen. Men ja breätta om allt du gjort, att du städa, hjälpt mej o sagt nej till skumma grejer. Han lyssna. Han ä villig att sälja. Säj int att ja sa att han ä snäll. Han ä int snäll. Kolla tavlan vid vägen. /R\n*berätta",
@@ -4563,13 +4729,6 @@
   "figur": "mamma",
   "text": "Pappa säger att du har KÖPT MARK?! Hur?? Vems?? Har du skrivit på något?? Skicka papperen till mig så läser jag.",
   "var": "Sms i kopMark"
- },
- {
-  "id": "rolf-0fa5b740",
-  "figur": "rolf",
-  "text": "Hörru. Vill du följa mä på rundan? Morgonkontoret, konditoriet o ett ställe ja aldrig visat nån. Hoppa in när ja tutar vid tippen. /R",
-  "kalla": "Hörru. Vill du följa me på rundan? Morgonkontoret, konditoriet o ett ställe ja aldrig visat nån. Hoppa in när ja tutar vid tippen. /R",
-  "var": "Sms i kollaResa"
  },
  {
   "id": "rolf-3900bf2f",
@@ -4744,12 +4903,6 @@
   "id": "bror-2229dfac",
   "figur": "bror",
   "text": "Den är inte från mig. Den låg utanför. Typ.",
-  "var": "U_REPLIK"
- },
- {
-  "id": "mamma-bf7abcb6",
-  "figur": "mamma",
-  "text": "Det är så STÄDAT!",
   "var": "U_REPLIK"
  },
  {

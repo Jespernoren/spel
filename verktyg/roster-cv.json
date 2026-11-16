@@ -1,0 +1,74 @@
+[
+ {
+  "id": "pappa-143d5163",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Jaså. Här bor du alltså.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Jaså. Här bor du alltså.",
+  "hand": false
+ },
+ {
+  "id": "pappa-45de4e33",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Mamma skickade burkar. Jag bar dem.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Mamma skickade burkar. Jag bar dem.",
+  "hand": false
+ },
+ {
+  "id": "rolf-cfab7789",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "ÖJ! Dä ä kaffe nu. Ja tog mä en bulle. Den ä från i går, men dä märks int.",
+  "skickas": "[old, tired, thick Värmland accent, calm] ÖJ! [short pause] Dä ä kaffe nu. Ja tog mä en bulle. Den ä från i går, men dä märks int.",
+  "hand": false
+ },
+ {
+  "id": "rolf-b9329452",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Birgitta hade aldrig trott att nån sklule bo hä frivilligt.\n*skulle",
+  "skickas": "[old, tired, thick Värmland accent, calm] [sighs] Birgitta hade aldrig trott att nån sklule bo hä frivilligt. [sorrowful] *skulle",
+  "hand": false
+ },
+ {
+  "id": "rolf-98efc0d8",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Birgitta hade aldrig trott att nån skulle bo hä frivilligt.",
+  "skickas": "[old, tired, thick Värmland accent, calm] [sorrowful] [sighs] Birgitta hade aldrig trott att nån skulle bo hä frivilligt.",
+  "hand": false
+ },
+ {
+  "id": "rolf-acba0f1d",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "ÖJ! Hon kalldae den Humlan. Ta hand om den. /R\n*kallade",
+  "skickas": "[old, tired, thick Värmland accent, calm] ÖJ! [short pause] Hon kalldae den Humlan. Ta hand om den. /R *kallade [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-96c9ff5d",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "ÖJ! Hon kallade den Humlan. Ta hand om den. /R",
+  "skickas": "[old, tired, thick Värmland accent, calm] ÖJ! [short pause] Hon kallade den Humlan. Ta hand om den. /R [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-fb13ca4e",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Dina tankar, tips och varningar",
+  "visad": "Hörru. Vill du följa mä på rundan? Morgonkontoret, konditoriet o ett ställe ja aldrig visat nån. Ja tutar två gånger vid tippen. /R",
+  "skickas": "[old, tired, thick Värmland accent, calm] Hörru. [short pause] Vill du följa mä på rundan? Morgonkontoret, konditoriet o ett ställe ja aldrig visat nån. Ja tutar två gånger vid tippen. /R [chuckles]",
+  "hand": false
+ }
+]

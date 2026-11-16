@@ -344,7 +344,7 @@
     if (/^Lägg 3 vaser i säljlådan/.test(txt)) {
       if (!H.antalInv('n2_vas')) { await printa({ typ: 'n2_vas' }); return; }
       const l = H.placerade.find((p) => p.typ === 'saljlada'); if (!l) { handling('ingen säljlåda'); await vanta(3); return; }
-      valj('n2_vas'); await gaTill(l.mesh, 1.4, 'säljlådan'); H.saljladaAktivera(l); handling('lägger en vas i säljlådan'); await vanta(1); return;
+      await gaTill(l.mesh, 1.4, 'säljlådan'); H.saljladaAktivera(l); await vanta(0.5); document.querySelector('[data-lada="n2_vas"]')?.click(); await vanta(0.4); document.querySelector('[data-lada-salj]')?.click(); await vanta(0.4); await stangPopups(); handling('lägger vaserna i säljlådan (DA)'); await vanta(1); return;
     }
     if (/^Köp receptet på cykelhjälmen/.test(txt)) { await kopRecept('n2_hjalm'); return; }
     if (/^Printa en lampskärm att sälja/.test(txt)) { if (!H.harRecept('lampskarm')) await kopRecept('lampskarm'); await printa({ typ: 'lampskarm' }); return; }   // CF
