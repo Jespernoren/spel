@@ -182,7 +182,7 @@ def main():
     ut = []
     for e in manus:
         f = e['figur']
-        if f == 'ali': continue
+        if f == 'ali' or f not in GRUND: continue   # Ali behåller gamla rösten; figurer utan grundtagg (Helen, Bengt) får egna profiler senare (BR+BS)
         kalla = e.get('kalla') or e['text']
         if not re.search(r'[A-Za-zÅÄÖåäö]', EMOJI.sub('', kalla)): continue   # bara emoji (pappas 👍) – inget att läsa
         if e['id'] in hand:

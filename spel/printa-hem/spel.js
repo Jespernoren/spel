@@ -5392,13 +5392,13 @@ const ROLF = [
     brev: 'ÖJ! Ja såg att du börja städa gården. Respekt. Ingen städar här. Är de du som printar grejer? Ja hitta en gammal kopparkanna på tippen, me såna krumelurer på. Ali blev alldeles blank i ögonen. Den va som hans farmors. Som tack ritade han en ölhållare me kylklamp åt mig i datorn. Ritningen ligger i lådan. Nyckeln till tippen oxå. Ta så mycke plast du vill. Kall öl e viktigt. /Rolf (sopbilen)',   // CH
     tack: 'TACK för hållarn!! Ölen e iskall. La me en gammal lur i lådan, så ja kan sms:a dig. /Rolf' },   // punkt BD/BE: T0731 – nyckeln kom med brev 1, tacket ger luren
   { vara: 'flaskoppnare', forskott: ['karra'],
-    brev: 'Gomorron! Rolf här. Kajsa (katten) knuffa ner min flasköppnare i tippen 😩 Printar du en ny? Me magnet så den sitter på flaket. Ritningen ligger i lådan. Ali ritade den åt mig igen. Han tar betalt i korv. Ja ställde min gamla skottkärra bredvid – den e din redan nu. Me kärran bär du åtta gånger mer skräp per vända. Tunnorna o kajakerna e för tunga för din kvarn. Än. /Rolf',
+    brev: 'Gomorron! Rolf här. Kajsa (katten) knuffa ner min flasköppnare i tippen 😩 Printar du en ny? Me magnet så den sitter på flaket. Ritningen ligger i lådan. Ali ritade den åt mig igen. Han tar betalt i korv. Ja ställde min gamla skottkärra bredvid – den e din redan nu. Hon e gammal men hon håller. Tunnorna där borta e för tunga för din kvarn. Än. /Rolf',
     tack: 'PERFEKT öppnare!!! Lite pengar i lådan. Hoppas kärran gör nytta. /Rolf' },
   { vara: 'grillspade',
-    brev: 'Ska grilla på lördag. Ensam som vanligt, Kajsa äter inte korv. Ingen grillspade. Min gamla smälte. Lång historia. Ritningen ligger i lådan. Fixar du? 250 spänn o ja tippar dubbelt nästa gång. /Rolf 🍖',
+    brev: 'Ska grilla på lördag. Ensam som vanligt, Kajsa äter inte korv. Ingen grillspade. Min gamla smälte. Lång historia. Ritningen ligger i lådan. Fixar du? Ja betalar. O ja kanske tappar lite extra skräp vid din grind. Av misstag. /Rolf 🍖',
     tack: 'Grillspaden e ju KONST. Pengar i lådan. Ses på lördag. Eller inte. Vi får se. /Rolf' },
   { vara: 'tomte',
-    brev: 'Flaket e så trist. Folk vinkar aldrig åt sopbilen. Med en tomte på flaket kanske dom gör det. En sån me luva o skägg. Ritningen ligger i lådan. 400 spänn + dubbel last! /Rolf 🎅',
+    brev: 'Flaket e så trist. Folk vinkar aldrig åt sopbilen. Med en tomte på flaket kanske dom gör det. En sån me luva o skägg. Ritningen ligger i lådan. Ja betalar. O du ska få se på skräp. /Rolf 🎅',
     tack: 'Tomten sitter på flaket nu. Vi vinkar åt alla. ALLA. En tant vinka tillbaka. Första gången på trettio år. Pengar i lådan. /Rolf' },   // CT
 ];ROLF.forEach((o, i) => { o.belo = [...B.ROLF_BELONING[i]]; });
 
@@ -6337,7 +6337,7 @@ function ata(typ) {
 // Förvarning → figuren väntar vid grinden → du klickar → samtal (bara inom 6 m och aldrig i en meny) → gåva och respekt.
 const BESOK = [
   { id: 'rolfKaffe', namn: 'Rolf på kaffe', trivsel: 180, vem: 'rolf', respekt: 8, forvarning: () => { tuta(); setTimeout(tuta, 500); },
-    rader: ['Dä ä kaffe nu. Jag tog med en bulle. Den ä från i går, men dä märks inte.', 'Birgitta hade aldrig trott att nån skulle bo här frivilligt.', 'Jag hittade den här. Tänkte på dig. Fråga inte varför.'],
+    rader: ['Dä ä kaffe nu. Ja tog med en bulle. Den ä från i går, men dä märks inte.', 'Birgitta hade aldrig trott att nån skulle bo här frivilligt.', 'Ja hittade den här. Tänkte på dig. Fråga inte varför.'],
     gava: () => { ata('bulle'); S.kyl = true; ui.toast('🧊 Rolf lämnade sin och Birgittas gamla kyl – maten håller längre nu', 'guld'); setTimeout(() => sms('rolf', 'Hon kallade den Humlan. Ta hand om den. /R'), 9000); } },
   { id: 'aliLunch', namn: 'Ali på lunch', trivsel: 230, vem: 'ali', respekt: 10, forvarning: () => ljud.plock(),
     rader: ['Jag har lunch i fyrtio minuter. Jag tar trettio här.', 'Stolen är bra. Min fru skulle säga att den är för bra för dig. Ta det som en komplimang.', 'Jag ritade nåt i natt. Du får det. Säg inte till min pappa.'],
@@ -6483,7 +6483,7 @@ interaktor.registrera(sackRulle, {
     handelse('sopsack');
   },
 });
-const ROLF_RODA = 'La tre rullar röd plast i lådan. Malde backarna själv i natt. PETG, riktigt bra grejer. Mer sånt när folk börjar respektera dej. /R';
+const ROLF_RODA = 'La tre rullar röd plast i lådan. Malde backarna själv i natt. Kajsa hjälpte int till. /R';
 // DK: materialen låses upp av Rolf – ett lass vid upplåsningen, sedan en dagskvot med sopbilen
 const ROD_LASS_SMS = 'Ja hitta ett helt lass på återvinningen. Ingen ville ha dom. Nu ä dom dina. /R', KOLF_LASS_SMS = 'Båtklubben skulle rensa förrådet. Ja hjälpte till. Fråga inte hur. /R';
 const rodUpplast = () => (S.kapitel || 1) >= 2 && !!S.pappaBesok, kolfUpplast = () => (S.kapitel || 1) >= 3;
@@ -6537,7 +6537,7 @@ function uppdateraSopbil(dt) {
     sopbil.position.x = Math.min(TIPP.x, sopbil.position.x + bil.fart * dt);
     if (kvar < 0.01 && S.brevVantar && (S.vakenTid || 0) >= S.brevVantar.tidigast) brevMedSopbilen();   // BO
     if (kvar < 0.01) { bil.fart = 0; bil.t = 0; bil.fas = S.resa === 'bjuden' ? 'resaVantar' : S.post.tillRolf ? 'rolf' : 'svang'; if (bil.fas === 'rolf') startaArende();
-      if (bil.fas === 'resaVantar') { tuta(); setTimeout(tuta, 700); if (!S.resaVantSms) { S.resaVantSms = true; sms('rolf', 'Hoppa in. Jag väntar. Nåja, två minuter. /R'); } } }   // CN regel 5: ingen timer
+      if (bil.fas === 'resaVantar') { tuta(); setTimeout(tuta, 700); if (!S.resaVantSms) { S.resaVantSms = true; sms('rolf', 'Hoppa in. Ja väntar. Nåja, två minuter. /R'); } } }   // CN regel 5: ingen timer
   } else if (bil.fas === 'resaVantar') {
     bil.fart = 0; if (S.resa !== 'bjuden' || bil.t > 120) { bil.fas = 'svang'; bil.t = 0; }   /* "Nåja, två minuter" – sen tippar Rolf och frågar igen nästa gång */
   } else if (bil.fas === 'rolf') {
@@ -6637,8 +6637,8 @@ function uppdateraArstid() {
 // ---------- Respekt ----------
 const BURK_RESPEKT = 4;
 function rolfFyndSms(n) {   // punkt BD: låter som Rolf, inte som ett spelsystem
-  const vad = { 2: 'röda backar av riktigt bra plast', 3: 'kolfiberrester', 4: 'guldglittriga dunkar', 5: 'titanspån' }[n];
-  return `Folk pratar gott om dej. Ja hitta ${vad} på tippen. Tre lådor. Ja la dom vid grinden. /R`;
+  /* DQ E: fyra olika sms, titan finns inte längre */
+  return { 2: 'Folk pratar gott om dej. Ja hitta röda backar av riktigt bra plast på tippen. Ja la dom vid grinden. /R', 3: 'Kajsa hitta en låda kolfiberrester bakom husvagnen. Hon ville int ha dom. Grinden. /R', 4: 'Nån har slängt dunkar som glittrar. Guld, tror ja. Eller glitter. Dom står vid grinden. /R' }[n] || '';
 }
 const ROLF_JOBBLAPP = ['Rolf här. Ja har en grej. Lite känslig. Ja la en lapp i postlådan. Läs den o bränn den sen. /R', 'Ny lapp i lådan. Du vet vad de betyder. /R',   // CT: används i ordning, aldrig två gånger
   'Lapp i lådan. Int brådis. Men lite brådis. /R', 'Ja har skrivit nåt. Med blyerts, så ja kan sudda om de blir fel. Lådan. /R', 'Kajsa satt på lappen hela natten. Den e lite varm. Lådan. /R',
@@ -9086,6 +9086,7 @@ const SMS_POOL = [
   { id: 'b_pappa_mjolk', vem: 'bror', nar: () => S.dag >= 6, text: 'Pappa gick för att tjacka mjölk och kom hem med en motorsåg. "Den var på rea." Vi har inga träd.' },
   { id: 'b_polare', vem: 'bror', nar: () => S.dag >= 8, text: 'Berättade för polarna att min lillebrorsa bygger sitt eget hus. Dom tror jag ljuger. Fortsätt.' },
   // Rolf: vanor och gammalt bagage
+  { id: 'r_kajak', vem: 'rolf', nar: () => (S.kapitel || 1) >= 3, text: 'Fick en kajak i lasset. Ingen paddel. Typiskt. Ja la den vid grinden åt dig. /R' },   /* DQ D: kajaker finns först i kapitel 3 */
   { id: 'r_bulle', vem: 'rolf', nar: () => S.rolf.i >= 1, text: 'Morgonbulle på kontoret me polarna. Bengt har ny keps. Vi pratade om den i en timme. Den e grön. /R' },
   { id: 'r_kajsa', vem: 'rolf', nar: () => S.rolf.i >= 1, text: 'Kajsa la en död mus på min kudde. De e kärlek. Hon får lax ikväll. /R' },
   { id: 'r_kopp', vem: 'rolf', nar: () => S.rolf.i >= 2, text: 'Hittade Birgittas gamla kaffekopp under sängen i husvagnen. Ja dricker inte ur den. Ja bara tittar på den. /R' },
@@ -9136,7 +9137,6 @@ const ROLF_IBLAND = [
   'Tippar extra plast i eftermiddag. Säg inte till chefen. Han heter också Rolf. Förvirrande. /R',
   'Ölhållarn funkar fortfarande. Den e min bästa vän. Ni e delad etta. /R',
   'Såg din skorsten ryka. Eller va de grillen? Hoppas de va grillen. /R',
-  'Fick en kajak i lasset. Ingen paddel. Typiskt. Ja la den vid grinden åt dig. /R',
 ];
 // punkt BD: mamma dag 1 när sängen är printad (40–60 s mellan), pappa och storebror dag 2 efter morgonkortet (+20 s och +60 s)
 paHandelse('tagitUrPrint', ({ sak }) => {
@@ -10301,7 +10301,7 @@ function rostManus() {
   vid('Chefen (också Rolf): böter'); CHEFEN.forEach((t) => add('chefen', t));
   vid('Sopbilsresan med Rolf'); RESA.forEach((x) => add('rolf', x.rad));
   RESA.forEach((x) => (x.val || []).forEach((v) => (v[3] || []).forEach((t) => { L.push(['rolf', t]); D.push(['rolf', t, t, 'Sopbilsresan: konditoriet']); })));   // redan på värmländska – ingen rolfDialekt
-  vid('Rolfs tack för presenter, jobblappar och fynd'); Object.values(ROLF_TACK).forEach((x) => add('rolf', x.text)); ROLF_JOBBLAPP.forEach((t) => add('rolf', t)); [2, 3, 4, 5].forEach((n) => add('rolf', rolfFyndSms(n)));
+  vid('Rolfs tack för presenter, jobblappar och fynd'); Object.values(ROLF_TACK).forEach((x) => add('rolf', x.text)); ROLF_JOBBLAPP.forEach((t) => add('rolf', t)); [2, 3, 4].forEach((n) => add('rolf', rolfFyndSms(n)));
   vid('Rolfs sms om marken och säljlådan'); Object.values(ROLF_MARK).forEach((t) => add('rolf', t)); LADAN_SMS.forEach((t) => add('rolf', t)); add('rolf', ROLF_SALJLADA); add('rolf', ROLF_RODA);
   vid('Brorsans sms dag 1 (punkt AS)'); add('bror', BROR_SMS1); add('bror', BROR_SMS2);
   vid('Ali om det begagnade (punkt AS)'); add('ali', ALI_GAMMALKVARN); add('ali', ALI_BATTERI);
@@ -10818,7 +10818,7 @@ paHandelse('tagitUrPrint', () => {
 const GORAN_REPLIK = {
   mamma: ['mamma', 'Det finns MÅSAR vid soptippar!! Dom tar MAT. Och SMÅ HUNDAR. Du är inte en liten hund men ÄNDÅ.'],
   rolf: ['rolf', 'Dä ä Göran. Han ä från 2014. Han tar int skräp, bara grejer som e fina. MVH ROLF'],
-  rad: ['rolf', 'Göran tar dina grejer? Ali har fågelbad. Måsar ä enkla. Birgitta hade ett vid husvagnen. MVH ROLF'],
+  rad: ['rolf', 'Göran tar dina grejer? Birgitta hade ett fågelbad vid husvagnen. Då lät han bli våra. MVH ROLF'],
   ali: ['ali', 'Ali här. Din mås stod på min disk i morse. Han köpte inget.'],
 };
 const goran = new THREE.Group();
