@@ -3125,12 +3125,6 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-041acefc",
-  "figur": "du",
-  "text": "Skrivaren står kvar på cykeln. Den ska av.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
   "id": "du-3dcf89aa",
   "figur": "du",
   "text": "Tung. Den har storebror aldrig burit så långt.",
@@ -3140,12 +3134,6 @@
   "id": "du-fd359f8f",
   "figur": "du",
   "text": "Den behöver ström. Och det enda här som rör sig är jag.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
-  "id": "du-5548d50f",
-  "figur": "du",
-  "text": "Okej. Trampa. Och välj nåt litet att printa.",
   "var": "Storykedjan (punkt BE)"
  },
  {
@@ -3161,21 +3149,15 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "ali-df4df70e",
-  "figur": "ali",
-  "text": "Mer plast-tråd behöver du. Jag har pappas gamla köttkvarn där bak. Han byggde om den.",
+  "id": "du-abeb3c31",
+  "figur": "du",
+  "text": "Skräpet i tratten. Sen veva.",
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-4cc30b04",
+  "id": "du-341fefab",
   "figur": "du",
-  "text": "En flaska till, sen blir det en rulle.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
-  "id": "du-da4ec593",
-  "figur": "du",
-  "text": "Gripen kostar femtio. Fler nyckelringar, alltså.",
+  "text": "En rulle! Nu en nyckelring. Trampa!",
   "var": "Storykedjan (punkt BE)"
  },
  {

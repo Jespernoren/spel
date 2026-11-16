@@ -12539,15 +12539,15 @@ if (GAMMALT_SPEL) visaOmbyggt();
 // BX: räknar alltid de väggar som faktiskt sitter
 const VAGG_KVAR_TEXT = ['Det är redan tätt. Då kan pengarna gå till en större skrivare.', 'En vägg kvar. Sen är det tätt.', 'Två väggar kvar. Sen är det tätt.', 'Tre väggar kvar. Sen är det tätt.', 'Fyra väggar kvar. Sen är det tätt.'];
 const KEDJA_TEXT = {
-  skylt: ['Soptippsvägen 1. Nu bor jag här. Officiellt. Typ.', 'Skrivaren står kvar på cykeln. Den ska av.'],
+  skylt: ['Soptippsvägen 1. Nu bor jag här. Officiellt. Typ.', null],   // DT: skrivaren står redan på gården
   lastat: ['Tung. Den har storebror aldrig burit så långt.'],
   skrivareStar: [null, 'Den behöver ström. Och det enda här som rör sig är jag.'],
-  cykel: [null, 'Okej. Trampa. Och välj nåt litet att printa.'],
+  cykel: [null, null],
   printStart: ['Den piper. Den GÖR något.'],
   printKlar: ['Klar! Ta ut den innan den ändrar sig.'],
-  aliKvarn: [null, 'Mer plast-tråd behöver du. Jag har pappas gamla köttkvarn där bak. Han byggde om den.', 'ali'],
-  kvarnStar: [null, 'En flaska till, sen blir det en rulle.'],
-  rulle: [null, 'Gripen kostar femtio. Fler nyckelringar, alltså.'],   // F1: priset, inte saldot
+  aliKvarn: [null, null],   // DT: Ali säger sin kvarnreplik när man köper den
+  kvarnStar: [null, 'Skräpet i tratten. Sen veva.'],   // DT
+  rulle: [null, 'En rulle! Nu en nyckelring. Trampa!'],   // DT
   harRadGrip: ['Femtio kronor. Nu har jag råd med gripen.'],
   grip: [null, 'Tre åt gången. Men mina armar… Kvarnen borde veva själv.'],
   motorKopt: [null, 'Motorn är min. Nu ska den printas och sitta på kvarnen. Slut på vevandet.'],   // B27
