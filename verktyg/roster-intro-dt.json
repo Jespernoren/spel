@@ -1,0 +1,91 @@
+[
+ {
+  "id": "intro-berattare-9a1fc39a",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Du packar ryggsäcken och storebrors gamla 3D-skrivare. Allt surras fast på cykeln.",
+  "skickas": "[warm, hopeful, storyteller] [calm] Du packar ryggsäcken och storebrors gamla 3D-skrivare. Allt surras fast på cykeln.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-8a744072",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Förbi skolan. Förbi affären. Förbi där husen tar slut.",
+  "skickas": "[warm, hopeful, storyteller] [calm] Förbi skolan. Förbi affären. Förbi där husen tar slut.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-c354b839",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Vid soptippen står ett tomt skjul och en gård full av skräp.",
+  "skickas": "[warm, hopeful, storyteller] [curious] Vid soptippen står ett tomt skjul och en gård full av skräp.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-800d0430",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Trampar du på cykeln får skrivaren ström.",
+  "skickas": "[warm, hopeful, storyteller] [encouraging] Trampar du på cykeln får skrivaren ström.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-400944d3",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Skräp är plast.",
+  "skickas": "[warm, hopeful, storyteller] [matter-of-fact] Skräp är plast.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-e1fce648",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Plast blir filament.",
+  "skickas": "[warm, hopeful, storyteller] [building excitement] Plast blir filament.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-499d739e",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Och med filament kan man printa… allt.",
+  "skickas": "[warm, hopeful, storyteller] [excited] [short pause] Och med filament kan man printa… allt.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-3fc8efb0",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Tänk om det här kunde bli ett riktigt hem?",
+  "skickas": "[warm, hopeful, storyteller] [dreamy] Tänk om det här kunde bli ett riktigt hem?",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-berattare-1ee2eaac",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Utan mammas tjat.",
+  "skickas": "[warm, hopeful, storyteller] [warm] [softly] Utan mammas tjat.",
+  "hand": true,
+  "speed": 1.1
+ },
+ {
+  "id": "intro-mamma-6bab860d",
+  "figur": "mamma",
+  "rost": "mamma",
+  "visad": "Du kan lika gärna BO på en soptipp!",
+  "skickas": "[thick Småland accent, fast, shrill, worried] [furious] [shouting] Du kan lika gärna BO på en soptipp!",
+  "hand": true
+ }
+]

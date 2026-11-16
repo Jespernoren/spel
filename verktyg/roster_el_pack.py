@@ -37,8 +37,23 @@ def main():
         if trimmat.get(f) == sha(p):
             continue
         trimma(p); trimmat[f] = sha(p); nya += 1
+    # DT: ROST_FART i balans.js – berättaren läses snabbare med atempo (samma tonhöjd). Varje fil bara en gång.
+    import re
+    balans = os.path.join(os.path.dirname(os.path.abspath(MAPP)), 'balans.js')
+    m = re.search(r'ROST_FART\s*=\s*\{([^}]*)\}', open(balans).read()) if os.path.exists(balans) else None
+    fart = {k: float(v) for k, v in re.findall(r'(\w+)\s*:\s*([\d.]+)', m.group(1))} if m else {}
+    snabbade = 0
+    for f in filer:
+        fig = f[6:] if f.startswith('intro-') else f
+        fig = fig.split('-')[0]
+        if fig not in fart or fart[fig] == 1: continue
+        p = os.path.join(MAPP, f); nyckel = f'fart:{f}'
+        if trimmat.get(nyckel) == f'{fart[fig]}:{sha(p)}': continue
+        tmp = p + '.tmp.mp3'
+        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', p, '-af', f'atempo={fart[fig]}', '-ac', '1', '-ar', '44100', '-b:a', '128k', tmp], check=True)
+        os.replace(tmp, p); trimmat[f] = sha(p); trimmat[nyckel] = f'{fart[fig]}:{sha(p)}'; snabbade += 1
     json.dump(trimmat, open(trimfil, 'w'), indent=0, sort_keys=True)
-    print(f'klippta nu: {nya} av {len(filer)}')
+    print(f'klippta nu: {nya} av {len(filer)}, snabbare: {snabbade}')
 
     index = json.load(open(os.path.join(MAPP, 'index.json')))
     packmapp = os.path.join(MAPP, 'pack'); os.makedirs(packmapp, exist_ok=True)
