@@ -15,10 +15,14 @@ const ROST_ID = {
   // bror, chefen: läggs till när Jesper skickar röst-id. Ali behåller den gamla rösten.
 };
 const FIGURER = ['rolf', 'ali', 'pappa', 'bror', 'chefen', 'du', 'mamma', 'berattare'];
-const [fil = 'verktyg/roster-taggar.json', lage = 'nya', figurerArg = ''] = process.argv.slice(2);   // lage: nya | alla; figurer: t.ex. "rolf,mamma,pappa"
+const [fil = 'verktyg/roster-taggar.json', lage = 'nya', figurerArg = '', torrArg = 'ja', takArg = '0'] = process.argv.slice(2);   // lage: nya | alla; figurer: t.ex. "rolf,mamma,pappa"
+// EC: ElevenLabs körs bara med en figurlista, ett tak för antal tecken och efter en torrkörning som Jesper har sagt ja till.
+// torr = ja (standard): räknar bara klipp och tecken, skickar ingenting. torr = nej: skarp körning, kräver figurer och tak.
 const bara = figurerArg.split(',').map((x) => x.trim()).filter(Boolean);
+const TORR = torrArg !== 'nej', TAK = Number(takArg) || 0;
+if (!bara.length) { console.error('Avbryter: ange figurer (t.ex. rolf,mamma). En körning utan figurlista kan göra av med alla krediter.'); process.exit(1); }
 const NYCKEL = process.env.ELEVENLABS_API_KEY;
-if (!NYCKEL) { console.error('ELEVENLABS_API_KEY saknas'); process.exit(1); }
+if (!TORR && !NYCKEL) { console.error('ELEVENLABS_API_KEY saknas'); process.exit(1); }
 
 // samma nyckel som spelet (rostNyckel i spel.js)
 function rostNyckel(t) {
@@ -45,6 +49,15 @@ for (const r of lista) {
   if (!grupper.has(k)) grupper.set(k, { ...r, nycklar: [...r.nycklar] }); else grupper.get(k).nycklar.push(...r.nycklar);
 }
 let gjorda = 0, tecken = 0, fel = 0, iRad = 0;
+{ // EC: torrkörning – exakt vad som skulle skickas, per figur
+  const behov = [...grupper.values()].filter((r) => lage === 'alla' || !fs.existsSync(r.prov ? path.join('verktyg/roster-prov/el', `${r.id.replace(/[^\w-]/g, '_')}.mp3`) : path.join(UT, `${r.id.replace(/[^\w-]/g, '_')}.mp3`)));
+  const per = {}; for (const r of behov) { per[r.rost] = per[r.rost] || { klipp: 0, tecken: 0 }; per[r.rost].klipp++; per[r.rost].tecken += r.text.length; }
+  const tot = behov.reduce((a, r) => a + r.text.length, 0);
+  console.log(`TORRKÖRNING: ${behov.length} nya klipp, ${tot} tecken · ${JSON.stringify(per)}`);
+  if (TORR) { console.log('Torrkörning – inget skickat. Kör skarpt med torr=nej och ett tak (antal tecken) när Jesper har sagt ja.'); process.exit(0); }
+  if (!TAK) { console.error('Avbryter: ett tak (antal tecken) krävs för en skarp körning.'); process.exit(1); }
+  if (tot > TAK) { console.error(`Avbryter: ${tot} tecken är över taket ${TAK}.`); process.exit(1); }
+}
 console.log(`att skicka: ${grupper.size} klipp, ${[...grupper.values()].reduce((a, r) => a + r.text.length, 0)} tecken (de som redan finns hoppas över)`);
 for (const r of grupper.values()) {
   const mp3 = `${r.id.replace(/[^\w-]/g, '_')}.mp3`, ut = r.prov ? path.join('verktyg/roster-prov/el', mp3) : path.join(UT, mp3);   // prov: lyssningsprov, inte i spelet

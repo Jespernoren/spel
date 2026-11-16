@@ -2,7 +2,7 @@
 // Kör: node verktyg/sim-kapitel1.mjs <url> <ut.md> [körning-nr]
 //   url: t.ex. http://127.0.0.1:8765/printa-hem.html (det byggda spelet)
 // Loggen visar per dag: minuter, prints, kr, köp, bärförmåga, trivsel och ALL text (tid, källa, vem).
-// Flaggor: INAKTUELL (text visas fast villkoret inte gäller), SEN (reaktion > 10 s efter händelsen), BONUS DAG 1, KROCK (två texter inom 5 s), RÖST AVBRUTEN (ny röst innan den förra pratat klart),
+// Flaggor: SPAM (samma notis inom 2 min), TOM RUTA (inget mål i rutan efter 10 s), UPPREPNING (samma text inom 5 dagar), INAKTUELL (text visas fast villkoret inte gäller), SEN (reaktion > 10 s efter händelsen), BONUS DAG 1, KROCK (två texter inom 5 s), RÖST AVBRUTEN (ny röst innan den förra pratat klart),
 // FÖR TIDIGT (texten nämner en sak som inte finns hos Ali än), TEMPO (dagen utanför 10–15 min, dag 1 10–12).
 import fs from 'fs';
 import { chromium } from '/home/claude/verktyg/node_modules/playwright-core/index.mjs';
@@ -151,8 +151,28 @@ for (const h of r.logg.filter((e) => e.kalla === 'händelse' && e.vem === 'malKl
   const m = r.logg.find((e) => e.kalla === 'målruta' && e.tot >= h.tot - 0.05);
   if (!m) continue;
   const v = m.tot - h.tot; malVantan.push({ dag: h.dag, t: h.t, v, text: m.text });
-  if (v > 60) flaggor.push({ dag: h.dag, t: h.t, typ: 'MÅL > 60 s', text: `${v.toFixed(1)} s innan "${m.text.slice(0, 60)}" syntes` });
-  else if (v > 4) flaggor.push({ dag: h.dag, t: h.t, typ: 'MÅL > 4 s', text: `${v.toFixed(1)} s innan "${m.text.slice(0, 60)}" syntes` });
+  // EC: TOM RUTA – inget mål i rutan mer än 10 s efter att förra målet blev klart (på morgonen räknat från BÖRJA DAGEN)
+  const fore = [...r.logg].reverse().find((e) => e.kalla === 'målruta' && e.tot < h.tot - 0.05);   // räkna från första mål som klarades sedan rutan senast byttes
+  if (fore && r.logg.some((e) => e.kalla === 'händelse' && e.vem === 'malKlart' && e.tot > fore.tot && e.tot < h.tot - 0.05)) continue;
+  const mk = r.logg.find((e) => e.kalla === 'händelse' && e.vem === 'morgonkortStangt' && e.tot >= h.tot && e.tot <= m.tot);
+  const v2 = m.tot - (mk ? mk.tot : h.tot);
+  if (v2 > 10.5) flaggor.push({ dag: h.dag, t: h.t, typ: 'TOM RUTA', text: `${v2.toFixed(1)} s innan "${m.text.slice(0, 60)}" syntes` });
+}
+// EC: SPAM – samma notis (siffror bortsett) två gånger inom 2 min
+{ const sen = new Map();
+  for (const e of r.logg.filter((x) => x.kalla === 'sak' && String(x.vem).startsWith('notis:'))) {
+    const k = e.text.replace(/[\d%]+/g, '#'), f = sen.get(k);
+    if (f != null && e.tot - f < 120) flaggor.push({ dag: e.dag, t: e.t, typ: 'SPAM', text: `${(e.tot - f).toFixed(0)} s efter förra: "${e.text.slice(0, 70)}"` });
+    sen.set(k, e.tot);
+  }
+}
+// EC: UPPREPNING – samma figurtext (sms, småprat, tanke) visas igen inom 5 dagar
+{ const sett = new Map();
+  for (const e of r.logg.filter((x) => (x.kalla === 'sak' || x.kalla === 'bubbla') && x.vem && !['berattare', 'bud', ''].includes(x.vem) && !String(x.vem).startsWith('notis:') && !/^\(/.test(x.text))) {
+    const f = sett.get(e.text);
+    if (f != null && e.dag - f < 5 && e.kalla === 'sak') flaggor.push({ dag: e.dag, t: e.t, typ: 'UPPREPNING', text: `${e.vem}: "${e.text.slice(0, 70)}" (förra gången dag ${f})` });
+    if (e.kalla === 'sak') sett.set(e.text, e.dag);
+  }
 }
 // tempo
 for (const d of r.dagar) {

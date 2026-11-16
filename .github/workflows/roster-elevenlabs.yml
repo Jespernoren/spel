@@ -14,9 +14,17 @@ on:
         default: 'nya'
         required: true
       figurer:
-        description: 'Bara dessa röster, t.ex. rolf,mamma,pappa (tomt = alla som har röst-id)'
+        description: 'Bara dessa röster, t.ex. rolf,mamma,pappa (krävs)'
         default: ''
-        required: false
+        required: true
+      torr:
+        description: 'ja = torrkörning (räknar bara klipp och tecken). nej = skarp körning – bara efter Jespers ja'
+        default: 'ja'
+        required: true
+      tak:
+        description: 'Max antal tecken i en skarp körning (krävs när torr = nej)'
+        default: '0'
+        required: true
 permissions:
   contents: write
 concurrency: roster-elevenlabs
@@ -31,7 +39,7 @@ jobs:
       - name: Generera klipp
         env:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
-        run: node verktyg/roster_eleven.mjs "${{ inputs.fil }}" "${{ inputs.lage }}" "${{ inputs.figurer }}"
+        run: node verktyg/roster_eleven.mjs "${{ inputs.fil }}" "${{ inputs.lage }}" "${{ inputs.figurer }}" "${{ inputs.torr }}" "${{ inputs.tak }}"
       - name: Klipp tystnaden och packa klippen per figur (punkt AZ)
         run: |
           command -v ffmpeg || (sudo apt-get update -q && sudo apt-get install -y -q ffmpeg)

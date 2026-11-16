@@ -198,6 +198,7 @@ export const HUD_CSS = `
 .hud-stopp span{display:block;font:800 15px/1.25 system-ui;margin:2px 0}
 .hud-stopp em{display:block;font:700 12.5px/1.3 system-ui;font-style:normal;background:rgba(0,0,0,.25);border-radius:6px;padding:3px 6px;margin-top:4px}
 .hud-stopp.stopp{animation:hudStoppPuls 1.4s ease-in-out infinite}
+.hud-stopp.vantar{background:${LAGER},#b07a1a;border-bottom-color:#6b4708}.hud-stopp.vantar::after{border-top-color:#6b4708}
 @keyframes hudStoppPuls{50%{filter:brightness(1.18)}}
 .hud-stopp.klar{background:${LAGER},#2f8a52;border-bottom-color:#1d5a35}.hud-stopp.klar::after{border-top-color:#1d5a35}
 .hud-stopp.hit{background:${LAGER},#e0a82e;color:#2a1c05;border-bottom-color:#8a6510}.hud-stopp.hit::after{border-top-color:#8a6510}.hud-stopp.hit em{background:rgba(255,255,255,.3)}
