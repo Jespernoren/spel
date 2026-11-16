@@ -3125,6 +3125,12 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
+  "id": "du-041acefc",
+  "figur": "du",
+  "text": "Skrivaren står kvar på cykeln. Den ska av.",
+  "var": "Storykedjan (punkt BE)"
+ },
+ {
   "id": "du-3dcf89aa",
   "figur": "du",
   "text": "Tung. Den har storebror aldrig burit så långt.",
@@ -3134,6 +3140,12 @@
   "id": "du-fd359f8f",
   "figur": "du",
   "text": "Den behöver ström. Och det enda här som rör sig är jag.",
+  "var": "Storykedjan (punkt BE)"
+ },
+ {
+  "id": "du-5548d50f",
+  "figur": "du",
+  "text": "Okej. Trampa. Och välj nåt litet att printa.",
   "var": "Storykedjan (punkt BE)"
  },
  {
@@ -3155,9 +3167,9 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-341fefab",
+  "id": "du-da4ec593",
   "figur": "du",
-  "text": "En rulle! Nu en nyckelring. Trampa!",
+  "text": "Gripen kostar femtio. Fler nyckelringar, alltså.",
   "var": "Storykedjan (punkt BE)"
  },
  {
@@ -3649,9 +3661,9 @@
   "var": "Introt"
  },
  {
-  "id": "berattare-800d0430",
+  "id": "berattare-5e217579",
   "figur": "berattare",
-  "text": "Trampar du på cykeln får skrivaren ström.",
+  "text": "Lasta av skrivaren. Gör om cykeln till en strömkälla.",
   "var": "Introt"
  },
  {
@@ -3697,15 +3709,15 @@
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-cd9810cc",
+  "id": "berattare-c5267ddc",
   "figur": "berattare",
-  "text": "Klicka på cykeln igen och gör om den så att den ger ström.",
+  "text": "Gör om cykeln till en strömkälla.",
   "var": "Berättaren läser målen"
  },
  {
-  "id": "berattare-a1250bfc",
+  "id": "berattare-0f5c03d0",
   "figur": "berattare",
-  "text": "Plocka upp en bit skräp.",
+  "text": "Printa och sälj tills rullen är slut.",
   "var": "Berättaren läser målen"
  },
  {

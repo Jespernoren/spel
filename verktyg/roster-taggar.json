@@ -2673,6 +2673,15 @@
   "hand": false
  },
  {
+  "id": "du-041acefc",
+  "figur": "du",
+  "rost": "du",
+  "var": "Storykedjan (punkt BE)",
+  "visad": "Skrivaren står kvar på cykeln. Den ska av.",
+  "skickas": "[dry, deadpan] [quietly] [sighs] Skrivaren står kvar på cykeln. Den ska av.",
+  "hand": false
+ },
+ {
   "id": "du-3dcf89aa",
   "figur": "du",
   "rost": "du",
@@ -2688,6 +2697,15 @@
   "var": "Storykedjan (punkt BE)",
   "visad": "Den behöver ström. Och det enda här som rör sig är jag.",
   "skickas": "[dry, deadpan] [quietly] [sighs] Den behöver ström. Och det enda här som rör sig är jag.",
+  "hand": false
+ },
+ {
+  "id": "du-5548d50f",
+  "figur": "du",
+  "rost": "du",
+  "var": "Storykedjan (punkt BE)",
+  "visad": "Okej. Trampa. Och välj nåt litet att printa.",
+  "skickas": "[dry, deadpan] [quietly] [sighs] Okej. Trampa. Och välj nåt litet att printa.",
   "hand": false
  },
  {
@@ -2718,12 +2736,12 @@
   "hand": false
  },
  {
-  "id": "du-341fefab",
+  "id": "du-da4ec593",
   "figur": "du",
   "rost": "du",
   "var": "Storykedjan (punkt BE)",
-  "visad": "En rulle! Nu en nyckelring. Trampa!",
-  "skickas": "[dry, deadpan] [sighs] [pleased] En rulle! Nu en nyckelring. Trampa!",
+  "visad": "Gripen kostar femtio. Fler nyckelringar, alltså.",
+  "skickas": "[dry, deadpan] [quietly] [sighs] Gripen kostar femtio. Fler nyckelringar, alltså.",
   "hand": false
  },
  {
@@ -3438,12 +3456,12 @@
   "hand": false
  },
  {
-  "id": "berattare-800d0430",
+  "id": "berattare-5e217579",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Introt",
-  "visad": "Trampar du på cykeln får skrivaren ström.",
-  "skickas": "[warm storyteller, calm] Trampar du på cykeln får skrivaren ström.",
+  "visad": "Lasta av skrivaren. Gör om cykeln till en strömkälla.",
+  "skickas": "[warm storyteller, calm] Lasta av skrivaren. Gör om cykeln till en strömkälla.",
   "hand": false
  },
  {
@@ -3510,21 +3528,21 @@
   "hand": false
  },
  {
-  "id": "berattare-cd9810cc",
+  "id": "berattare-c5267ddc",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Berättaren läser målen",
-  "visad": "Klicka på cykeln igen och gör om den så att den ger ström.",
-  "skickas": "[warm storyteller, calm] Klicka på cykeln igen och gör om den så att den ger ström.",
+  "visad": "Gör om cykeln till en strömkälla.",
+  "skickas": "[warm storyteller, calm] Gör om cykeln till en strömkälla.",
   "hand": false
  },
  {
-  "id": "berattare-a1250bfc",
+  "id": "berattare-0f5c03d0",
   "figur": "berattare",
   "rost": "berattare",
   "var": "Berättaren läser målen",
-  "visad": "Plocka upp en bit skräp.",
-  "skickas": "[warm storyteller, calm] Plocka upp en bit skräp.",
+  "visad": "Printa och sälj tills rullen är slut.",
+  "skickas": "[warm storyteller, calm] Printa och sälj tills rullen är slut.",
   "hand": false
  },
  {

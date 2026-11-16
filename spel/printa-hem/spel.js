@@ -575,8 +575,8 @@ const printat = (typ) => (S.printTot || {})[typ] || 0;
 const STEG_TAL = {
   lasta: 'Klicka på cykeln och lasta av storebrors skrivare.',
   stall: 'Ställ skrivaren på den lysande platsen i linje ett.',
-  bygg: 'Klicka på cykeln igen och gör om den så att den ger ström.',
-  skrap: 'Plocka upp en bit skräp.',   /* DT: korta mål, max ca 8 ord */
+  bygg: 'Gör om cykeln till en strömkälla.',
+  rullSlut: 'Printa och sälj tills rullen är slut.',   /* DT: korta mål, max ca 8 ord */
   trampa: 'Trampa och printa en nyckelring.',
   salj: 'Sälj nyckelringen hos Ali.',
   kop: 'Fråga Ali om en kvarn.',
@@ -603,13 +603,17 @@ const STEG_TAL_SPARA = {
 };
 const stegTal = (id) => STEG_TAL_SPARA[id] && S.mynt < STEG_TAL_SPARA[id][1] ? STEG_TAL_SPARA[id][0] : (STEG_TAL[id] || '');
 const STEG = [
-  // DT: skylten → en bit skräp → kvarnen hos Ali → ställ ut → mal → nyckelring → sälj (powerbanken). Skrivaren, tornet och cykeln står där från start.
-  { id: 'skrap', del: D1, text: 'Plocka upp en bit skräp', klar: () => hand.saker.length > 0 || !!S.kvarnKopt || S.dag > 1, tanke: 'Hmm. Plast. Skulle jag kunna göra filament av det här?!', tankeForst: true },
+  // DT (AS-ordningen): skylten → lasta av → ställ skrivaren → gör om cykeln → trampa med storebrors rulle → sälj (powerbanken) → rullen tar slut, skräptanken → kvarnen
+  { id: 'lasta', del: D1, text: 'Lasta av skrivaren från cykeln', klar: () => !!S.skrivareLastad || S.dag > 1 },
+  { id: 'stall', del: D1, text: 'Ställ skrivaren på rutan', klar: () => !!S.skrivareStar || S.dag > 1 },
+  { id: 'bygg', del: D1, text: 'Gör om cykeln till en strömkälla', klar: () => !!S.cykelOmbyggd || S.dag > 1 },
+  { id: 'trampa', del: D1, bild: 'nyckelring', text: 'Trampa och printa en nyckelring', klar: () => printat('nyckelring') >= 1 || S.stat.printat >= 1 || S.dag > 1 },
+  { id: 'salj', del: D1, text: 'Sälj nyckelringen hos Ali', klar: () => (S.stat.salt || 0) >= 1 || S.dag > 1 },
+  { id: 'rullSlut', del: D1, bild: 'nyckelring', text: () => { const f = skrivare.find((x) => x.id === 'g1')?.fil || 0; return f >= 100 ? `Printa och sälj tills rullen är slut · ${Math.floor(f / 100)} kvar` : 'Sälj nyckelringarna hos Ali'; },
+    klar: () => ((skrivare.find((x) => x.id === 'g1')?.fil || 0) < 100 && !antalInv('nyckelring')) || !!S.kvarnKopt || S.dag > 1, tanke: 'Hmm. Plast. Skulle jag kunna göra filament av det här?!', tankeForst: true },
   { id: 'kop', del: D1, bild: 'byggsats:gammalkvarn', text: 'Fråga Ali om en kvarn', klar: () => !!S.kvarnKopt || S.dag > 1 },
   { id: 'kvarn', del: D1, bild: 'byggsats:gammalkvarn', text: 'Ställ kvarnen vid tornet', klar: () => !!S.kvarnStar || S.dag > 1 },
   { id: 'flaska', del: D1, text: () => S.kvarn.tratt ? `Veva kvarnen · ${Math.round(Math.min(S.kvarn.ut, RULLE) / RULLE * 100)} %` : hand.saker.length ? 'Lägg skräpet i kvarnen' : 'Plocka skräp och mal det', klar: () => S.stat.hamtat >= 1 || helaRullar() >= 1 || S.dag > 1, lapp: 'malt' },
-  { id: 'trampa', del: D1, bild: 'nyckelring', text: 'Trampa och printa en nyckelring', klar: () => printat('nyckelring') >= 1 || S.stat.printat >= 1 || S.dag > 1 },
-  { id: 'salj', del: D1, text: 'Sälj nyckelringen hos Ali', klar: () => (S.stat.salt || 0) >= 1 || S.dag > 1 },
   // punkt AG: en sak i taget – gripen, en kruka, motorn, sedan sängen
   { id: 'kopGrip', del: D1, bild: 'byggsats:grip', text: () => S.mynt >= 50 ? 'Köp skräpgripen hos Ali (50 kr)' : `Printa och sälj nyckelringar · ${S.mynt}/50 kr till gripen`, klar: () => S.ritningar.includes('grip') || forstaUpp() || S.dag > 1, lapp: 'ritning' },
   { id: 'printGrip', del: D1, text: () => skrivare.some((x) => x.klar === 'byggsats:grip') ? 'Ta skräpgripen ur skrivaren' : 'Printa din skräpgrip', klar: () => forstaUpp() || S.dag > 1 },
@@ -792,10 +796,9 @@ if (S.steg > STEG.length) S.steg = STEG.length;
 // Gamla sparfiler: dag 1 hade 15 mål (lasta, ställ, bygg …), nu 13, och dag 2 börjar med bilbatteriet – målindex flyttas.
 if (!S.stegVer) {
   const ny = S.steg === 0 && !S.skyltUppe && !S.stat?.printat;
-  if (!ny) S.steg = S.steg < 8 ? 0 : S.steg < 15 ? S.steg - 2 : S.steg - 1;
-  S.skrivareLastad = S.skrivareStar = S.cykelOmbyggd = true;
-  if (ny) S.mynt = Math.max(S.mynt || 0, MASKINER.gammalkvarn.ritning);   /* exakt till kvarnen */
-  S.stegVer = 2;
+  if (!ny) S.steg = S.steg < 5 ? S.steg : S.steg < 8 ? S.steg + 1 : S.steg < 15 ? S.steg + 1 : S.steg + 2;   // dag 1: + rullSlut, dag 2: + bilbatteriet
+  if (ny) S.mynt = Math.max(S.mynt || 0, 5);   /* DT: 5 kr + storebrors rulle (3 nyckelringar à 15) = exakt kvarnen */
+  S.stegVer = 3;
 }
 
 // ---------- Scen ----------
@@ -4561,7 +4564,7 @@ function malPunkt() {
     case 'monteraMotor': return skr();
     case 'pappa6': return pappaGubbe.visible ? pappaGubbe.getWorldPosition(v).setY(2.0) : null;   // CM
     case 'kopSack': return S.sackLagd && sackRulle.visible ? sackRulle.getWorldPosition(v).setY(0.8) : null;   // CH
-    case 'skrap': return gripbart()?.getWorldPosition(v).setY(0.15) || null;   /* DT */
+    case 'rullSlut': return antalInv('nyckelring') && (skrivare.find((x) => x.id === 'g1')?.fil || 0) < 100 ? new THREE.Vector3(ALI.x, 1.4, ALI.z - 1.2) : skr();   /* DT */
     case 'kopBatteri':
     case 'salj': case 'kop': case 'kopGrip': case 'kopMotor': case 'kopSang': return new THREE.Vector3(ALI.x, 1.4, ALI.z - 1.2);
     case 'sov1': return new THREE.Vector3(SANG_PLATS.x, 0.6, SANG_PLATS.z);
@@ -10401,9 +10404,9 @@ const INTRO = [   // DT: 12 repliker, inga kort utan text, ingen gamingsetup
   { lager: [IB('kort9')], musik: true, text: 'Du packar ryggsäcken och storebrors gamla 3D-skrivare. Allt surras fast på cykeln.' },
   { lager: [{ id: 'vagloop', loop: 'intro/vag.webp' }, { id: 'cyklist', sprite: 'intro/cyklist-tramp.webp', n: 4 }], text: 'Förbi skolan. Förbi affären. Förbi där husen tar slut.' },
   { lager: [IB('gard'), IB('cyklist', { id: 'cyklist-in', cls: 'in-fran-vanster' })], text: 'Vid soptippen står ett tomt skjul och en gård full av skräp.' },
-  { lager: [IB('kort12'), { id: 'rit12', rit12: true }], text: 'Trampar du på cykeln får skrivaren ström.' },
+  { lager: [IB('gard'), IB('cyklist', { id: 'cyklist-in', cls: 'in-fran-vanster' })], text: 'Lasta av skrivaren. Gör om cykeln till en strömkälla.' },   /* DT: introt visar inte det man gör själv – ingen trampbild */
   { lager: [IB('kort13'), { id: 'rit13', rit13: true }], rader: ['Skräp är plast.', 'Plast blir filament.', 'Och med filament kan man printa… allt.'] },   // punkt BA: kvarnen, extrudern och rullen ritas fram rad för rad
-  { lager: [{ id: 'skjul', skjul: true }], rader: ['Tänk om det här kunde bli ett riktigt hem?', 'Utan mammas tjat.'], logo: true },
+  { lager: [{ id: 'skjul', skjul: true }, IB('cyklist', { id: 'cyklist-skjul', cls: 'vid-skjul' })], rader: ['Tänk om det här kunde bli ett riktigt hem?', 'Utan mammas tjat.'], logo: true },   /* slutar som spelet börjar: cykeln med skrivaren framför skjulet */
 ];
 const INTRO_TAL = () => INTRO.flatMap((p) => p.rader ? p.rader.map((t) => ['berattare', t]) : [[p.bubbla ? (p.du ? 'du' : 'mamma') : 'berattare', p.bubbla || p.text]]);
 const introSrcer = (i) => (INTRO[i]?.lager || []).map((l) => l.skjul ? 'intro/skjul.webp' : l.src || l.loop || l.sprite).filter(Boolean);
@@ -10449,6 +10452,7 @@ introCss.textContent = `
 .ph-rit13 path.rita{animation:phRita 1.8s var(--d,0s) ease-out forwards}
 .ph-rit13 path.slang{stroke-width:.45;stroke:#bfe9ff}
 .ph-il.in-fran-vanster{inset:auto;left:0;bottom:2%;width:30%;height:auto;aspect-ratio:1;animation:phIn2 2s cubic-bezier(.25,.8,.35,1) forwards}
+.ph-il.vid-skjul{inset:auto;left:6%;bottom:3%;width:24%;height:auto;aspect-ratio:1;z-index:2}
 @keyframes phIn2{0%{transform:translateX(-110%)}78%{transform:translateX(118%)}88%{transform:translateX(112%) rotate(-2deg)}100%{transform:translateX(114%) rotate(0)}}
 .ph-skjul14{position:absolute;inset:0;transform-origin:${(SKJUL_PTS.dorrMitt[0] * 100).toFixed(1)}% ${(SKJUL_PTS.dorrMitt[1] * 100).toFixed(1)}%;animation:phZoom 4.2s ease-in-out forwards}
 .ph-skjul14 img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -12539,15 +12543,15 @@ if (GAMMALT_SPEL) visaOmbyggt();
 // BX: räknar alltid de väggar som faktiskt sitter
 const VAGG_KVAR_TEXT = ['Det är redan tätt. Då kan pengarna gå till en större skrivare.', 'En vägg kvar. Sen är det tätt.', 'Två väggar kvar. Sen är det tätt.', 'Tre väggar kvar. Sen är det tätt.', 'Fyra väggar kvar. Sen är det tätt.'];
 const KEDJA_TEXT = {
-  skylt: ['Soptippsvägen 1. Nu bor jag här. Officiellt. Typ.', null],   // DT: skrivaren står redan på gården
+  skylt: ['Soptippsvägen 1. Nu bor jag här. Officiellt. Typ.', 'Skrivaren står kvar på cykeln. Den ska av.'],
   lastat: ['Tung. Den har storebror aldrig burit så långt.'],
   skrivareStar: [null, 'Den behöver ström. Och det enda här som rör sig är jag.'],
-  cykel: [null, null],
+  cykel: [null, 'Okej. Trampa. Och välj nåt litet att printa.'],
   printStart: ['Den piper. Den GÖR något.'],
   printKlar: ['Klar! Ta ut den innan den ändrar sig.'],
   aliKvarn: [null, null],   // DT: Ali säger sin kvarnreplik när man köper den
   kvarnStar: [null, 'Skräpet i tratten. Sen veva.'],   // DT
-  rulle: [null, 'En rulle! Nu en nyckelring. Trampa!'],   // DT
+  rulle: [null, 'Gripen kostar femtio. Fler nyckelringar, alltså.'],   // F1: priset, inte saldot
   harRadGrip: ['Femtio kronor. Nu har jag råd med gripen.'],
   grip: [null, 'Tre åt gången. Men mina armar… Kvarnen borde veva själv.'],
   motorKopt: [null, 'Motorn är min. Nu ska den printas och sitta på kvarnen. Slut på vevandet.'],   // B27

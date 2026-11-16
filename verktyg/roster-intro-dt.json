@@ -87,5 +87,14 @@
   "visad": "Du kan lika gärna BO på en soptipp!",
   "skickas": "[thick Småland accent, fast, shrill, worried] [furious] [shouting] Du kan lika gärna BO på en soptipp!",
   "hand": true
+ },
+ {
+  "id": "intro-berattare-5e217579",
+  "figur": "berattare",
+  "rost": "berattare",
+  "visad": "Lasta av skrivaren. Gör om cykeln till en strömkälla.",
+  "skickas": "[warm, hopeful, storyteller] [encouraging] Lasta av skrivaren. [short pause] Gör om cykeln till en strömkälla.",
+  "hand": true,
+  "speed": 1.1
  }
 ]

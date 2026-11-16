@@ -332,7 +332,7 @@
         if (H.antalInv('nyckelring') < 3 && fil(sk) >= 100) { await strom(6); await printa({ typ: 'nyckelring' }); return; }
         await ali(() => saljAllt(), 'sälja nyckelringar'); return;
       }
-      case 'skrap': await plockaLass({}); return;   // DT
+      case 'rullSlut': { const sk = H.skrivare.find((x) => x.id === 'g1'); if (fil(sk) >= 100) { await strom(4); await printa({ typ: 'nyckelring' }); return; } await ali(() => saljAllt(), 'sälja nyckelringar'); return; }   // DT
       case 'kop': await ali(async () => { await kopHosAli('gammalkvarn'); }, 'kvarnen'); return;
       case 'kopBatteri': await ali(async () => { await kopHosAli('cykelbatteri'); }, 'bilbatteriet'); if (!S.batteriKopt) await tjana(60, 'bilbatteriet'); return;
       case 'kvarn': valj('byggsats:gammalkvarn'); await klick(H.startYta, 'kvarnens ruta'); return;
