@@ -51,7 +51,7 @@ p.on('pageerror', (e) => console.log('[sidfel]', e.message));
 await p.evaluate((u) => { window.__vt.start(); window.__simUtforlig = u; }, !!process.env.UTFORLIG);
 await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.meta.url), 'utf8') });
 // SIM_FRAN=fil: börja från en sparfil · varje ny dag sparas till /tmp/sim-dag<N>.json så att en lång körning kan tas om från en dag
-let sparadDag = 0; const kollaDag = setInterval(async () => { try { const [d, sp] = await p.evaluate(() => [window.__printahem.S.dag, localStorage.getItem('spar:printahem2:v1')]); if (d !== sparadDag && sp) { sparadDag = d; fs.writeFileSync(`/tmp/sim-dag${d}.json`, sp); } } catch {} }, 15000);
+let sparadDag = 0; const kollaDag = setInterval(async () => { try { const [d, sp, mem] = await p.evaluate(() => [window.__printahem.S.dag, localStorage.getItem('spar:printahem2:v1'), [Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6), window.__printahem.skrapLista.length, window.__printahem.placerade.length, document.querySelectorAll('*').length]]); if (process.env.SIM_MINNE) console.log('[minne]', d, JSON.stringify(mem)); if (d !== sparadDag && sp) { sparadDag = d; fs.writeFileSync(`/tmp/sim-dag${d}.json`, sp); } } catch {} }, 15000);
 const r = await p.evaluate((d) => window.__simBot.kor(d, 30 * d), +tillDag); clearInterval(kollaDag);
 await b.close();
 

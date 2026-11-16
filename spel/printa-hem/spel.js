@@ -2861,6 +2861,7 @@ function ikonModell(typ) {
     return [g, false];
   }
   if (id === 'cykelbatteri') return [kopia(batteri), false];
+  if (/^gs_/.test(id) && husvagnG) return [kopia(husvagnG), false];   /* CC: gäststugans delar visar gäststugan, inte en låda */
   if (SKRIVARTYP[id]) return [skapaSkrivare(SKRIVARTYP[id]), false];
   const riktig = skapaRiktig(id); if (riktig) return [riktig, false];
   const g = skapaMaskin(id); if (g && g.children.length) return [g, false];
@@ -2903,7 +2904,7 @@ function renderaIkon(typ, px = 160) {
   const [m0, saknas] = ikonModell(typ), m = new THREE.Group(); m.add(m0);
   m0.traverse((o) => { if (o.isLight || o.isSprite) o.visible = false; });
   { const bort = []; m0.traverse((o) => { if (o !== m0 && !o.visible) bort.push(o); }); bort.forEach((o) => o.parent?.remove(o)); }   // osynliga delar (träffytor, motorn som inte är monterad) räknas inte in i storleken
-  m.rotation.y = typ === 'karra' ? 2.4 : 0.65;
+  m.rotation.y = typ === 'karra' || typ === 'byggsats:karra' ? 2.4 : typ === 'dator' ? -0.35 : 0.65;   /* CC: samma vinkel som skottkärran – hjulet syns */
   passaIn(m, 1);
   ikonScen2.add(m);
   ikonKam2.position.set(1.55, 1.15, 2.0); ikonKam2.lookAt(0, 0, 0);

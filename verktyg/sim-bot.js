@@ -173,7 +173,7 @@
       if (fil(sk) >= 1 && (lin === 'bla' ? H.extruderFull() : !H.tornPlats(lin))) return true;   // DM2: tornet är fullt – skrivaren drar mer medan den printar
       if (sk.gen === 5) {
         if (H.antalInv('rulle3') && H.tornPlats('kolf')) { const p = H.kolfKvarn(); valj('rulle3'); await gaTill(p.mesh, 1.6, 'kolfibertornet'); H.kolfAktivera(p); handling('lägger kolfiber i tornet'); continue; }
-        await tjana(S.mynt + 100, 'väntar på kolfiber'); await vanta(3); continue;
+        handling('väntar på kolfiber från bandet'); if (varv > 30) return false; await vanta(8); continue;   // inte tjana här: tjana → printa kolfiber → filament → tjana … (oändlig rekursion)
       }
       if (sk.gen === 4) {
         if (H.antalInv('rulle2') && H.tornPlats('rod')) { const p = H.petgKvarn(); valj('rulle2'); await gaTill(p.mesh, 1.6, 'röda tornet'); H.petgAktivera(p); handling('lägger röd PETG i tornet'); continue; }
