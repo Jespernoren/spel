@@ -6349,7 +6349,7 @@ function tippaLast() {
   ljud.borsta(); ljud.placera();
   const ggr = S.rolf.extra > 0 ? 2 : 1;
   if (S.rolf.extra > 0) S.rolf.extra--;
-  const plats = MAX_SKRAP - skrapLista.length;
+  const plats = MAX_SKRAP - skrapLista.filter((x) => !x.userData.tung).length;   /* tunga saker räknas inte – de får inte stoppa det vanliga skräpet */
   const bak = new THREE.Vector3(); flak.localToWorld(bak.set(-0.2, 1.4, 0));
   for (let i = 0; i < Math.min(SOPBIL_LAST * ggr + trimNiva('sopbil') * 3 + sopbilExtra(), plats); i++) {
     const [x, z] = tippPlats();
@@ -6360,7 +6360,7 @@ function tippaLast() {
     sk.position.copy(fran);
   }
   if ((S.kapitel || 1) >= 3) for (let i = 0; i < 2 && skrapLista.filter((x) => x.userData.sort === 'kajak').length < 8; i++) { const [x, z] = tippPlats(); laggSkrap(x, z, variantFor('kajak'), Math.random() * 6.3); }   /* DF: kajaker på tippen */
-  if ((S.kapitel || 1) >= 2) for (let i = 0; i < SOPBIL_TUNNOR && skrapLista.length < MAX_SKRAP + SOPBIL_TUNNOR; i++) { const [x, z] = tippPlats(); laggSkrap(x, z, variantFor('tunna'), Math.random() * 6.3); }
+  if ((S.kapitel || 1) >= 2) for (let i = 0; i < SOPBIL_TUNNOR && skrapLista.length < MAX_SKRAP + SOPBIL_TUNNOR && skrapLista.filter((x) => x.userData.sort === 'tunna').length < 14; i++)   /* DF: tunnorna får inte tränga ut det vanliga skräpet */ { const [x, z] = tippPlats(); laggSkrap(x, z, variantFor('tunna'), Math.random() * 6.3); }
   if (Math.hypot(spelare.pos.x - TIPP.x, spelare.pos.z - TIPP.z) < 30) ui.toast(ggr > 1 ? '🚛 Rolf tippade DUBBEL last på soptippen!' : '🚛 Sopbilen tippade en ny last på soptippen!', 'guld');
   if (!S.lappar.includes('sopbil') && !S.tippNyckel) visaLapp('sopbil');
 }

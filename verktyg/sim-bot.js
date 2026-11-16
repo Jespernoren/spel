@@ -183,7 +183,7 @@
       const tipp = S.tippNyckel && gardsSkrap().length <= H.gardMal();
       let n = await plockaLass({ tippen: tipp });
       if (!n && !tipp && S.tippNyckel && !H.hand.saker.length) n = await plockaLass({ tippen: true });   // gården tom på det som går att lyfta – ta från tippen
-      if (!n && !H.hand.saker.length) { if (!S.kvarn.tratt) { handling('inget skräp kvar att mala!'); return false; } }
+      if (!n && !H.hand.saker.length) { if (!S.kvarn.tratt) { handling('inget skräp kvar att mala – väntar på sopbilen'); if (varv > 30) return false; await vanta(20); continue; } }
       await tomIKvarnen(); await mal();
     }
     return sk.fil >= gram;
@@ -237,9 +237,9 @@
     let varv = 0;
     await webbJobb();   // CR: beställningar från webbshoppen först – de betalar mer
     while (S.mynt < mal && varv++ < 30) {
-      const kand = Object.keys(H.VAROR).filter((t) => !tjanaFel.has(t) && !/^(g_|h_|hf_|ra_|r_|p_|fynd|burk|rulle|n_)/.test(t) && H.VAROR[t].pris > 0 && !H.VAROR[t].lyx && (!H.VAROR[t].niva || (H.VAROR[t].niva === 2 && H.harPlacerat('skrivarepetg'))) && H.harRecept(t) && (H.VAROR[t].syns?.() ?? true) && !H.VAROR[t].gava && H.VAROR[t].gram > 0);
+      const kand = Object.keys(H.VAROR).filter((t) => !tjanaFel.has(t) && !/^(g_|h_|hf_|ra_|r_|p_|fynd|burk|rulle|n_)/.test(t) && H.VAROR[t].pris > 0 && !H.VAROR[t].lyx && (!H.VAROR[t].niva || (H.VAROR[t].niva === 2 && H.harPlacerat('skrivarepetg')) || (H.VAROR[t].niva === 3 && H.harPlacerat('kolfskrivare'))) && H.harRecept(t) && (H.VAROR[t].syns?.() ?? true) && !H.VAROR[t].gava && H.VAROR[t].gram > 0);
       kand.sort((a, b) => H.prisNu(b) / H.VAROR[b].tid - H.prisNu(a) / H.VAROR[a].tid);
-      const t = kand[0]; if (!t) { handling('inget att printa och sälja!'); return; }
+      const t = kand[0]; if (!t) { handling('inget att printa och sälja – väntar på sopbilen'); tjanaFel.clear(); await vanta(30); return; }
       handling(`tjänar pengar${varfor ? ' till ' + varfor : ''}: ${S.mynt}/${mal} kr → printar ${H.VAROR[t].namn.toLowerCase()} (${H.prisNu(t)} kr)`);
       const sk = ledig({ typ: t }); const antal = Math.max(1, Math.min(4, Math.floor((sk.fil || 0) / H.VAROR[t].gram)));   // BP: även röd PETG
       let gick = 0; for (let i = 0; i < antal && S.mynt + i * H.prisNu(t) < mal; i++) { if (!(await printa({ typ: t }))) break; gick++; }
@@ -379,7 +379,7 @@
     }
     if (/^Lyft en tunna/.test(txt) && !S.sackkarra) { const p = H.placerade.find((x) => x.typ === 'sackkarra'); if (p) { await klick(p.mesh, 'säckkärran i högen'); return; } }
     if (/^Lyft en tunna/.test(txt)) {
-      valj('sackkarra'); const t = H.skrapLista.filter((x) => x.userData.tung && x.userData.interaktion).sort((a, b) => Math.hypot(a.position.x - H.spelare.pos.x, a.position.z - H.spelare.pos.z) - Math.hypot(b.position.x - H.spelare.pos.x, b.position.z - H.spelare.pos.z))[0];
+      valj('sackkarra'); const t = H.skrapLista.filter((x) => x.userData.tung && x.userData.interaktion && x.userData.sort !== 'kajak' && H.kanLyfta(x)).sort((a, b) => Math.hypot(a.position.x - H.spelare.pos.x, a.position.z - H.spelare.pos.z) - Math.hypot(b.position.x - H.spelare.pos.x, b.position.z - H.spelare.pos.z))[0];
       if (!t) { handling('ingen tunna att lyfta'); await vanta(5); return; }
       await gaTill(t, 1.2, 'en tunna'); t.userData.interaktion.aktivera(); await vanta(1); handling('lyfter en tunna med säckkärran'); await klick(H.kvarn, 'kvarnen'); await mal(); H.byt(0); return;
     }
@@ -401,7 +401,7 @@
   // kärran: lyft det närmaste tunga skräpet och tippa det i PETG-kvarnen (finns den inte: vid kvarnen, B51)
   async function tungtTillPetg() {
     valj('sackkarra'); const p0 = H.spelare.pos;
-    const t = H.skrapLista.filter((x) => x.userData.tung && x.userData.interaktion).sort((a, b) => Math.hypot(a.position.x - p0.x, a.position.z - p0.z) - Math.hypot(b.position.x - p0.x, b.position.z - p0.z))[0];
+    const t = H.skrapLista.filter((x) => x.userData.tung && x.userData.interaktion && x.userData.sort !== 'kajak' && H.kanLyfta(x)).sort((a, b) => Math.hypot(a.position.x - p0.x, a.position.z - p0.z) - Math.hypot(b.position.x - p0.x, b.position.z - p0.z))[0];
     if (!t) { handling('inget tungt skräp kvar'); await vanta(5); return false; }
     await gaTill(t, 1.2, 'en tunna'); t.userData.interaktion.aktivera(); await vanta(1);
     const p = H.petgKvarn();
