@@ -8,6 +8,7 @@
 //  Spel med  mobil: false  i spel-lista.js sparas aldrig (t.ex. Soptippsvägen 1 är 115 MB).
 // =============================================================
 const CACHE_NAMN = 'familjens-spel-v1';   // samma namn som i mobil/app.js
+const VERSION = 2;                        // höj när sw.js ändras
 const VANTA_PA_NATET_MS = 2500;           // sedan används sparad kopia
 
 self.window = self;                       // spel-lista.js skriver till window.SPEL
@@ -55,7 +56,9 @@ self.addEventListener('fetch', (e) => {
   // Egna filer → nätet först, sparad kopia om nätet är långsamt eller borta
   e.respondWith((async () => {
     const c = await caches.open(CACHE_NAMN);
-    const fran_natet = fetch(req).then((svar) => {
+    // no-cache: fråga alltid servern om filen ändrats (GitHub Pages låter annars webbläsaren
+    // använda en gammal kopia i 10 minuter, och nya spel syns inte direkt)
+    const fran_natet = fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }).then((svar) => {
       if (svar.ok && svar.type === 'basic') c.put(req, svar.clone());
       return svar;
     });

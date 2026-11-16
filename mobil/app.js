@@ -405,7 +405,14 @@ function konfetti() {
 
 // ---------- Offline-stöd (service worker ligger i spelhallens rot) ----------
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('../sw.js', { scope: '../' }).catch(() => {});
+  navigator.serviceWorker.register('../sw.js', { scope: '../', updateViaCache: 'none' })
+    .then((reg) => reg.update()).catch(() => {});
+  // Ny version av appen installerad → ladda om en gång så att nya spel syns
+  let laddarOm = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (laddarOm || !navigator.serviceWorker.controller) return;
+    laddarOm = true; location.reload();
+  });
 }
 
 // ---------- Start ----------
