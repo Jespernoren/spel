@@ -210,8 +210,8 @@ const VAROR = {
   julbord: { namn: 'Julbord med ljusstakar', ikon: '', jul: true, syns: () => S.dag >= 22 && !S.julFirad && !antalInv('julbord'), beskr: 'Långbord och ljusstakar. Gratis – det är jul.' },
   g_kapsyl: { namn: 'Kapsyl från Göran', ikon: '', kop: true, beskr: 'Blank. Göran tyckte den var fin.' },
   g_skruv: { namn: 'Blank skruv från Göran', ikon: '', kop: true, beskr: 'Rostfri. Göran har smak.' },
-  fagelskramma: { namn: 'Fågelskrämma', ikon: '', trivsel: 3, placerbar: true, radie: 0.35, syns: () => S.dag >= 6 && !!S.goranSedd, lyx: 'Skrämmer fåglar. Enligt förpackningen.' },
-  fagelbad: { namn: 'Fågelbad', ikon: '', trivsel: 8, placerbar: true, radie: 0.35, syns: () => S.dag >= 6 && !!S.goranSedd, lyx: 'Ett litet bad på en fot. Måsar gillar sånt. Tydligen.' },
+  fagelskramma: { namn: 'Fågelskrämma', ikon: '', trivsel: 3, placerbar: true, radie: 0.35, syns: () => S.dag >= 6 && (!!S.goranSedd || STEG[S.steg]?.id === 'goran6'), lyx: 'Skrämmer fåglar. Enligt förpackningen.' },
+  fagelbad: { namn: 'Fågelbad', ikon: '', trivsel: 8, placerbar: true, radie: 0.35, syns: () => S.dag >= 6 && (!!S.goranSedd || STEG[S.steg]?.id === 'goran6'), lyx: 'Ett litet bad på en fot. Måsar gillar sånt. Tydligen.' },
   lampskarm: { namn: 'Lampskärm', ikon: '💡', syns: () => S.dag >= 3 || S.rolf.i >= 2 || harRecept('fagelholk') },
   dronare: { namn: 'Drönarram', ikon: '🛸', syns: () => S.rolf.i >= 3 || harRecept('lampskarm') },
   skateboard: { namn: 'Skateboard', ikon: '🛹', syns: () => S.kapitel >= 2 && harRecept('dronare') },
@@ -645,6 +645,7 @@ const STEG = [
   { id: 'sol6', del: R6, bild: 'byggsats:sol', text: 'Bygg en solpanel', klar: () => harPlacerat('sol'), tanke: 'Den röda kvarnen drar mer än vinden orkar. Solen får hjälpa till.' },   /* linje 2: solpanelen flyttad hit */
   { del: R6, bild: 'byggsats:petgkvarn', text: () => S.rodKvarnKopt ? 'Ställ den röda kvarnen i röda linjen' : 'Köp den röda kvarnen hos Ali', klar: () => harPlacerat('petgkvarn') },
   { del: R6, text: 'Mal tunnan i PETG-kvarnen', klar: () => (S.stat.tungMalt || 0) >= 1 },
+  { id: 'goran6', del: R6, bild: () => harRecept('fagelskramma') || harRecept('fagelbad') ? (harRecept('fagelbad') ? 'fagelbad' : 'fagelskramma') : 'fagelskramma', text: 'Ge Göran ett eget ställe: fågelskrämma eller fågelbad', klar: () => harPlacerat('fagelskramma') || harPlacerat('fagelbad'), tanke: 'Göran har ett hem nu. Bättre än jag hade för en vecka sen.' },   /* dag 6: måsen får ett hem */
   sovSteg(6, R6),
   { del: R7, bild: 'byggsats:skrivarepetg', text: 'Bygg PETG-skrivaren', klar: () => harPlacerat('skrivarepetg') },
   { del: R7, bild: 'n2_vas', text: 'Printa en designvas i röd PETG', klar: () => printat('n2_vas') >= 1 || (S.saltTot?.n2_vas || 0) >= 1 },

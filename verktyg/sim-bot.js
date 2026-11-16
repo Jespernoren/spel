@@ -348,6 +348,7 @@
       if (!har) { const pris = H.MASKINER[id].ritning; if (S.mynt < pris) { await tjana(pris, id); return; } await ali(async () => { await kopHosAli(id); }, 'köpa ' + id); return; }
       const b = Object.keys(H.MAT_VARDE || {}).find((t) => t.startsWith('burk_') && H.antalInv(t)); if (b) { H.ata(b); handling('lagar ' + b + ' på spisen'); } await vanta(1); return;
     }
+    if (/^Ge Göran ett eget ställe/.test(txt)) { if (!H.harRecept('fagelskramma')) await kopRecept('fagelskramma'); if (!H.antalInv('fagelskramma')) await printa({ typ: 'fagelskramma' }); if (H.antalInv('fagelskramma')) await placera('fagelskramma'); return; }   // dag 6
     if (/^Printa en designvas/.test(txt)) { if (!H.harRecept('n2_vas')) await kopRecept('n2_vas'); await printa({ typ: 'n2_vas' }); return; }
     if (/^Sälj designvasen/.test(txt)) { if (!H.antalInv('n2_vas')) await printa({ typ: 'n2_vas' }); await ali(() => saljAllt(), 'sälja vasen'); return; }
     if (/^Lägg 3 vaser i säljlådan/.test(txt)) {
