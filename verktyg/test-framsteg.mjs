@@ -25,7 +25,23 @@ for (let i = 0; i < 60 && !(await p.evaluate(() => !!window.__printahem?.ui?.iga
 }
 steg.push(['spelet igång', await p.evaluate(() => !!window.__printahem?.ui?.igang)]);
 await p.waitForTimeout(8000);
-const r = await p.evaluate(async () => { const H = window.__printahem; const sk = H.skrivare[0]; sk.fil = 3000; H.S.strom = 999; H.startaJobb(sk, { maskin: "grip" }); H.simulera(0.5); const f = H.framsteg(sk); const hov = H.skrivarText(sk); const bar = [...document.querySelectorAll(".hud-skrivbar span")].map((x) => x.textContent); const pct = Math.floor(f.andel * 100) + " %"; return { f, hov, bar, ok: hov.includes(pct) && bar.filter(Boolean).every((b) => b.startsWith(pct)) }; }); console.log(JSON.stringify(r)); if (!r.ok) { console.log("✗ framstegen skiljer sig mellan vyerna"); process.exitCode = 1; } else console.log("✓ samma framsteg i alla vyer");
+// DB: en etikett över skrivaren – rad 1 mätare + procent för hela printen, rad 2 klartext. Pekar man på skrivaren visas ingen procent.
+const r = await p.evaluate(async () => {
+  const H = window.__printahem, fel = [];
+  if (H.skrivare.length < 2 && H.placera) H.placera({ id: 'testM', typ: 'skrivare2', x: H.skrivare[0].mesh.position.x + 2.5, z: H.skrivare[0].mesh.position.z, r: 0, r8: 0 });
+  const S0 = H.skrivare[0], M = H.skrivare[1]; H.S.strom = 999;
+  S0.fil = 3000; H.startaJobb(S0, { maskin: 'grip' });
+  if (M) { M.fil = 3000; H.startaJobb(M, { typ: 'nyckelring' }); }
+  let forra = [-1, -1];
+  for (let k = 0; k < 60 && (S0.jobb || (M && M.jobb)); k++) {
+    H.simulera(0.25); H.ritaSkrivBarer?.();
+    [S0, M].forEach((sk, i) => { if (!sk || !sk.jobb) return; const a = H.framsteg(sk).andel; if (a + 1e-9 < forra[i]) fel.push(`skrivare ${i}: ${forra[i]} → ${a}`); forra[i] = a;
+      if (/%|kvar/.test(H.skrivarText(sk))) fel.push('procent i pekaretiketten: ' + H.skrivarText(sk)); });
+  }
+  const etiketter = [...document.querySelectorAll('.hud-skrivbar b')].map((x) => x.textContent);
+  if (etiketter.some((t) => /…$/.test(t))) fel.push('avkortat namn: ' + etiketter.join(' | '));
+  return { fel, etiketter, harM: !!M, ok: !fel.length };
+}); console.log(JSON.stringify(r)); if (!r.ok) { console.log("✗ DB: etiketten över skrivaren"); process.exitCode = 1; } else console.log('✓ DB: procenten går bara uppåt, ingen procent när man pekar' + (r.harM ? ' (Skrivare S och M samtidigt)' : ''));
 steg.push(['dag 1, första målet', await p.evaluate(() => window.__printahem.S.dag === 1 && !!window.__printahem.stegText())]);
 for (const [t, ok] of steg) console.log(ok ? '✓' : '✗', t);
 console.log(fel.length ? fel.join('\n') : 'inga sidfel');

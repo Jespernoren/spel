@@ -131,8 +131,8 @@ export const HUD_CSS = `
 .ali-grupp.ej{margin-top:14px;padding:10px;border-radius:10px;background:rgba(0,0,0,.25);border:1px dashed rgba(255,255,255,.18)}.ali-grupp.ej>b{color:#c5ccda}.ali-grupp.ej .ui-ruta{filter:grayscale(.85) brightness(.8);cursor:pointer}
 
 
-.hud-skrivbar{position:absolute;left:0;top:0;transform-origin:50% 100%;width:190px;padding:6px 10px 8px;border-radius:9px;background:${LAGER_SVAG},rgba(25,28,36,.88);color:#fff;font:800 13px/1.2 system-ui;box-shadow:0 6px 14px rgba(0,0,0,.3)}
-.hud-skrivbar .rad{display:flex;justify-content:space-between;gap:8px;margin-bottom:5px}.hud-skrivbar b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hud-skrivbar span{color:#9fe8ff;font-variant-numeric:tabular-nums}
+.hud-skrivbar{position:absolute;left:0;top:0;transform-origin:50% 100%;width:max-content;min-width:200px;max-width:290px;padding:6px 10px 8px;border-radius:9px;background:${LAGER_SVAG},rgba(25,28,36,.88);color:#fff;font:800 13px/1.2 system-ui;box-shadow:0 6px 14px rgba(0,0,0,.3)}
+.hud-skrivbar .rad1{display:flex;align-items:center;gap:8px;margin-bottom:5px}.hud-skrivbar .rad1 .bar{flex:1}.hud-skrivbar b{display:block;white-space:normal;overflow-wrap:break-word;font-weight:700}.hud-skrivbar span{color:#9fe8ff;font-variant-numeric:tabular-nums}
 .hud-skrivbar .bar{height:9px;border-radius:999px;background:rgba(255,255,255,.15);overflow:hidden}.hud-skrivbar .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3de3ff,#7dffb0)}
 .ui-fot:has([data-fynd-ok]){display:flex;justify-content:center}
 .ph-fynd{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;padding:6px 0 4px}
