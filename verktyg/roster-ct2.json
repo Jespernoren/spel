@@ -1,0 +1,65 @@
+[
+ {
+  "id": "rolf-ce1f4997",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Rolfs brev och tack i postlådan (kapitel 1)",
+  "visad": "Tomten sitter på flaket nu. Vi vinkar åt alla. ALLA. En tant vinka tillbaka. Första gången på tretito år. Pengar i lådan. /Rolf\n*trettio",
+  "skickas": "[old, tired, thick Värmland accent, calm] Tomten sitter på flaket nu. [short pause] Vi vinkar åt alla. ALLA. En tant vinka tillbaka. Första gången på tretito år. Pengar i lådan. /Rolf *trettio [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-739ffa24",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Rolfs brev och tack i postlådan (kapitel 1)",
+  "visad": "Tomten sitter på flaket nu. Vi vinkar åt alla. ALLA. En tant vinka tillbaka. Första gången på trettio år. Pengar i lådan. /Rolf",
+  "skickas": "[old, tired, thick Värmland accent, calm] Tomten sitter på flaket nu. [short pause] Vi vinkar åt alla. ALLA. En tant vinka tillbaka. Första gången på trettio år. Pengar i lådan. /Rolf [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-f9978d5f",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Rolfs tack för presenter, jobblappar och fynd",
+  "visad": "Hörru.. Lapp i lådan. Int brådis. Men lite brådis. /R",
+  "skickas": "[old, tired, thick Värmland accent, calm] Hörru.. [short pause] Lapp i lådan. Int brådis. Men lite brådis. /R [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-d9ac6724",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Rolfs tack för presenter, jobblappar och fynd",
+  "visad": "Hörru. Kajsa satt på lappen hela natten. Den ä lite varm. Lådan. /R",
+  "skickas": "[old, tired, thick Värmland accent, calm] Hörru. [short pause] Kajsa satt på lappen hela natten. Den ä lite varm. Lådan. /R [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-398888af",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Rolfs tack för presenter, jobblappar och fynd",
+  "visad": "Ett litet uppdrag.. Inget farligt. Nästan inget farligt. Lådan. /R",
+  "skickas": "[old, tired, thick Värmland accent, calm] Ett litet uppdrag.. [short pause] Inget farligt. Nästan inget farligt. Lådan. /R [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-29941e90",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Rolfs tack för presenter, jobblappar och fynd",
+  "visad": "Ja la en lapp.. Läs den när ingen ser. Typ Bengt-Åke. /R",
+  "skickas": "[old, tired, thick Värmland accent, calm] Ja la en lapp.. [short pause] Läs den när ingen ser. Typ Bengt-Åke. /R [chuckles]",
+  "hand": false
+ },
+ {
+  "id": "rolf-9f083dae",
+  "figur": "rolf",
+  "rost": "rolf",
+  "var": "Rolfs tack för presenter, jobblappar och fynd",
+  "visad": "Sista lappen på ett tag. Lovar. Typ. /R",
+  "skickas": "[old, tired, thick Värmland accent, calm] Sista lappen på ett tag. [short pause] Lovar. Typ. /R [chuckles]",
+  "hand": false
+ }
+]

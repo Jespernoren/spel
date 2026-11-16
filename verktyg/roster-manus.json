@@ -97,17 +97,16 @@
   "var": "Rolfs brev och tack i postlådan (kapitel 1)"
  },
  {
-  "id": "rolf-a6512177",
+  "id": "rolf-ce1f4997",
   "figur": "rolf",
-  "text": "Tjo.. Tomten sitter på flaket nu. Vi vinkar åt alla. ALLA. Pengar + dubbel last. MVH ROLF",
-  "kalla": "Tomten sitter på flaket nu. Vi vinkar åt alla. ALLA. Pengar + dubbel last. /Rolf",
+  "text": "Tomten sitter på flaket nu. Vi vinkar åt alla. ALLA. En tant vinka tillbaka. Första gången på tretito år. Pengar i lådan. /Rolf\n*trettio",
+  "kalla": "Tomten sitter på flaket nu. Vi vinkar åt alla. ALLA. En tant vinka tillbaka. Första gången på trettio år. Pengar i lådan. /Rolf",
   "var": "Rolfs brev och tack i postlådan (kapitel 1)"
  },
  {
-  "id": "rolf-542ec044",
+  "id": "rolf-739ffa24",
   "figur": "rolf",
-  "text": "Tjo. Tomten sitter på flaket nu. Vi vinkar åt alla. ALLA. Pengar + dubbel last. /Rolf",
-  "kalla": "Tomten sitter på flaket nu. Vi vinkar åt alla. ALLA. Pengar + dubbel last. /Rolf",
+  "text": "Tomten sitter på flaket nu. Vi vinkar åt alla. ALLA. En tant vinka tillbaka. Första gången på trettio år. Pengar i lådan. /Rolf",
   "var": "Rolfs brev och tack i postlådan (kapitel 1)"
  },
  {
@@ -499,6 +498,54 @@
   "figur": "rolf",
   "text": "ÖJ! Ny lapp i lådan. Du vet va dä betyder. /R",
   "kalla": "Ny lapp i lådan. Du vet vad de betyder. /R",
+  "var": "Rolfs tack för presenter, jobblappar och fynd"
+ },
+ {
+  "id": "rolf-f9978d5f",
+  "figur": "rolf",
+  "text": "Hörru.. Lapp i lådan. Int brådis. Men lite brådis. /R",
+  "kalla": "Lapp i lådan. Int brådis. Men lite brådis. /R",
+  "var": "Rolfs tack för presenter, jobblappar och fynd"
+ },
+ {
+  "id": "rolf-fd517ccf",
+  "figur": "rolf",
+  "text": "Hörru. Ja har skrivit nåt. Mä blyerts, så ja kan sudda om dä blir fel. Lådan. /R",
+  "kalla": "Ja har skrivit nåt. Med blyerts, så ja kan sudda om de blir fel. Lådan. /R",
+  "var": "Rolfs tack för presenter, jobblappar och fynd"
+ },
+ {
+  "id": "rolf-411f8976",
+  "figur": "rolf",
+  "text": "Hörru. Kajsa satt på lappne hela natten. Den ä lite varm. Lådan. /R\n*lappen",
+  "kalla": "Kajsa satt på lappen hela natten. Den e lite varm. Lådan. /R",
+  "var": "Rolfs tack för presenter, jobblappar och fynd"
+ },
+ {
+  "id": "rolf-d9ac6724",
+  "figur": "rolf",
+  "text": "Hörru. Kajsa satt på lappen hela natten. Den ä lite varm. Lådan. /R",
+  "kalla": "Kajsa satt på lappen hela natten. Den e lite varm. Lådan. /R",
+  "var": "Rolfs tack för presenter, jobblappar och fynd"
+ },
+ {
+  "id": "rolf-398888af",
+  "figur": "rolf",
+  "text": "Ett litet uppdrag.. Inget farligt. Nästan inget farligt. Lådan. /R",
+  "kalla": "Ett litet uppdrag. Inget farligt. Nästan inget farligt. Lådan. /R",
+  "var": "Rolfs tack för presenter, jobblappar och fynd"
+ },
+ {
+  "id": "rolf-29941e90",
+  "figur": "rolf",
+  "text": "Ja la en lapp.. Läs den när ingen ser. Typ Bengt-Åke. /R",
+  "kalla": "Ja la en lapp. Läs den när ingen ser. Typ Bengt-Åke. /R",
+  "var": "Rolfs tack för presenter, jobblappar och fynd"
+ },
+ {
+  "id": "rolf-9f083dae",
+  "figur": "rolf",
+  "text": "Sista lappen på ett tag. Lovar. Typ. /R",
   "var": "Rolfs tack för presenter, jobblappar och fynd"
  },
  {
@@ -2637,6 +2684,66 @@
   "var": "Ali i butiken"
  },
  {
+  "id": "ali-716a0732",
+  "figur": "ali",
+  "text": "Stängt. Jag sitter här bara för att det är mörkt hemma.",
+  "var": "Ali i butiken"
+ },
+ {
+  "id": "ali-cd35ac8b",
+  "figur": "ali",
+  "text": "Nej. Kassan sover. Jag ska också sova.",
+  "var": "Ali i butiken"
+ },
+ {
+  "id": "ali-e6420216",
+  "figur": "ali",
+  "text": "Kom i morgon. Klockan åtta. Kaffet är färskt då. Nästan.",
+  "var": "Ali i butiken"
+ },
+ {
+  "id": "ali-a0935f09",
+  "figur": "ali",
+  "text": "Stängt, min vän. Även ingenjörer behöver sova.",
+  "var": "Ali i butiken"
+ },
+ {
+  "id": "ali-0bfa2071",
+  "figur": "ali",
+  "text": "Jag har redan räknat kassan. Jag räknar den inte igen.",
+  "var": "Ali i butiken"
+ },
+ {
+  "id": "ali-6edc0a4b",
+  "figur": "ali",
+  "text": "Min fru väntar med middag. Det är dolma. Gå hem.",
+  "var": "Ali i butiken"
+ },
+ {
+  "id": "ali-d5fca66e",
+  "figur": "ali",
+  "text": "Lampan är släckt. Det betyder stängt. Eller trasig lampa. Stängt.",
+  "var": "Ali i butiken"
+ },
+ {
+  "id": "ali-4c789c09",
+  "figur": "ali",
+  "text": "Åtta i morgon. Inte sju. Inte halv åtta. Åtta.",
+  "var": "Ali i butiken"
+ },
+ {
+  "id": "ali-59d51090",
+  "figur": "ali",
+  "text": "Om det är akut: det är inte akut. Godnatt.",
+  "var": "Ali i butiken"
+ },
+ {
+  "id": "ali-a1c2b898",
+  "figur": "ali",
+  "text": "Jag ser dig genom fönstret. Jag låtsas att jag inte gör det.",
+  "var": "Ali i butiken"
+ },
+ {
   "id": "ali-342f4f45",
   "figur": "ali",
   "text": "Ali här. Jag har inte sovit på tre dygn. 🧲 MAGNETPISTOL. Den drog åt sig min nyckelknippa, min klocka och nästan en tand. Det här är framtiden, min vän. Du kommer gilla den. Jag gillar den. Säg inte till nån att jag gillar nåt.",
@@ -3842,6 +3949,126 @@
   "id": "du-2f709863",
   "figur": "du",
   "text": "Det börjar kännas som ett hem. På riktigt.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-a85cbba7",
+  "figur": "ali",
+  "text": "Hallå! Jag har nya skruvar. Samma gamla, men nya.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-ba062efa",
+  "figur": "ali",
+  "text": "Du ser trött ut. Det är bra. Det betyder jobb.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-894eaea5",
+  "figur": "ali",
+  "text": "Jag har kaffe. Det är inte gott. Men det finns.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-6697f58d",
+  "figur": "ali",
+  "text": "Akta pölen. Den har varit där sedan 2014.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-00c21f6d",
+  "figur": "ali",
+  "text": "Min fru frågar om dig. Jag sa: printar.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-314e009d",
+  "figur": "ali",
+  "text": "Kom in och titta. Titta är gratis. Nästan.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-a15e6add",
+  "figur": "ali",
+  "text": "Har du ätit? Jag frågar för att din mamma ringer.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-9dd35455",
+  "figur": "ali",
+  "text": "Kaktusen hälsar. Han heter Ahmed.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-a34c9a9e",
+  "figur": "ali",
+  "text": "Jag har en ny hylla. Den lutar. Som jag.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-f5539b6f",
+  "figur": "ali",
+  "text": "Älgen var här i morse. Han köpte inget heller.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-61180de8",
+  "figur": "ali",
+  "text": "Ditt skjul syns från kassan. Det ser bättre ut nu.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-ddb3053e",
+  "figur": "ali",
+  "text": "Jag har ritat något i natt. Kanske en fågel. Kanske en stol.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-72e0e7b2",
+  "figur": "ali",
+  "text": "Sol idag! Jag sitter inne ändå. Principer.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-4c0d344c",
+  "figur": "ali",
+  "text": "Jag har räknat kassan två gånger. Samma summa. Tråkigt.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-20c567f8",
+  "figur": "ali",
+  "text": "Rolf var här. Köpte korv. Samma korv.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-f1b0af72",
+  "figur": "ali",
+  "text": "Din plast luktar ända hit. Det är ett bra tecken.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-f2f10090",
+  "figur": "ali",
+  "text": "Jag stängde nästan. Sedan tänkte jag: kanske kommer du.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-2951bf35",
+  "figur": "ali",
+  "text": "Radion säger regn. Radion säger alltid regn.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-dcae3217",
+  "figur": "ali",
+  "text": "AI:n säger hej. Jag säger hej. Det räcker.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "ali-424482ec",
+  "figur": "ali",
+  "text": "Gå inte förbi för fort. Jag hinner inte vinka.",
   "var": "Dina tankar, tips och varningar"
  },
  {

@@ -5006,7 +5006,7 @@ const ROLF = [
     tack: 'Grillspaden e ju KONST. Pengar i lådan. Ses på lördag. Eller inte. Vi får se. /Rolf' },
   { vara: 'tomte',
     brev: 'Flaket e så trist. Folk vinkar aldrig åt sopbilen. Med en tomte på flaket kanske dom gör det. En sån me luva o skägg. Ritningen ligger i lådan. 400 spänn + dubbel last! /Rolf 🎅',
-    tack: 'Tomten sitter på flaket nu. Vi vinkar åt alla. ALLA. Pengar + dubbel last. /Rolf' },
+    tack: 'Tomten sitter på flaket nu. Vi vinkar åt alla. ALLA. En tant vinka tillbaka. Första gången på trettio år. Pengar i lådan. /Rolf' },   // CT
 ];ROLF.forEach((o, i) => { o.belo = [...B.ROLF_BELONING[i]]; });
 
 // Rolf lämnar något i lådan och sms:ar om det (när han har ditt nummer)
@@ -5282,7 +5282,7 @@ function efterBeloning(lista) {
   andraRespekt(4, 'Fixade det Rolf bad om');
   if (S.rolfTackIBrev === nr) { /* B2: tacket stod redan i morgonens brev */ }
   else if (nr === 0) visaLapp('rolftack:0');          // första gången: ett brev (med hans nummer)
-  else sms('rolf', ROLF[nr].tack);               // sedan sms:ar han
+  else if (!(S.rolfTackSkickat || []).includes(nr)) { S.rolfTackSkickat = [...(S.rolfTackSkickat || []), nr]; sms('rolf', ROLF[nr].tack); }   // sedan sms:ar han – CT: bara en gång per tack
   visaPostInne(); sparaSnart();
 }
 function oppnaGrind(direkt = false) {
@@ -6101,7 +6101,9 @@ function rolfFyndSms(n) {   // punkt BD: låter som Rolf, inte som ett spelsyste
   const vad = { 2: 'röda backar av riktigt bra plast', 3: 'kolfiberrester', 4: 'guldglittriga dunkar', 5: 'titanspån' }[n];
   return `Folk pratar gott om dej. Ja hitta ${vad} på tippen. Tre lådor. Ja la dom vid grinden. /R`;
 }
-const ROLF_JOBBLAPP = ['Rolf här. Ja har en grej. Lite känslig. Ja la en lapp i postlådan. Läs den o bränn den sen. /R', 'Ny lapp i lådan. Du vet vad de betyder. /R'];
+const ROLF_JOBBLAPP = ['Rolf här. Ja har en grej. Lite känslig. Ja la en lapp i postlådan. Läs den o bränn den sen. /R', 'Ny lapp i lådan. Du vet vad de betyder. /R',   // CT: används i ordning, aldrig två gånger
+  'Lapp i lådan. Int brådis. Men lite brådis. /R', 'Ja har skrivit nåt. Med blyerts, så ja kan sudda om de blir fel. Lådan. /R', 'Kajsa satt på lappen hela natten. Den e lite varm. Lådan. /R',
+  'Ett litet uppdrag. Inget farligt. Nästan inget farligt. Lådan. /R', 'Ja la en lapp. Läs den när ingen ser. Typ Bengt-Åke. /R', 'Sista lappen på ett tag. Lovar. Typ. /R'];
 const senaSystem = () => !!S.kapitelKlart;   // respekt, rang, prestationer, värme, mark, trim, fynd 3–5, skumma jobb och möglande mat syns först i kapitel 2
 const FIL_FARG = { 1: FIL1, 2: 0xd63a2f, 3: 0x2fbf5a, 4: 0xd4a017, 5: 0x9a8ab8 };
 const nivaUpplast = (n) => n <= 1 || (n === 2 ? S.kapitel >= 2 : S.kapitel >= 4);   // röd PETG i kapitel 2, nivå 3–5 i kapitel 4
@@ -6476,7 +6478,10 @@ const ALI_HEJ = ['Pappa stod bakom den här disken i trettio år. Jag har stått
   'Du är den enda här som vet vad en tolerans är. Det värmer. Lite. Inte mycket.', 'Kunder, kunder. Ingen ingenjör. Förutom du kanske.',
   'Semesterkassan: 340 kr. Köp nåt, min vän.', 'Du printar mina ritningar. Ingen har gjort det förut. Jag är inte rörd. Det är dammet.','Jag har stått här sedan sex i morse. Vad vill du?', 'Ledig? Vad är det? Har aldrig hört talas om det.', 'Köp nåt eller gå, min vän. Mina fötter värker.', 'Min fru säger att jag bor här. Hon har rätt.',
   'Salam. Ja, ja, jag har nya grejer. Som vanligt. Varje dag.', 'Semester? Jag hade semester 2009. Det regnade.', 'Du igen. Bra. Du är den enda som köper nåt.'];
-const ALI_STANGT = ['STÄNGT. Jag har jobbat i femton timmar. Gå hem och sov!', 'Klockan är nio. Jag är inte här. Kom tillbaka i morgon.', 'Nej. Nej nej nej. Stängt. Godnatt.'];
+const ALI_STANGT = ['STÄNGT. Jag har jobbat i femton timmar. Gå hem och sov!', 'Klockan är nio. Jag är inte här. Kom tillbaka i morgon.', 'Nej. Nej nej nej. Stängt. Godnatt.',   // CT: 10 nya
+  'Stängt. Jag sitter här bara för att det är mörkt hemma.', 'Nej. Kassan sover. Jag ska också sova.', 'Kom i morgon. Klockan åtta. Kaffet är färskt då. Nästan.', 'Stängt, min vän. Även ingenjörer behöver sova.',
+  'Jag har redan räknat kassan. Jag räknar den inte igen.', 'Min fru väntar med middag. Det är dolma. Gå hem.', 'Lampan är släckt. Det betyder stängt. Eller trasig lampa. Stängt.', 'Åtta i morgon. Inte sju. Inte halv åtta. Åtta.',
+  'Om det är akut: det är inte akut. Godnatt.', 'Jag ser dig genom fönstret. Jag låtsas att jag inte gör det.'];
 const aliOppen = () => !sovDags();
 // spelklockan: dagen går från 08:00 till 20:00 i takt med dagens mål – 21:00 stänger Ali och det är dags att sova
 // i det oändliga bygget går klockan på riktig tid: en dag = DAG_LANGD sekunder, 08:00 → 21:00, sedan natt
@@ -8566,7 +8571,7 @@ function familjSms() {
   if (S.rolf.boter) { const b = Math.min(S.mynt, S.rolf.boter), t = CHEFEN[((S.rolf.ja / 2) - 1) % CHEFEN.length]; S.rolf.boter = 0; setTimeout(() => { S.mynt -= b; sms('chefen', `${t} ${b} kr. /Rolf (chefen)`); ui.toast(`Böter: −${b} kr`, 'fel'); sparaSnart(); }, 7000); }
   if (S.dag >= 7 && ![11, 14, 16, 22].includes(d) && !(S.pappaNasta === d) && !nVantarLapp() && S.rolf.i >= ROLF.length && S.rolf.jobb == null && !S.post.lapp && !S.post.tillRolf && !S.post.tillMig.length && S.rolf.jobbDag !== d && (d - (S.rolf.jobbDag || 0)) >= 2) {
     S.rolf.jobbDag = d; S.post.lapp = 'jobb'; visaPostInne();
-    setTimeout(() => sms('rolf', ROLF_JOBBLAPP[(S.rolf.jobbNr || 0) === 0 ? 0 : 1]), 3500);
+    { const t = ROLF_JOBBLAPP.find((x) => !harSagt(rolfDialekt(x, false)) && !harSagt(x)) ; const i = S.rolf.jobbLappNr = (S.rolf.jobbLappNr || 0) + 1; const txt = ROLF_JOBBLAPP[i - 1] || t; if (txt) setTimeout(() => sms('rolf', txt), 3500); }   // CT: i ordning, tyst när de är slut
   }
   // dagens meddelanden: de fasta för dag 1–2, sedan 2–3 nya ur poolen som passar läget (aldrig samma två gånger)
   const sett = new Set(S.smsSett || []);
@@ -9724,7 +9729,7 @@ function rostManus() {
   vid('Lappar, brev och dagbok'); Object.entries(LAPPAR).forEach(([id, [titel, t]]) => add(vemAvTitel(titel), t));
   vid('Introt'); INTRO_TAL().forEach(([v, t]) => add(v, t));
   vid('Berättaren läser målen'); Object.values(STEG_TAL).forEach((t) => add('berattare', t)); Object.values(STEG_TAL_SPARA).forEach(([t]) => add('berattare', t));
-  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); TANKAR_INLINE.forEach((t) => add('du', t)); TANKAR_NYA.forEach((t) => add('du', t)); add('ali', ALI_KANNA); add('ali', ALI_RODKVARN); add('ali', ALI_DATOR); add('ali', ALI_DATOR_SEN); add('rolf', ROLF_PAKET_LAPP); add('rolf', ROLF_PAKET_SEN); GAST_ROLF.forEach((t) => add('rolf', t)); add('rolf', GAST_DRAR); add('rolf', GAST_KLAR_ROLF); add('rolf', GAST_JUL); add('rolf', HELEN_GAST_ROLF); add('helen', HELEN_GAST); add('rolf', ROLF_SACK_LAPP); add('du', TANKE_UTANFOR); GORAN_HALLA.forEach((t) => add('du', t)); add('du', GORAN_MAMMA); add('du', GORAN_FAGELBAD); MORGON_TANKAR.forEach((m) => add('du', m.text)); add('du', MORGON_BRA.text); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); ALI_FAST.forEach(([, f]) => add('ali', f)); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
+  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); TANKAR_INLINE.forEach((t) => add('du', t)); TANKAR_NYA.forEach((t) => add('du', t)); ALI_FORBI.forEach((t) => add('ali', t)); ALI_STANGT.forEach((t) => add('ali', t)); add('ali', ALI_KANNA); add('ali', ALI_RODKVARN); add('ali', ALI_DATOR); add('ali', ALI_DATOR_SEN); add('rolf', ROLF_PAKET_LAPP); add('rolf', ROLF_PAKET_SEN); GAST_ROLF.forEach((t) => add('rolf', t)); add('rolf', GAST_DRAR); add('rolf', GAST_KLAR_ROLF); add('rolf', GAST_JUL); add('rolf', HELEN_GAST_ROLF); add('helen', HELEN_GAST); add('rolf', ROLF_SACK_LAPP); add('du', TANKE_UTANFOR); GORAN_HALLA.forEach((t) => add('du', t)); add('du', GORAN_MAMMA); add('du', GORAN_FAGELBAD); MORGON_TANKAR.forEach((m) => add('du', m.text)); add('du', MORGON_BRA.text); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); ALI_FAST.forEach(([, f]) => add('ali', f)); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
   rostManus.detalj = D;
   return L;
 }
@@ -10711,7 +10716,12 @@ const LIV_ROST = [
   ...Object.values(ALI_MINNE).map((t) => ['ali', t]),
 ];
 const ROLF_HEM = { dorr: LIV_ROST[7][1], tak: LIV_ROST[8][1] };
-const ALI_FORBI = LIV_ROST.slice(0, 6).map((x) => x[1]), ALI_KVALL = LIV_ROST[6][1];
+const ALI_FORBI = [...LIV_ROST.slice(0, 6).map((x) => x[1]),   // CT: 20 nya, ropade från dörren
+  'Hallå! Jag har nya skruvar. Samma gamla, men nya.', 'Du ser trött ut. Det är bra. Det betyder jobb.', 'Jag har kaffe. Det är inte gott. Men det finns.', 'Akta pölen. Den har varit där sedan 2014.',
+  'Min fru frågar om dig. Jag sa: printar.', 'Kom in och titta. Titta är gratis. Nästan.', 'Har du ätit? Jag frågar för att din mamma ringer.', 'Kaktusen hälsar. Han heter Ahmed.',
+  'Jag har en ny hylla. Den lutar. Som jag.', 'Älgen var här i morse. Han köpte inget heller.', 'Ditt skjul syns från kassan. Det ser bättre ut nu.', 'Jag har ritat något i natt. Kanske en fågel. Kanske en stol.',
+  'Sol idag! Jag sitter inne ändå. Principer.', 'Jag har räknat kassan två gånger. Samma summa. Tråkigt.', 'Rolf var här. Köpte korv. Samma korv.', 'Din plast luktar ända hit. Det är ett bra tecken.',
+  'Jag stängde nästan. Sedan tänkte jag: kanske kommer du.', 'Radion säger regn. Radion säger alltid regn.', 'AI:n säger hej. Jag säger hej. Det räcker.', 'Gå inte förbi för fort. Jag hinner inte vinka.'], ALI_KVALL = LIV_ROST[6][1];
 
 // pratbubblor som sitter fast på något i världen
 const varldsBubblor = [];
