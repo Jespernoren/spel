@@ -1,0 +1,38 @@
+[
+ {
+  "id": "pappa-143d5163",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Jaså. Här bor du alltså.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Jaså. Här bor du alltså.",
+  "hand": false
+ },
+ {
+  "id": "pappa-45de4e33",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "Pappas besök (med Rolf första gången)",
+  "visad": "Mamma skickade burkar. Jag bar dem.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Mamma skickade burkar. Jag bar dem.",
+  "hand": false
+ },
+ {
+  "id": "pappa-e1e53d1e",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "U_REPLIK",
+  "visad": "Taket håller i alla fall.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Taket håller i alla fall.",
+  "hand": false
+ },
+ {
+  "id": "pappa-29dc6908",
+  "figur": "pappa",
+  "rost": "pappa",
+  "var": "U_REPLIK",
+  "visad": "Ja ja. Det här kunde varit värre.",
+  "skickas": "[thick old Stockholm accent, flat, indifferent, low energy] Ja ja. Det här kunde varit värre.",
+  "hand": false
+ }
+]

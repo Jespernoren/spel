@@ -229,11 +229,11 @@
     let varv = 0;
     await webbJobb();   // CR: beställningar från webbshoppen först – de betalar mer
     while (S.mynt < mal && varv++ < 30) {
-      const kand = Object.keys(H.VAROR).filter((t) => !/^(g_|h_|hf_|ra_|r_|p_|fynd|burk|rulle|n_)/.test(t) && H.VAROR[t].pris > 0 && !H.VAROR[t].lyx && !H.VAROR[t].niva && H.harRecept(t) && (H.VAROR[t].syns?.() ?? true) && !H.VAROR[t].gava && H.VAROR[t].gram > 0);
+      const kand = Object.keys(H.VAROR).filter((t) => !/^(g_|h_|hf_|ra_|r_|p_|fynd|burk|rulle|n_)/.test(t) && H.VAROR[t].pris > 0 && !H.VAROR[t].lyx && (!H.VAROR[t].niva || (H.VAROR[t].niva === 2 && H.harPlacerat('skrivarepetg'))) && H.harRecept(t) && (H.VAROR[t].syns?.() ?? true) && !H.VAROR[t].gava && H.VAROR[t].gram > 0);
       kand.sort((a, b) => H.prisNu(b) / H.VAROR[b].tid - H.prisNu(a) / H.VAROR[a].tid);
       const t = kand[0]; if (!t) { handling('inget att printa och sälja!'); return; }
       handling(`tjänar pengar${varfor ? ' till ' + varfor : ''}: ${S.mynt}/${mal} kr → printar ${H.VAROR[t].namn.toLowerCase()} (${H.prisNu(t)} kr)`);
-      const sk = ledig(); const antal = Math.max(1, Math.min(4, Math.floor((sk.fil || 0) / H.VAROR[t].gram)));
+      const sk = ledig({ typ: t }); const antal = Math.max(1, Math.min(4, Math.floor((sk.fil || 0) / H.VAROR[t].gram)));   // BP: även röd PETG
       for (let i = 0; i < antal && S.mynt + i * H.prisNu(t) < mal; i++) { if (!(await printa({ typ: t }))) break; }
       await ali(() => saljAllt(BEHALL().filter((x) => x !== t)), 'sälja');   // det som printades för pengar säljs (en pall/kruka får vara kvar till trivseln)
     }
@@ -334,6 +334,8 @@
       case 'pall': await kopRecept('pall'); await printa({ typ: 'pall' }); if (H.antalInv('pall')) await placera('pall'); return;
     }
     if (/^Städa gården/.test(txt)) { const sk = ledig(); await plockaLass({}); await tomIKvarnen(); await mal(); if (H.helaRullar()) { await hamtaRulle(); if (sk.fil < 1500) { valj('rulle'); await klick(sk.mesh, 'skrivaren'); } } return; }
+    if (/^Skicka två paket från datorn/.test(txt)) { webbDag = 0; await webbJobb(); await tjana(S.mynt + 60, 'väntar på fler beställningar'); await vanta(2); return; }   // dag 9-målet
+    if (/^Sopbilen kommer förbi under dagen/.test(txt)) { await tjana(S.mynt + 60, 'väntar på sopbilen (BO)'); await vanta(1); return; }   // BO: gör något vettigt medan brevet är på väg
     if (/^Läs brevet i Rolfs postlåda/.test(txt)) { await klick(H.postlada, 'Rolfs postlåda'); await stangPopups(); return; }
     if (/^Printa /.test(txt) && H.aktivGava()) { const v = H.aktivGava(); if (!H.antalInv(v)) await printa({ typ: v }); return; }
     if (/^Lägg .* i Rolfs postlåda/.test(txt)) { await gePresent(H.aktivGava()); return; }

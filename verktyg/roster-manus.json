@@ -4167,9 +4167,99 @@
   "var": "Dina tankar, tips och varningar"
  },
  {
+  "id": "du-93d9cb89",
+  "figur": "du",
+  "text": "Jag skulle kunna äta en sopsäck. Nästan.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-ede39ed3",
+  "figur": "du",
+  "text": "När åt jag senast? Det var nog i går.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-25ee2864",
+  "figur": "du",
+  "text": "Allt går trögt på tom mage.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
   "id": "du-582ecd08",
   "figur": "du",
   "text": "Jag fryser om tårna.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-8753001d",
+  "figur": "du",
+  "text": "Jag ser min andedräkt. Inomhus.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-b28dae9a",
+  "figur": "du",
+  "text": "Fingrarna vill inte riktigt.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-51b004a6",
+  "figur": "du",
+  "text": "Det drar. Från överallt.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-f467d5e8",
+  "figur": "du",
+  "text": "Strumpor. Jag borde ha lyssnat på mamma.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-3a960d2f",
+  "figur": "du",
+  "text": "Mätt. Varm. Jag skulle kunna bära en kyl.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-debbc8fd",
+  "figur": "du",
+  "text": "Det här är nog vad folk kallar att må bra. Konstigt.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-5210be77",
+  "figur": "du",
+  "text": "Inte en enda frusen tå. Rekord.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-f54a7636",
+  "figur": "du",
+  "text": "Jag nynnar. Varför nynnar jag?",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-90c8238c",
+  "figur": "du",
+  "text": "Mamma hade varit stolt. Säg inget till henne.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-e32ac7d5",
+  "figur": "du",
+  "text": "Full mage, varmt skjul. Jag är typ kung här.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-93f37437",
+  "figur": "du",
+  "text": "Jag går fortare när jag ätit. Vem visste.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-61fa2b23",
+  "figur": "du",
+  "text": "Skjulet luktar mat i stället för mus. Framsteg.",
   "var": "Dina tankar, tips och varningar"
  },
  {
@@ -4909,6 +4999,18 @@
   "id": "pappa-246088cf",
   "figur": "pappa",
   "text": "Jaha.",
+  "var": "U_REPLIK"
+ },
+ {
+  "id": "pappa-e1e53d1e",
+  "figur": "pappa",
+  "text": "Taket håller i alla fall.",
+  "var": "U_REPLIK"
+ },
+ {
+  "id": "pappa-29dc6908",
+  "figur": "pappa",
+  "text": "Ja ja. Det här kunde varit värre.",
   "var": "U_REPLIK"
  },
  {

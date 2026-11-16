@@ -108,9 +108,9 @@ export const VARA_SIFFROR = {
   rulle3: { gram: 0, tid: 0, pris: 0 },
   rulle4: { gram: 0, tid: 0, pris: 0 },
   rulle5: { gram: 0, tid: 0, pris: 0 },
-  n2_vas: { gram: 600, tid: 24, pris: 400, recept: 300 },   // BI steg 5: +25 %   // BI: receptet 600 → 300 kr
-  n2_hjalm: { gram: 900, tid: 30, pris: 700, recept: 1200 },   // BI steg 5: +25 %
-  n2_neon: { gram: 1200, tid: 40, pris: 900, recept: 2400 },
+  n2_vas: { gram: 600, tid: 22, pris: 400, recept: 300 },   // BI steg 5: +25 %   // BI: receptet 600 → 300 kr   // BP: varje nytt recept tjänar mer
+  n2_hjalm: { gram: 900, tid: 31, pris: 700, recept: 1200 },   // BI steg 5: +25 %   // BP: varje nytt recept tjänar mer
+  n2_neon: { gram: 1200, tid: 30, pris: 960, recept: 2400 },   // BP: varje nytt recept tjänar mer
   n2_paddel: { gram: 2000, tid: 50, pris: 2300, recept: 4500 },
   n3_stol: { gram: 2000, tid: 60, pris: 5200 },
   n4_staty: { gram: 3000, tid: 80, pris: 9000 },
@@ -148,11 +148,11 @@ export const VARA_SIFFROR = {
   tillstand: { gram: 250, tid: 10, pris: 0 },
   sang: { gram: 1200, tid: 20, pris: 0 },
   nyckelring: { gram: 100, tid: 4, pris: 15 },
-  kruka: { gram: 400, tid: 18, pris: 60, recept: 40 },     // punkt AG: receptet är gratis från Ali vid första försäljningen
-  pall: { gram: 1000, tid: 20, pris: 170, recept: 80 },   // B43: 32 → 20 s
+  kruka: { gram: 400, tid: 11, pris: 70, recept: 40 },     // punkt AG: receptet är gratis från Ali vid första försäljningen   // BP: varje nytt recept tjänar mer
+  pall: { gram: 1000, tid: 21, pris: 180, recept: 80 },   // B43: 32 → 20 s   // BP: varje nytt recept tjänar mer
   rulle: { gram: 1000, tid: 0, pris: 0 },
-  mobilstall: { gram: 300, tid: 12, pris: 50, recept: 100 },
-  fagelholk: { gram: 800, tid: 26, pris: 170, recept: 300 },
+  mobilstall: { gram: 300, tid: 10, pris: 50, recept: 100 },   // BP: varje nytt recept tjänar mer
+  fagelholk: { gram: 800, tid: 16, pris: 170, recept: 300 },   // BP: varje nytt recept tjänar mer
   n_kopp: { gram: 300, tid: 14, pris: 0, recept: 1 },         // punkt L: bara för N. (betalningen följer JOBB_ANDEL, minst 300 kr)
   t_spalje: { gram: 1500, tid: 30, pris: 0, recept: 500 },     // punkt N: röd PETG, 500 × PRIS_SKALA = 300 kr hos Ali
   t_bevattning: { gram: 1200, tid: 26, pris: 0, recept: 420 },  // 250 kr
@@ -162,11 +162,11 @@ export const VARA_SIFFROR = {
   julbord: { gram: 500, tid: 20, pris: 0 },                        // punkt O: gratis, printas på ca 20 s
   g_kapsyl: { gram: 0, tid: 0, pris: 4 },                          // Görans gåvor – humor, inte ekonomi
   g_skruv: { gram: 0, tid: 0, pris: 6 },
-  lampskarm: { gram: 1200, tid: 34, pris: 320, recept: 600 },
-  dronare: { gram: 1500, tid: 40, pris: 480, recept: 1000 },
-  skateboard: { gram: 2000, tid: 50, pris: 780, recept: 1500 },
-  gitarr: { gram: 3000, tid: 64, pris: 1400, recept: 2500 },
-  cykelram: { gram: 5000, tid: 80, pris: 2900, recept: 4500 },
+  lampskarm: { gram: 1200, tid: 25, pris: 320, recept: 600 },   // BP: varje nytt recept tjänar mer
+  dronare: { gram: 1500, tid: 32, pris: 480, recept: 1000 },   // BP: varje nytt recept tjänar mer
+  skateboard: { gram: 2000, tid: 30, pris: 780, recept: 1500 },   // BP: varje nytt recept tjänar mer
+  gitarr: { gram: 3000, tid: 37, pris: 1400, recept: 2500 },   // BP: varje nytt recept tjänar mer
+  cykelram: { gram: 5000, tid: 52, pris: 2900, recept: 4500 },   // BP: varje nytt recept tjänar mer
   pkajak: { gram: 12000, tid: 120, pris: 9000, recept: 10000 },
 };
 
