@@ -17,6 +17,7 @@ await H(() => { const h = window.__printahem, S = h.S; S.kapitel = 3; S.pappaBes
   S.hotbar[5] = { typ: 'byggsats:petgband', n: 1 }; S.hotbar[6] = { typ: 'byggsats:stortratt', n: 1 };
   for (let i = 0; i < 20; i++) h.laggSkrap(-28 + (i % 5) * 0.2, 12 + Math.floor(i / 5) * 0.2, h.variantFor(i % 2 ? 'kajak' : 'tunna'), 0);
   S.karraLast = [h.variantFor('tunna'), h.variantFor('tunna'), h.variantFor('tunna')];
+  h.placera({ id: 'tk7', typ: 'kolfkvarn', x: -16.3, z: 10, r: 0, r8: 0 }); h.placera({ id: 'tk8', typ: 'kolfskrivare', x: -10.5, z: 10, r: 0, r8: 0 });   /* kolfiberlinjen i sparfilen kraschade laddningen (FIL_FARG före definitionen) */
   h.spar.spara(true); });
 await p.reload(); await p.waitForTimeout(8000);
 const m = await H(() => { const h = window.__printahem, S = h.S, k = h.skrapLista.filter((x) => x.userData.sort === 'kajak'), t = h.skrapLista.filter((x) => x.userData.tung && x.userData.sort !== 'kajak');
@@ -25,6 +26,7 @@ const m = await H(() => { const h = window.__printahem, S = h.S, k = h.skrapList
   return { band: S.petg.band, cont: S.petg.container, stor: S.kvarn.stor, jet: S.kvarn.jet, turbo: S.kvarn.turbo, kniv: S.kvarn.kniv, auto: [S.auto.band, S.auto.lastarm, S.auto.arm], lada: S.auto.lada, kajak: k.length, tunga: t.length, krock, pirra: S.karraLast.length, petgband: inv.includes('petgband'), stortratt: inv.includes('stortratt'), contInv: inv.includes('petgcontainer') }; });
 console.log(JSON.stringify(m));
 ut.push(['tunga rullbandet → stor container (även byggsatsen)', !m.band && m.cont && !m.petgband && m.contInv]);
+ut.push(['sparfilen med kolfiberlinjen laddas', await H(() => !!window.__printahem.kolfKvarn?.() && window.__printahem.skrivare.some((x) => x.gen === 5))]);
 ut.push(['stora tratten borta', !m.stor && !m.stortratt]);
 ut.push(['jetmotorn på blå kvarnen → turbo', !m.jet && m.turbo]);
 ut.push(['knivarna på blå kvarnen borta', !m.kniv]);

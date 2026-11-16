@@ -46,6 +46,8 @@ await p.addInitScript((fran) => {
 }, process.env.SIM_FRAN ? fs.readFileSync(process.env.SIM_FRAN, 'utf8') : null);
 await p.goto(url); await p.waitForTimeout(3500);
 await p.click('.br-starta').catch(() => {}); await p.waitForTimeout(2000);
+for (let i = 0; i < 30 && !(await p.evaluate(() => !!window.__printahem?.S).catch(() => false)); i++) await p.waitForTimeout(1000);
+p.on('pageerror', (e) => console.log('[sidfel]', e.message));
 await p.evaluate((u) => { window.__vt.start(); window.__simUtforlig = u; }, !!process.env.UTFORLIG);
 await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.meta.url), 'utf8') });
 // SIM_FRAN=fil: börja från en sparfil · varje ny dag sparas till /tmp/sim-dag<N>.json så att en lång körning kan tas om från en dag
