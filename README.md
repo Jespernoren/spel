@@ -126,3 +126,6 @@ Ta bort `mobil: false` i `spel-lista.js` när ett spel blivit mobilvänligt.
 
 ### Uppläsning: `delat/rost.js`
 Läggs först i `<head>` i alla spel. Gör om ensamma stora bokstäver till små innan rösten läser, så att den säger "ö" och inte "versal Ö".
+
+### Familjespel och profiler: `delat/familj.js`
+`FAMILJ`, `inloggad()` (vem som är inloggad i appen), `sparaRekord(mapp, id, poang)` (sparar `rekord:<mapp>:<id>` och `rekord:<mapp>`), `familjensTopp(mapp)`. Appen läser personliga rekord först, så topplistan blir rätt även när flera spelar på samma telefon. Mattekampen är första spelet byggt så.

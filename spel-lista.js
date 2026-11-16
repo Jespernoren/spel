@@ -9,6 +9,17 @@
 // =============================================================
 window.SPEL = [
   {
+    mapp: "mattekampen",
+    namn: "Mattekampen",
+    ikon: "🚀",
+    beskrivning: "Familjens sifferquiz! Mamma och pappa får svåra tal, barnen enkla. Svara rätt så åker din raket uppåt, 60 sekunder per omgång. Idé: Charlie och Beppe.",
+    typ: "Matte · Quiz · Mobil",
+    spelare: ["Alla"],
+    farg: ["#5b2bd6", "#ff7ab8"],
+    status: "klar",
+    ny: true,
+  },
+  {
     mapp: "trollskattornet",
     mobil: false, // inte helt mobilvänligt än (granskat 2026-11-16) – syns inte i Familjens Spel
     namn: "Trollskattornet",

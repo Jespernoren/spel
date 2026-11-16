@@ -9,14 +9,9 @@
 //  får den som är inloggad poängen. Spelen behöver alltså inte ändras.
 // =============================================================
 import { molnPa, koa, skicka, hamta as hamtaMoln } from './moln.js';
+import { FAMILJ } from '../delat/familj.js';
 
-// ---------- Familjen (byt bild: lägg bilder/<id>.jpg) ----------
-const FAMILJ = [
-  { id: 'mamma',   namn: 'Mamma',   emoji: '👩', farg: '#ff6fae', filter: null },
-  { id: 'pappa',   namn: 'Pappa',   emoji: '👨', farg: '#3de3ff', filter: null },
-  { id: 'beppe',   namn: 'Beppe',   emoji: '🧙', farg: '#ffc83d', filter: 'Beppe' },
-  { id: 'charlie', namn: 'Charlie', emoji: '🦄', farg: '#c08cff', filter: 'Charlie' },
-];
+// ---------- Familjen (namn, färger, bilder) finns i ../delat/familj.js ----------
 const STJARNOR_FOR_PLATS = [3, 2, 1];   // etta, tvåa, trea i ett spel
 const CACHE_NAMN = 'familjens-spel-v1'; // samma namn som i ../sw.js
 
@@ -25,6 +20,8 @@ const $ = (id) => document.getElementById(id);
 const las = (n, std) => { try { const v = localStorage.getItem(n); return v === null ? std : JSON.parse(v); } catch { return std; } };
 const skriv = (n, v) => { try { localStorage.setItem(n, JSON.stringify(v)); } catch {} };
 const rekordFor = (mapp) => { try { return Number(localStorage.getItem('rekord:' + mapp)) || 0; } catch { return 0; } };
+// Spel som vet vem som spelar sparar också 'rekord:<mapp>:<id>' (se delat/familj.js)
+const rekordPerson = (mapp, pid) => { try { return Number(localStorage.getItem(`rekord:${mapp}:${pid}`)) || 0; } catch { return 0; } };
 const person = (id) => FAMILJ.find((p) => p.id === id);
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -222,7 +219,7 @@ function ritaLista() {
 function startaSpel(mapp, href) {
   pling(true);
   // Kom ihåg rekordet före spelet, så vi ser om det blev nytt
-  skriv('familj:pagaende', { mapp, pid: jag.id, fore: rekordFor(mapp), tid: Date.now() });
+  skriv('familj:pagaende', { mapp, pid: jag.id, fore: rekordFor(mapp), foreEgen: rekordPerson(mapp, jag.id), tid: Date.now() });
   // Räkna spelomgången
   data.spelat[jag.id] ||= {};
   data.spelat[jag.id][mapp] ||= {};
@@ -239,8 +236,9 @@ function kollaPagaende() {
   const p = las('familj:pagaende', null);
   if (!p) return;
   localStorage.removeItem('familj:pagaende');
-  const efter = rekordFor(p.mapp);
-  if (efter <= p.fore) return;
+  const egenEfter = rekordPerson(p.mapp, p.pid);
+  const efter = egenEfter > (p.foreEgen || 0) ? egenEfter : rekordFor(p.mapp);
+  if (efter <= p.fore && egenEfter <= (p.foreEgen || 0)) return;
   const vem = person(p.pid);
   const forut = data.poang[p.mapp]?.[p.pid]?.poang || 0;
   if (!vem || efter <= forut) return;
@@ -411,14 +409,30 @@ if ('serviceWorker' in navigator) {
 }
 
 // ---------- Start ----------
+// Personliga rekord som sparats i spelen (även när spelet inte startades från appen)
+function lasPersonligaRekord() {
+  let andrat = false;
+  for (const s of SPEL) for (const p of FAMILJ) {
+    const v = rekordPerson(s.mapp, p.id);
+    if (v > (data.poang[s.mapp]?.[p.id]?.poang || 0)) {
+      data.poang[s.mapp] ||= {};
+      data.poang[s.mapp][p.id] = { poang: v, tid: Date.now() };
+      koa(`poang/${s.mapp}/${p.id}`, data.poang[s.mapp][p.id]);
+      andrat = true;
+    }
+  }
+  if (andrat) sparaLokalt();
+}
+
 function start() {
   kollaPagaende();
+  lasPersonligaRekord();
   if (jag) visaApp(); else visaVem();
   synka();
 }
 start();
 // Android "tillbaka"-knappen visar sidan från minnet – kolla poängen igen
-addEventListener('pageshow', (e) => { if (e.persisted) { kollaPagaende(); ritaAllt(); synka(); } });
+addEventListener('pageshow', (e) => { if (e.persisted) { kollaPagaende(); lasPersonligaRekord(); ritaAllt(); synka(); } });
 addEventListener('online', synka);
 
 // Testkrok

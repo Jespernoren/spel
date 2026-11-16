@@ -3,7 +3,7 @@
 <head>
 <script src="../../delat/rost.js"></script>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Sudoku-äventyret</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -123,6 +123,8 @@
   .overlay-card p{font-size:1.05rem;line-height:1.5;margin-bottom:16px;}
   .confetti{position:fixed;top:-20px;font-size:1.6rem;animation:fall linear forwards;z-index:9;pointer-events:none;}
   @keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:0.9;}}
+  html, body { touch-action: manipulation; overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+  .cell, button { touch-action: manipulation; }
 </style>
 </head>
 <body class="world-start">
@@ -205,7 +207,9 @@
       intro:'I Sagolandet behöver enhörningen din hjälp med sin magi.',
       done:'Sagolandet är räddat! Enhörningen viftar tack! 🦄' }
   ];
-  const DIFF = { beppe: 5, charlie: 9 }; // blanks
+  const DIFF = { beppe: 5, charlie: 9, mamma: 11, pappa: 11 }; // tomma rutor per spelare
+  const NAMN = { beppe: 'Beppe', charlie: 'Charlie', mamma: 'Mamma', pappa: 'Pappa' };
+  const HJALTE = { beppe: '🐢', charlie: '🦋', mamma: '🌺', pappa: '🦁' };
   let hero = 'charlie';
   let heroEmoji = '🦋';
   let unlocked = 0;            // highest unlocked world index
@@ -236,14 +240,14 @@
     document.getElementById(id).classList.add('active');
   }
   function chooseHero(h){
-    sndTap(); hero=h; heroEmoji = h==='beppe'?'🐢':'🦋';
+    sndTap(); hero=h; heroEmoji = HJALTE[h]||'🦋';
     buildMap();
     showScreen('screen-map');
     document.body.className='world-start';
   }
   function buildMap(){
     document.getElementById('map-sub').textContent =
-      (hero==='beppe'?'Beppe 🐢':'Charlie 🦋') + ' — res genom alla fyra världarna!';
+      NAMN[hero] + ' ' + heroEmoji + ' — res genom alla fyra världarna!';
     const map=document.getElementById('map'); map.innerHTML='';
     WORLDS.forEach((w,i)=>{
       const locked = i>unlocked;
@@ -350,7 +354,8 @@
   function winLevel(){
     sndWin(); setMsg(''); confettiBurst();
     // rekord = antal lösta sudokun (familjens topplista)
-    try{ localStorage.setItem('rekord:sudoku-aventyr', (+localStorage.getItem('rekord:sudoku-aventyr')||0)+1); }catch(e){}
+    try{ localStorage.setItem('rekord:sudoku-aventyr', (+localStorage.getItem('rekord:sudoku-aventyr')||0)+1);
+      const k='rekord:sudoku-aventyr:'+hero; localStorage.setItem(k, (+localStorage.getItem(k)||0)+1); }catch(e){}
     completed[current]=true;
     const wasLast = current===WORLDS.length-1;
     if(current===unlocked && !wasLast) unlocked=current+1;
@@ -360,7 +365,7 @@
       // Ending
       setTimeout(()=>{ sndUnlock();
         document.getElementById('end-text').textContent=
-          `${hero==='beppe'?'Beppe':'Charlie'}, du räddade alla fyra världarna och blev en riktig pussel-hjälte! ${heroEmoji}🏆`;
+          `${NAMN[hero]}, du räddade alla fyra världarna och blev en riktig pussel-hjälte! ${heroEmoji}🏆`;
         document.getElementById('overlay-end').classList.add('show');
       },700);
       return;
@@ -388,6 +393,19 @@
     document.body.className='world-start';
     showScreen('screen-start');
   }
+
+  // ---- Spelaren från familjens profil (appen Familjens Spel) ----
+  (function(){
+    let id=null; try{ id=JSON.parse(localStorage.getItem('familj:jag')); }catch(e){}
+    if(!NAMN[id]) return;
+    const rad=document.querySelector('.who-row');
+    rad.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;gap:8px">'
+      +'<img src="../../mobil/bilder/'+id+'.jpg" alt="" style="width:84px;height:84px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 4px #fff,0 6px 14px rgba(0,0,0,.2)" onerror="this.remove()">'
+      +'<button class="who-btn who-'+(id==='beppe'?'beppe':'charlie')+'" id="kor-knapp">Kör, '+NAMN[id]+'! '+HJALTE[id]+'</button></div>';
+    document.getElementById('kor-knapp').onclick=()=>chooseHero(id);
+    const fraga=[...document.querySelectorAll('.story-card p')].find(p=>p.textContent.includes('Vem är dagens hjälte'));
+    if(fraga) fraga.innerHTML='<b>Dagens hjälte: '+NAMN[id]+' '+HJALTE[id]+'</b>';
+  })();
 </script>
 <script src="../../delat/hem.js"></script>
 </body>

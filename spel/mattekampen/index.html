@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script src="../../delat/rost.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#140d33">
+<title>Mattekampen</title>
+<style>
+  :root { --bg:#140d33; --panel:rgba(255,255,255,.1); --kant:rgba(255,255,255,.18); --text:#fff; --dim:#c4bbef; --gul:#ffd43b; --rosa:#ff4fa3; --gron:#4be38a; --rod:#ff5a6e; --f:#ffd43b; }
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
+  html,body { height:100%; overflow:hidden; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--text); background:var(--bg); touch-action:manipulation; }
+  [hidden] { display:none !important; }
+  button { font:inherit; color:inherit; border:0; background:none; cursor:pointer; }
+
+  /* ---------- Himlen ---------- */
+  #himmel { position:fixed; inset:0; z-index:0; background:linear-gradient(#0b0626 0%, #25106a 45%, #5b2bd6 80%, #ff7ab8 100%); transition: background-position 1s; }
+  #stjarnor { position:fixed; inset:0; z-index:0; }
+  #raket { position:fixed; left:12px; bottom:0; z-index:1; width:70px; transition: transform .6s cubic-bezier(.3,1.4,.5,1); will-change:transform; }
+  #raket .kropp { position:relative; width:70px; height:110px; }
+  #raket svg { width:70px; height:110px; display:block; }
+  #raket .pilot { position:absolute; left:17px; top:26px; width:36px; height:36px; border-radius:50%; overflow:hidden; display:grid; place-items:center; font-size:22px; background:var(--f); box-shadow:0 0 0 3px #fff; }
+  #raket .pilot img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  #raket .eld { position:absolute; left:23px; top:104px; width:24px; height:30px; border-radius:50% 50% 50% 50% / 30% 30% 70% 70%; background:radial-gradient(#fff6a0, #ff9a2e 60%, transparent 70%); animation: eld .15s infinite alternate; }
+  @keyframes eld { to { transform: scaleY(1.35); opacity:.85; } }
+  #hojdmatare { position:fixed; left:4px; top:90px; bottom:20px; width:4px; border-radius:4px; background:rgba(255,255,255,.15); z-index:1; }
+  #hojdmatare div { position:absolute; bottom:0; left:0; right:0; border-radius:4px; background:linear-gradient(var(--gul), var(--rosa)); transition: height .6s; }
+
+  /* ---------- Layout ---------- */
+  .skarm { position:fixed; inset:0; z-index:2; display:flex; flex-direction:column; padding: max(12px, env(safe-area-inset-top)) 14px max(16px, env(safe-area-inset-bottom)) 92px; }
+  .topp { display:flex; align-items:center; gap:10px; }
+  .avatar { position:relative; display:inline-grid; place-items:center; flex:0 0 auto; border-radius:50%; overflow:hidden; background:var(--f); box-shadow:0 0 0 3px var(--f); }
+  .avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .tid { margin-left:auto; position:relative; width:58px; height:58px; }
+  .tid svg { width:58px; height:58px; transform: rotate(-90deg); }
+  .tid b { position:absolute; inset:0; display:grid; place-items:center; font-size:20px; font-weight:900; }
+  .poang { font-size:30px; font-weight:900; color:var(--gul); text-shadow:0 0 14px rgba(255,212,59,.6); min-width:60px; text-align:right; }
+  .serie { height:26px; text-align:center; font-weight:900; font-size:18px; color:var(--gul); margin-top:6px; }
+
+  .fraga { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; }
+  .fraga .tal { font-size: clamp(42px, 13vw, 72px); font-weight:900; letter-spacing:1px; text-shadow:0 4px 0 rgba(0,0,0,.25); line-height:1.1; }
+  .fraga .saker { font-size: clamp(38px, 11vw, 58px); line-height:1.25; max-width:320px; word-break:break-all; }
+  .fraga .liten { font-size:18px; color:var(--dim); font-weight:700; }
+  .fraga .lyssna { font-size:26px; width:52px; height:52px; border-radius:50%; background:var(--panel); }
+
+  .svar { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .svar button {
+    height: clamp(84px, 15vh, 120px); border-radius:24px; font-size: clamp(34px, 10vw, 48px); font-weight:900;
+    background:#fff; color:#2a145e; box-shadow:0 7px 0 #b6a6ff; transition: transform .08s;
+  }
+  .svar button:active { transform: translateY(4px); box-shadow:0 3px 0 #b6a6ff; }
+  .svar button .prickar { display:block; font-size:12px; letter-spacing:2px; color:#8a78d6; line-height:1; margin-top:2px; }
+  .svar button.ratt { background:var(--gron); color:#063; box-shadow:0 7px 0 #1c9c55; }
+  .svar button.fel { background:var(--rod); color:#fff; box-shadow:0 7px 0 #b02035; animation: skaka .3s; }
+  @keyframes skaka { 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+  /* ---------- Menyer ---------- */
+  .meny { position:fixed; inset:0; z-index:5; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:24px; text-align:center; background:rgba(12,6,36,.6); backdrop-filter: blur(3px); }
+  .meny h1 { font-size:clamp(34px, 10vw, 44px); white-space:nowrap; font-weight:900; line-height:1; text-shadow:0 0 22px rgba(255,79,163,.7); }
+  .meny h1 span { color:var(--gul); }
+  .meny p { color:var(--dim); font-size:17px; max-width:320px; }
+  .stor { padding:18px 40px; border-radius:22px; font-size:26px; font-weight:900; background:var(--gul); color:#2a145e; box-shadow:0 7px 0 #c99a00; }
+  .stor:active { transform: translateY(4px); box-shadow:0 3px 0 #c99a00; }
+  .lank { color:var(--dim); font-weight:800; font-size:16px; padding:8px 14px; border-radius:14px; background:var(--panel); }
+  .familj { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .familj button { display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px; border-radius:22px; background:var(--panel); border:1px solid var(--kant); font-weight:800; font-size:18px; }
+  .resultat .stort { font-size:72px; font-weight:900; color:var(--gul); line-height:1; text-shadow:0 0 24px rgba(255,212,59,.6); }
+  .topplista { width:100%; max-width:320px; display:flex; flex-direction:column; gap:6px; }
+  .topplista div { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:16px; background:var(--panel); font-weight:800; }
+  .topplista div b { margin-left:auto; color:var(--gul); }
+  .topplista div.jag { box-shadow: 0 0 0 2px var(--gul); }
+  .nytt { font-size:24px; font-weight:900; color:var(--gul); animation: puls 1s infinite; }
+  @keyframes puls { 50% { transform: scale(1.08); } }
+
+  .plus { position:fixed; z-index:6; font-size:30px; font-weight:900; color:var(--gul); pointer-events:none; animation: upp .9s forwards; text-shadow:0 2px 8px rgba(0,0,0,.4); }
+  @keyframes upp { to { transform: translateY(-80px); opacity:0; } }
+  #konfetti { position:fixed; inset:0; z-index:7; pointer-events:none; width:100%; height:100%; }
+</style>
+</head>
+<body>
+  <div id="himmel"></div>
+  <canvas id="stjarnor"></canvas>
+  <div id="hojdmatare"><div id="hojd"></div></div>
+  <div id="raket">
+    <div class="kropp">
+      <svg viewBox="0 0 70 110">
+        <path d="M35 2 C55 20 60 50 56 86 H14 C10 50 15 20 35 2 Z" fill="#f4f1ff" stroke="#2a145e" stroke-width="3"/>
+        <path d="M14 70 L2 96 L16 92 Z M56 70 L68 96 L54 92 Z" fill="#ff4fa3" stroke="#2a145e" stroke-width="3" stroke-linejoin="round"/>
+        <rect x="22" y="86" width="26" height="10" rx="3" fill="#8a78d6" stroke="#2a145e" stroke-width="3"/>
+        <circle cx="35" cy="44" r="21" fill="#2a145e"/>
+      </svg>
+      <div class="pilot" id="pilot"></div>
+      <div class="eld"></div>
+    </div>
+  </div>
+
+  <!-- Spelet -->
+  <section class="skarm" id="spel" hidden>
+    <div class="topp">
+      <span id="spelare"></span>
+      <div class="poang" id="poang">0</div>
+      <div class="tid">
+        <svg viewBox="0 0 58 58"><circle cx="29" cy="29" r="25" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="6"/>
+          <circle id="tidRing" cx="29" cy="29" r="25" fill="none" stroke="#ffd43b" stroke-width="6" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="0"/></svg>
+        <b id="tid">60</b>
+      </div>
+    </div>
+    <div class="serie" id="serie"></div>
+    <div class="fraga" id="fraga"></div>
+    <div class="svar" id="svar"></div>
+  </section>
+
+  <!-- Start -->
+  <section class="meny" id="start" hidden>
+    <h1>Matte<span>kampen</span> 🚀</h1>
+    <div id="startSpelare"></div>
+    <p id="startText"></p>
+    <button class="stor" id="startKnapp">Starta!</button>
+    <button class="lank" id="bytKnapp">🔄 Byt spelare</button>
+  </section>
+
+  <!-- Vem spelar? -->
+  <section class="meny" id="vem" hidden>
+    <h1>Vem <span>spelar?</span></h1>
+    <div class="familj" id="familj"></div>
+  </section>
+
+  <!-- Resultat -->
+  <section class="meny resultat" id="slut" hidden>
+    <p id="slutRubrik">Tiden är slut!</p>
+    <div class="stort" id="slutPoang">0</div>
+    <div id="slutNytt"></div>
+    <p id="slutText"></p>
+    <div class="topplista" id="topplista"></div>
+    <button class="stor" id="igenKnapp">Igen! 🚀</button>
+  </section>
+
+  <canvas id="konfetti"></canvas>
+  <script type="module" src="spel.js"></script>
+  <script src="../../delat/hem.js"></script>
+</body>
+</html>
