@@ -18,17 +18,17 @@ const d1 = await H(() => { const h = window.__printahem, T = h.skrapLista.filter
 ut.push([`3. dag 1: kanoten (${d1.kanot}) och tunnorna (${d1.tunnor}) ligger på tippen`, d1.kanot >= 1 && d1.tunnor >= 2]);
 await H(() => { const h = window.__printahem; const k = h.skrapLista.find((x) => x.userData.sort === 'kajak'), t = h.skrapLista.find((x) => x.userData.sort === 'tunna'); h.byt(0); h.plockaSkrap(k); h.plockaSkrap(k); h.plockaSkrap(t); h.plockaSkrap(t); });
 await p.waitForTimeout(1500);
-ut.push(['   kanottanken en gång', (await har('En hel kanot. Vem slänger en kanot?')) >= 1 && (await H(() => window.__printahem.textLogg().filter((r) => r[1] === 'tanke' && JSON.stringify(r).includes('En hel kanot')).length)) <= 1]);
+ut.push(['   kanoten: tanken "för stor" en gång (DJ, siktet ger kanottanken)', (await H(() => window.__printahem.textLogg().filter((r) => r[1] === 'tanke' && JSON.stringify(r).includes('Jag får komma på något annat sätt')).length)) === 1]);
 ut.push(['   tunntanken en gång', (await har('Jag behöver något att köra den på')) >= 1]);
 // 2. med pirran: småskräp, kanot och tunna
 const r = await H(() => { const h = window.__printahem; h.S.sackkarra = true; h.laggTill('sackkarra'); h.valjTyp('sackkarra');
   const k = h.skrapLista.find((x) => x.userData.sort === 'kajak'), t = h.skrapLista.find((x) => x.userData.sort === 'tunna'), l = h.skrapLista.find((x) => !x.userData.tung);
-  const etl = l.userData.interaktion?.text?.(), etk = k.userData.interaktion?.text?.();
+  const etl = (l.userData.interaktion?.text?.() || '').replace('\u2060', ''), etk = (k.userData.interaktion?.text?.() || '').replace('\u2060', '');
   h.plockaSkrap(l); h.plockaSkrap(k); const fore = h.S.karraLast.length; h.plockaSkrap(t);
   return { l: h.skrapLista.includes(l), k: h.skrapLista.includes(k), t: !h.skrapLista.includes(t) && h.S.karraLast.length === fore + 1, etl, etk }; });
 await p.waitForTimeout(1500);
 ut.push(['2. småskräp ligger kvar ("' + r.etl + '")', r.l && r.etl === 'För liten för pirran']);
-ut.push(['   kanoten ligger kvar ("' + r.etk + '")', r.k && r.etk === 'För stor för pirran']);
+ut.push(['   kanoten ligger kvar ("' + r.etk + '")', r.k && r.etk === 'För stor att lyfta']);
 ut.push(['   tunnan går', r.t]);
 ut.push(['   tankarna för liten/för stor', (await har('för liten för pirran. Den tar jag med handen')) >= 1 && (await har('Jag får komma på något annat sätt')) >= 1]);
 await p.addStyleTag({ content: 'body > *:not(canvas){visibility:hidden!important}' }); await p.waitForTimeout(400); await p.screenshot({ path: '/tmp/pirra-dg.png' });

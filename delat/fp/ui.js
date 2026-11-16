@@ -84,7 +84,7 @@ export class FpUI {
   // ---------- Visning ----------
   prompt(text) {
     const p = this.el('.fp-prompt');
-    if (text) p.textContent = (this.o.spelare?.arTouch ? '✋ ' : '[E] ') + text;
+    if (text) p.textContent = text.startsWith('\u2060') ? text.slice(1) : (this.o.spelare?.arTouch ? '✋ ' : '[E] ') + text;   // \u2060 först = det går inte att göra, ingen knapp
     p.classList.toggle('syns', !!text);
     this.el('.fp-kors').classList.toggle('aktiv', !!text);
   }

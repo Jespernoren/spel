@@ -2479,13 +2479,23 @@ function startaTidtipp() {
   };
   tick();
 }
+// DJ: stora saker får aldrig ligga inuti varandra – upptagen plats → närmaste lediga bredvid
+const STOR_RADIE = { kajak: 1.35, tunna: 0.62, dunk: 0.3, back: 0.3 };
+function friPlats(x, z, sort) {
+  const r = STOR_RADIE[sort]; if (!r) return [x, z];
+  const krock = (px, pz) => skrapLista.some((o) => { const r2 = STOR_RADIE[o.userData.sort]; return r2 && Math.hypot(o.position.x - px, o.position.z - pz) < r + r2; });
+  if (!krock(x, z)) return [x, z];
+  for (let d = 0.4; d < 6; d += 0.35) for (let a = 0; a < Math.PI * 2; a += 0.5) { const px = x + Math.cos(a) * d, pz = z + Math.sin(a) * d; if (!krock(px, pz)) return [px, pz]; }
+  return [x, z];
+}
 function laggSkrap(x, z, variant, rot) {
+  [x, z] = friPlats(x, z, skrapSort(variant));
   const s = skapaSkrap(variant);
   s.position.set(x, 0.01 + tippHojd(x, z), z); s.rotation.y = rot;
   s.userData.skrap = [x, z, variant, rot];
   scen.add(s); skrapLista.push(s); skalaTraff(s);
   interaktor.registrera(s, {
-    text: () => s.userData.sort === 'kajak' ? (valdSack() ? 'För stor för pirran' : S.kolf.band ? '🔒 Kanot – rullbandet hämtar den' : '🔒 En hel kanot') : valdSack() && !s.userData.tung ? 'För liten för pirran' : !kanLyfta(s) ? `🔒 ${SKRAP_SORTER[s.userData.sort].namn} – för tung. Den behöver något med större hjul.` : s.userData.tung ? (valdSack() && S.karraLast.length >= pirraKap() ? 'Pirran är full – tippa vid röda kvarnen' : valdTyp() === 'karra' ? 'Den här tar du med pirran' : `Lasta ${bestamd(SKRAP_SORTER[s.userData.sort].namn)} på pirran`) : valdSack() ? 'Pirran tar bara det tunga' : valdKarra() ? (karraFull(s.userData.gram) ? 'Skottkärran är full' : `Lasta ${bestamd(SKRAP_SORTER[s.userData.sort].namn)} i skottkärran (${rullar(s.userData.gram)})`) : (hand.full ? 'Fullt i famnen' : niva() === MAGNET_NIVA ? 'Håll inne – magneten drar' : `Plocka ${SKRAP_SORTER[s.userData.sort].namn.toLowerCase()} (${rullar(s.userData.gram)})`),
+    text: () => skrapEtikett(s) || (s.userData.tung ? (valdSack() && S.karraLast.length >= pirraKap() ? 'Pirran är full – tippa vid röda kvarnen' : valdTyp() === 'karra' ? 'Den här tar du med pirran' : `Lasta ${bestamd(SKRAP_SORTER[s.userData.sort].namn)} på pirran`) : valdSack() ? 'Pirran tar bara det tunga' : valdKarra() ? (karraFull(s.userData.gram) ? 'Skottkärran är full' : `Lasta ${bestamd(SKRAP_SORTER[s.userData.sort].namn)} i skottkärran (${rullar(s.userData.gram)})`) : (hand.full ? 'Fullt i famnen' : niva() === MAGNET_NIVA ? 'Håll inne – magneten drar' : `Plocka ${SKRAP_SORTER[s.userData.sort].namn.toLowerCase()} (${rullar(s.userData.gram)})`)),
     kanAktivera: () => (S.tippNyckel || !paTippen(s.position.x, s.position.z)) && kamera.position.distanceTo(s.position) <= SKRAP_RACKVIDD[niva()] + 1.6,
     aktivera: () => plockaSkrap(s),
   });
@@ -2546,7 +2556,9 @@ const karraFull = (g = 0) => karraGram() + Math.max(g, 1) > KARRA_KAP;
 const kanLyfta = (s) => s.userData.sort !== 'kajak' && (!s.userData.tung || !!S.sackkarra);
 const KAJAK_LANG = 'För lång. Den måste med bandet.';   /* DE: kajaken väntar på kolfiberlinjen */   // CM: tunga saker lyfts bara med säckkärran (pappas, dag 6)
 function plockaSkrap(s, tyst = false) {
-  if (s.userData.sort === 'kajak') { if (!tyst && !enGang(valdSack() ? PIRRA_STOR : KANOT_T, 'DG: kanoten')) ljudH('fel'); return; }   /* DG: kanoten kommer bara med bandet – tanken avslöjar inte hur */   /* DF: kajaken kommer bara med bandet */
+  if (s.userData.sort === 'kajak') { if (!tyst && !enGang(STOR_T, 'DJ: för stor')) ljudH('fel'); return; }   /* DJ */
+  if (s.userData.tung && valdTyp() === 'karra') { if (!tyst && !enGang(KARRA_TUNG_T, 'DJ: tunna i kärran')) ljudH('fel'); return; }
+  if (s.userData.tung && !valdSack()) { if (!tyst) tungMiss(); return; }   /* DG: kanoten kommer bara med bandet – tanken avslöjar inte hur */   /* DF: kajaken kommer bara med bandet */
   if (!kanLyfta(s)) { if (!tyst) tungMiss(); return; }
   if (s.userData.tung && !valdSack()) {   // CM: tunga saker tar man med säckkärran
     if (tyst) return;
@@ -2760,7 +2772,7 @@ function karraMal() {
   return bast;
 }
 function uppdateraKarraMal(dt) {
-  { const hv = interaktor.hovrad; if (hv?.userData.typ === 'skrap' && !menyOppen()) { if (hv.userData.sort === 'kajak') enGang(valdSack() ? PIRRA_STOR : KANOT_T, 'DG: siktar på kanoten'); else if (hv.userData.tung && !kanLyfta(hv)) enGang(TUNG_T, 'DG: siktar på tunnan'); } }
+  { const hv = interaktor.hovrad; if (hv?.userData.typ === 'skrap' && !menyOppen()) { if (hv.userData.sort === 'kajak') enGang(KANOT_T, 'DG: siktar på kanoten'); else if (hv.userData.tung && !kanLyfta(hv)) enGang(TUNG_T, 'DG: siktar på tunnan'); } }
   karraKand = valdKarra() && !tomhant && karraPassar(interaktor.hovrad) ? interaktor.hovrad : karraMal();   /* DE: det etiketten visar är det du lastar */
   const ring = karraKand || (interaktor.hovrad?.userData.typ === 'skrap' ? interaktor.hovrad : null);   // CY: det du siktar på får linjens färg
   karraRing.visible = !!ring;
@@ -2780,6 +2792,16 @@ function linjeFor(key) {
 }
 function kortTanke(id, t) { if (!varnadTid['kt:' + id]) { varnadTid['kt:' + id] = 1; tanke(t, 'CY', 'REAKTION'); } else ljud.fel(); }   // CY: en kort tanke första gången, sedan bara ljudet
 let tungMissSagt = false;
+const NOLAS = '\u2060';   /* DJ: etikett utan [E] – det går inte */
+const STOR_T = 'Den där kan jag inte lyfta med det här. Den är för stor. Jag får komma på något annat sätt.', KARRA_TUNG_T = 'Den väger för mycket för kärran.';
+function skrapEtikett(s) {   /* DJ: etiketten utgår från det du håller i handen – aldrig från kvarnen */
+  const sort = s.userData.sort;
+  if (sort === 'kajak') return S.kolf?.band && !valdSack() ? NOLAS + 'Rullbandet hämtar den' : NOLAS + 'För stor att lyfta';
+  if (valdSack() && !s.userData.tung) return NOLAS + 'För liten för pirran';
+  if (s.userData.tung && valdTyp() === 'karra') return NOLAS + 'För tung för kärran';
+  if (s.userData.tung && !valdSack()) return NOLAS + 'För tung att lyfta';
+  return '';
+}
 const TUNG_T = 'Den är för tung. Jag behöver något att köra den på.', KANOT_T = 'En hel kanot. Vem slänger en kanot?';   /* DG: tidiga ledtrådar */
 const PIRRA_LITEN = 'Nä, den där är för liten för pirran. Den tar jag med handen.', PIRRA_STOR = 'Den där kan jag inte lyfta med pirran. Den är för stor. Jag får komma på något annat sätt.';
 const enGang = (t, varfor) => { if (varnadTid['dg:' + t] || harSagt(t)) return false; varnadTid['dg:' + t] = 1; tanke(t, varfor, 'REAKTION'); return true; };
@@ -4157,7 +4179,7 @@ const TANKE_UTANFOR = 'Den här måste stå i linjen vid kvarnen, annars når in
 const ALI_KANNA = 'Rolf gav mig en kanna. Som min farmors. Jag ritade en sak åt honom. Säg inget, han gråter lätt.';   // CH
 const ALI_RODKVARN = 'Den röda? Jag har aldrig vågat starta den. Ta den. Starta den långt bort från mig.';   // CM
 const TANKAR_NYA = ['Grinden. Det är Helen, hör jag på stegen.', 'Gäststuga. Alltid bra att ha.', 'Helen. Det finns en gäststuga. Den är din om du vill.', 'Skåpet först.', 'En webbshop. Från ett skjul. Med modem. Varför inte.', 'Den röda tar jag med pirran.', 'Det röda ska i den röda kvarnen.', 'Det blå skräpet går i den blå kvarnen.', 'Vad var det som flög över grinden?', 'En sopsäck. Från sopbilen. Logiskt.', 'Ali ritar åt Rolf. Rolf ritar inte. Det förklarar saken.', 'Lite närmare.', 'Den här är för tung. Jag behöver nåt med större hjul.', 'Pirran är för de röda sakerna. Skräpet tar jag med händerna.', 'Det börjar kännas som ett hem. På riktigt.'];   // CH, CJ, CL, CM
-const TANKAR_INLINE = [TUNG_T, KANOT_T, PIRRA_LITEN, PIRRA_STOR, KOLF_FORSTA, 'Den här är för stor för lilla kvarnen. Den ska till kolfiberkvarnen.', FICKA_TANKE, ALLT_FULLT_TANKE, 'Det får inte plats. Jag behöver något att tippa i.', 'Den här är för tung för lilla kvarnen.'];
+const TANKAR_INLINE = [TUNG_T, KANOT_T, PIRRA_LITEN, STOR_T, KARRA_TUNG_T, KOLF_FORSTA, 'Den här är för stor för lilla kvarnen. Den ska till kolfiberkvarnen.', FICKA_TANKE, ALLT_FULLT_TANKE, 'Det får inte plats. Jag behöver något att tippa i.', 'Den här är för tung för lilla kvarnen.'];
 function iTratten(gram, tung) {
   if (!S.kvarnStar) return false;   // B23: kvarnen och tratten finns inte i världen före köpet
   if (tung && petgKvarn()) return petgIn(gram) ? 'petg' : false;   // tungt på bandet går vidare till PETG-kvarnen
