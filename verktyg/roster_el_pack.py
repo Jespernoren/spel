@@ -15,6 +15,7 @@ import hashlib, json, os, subprocess, sys
 MAPP = sys.argv[1] if len(sys.argv) > 1 else 'spel/printa-hem/roster-el'
 TROSKEL = '-45dB'
 FORE, EFTER = 0.03, 0.12
+MAX_PACK = 12 * 1024 * 1024
 
 def sha(p):
     return hashlib.sha1(open(p, 'rb').read()).hexdigest()[:12]
@@ -46,8 +47,11 @@ def main():
     for fil in sorted(set(index.values())):
         if not os.path.exists(os.path.join(MAPP, fil)):
             continue
-        pk = packnamn(fil); buf = data.setdefault(pk, bytearray())
         b = open(os.path.join(MAPP, fil), 'rb').read()
+        bas = packnamn(fil); n = 1; pk = bas
+        while len(data.get(pk, b'')) + len(b) > MAX_PACK:   # stora paket delas (artifacts tar högst 20 MiB per fil)
+            n += 1; pk = f'{bas}{n}'
+        buf = data.setdefault(pk, bytearray())
         placering[fil] = [pk, len(buf), len(b)]; buf.extend(b)
     for f in os.listdir(packmapp):
         if f.endswith('.mp3') and f[:-4] not in data:
