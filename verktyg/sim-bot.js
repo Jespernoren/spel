@@ -181,7 +181,8 @@
       if (H.antalInv('rulle')) { valj('rulle'); await klick(sk.mesh, 'skrivaren'); handling(`laddar rulle i skrivaren (${Math.round(sk.fil)} g)`); continue; }
       if (H.helaRullar()) { await hamtaRulle(); continue; }
       const tipp = S.tippNyckel && gardsSkrap().length <= H.gardMal();
-      const n = await plockaLass({ tippen: tipp });
+      let n = await plockaLass({ tippen: tipp });
+      if (!n && !tipp && S.tippNyckel && !H.hand.saker.length) n = await plockaLass({ tippen: true });   // gården tom på det som går att lyfta – ta från tippen
       if (!n && !H.hand.saker.length) { if (!S.kvarn.tratt) { handling('inget skräp kvar att mala!'); return false; } }
       await tomIKvarnen(); await mal();
     }
@@ -419,11 +420,11 @@
   window.__simBot = {
     async kor(tillDag = 6, maxMin = 120) {
       dagStart = tid; window.__textLogg('MÅL', '', H.stegText());
-      const stopp = tid + maxMin * 60; let sista = -1, samma = 0;
+      const stopp = tid + maxMin * 60; let sista = -1, samma = 0, stegT = tid;
       while (S.dag < tillDag && tid < stopp) {   // B55: boten kör vidare in i kapitel 2
         { let w = 0; while (H.pratar?.() && w++ < 120) await vanta(0.1); }   // en spelare lyssnar klart innan hen gör nästa sak
         const fore = S.steg + ':' + S.dag; console.log(`[sim] dag ${S.dag} ${fmt(tid - dagStart)} ${S.mynt} kr · ${H.stegId?.() || ''} · ${(H.stegText() || '').slice(0, 50)}`); await gorSteg();
-        if (fore === sista) { await vanta(1); if (++samma > 60) { handling('fastnade: ' + H.stegText()); break; } } else { sista = fore; samma = 0; }
+        if (fore === sista) { await vanta(1); if (++samma > 60 || tid - stegT > 15 * 60) { handling('fastnade: ' + H.stegText()); break; } } else { sista = fore; samma = 0; stegT = tid; }
       }
       if (!dagar.some((d) => d.dag === S.dag)) dagar.push({ dag: S.dag, sek: tid - dagStart, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat, ofardig: true });
       return { logg, handlingar, dagar, kop, tid };

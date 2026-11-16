@@ -3886,9 +3886,27 @@
   "var": "Dina tankar, tips och varningar"
  },
  {
-  "id": "du-f35a0e58",
+  "id": "du-02725082",
   "figur": "du",
-  "text": "För lång. Den måste med bandet.",
+  "text": "Den är för tung. Jag behöver något att köra den på.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-809291b7",
+  "figur": "du",
+  "text": "En hel kanot. Vem slänger en kanot?",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-07bcf6a4",
+  "figur": "du",
+  "text": "Nä, den där är för liten för pirran. Den tar jag med handen.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-3fb0fd5e",
+  "figur": "du",
+  "text": "Den där kan jag inte lyfta med pirran. Den är för stor. Jag får komma på något annat sätt.",
   "var": "Dina tankar, tips och varningar"
  },
  {
