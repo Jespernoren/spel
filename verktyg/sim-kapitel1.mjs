@@ -187,6 +187,10 @@ for (const e of r.logg.filter((x) => x.kalla === 'osynlig gåva')) flaggor.push(
     if (har) { forklarat.add(e.text); continue; }
     if (!forklarat.has(e.text)) flaggor.push({ dag: e.dag, t: e.t, typ: 'TYST NEJ', text: `nej-ljud utan förklaring (${e.text.slice(0, 60) || 'inget i handen'})` });
   } }
+// A-041: SKRATT per 10 min och TORRT (över 4 min speltid utan roligt ögonblick)
+{ const sk = r.logg.filter((e) => e.kalla === 'skratt'); r.skratt = sk.length;
+  for (const d of r.dagar) { const lista = sk.filter((e) => e.dag === d.dag).map((e) => e.t).sort((a, b) => a - b); let forra = 0;
+    for (const t of [...lista, d.sek]) { if (t - forra > 240 && d.sek > 60) flaggor.push({ dag: d.dag, t: forra, typ: 'TORRT', text: `${Math.round(t - forra)} s utan roligt ögonblick` }); forra = t; } } }
 // tempo
 for (const d of r.dagar) {
   const min = d.sek / 60, [lo, hi] = d.dag === 1 ? [10, 12] : [10, 15];
@@ -202,6 +206,7 @@ for (const d of r.dagar) md += `| ${d.dag} | ${(d.sek / 60).toFixed(1)} | ${d.se
   md += `\n## Flaskhalskartan (EE)\n\n| Dag | ${K.join(' | ')} | Upplåst |\n|---|${K.map(() => '---').join('|')}|---|\n`;
   for (const d of r.dagar) md += `| ${d.dag} | ${K.map((k) => Math.round(d.flask?.[k] || 0)).join(' | ')} | ${r.logg.filter((e) => e.kalla === 'upplåst' && e.dag === d.dag).map((e) => `${e.text} (${e.vem}, ${fmt(e.t)}${/reserv/.test(e.varfor) ? ', reserv' : ''})`).join(', ')} |\n`;
   const kl = r.logg.filter((e) => e.kalla === 'brott' && ['TIDIG', 'FAST', 'RESERV'].includes(e.vem)); md += `\nTIDIG: ${kl.filter((e) => e.vem === 'TIDIG').length} · FAST: ${kl.filter((e) => e.vem === 'FAST').length} · upplåst av reserven (målet väntade 3 min): ${kl.filter((e) => e.vem === 'RESERV').length}\n`; }
+md += `\n**SKRATT:** ${r.skratt || 0} roliga ögonblick på ${Math.round(r.dagar.reduce((a, d) => a + d.sek, 0) / 60)} min (${(10 * (r.skratt || 0) / Math.max(1, r.dagar.reduce((a, d) => a + d.sek, 0) / 60)).toFixed(1)} per 10 min, mål minst 5)\n`;
 md += `\n**Köp:**\n\n` + r.kop.map((k) => `- dag ${k.dag} ${fmt(k.t)} – ${k.id} (${k.pris} kr)`).join('\n') + '\n';
 md += `\n## Storykedjan (kvittens → varför → nytt mål)\n\n| Dag | Tid | Id | Kvittens | Varför | Nytt mål | Tid till målet |\n|---|---|---|---|---|---|---|\n` + kedjeRader.map((k) => `| ${k.dag} | ${fmt(k.t)} | ${k.id} | ${k.kv.slice(0, 60)} | ${k.va.slice(0, 60)} | ${k.mal.slice(0, 60)} | ${k.gap == null ? '–' : k.gap.toFixed(1) + ' s'} |`).join('\n') + '\n';
 md += `\n## Hur länge nya mål väntade (från att förra målet blev klart till att det nya syntes i målrutan)\n\n` + (malVantan.length ? `Snitt ${(malVantan.reduce((x, m) => x + m.v, 0) / malVantan.length).toFixed(1)} s · max ${Math.max(...malVantan.map((m) => m.v)).toFixed(1)} s · över 4 s: ${malVantan.filter((m) => m.v > 4).length} · över 8 s: ${malVantan.filter((m) => m.v > 8).length} av ${malVantan.length}\n` : '-\n');

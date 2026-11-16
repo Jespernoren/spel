@@ -110,6 +110,7 @@ const RACKVIDD_BYGG = 6;         // hur långt bort man kan ställa saker
 
 // Saker man kan printa och sälja (gram filament, tid i sekunder på Gen 1, pris hos Ali)
 const VAROR = {
+  spagetti: { namn: 'Plastspagetti (modern konst)', ikon: '🍝', pris: 3, gram: 0, tid: 0, syns: () => false },   /* A-041: Ali köper den som konst */
   olhallare: { namn: 'Ölhållare med kylklamp', ikon: '🍺', gava: true },  // gåvor till Rolf
   flaskoppnare: { namn: 'Flasköppnare med magnet', ikon: '🍾', gava: true },
   grillspade: { namn: 'Grillspade', ikon: '🍖', gava: true },
@@ -1850,6 +1851,7 @@ function skapaVara(typ) { const g = skapaVaraGrund(typ); return blaSaljvara(typ)
 function skapaVaraGrund(typ) {
   if (typ === 'skrivareS') { const sk = skapaSkrivare(1); sk.scale.setScalar(0.7); return sk; }   // punkt AS
   const g = new THREE.Group();
+  if (typ === 'spagetti') { const m = mat(0x2d6cdf, { roughness: 0.6 }); for (let i = 0; i < 14; i++) { const t = new THREE.Mesh(new THREE.TorusGeometry(0.03 + Math.random() * 0.05, 0.006, 5, 12, Math.PI * (1 + Math.random())), m); t.position.set((Math.random() - 0.5) * 0.12, 0.03 + Math.random() * 0.1, (Math.random() - 0.5) * 0.12); t.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3); g.add(t); } return g; }   /* A-041: en misslyckad print */
   if (typ === 'nyckelkopia') {
     const m = mat(0xd9b44a);
     g.add(at(new THREE.Mesh(new THREE.TorusGeometry(0.035, 0.012, 8, 16), m), 0, 0.12, 0));
@@ -3486,7 +3488,7 @@ function uppdateraSkrivare(sk, dt) {
       S.auto.innehall = { ...(S.auto.innehall || {}), [j.typ]: (S.auto.innehall?.[j.typ] || 0) + 1 }; S.stat.iLada = (S.stat.iLada || 0) + 1;
       ladaPaket(sk, j.typ); ljud.placera(); if (sk.ko?.length) nastaJobb(sk, null);
     } else {
-      sk.jobb = null; laggUt(sk, j.typ); ljudH('print-klar');
+      const fel = humorSpagetti(j.typ); sk.jobb = null; laggUt(sk, fel ? 'spagetti' : j.typ); ljudH('print-klar');
       const nUt = antalUt(sk);
       if (nUt === 1 && S.stat.printat > 0) skrivarNotis(sk, `${VAROR[j.typ]?.namn || 'Utskriften'} är klar – ta ut den${sk.upprepa === j.typ ? ' (printar en till – tryck på skrivaren för att stoppa)' : ''}`, 'guld', true, 'klar');
       else if (nUt % 3 === 0) skrivarNotis(sk, `${nUt} st klara på skrivaren – ta ut dem`, 'bra');
@@ -4244,7 +4246,7 @@ function petgIn(gram) {   /* DO: containern rymmer 6 och matar kvarnen en i tage
   S.petg.cont = S.petg.cont || [];
   if (S.petg.container) { if (S.petg.cont.length >= CONTAINER_MAX) return 'full'; S.petg.cont.push(gram); }
   else { if (S.petg.ko >= 1) return 'upptagen'; S.petg.ko += gram; }
-  S.stat.tungMalt = (S.stat.tungMalt || 0) + 1; sparaSnart(); return true;
+  S.stat.tungMalt = (S.stat.tungMalt || 0) + 1; sparaSnart(); try { humorRap(); } catch (e) {} return true;
 }
 const petgTopp = (p) => p.mesh.localToWorld(new THREE.Vector3(0, 1.3, 0));
 function petgTungaIKarran() { return valdKarra() ? S.karraLast.filter((v) => SKRAP_SORTER[skrapSort(v)].tung) : []; }
@@ -4818,6 +4820,7 @@ function uppdateraMalSkylt(dt) {
 const nastaGram = () => (S.kvarn.tratt ? S.kvarn.trattGram / S.kvarn.tratt : 200);
 // en flaska klar i kvarnen
 function flaskaMald() {
+  try { humorKvarnSpottar(); } catch (e) {}
   const g = Math.round(S.kvarn.trattGram / S.kvarn.tratt) || SKRAP_SORTER.flaska.gram;
   S.kvarn.tratt--; S.kvarn.trattGram = Math.max(0, S.kvarn.trattGram - g); S.kvarn.prog = 0;
   const forut = Math.floor(S.kvarn.ut / RULLE);
@@ -5165,7 +5168,7 @@ const sovDags = () => !!STEG[S.steg]?.sov ||   // CI: man får sova så fort dag
 interaktor.registrera(tältSäng, {
   text: () => sovDags() ? '🌙 Sov till nästa dag' : STEG[S.steg]?.sov ? `Din säng – du är inte trött än (kväll om ${Math.max(1, Math.ceil((MIN_VAKEN - (S.vakenTid || 0)) / 60))} min)` : 'Din säng – det är inte kväll än. Gör klart dagens jobb först',
   kanAktivera: () => !!S.sang,
-  aktivera: () => { if (sovDags()) sov(); else ui.toast(STEG[S.steg]?.sov ? 'Inte trött än – printa och sälj lite till' : 'Det är inte kväll än – gör klart dagens jobb först'); },
+  aktivera: () => { if (sovDags()) sov(); else { ui.toast(STEG[S.steg]?.sov ? 'Inte trött än – printa och sälj lite till' : 'Det är inte kväll än – gör klart dagens jobb först'); humorSangDag(); } },
 });
 // ---------- Kväll → natt → morgon ----------
 const KVALL = { himmel: 0xf0a878, sol: 0xffa96b, solStyrka: 1.1 }, DAG = { himmel: 0xbfdcf0, sol: 0xffffff, solStyrka: 2.0 };
@@ -5685,7 +5688,7 @@ const PROTO_SVAR = {
   a_robot: 'Roboten. Den har mitt ansikte på skärmen. Den säger "öppet till nio". Jag har aldrig varit så stolt.',
 };
 const presentNu = () => Object.keys(ROLF_TACK).find((id) => !(S.rolf.fatt || []).includes(id));
-const CHEFEN = ['Hej. Rolf här – chefen. Någon har druckit min espresso. Rolf säger att det var ”ungen vid tippen”. Böter.', 'Chefen igen. Det har varit en skylt på grinden. Och mina kakor är färre. Jag vet att du är inblandad. Böter.', 'Chefen. Jag har hittat en servett stämplad GODKÄNT. Den var inte godkänd. Böter.'];
+const CHEFEN = ['Hej. Rolf här – chefen. Någon har druckit min espresso. Rolf säger att det var ”ungen vid tippen”. Böter.', 'Chefen igen. Det har varit en skylt på grinden. Och mina kakor är färre. Jag vet att du är inblandad. Böter.', 'Chefen. Jag har hittat en servett stämplad GODKÄNT. Den var inte godkänd. Böter.', 'Chefen. Böter. (För högt gräs.)', 'Chefen. Böter. (För att du såg på mig.)', 'Chefen. Böter. (Jag vet inte varför. Men det känns rätt.)'];   /* A-041: böterna blir dummare */
 const gavaRitningPris = (id) => Math.max(20, Math.min(S.mynt, Math.round((VAROR[id]?.gram || 300) / 10)));   // aldrig dyrare än du har
 const aktivGava = () => (S.rolf.jobb != null ? jobbNu().vara : S.rolf.aktiv && ROLF[S.rolf.i] ? ROLF[S.rolf.i].vara : null);
 function oppnaJobbVal() {
@@ -6651,7 +6654,8 @@ function ton(f, d, vol, typ = 'square', fordrojning = 0) {
 }
 const bilVolym = () => Math.max(0, 1 - sopbil.position.distanceTo(kamera.position) / 70) ** 2;
 let tutBubblaT = -1e9;
-function tuta() { const v = 0.02 + 0.12 * bilVolym(); if (!ljudH('tuta', 0.25 + 0.75 * bilVolym())) { ton(392, 0.25, v); ton(330, 0.25, v, 'square', 0.28); } try { if (S.dag >= 2 && sopbil.position.distanceTo(spelare.pos) < 30 && performance.now() - tutBubblaT > 90000) { tutBubblaT = performance.now();   /* EC#1: en bubbla per besök */ varldsBubbla(sopbil, S.skyltTut ? 'TUUT! Grann skylt!' : ['TUUT! Tjena!', 'TUUT! Hej grannen!', 'TUUT TUUT!'][Math.floor(Math.random() * 3)], 3, 3.2); S.skyltTut = 0; } } catch {} }
+let tutNr = 0;
+function tuta() { const v = 0.02 + 0.12 * bilVolym(); if (++tutNr % 3 === 0) { ton(392, 0.18, v, 'square'); ton(370, 0.18, v, 'square', 0.2); ton(311, 0.35, v, 'square', 0.4); skratt('falsk tuta'); } else if (!ljudH('tuta', 0.25 + 0.75 * bilVolym())) { ton(392, 0.25, v); ton(330, 0.25, v, 'square', 0.28); }   /* A-041: var tredje tuta spelar falskt */ try { if (S.dag >= 2 && sopbil.position.distanceTo(spelare.pos) < 30 && performance.now() - tutBubblaT > 90000) { tutBubblaT = performance.now();   /* EC#1: en bubbla per besök */ varldsBubbla(sopbil, S.skyltTut ? 'TUUT! Grann skylt!' : ['TUUT! Tjena!', 'TUUT! Hej grannen!', 'TUUT TUUT!'][Math.floor(Math.random() * 3)], 3, 3.2); S.skyltTut = 0; } } catch {} }
 // motorljud: en gammal diesel som brummar, skakar och spruttar – hörs tydligare ju närmare bilen är
 let bilMotor = null, bilPutt = 0;
 function brunBrus(c, sek = 2) {   // mörkt brus (som ett avgasrör)
@@ -6874,7 +6878,7 @@ function rolfSackKoll(dt) {
     sackFlyg = Math.min(1, sackFlyg + dt / 1.3); const t = sackFlyg;
     sackRulle.position.lerpVectors(SACK_FRAN, SACK_TILL, t); sackRulle.position.y = SACK_FRAN.y * (1 - t) + SACK_TILL.y * t + Math.sin(t * Math.PI) * 3.2;
     sackRulle.rotation.x += dt * 9;
-    if (t >= 1) { sackFlyg = 0; sackRulle.rotation.x = 0; ljud.placera(); textLogg('sopsack', 'rolf', 'Sopsäckarna landade på gården');
+    if (t >= 1) { sackFlyg = 0; sackRulle.rotation.x = 0; ljud.placera(); textLogg('sopsack', 'rolf', 'Sopsäckarna landade på gården'); if (Math.hypot(spelare.pos.x - SACK_TILL.x, spelare.pos.z - SACK_TILL.z) < 5) { const y0 = spelare.pitch; let n = 0; const sk = () => { spelare.pitch = y0 + Math.sin(n * 2.4) * 0.05 * (1 - n / 12); if (++n < 12) requestAnimationFrame(sk); else spelare.pitch = y0; }; sk(); paket([{ tanke: HUMOR_T.aj }], { vikt: 'REAKTION' }); skratt('säckarna på huvudet'); }   /* A-041 */
       paket([{ tanke: SACK_FLYG_T }, { ge: () => { S.sackSms = true; sparaSnart(); } }], { vikt: 'STORY', varfor: 'EL 28: säckarna flög ut – lappen läses först när man tar upp dem', villkor: () => !S.korg }); }
     return;
   }
@@ -6975,7 +6979,7 @@ function uppdateraSopbil(dt) {
     }
   } else if (bil.fas === 'tippar') {
     flak.rotation.z = Math.min(1, bil.t / 1.4) * 0.85;
-    if (bil.t > 1.3 && !bil.tippat) { bil.tippat = true; tippaLast(); }
+    if (bil.t > 1.3 && !bil.tippat) { bil.tippat = true; tippaLast(); humorDack(); }
     if (bil.t > 3) flak.rotation.z = Math.max(0, 0.85 - (bil.t - 3) * 0.6);
     if (bil.t > 4.5) { flak.rotation.z = 0; bil.fas = 'framat'; bil.t = 0; }
   } else if (bil.fas === 'framat') {
@@ -7572,7 +7576,8 @@ function saljTillAli(t, n) {
   if (!t.startsWith('byggsats:') && !VAROR[t]?.lyx) { S.saltIdag = { ...(S.saltIdag || {}), [t]: saltIdag(t) + n }; S.saltTot = { ...(S.saltTot || {}), [t]: (S.saltTot?.[t] || 0) + n }; }
   S.mynt += summa; S.stat.salt += n; ljud.mynt(); myntRegn(summa);
   if (t === 'kruka') S.stat.krukaSald = (S.stat.krukaSald || 0) + n;   /* EF17 */
-  if (t === 'nyckelring') flaskLagg('inkomst', n);   /* EE: nyckelringarna som inkomst */
+  if (t === 'spagetti') { aliRepl = 'Modern konst. Tre kronor. Jag hänger den i fönstret.'; skratt('Ali köper konst'); }   /* A-041 */
+  if (t === 'nyckelring') { flaskLagg('inkomst', n); try { humorNyckelringar(); } catch (e) {} }   /* EE: nyckelringarna som inkomst · A-041 */
   giAliBonus();
   return summa;
 }
@@ -7996,6 +8001,7 @@ function oppnaMarknad() {
     el.querySelectorAll('[data-kopnu]').forEach((k) => { k.onclick = () => {   /* EM 33: ett klick köper just det kortet */
       const x = kop.find((y) => y.key === k.dataset.kopnu); if (!x) return;
       if (x.las) { aliRepl = typeof x.las === 'string' ? x.las : 'Den har jag inte än. Kom tillbaka.'; ljud.fel(); oppnaMarknad(); return; }
+      if (x.pris >= 500) { ton(1568, 0.12, 0.05); ton(2093, 0.18, 0.05, 'sine', 0.12); skratt('Alis dyr-pling'); }   /* A-041: Alis pling när något är dyrt */
       if (S.mynt < x.pris) { aliRepl = `Du saknar ${krT(x.pris - S.mynt)} kr. Kom tillbaka, min vän.`; ljud.fel(); oppnaMarknad(); return; }   /* ED9 */
       const forut = S.mynt; S.mynt -= x.pris; aliRepl = '';
       if (x.kop() === false) { S.mynt = forut; aliRepl = aliRepl || 'Det går inte just nu.'; ljud.fel(); oppnaMarknad(); return; }
@@ -9754,7 +9760,7 @@ function familjSms() {
   if ((S.familjDag || 0) >= d) return;
   S.familjDag = d;
 
-  if (S.rolf.boter) { const b = Math.min(S.mynt, S.rolf.boter), t = CHEFEN[((S.rolf.ja / 2) - 1) % CHEFEN.length]; S.rolf.boter = 0; paket([{ sms: ['chefen', `${t} ${b} kr. /Rolf (chefen)`] }, { ge: () => { S.mynt -= b; sparaSnart(); } }, { toast: [`Böter: −${b} kr`, 'fel'] }], { om: 7000 }); }
+  if (S.rolf.boter) { const b = Math.min(S.mynt, S.rolf.boter), t = CHEFEN[((S.rolf.ja / 2) - 1) % CHEFEN.length]; S.rolf.boter = 0; if (S.rolf.ja >= 8) skratt('chefens böter'); paket([{ sms: ['chefen', `${t} ${b} kr. /Rolf (chefen)`] }, { ge: () => { S.mynt -= b; sparaSnart(); } }, { toast: [`Böter: −${b} kr`, 'fel'] }], { om: 7000 }); }
   if (S.dag >= 7 && ![11, 14, 16, 22].includes(d) && !(S.pappaNasta === d) && !nVantarLapp() && S.rolf.i >= ROLF.length && S.rolf.jobb == null && !S.post.lapp && !S.post.tillRolf && !S.post.tillMig.length && S.rolf.jobbDag !== d && (d - (S.rolf.jobbDag || 0)) >= 2) {
     S.rolf.jobbDag = d; S.post.lapp = 'jobb'; visaPostInne();
     { const t = ROLF_JOBBLAPP.find((x) => !harSagt(rolfDialekt(x, false)) && !harSagt(x)) ; const i = S.rolf.jobbLappNr = (S.rolf.jobbLappNr || 0) + 1; const txt = ROLF_JOBBLAPP[i - 1] || t; if (txt) paket([{ sms: ['rolf', txt] }], { om: 3500 }); }   // CT: i ordning, tyst när de är slut
@@ -10927,7 +10933,7 @@ function rostManus() {
   vid('Lappar, brev och dagbok'); Object.entries(LAPPAR).forEach(([id, [titel, t]]) => add(vemAvTitel(titel), t));
   vid('Introt'); INTRO_TAL().forEach(([v, t]) => add(v, t));
   vid('Berättaren läser målen'); Object.values(STEG_TAL).forEach((t) => add('berattare', t)); Object.values(STEG_TAL_SPARA).forEach(([t]) => add('berattare', t));
-  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); TANKAR_INLINE.forEach((t) => add('du', t)); TANKAR_NYA.forEach((t) => add('du', t)); [GENERATOR_T, MOTOR_KVITTO, FLAGGAN_T, TIPPEN_T, ...ROLF.map((o) => HAMTAT_T(VAROR[o.vara]?.namn.toLowerCase() || 'gåvan')), ...STEG.map((x) => x.knuff).filter(Boolean), ...Object.values(KLAGO), SACK_FLYG_T, ROLF_KAND_T, ...POLAROID.map((p) => p.tanke).filter(Boolean), ...Object.values(MONTERA).map((m) => m.kvitto).filter(Boolean), PAUS_T, HANDER_T, BROR_RULLE_T, STOR_T, KARRA_TUNG_T, KANOT_T, TUNG_T, PIRRA_LITEN, KOLF_FORSTA, ...Object.values(LINJE_TANKE), ...Object.values(FARG_T), ...Object.values(TORN_FARG_T), SLANG_T].forEach((t) => typeof t === 'string' && add('du', t)); add('rolf', ROD_LASS_SMS); add('rolf', KOLF_LASS_SMS);   /* DG–DM2 */ STEG.filter((x) => x.tanke).forEach((x) => add('du', x.tanke)); ALI_FORBI.forEach((t) => add('ali', t)); ALI_STANGT.forEach((t) => add('ali', t)); BESOK.forEach((b) => b.rader.forEach((t) => add(b.vem, t))); [...VALMA_KLAGA_MAT, ...VALMA_KLAGA_KALL, ...VALMA_GLAD].forEach((t) => add('du', t)); add('rolf', 'Hon kallade den Humlan. Ta hand om den. /R'); add('mamma', 'Jag kommer. Säg inget. ❤️'); add('mamma', 'Vi kommer kl 3. Pappa tar med granen. Den är för stor.'); add('rolf', 'Hoppa in. Jag väntar. Nåja, två minuter. /R'); add('rolf', 'Hörru. Vill du följa me på rundan? Morgonkontoret, konditoriet o ett ställe ja aldrig visat nån. Ja tutar två gånger vid tippen. /R'); add('ali', 'En hylla. Den lutar lite. Det är karaktär.'); add('ali', 'Laga inget som luktar fisk. Rolf kommer då.'); add('ali', 'Med senap. Det ingår. Allt annat kostar.'); add('du', 'Kostym. På Soptippsvägen?'); add('ali', ALI_KANNA); add('ali', ALI_RODKVARN); add('ali', ALI_DATOR); add('ali', ALI_DATOR_SEN); add('rolf', ROLF_PAKET_LAPP); add('rolf', ROLF_PAKET_SEN); GAST_ROLF.forEach((t) => add('rolf', t)); add('rolf', GAST_DRAR); add('rolf', GAST_KLAR_ROLF); add('rolf', GAST_JUL); add('rolf', HELEN_GAST_ROLF); add('helen', HELEN_GAST); add('rolf', ROLF_SACK_LAPP); add('du', TANKE_UTANFOR); GORAN_HALLA.forEach((t) => add('du', t)); add('du', GORAN_MAMMA); add('du', GORAN_FAGELBAD); MORGON_TANKAR.forEach((m) => add('du', m.text)); add('du', MORGON_BRA.text); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); ALI_FAST.forEach(([, f]) => add('ali', f)); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
+  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); TANKAR_INLINE.forEach((t) => add('du', t)); TANKAR_NYA.forEach((t) => add('du', t)); [GENERATOR_T, MOTOR_KVITTO, HUMOR_T.trana, HUMOR_T.dack, HUMOR_T.lar, HUMOR_T.aj, HUMOR_T.spagetti, HUMOR_T.katt, HUMOR_T.sang, ...HUMOR_T.spotta, FLAGGAN_T, TIPPEN_T, ...ROLF.map((o) => HAMTAT_T(VAROR[o.vara]?.namn.toLowerCase() || 'gåvan')), ...STEG.map((x) => x.knuff).filter(Boolean), ...Object.values(KLAGO), SACK_FLYG_T, ROLF_KAND_T, ...POLAROID.map((p) => p.tanke).filter(Boolean), ...Object.values(MONTERA).map((m) => m.kvitto).filter(Boolean), PAUS_T, HANDER_T, BROR_RULLE_T, STOR_T, KARRA_TUNG_T, KANOT_T, TUNG_T, PIRRA_LITEN, KOLF_FORSTA, ...Object.values(LINJE_TANKE), ...Object.values(FARG_T), ...Object.values(TORN_FARG_T), SLANG_T].forEach((t) => typeof t === 'string' && add('du', t)); add('rolf', ROD_LASS_SMS); add('rolf', KOLF_LASS_SMS);   /* DG–DM2 */ STEG.filter((x) => x.tanke).forEach((x) => add('du', x.tanke)); ALI_FORBI.forEach((t) => add('ali', t)); ALI_STANGT.forEach((t) => add('ali', t)); BESOK.forEach((b) => b.rader.forEach((t) => add(b.vem, t))); [...VALMA_KLAGA_MAT, ...VALMA_KLAGA_KALL, ...VALMA_GLAD].forEach((t) => add('du', t)); add('rolf', 'Hon kallade den Humlan. Ta hand om den. /R'); add('mamma', 'Jag kommer. Säg inget. ❤️'); add('mamma', 'Vi kommer kl 3. Pappa tar med granen. Den är för stor.'); add('rolf', 'Hoppa in. Jag väntar. Nåja, två minuter. /R'); add('rolf', 'Hörru. Vill du följa me på rundan? Morgonkontoret, konditoriet o ett ställe ja aldrig visat nån. Ja tutar två gånger vid tippen. /R'); add('ali', 'En hylla. Den lutar lite. Det är karaktär.'); add('ali', 'Laga inget som luktar fisk. Rolf kommer då.'); add('ali', 'Med senap. Det ingår. Allt annat kostar.'); add('du', 'Kostym. På Soptippsvägen?'); add('ali', ALI_KANNA); add('ali', ALI_RODKVARN); add('ali', ALI_DATOR); add('ali', ALI_DATOR_SEN); add('rolf', ROLF_PAKET_LAPP); add('rolf', ROLF_PAKET_SEN); GAST_ROLF.forEach((t) => add('rolf', t)); add('rolf', GAST_DRAR); add('rolf', GAST_KLAR_ROLF); add('rolf', GAST_JUL); add('rolf', HELEN_GAST_ROLF); add('helen', HELEN_GAST); add('rolf', ROLF_SACK_LAPP); add('du', TANKE_UTANFOR); GORAN_HALLA.forEach((t) => add('du', t)); add('du', GORAN_MAMMA); add('du', GORAN_FAGELBAD); MORGON_TANKAR.forEach((m) => add('du', m.text)); add('du', MORGON_BRA.text); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); ALI_FAST.forEach(([, f]) => add('ali', f)); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
   rostManus.detalj = D;
   return L;
 }
@@ -11831,15 +11837,16 @@ function taFoto() {
 }
 /* EK 26: fotot är ett ögonblick – blixt, stort mitt på skärmen i ca 2 s med milstolpen under, sedan den hoppfulla tanken. Ett STORY-paket: kön står still under tiden */
 function fotografera(p) {
+  if ((S.polaroid || []).length >= 2 && Math.random() < 0.3) { p = { ...p, under: (p.under || p.text) + ' (och min tumme)', tumme: true }; skratt('tummen på fotot'); }   /* A-041: fotot misslyckas ibland */
   const bild = taFoto(); S.polaroid = S.polaroid || []; S.polaroid.push({ id: p.id, dag: S.dag, bild }); sparaSnart();
   kanalLagg({ vikt: 'STORY', vem: 'foto', text: p.under || p.text, rost: false, minMs: 2600, visa: () => {
     const blixt = document.createElement('div'); blixt.className = 'ph-blixt'; document.body.appendChild(blixt); setTimeout(() => blixt.remove(), 700);
     ljudH('kamera'); textLogg('foto', 'du', p.under || p.text, p.id);
-    if (bild) { const d = document.createElement('div'); d.className = 'ph-polstor'; d.innerHTML = `<img src="${bild}" alt=""><div>${rens(p.under || p.text)}</div>`; document.body.appendChild(d); setTimeout(() => { d.classList.add('ut'); setTimeout(() => d.remove(), 700); }, 2200); }
+    if (bild) { const d = document.createElement('div'); d.className = 'ph-polstor'; d.innerHTML = `<img src="${bild}" alt="">${p.tumme ? '<span class="ph-tumme"></span>' : ''}<div>${rens(p.under || p.text)}</div>`; document.body.appendChild(d); setTimeout(() => { d.classList.add('ut'); setTimeout(() => d.remove(), 700); }, 2200); }
   } });
   if (p.tanke) paket([{ tanke: p.tanke }], { vikt: 'STORY', varfor: 'EK 26: fotots tanke' });
 }
-{ const st = document.createElement('style'); st.textContent = '.ph-polstor{position:fixed;left:50%;top:46%;z-index:94;width:min(420px,60vw);background:#f7f4ec;padding:12px 12px 16px;box-shadow:0 14px 40px rgba(0,0,0,.55);transform:translate(-50%,-50%) rotate(-2deg);pointer-events:none;animation:phPolStor .35s ease-out}.ph-polstor img{width:100%;display:block}.ph-polstor div{font:600 26px "Segoe Print","Comic Sans MS",cursive;color:#2a2a2a;text-align:center;margin-top:10px}.ph-polstor.ut{transition:all .7s ease-in;transform:translate(30vw,-60vh) rotate(12deg) scale(.3);opacity:0}@keyframes phPolStor{from{transform:translate(-50%,-50%) scale(.6);opacity:0}}'; document.head.appendChild(st); }
+{ const st = document.createElement('style'); st.textContent = '.ph-polstor{position:fixed;left:50%;top:46%;z-index:94;width:min(420px,60vw);background:#f7f4ec;padding:12px 12px 16px;box-shadow:0 14px 40px rgba(0,0,0,.55);transform:translate(-50%,-50%) rotate(-2deg);pointer-events:none;animation:phPolStor .35s ease-out}.ph-polstor img{width:100%;display:block}.ph-polstor .ph-tumme{position:absolute;left:-6%;bottom:22%;width:38%;height:40%;border-radius:50%;background:radial-gradient(#e8b598,#b97a5c);filter:blur(3px)}.ph-polstor div{font:600 26px "Segoe Print","Comic Sans MS",cursive;color:#2a2a2a;text-align:center;margin-top:10px}.ph-polstor.ut{transition:all .7s ease-in;transform:translate(30vw,-60vh) rotate(12deg) scale(.3);opacity:0}@keyframes phPolStor{from{transform:translate(-50%,-50%) scale(.6);opacity:0}}'; document.head.appendChild(st); }
 // testkrok: __printahem.polaroid(n) tar foto n (1–15) direkt
 function polaroidTest(n) { const p = POLAROID[n - 1]; if (!p) return false; S.polaroid = (S.polaroid || []).filter((f) => f.id !== p.id); fotografera(p); ritaPolaroider(); return true; }
 function kollaPolaroid() {
@@ -13253,6 +13260,76 @@ setInterval(() => {
   if (stegId() === 'kopGrip' && S.mynt >= (MASKINER.grip.ritning || 50)) kedja('harRadGrip');
   if ((S.stat.krukaSald || 0) >= 1 && klockan() >= 18 * 60) kedja('morkt');
 }, 500);
+/* ---------- A-041: humor i handling – världen reagerar, fysisk komik och eskalering ----------
+   Varje ögonblick är ett paket (eller ett ljud/en rörelse) med utlösare. skratt(id) räknas av AX (SKRATT, TORRT). */
+function skratt(id) { textLogg('skratt', 'du', id); }
+const HUMOR_T = {
+  sopa: 'Inte här, habibi.', nyckel30: 'Nyckelringsmannen! Välkommen tillbaka.', nyckel50: 'Jag satte upp en skylt. Läs den.',
+  trana: 'Jag tränar. Tydligen.', lar: 'Mina lår har egna lår nu.', aj: 'Aj. Tack, antar jag.',
+  spotta: ['Jaha. En kalsong.', 'En toffla. Bara en.', 'En badanka. Den överlevde kvarnen.', 'En tandborste. Jag frågar inte.'],
+  spagetti: 'Den blev… spagetti. Ali kallar det modern konst.', katt: 'Kajsa. Ut ur skrivaren. Nu.', sang: 'Den knarrar. Den har alltid knarrat.', rolfVinkar: 'TUUT! Vinka då!', dack: 'Däcket ville inte stanna. Jag förstår det.',
+};
+function humorSangDag() {
+  if (S.humorSovDag === S.dag || S.dag < 2) return; S.humorSovDag = S.dag; const k = klockan(), h = k == null ? 14 : Math.floor(k / 60);
+  paket([{ sms: ['mamma', `Sover du?? KLOCKAN ÄR ${h}.`] }], { vikt: 'REAKTION', varfor: 'A-041: säng mitt på dagen' }); skratt('mamma: sover du');
+}
+function humorSpagetti(typ) {
+  if (!VAROR[typ]?.pris || S.dag < 2 || typ === STEG[S.steg]?.bild || Math.random() > 1 / 30) return false;
+  paket([{ tanke: HUMOR_T.spagetti }], { vikt: 'REAKTION', varfor: 'A-041: misslyckad print' }); skratt('plastspagetti'); return true;
+}
+function humorKvarnSpottar() {
+  if (S.dag < 2 || Math.random() > 1 / 14) return;
+  const i = (S.humorSpott = ((S.humorSpott || 0) + 1)) - 1, t = HUMOR_T.spotta[i % HUMOR_T.spotta.length];
+  const p = kvarn.getWorldPosition(new THREE.Vector3()); const o = skapaSkrap(Math.floor(Math.random() * 6)); o.position.set(p.x + 0.8, 1.2, p.z + 0.4); scen.add(o);
+  const t0 = performance.now(); const flyg = () => { const k = Math.min(1, (performance.now() - t0) / 700); o.position.set(p.x + 0.8 + k * 1.6, 1.2 + Math.sin(k * Math.PI) * 1.2 - k * 1.15, p.z + 0.4 + k * 0.8); o.rotation.x += 0.3; if (k < 1) requestAnimationFrame(flyg); else scen.remove(o); }; flyg();
+  ton(140, 0.08, 0.05, 'square'); paket([{ tanke: t }], { vikt: 'REAKTION', varfor: 'A-041: kvarnen spottar' }); skratt('kvarnen spottar');
+}
+function humorDack() {   /* A-041: ett däck rullar iväg efter tippningen och lägger sig långt bort */
+  if (S.dag < 2 || Math.random() > 1 / 5) return;
+  const d = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.13, 8, 16), new THREE.MeshLambertMaterial({ color: 0x1d1d1d }));
+  const p = sopbil.getWorldPosition(new THREE.Vector3()); d.position.set(p.x - 2, 0.45, p.z); scen.add(d);
+  const t0 = performance.now(); let vagg = 0;
+  const rull = () => { const k = (performance.now() - t0) / 1000; d.position.x = p.x - 2 - k * 3.2; d.rotation.y = Math.PI / 2; d.rotation.x -= 0.16;
+    if (k > 4) { vagg += 0.12; d.rotation.z = Math.min(Math.PI / 2, vagg); d.position.y = Math.max(0.13, 0.45 - vagg * 0.2); }
+    if (k < 5.5) requestAnimationFrame(rull); else setTimeout(() => scen.remove(d), 30000); };
+  requestAnimationFrame(rull); skratt('däcket rullar iväg');
+  if (Math.hypot(spelare.pos.x - d.position.x, spelare.pos.z - d.position.z) < 25) paket([{ tanke: HUMOR_T.dack }], { vikt: 'REAKTION', varfor: 'A-041: däck rullar' });
+}
+function humorRap() { ton(95, 0.22, 0.07, 'sawtooth'); ton(70, 0.3, 0.06, 'sawtooth', 0.12); skratt('kvarnen rapar'); }
+const nyckelSkylt = skylt('NYCKELRINGAR – FRÅGA EJ', 1.5, 0.24, '#fff6d6', '#7a1f1f'); nyckelSkylt.position.set(0, 1.45, 0.42); nyckelSkylt.visible = false; marknad.add(nyckelSkylt);
+function humorNyckelringar() {
+  const n = S.saltTot?.nyckelring || 0;
+  if (n >= 30 && !S.humorN30) { S.humorN30 = true; aliRepl = HUMOR_T.nyckel30; skratt('Nyckelringsmannen'); }
+  if (n >= 50 && !S.humorN50) { S.humorN50 = true; aliRepl = HUMOR_T.nyckel50; skratt('skylten hos Ali'); }
+  nyckelSkylt.visible = !!S.humorN50;
+}
+nyckelSkylt.visible = !!S.humorN50;
+// trampa i onödan, och trampa länge
+let trampSek = 0, trampForgaves = 0;
+setInterval(() => {
+  if (!ui.igang || sover) return;
+  const trampar = (anvandNere || spelare.tangenter.Space) && interaktor.hovrad === cykel;
+  trampSek = trampar ? trampSek + 0.5 : 0;
+  if (trampar && S.strom >= stromMax() - 0.5 && !skrivare.some((sk) => sk.jobb)) trampForgaves += 0.5; else trampForgaves = 0;
+  if (trampForgaves >= 4 && !harSagt(HUMOR_T.trana)) { paket([{ tanke: HUMOR_T.trana }], { vikt: 'REAKTION', varfor: 'A-041' }); skratt('tränar'); }
+  if (trampSek >= 60 && !harSagt(HUMOR_T.lar)) { paket([{ tanke: HUMOR_T.lar }], { vikt: 'REAKTION', varfor: 'A-041' }); skratt('låren'); }
+  // skräp hos Ali sopas ut igen
+  for (const x of skrapLista) { if (!x.visible || !x.parent) continue; if (Math.hypot(x.position.x - ALI.x, x.position.z - ALI.z) < 2.2) { x.position.set(ALI.x + (Math.random() - 0.5) * 2, 0, ALI.z - 3.4); if (performance.now() - (S.humorSopT || 0) > 60000) { S.humorSopT = performance.now(); varldsBubbla(ali, HUMOR_T.sopa, 3, 0.55); skratt('Ali sopar ut'); } } }
+  // står man stilla vid tippen tutar Rolf och vinkar ändå
+  if (paTippen(spelare.pos.x, spelare.pos.z) && !spelare.rorelse && (S.humorTippStill = (S.humorTippStill || 0) + 0.5) > 25 && S.rolfKand && performance.now() - (S.humorTippT || 0) > 240000) { S.humorTippStill = 0; S.humorTippT = performance.now(); tuta(); setTimeout(tuta, 450); try { varldsBubbla(sopbil, HUMOR_T.rolfVinkar, 3, 3.2); } catch (e) {} skratt('Rolf vinkar'); }
+  else if (spelare.rorelse) S.humorTippStill = 0;
+}, 500);
+// sängen knarrar högre för varje hopp – och sedan ett krack
+let sangHopp = 0, varLuften = false;
+setInterval(() => {
+  try { if (!S.sang || !iSkjulet()) return; const luft = spelare.pos.y > 0.15; if (luft && !varLuften) { sangHopp++; ton(180 + sangHopp * 25, 0.12, 0.02 + sangHopp * 0.01, 'sawtooth');
+    if (sangHopp === 5) { ton(60, 0.4, 0.12, 'square'); paket([{ tanke: HUMOR_T.sang }], { vikt: 'REAKTION', varfor: 'A-041: sängen' }); skratt('sängen knarrar'); } }
+    varLuften = luft; } catch (e) {}
+}, 100);
+// Kajsa sätter sig i skrivaren
+const kajsaKatt = kajsa.clone(true); kajsaKatt.visible = false; scen.add(kajsaKatt);   /* samma Kajsa som annars */
+paHandelse('printStart', () => { if (S.dag < 3 || !S.rolfKand || Math.random() > 1 / 25 || kajsaKatt.visible) return; const sk = skrivare.find((x) => x.jobb); if (!sk) return; const p = sk.mesh.getWorldPosition(new THREE.Vector3()); kajsaKatt.position.set(p.x, p.y + 0.25, p.z); kajsaKatt.visible = true; ton(700, 0.12, 0.03); ton(520, 0.2, 0.03, 'sine', 0.15);
+  paket([{ tanke: HUMOR_T.katt }], { om: 1500, vikt: 'REAKTION', varfor: 'A-041: Kajsa' }); skratt('Kajsa i skrivaren'); setTimeout(() => { kajsaKatt.visible = false; }, 9000); });
 /* ---------- EO 35: varje maskin har 5 nivåer – ytan går från skrotig till blank, i linjens färg ---------- */
 const LINJE_FARG = { bla: 0x2d6cdf, rod: 0xd63a2f, kolf: 0x3a3d42 };
 const YTA_NIVA = [null, { r: 0.92, m: 0.08, mix: 0.35 }, { r: 0.75, m: 0.2, mix: 0.5 }, { r: 0.5, m: 0.4, mix: 0.75 }, { r: 0.32, m: 0.65, mix: 0.85 }, { r: 0.18, m: 0.9, mix: 0.9 }];

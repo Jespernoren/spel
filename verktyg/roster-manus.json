@@ -330,6 +330,24 @@
   "var": "Chefen (också Rolf): böter"
  },
  {
+  "id": "chefen-d806b788",
+  "figur": "chefen",
+  "text": "Chefen. Böter. (För högt gräs.)",
+  "var": "Chefen (också Rolf): böter"
+ },
+ {
+  "id": "chefen-fb7dae0a",
+  "figur": "chefen",
+  "text": "Chefen. Böter. (För att du såg på mig.)",
+  "var": "Chefen (också Rolf): böter"
+ },
+ {
+  "id": "chefen-347638aa",
+  "figur": "chefen",
+  "text": "Chefen. Böter. (Jag vet inte varför. Men det känns rätt.)",
+  "var": "Chefen (också Rolf): böter"
+ },
+ {
   "id": "rolf-0c0157fc",
   "figur": "rolf",
   "text": "Hä sitter vi varje morron. Lasse, Gunnar o ja. Lasse har kört buss i 38 år. Gunnar har aldrig sagt varför han ä hä. Vi frågar int. Ta en bulle, ja bjuder.\n*sitter",
@@ -4003,6 +4021,72 @@
   "id": "du-4ca9dc6f",
   "figur": "du",
   "text": "Motorn sitter där veven satt. Mina armar tackar.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-0811452a",
+  "figur": "du",
+  "text": "Jag tränar. Tydligen.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-77b6d980",
+  "figur": "du",
+  "text": "Däcket ville inte stanna. Jag förstår det.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-0b992d29",
+  "figur": "du",
+  "text": "Mina lår har egna lår nu.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-5e63fcd3",
+  "figur": "du",
+  "text": "Aj. Tack, antar jag.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-5f4f6f5e",
+  "figur": "du",
+  "text": "Den blev… spagetti. Ali kallar det modern konst.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-7631e6cf",
+  "figur": "du",
+  "text": "Kajsa. Ut ur skrivaren. Nu.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-2c40f53e",
+  "figur": "du",
+  "text": "Den knarrar. Den har alltid knarrat.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-4c394305",
+  "figur": "du",
+  "text": "Jaha. En kalsong.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-265bf20f",
+  "figur": "du",
+  "text": "En toffla. Bara en.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-17a4ec65",
+  "figur": "du",
+  "text": "En badanka. Den överlevde kvarnen.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-ed7b867d",
+  "figur": "du",
+  "text": "En tandborste. Jag frågar inte.",
   "var": "Dina tankar, tips och varningar"
  },
  {
