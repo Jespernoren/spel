@@ -432,7 +432,7 @@ const storstaSkrivare = () => Math.max(1, ...skrivare.filter((x) => x.gen !== 4)
 const SANG_INSTRUKTION = 60;    // kr – sängen låses upp efter första uppgraderingen
 const SPOL_MAX = [3000, 7000, 12000, 20000];   // rullar per skrivare: vanlig 3 · stor 7 · XL 12 · torn 20 – varje rulle syns i stället
 const SPOL_NIVA = { spolhallare: 1, spolhallare2: 2, spolhallare3: 3 };
-const maxFil = (sk) => SPOL_MAX[sk.spolNiva || 0];
+const maxFil = () => RULLE;   /* DM2 */
 
 // verktygsnivå för skräp: magnetpistolen gäller bara när den är vald i verktygsraden – annars gripen (sopsäcken ger mer plats)
 const niva = () => (S.magnet && S.hotbar?.[S.vald]?.typ === 'magnet') ? MAGNET_NIVA : S.ryggkorg ? 3 : S.korg ? 2 : S.grip ? 1 : 0;
@@ -610,7 +610,7 @@ const STEG = [
   { id: 'salj', del: D1, text: () => printat('nyckelring') < 3 && (skrivare.find((x) => x.id === 'g1')?.fil || 0) >= 100 ? 'Sälj den hos Ali, över vägen (eller printa två till först)' : 'Sälj den hos Ali, över vägen', klar: () => (S.stat.salt || 0) >= 1 || S.kvarnKopt || S.dag > 1 },
   { id: 'kop', del: D1, bild: () => !S.kvarnKopt ? 'byggsats:gammalkvarn' : null, text: () => !S.kvarnKopt ? `Köp kvarnen hos Ali (50 kr)${S.batteriKopt ? '' : ' – och cykelbatteriet (30 kr) om pengarna räcker'}` : 'Köp kvarnen hos Ali', klar: () => !!S.kvarnKopt || S.dag > 1 },
   { id: 'kvarn', del: D1, text: 'Ställ kvarnen på sin ruta i linje 1', klar: () => !!S.kvarnStar || S.dag > 1 },
-  { id: 'flaska', del: D1, text: () => S.kvarn.tratt ? `Veva kvarnen · ${Math.round(Math.min(S.kvarn.ut, RULLE) / RULLE * 100)} %` : hand.saker.length ? 'Lägg flaskan i kvarnen' : 'Plocka en flaska och mal den', klar: () => S.stat.hamtat >= 1 || S.dag > 1, lapp: 'malt' },
+  { id: 'flaska', del: D1, text: () => S.kvarn.tratt ? `Veva kvarnen · ${Math.round(Math.min(S.kvarn.ut, RULLE) / RULLE * 100)} %` : hand.saker.length ? 'Lägg flaskan i kvarnen' : 'Plocka en flaska och mal den', klar: () => S.stat.hamtat >= 1 || helaRullar() >= 1 || S.dag > 1, lapp: 'malt' },
   // punkt AG: en sak i taget – gripen, en kruka, motorn, sedan sängen
   { id: 'kopGrip', del: D1, bild: 'byggsats:grip', text: () => S.mynt >= 50 ? 'Köp skräpgripen hos Ali (50 kr)' : `Printa och sälj nyckelringar · ${S.mynt}/50 kr till gripen`, klar: () => S.ritningar.includes('grip') || forstaUpp() || S.dag > 1, lapp: 'ritning' },
   { id: 'printGrip', del: D1, text: () => skrivare.some((x) => x.klar === 'byggsats:grip') ? 'Ta skräpgripen ur skrivaren' : 'Printa din skräpgrip', klar: () => forstaUpp() || S.dag > 1 },
@@ -3106,18 +3106,18 @@ function visaSpolar(sk) {
 function laggTillSkrivare(id, gen, mesh, sparat) {
   const sk = { id, gen, mesh, jobb: null, prog: 0, klar: null, visning: null, vantar: '', fil: 0, upprepaPa: !!S.auto?.lada && gen !== PETG_GEN && gen !== KOLF_GEN };   // byggd efter leveranslådan: autoprint direkt
   if (sparat) Object.assign(sk, { jobb: sparat.jobb, prog: sparat.prog || 0, klar: sparat.klar, fil: sparat.fil || 0, spolNiva: sparat.spolNiva || 0, upprepa: sparat.upprepa || null, upprepaPa: !!sparat.upprepaPa, klarL: sparat.klarL || null, ko: Array.isArray(sparat.ko) ? sparat.ko : sparat.ko ? [sparat.ko] : [], mod: sparat.mod || null });
-  if (sk.spolNiva) { const over = Math.max(0, sk.fil - SPOL_MAX[0]); sk.spolNiva = 0; sk.fil -= over; if (over >= RULLE) { const n = Math.floor(over / RULLE); if (gen === PETG_GEN) S.petg.rullar = (S.petg.rullar || 0) + n; else if (gen === KOLF_GEN) S.kolf.rullar = (S.kolf.rullar || 0) + n; else S.kvarn.ut += n * RULLE; } }   /* DM: inga rullhållare på skrivarna – rullarna läggs i linjens torn */
+  sk.spolNiva = 0; flyttaSkrivarRullar(sk, sparat?.filTyp);   /* DM/DM2: inga rullhållare – rullarna flyttas till rätt linjes torn */
   // spolen på skrivarens sida: tjock när den är full, krymper medan den printar
   const spole = new THREE.Group(), B = 0.5 * (mesh.userData.sk || 1);
   const helSpole = filamentSpole(gen === PETG_GEN ? 0xd63a2f : gen === KOLF_GEN ? FIL_FARG[3] : FIL1, 0.13, 0.1); helSpole.rotation.y = Math.PI / 2; spole.add(helSpole);
   const karna = helSpole.userData.lindning;
-  spole.position.set(B / 2 + 0.09, 0.45 * (mesh.userData.sk || 1), -B / 4); mesh.add(spole); sk.spole = spole; sk.spoleKarna = karna;
-  ritaSpolstall(sk);
+  spole.position.set(B / 2 + 0.09, 0.45 * (mesh.userData.sk || 1), -B / 4); sk.spole = spole; sk.spoleKarna = karna;   /* DM2: ingen spole eller rullhållare på skrivaren */
+  { const sl = cyl(0.025, 0.025, 0.5, mat(0x2a2a2e, { roughness: 0.6 }), 8); sl.position.set(B / 2 + 0.03, 0.25, -B / 4); mesh.add(sl); }   /* slangen från tornet */
   skrivare.push(sk);
   if (sk.klar) visaPaBadd(sk, sk.klar, 1);
   else if (sk.jobb) visaPaBadd(sk, sk.jobb.maskin ? 'del' : sk.jobb.typ, sk.prog);
   interaktor.registrera(mesh, {
-    text: () => VAROR[valdTyp()]?.proto?.mod ? (sk.mod ? `Den här skrivaren har redan ${VAROR[sk.mod].namn.replace('Prototyp: ', '').toLowerCase()} – välj en annan skrivare` : `🔧 Montera ${VAROR[valdTyp()].namn.replace('Prototyp: ', '').toLowerCase()} på skrivare ${GEN[sk.gen].namn}`) : SPOL_NIVA[(valdTyp() || '').replace('byggsats:', '')] ? `🧵 Montera ${namnFor(valdTyp()).toLowerCase()} på skrivaren (${(sk.spolNiva || 0) >= (valdTyp().endsWith('2') ? 2 : 1) ? 'har redan' : 'nu ' + maxFil(sk) / RULLE + ' rullar'})` : valdTyp() === 'rulle2' && sk.gen !== PETG_GEN ? 'Röd PETG går bara i PETG-skrivaren' : valdTyp() === 'rulle' && sk.gen === PETG_GEN ? 'PETG-skrivaren tar bara röd PETG' : valdTyp() === filTyp(sk) && !sk.klar ? (rullPlatsI(sk) ? `🧵 Ladda ${Math.min(S.hotbar[S.vald].n, rullPlatsI(sk)) > 1 ? Math.min(S.hotbar[S.vald].n, rullPlatsI(sk)) + ' rullar' : 'rullen'} i skrivaren` : '🧵 Rullhållaren är full – printa något först') : skrivarText(sk),
+    text: () => VAROR[valdTyp()]?.proto?.mod ? (sk.mod ? `Den här skrivaren har redan ${VAROR[sk.mod].namn.replace('Prototyp: ', '').toLowerCase()} – välj en annan skrivare` : `🔧 Montera ${VAROR[valdTyp()].namn.replace('Prototyp: ', '').toLowerCase()} på skrivare ${GEN[sk.gen].namn}`) : SPOL_NIVA[(valdTyp() || '').replace('byggsats:', '')] ? `🧵 Montera ${namnFor(valdTyp()).toLowerCase()} på skrivaren (${(sk.spolNiva || 0) >= (valdTyp().endsWith('2') ? 2 : 1) ? 'har redan' : 'nu ' + maxFil(sk) / RULLE + ' rullar'})` : ROLL_LINJE[valdTyp()] && !sk.klar ? NOLAS + (ROLL_LINJE[valdTyp()] !== tornFor(sk) ? FARG_T[tornFor(sk)].replace('.', '') : 'Rullarna kommer genom slangen från tornet') : skrivarText(sk),
     aktivera: () => anvandSkrivare(sk),
   });
   return sk;
@@ -3140,18 +3140,64 @@ function tomBadd(sk) { if (sk.visning) sk.mesh.userData.bad.remove(sk.visning); 
 
 const kopplad = (sk) => !!genNiva(sk) || linjeSkrivare(1).includes(sk) || sk.id === 'g1';
 // CE: 'behöver filament' bara när tornet faktiskt är tomt – och med orsaken
-const tomOrsak = (sk) => sk.gen === PETG_GEN ? 'tom – ladda röd PETG' : sk.gen === KOLF_GEN ? (S.kolf.slang ? 'väntar på kolfiber från kvarnen' : 'tom – ladda svartgrå kolfiber') : !kopplad(sk) ? 'står utanför linjen – slangen når inte' : helaRullar() < 1 ? 'rulltornet är tomt – mal mer skräp' : 'plasten är på väg genom slangen';
+const tomOrsak = (sk) => sk.gen === PETG_GEN ? 'röda tornet är tomt – mal tunnor' : sk.gen === KOLF_GEN ? (slangNar(sk) ? 'kolfibertornet är tomt – mal kajaker' : 'behöver slangfördelaren för att nå tornet') : !kopplad(sk) ? 'står utanför linjen – slangen når inte' : helaRullar() < 1 ? 'rulltornet är tomt – mal mer skräp' : 'plasten är på väg genom slangen';
 function skrivarText(sk) {
-  const namn = (sk.gen === PETG_GEN ? 'PETG-skrivaren' : sk.gen === KOLF_GEN ? 'Kolfiberskrivaren' : 'Skrivare ' + GEN[sk.gen].namn) + ` (${sk.fil > 0 ? rullar(sk.fil) : tomOrsak(sk)})`;
+  const namn = (sk.gen === PETG_GEN ? 'PETG-skrivaren' : sk.gen === KOLF_GEN ? 'Kolfiberskrivaren' : 'Skrivare ' + GEN[sk.gen].namn) + ` (${filTillg(sk) >= 1 ? rullar(filTillg(sk)) : tomOrsak(sk)})`;
   // DB: pekar man på skrivaren visas bara det man kan göra – framsteget står i etiketten över skrivaren
   if (sk.klar) { const n = antalUt(sk); return `Ta ut ${n > 1 ? n + ' saker' : namnPa(sk.klar)}`; }
-  if (sk.jobb) return (valdTyp() === 'rulle' || valdTyp() === 'rulle2') ? 'Ladda rullen' : '';
+  if (sk.jobb) return '';
   return `Printa (${namn})`;
 }
 const namnPa = (typ) => typ.startsWith('byggsats:') ? MASKINER[typ.split(':')[1]].namn.toLowerCase() : VAROR[typ].namn.toLowerCase();
 
 // så många rullar som får plats – en påbörjad rulle får alltid plats om det finns lite utrymme kvar
 const rullPlatsI = (sk) => { const fri = maxFil(sk) - sk.fil; return fri < 50 ? 0 : Math.max(1, Math.floor(fri / RULLE)); };
+/* DM2: skrivarna har inga egna rullhållare – de drar plasten direkt ur linjens torn genom slangen. Rullar i handen läggs i tornet. */
+const ROLL_LINJE = { rulle: 'bla', rulle2: 'rod', rulle3: 'kolf' };
+const FARG_T = { bla: 'Den här skrivaren tar bara blå plast.', rod: 'Den här skrivaren tar bara röd PETG.', kolf: 'Den här skrivaren tar bara kolfiber.' };
+const TORN_FARG_T = { bla: 'Det här tornet tar bara blå plast.', rod: 'Det här tornet tar bara röd PETG.', kolf: 'Det här tornet tar bara kolfiber.' };
+const SLANG_T = 'Rullarna kommer genom slangen från tornet. Jag lägger den i tornet i stället.';
+const tornFor = (sk) => genNiva(sk) === 2 ? 'rod' : genNiva(sk) === 3 ? 'kolf' : 'bla';
+const TORN_TYP = { bla: 'rulle', rod: 'rulle2', kolf: 'rulle3' };
+function tornRullar(l) { return l === 'rod' ? (S.petg.rullar || 0) : l === 'kolf' ? (S.kolf.rullar || 0) : (S.kvarnStar ? helaRullar() : 0); }
+function tornPlats(l) { return l === 'rod' ? Math.max(0, petgMax() - (S.petg.rullar || 0)) : l === 'kolf' ? Math.max(0, KOLF_MAX - (S.kolf.rullar || 0)) : Math.max(0, Math.floor((utlagerKap() * RULLE - S.kvarn.ut) / RULLE)); }
+function tornLagg(l, n) { if (l === 'rod') S.petg.rullar = (S.petg.rullar || 0) + n; else if (l === 'kolf') S.kolf.rullar = (S.kolf.rullar || 0) + n; else S.kvarn.ut += n * RULLE; }
+function slangNar(sk) { const l = tornFor(sk); if (l === 'kolf') return !!S.kolf.slang || skrivare.find((x) => x.gen === KOLF_GEN) === sk; if (l === 'bla') return !!S.kvarnStar && kopplad(sk); return true; }
+const filTillg = (sk) => (sk.fil || 0) + (slangNar(sk) ? tornRullar(tornFor(sk)) * RULLE : 0);
+function dragTorn(sk, g) {
+  const l = tornFor(sk); let n = 0;
+  if (!slangNar(sk)) return 0;
+  while ((sk.fil || 0) < g && tornRullar(l) > 0) { if (l === 'rod') S.petg.rullar--; else if (l === 'kolf') S.kolf.rullar--; else S.kvarn.ut -= RULLE; sk.fil = (sk.fil || 0) + RULLE; n++; }
+  if (n) {
+    S.stat.hamtat = (S.stat.hamtat || 0) + n; S.stat.laddat = (S.stat.laddat || 0) + n;
+    if (!(S.slangKopplad || []).includes(sk.id)) { S.slangKopplad = [...(S.slangKopplad || []), sk.id]; try { spelaLjud('placera'); platsToast('🔗 Slangen kopplad', sk.mesh, 'bra'); } catch {} }
+    sparaSkrivare(); sparaSnart();
+  }
+  return n;
+}
+function rullTornText(l) {
+  const t = valdTyp(); if (!ROLL_LINJE[t]) return null;
+  if (ROLL_LINJE[t] !== l) return NOLAS + TORN_FARG_T[l].replace('.', '');
+  const n = S.hotbar[S.vald]?.n || 0;
+  return tornPlats(l) ? `Lägg ${n > 1 ? 'rullarna' : 'rullen'} i tornet` : NOLAS + 'Tornet är fullt';
+}
+function rullTornAktivera(l) {
+  const t = valdTyp(); if (!ROLL_LINJE[t]) return false;
+  if (ROLL_LINJE[t] !== l) { kortTanke('tornfarg' + l, TORN_FARG_T[l]); return true; }
+  const n = Math.min(S.hotbar[S.vald]?.n || 0, tornPlats(l));
+  if (!n) { ljudH('fel'); ui.toast('Tornet är fullt', 'fel'); return true; }
+  taBortInv(t, n); tornLagg(l, n); ljudH('snapp'); sparaSnart(); return true;
+}
+/* DM2: gamla sparfiler – hela rullar i skrivaren flyttas till rätt linjes torn (fel färg till sitt eget torn), annars till kistan */
+function flyttaSkrivarRullar(sk, typ) {
+  const l = ROLL_LINJE[typ] || tornFor(sk), egen = l === tornFor(sk);
+  let n = Math.floor((sk.fil || 0) / RULLE); const rest = (sk.fil || 0) - n * RULLE;
+  sk.fil = egen ? rest : 0;
+  if (!egen && l === 'bla' && rest > 0) S.kvarn.ut += rest;
+  if (!n) return;
+  const iTorn = Math.min(n, tornPlats(l)); tornLagg(l, iTorn);
+  if (n - iTorn > 0) laggIForrad(TORN_TYP[l], n - iTorn, true);
+}
 function laddaSkrivare(sk) {
   // rulle i handen + klick på skrivaren (eller rullhållaren) = ladda. Menyn öppnas aldrig här.
   const har = S.hotbar[S.vald]?.n || 0, n = Math.min(har, rullPlatsI(sk));
@@ -3161,6 +3207,7 @@ function laddaSkrivare(sk) {
 }
 function anvandSkrivare(sk) {
   if ((valdTyp() === 'rulle' || valdTyp() === 'rulle2' || valdTyp() === 'rulle3') && !sk.klar) {
+    { const l = tornFor(sk); if (ROLL_LINJE[valdTyp()] !== l) kortTanke('farg' + l, FARG_T[l]); else kortTanke('slangT', SLANG_T); return; }   /* DM2: ingen handladdning */
     if (valdTyp() !== filTyp(sk)) { ljud.fel(); ui.toast(sk.gen === KOLF_GEN ? 'Kolfiberskrivaren tar bara svartgrå kolfiber – den kommer från kolfiberkvarnen' : valdTyp() === 'rulle3' ? 'Kolfiber laddas i kolfiberskrivaren i linje 3.' : sk.gen === PETG_GEN ? 'PETG-skrivaren tar bara röd PETG (nivå 2) – den kommer från PETG-kvarnen' : 'Röd PETG laddas i den röda PETG-skrivaren. Här går vanlig blå filament.', 'fel'); return; }
     laddaSkrivare(sk); return;
   }
@@ -3250,13 +3297,13 @@ function startaDirekt(sk, val) {
   if (val.maskin) {
     const m = MASKINER[val.maskin];
     if ((genNiva(sk) || 1) !== printLinje(val.maskin)) { if (LINJE_TANKE[printLinje(val.maskin)]) kortTanke('linje' + printLinje(val.maskin), LINJE_TANKE[printLinje(val.maskin)]); return false; }   /* DO */
-    if (sk.fil < 1) return false;
+    if (filTillg(sk) < 1) return false;
     sk.jobb = { maskin: val.maskin, del: 1 };
     visaPaBadd(sk, 'byggsats:' + val.maskin, 0);
   } else {
     const v = VAROR[val.typ];
     if (storlekFor(val.typ) > skrivStorlek(sk)) return false;
-    if (sk.fil < 1) return false;
+    if (filTillg(sk) < 1) return false;
     if ((v.niva === 2 || v.niva === 3) && genNiva(sk) !== v.niva) return false;   // PETG- och kolfibersaker kräver sin egen skrivare
     if (genNiva(sk) && v.niva !== genNiva(sk)) return false;
     if (v.niva && v.niva !== 2 && v.niva !== 3) {   // kräver en rulle av rätt nivå (förbrukas när utskriften startar)
@@ -3299,8 +3346,8 @@ function nastaJobb(sk, forra) {
   if (sk.ko?.length) { const v = sk.ko.shift(); if (startaDirekt(sk, v) === true) { skrivarNotis(sk, `Startar nästa i kön: ${(v.maskin ? MASKINER[v.maskin].namn : VAROR[v.typ].namn).toLowerCase()}`, 'bra'); return true; } }
   if (forra && sk.upprepa === forra) {
     const g = VAROR[forra].gram * (sk.mod === 'm_snal' ? 0.65 : 1);
-    if (sk.fil + 0.5 >= g) { const u = sk.upprepa; const ok = startaDirekt(sk, { typ: forra }) === true; sk.upprepa = u; return ok; }
-    skrivarNotis(sk, `Filamentet räckte till ${antalUt(sk)} st – ladda en rulle så fortsätter den`, '', true);
+    if (filTillg(sk) + 0.5 >= g) { const u = sk.upprepa; const ok = startaDirekt(sk, { typ: forra }) === true; sk.upprepa = u; return ok; }
+    skrivarNotis(sk, `Plasten räckte till ${antalUt(sk)} st – mal mer så fortsätter den`, '', true);
   }
   return false;
 }
@@ -3343,8 +3390,9 @@ function uppdateraSkrivare(sk, dt) {
   S.strom -= behov;
   let dp = (dt * skrivFart(sk)) / tid;   // dag 1–2: halva printtiden (skrivFart)
   const gram = (j.maskin ? MASKINER[j.maskin].gram : VAROR[j.typ].gram) * (sk.mod === 'm_snal' ? 0.65 : 1), behovFil = gram * Math.min(dp, 1 - sk.prog);
+  if (sk.fil < behovFil) dragTorn(sk, behovFil);   /* DM2: direkt ur tornet */
   if (sk.fil < behovFil) {
-    if (sk.fil < 0.5) { sk.vantar = 'filamentet tog slut – ladda en rulle'; if (!sk.slutVarnad) { sk.slutVarnad = true; skrivarNotis(sk, `Filamentet tog slut på ${Math.round(sk.prog * 100)} % – ladda en rulle`, 'fel', true); } S.strom += behov; return false; }
+    if (sk.fil < 0.5) { sk.vantar = 'tornet är tomt – mal mer'; if (!sk.slutVarnad) { sk.slutVarnad = true; skrivarNotis(sk, `Tornet är tomt på ${Math.round(sk.prog * 100)} % – mal mer så fortsätter den`, 'fel', true); } S.strom += behov; return false; }
     dp = sk.fil / gram; sk.fil = 0;
   } else sk.fil -= behovFil;
   sk.slutVarnad = false;
@@ -3572,12 +3620,12 @@ function uppdateraAuto(dt) {
   }
   // autoprint: skrivare med Autoprint på startar om när de är tomma
   if (S.auto.lada) for (const sk of skrivare) {
-    if (sk.upprepa && !sk.jobb && !sk.klar && VAROR[sk.upprepa] && !VAROR[sk.upprepa].niva && sk.fil >= VAROR[sk.upprepa].gram && storlekFor(sk.upprepa) <= skrivStorlek(sk)) startaJobb(sk, { typ: sk.upprepa });
+    if (sk.upprepa && !sk.jobb && !sk.klar && VAROR[sk.upprepa] && !VAROR[sk.upprepa].niva && filTillg(sk) >= VAROR[sk.upprepa].gram && storlekFor(sk.upprepa) <= skrivStorlek(sk)) startaJobb(sk, { typ: sk.upprepa });
   }
   ritaLadSkylt();
 }
 function sparaSkrivare() {
-  for (const sk of skrivare) S.skrivare[sk.id] = { jobb: sk.jobb, prog: sk.prog, klar: sk.klar, fil: sk.fil, spolNiva: sk.spolNiva || 0, upprepa: sk.upprepa || null, upprepaPa: !!sk.upprepaPa, mod: sk.mod || null, klarL: sk.klarL || null, ko: sk.ko || [] };
+  for (const sk of skrivare) S.skrivare[sk.id] = { jobb: sk.jobb, prog: sk.prog, klar: sk.klar, fil: sk.fil, filTyp: filTyp(sk), spolNiva: 0, upprepa: sk.upprepa || null, upprepaPa: !!sk.upprepaPa, mod: sk.mod || null, klarL: sk.klarL || null, ko: sk.ko || [] };
   sparaSnart();
 }
 
@@ -3957,6 +4005,7 @@ if (!S.skrivareStar && !S.stat.printat) { const g1 = skrivare.find((x) => x.id =
 ritaStart();
 let autoRullT = 0, slangSenast = -1e9;
 function autoRulle(dt) {
+  return;   /* DM2: skrivarna drar själva ur tornet (dragTorn) */
   autoRullT += dt; if (autoRullT < 0.5) return; autoRullT = 0;
   if (!S.kvarnStar || !S.skrivareStar) return;   // punkt AS: kvarnen och skrivaren måste stå på gården
   if (helaRullar() < 1) return;
@@ -4036,6 +4085,7 @@ function petgIn(gram) {   /* DO: containern rymmer 6 och matar kvarnen en i tage
 const petgTopp = (p) => p.mesh.localToWorld(new THREE.Vector3(0, 1.3, 0));
 function petgTungaIKarran() { return valdKarra() ? S.karraLast.filter((v) => SKRAP_SORTER[skrapSort(v)].tung) : []; }
 function petgText() {
+  { const r = rullTornText('rod'); if (r) return r; }
   const tunga = petgTungaIKarran();
   if (tunga.length) { const n = bestamd(SKRAP_SORTER[skrapSort(tunga[0])].namn); return S.petg.container ? ((S.petg.cont || []).length >= CONTAINER_MAX ? '\u2060Containern är full' : `Tippa ${n} i containern (${(S.petg.cont || []).length}/${CONTAINER_MAX})`) : S.petg.ko >= 1 ? '\u2060Kvarnen mal – en i taget' : `Lägg ${n} i tratten`; }
   if (valdTyp() === 'fynd2') return 'Mal den röda backen till röd PETG';
@@ -4048,6 +4098,7 @@ function petgText() {
   return `PETG-kvarnen · ${mal}${S.petg.turbo ? ' · turbo' : ''}${S.petg.container ? ` · containern ${(S.petg.cont || []).length}/${CONTAINER_MAX}` : ''}`;
 }
 function petgAktivera(p) {
+  if (rullTornAktivera('rod')) return;
   if (valdTyp() === 'byggsats:petgcontainer' || valdTyp() === 'byggsats:petgtorn' || valdTyp() === 'byggsats:turbomotor') {
     const t = valdTyp().slice(9), nyckel = t === 'petgcontainer' ? 'container' : t === 'petgtorn' ? 'torn' : 'turbo';
     if (S.petg[nyckel]) { ljud.fel(); return; }
@@ -4099,6 +4150,7 @@ function laggTillPetg(p) {
 // DM: linjens torn → slangen → linjens skrivare. Utan fördelare får en skrivare i taget (den som har minst), med fördelare alla.
 const linjeMatT = {};
 function matarLinje(gen, st, nyckel, alla) {
+  return;   /* DM2: ersatt av dragTorn */
   if (!(st[nyckel] > 0)) return;
   const nu = performance.now(); if (nu - (linjeMatT[gen] || 0) < (alla ? 300 : 1500)) return; linjeMatT[gen] = nu;
   const kand = skrivare.filter((sk) => sk.gen === gen && sk.fil <= maxFil(sk) - RULLE).sort((a, b) => a.fil - b.fil);
@@ -4167,6 +4219,7 @@ function taBortSkrap(x) { scen.remove(x); interaktor.avregistrera(x); const i = 
 setTimeout(() => { try { migreraDK(); } catch (e) { console.warn('migreraDK', e); } }, 50);
 const kolfKvarn = () => placerade.find((p) => p.typ === 'kolfkvarn');
 function kolfText() {
+  { const r = rullTornText('kolf'); if (r) return r; }
   if (valdTyp() === 'byggsats:kolfband') return S.kolf.band ? 'Rullbandet sitter redan' : 'Montera rullbandet från tippen';
   if (valdTyp() === 'byggsats:kolfslang') return S.kolf.slang ? 'Slangfördelaren sitter redan' : 'Montera slangfördelaren';
   if (valdTyp() === 'byggsats:jetmotor') return S.kolf.jet ? 'Jetmotorn sitter redan' : '🚀 Montera JETMOTORN på kolfiberkvarnen';
@@ -4182,6 +4235,7 @@ function ritaKolfExtra(p) {
   if (S.kolf.jet && !ud.jet) { const j = new THREE.Group(); j.add(at(cyl(0.18, 0.13, 0.5, mat(0x3a3d42, { metalness: 0.7 }), 14), 0, 0, 0)); j.add(at(cyl(0.1, 0.16, 0.12, mat(0xff7a20, { emissive: 0xff5a10, emissiveIntensity: 1.2 }), 14), 0, -0.3, 0)); j.rotation.z = Math.PI / 2; j.position.set(-0.6, 0.85, 0); p.mesh.add(j); ud.jet = j; }
 }
 function kolfAktivera(p) {
+  if (rullTornAktivera('kolf')) return;
   const t = valdTyp();
   if (t === 'byggsats:kolfband' || t === 'byggsats:kolfslang' || t === 'byggsats:jetmotor') {
     const nyckel = t === 'byggsats:kolfband' ? 'band' : t === 'byggsats:kolfslang' ? 'slang' : 'jet';
@@ -4367,8 +4421,9 @@ const helaRullar = () => Math.floor(S.kvarn.ut / RULLE);
 const rulleMax = () => 1 + (S.korg ? 2 : 0) + (S.dag >= 4 ? 2 : 0) + (S.karra ? 1 : 0);
 const rullePlats = () => Math.max(0, rulleMax() - antalInv('rulle'));
 interaktor.registrera(rulle, {
-  text: () => helaRullar() ? (helaRullar() === 1 ? 'Ta filamentrullen (1 rulle klar)' : `Ta filamentrullarna (${helaRullar()} rullar klara)`) : `Filamentrullen fylls: ${Math.round(S.kvarn.ut / RULLE * 100)} % – mala mer skräp`,
+  text: () => rullTornText('bla') || (helaRullar() ? (helaRullar() === 1 ? 'Ta filamentrullen (1 rulle klar)' : `Ta filamentrullarna (${helaRullar()} rullar klara)`) : `Filamentrullen fylls: ${Math.round(S.kvarn.ut / RULLE * 100)} % – mala mer skräp`),
   aktivera: () => {
+    if (rullTornAktivera('bla')) return;
     const n = Math.min(helaRullar(), rullePlats());
     if (!helaRullar()) { ui.toast(`Rullen är ${Math.round(S.kvarn.ut / RULLE * 100)} % full – den måste vara hel`, ''); return; }
     if (!n) { varna('barRulle'); return; }
@@ -4376,7 +4431,7 @@ interaktor.registrera(rulle, {
     if (!harRumFor('rulle', n)) { ui.toast('📦 Ingen plats för rullarna – töm verktygsraden eller kistan', 'fel'); ljud.fel(); return; }
     const vart = laggTill('rulle', n); S.kvarn.ut -= n * RULLE;
     if (typeof vart === 'number' && !valdTyp()) byt(vart);
-    ui.toast(`🧵 ${n > 1 ? n + ' rullar' : 'En rulle'} filament i verktygsraden – bär ${n > 1 ? 'dem' : 'den'} till skrivaren och klicka för att ladda`, 'bra');
+    ui.toast(`🧵 ${n > 1 ? n + ' rullar' : 'En rulle'} filament i verktygsraden – sälj till Ali eller lägg tillbaka i tornet`, 'bra');
     S.stat.hamtat++; ljudH('plock'); sparaSnart();
   },
 });
@@ -6872,20 +6927,20 @@ function oppnaPrintMeny(sk) {
   const behov = (x) => (x.attr.startsWith('data-maskin') ? MASKINER[x.id].gram : x.gram);
   const forStor = (x) => !x.attr.startsWith('data-maskin') && storlekFor(x.id) > skrivStorlek(sk);
   const saknarRulle = (x) => { const n = !petg && !x.attr.startsWith('data-maskin') && VAROR[x.id]?.niva; return n && !antalInv('rulle' + n) ? n : 0; };   // specialfilament (PETG, kolfiber …) måste finnas
-  const kanInte = (x) => forStor(x) || sk.fil < 1 || !!saknarRulle(x);
+  const kanInte = (x) => forStor(x) || filTillg(sk) < 1 || !!saknarRulle(x);
   const helaISkrivare = Math.floor((sk.fil || 0) / RULLE);
-  const taAv = helaISkrivare >= 1 && !sk.jobb ? `<div class="ph-saljallt">${knapp({ text: `Ta av en rulle (${helaISkrivare} hel${helaISkrivare > 1 ? 'a' : ''} i skrivaren)`, typ: 'neutral', attr: 'data-taav', ikon: 'rulle' })}<span>Hamnar i verktygsraden – bra om du vill flytta filament till en annan skrivare</span></div>` : '';
+  const taAv = '';   /* DM2: inga rullar i skrivaren att ta av */
   const jNu = sk.jobb, jNamn = jNu ? (jNu.maskin ? MASKINER[jNu.maskin].namn : VAROR[jNu.typ]?.namn || '') : '';
   const printarNu = jNu ? `<div class="ph-saljallt ph-printarnu"><span><b>Printar: ${rens(jNamn)}</b> · ${Math.floor(framsteg(sk).andel * 100)} % · ${framsteg(sk).text}${sk.upprepa ? ' · upprepar' : ''}</span>${sk.upprepa ? knapp({ text: 'Stoppa efter den här', typ: 'neutral', attr: 'data-stoppa', ikon: 'klocka' }) : ''}${knapp({ text: 'Avbryt', typ: 'minus', attr: 'data-avbryt', ikon: 'stang' })}</div>` : '';
   const koNamn = (v) => v.maskin ? MASKINER[v.maskin].namn : VAROR[v.typ]?.namn || '';
   const koHtml = sk.ko?.length ? `<div class="ph-saljallt ph-printarnu"><span><b>I kön:</b> ${sk.ko.map((v, i) => `${rens(koNamn(v))} <button class="ph-kobort" data-kobort="${i}" title="Ta bort ur kön">✕</button>`).join(' · ')}</span>${knapp({ text: 'Töm kön', typ: 'neutral', attr: 'data-kotom', ikon: 'stang' })}</div>` : '';
   const kropp = printarNu + koHtml + taAv + (FLIKAR.length ? FLIKAR.map(([fl, , namn]) => sektion(namn, fl === 'salj' ? 'grön siffra = vad Ali betalar idag' : 'siffran = rullar filament') + grid(saker.filter((x) => x.flik === fl).sort((a, b) => (b === malSak) - (a === malSak) || (forStor(a) || kanInte(a)) - (forStor(b) || kanInte(b))).map((x) => uiRuta({ bild: ((k) => printatEn(k) ? tumme(k) : bpImg(k))(x.attr.startsWith('data-maskin') ? 'byggsats:' + x.id : x.id), attr: `data-pval="${x.id}"`, vald: x === vald, dyr: !forStor(x) && kanInte(x), last: forStor(x), storlek: storlekRuta(x.id, x.attr.startsWith('data-maskin')), niva: x.attr.startsWith('data-maskin') ? 0 : (VAROR[x.id]?.niva || 0), pris: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? '+' + prisNu(x.id) : rullKort(x.gram), prisTyp: VAROR[x.id]?.pris && !x.attr.startsWith('data-maskin') ? 'plus' : 'fil', titel: x.namn, etikett: true })))).join('')
-    + (antalInv('rulle') ? `<p class="ui-tom">${ik('rulle')} Du bär ${antalInv('rulle')} ${antalInv('rulle') === 1 ? 'rulle' : 'rullar'} – välj den i verktygsraden och klicka på skrivaren för att ladda.</p>` : '')
+    + (antalInv('rulle') ? `<p class="ui-tom">${ik('rulle')} Du bär ${antalInv('rulle')} ${antalInv('rulle') === 1 ? 'rulle' : 'rullar'} – lägg dem i tornet vid kvarnen, så tar skrivaren plasten genom slangen.</p>` : '')
     : `<p class="ui-tom">${petg ? 'Köp ett PETG-recept hos Ali (hyllan Röd PETG) – vas, hjälm, neonskylt, paddel.' : 'Inget att printa just nu – köp ritningar och recept hos Ali.'}</p>`);
   const fot = vald ? detalj({ bild: tumme(vald.attr.startsWith('data-maskin') ? 'byggsats:' + vald.id : vald.id, 72), titel: vald.namn, text: rens(vald.info).replace(/<br>/g, ' · '),
-    faktaLista: [VAROR[vald.id]?.niva && !vald.attr.startsWith('data-maskin') ? ['rulle', nivaText(VAROR[vald.id].niva), antalInv('rulle' + VAROR[vald.id].niva) ? 'plus' : 'minus'] : null, VAROR[vald.id]?.pris && !vald.attr.startsWith('data-maskin') ? ['mynt', `Ali betalar ${prisNu(vald.id)} kr idag${prisNu(vald.id) < saljPris(vald.id) ? ` (vanligt ${saljPris(vald.id)})` : ''}`, 'plus'] : null, VAROR[vald.id]?.pris && !vald.attr.startsWith('data-maskin') ? ['oandlig', `${Math.round(prisNu(vald.id) / (vald.gram / RULLE))} kr per rulle`, 'plus'] : null, sk.fil > 0 && sk.fil < behov(vald) && !forStor(vald) ? ['varning', `Laddat räcker till ${Math.floor(sk.fil / behov(vald) * 100)} % – den pausar sedan tills du laddar mer`, 'varn'] : null, ['klocka', `${Math.round(vald.tid / g.fart)} s`], ['rulle', `${rullar(vald.gram)}${vald.attr.startsWith('data-maskin') ? ` (${rullar(behov(vald))} per del)` : ''}`]],
+    faktaLista: [VAROR[vald.id]?.niva && !vald.attr.startsWith('data-maskin') ? ['rulle', nivaText(VAROR[vald.id].niva), antalInv('rulle' + VAROR[vald.id].niva) ? 'plus' : 'minus'] : null, VAROR[vald.id]?.pris && !vald.attr.startsWith('data-maskin') ? ['mynt', `Ali betalar ${prisNu(vald.id)} kr idag${prisNu(vald.id) < saljPris(vald.id) ? ` (vanligt ${saljPris(vald.id)})` : ''}`, 'plus'] : null, VAROR[vald.id]?.pris && !vald.attr.startsWith('data-maskin') ? ['oandlig', `${Math.round(prisNu(vald.id) / (vald.gram / RULLE))} kr per rulle`, 'plus'] : null, filTillg(sk) > 0 && filTillg(sk) < behov(vald) && !forStor(vald) ? ['varning', `Tornet räcker till ${Math.floor(filTillg(sk) / behov(vald) * 100)} % – den pausar sedan tills kvarnen malt mer`, 'varn'] : null, ['klocka', `${Math.round(vald.tid / g.fart)} s`], ['rulle', `${rullar(vald.gram)}${vald.attr.startsWith('data-maskin') ? ` (${rullar(behov(vald))} per del)` : ''}`]],
     knappar: [S.auto?.lada && !genNiva(sk) && !vald.attr.startsWith('data-maskin') && upprepbar(vald.id) ? { text: sk.upprepaPa ? 'Autoprint: PÅ' : 'Autoprint: AV', typ: sk.upprepaPa ? 'plus' : 'neutral', attr: `data-upprepa="${vald.id}"`, ikon: 'oandlig' } : null, { text: sk.jobb ? (kanKo(sk) ? ((sk.ko?.length || 0) < KO_MAX_SKRIVARE ? `Lägg i kö (${(sk.ko?.length || 0) + 1}/${KO_MAX_SKRIVARE})` : 'Kön är full') : 'Avbryt och printa den här') : saknarRulle(vald) ? `Kräver filament nivå ${saknarRulle(vald)}` : forStor(vald) ? `Kräver skrivare ${STORLEK_NAMN[storlekFor(vald.id)]}` : kanInte(vald) ? 'Ladda mer filament' : 'Printa', typ: 'plus', attr: vald.attr + ' data-printa', av: sk.jobb ? (kanKo(sk) ? (sk.ko?.length || 0) >= KO_MAX_SKRIVARE || forStor(vald) : forStor(vald) || saknarRulle(vald) > 0) : kanInte(vald), ikon: forStor(vald) ? 'las' : 'skrivare' }].filter(Boolean) }) : detalj({});
-  const html = panel({ ikon: 'skrivare', titel: `Skrivare ${g.namn} · byggvolym ${g.mm} mm${sk.mod ? ' · ' + VAROR[sk.mod].namn.replace('Prototyp: ', '') : ''}`, sub: S.strom < 20 ? 'Lite ström – trampa cykeln så att skrivaren orkar' : 'Välj vad du vill printa', resurser: resurs('rulle', `${rullar(sk.fil)} laddat`) + resurs('blixt', Math.floor(S.strom), S.strom < 20 ? 'varn' : ''),
+  const html = panel({ ikon: 'skrivare', titel: `Skrivare ${g.namn} · byggvolym ${g.mm} mm${sk.mod ? ' · ' + VAROR[sk.mod].namn.replace('Prototyp: ', '') : ''}`, sub: S.strom < 20 ? 'Lite ström – trampa cykeln så att skrivaren orkar' : 'Välj vad du vill printa', resurser: resurs('rulle', `${rullar(filTillg(sk))} i tornet`) + resurs('blixt', Math.floor(S.strom), S.strom < 20 ? 'varn' : ''),
     kropp, fot });
   oppnaRuta(html, (el) => {
     coachLapp(el, 'print');
@@ -8219,10 +8274,9 @@ function nastaAtgard(text) {
     if (konkret[2]) {
       // punkt AL: räcker filamentet till målsaken? Säg i gram och flaskor vad som fattas
       const t = typeof st.bild === 'function' ? st.bild() : st.bild, ar = String(t).startsWith('byggsats:'), id = ar ? t.slice(9) : t;
-      const behov = ar ? (MASKINER[id]?.gram || 0) : (VAROR[id]?.gram || 0), iSkrivare = Math.max(0, ...skrivare.filter((x) => !genNiva(x)).map((x) => x.fil || 0));
+      const behov = ar ? (MASKINER[id]?.gram || 0) : (VAROR[id]?.gram || 0), iSkrivare = Math.max(0, ...skrivare.filter((x) => !genNiva(x)).map((x) => x.fil || 0)) + (S.kvarnStar ? helaRullar() * RULLE : 0) - (S.kvarnStar ? Math.min(S.kvarn.ut || 0, helaRullar() * RULLE) : 0);
       if (behov && !skrivare.some((x) => x.jobb) && iSkrivare < behov) {
-        if (antalInv('rulle')) return ['rulle', 'Ladda en rulle i skrivaren', false, 'skrivare'];
-        if (helaRullar() > 0) return ['rulle', 'Ta rullen vid kvarnen och ladda skrivaren', false, 'kvarn'];
+        if (antalInv('rulle')) return ['rulle', 'Lägg rullen i tornet vid kvarnen', false, 'kvarn'];
         const har = Math.round(iSkrivare + (S.kvarn.ut || 0)), flaskor = Math.max(1, Math.ceil((behov - har) / SKRAP_SORTER.flaska.gram));
         if (har < behov) return ['kvarn', `Skrivaren behöver ${rullar(behov)}. Du har ${rullar(har)}. Mal ${flaskor} flask${flaskor === 1 ? 'a' : 'or'} till.`, false, hand.saker.length || S.kvarn.tratt > 0 ? 'kvarn' : 'skrap'];
       }
@@ -8230,10 +8284,9 @@ function nastaAtgard(text) {
     return [konkret[0], konkret[1], false, konkret[3]];
   }
   const vilPrinta = /^(Printa|Gör det mysigt|Inred|Isolera|Bygg|Lägg plåttak|Tapetsera)/i.test(text) || /^Printa/.test(text);
-  const harFil = skrivare.some((x) => x.fil >= 100 || x.jobb);
+  const harFil = skrivare.some((x) => filTillg(x) >= 100 || x.jobb);
   if (vilPrinta && !harFil) {
-    if (antalInv('rulle')) return ['rulle', 'Ladda en rulle i skrivaren'];
-    if (helaRullar() > 0) return ['rulle', 'Ta rullen vid kvarnen'];
+    if (antalInv('rulle')) return ['rulle', 'Lägg rullen i tornet vid kvarnen'];
     if (hand.saker.length || S.karraLast?.length) return ['kvarn', 'Lägg skräpet i kvarnen'];
     if (S.kvarn.tratt > 0) return ['kvarn', 'Veva kvarnen'];
     return ['hand', gardSkrap() > 0 ? 'Plocka skräp till kvarnen' : 'Hämta skräp på tippen'];
@@ -9456,7 +9509,7 @@ function samlaOchSpara(direkt = false) {
   S.placerade = placerade.map(sparbar);
   const nyPos = [+spelare.pos.x.toFixed(2), +spelare.pos.z.toFixed(2), +spelare.yaw.toFixed(3), +spelare.pitch.toFixed(3)];
   if (!S.pos || Math.hypot(nyPos[0] - S.pos[0], nyPos[1] - S.pos[1]) > 0.5 || Math.abs(nyPos[2] - S.pos[2]) > 0.3) { S.pos = nyPos; sparaFlagga = true; }
-  for (const sk of skrivare) S.skrivare[sk.id] = { jobb: sk.jobb, prog: sk.prog, klar: sk.klar, fil: sk.fil, spolNiva: sk.spolNiva || 0, upprepa: sk.upprepa || null, upprepaPa: !!sk.upprepaPa, mod: sk.mod || null, klarL: sk.klarL || null, ko: sk.ko || [] };
+  for (const sk of skrivare) S.skrivare[sk.id] = { jobb: sk.jobb, prog: sk.prog, klar: sk.klar, fil: sk.fil, filTyp: filTyp(sk), spolNiva: 0, upprepa: sk.upprepa || null, upprepaPa: !!sk.upprepaPa, mod: sk.mod || null, klarL: sk.klarL || null, ko: sk.ko || [] };
   let p = null;
   if (direkt || sparaFlagga || skrivare.some((s) => s.jobb)) p = spar.spara(direkt);
   sparaFlagga = false;
@@ -10244,7 +10297,7 @@ function rostManus() {
   vid('Lappar, brev och dagbok'); Object.entries(LAPPAR).forEach(([id, [titel, t]]) => add(vemAvTitel(titel), t));
   vid('Introt'); INTRO_TAL().forEach(([v, t]) => add(v, t));
   vid('Berättaren läser målen'); Object.values(STEG_TAL).forEach((t) => add('berattare', t)); Object.values(STEG_TAL_SPARA).forEach(([t]) => add('berattare', t));
-  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); TANKAR_INLINE.forEach((t) => add('du', t)); TANKAR_NYA.forEach((t) => add('du', t)); STEG.filter((x) => x.tanke).forEach((x) => add('du', x.tanke)); ALI_FORBI.forEach((t) => add('ali', t)); ALI_STANGT.forEach((t) => add('ali', t)); BESOK.forEach((b) => b.rader.forEach((t) => add(b.vem, t))); [...VALMA_KLAGA_MAT, ...VALMA_KLAGA_KALL, ...VALMA_GLAD].forEach((t) => add('du', t)); add('rolf', 'Hon kallade den Humlan. Ta hand om den. /R'); add('mamma', 'Jag kommer. Säg inget. ❤️'); add('mamma', 'Vi kommer kl 3. Pappa tar med granen. Den är för stor.'); add('rolf', 'Hoppa in. Jag väntar. Nåja, två minuter. /R'); add('rolf', 'Hörru. Vill du följa me på rundan? Morgonkontoret, konditoriet o ett ställe ja aldrig visat nån. Ja tutar två gånger vid tippen. /R'); add('ali', 'En hylla. Den lutar lite. Det är karaktär.'); add('ali', 'Laga inget som luktar fisk. Rolf kommer då.'); add('ali', 'Med senap. Det ingår. Allt annat kostar.'); add('du', 'Kostym. På Soptippsvägen?'); add('ali', ALI_KANNA); add('ali', ALI_RODKVARN); add('ali', ALI_DATOR); add('ali', ALI_DATOR_SEN); add('rolf', ROLF_PAKET_LAPP); add('rolf', ROLF_PAKET_SEN); GAST_ROLF.forEach((t) => add('rolf', t)); add('rolf', GAST_DRAR); add('rolf', GAST_KLAR_ROLF); add('rolf', GAST_JUL); add('rolf', HELEN_GAST_ROLF); add('helen', HELEN_GAST); add('rolf', ROLF_SACK_LAPP); add('du', TANKE_UTANFOR); GORAN_HALLA.forEach((t) => add('du', t)); add('du', GORAN_MAMMA); add('du', GORAN_FAGELBAD); MORGON_TANKAR.forEach((m) => add('du', m.text)); add('du', MORGON_BRA.text); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); ALI_FAST.forEach(([, f]) => add('ali', f)); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
+  vid('Dina tankar, tips och varningar'); add('du', DU_BYGG); TANKAR_INLINE.forEach((t) => add('du', t)); TANKAR_NYA.forEach((t) => add('du', t)); [STOR_T, KARRA_TUNG_T, KANOT_T, TUNG_T, PIRRA_LITEN, KOLF_FORSTA, ...Object.values(LINJE_TANKE), ...Object.values(FARG_T), ...Object.values(TORN_FARG_T), SLANG_T].forEach((t) => typeof t === 'string' && add('du', t)); add('rolf', ROD_LASS_SMS); add('rolf', KOLF_LASS_SMS);   /* DG–DM2 */ STEG.filter((x) => x.tanke).forEach((x) => add('du', x.tanke)); ALI_FORBI.forEach((t) => add('ali', t)); ALI_STANGT.forEach((t) => add('ali', t)); BESOK.forEach((b) => b.rader.forEach((t) => add(b.vem, t))); [...VALMA_KLAGA_MAT, ...VALMA_KLAGA_KALL, ...VALMA_GLAD].forEach((t) => add('du', t)); add('rolf', 'Hon kallade den Humlan. Ta hand om den. /R'); add('mamma', 'Jag kommer. Säg inget. ❤️'); add('mamma', 'Vi kommer kl 3. Pappa tar med granen. Den är för stor.'); add('rolf', 'Hoppa in. Jag väntar. Nåja, två minuter. /R'); add('rolf', 'Hörru. Vill du följa me på rundan? Morgonkontoret, konditoriet o ett ställe ja aldrig visat nån. Ja tutar två gånger vid tippen. /R'); add('ali', 'En hylla. Den lutar lite. Det är karaktär.'); add('ali', 'Laga inget som luktar fisk. Rolf kommer då.'); add('ali', 'Med senap. Det ingår. Allt annat kostar.'); add('du', 'Kostym. På Soptippsvägen?'); add('ali', ALI_KANNA); add('ali', ALI_RODKVARN); add('ali', ALI_DATOR); add('ali', ALI_DATOR_SEN); add('rolf', ROLF_PAKET_LAPP); add('rolf', ROLF_PAKET_SEN); GAST_ROLF.forEach((t) => add('rolf', t)); add('rolf', GAST_DRAR); add('rolf', GAST_KLAR_ROLF); add('rolf', GAST_JUL); add('rolf', HELEN_GAST_ROLF); add('helen', HELEN_GAST); add('rolf', ROLF_SACK_LAPP); add('du', TANKE_UTANFOR); GORAN_HALLA.forEach((t) => add('du', t)); add('du', GORAN_MAMMA); add('du', GORAN_FAGELBAD); MORGON_TANKAR.forEach((m) => add('du', m.text)); add('du', MORGON_BRA.text); Object.values(FORSTA).forEach((f) => add('du', f.rost)); Object.values(COACH).forEach((t) => add('du', t)); Object.values(VARN).forEach((t) => add('du', t)); add('ali', ALI_ROP); ALI_FAST.forEach(([, f]) => add('ali', f)); add('ali', ALI_BONUS_FORSTA); ALI_BONUS_RAD.forEach(([, t]) => add('ali', t)); PUFFAR.forEach((p) => add('du', p.text));
   rostManus.detalj = D;
   return L;
 }
@@ -12469,7 +12522,7 @@ const KEDJA_STRYK = { printKlar: () => nyckelringUttagen };
 const fyraVaggar = () => !!S.hem?.vaggar || (S.hem?.vagg || 0) >= 4;
 const KEDJA_MAL = {
   skylt: () => !!S.skrivareLastad, skrivareStar: () => !!S.cykelOmbyggd, cykel: () => (S.stat.printat || 0) >= 1,
-  aliKvarn: () => !!S.kvarnKopt, kvarnStar: () => (S.stat.hamtat || 0) >= 1, rulle: () => S.ritningar.includes('grip') || forstaUpp(),
+  aliKvarn: () => !!S.kvarnKopt, kvarnStar: () => (S.stat.hamtat || 0) >= 1 || helaRullar() >= 1, rulle: () => S.ritningar.includes('grip') || forstaUpp(),
   grip: () => S.ritningar.includes('kvarnmotor') || !!S.kvarn.motor, motorKopt: () => !!S.kvarn.motor,
   morkt: () => S.ritningar.includes('sang') || !!S.sang || antalInv('sang') > 0,
   dag2: () => !!S.korg || !!S.ryggkorg, kruka: () => gardSkrap() <= gardMal(), rolf0: () => (S.stat.tipp || 0) >= 5, tippen: () => !!S.hem?.dorr,
@@ -12555,7 +12608,7 @@ setInterval(() => {
   if (stegId() === 'kopGrip' && S.mynt >= (MASKINER.grip.ritning || 50)) kedja('harRadGrip');
   if (S.kvarn.motor && klockan() >= 18 * 60) kedja('morkt');
 }, 500);
-window.__printahem = {
+window.__printahem = { filTillg, dragTorn, tornPlats, tornRullar, slangNar, rullTornAktivera, flyttaSkrivarRullar, anvandSkrivare,
   framsteg, skrivarText, framstegKvarn,
   dbgKanal: () => ({ nu: performance.now(), pratarTill, pratarVem, kanalFri, aktiv: kanalAktiv && kanalAktiv.text, n: kanal.length, pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: medEl2.hidden, butik: ui.butiksOverlay.hidden, ov: ui.overlay.hidden }),
   textLogg: () => TEXTLOGG.slice(), pratar: () => !!kanalAktiv || kanal.length > 0 || performance.now() < pratarTill || performance.now() < kanalFri, kanal: () => ({ aktiv: kanalAktiv && { vem: kanalAktiv.vem, text: kanalAktiv.text, vikt: kanalAktiv.vikt }, ko: kanal.map((x) => ({ vem: x.vem, text: x.text, vikt: x.vikt })) }), rostMatning, renderaIkon, ikonLista, handelseLogg, ritningInfo: () => { const c = ritning ? new THREE.Box3().setFromObject(ritning).getCenter(new THREE.Vector3()) : null; return { nyckel: ritningNyckel, linjer: ritning?.children.length || 0, printar: printarFram.size, mitt: c && [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(2)] }; }, prata, elHelFig: () => [...(elHel || [])], avkodat, forladdaRepliker, introLager, trampa: (sek) => { trampTest = sek; }, veva: (sek) => { vevTest = sek; }, siktaVagg: (v) => { vaggTest = v; }, vaggarKlara: () => vaggarKlara(), tapetKlara: () => tapetKlara(), nastaInred, prisNu, helaRullar, extruderFull, gardMal, kanLyfta, karraFull, harGava, valdKarra, BARA_SKRAP, SKRAP_RACKVIDD, utlagerKap, startPlats, sattFonster: () => { const n = fonsterLista().length; S.hem = { ...(S.hem || {}), fonster: [...fonsterLista(), { vagg: Object.keys(VAGGAR).filter((k) => !/dorr|fram/i.test(k))[n % 3] || Object.keys(VAGGAR)[0], u: 0.5 }] }; ritaFonster(); uppdateraSkjul(); sparaSnart(); }, medKo, medEl2, uppdatera, stegText: () => { const st = STEG[S.steg]; return st ? (typeof st.text === 'function' ? st.text() : st.text) : ''; }, valdTyp: () => valdTyp(), ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, webbOrdrar, oppnaDator, BESOK, besok, startaBesok, ata, MAT_VARDE, printLinje, migreraDK, kolfKvarn, kolfAktivera, uppdateraKolf, nastaGamer, trimNiva, plockaUppPlacerad, plockaSkrap, karraRing, foremal, variantFor, valjTyp, husvagnKlick, gastScen, gastDelKlar, husvagn: () => husvagnG, rolfBesok, sackRulle, karraKlick, karraMal, pappaGubbe, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };

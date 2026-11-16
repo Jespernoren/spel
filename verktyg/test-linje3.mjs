@@ -20,9 +20,9 @@ ut.push(['tanken "för stor" (DJ)', await H(() => window.__printahem.textLogg().
 await H(() => { const h = window.__printahem; h.S.strom = 500; });
 await H(() => { const h = window.__printahem; for (let i = 0; i < 300; i++) { h.S.strom = 12; h.uppdateraKolf(0.5); } });
 await p.waitForTimeout(2500);
-const st = await H(() => { const h = window.__printahem; return { kaj: h.S.stat.bandKajak || 0, rullar: h.S.stat.kolfRullar || 0, fil: h.skrivare.find((x) => x.gen === 5)?.fil || 0 }; });
+const st = await H(() => { const h = window.__printahem; return { kaj: h.S.stat.bandKajak || 0, rullar: h.S.stat.kolfRullar || 0, fil: h.filTillg(h.skrivare.find((x) => x.gen === 5)) || 0 }; });
 ut.push([`bandet tog kajaker (${st.kaj}) och kvarnen gjorde rullar (${st.rullar})`, st.kaj >= 1 && st.rullar >= 1]);
-ut.push([`slangfördelaren matar kolfiberskrivaren (${Math.round(st.fil)} g)`, st.fil > 0]);
+ut.push([`kolfiberskrivaren når tornet genom slangen (${Math.round(st.fil)} g)`, st.fil > 0]);
 ut.push(['tanken vid första kajaken', await H(() => window.__printahem.textLogg().some((r) => JSON.stringify(r).includes('Den åker själv')))]);
 const r = await H(() => { const h = window.__printahem, sk = h.skrivare.find((x) => x.gen === 5); sk.fil = Math.max(sk.fil, 3000); return h.startaJobb(sk, { typ: 'n3_stol' }); });
 ut.push(['kolfiberstolen startar på kolfiberskrivaren', !!r]);

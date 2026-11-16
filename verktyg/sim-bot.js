@@ -164,29 +164,28 @@
     return klick(H.rulle, 'rullen vid extrudern');
   }
   // se till att skrivaren har minst `gram` filament
+  // DM2: skrivarna drar plasten direkt ur linjens torn – boten mal och lägger rullar i handen i rätt torn
+  const fil = (sk) => H.filTillg(sk);
   async function filament(sk, gram, varfor = '') {
     let varv = 0;
-    while (sk.fil < gram && varv++ < 40) {
-      if (sk.gen === 5) {   // DF: kolfiber – slangfördelaren eller rullar från kolfiberkvarnen
-        if (H.antalInv('rulle3')) { valj('rulle3'); await klick(sk.mesh, 'kolfiberskrivaren'); handling(`laddar kolfiber (${Math.round(sk.fil)} g)`); continue; }
-        if (S.kolf.rullar && !S.kolf.slang) { const p = H.kolfKvarn(); await gaTill(p.mesh, 1.6, 'kolfiberkvarnen'); H.byt(0); H.kolfAktivera(p); handling('tar kolfiber ur kolfiberkvarnen'); continue; }
+    while (fil(sk) < gram && varv++ < 40) {
+      if (sk.gen === 5) {
+        if (H.antalInv('rulle3') && H.tornPlats('kolf')) { const p = H.kolfKvarn(); valj('rulle3'); await gaTill(p.mesh, 1.6, 'kolfibertornet'); H.kolfAktivera(p); handling('lägger kolfiber i tornet'); continue; }
         await tjana(S.mynt + 100, 'väntar på kolfiber'); await vanta(3); continue;
       }
-      if (sk.gen === 4) {   // röd PETG: tunga saker i PETG-kvarnen → ta rullarna → ladda
-        if (H.antalInv('rulle2')) { valj('rulle2'); await klick(sk.mesh, 'PETG-skrivaren'); handling(`laddar röd PETG (${Math.round(sk.fil)} g)`); continue; }
-        if (S.petg.rullar) { const p = H.petgKvarn(); await gaTill(p.mesh, 1.6, 'PETG-kvarnen'); H.byt(0); H.petgAktivera(p); handling('tar röd PETG ur PETG-kvarnen'); continue; }
-        if (S.petg.ko > 1) { await vanta(3); continue; }
+      if (sk.gen === 4) {
+        if (H.antalInv('rulle2') && H.tornPlats('rod')) { const p = H.petgKvarn(); valj('rulle2'); await gaTill(p.mesh, 1.6, 'röda tornet'); H.petgAktivera(p); handling('lägger röd PETG i tornet'); continue; }
+        if (S.petg.ko > 1 || (S.petg.cont || []).length) { await vanta(3); continue; }
         if (!(await tungtTillPetg())) return false; continue;
       }
-      if (H.antalInv('rulle')) { valj('rulle'); await klick(sk.mesh, 'skrivaren'); handling(`laddar rulle i skrivaren (${Math.round(sk.fil)} g)`); continue; }
-      if (H.helaRullar()) { await hamtaRulle(); continue; }
+      if (H.antalInv('rulle') && H.tornPlats('bla')) { valj('rulle'); await klick(H.rulle, 'blå tornet'); handling('lägger rullen i tornet'); continue; }
       const tipp = S.tippNyckel && gardsSkrap().length <= H.gardMal();
       let n = await plockaLass({ tippen: tipp });
-      if (!n && !tipp && S.tippNyckel && !H.hand.saker.length) n = await plockaLass({ tippen: true });   // gården tom på det som går att lyfta – ta från tippen
+      if (!n && !tipp && S.tippNyckel && !H.hand.saker.length) n = await plockaLass({ tippen: true });
       if (!n && !H.hand.saker.length) { if (!S.kvarn.tratt) { handling('inget skräp kvar att mala – väntar på sopbilen'); if (varv > 30) return false; await vanta(20); continue; } }
       await tomIKvarnen(); await mal();
     }
-    return sk.fil >= gram;
+    return fil(sk) >= gram;
   }
   // ström: trampa vid cykeln tills det räcker
   async function strom(behov = 3) {
@@ -219,7 +218,7 @@
   async function vantaPaPrint(sk) {
     let varv = 0;
     while (sk.jobb && varv++ < 2000) {
-      if (sk.fil < 5 && sk.jobb) { await filament(sk, 300); continue; }
+      if (fil(sk) < 5 && sk.jobb) { await filament(sk, 300); continue; }
       if (H.solEffekt() <= 0 && S.strom < 1.5) { await strom(4); continue; }
       if (S.strom > 6 || H.solEffekt() > 0) {
         if (!H.extruderFull() && S.kvarn.tratt < 3 && gardsSkrap().length) { await plockaLass({}); await tomIKvarnen(); if (!S.kvarn.motor) await mal(); continue; }
@@ -241,7 +240,7 @@
       kand.sort((a, b) => H.prisNu(b) / H.VAROR[b].tid - H.prisNu(a) / H.VAROR[a].tid);
       const t = kand[0]; if (!t) { handling('inget att printa och sälja – väntar på sopbilen'); tjanaFel.clear(); await vanta(30); return; }
       handling(`tjänar pengar${varfor ? ' till ' + varfor : ''}: ${S.mynt}/${mal} kr → printar ${H.VAROR[t].namn.toLowerCase()} (${H.prisNu(t)} kr)`);
-      const sk = ledig({ typ: t }); const antal = Math.max(1, Math.min(4, Math.floor((sk.fil || 0) / H.VAROR[t].gram)));   // BP: även röd PETG
+      const sk = ledig({ typ: t }); const antal = Math.max(1, Math.min(4, Math.floor(fil(sk) / H.VAROR[t].gram)));   // BP: även röd PETG
       let gick = 0; for (let i = 0; i < antal && S.mynt + i * H.prisNu(t) < mal; i++) { if (!(await printa({ typ: t }))) break; gick++; }
       if (!gick && !H.antalInv(t)) { tjanaFel.add(t); handling(`${H.VAROR[t].namn.toLowerCase()} gick inte att printa – tar nästa`); }
       await ali(() => saljAllt(BEHALL().filter((x) => x !== t)), 'sälja');   // det som printades för pengar säljs (en pall/kruka får vara kvar till trivseln)
@@ -326,12 +325,12 @@
       case 'trampa': await strom(6); await printa({ typ: 'nyckelring' }); return;
       case 'salj': {
         const sk = H.skrivare.find((x) => x.id === 'g1');
-        if (H.antalInv('nyckelring') < 3 && sk.fil >= 100) { await strom(6); await printa({ typ: 'nyckelring' }); return; }
+        if (H.antalInv('nyckelring') < 3 && fil(sk) >= 100) { await strom(6); await printa({ typ: 'nyckelring' }); return; }
         await ali(() => saljAllt(), 'sälja nyckelringar'); return;
       }
       case 'kop': await ali(async () => { await kopHosAli('gammalkvarn'); if (S.mynt >= 30) await kopHosAli('cykelbatteri'); }, 'kvarnen'); return;
       case 'kvarn': valj('byggsats:gammalkvarn'); await klick(H.startYta, 'kvarnens ruta'); return;
-      case 'flaska': { const sk = H.skrivare.find((x) => x.id === 'g1'); await filament(sk, sk.fil + 900); return; }
+      case 'flaska': { const sk = H.skrivare.find((x) => x.id === 'g1'); await filament(sk, fil(sk) + 900); return; }
       case 'kopGrip': await kopMaskin('grip'); return;
       case 'printGrip': if (!H.antalInv('byggsats:grip') && !S.grip) await printa({ maskin: 'grip' }); return;
       case 'kopMotor': await kopMaskin('kvarnmotor'); return;
@@ -344,7 +343,7 @@
       case 'ryggkorg': await bygg('ryggkorg'); return;
       case 'pall': await kopRecept('pall'); await printa({ typ: 'pall' }); if (H.antalInv('pall')) await placera('pall'); return;
     }
-    if (/^Städa gården/.test(txt)) { const sk = ledig(); await plockaLass({}); await tomIKvarnen(); await mal(); if (H.helaRullar()) { await hamtaRulle(); if (sk.fil < 1500) { valj('rulle'); await klick(sk.mesh, 'skrivaren'); } } return; }
+    if (/^Städa gården/.test(txt)) { const sk = ledig(); await plockaLass({}); await tomIKvarnen(); await mal(); return; }
     if (/^Skicka två paket från datorn/.test(txt)) { webbDag = 0; await webbJobb(); await tjana(S.mynt + 60, 'väntar på fler beställningar'); await vanta(2); return; }   // dag 9-målet
     if (/^Sopbilen kommer förbi under dagen/.test(txt)) { await tjana(S.mynt + 60, 'väntar på sopbilen (BO)'); await vanta(1); return; }   // BO: gör något vettigt medan brevet är på väg
     if (/^Läs brevet i Rolfs postlåda/.test(txt)) { await klick(H.postlada, 'Rolfs postlåda'); await stangPopups(); return; }

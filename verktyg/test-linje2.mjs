@@ -41,9 +41,9 @@ const c = await H(() => { const h = window.__printahem, S = h.S, pk = h.placerad
   const iCont = S.petg.cont.length;
   let gjorda = 0; const f0 = petgSk.fil;
   for (let i = 0; i < 400; i++) { S.strom = 12; const r0 = S.petg.rullar; h.uppdateraPetg(0.25); }
-  return { iCont, rullar: S.petg.rullar, fil: petgSk.fil, tot: S.petg.rullar + Math.round(petgSk.fil / 1000) };
+  return { iCont, rullar: S.petg.rullar, fil: petgSk.fil, till: h.filTillg(petgSk), tot: S.petg.rullar + Math.round(petgSk.fil / 1000) };
 });
 ut.push([`DO: tre tunnor i containern (${c.iCont}/6)`, c.iCont === 3]);
-ut.push([`DO/DM: kvarnen mal dem själv – ca 9 rullar (${c.tot}: ${c.rullar} i tornet, ${Math.round(c.fil)} g i PETG-skrivaren)`, c.tot >= 8 && c.fil > 0]);
+ut.push([`DO/DM: kvarnen mal dem själv – ca 9 rullar (${c.tot}: ${c.rullar} i tornet, ${Math.round(c.fil)} g i PETG-skrivaren, skrivaren når ${c.till} g genom slangen)`, c.tot >= 8 && c.till >= 8000]);
 for (const [t, ok] of ut) console.log(ok ? '✓' : '✗', t);
 console.log(fel.length ? fel.join('\n') : 'inga sidfel'); await b.close(); process.exit(ut.every((x) => x[1]) && !fel.length ? 0 : 1);

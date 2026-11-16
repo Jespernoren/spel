@@ -3886,6 +3886,18 @@
   "var": "Dina tankar, tips och varningar"
  },
  {
+  "id": "du-9b42b326",
+  "figur": "du",
+  "text": "Den här ska vara röd. Den får PETG-skrivaren göra.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-ceeea409",
+  "figur": "du",
+  "text": "Den här ska vara i kolfiber. Den får kolfiberskrivaren göra.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
   "id": "du-02725082",
   "figur": "du",
   "text": "Den är för tung. Jag behöver något att köra den på.",
@@ -3904,9 +3916,15 @@
   "var": "Dina tankar, tips och varningar"
  },
  {
-  "id": "du-3fb0fd5e",
+  "id": "du-372ba485",
   "figur": "du",
-  "text": "Den där kan jag inte lyfta med pirran. Den är för stor. Jag får komma på något annat sätt.",
+  "text": "Den där kan jag inte lyfta med det här. Den är för stor. Jag får komma på något annat sätt.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-c41e06f7",
+  "figur": "du",
+  "text": "Den väger för mycket för kärran.",
   "var": "Dina tankar, tips och varningar"
  },
  {
@@ -4033,6 +4051,69 @@
   "id": "du-2f709863",
   "figur": "du",
   "text": "Det börjar kännas som ett hem. På riktigt.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-9cac3af7",
+  "figur": "du",
+  "text": "Den här skrivaren tar bara blå plast.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-fad89d3a",
+  "figur": "du",
+  "text": "Den här skrivaren tar bara röd PETG.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-7320d850",
+  "figur": "du",
+  "text": "Den här skrivaren tar bara kolfiber.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-f908b108",
+  "figur": "du",
+  "text": "Det här tornet tar bara blå plast.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-ab23a54f",
+  "figur": "du",
+  "text": "Det här tornet tar bara röd PETG.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-da22e0ff",
+  "figur": "du",
+  "text": "Det här tornet tar bara kolfiber.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-df9855de",
+  "figur": "du",
+  "text": "Rullarna kommer genom slangen från tornet. Jag lägger den i tornet i stället.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-93524021",
+  "figur": "rolf",
+  "text": "Ja hitta ett helt lass på återvinningen. Ingen ville ha dôm. Nu ä dôm dina. MVH ROLF",
+  "kalla": "Ja hitta ett helt lass på återvinningen. Ingen ville ha dom. Nu ä dom dina. /R",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-61ae22b7",
+  "figur": "rolf",
+  "text": "Ja hitta ett helt lass på återvinningen. Ingen ville ha dôm. Nu ä dôm dina. /R",
+  "kalla": "Ja hitta ett helt lass på återvinningen. Ingen ville ha dom. Nu ä dom dina. /R",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "rolf-00887528",
+  "figur": "rolf",
+  "text": "ÖJ! Båtklubben skulle rensa förrådet. Ja hjälpte till. Fråga int hur. /R",
+  "kalla": "Båtklubben skulle rensa förrådet. Ja hjälpte till. Fråga inte hur. /R",
   "var": "Dina tankar, tips och varningar"
  },
  {
