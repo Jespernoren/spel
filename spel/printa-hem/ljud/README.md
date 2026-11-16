@@ -1,21 +1,44 @@
 # Ljudeffekter – Soptippsvägen 1
 
-Alla ljud här kommer från **Kenney** (www.kenney.nl) och är **CC0** (fria att använda, se `licenser/`). Valda ur Kenneys ljudpaket i punkt X och omkodade till mono-mp3 (64 kbit/s) så att de spelar i alla webbläsare.
+Ljudpaketet från 2026-11-16, godkänt av Jesper. Riktiga inspelningar, mono mp3, normaliserade till ungefär samma ljudnivå (ca −16 LUFS, bakgrundsljuden ca −18). Licenser: `licenser/LJUD-LICENSER.txt`.
 
-| Fil | Används när | Original |
-|---|---|---|
-| plock | plocka upp, klick i menyer | interface-sounds/pluck_001 |
-| placera | ställa ut, bygga | impact-sounds/impactPlank_medium_000 |
-| tratt | skräp i kvarnens tratt | impact-sounds/impactMetal_light_000 |
-| rulle-klar | en filamentrulle blir klar | interface-sounds/drop_001 |
-| klar | print klar | interface-sounds/confirmation_001 |
-| stor | stora saker: montera, nytt verktyg | music-jingles/jingles_PIZZI00 |
-| mynt | sälja | rpg-audio/handleCoins |
-| kop | köpa hos Ali | interface-sounds/maximize_001 |
-| fel | går inte | interface-sounds/error_004 |
-| meny-oppna / meny-stang | menyer | interface-sounds/open_001, close_001 |
-| ryggsack | öppna ryggsäcken | rpg-audio/cloth2 |
-| postlada | Rolfs postlåda | rpg-audio/metalLatch |
-| nytt-mal | ett dagsmål klart, nästa börjar | interface-sounds/question_001 |
-| sov | lägga sig och sova | music-jingles/jingles_STEEL00 |
-| kapitel | nytt kapitel, ny rang | music-jingles/jingles_SAX07 |
+## Regler
+- Ett ljud per händelse – aldrig två ljud ovanpå varandra.
+- Samma betydelse = samma ljud (få pengar = cha-ching överallt).
+- Hellre inget ljud än ett onödigt.
+
+## Händelse → fil
+| Händelse | Fil |
+|---|---|
+| Sälja hos Ali, Rolfs pengar i postlådan, Ali hämtade säljlådan | chaching |
+| Köpa hos Ali (ritning/recept) | mynt-ge |
+| Kapitelbelöning, mammas pengar, flytta in | fanfar |
+| Köpa mark | stampel |
+| Polaroid, bild till mamma | kamera |
+| Ny utrustning (grip, sopsäck, ryggkorg, kärra, pirra, magnet) | utrustning |
+| Större ryggsäck | inget ljud |
+| Montera (motor, tratt, turbo, jet, knivar, sophållare, vindsnurra, rulltorn, container) | montera |
+| Ladda rulle i skrivaren | snapp |
+| Ställa ut en maskin/sak | placera |
+| Sophållaren, tippa ur kärran/pirran | rasar |
+| Släppa allt man bär | slappa |
+| Print klar / ta ut print | print-klar / plopp |
+| Rulle klar från kvarnen | rulle-klar |
+| Plocka upp skräp | plock |
+| Skräp i tratten | tratt |
+| Bygga tak, väggar, dörr, fönster, golv | hammare2 |
+| Tapetsera | tapet |
+| Spika skylten (per slag) | hammare1 |
+| Sms / dagboken | sms / sida |
+| Samtal | telefon |
+| Rolfs postlåda | brev |
+| Nytt mål | nytt-mal |
+| Kapitel klart, ny rang | kapitel |
+| Sova | sova |
+| Något går inte | fel |
+| Öppna/stänga meny | meny-oppna / meny-stang |
+| Sopbilen tutar / Göran | tuta / mas |
+| Skrivaren jobbar (loop) / stannar mitt i | skrivare / skrivare-stopp |
+| Trampa cykeln (loop) | cykel |
+| Modemet | modem |
+| Sopbilens motor: står still / kör (loopar, volym efter avstånd) | motor-tomgang / motor-kor |
