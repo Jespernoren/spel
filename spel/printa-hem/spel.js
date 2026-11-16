@@ -6381,7 +6381,7 @@ function uppdateraSopbil(dt) {
     if (kvar < 0.01) { bil.fart = 0; bil.t = 0; bil.fas = S.resa === 'bjuden' ? 'resaVantar' : S.post.tillRolf ? 'rolf' : 'svang'; if (bil.fas === 'rolf') startaArende();
       if (bil.fas === 'resaVantar') { tuta(); setTimeout(tuta, 700); if (!S.resaVantSms) { S.resaVantSms = true; sms('rolf', 'Hoppa in. Jag väntar. Nåja, två minuter. /R'); } } }   // CN regel 5: ingen timer
   } else if (bil.fas === 'resaVantar') {
-    bil.fart = 0; if (S.resa !== 'bjuden') { bil.fas = 'svang'; bil.t = 0; }
+    bil.fart = 0; if (S.resa !== 'bjuden' || bil.t > 120) { bil.fas = 'svang'; bil.t = 0; }   /* "Nåja, två minuter" – sen tippar Rolf och frågar igen nästa gång */
   } else if (bil.fas === 'rolf') {
     uppdateraRolf(dt);
     if (!arende.aktiv) { bil.fas = 'svang'; bil.t = 0; }
