@@ -413,7 +413,7 @@ const GEN = { 1: { fart: 2, strom: 4, namn: 'S', storlek: 1, mm: 180 }, 2: { far
 // skrivarens storlek bestämmer vad den kan printa: S små saker, M mellanstora, L stora (soffa, kajak, jacuzzi …)
 const SKRIVARTYP = { skrivare2: 2, skrivare3: 3, skrivarepetg: 4, kolfskrivare: 5 };
 // DO: byggsatser som hör till en linje printas på den linjens skrivare med den linjens filament (startmaskinerna på linjen innan)
-const PRINT_LINJE = { petgcontainer: 2, petgtorn: 2, turbomotor: 2, magnet: 2, kolfkvarn: 2, kolfskrivare: 2, kolfband: 3, jetmotor: 3, kolfslang: 3 };
+const PRINT_LINJE = { petgcontainer: 2, petgtorn: 2, turbomotor: 2, magnet: 2, kolfkvarn: 2, kolfskrivare: 2, kolfband: 2, jetmotor: 3, kolfslang: 3 }   /* kolfbandet är en startmaskin: utan det kommer ingen kolfiber in */;
 const printLinje = (m) => PRINT_LINJE[m] || 1;
 const LINJE_NAMN = { 1: 'blå linjen', 2: 'röda linjen', 3: 'kolfiberlinjen' };
 const LINJE_TANKE = { 2: 'Den här ska vara röd. Den får PETG-skrivaren göra.', 3: 'Den här ska vara i kolfiber. Den får kolfiberskrivaren göra.' };
@@ -3159,8 +3159,8 @@ const TORN_FARG_T = { bla: 'Det här tornet tar bara blå plast.', rod: 'Det hä
 const SLANG_T = 'Rullarna kommer genom slangen från tornet. Jag lägger den i tornet i stället.';
 const tornFor = (sk) => genNiva(sk) === 2 ? 'rod' : genNiva(sk) === 3 ? 'kolf' : 'bla';
 const TORN_TYP = { bla: 'rulle', rod: 'rulle2', kolf: 'rulle3' };
-function tornRullar(l) { return l === 'rod' ? (S.petg.rullar || 0) : l === 'kolf' ? (S.kolf.rullar || 0) : (S.kvarnStar ? helaRullar() : 0); }
-function tornPlats(l) { return l === 'rod' ? Math.max(0, petgMax() - (S.petg.rullar || 0)) : l === 'kolf' ? Math.max(0, KOLF_MAX - (S.kolf.rullar || 0)) : Math.max(0, Math.floor((utlagerKap() * RULLE - S.kvarn.ut) / RULLE)); }
+function tornRullar(l) { return l === 'rod' ? (S.petg.rullar || 0) : l === 'kolf' ? (S.kolf.rullar || 0) : (S.kvarnStar ? Math.floor(S.kvarn.ut / RULLE) : 0); }
+function tornPlats(l) { return l === 'rod' ? Math.max(0, petgMax() - (S.petg.rullar || 0)) : l === 'kolf' ? Math.max(0, KOLF_MAX - (S.kolf.rullar || 0)) : Math.max(0, utlagerKap() - Math.floor(S.kvarn.ut / RULLE)); }
 function tornLagg(l, n) { if (l === 'rod') S.petg.rullar = (S.petg.rullar || 0) + n; else if (l === 'kolf') S.kolf.rullar = (S.kolf.rullar || 0) + n; else S.kvarn.ut += n * RULLE; }
 function slangNar(sk) { const l = tornFor(sk); if (l === 'kolf') return !!S.kolf.slang || skrivare.find((x) => x.gen === KOLF_GEN) === sk; if (l === 'bla') return !!S.kvarnStar && kopplad(sk); return true; }
 const filTillg = (sk) => (sk.fil || 0) + (slangNar(sk) ? tornRullar(tornFor(sk)) * RULLE : 0);

@@ -13,7 +13,7 @@ const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
 const sidfel = []; p.on('pageerror', (e) => sidfel.push(e.message));
 p.on('console', (m) => { const t = m.text(); if (t.startsWith('[sim]')) console.log(t); });
 // virtuell tid: aktiveras när boten startar
-await p.addInitScript(() => {
+await p.addInitScript((fran) => {
   const rs = window.setTimeout.bind(window), rc = window.clearTimeout.bind(window), si = window.setInterval.bind(window), ci = window.clearInterval.bind(window), raf = window.requestAnimationFrame.bind(window);
   const pnow = performance.now.bind(performance);
   let virt = false, vt = 0, nid = 1e6; const T = new Map(); let rafQ = [];
@@ -42,13 +42,15 @@ await p.addInitScript(() => {
     verklig: (fn, ms) => { if (ms) return rs(fn, ms); const ch = new MessageChannel(); ch.port1.onmessage = () => fn(); ch.port2.postMessage(0); },   // MessageChannel stryps inte som setTimeout i en dold flik
     get nu() { return vt; },
   };
-  if (!sessionStorage.getItem('sim')) { sessionStorage.setItem('sim', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ introSett: true, spelarNamn: 'Simulering' })); }
-});
+  if (!sessionStorage.getItem('sim')) { sessionStorage.setItem('sim', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', fran || JSON.stringify({ introSett: true, spelarNamn: 'Simulering' })); }
+}, process.env.SIM_FRAN ? fs.readFileSync(process.env.SIM_FRAN, 'utf8') : null);
 await p.goto(url); await p.waitForTimeout(3500);
 await p.click('.br-starta').catch(() => {}); await p.waitForTimeout(2000);
 await p.evaluate((u) => { window.__vt.start(); window.__simUtforlig = u; }, !!process.env.UTFORLIG);
 await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.meta.url), 'utf8') });
-const r = await p.evaluate((d) => window.__simBot.kor(d, 30 * d), +tillDag);
+// SIM_FRAN=fil: börja från en sparfil · varje ny dag sparas till /tmp/sim-dag<N>.json så att en lång körning kan tas om från en dag
+let sparadDag = 0; const kollaDag = setInterval(async () => { try { const [d, sp] = await p.evaluate(() => [window.__printahem.S.dag, localStorage.getItem('spar:printahem2:v1')]); if (d !== sparadDag && sp) { sparadDag = d; fs.writeFileSync(`/tmp/sim-dag${d}.json`, sp); } } catch {} }, 15000);
+const r = await p.evaluate((d) => window.__simBot.kor(d, 30 * d), +tillDag); clearInterval(kollaDag);
 await b.close();
 
 // ---------- rapport ----------

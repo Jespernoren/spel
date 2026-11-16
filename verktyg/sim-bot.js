@@ -168,7 +168,9 @@
   const fil = (sk) => H.filTillg(sk);
   async function filament(sk, gram, varfor = '') {
     let varv = 0;
+    const lin = sk.gen === 5 ? 'kolf' : sk.gen === 4 ? 'rod' : 'bla';
     while (fil(sk) < gram && varv++ < 40) {
+      if (fil(sk) >= 1 && (lin === 'bla' ? H.extruderFull() : !H.tornPlats(lin))) return true;   // DM2: tornet är fullt – skrivaren drar mer medan den printar
       if (sk.gen === 5) {
         if (H.antalInv('rulle3') && H.tornPlats('kolf')) { const p = H.kolfKvarn(); valj('rulle3'); await gaTill(p.mesh, 1.6, 'kolfibertornet'); H.kolfAktivera(p); handling('lägger kolfiber i tornet'); continue; }
         await tjana(S.mynt + 100, 'väntar på kolfiber'); await vanta(3); continue;
@@ -185,7 +187,7 @@
       if (!n && !H.hand.saker.length) { if (!S.kvarn.tratt) { handling('inget skräp kvar att mala – väntar på sopbilen'); if (varv > 30) return false; await vanta(20); continue; } }
       await tomIKvarnen(); await mal();
     }
-    return fil(sk) >= gram;
+    return fil(sk) >= gram || (fil(sk) >= 1 && (lin === 'bla' ? H.extruderFull() : !H.tornPlats(lin)));
   }
   // ström: trampa vid cykeln tills det räcker
   async function strom(behov = 3) {
