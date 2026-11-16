@@ -22,6 +22,19 @@ const eb = await H(() => { const h = window.__printahem, S = h.S; S.skyltUppe = 
 ut.push([`EB: skrivarens skylt visar grundorsaken ("${eb.a}")`, eb.a === 'Kvarnen har inget skräp']);
 ut.push([`EB: kvarnen får en egen skylt där det ska lösas ("${eb.b}")`, eb.b === 'Mata kvarnen']);
 ut.push([`EB: skräp i tratten men ingen motor → "${eb.c}"`, eb.c === 'Kvarnen väntar på dig']);
+// EB: kvarnens torn är fullt – rätt skylt beroende på vad som stoppar skrivaren (fyra sätt)
+const eb4 = await H(() => { const h = window.__printahem, S = h.S, sk = h.skrivare.find((x) => x.id === 'g1'); S.kvarnStar = true; S.kvarn.tratt = 2; S.kvarn.ut = 1e6;
+  const skylt = () => h.maskinStopp().find((x) => /Kvarnen väntar|Skrivarna hinner/.test(x.varfor || '')) || {};
+  const r = {};
+  sk.jobb = { typ: 'nyckelring' }; sk.vantar = 'ingen ström!'; r.strom = skylt()?.varfor;
+  sk.jobb = null; sk.vantar = ''; sk.klar = 'nyckelring'; r.platta = skylt()?.varfor;
+  sk.klar = null; r.inget = skylt()?.varfor;
+  sk.jobb = { typ: 'nyckelring' }; r.kapacitet = skylt(); 
+  sk.jobb = null; S.kvarn.ut = 0; S.kvarn.tratt = 0; return { ...r, kapacitet: r.kapacitet?.typ + ' ' + r.kapacitet?.varfor }; });
+ut.push([`EB: ingen ström → skylten vid cykeln "${eb4.strom}"`, /ingen ström/.test(eb4.strom || '')]);
+ut.push([`EB: plattan full → "${eb4.platta}"`, /plattan är full/.test(eb4.platta || '')]);
+ut.push([`EB: printar inget → "${eb4.inget}"`, /printar inget/.test(eb4.inget || '')]);
+ut.push([`EB: hela kedjan går → bygg ut (${eb4.kapacitet})`, /^vantar Skrivarna hinner inte/.test(eb4.kapacitet || '')]);
 // EC#1: samma notis högst en gång per 2 min (siffror räknas inte), statusnotiser utan procent bara första gången
 const ec = await H(() => { const h = window.__printahem, S = h.S; const fore = h.textLogg().length;
   h.notis('Testnotis 1 klar', 'guld'); h.notis('Testnotis 2 klar', 'guld');

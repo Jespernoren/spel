@@ -8840,6 +8840,16 @@ function filGrund(sk) {
   return { varfor: 'Kvarnen har inget skräp', fix: S.kvarn.band || (S.kvarn.binge || []).length ? 'Töm skräp i sophållaren' : 'Plocka skräp och lägg det i tratten', kort: 'Mata kvarnen', ikon: 'kvarn' };
 }
 const stromGrund = () => ({ varfor: stromBehov() > TRAMP_PER_S + solEffekt() + vindEffekt() ? `Maskinerna drar mer ström än du får in` : 'Batteriet är tomt', fix: stromFix(), kort: S.powerbank || S.batteriKopt ? 'Mer ström' : 'Trampa cykeln', ikon: 'blixt' });
+// EB: tornet vid kvarnen är fullt – följ kedjan framåt (torn → slang → skrivare → platta) och visa första länken som stoppar.
+// "Bygg ut" visas bara när hela kedjan går och kapaciteten är flaskhalsen (EE).
+function kvarnFullGrund() {
+  const lin = skrivare.filter((x) => tornFor(x) === 'bla' && slangNar(x));
+  if (!lin.length) return { typ: 'stopp', varfor: 'Ingen skrivare tar plast från tornet', fix: 'Ställ en skrivare i linjen vid kvarnen', kort: 'Ställ en skrivare här', ikon: 'varning' };
+  { const f = lin.find((x) => x.jobb && x.vantar === 'ingen ström!'); if (f) return { obj: cykel, y: 1.5, typ: 'stopp', varfor: 'Kvarnen väntar på skrivaren – den har ingen ström', fix: stromFix(), kort: S.powerbank || S.batteriKopt ? 'Mer ström' : 'Trampa cykeln', ikon: 'blixt' }; }
+  { const f = lin.find((x) => !x.jobb && x.klar); if (f) return { obj: f.mesh, y: 1.0, typ: 'stopp', varfor: 'Kvarnen väntar på skrivaren – plattan är full', fix: 'Ta ut det som är klart ur skrivaren', kort: 'Ta ut ur skrivaren', ikon: 'bock' }; }
+  if (lin.every((x) => !x.jobb)) return { obj: lin[0].mesh, y: 1.0, typ: 'stopp', varfor: 'Kvarnen väntar på skrivaren – den printar inget', fix: 'Starta en print på skrivaren', kort: 'Starta en print', ikon: 'varning' };
+  return { typ: 'vantar', varfor: 'Skrivarna hinner inte med kvarnen', fix: 'Bygg ut: fler skrivare eller ett större torn', kort: 'Kvarnen väntar på skrivarna', ikon: 'rulle' };
+}
 function maskinStopp() {
   const L = [];
   for (const sk of skrivare) {
@@ -8851,7 +8861,7 @@ function maskinStopp() {
     else if (sk.klar) L.push({ obj: sk.mesh, y: 1.0, typ: 'klar', rub: `${namn} är klar`, varfor: namnFor(sk.klar), fix: 'Klicka på skrivaren och ta den', kort: 'Klar – ta ut', ikon: 'bock' });
   }
   if (S.kvarn.motor && S.kvarn.tratt > 0 && S.strom < 1) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Kvarnen står still', varfor: 'Motorn har ingen ström', fix: 'Trampa cykeln för att ladda batteriet', kort: 'Trampa cykeln', ikon: 'blixt' });
-  else if (S.kvarnStar && S.kvarn.tratt > 0 && extruderFull()) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Kvarnen står still', varfor: 'Rullhållaren är full', fix: 'Ta rullarna vid kvarnen', kort: 'Ta rullen', ikon: 'rulle' });
+  else if (S.kvarnStar && S.kvarn.tratt > 0 && extruderFull()) L.push({ obj: kvarn, y: 1.6, rub: 'Kvarnen står still', ...kvarnFullGrund() });   /* EB: följ kedjan framåt – skylten hamnar där du ska göra något */
   else if (!S.kvarn.motor && S.kvarn.tratt >= TRATT_MAX) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Tratten är full', varfor: 'Ingen plats för mer skräp', fix: 'Veva kvarnen – klicka och håll på veven', kort: 'Veva kvarnen', ikon: 'kvarn' });
   if (L.some((x) => x.varfor === 'Kvarnen har inget skräp') && !L.some((x) => x.obj === kvarn)) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Kvarnen', varfor: 'Skrivarna väntar på plast', fix: 'Plocka skräp och lägg det i tratten', kort: 'Mata kvarnen', ikon: 'kvarn' });   // EB: grundorsaken syns där den ska lösas
   if (L.some((x) => /ström/.test(x.varfor) || /Batteriet/.test(x.varfor))) L.push({ obj: cykel, y: 1.5, typ: 'hit', rub: 'Trampa här!', varfor: `Batteri ${Math.floor(S.strom)}/${stromMax()}`, fix: 'Klicka och håll på cykeln', kort: 'Trampa här!', ikon: 'blixt' });
