@@ -16,7 +16,7 @@ await H(() => { const h = window.__printahem, S = h.S; S.kapitel = 3; S.dag = 11
 const t = await H(() => { const h = window.__printahem; const k = h.skrapLista.find((x) => x.userData.sort === 'kajak'); h.S.sackkarra = true; h.laggTill('sackkarra'); h.valjTyp('sackkarra'); h.plockaSkrap(k); return { kvar: h.skrapLista.includes(k), last: h.S.karraLast.length }; });
 ut.push(['kajaken går inte att lasta på pirran', t.kvar && t.last === 0]);
 await p.waitForTimeout(1500);
-ut.push(['tanken "För lång. Den måste med bandet."', await H(() => window.__printahem.textLogg().some((r) => JSON.stringify(r).includes('För lång. Den måste med bandet.')))]);
+ut.push(['tanken "för stor" (DJ)', await H(() => window.__printahem.textLogg().some((r) => JSON.stringify(r).includes('Jag får komma på något annat sätt')))]);
 await H(() => { const h = window.__printahem; h.S.strom = 500; });
 await H(() => { const h = window.__printahem; for (let i = 0; i < 300; i++) { h.S.strom = 12; h.uppdateraKolf(0.5); } });
 await p.waitForTimeout(2500);

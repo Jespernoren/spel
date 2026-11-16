@@ -18,7 +18,7 @@ await p.waitForTimeout(800);
 ut.push(['1. bara en pirra (ingen i famnen)', await H(() => window.__printahem.foremal.children.length === 0)]);
 const info = await H(() => { const h = window.__printahem, t = h.skrapLista[h.skrapLista.length - 1], m = h.karraMal(), c = t.userData.traff.getWorldPosition(new t.position.constructor()), r = h.karraRing.position;
   return { mal: m === t, d: Math.hypot(r.x - c.x, r.z - c.z), syns: h.karraRing.visible, text: t.userData.interaktion?.text?.() || '' }; });
-ut.push(['2. etiketten säger "Lasta regntunnan på pirran"', /^Lasta regntunnan på pirran$/.test(info.text)]);
+ut.push(['2. etiketten säger "Lasta regntunnan på pirran"', /^Lasta regntunnan på pirran \(3 rullar\)$/.test(info.text)]);
 ut.push(['3. ringen ligger i tunnans träffyta (' + info.d.toFixed(3) + ' m)', info.syns && info.mal && info.d < 0.05]);
 await p.screenshot({ path: '/tmp/pirra-fore.png' });
 await H(() => { const h = window.__printahem; h.plockaSkrap(h.skrapLista[h.skrapLista.length - 1]); });

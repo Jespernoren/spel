@@ -108,10 +108,10 @@ export const VARA_SIFFROR = {
   rulle3: { gram: 0, tid: 0, pris: 0 },
   rulle4: { gram: 0, tid: 0, pris: 0 },
   rulle5: { gram: 0, tid: 0, pris: 0 },
-  n2_vas: { gram: 600, tid: 22, pris: 400, recept: 300 },   // BI steg 5: +25 %   // BI: receptet 600 → 300 kr   // BP: varje nytt recept tjänar mer
-  n2_hjalm: { gram: 900, tid: 31, pris: 700, recept: 1200 },   // BI steg 5: +25 %   // BP: varje nytt recept tjänar mer
-  n2_neon: { gram: 1200, tid: 30, pris: 960, recept: 2400 },   // BP: varje nytt recept tjänar mer
-  n2_paddel: { gram: 2000, tid: 50, pris: 2300, recept: 4500 },
+  n2_vas: { gram: 600, tid: 22, pris: 790, recept: 600 },   // BI steg 5: +25 %   // BI: receptet 600 → 300 kr   // BP: varje nytt recept tjänar mer   // DL
+  n2_hjalm: { gram: 900, tid: 31, pris: 1330, recept: 2300 },   // BI steg 5: +25 %   // BP: varje nytt recept tjänar mer   // DL
+  n2_neon: { gram: 1200, tid: 30, pris: 1530, recept: 3800 },   // BP: varje nytt recept tjänar mer   // DL
+  n2_paddel: { gram: 2000, tid: 50, pris: 3000, recept: 5900 },   // DL
   n3_stol: { gram: 2000, tid: 60, pris: 5200 },
   n4_staty: { gram: 3000, tid: 80, pris: 9000 },
   n5_drake: { gram: 4000, tid: 100, pris: 16000 },
@@ -164,10 +164,10 @@ export const VARA_SIFFROR = {
   g_skruv: { gram: 0, tid: 0, pris: 6 },
   lampskarm: { gram: 1200, tid: 25, pris: 320, recept: 600 },   // BP: varje nytt recept tjänar mer
   dronare: { gram: 1500, tid: 32, pris: 480, recept: 1000 },   // BP: varje nytt recept tjänar mer
-  skateboard: { gram: 2000, tid: 30, pris: 780, recept: 1500 },   // BP: varje nytt recept tjänar mer
-  gitarr: { gram: 3000, tid: 37, pris: 1400, recept: 2500 },   // BP: varje nytt recept tjänar mer
-  cykelram: { gram: 5000, tid: 52, pris: 2900, recept: 4500 },   // BP: varje nytt recept tjänar mer
-  pkajak: { gram: 12000, tid: 120, pris: 9000, recept: 10000 },
+  skateboard: { gram: 2000, tid: 30, pris: 600, recept: 1500 },   // BP: varje nytt recept tjänar mer   // DL
+  gitarr: { gram: 3000, tid: 37, pris: 925, recept: 2500 },   // BP: varje nytt recept tjänar mer   // DL
+  cykelram: { gram: 5000, tid: 52, pris: 1560, recept: 4500 },   // BP: varje nytt recept tjänar mer   // DL
+  pkajak: { gram: 3000, tid: 80, pris: 8000, recept: 10000 },   // DL: kolfiberkajak (linje 3) – mellan kolfiberstolen och guldstatyn
 };
 
 // ---------- Maskiner och 3D-modeller: ritning = råpris (≥ 150 skalas med PRIS_SKALA), delar, gram per del, tid per del ----------
