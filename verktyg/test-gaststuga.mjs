@@ -17,7 +17,7 @@ await H(() => { const h = window.__printahem; h.spelare.granser = { minX: -200, 
 ut.push(['Rolf väntar', await H(() => window.__printahem.gastScen.fas === 'vantar')]);
 await H(() => { const h = window.__printahem, r = h.rolfBesok.position; h.spelare.pos.set(r.x + 1, 0, r.z + 1); h.rolfBesok.userData.interaktion.aktivera(); });
 ut.push(['samtalet startar', await H(() => window.__printahem.gastScen.fas === 'pratar')]);
-for (let i = 0; i < 120 && (await H(() => window.__printahem.gastScen.fas)) !== ''; i++) { await H(() => { const h = window.__printahem, r = h.rolfBesok.position; h.spelare.pos.set(r.x + 1, 0, r.z + 1); }); await p.waitForTimeout(1000); }
+for (let i = 0; i < 200 && (await H(() => window.__printahem.gastScen.fas)) !== ''; i++) { await H(() => { const h = window.__printahem, r = h.rolfBesok.position; h.spelare.pos.set(r.x + 1, 0, r.z + 1); }); await p.waitForTimeout(1000); }
 console.log('d', await H(() => { const h = window.__printahem; return [h.spelare.pos.x.toFixed(1), h.rolfBesok.position.x.toFixed(1), JSON.stringify(h.spelare.granser)].join(' '); }));
 console.log('fas', await H(() => window.__printahem.gastScen.fas + ' steg ' + window.__printahem.gastScen.steg + ' meny ' + !window.__printahem.ui.overlay.hidden + !window.__printahem.ui.butiksOverlay.hidden + ' gast ' + JSON.stringify(window.__printahem.S.gast) + ' pos ' + window.__printahem.husvagn().position.x.toFixed(1)));
 ut.push(['husvagnen står hemma', await H(() => { const h = window.__printahem, g = h.husvagn(); return !!h.S.gast?.hemma && g.visible && Math.abs(g.position.x - 16.5) < 0.2; })]);

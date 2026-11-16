@@ -1477,6 +1477,30 @@
   "var": "Pappas besök (med Rolf första gången)"
  },
  {
+  "id": "mamma-8ce421a0",
+  "figur": "mamma",
+  "text": "Har du sovit nåt? Du har väl tandborste?? Och äter du?? Svara inte, jag vet att du är arg. ❤️ /Mamma",
+  "var": "Sms med svarsalternativ och småprat"
+ },
+ {
+  "id": "mamma-7410c343",
+  "figur": "mamma",
+  "text": "Rolf på sopbilen ringde. Han säger att du STÄDAR?! Vem är du och vad har du gjort med mitt barn? ❤️",
+  "var": "Sms med svarsalternativ och småprat"
+ },
+ {
+  "id": "mamma-ae07097f",
+  "figur": "mamma",
+  "text": "Var är du??",
+  "var": "Sms med svarsalternativ och småprat"
+ },
+ {
+  "id": "mamma-1a7f2d2c",
+  "figur": "mamma",
+  "text": "Pappa hälsar. Han sa inte det, men jag såg på honom att han ville.",
+  "var": "Sms med svarsalternativ och småprat"
+ },
+ {
   "id": "mamma-54dd7582",
   "figur": "mamma",
   "text": "Jag har städat ditt rum. Det tog TRE DAGAR. Jag hittade en macka från i somras. EN MACKA.",
@@ -2009,18 +2033,6 @@
   "id": "mamma-2910c5c5",
   "figur": "mamma",
   "text": "HUR KUNDE DU BARA GÅ?!?! Är du ok?? SVARA NÄR JAG RINGER!!",
-  "var": "Familjens sms dag för dag"
- },
- {
-  "id": "mamma-ae07097f",
-  "figur": "mamma",
-  "text": "Var är du??",
-  "var": "Familjens sms dag för dag"
- },
- {
-  "id": "mamma-1a7f2d2c",
-  "figur": "mamma",
-  "text": "Pappa hälsar. Han sa inte det, men jag såg på honom att han ville.",
   "var": "Familjens sms dag för dag"
  },
  {
@@ -3137,12 +3149,6 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-fd359f8f",
-  "figur": "du",
-  "text": "Den behöver ström. Och det enda här som rör sig är jag.",
-  "var": "Storykedjan (punkt BE)"
- },
- {
   "id": "du-5548d50f",
   "figur": "du",
   "text": "Okej. Trampa. Och välj nåt litet att printa.",
@@ -3179,6 +3185,12 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
+  "id": "du-c96f424a",
+  "figur": "du",
+  "text": "En kruka. Mamma skulle bli så stolt. Hon får inte veta.",
+  "var": "Storykedjan (punkt BE)"
+ },
+ {
   "id": "du-e71a2d9f",
   "figur": "du",
   "text": "Tre åt gången. Men mina armar… Kvarnen borde veva själv.",
@@ -3203,15 +3215,15 @@
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-6ed5d5fa",
+  "id": "du-92d978f0",
   "figur": "du",
-  "text": "Gården är full av skräp. Tre i taget räcker inte.",
+  "text": "Nu printar den klart även när jag vilar benen.",
   "var": "Storykedjan (punkt BE)"
  },
  {
-  "id": "du-c96f424a",
+  "id": "du-6ed5d5fa",
   "figur": "du",
-  "text": "En kruka. Mamma skulle bli så stolt. Hon får inte veta.",
+  "text": "Gården är full av skräp. Tre i taget räcker inte.",
   "var": "Storykedjan (punkt BE)"
  },
  {
@@ -4718,9 +4730,9 @@
   "var": "Dina tankar, tips och varningar"
  },
  {
-  "id": "du-b0fb2714",
+  "id": "du-7d783da2",
   "figur": "du",
-  "text": "Sälj det du har till vänster. Köp nya saker till höger.",
+  "text": "Välj det du vill köpa och tryck Köp. Sälj längst ned.",
   "var": "Dina tankar, tips och varningar"
  },
  {
@@ -4910,6 +4922,12 @@
   "var": "Dina tankar, tips och varningar"
  },
  {
+  "id": "mamma-e3fdb65b",
+  "figur": "mamma",
+  "text": "Pappa kommer förbi i morgon. Han säger inget men han vill. ❤️",
+  "var": "Sms i STEG"
+ },
+ {
   "id": "rolf-784abf5b",
   "figur": "rolf",
   "text": "Jo jo. Tre gånegr har du sagt nej. Ingen har sagt nej till mej sen Birgitta. Ja la nåt i lådan. Behåll dä. /R\n*gånger",
@@ -5007,6 +5025,39 @@
   "figur": "mamma",
   "text": "Pappa säger att du åkt SOPBIL hela dagen?! Hade du bilbälte?? Var det rent?? Åt du något?",
   "var": "Sms i slutaResa"
+ },
+ {
+  "id": "rolf-67c305ec",
+  "figur": "rolf",
+  "text": "Hitta du VOLVON?? Bengt-Åke har letat i trettio år. Säj int nåt till honom. MVH ROLF",
+  "kalla": "Hitta du VOLVON?? Bengt-Åke har letat i trettio år. Säj int nåt till honom. /R",
+  "var": "Sms i FYND"
+ },
+ {
+  "id": "rolf-15db3ace",
+  "figur": "rolf",
+  "text": "Hitta du VOLVON?? Bengt-Åke har letat i trettio år. Säj int nåt till honom. /R",
+  "var": "Sms i FYND"
+ },
+ {
+  "id": "mamma-6550818b",
+  "figur": "mamma",
+  "text": "Pappa säger att du hittat en RADIO i en källare. Är den smittad?? Torka av den!",
+  "var": "Sms i FYND"
+ },
+ {
+  "id": "rolf-57cab41e",
+  "figur": "rolf",
+  "text": "ÖJ! Husvagnen? Dä va vår första. Birgitta o ja bodde dä när vi kom hit 2009. Gardinen sitckade hon. Behåll pengarna. Gardinen mä. /R\n*stickade",
+  "kalla": "Husvagnen? De va vår första. Birgitta o ja bodde där när vi kom hit 2009. Gardinen stickade hon. Behåll pengarna. Gardinen me. /R",
+  "var": "Sms i FYND"
+ },
+ {
+  "id": "rolf-a9b5a25c",
+  "figur": "rolf",
+  "text": "ÖJ! Husvagnen? Dä va vår första. Birgitta o ja bodde dä när vi kom hit 2009. Gardinen stickade hon. Behåll pengarna. Gardinen mä. /R",
+  "kalla": "Husvagnen? De va vår första. Birgitta o ja bodde där när vi kom hit 2009. Gardinen stickade hon. Behåll pengarna. Gardinen me. /R",
+  "var": "Sms i FYND"
  },
  {
   "id": "mamma-1b4a0d77",

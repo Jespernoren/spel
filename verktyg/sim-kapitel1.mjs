@@ -2,7 +2,7 @@
 // Kör: node verktyg/sim-kapitel1.mjs <url> <ut.md> [körning-nr]
 //   url: t.ex. http://127.0.0.1:8765/printa-hem.html (det byggda spelet)
 // Loggen visar per dag: minuter, prints, kr, köp, bärförmåga, trivsel och ALL text (tid, källa, vem).
-// Flaggor: KROCK (två texter inom 5 s), RÖST AVBRUTEN (ny röst innan den förra pratat klart),
+// Flaggor: INAKTUELL (text visas fast villkoret inte gäller), SEN (reaktion > 10 s efter händelsen), BONUS DAG 1, KROCK (två texter inom 5 s), RÖST AVBRUTEN (ny röst innan den förra pratat klart),
 // FÖR TIDIGT (texten nämner en sak som inte finns hos Ali än), TEMPO (dagen utanför 10–15 min, dag 1 10–12).
 import fs from 'fs';
 import { chromium } from '/home/claude/verktyg/node_modules/playwright-core/index.mjs';
@@ -119,8 +119,27 @@ for (const sm of r.logg.filter((e) => e.kalla === 'sms')) {
   if (!bb) flaggor.push({ dag: sm.dag, t: sm.t, typ: 'SMS', text: `${sm.vem}: "${sm.text.slice(0, 50)}" syntes aldrig som bubbla` });
   else if (bb.tot - sm.tot > 15) flaggor.push({ dag: sm.dag, t: sm.t, typ: 'SMS', text: `${sm.vem}: bubblan kom ${(bb.tot - sm.tot).toFixed(0)} s efter sms:et` });
 }
+// EA: INAKTUELL – en text visas fast villkoret inte gäller längre (AX:s egna villkor, oberoende av spelets)
+for (const e of r.logg.filter((x) => x.inaktuell)) flaggor.push({ dag: e.dag, t: e.t, typ: 'INAKTUELL', text: `[${e.kalla}] ${e.vem}: "${e.text.slice(0, 70)}" – ${e.inaktuell}` });
+// EA: SEN – en reaktion visas mer än 10 s efter sin händelse (från att den köades, minus planerad väntan och tid i en meny)
+{ const vant = new Map();
+  const paketKlar = {}; let aktivPaket = null;
+  for (const e of r.logg) {
+    if (e.kalla === 'klar' && aktivPaket) { paketKlar[aktivPaket] = e.tot; aktivPaket = null; }
+    if (e.kalla === 'sak') aktivPaket = /paket (\d+)/.exec(e.varfor)?.[1] || null;
+    if (e.kalla === 'sak' && /^\(/.test(e.text)) { vant.delete(e.text); continue; }   // paketets tysta delar
+    if (e.kalla === 'väntar' && !vant.has(e.text)) { const om = /om ([\d.]+) s/.exec(e.varfor); vant.set(e.text, e.tot + (om ? +om[1] : 0)); }
+    if (e.kalla === 'sak' && /^REAKTION/.test(e.varfor) && vant.has(e.text)) {
+      const meny = +(/meny ([\d.]+) s/.exec(e.varfor)?.[1] || 0), pk = /paket (\d+)/.exec(e.varfor)?.[1], v = e.tot - Math.max(vant.get(e.text), (pk && paketKlar[pk]) || 0) - meny; vant.delete(e.text);   // i ett paket: från att förra delen var klar
+      if (v > 10.5) flaggor.push({ dag: e.dag, t: e.t, typ: 'SEN', text: `${v.toFixed(1)} s efter händelsen: ${e.vem}: "${e.text.slice(0, 70)}"` });
+    } else if (e.kalla === 'sak' || e.kalla === 'struken') vant.delete(e.text);
+  }
+}
+// EA: BONUS dag 1 – bonus (småprat) får inte förekomma dag 1
+for (const e of r.logg.filter((x) => x.kalla === 'sak' && /^SMÅPRAT/.test(x.varfor) && x.dag <= 1)) flaggor.push({ dag: e.dag, t: e.t, typ: 'BONUS DAG 1', text: `${e.vem}: "${e.text.slice(0, 70)}"` });
 // punkt 15: en sak i taget – pausen mellan saker, och hur länge varje nytt mål väntade efter att det förra blev klart
-const saker = r.logg.filter((e) => e.kalla === 'sak' || e.kalla === 'klar');
+const inreSak = (e) => /^\((läget ändras|tips|lapp)/.test(e.text);   // EA: paketets tysta delar (läget ändras) räknas inte som texter
+const saker = r.logg.filter((e) => (e.kalla === 'sak' || e.kalla === 'klar') && !inreSak(e));
 for (let i = 1; i < saker.length; i++) {
   const a = saker[i - 1], c = saker[i];
   if (a.kalla === 'sak' && c.kalla === 'sak') flaggor.push({ dag: c.dag, t: c.t, typ: 'SAMTIDIGT', text: `"${a.text.slice(0, 40)}" och "${c.text.slice(0, 40)}"` });
@@ -132,7 +151,7 @@ for (const h of r.logg.filter((e) => e.kalla === 'händelse' && e.vem === 'malKl
   const m = r.logg.find((e) => e.kalla === 'målruta' && e.tot >= h.tot - 0.05);
   if (!m) continue;
   const v = m.tot - h.tot; malVantan.push({ dag: h.dag, t: h.t, v, text: m.text });
-  if (v > 8) flaggor.push({ dag: h.dag, t: h.t, typ: 'MÅL > 8 s', text: `${v.toFixed(1)} s innan "${m.text.slice(0, 60)}" syntes` });
+  if (v > 60) flaggor.push({ dag: h.dag, t: h.t, typ: 'MÅL > 60 s', text: `${v.toFixed(1)} s innan "${m.text.slice(0, 60)}" syntes` });
   else if (v > 4) flaggor.push({ dag: h.dag, t: h.t, typ: 'MÅL > 4 s', text: `${v.toFixed(1)} s innan "${m.text.slice(0, 60)}" syntes` });
 }
 // tempo

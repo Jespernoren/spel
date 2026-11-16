@@ -5,7 +5,7 @@ const src = fs.readFileSync('/home/claude/jespernoren/spel/spel/printa-hem/spel.
 const lit = [];
 // var i koden ligger en replik: närmaste funktion eller konstant ovanför
 const varFor = (idx) => { const fore = src.slice(0, idx), m = [...fore.matchAll(/^(?:function (\w+)|const (\w+) = )/gm)].pop(); return m ? (m[1] || m[2]) : '?'; };
-for (const m of src.matchAll(/sms\('(\w+)',\s*'((?:[^'\\]|\\.)*)'/g)) lit.push([m[1], m[2].replace(/\\'/g, "'"), 'Sms i ' + varFor(m.index)]);
+for (const m of src.matchAll(/sms(?:\(|: \[)'(\w+)',\s*'((?:[^'\\]|\\.)*)'/g)) lit.push([m[1], m[2].replace(/\\'/g, "'"), 'Sms i ' + varFor(m.index)]);
 for (const m of src.matchAll(/aliSenare\('((?:[^'\\]|\\.)*)'/g)) lit.push(['ali', m[1].replace(/\\'/g, "'"), 'Ali i ' + varFor(m.index)]);
 for (const name of ['MAMMA_BURK_ARG', 'LADAN_SMS']) {
   const i = src.indexOf('const ' + name), j = src.indexOf('];', i);

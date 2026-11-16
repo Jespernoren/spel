@@ -14,8 +14,27 @@
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
   window.__textLogg = (kalla, vem, text, varfor = '') => {
     text = String(text).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(); if (!text) return;
-    logg.push({ t: tid - dagStart, tot: tid, dag: S.dag, kalla, vem: String(vem || ''), text, varfor: String(varfor || ''), steg: H.stegText?.() || '', mynt: S.mynt });
+    const e = { t: tid - dagStart, tot: tid, dag: S.dag, kalla, vem: String(vem || ''), text, varfor: String(varfor || ''), steg: H.stegText?.() || '', mynt: S.mynt };
+    if (kalla === 'sak' || kalla === 'sms-bubbla' || kalla === 'lapp') { try { const ia = inaktuell(text); if (ia) e.inaktuell = ia; } catch {} }
+    logg.push(e);
   };
+  // EA: AX:s egna villkor – oberoende av spelets. En text som visas fast det här gäller flaggas INAKTUELL.
+  const printatAx = (k) => (S.printTot || {})[k] || 0;
+  const varaAvNamn = (n) => Object.entries(H.VAROR || {}).find(([, v]) => v.namn === n)?.[0];
+  function inaktuell(text) {
+    if (/Ström som sparas hade varit/.test(text) && (S.powerbank || S.batteriKopt)) return 'har redan powerbanken/batteriet';
+    if (/rita en skräpgrip åt mig/.test(text) && S.ritningar.includes('grip')) return 'gripen är redan köpt';
+    if (/Gripen kostar femtio/.test(text) && S.ritningar.includes('grip')) return 'gripen är redan köpt';
+    if (/Sälj den till Ali/.test(text) && (S.stat.salt || 0) > 0) return 'har redan sålt';
+    if (/Skulle jag kunna göra filament/.test(text) && S.kvarnKopt) return 'kvarnen är redan köpt';
+    if (/Nu lägger jag den i Rolfs brevlåda/.test(text) && S.post?.tillRolf) return 'gåvan ligger redan i lådan';
+    if (/receptet till blomkrukan/.test(text) && printatAx('kruka') > 0) return 'krukan är redan printad';
+    { const m = /3D-modellen till (.+?) låg med i brevet/.exec(text); if (m) { const k = varaAvNamn(m[1]); if (k && (printatAx(k) > 0 || S.post?.tillRolf === k)) return `${m[1]} är redan printad`; } }
+    if (/Plocka upp Rolfs sopsäck/.test(text) && S.korg) return 'säcken är redan upplockad';
+    if (/behöver nåt å bära i/.test(text) && S.korg) return 'säcken är redan upplockad';
+    if (/Den stannar när jag slutar trampa/.test(text) && S.powerbank) return 'har powerbanken';
+    return '';
+  }
   // ui.toast och morgonkortet går via FpUI – fånga dem här
   const toast0 = H.ui.toast.bind(H.ui); H.ui.toast = (t, typ) => { window.__textLogg('toast', typ || '', t); return toast0(t, typ); };
   const start0 = H.ui.visaStart.bind(H.ui); H.ui.visaStart = (titel, text, knapp) => { window.__textLogg('morgonkort', titel, String(titel) + ' · ' + String(text || '')); return start0(titel, text, knapp); };
@@ -312,6 +331,8 @@
   // ---------- ett steg ----------
   async function gorSteg() {
     await stangPopups();
+    /* EA: som en riktig spelare – boten gör nästa mål först när det syns i målrutan (högst 60 s) */
+    for (let w = 0; w < 120 && H.malSynligt && !H.malSynligt(); w++) await vanta(0.5);
     if (S.post.tillMig?.length || S.post.lapp) { await klick(H.postlada, 'Rolfs postlåda'); await stangPopups(); }
     if (H.vantarPaNummer?.()) { await klick(H.postlada, 'Rolfs postlåda (telefonnumret)'); }
     for (const sk of skrivareAlla()) if (sk.klar && !sk.jobb) await taUt(sk);
@@ -339,6 +360,7 @@
       case 'flaska': { const sk = H.skrivare.find((x) => x.id === 'g1'); await filament(sk, fil(sk) + 900); return; }
       case 'kopGrip': await kopMaskin('grip'); return;
       case 'printGrip': if (!H.antalInv('byggsats:grip') && !S.grip) await printa({ maskin: 'grip' }); return;
+      case 'krukaD1': if (H.harRecept('kruka')) { await printa({ typ: 'kruka' }); return; } await tjana(S.mynt + 15, 'krukan (Ali ger receptet vid försäljningen)'); return;   // EA
       case 'kopMotor': await kopMaskin('kvarnmotor'); return;
       case 'monteraMotor': if (!S.kvarn.motor) await printa({ maskin: 'kvarnmotor' }); return;
       case 'kopSang': { if (S.ritningar.includes('sang')) return; if (S.mynt < 60) { await tjana(60, 'sängen'); return; } await ali(async () => { await kopHosAli('sang'); }, 'köpa sängen'); return; }
@@ -432,7 +454,7 @@
       const stopp = tid + maxMin * 60; let sista = -1, samma = 0, stegT = tid;
       while (S.dag < tillDag && tid < stopp) {   // B55: boten kör vidare in i kapitel 2
         { let w = 0; while (H.pratar?.() && w++ < 120) await vanta(0.1); }   // en spelare lyssnar klart innan hen gör nästa sak
-        const fore = S.steg + ':' + S.dag; console.log(`[sim] dag ${S.dag} ${fmt(tid - dagStart)} ${S.mynt} kr · ${H.stegId?.() || ''} · ${(H.stegText() || '').slice(0, 50)}`); await gorSteg();
+        const fore = S.steg + ':' + S.dag; console.log(`[sim] dag ${S.dag} ${fmt(tid - dagStart)} ${S.mynt} kr · ${H.stegId?.() || ''} · ${(H.stegText() || '').slice(0, 50)} · kö ${H.kanalLage?.().n ?? "?"}`); await gorSteg();
         if (fore === sista) { await vanta(1); if (++samma > 60 || tid - stegT > (+(window.__simStegMax || 15)) * 60) { handling('fastnade: ' + H.stegText()); break; } } else { sista = fore; samma = 0; stegT = tid; }
       }
       if (!dagar.some((d) => d.dag === S.dag)) dagar.push({ dag: S.dag, sek: tid - dagStart, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat, ofardig: true });
