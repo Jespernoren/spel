@@ -287,6 +287,7 @@
       if (id === 'vaggar' || id === 'tapeter') { const v = ['bak', 'vanster', 'hoger', 'fram'].find((x) => !(id === 'vaggar' ? H.vaggarKlara() : H.tapetKlara()).includes(x)); H.siktaVagg(v); valj(bs); const ok = await klick(H.skjulYta, 'skjulet (' + v + ')', 2.5); H.siktaVagg(null); return ok; }
       valj(bs); return klick(H.skjulYta, 'skjulet', 2.5);
     }
+    if (id === 'gamingbod') { valj(bs); await gaTill(H.skjulYta, 4, 'platsen vänster om skjulet'); const ok = H.byggBodTest(); handling(ok ? 'bygger gamingboden' : 'gamingboden fick inte plats'); return ok; }   // boden har en egen placering (spöket), inte placera()
     if (['kvarnmotor', 'stortratt', 'matarband'].includes(id)) { valj(bs); return klick(H.kvarn, 'kvarnen'); }
     if (['kolfband', 'kolfslang', 'jetmotor'].includes(id)) { const pk = H.placerade.find((p) => p.typ === 'kolfkvarn'); valj(bs); return klick(pk.mesh, 'kolfiberkvarnen'); }
     if (['petgtorn', 'petgcontainer'].includes(id)) { const pk = H.placerade.find((p) => p.typ === 'petgkvarn'); valj(bs); return klick(pk.mesh, 'röda kvarnen'); }
@@ -361,6 +362,10 @@
     }
     if (/^Ge Göran ett eget ställe/.test(txt)) { if (!H.harRecept('fagelskramma')) await kopRecept('fagelskramma'); if (!H.antalInv('fagelskramma')) await printa({ typ: 'fagelskramma' }); if (H.antalInv('fagelskramma')) await placera('fagelskramma'); return; }   // dag 6
     if (/^Mata in kajaker med bandet|^Vänta på den första svartgrå rullen/.test(txt)) { await tjana(S.mynt + 150, 'bandet hämtar kajaker'); await vanta(2); return; }   // DF
+    if (/^Printa och ställ ut/.test(txt)) {   // generiskt: köp receptet (tjäna först), printa, ställ ut
+      const st = H.STEG[S.steg], t = typeof st?.bild === 'function' ? st.bild() : st?.bild;
+      if (t && H.VAROR[t]) { if (H.antalInv(t)) { await placera(t); return; } if (!H.harRecept(t)) { if (S.mynt < (H.VAROR[t].recept || 0)) { await tjana(H.VAROR[t].recept, H.VAROR[t].namn.toLowerCase()); return; } await kopRecept(t); return; } if (!H.antalInv(t)) { await printa({ typ: t }); return; } await placera(t); return; }
+    }
     if (/^Printa en kolfiberstol/.test(txt)) { await printa({ typ: 'n3_stol' }); return; }
     if (/^Ställ in en gamersak i boden|^Inred boden/.test(txt)) { const t = H.nastaGamer?.(); if (t && !t.startsWith('byggsats:')) { if (!H.harRecept(t)) await kopRecept(t); if (!H.antalInv(t)) await printa({ typ: t }); if (H.antalInv(t)) await placera(t); } else await tjana(S.mynt + 300); return; }
     if (/^Bjud Rolf på fika/.test(txt)) { const ok = await ali(async () => { const k = [...document.querySelectorAll('[data-trim],[data-val]')].find((b) => /sopbil|fika/i.test(b.dataset.trim || b.dataset.val || '')); if (k) { k.click(); await vanta(0.6); } }, 'bjuda Rolf på fika'); if ((H.trimNiva?.('sopbil') || 0) < 1) await tjana(S.mynt + 1500, 'fikat'); return; }
