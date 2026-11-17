@@ -371,6 +371,12 @@
     if (H.antalInv('korv')) { valj('korv'); H.ata('korv'); }
     if (!S.skyltUppe && S.dag === 1) { await klick(H.bradhog, 'brädhögen'); await vanta(4); return; }
     const id = H.stegId(), txt = H.stegText() || '', st = H.STEG[S.steg];
+    if (!st && S.julFirad) {   /* A-042: efterspelet – köp marken som är kvar när pengarna räcker, tjäna under tiden, sov när dagen är slut */
+      if (H.sovDags()) { await klick(H.taltSang, 'sängen'); await vantaPaMorgon(); return; }
+      const t = H.MARK_TOMTER.find((x) => ['norr', 'tippkant', 'tippen', 'rolfhus'].includes(x.id) && !(S.mark?.agt || []).includes(x.id) && S.mynt >= x.pris);
+      if (t) { await gaTill(H.markTavla, 1.8, 'tavlan vid vägen'); H.kopMark(t.id); handling(`efterspelet: köper ${t.namn.toLowerCase()} (${t.pris} kr)`); await vanta(2); return; }
+      handling(`efterspelet: dag ${S.dag}, ${Math.round(S.dagTid || 0)} s`); await tjana(S.mynt + 500, 'efterspelet'); return;
+    }
     if (!st) return 'slut';
     if (st.sov && S.utsikt === 'bjuden') { let w = 0; while (H.bilFas?.() !== 'resaVantar' && w++ < 60) await vanta(1); if (H.bilFas?.() === 'resaVantar') return; }
     if (st.sov) {
