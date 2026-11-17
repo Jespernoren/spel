@@ -7734,7 +7734,10 @@ function klockan() {
 }
 const klockText = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 // Ali köper (nästan) allt: prints fullpris, byggsatser och delar för sitt plastvärde, dyra köp för halva priset
+/* AX g40: det som storyn behöver går inte att sälja förrän det har gjort sitt (A-050-regeln för guldet) */
+const storyKvar = (typ) => (typ === 'guldflaga' && !S.flagaBengt) || (typ === 'guldklump' && !S.klumpBengt) || (typ === 'kapskiva' && !S.kapskivaHosRolf) || typ === 'vaskpanna' || typ === 'hacka';
 const saljPris = (typ) => {
+  if (storyKvar(typ)) return 0;
   if (VAROR[typ]?.pris > 0) return Math.round(VAROR[typ].pris * (1 + trimNiva('pris') * 0.1) * (1 + trivselBonus()));   // trivselbonus: hos Ali, i säljlådan och i leveranslådan
   if (VAROR[typ]?.lyx) return Math.round(VAROR[typ].gram * 0.1);
   if (typ.startsWith('tapet_')) return Math.round((TAPETER[Number(typ.split('_')[1])]?.pris || 200) * 0.5);   // köpt hos Ali – tillbaka för halva priset
@@ -8071,6 +8074,7 @@ const ALI_NEJ = {
   gava: 'Den där är till Rolf. Lägg den i hans brevlåda vid grinden.',
 };
 function aliNejFor(t) {
+  if (storyKvar(t)) return 'Den där behöver du. Jag ser det på dig.';   /* AX g40 */
   if (STORY_SAKER.has(t)) return t.startsWith('burk_') ? ALI_NEJ.story : ALI_NEJ.sallsynt;   /* A-050 */
   if (t === aktivGava()) return ALI_NEJ.gava;
   if (t === 'rulle') return ALI_NEJ.rulle;
