@@ -490,6 +490,7 @@
   }
 
   window.__simBot = {
+    del: () => JSON.parse(JSON.stringify({ logg, handlingar, dagar, kop, tid })),   /* AX-rapport efter varje speldag */
     async kor(tillDag = 6, maxMin = 120) {
       dagStart = tid; window.__textLogg('MÅL', '', H.stegText());
       const stopp = tid + maxMin * 60; let sista = -1, samma = 0, stegT = tid;

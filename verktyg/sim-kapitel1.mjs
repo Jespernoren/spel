@@ -11,7 +11,9 @@ const [url = 'http://127.0.0.1:8765/printa-hem.html', ut = 'sim-kapitel1.md', nr
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
 const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
 const sidfel = []; p.on('pageerror', (e) => sidfel.push(e.message));
-p.on('console', (m) => { const t = m.text(); if (t.startsWith('[sim]')) console.log(t); });
+let senastLiv = Date.now();
+p.on('console', (m) => { const t = m.text(); if (t.startsWith('[sim]')) { senastLiv = Date.now(); console.log(t); } });
+setInterval(() => { if (Date.now() - senastLiv > 6 * 60000) { console.log('[sim] HÄNGER: ingen handling på 6 min – avbryter (rapporten fram till senaste dagen ligger kvar)'); process.exit(3); } }, 30000);
 // virtuell tid: aktiveras när boten startar
 await p.addInitScript((fran) => {
   const rs = window.setTimeout.bind(window), rc = window.clearTimeout.bind(window), si = window.setInterval.bind(window), ci = window.clearInterval.bind(window), raf = window.requestAnimationFrame.bind(window);
@@ -52,9 +54,13 @@ await p.evaluate(([u, m]) => { window.__vt.start(); window.__simUtforlig = u; wi
 await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.meta.url), 'utf8') });
 // SIM_FRAN=fil: börja från en sparfil · varje ny dag sparas till /tmp/sim-dag<N>.json så att en lång körning kan tas om från en dag
 let sparadDag = 0; const kollaDag = setInterval(async () => { try { const [d, sp, mem] = await p.evaluate(() => [window.__printahem.S.dag, localStorage.getItem('spar:printahem2:v1'), [Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6), window.__printahem.skrapLista.length, window.__printahem.placerade.length, document.querySelectorAll('*').length]]); if (process.env.SIM_MINNE) console.log('[minne]', d, JSON.stringify(mem)); if (d !== sparadDag && sp) { sparadDag = d; fs.writeFileSync(`/tmp/sim-dag${d}.json`, sp); } } catch {} }, 15000);
-const r = await p.evaluate((d) => window.__simBot.kor(d, 30 * d), +tillDag); clearInterval(kollaDag);
+let delDagar = 0;   /* AX skriver rapporten efter varje speldag – en körning som hänger ger ändå en rapport fram till den dagen */
+const delRapport = setInterval(async () => { try { const del = await Promise.race([p.evaluate(() => window.__simBot.del?.()), new Promise((_, n) => setTimeout(() => n(new Error('svarar inte')), 20000))]); if (del && del.dagar.length > delDagar) { delDagar = del.dagar.length; rapport(del); console.log(`[rapport] dag 1–${del.dagar[del.dagar.length - 1].dag} skriven till ${ut}`); } } catch (e) { console.log('[rapport] sidan svarar inte:', e.message); } }, 30000);
+const r = await p.evaluate((d) => window.__simBot.kor(d, 30 * d), +tillDag); clearInterval(kollaDag); clearInterval(delRapport);
 await b.close();
 
+function rapport(r) {
+  let md;
 // ---------- rapport ----------
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const synlig = (e) => ['sms-bubbla', 'notis', 'lapp', 'bubbla', 'meddelande', 'morgonkort'].includes(e.kalla);   // det som syns på skärmen (toasts är svar på ett klick och räknas inte)
@@ -198,7 +204,7 @@ for (const d of r.dagar) {
 }
 const per = {};
 for (const d of r.dagar) per[d.dag] = d;
-let md = `# Simulering kapitel 1 – körning ${nr}\n\n*Gjord ${new Date().toISOString().slice(0, 16).replace('T', ' ')} med \`verktyg/sim-kapitel1.mjs\` + \`verktyg/sim-bot.js\` (punkt AX). Boten går 4,5 m/s, läser ${15} tecken/s, trampar, vevar, plockar, printar, köper och säljer via spelets egna funktioner. Tiderna är speltid.*\n\n`;
+md = `# Simulering kapitel 1 – körning ${nr}\n\n*Gjord ${new Date().toISOString().slice(0, 16).replace('T', ' ')} med \`verktyg/sim-kapitel1.mjs\` + \`verktyg/sim-bot.js\` (punkt AX). Boten går 4,5 m/s, läser ${15} tecken/s, trampar, vevar, plockar, printar, köper och säljer via spelets egna funktioner. Tiderna är speltid.*\n\n`;
 md += `## Sammanfattning\n\n| Dag | Minuter | Väntan | Prints (totalt) | Kr vid sömn | Bär | Trivsel |\n|---|---|---|---|---|---|---|\n`;
 for (const d of r.dagar) md += `| ${d.dag} | ${(d.sek / 60).toFixed(1)} | ${d.sek ? Math.round((d.vantan || 0) / d.sek * 100) : 0} %${d.sek && (d.vantan || 0) / d.sek > 0.2 ? ' ⚠️' : ''} | ${d.printat} | ${d.mynt} | ${d.bar} | ${d.trivsel} |\n`;
 // EE: flaskhalskartan – sekunder (bara/inkomst: antal) per flaskhals och dag, och när kapacitetssakerna låstes upp
@@ -218,6 +224,9 @@ for (const dag of [...new Set(r.logg.map((e) => e.dag))]) {
   md += `\n<details><summary>Botens handlingar dag ${dag}</summary>\n\n` + r.handlingar.filter((h) => h.dag === dag).map((h) => `- ${fmt(h.t)} ${h.text} (${h.mynt} kr)`).join('\n') + '\n\n</details>\n';
 }
 fs.writeFileSync(ut, md);
+  return flaggor;
+}
+const flaggor = rapport(r);
 console.log(`klart: ${r.dagar.length} dagar, ${r.logg.length} textrader, ${flaggor.length} flaggor, sidfel ${sidfel.length} → ${ut}`);
 for (const d of r.dagar) console.log(`  dag ${d.dag}: ${(d.sek / 60).toFixed(1)} min, väntan ${d.sek ? Math.round((d.vantan || 0) / d.sek * 100) : 0} %, ${d.mynt} kr, trivsel ${d.trivsel}, bär ${d.bar}`);
 console.log('sista handlingar:', r.handlingar.slice(-6).map((h) => h.text).join(' | '));
