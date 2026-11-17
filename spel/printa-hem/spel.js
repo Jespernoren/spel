@@ -451,7 +451,7 @@ const TRIM = {
   kvarn: { namn: 'Kvarntrim', ikon: '⚙️', max: 5, bas: 300, vaxt: 1.6, beskr: (l) => `Kvarnen mal ${l * 25} % snabbare` },
   skrivare: { namn: 'Skrivartrim', ikon: '🖨️', max: 5, bas: 400, vaxt: 1.6, beskr: (l) => `Skrivarna printar ${l * 20} % snabbare` },
   pris: { namn: 'Säljsnack', ikon: '🪙', max: 5, bas: 500, vaxt: 1.7, beskr: (l) => `Ali betalar ${l * 10} % mer för prints` },
-  sopbil: { namn: 'Fika till Rolf', ikon: '🚛', max: 5, bas: 250, vaxt: 1.5, beskr: (l) => `Rolf tippar mer om han får bullar: ${l * 3} skräp extra varje gång` },   // B53
+  sopbil: { namn: 'Mutor till Rolf', ikon: '🚛', max: 5, bas: 250, vaxt: 1.5, beskr: (l) => `Bullar? Rolf tar bullar. Å en tia. Han tippar mer: ${l * 3} skräp extra varje gång` },   // B53
   batteri: { namn: 'Batteritrim', ikon: '🔋', max: 5, bas: 200, vaxt: 1.5, beskr: (l) => `+${l * 100} ström i batteriet` },
   utlager: { namn: 'Rullhållare vid kvarnen', ikon: '', max: 5, bas: 120, vaxt: 1.9, tidig: true, syns: () => false, /* CA: ersatt av rulltornet */ beskr: (l) => `Rymmer ${utlagerKap(l)} färdiga rullar innan kvarnen måste stanna` },
   band: { namn: 'Bandtrim', ikon: '', max: 5, bas: 600, vaxt: 1.6, syns: () => !!S.auto?.band, beskr: (l) => `Bandet går ${Math.round((1.25 ** l - 1) * 100)} % fortare och rymmer ${BAND_BAS + l * 3} saker` },
@@ -707,7 +707,7 @@ const STEG = [
   sovSteg(13, F13),
   { id: 'jet14', del: F14, bild: 'byggsats:jetmotor', text: 'Montera jetmotorn på kolfiberkvarnen', klar: () => !!S.kolf.jet },
   { del: F14, bild: 'byggsats:utlada', text: 'Bygg leveranslådan', klar: () => !!S.auto?.lada },
-  { del: F14, text: 'Bjud Rolf på fika hos Ali – då tippar sopbilen mer', klar: () => trimNiva('sopbil') >= 1 },
+  { del: F14, text: 'Köp mutor till Rolf hos Ali – då tippar sopbilen mer', klar: () => trimNiva('sopbil') >= 1 },
   sovSteg(14, F14),
   { del: F15, bild: 'byggsats:gamingbod', text: 'Bygg gamingboden', klar: () => !!S.bod },
   { id: 'gamer', del: F15, bild: () => nastaGamer(), text: () => `Inred boden · ${Math.min(3, gamerSaker())}/3 gamersaker`, klar: () => gamerSaker() >= 3 },
@@ -5691,7 +5691,7 @@ const ROLF_RIK = 'Ja vet att du ä rik nu. Hä ä lite spänn. Å nåt ja hitta 
 const ROLF_TACK = {
   p_sexpack: { ger: 'r_tv', text: 'Ett sexpack. Till MIG. Ingen har gett mig nåt sen 2009. Ja la en TV i lådan. Från ett dödsbo ja rensade. Den funkar om man slår på den. Hårt. /R' },
   p_korv: { ger: 'r_affisch', text: 'Korv! Ja grillade, Kajsa åt tre. Här – min gamla affisch från Rolfs Rockers 1987. Ja hade hår då. Ta den. Ja kan inte titta på den. /R' },
-  p_kajsa: { ger: 'r_gardin', text: 'Kajsa spinner som en motor. Ja la Birgittas gardiner i lådan. Hon stickade dom i husvagnen. Ja har inte kunnat titta på dom sen hon dog. Du får dom. Dom e fina. Jaja. /R' },
+  p_kajsa: { ger: 'r_gardin', text: 'Kajsa spinner som en motor. Ja la Birgittas gardiner i lådan. Hon stickade dom i husvagnen. Ja har inte kunnat titta på dom sen hon dog. Du får dom. Dom e fina. Fan. /R' },
   p_fiske: { ger: 'r_klocka', text: 'Ett riktigt fiskespö. Ja … ja vet inte vad ja ska säga. Ta min guldklocka. Fick den efter 30 år på bilen. Ingen har frågat vad klockan e sen dess. /R' },
   p_trummor: { ger: 'r_fatolj', text: 'Ja spelade i två timmar i går. Grannen ringde polisen. VÄRT DET. Här, fåtöljen från dödsbot på Granvägen. Läder. Bara lite sprucken. /R' },
   p_konsert: { ger: 'r_discokula', text: 'Ja dansade. Med en tant som heter Gun. Ja e skyldig dig för resten av livet. Ta discokulan från 1987. Den har sett saker. /R' },
@@ -7146,7 +7146,7 @@ function forstaPrintWow(sk) {
 }
 paHandelse('tagitUrPrint', ({ sak }) => { if (S.dag === 1 && sak === 'nyckelring') brorSms(); });   // punkt BC: exakt trigger
 // punkt AS: brorsans två sms när den första nyckelringen är klar (undantag från regeln om inga sms dag 1)
-const BROR_SMS1 = 'VA?! Fick du igång den?? Jag försökte i typ ett år. Den bara pep. 😳';
+const BROR_SMS1 = 'VA FAN?! Fick du igång den?? Jag försökte i typ ett år. Den bara pep. 😳';
 const BROR_SMS2 = 'Sälj den till Ali, han med affären vid tippen. Han köper gamla grejer. Han köpte min gamla mopedhjälm för 20 spänn.';
 let aliRopTid = 0, brorVantar = false;
 function brorSms() {
@@ -7884,7 +7884,7 @@ function saljGrupp(t) {
   return 'Dina printar';
 }
 const ALI_NEJ = {
-  burk: 'Mammas sylt? Sånt köper jag inte. Ät upp den.',
+  burk: 'Mammas sylt? Sån skit köper jag inte. Ät upp den.',
   mogel: 'Den där har mögel. Ut ur min butik med den.',
   rolf: 'Det där fick du av Rolf. Sånt säljer man inte. Har du inget hjärta?',
   sallsynt: 'Det där är sällsynt. Behåll det. Jag har inte råd ändå.',
@@ -9380,7 +9380,7 @@ const PRESTATIONER = [
   { id: 'rod', namn: 'Röd tråd', rad: 'Mal Rolfs PETG till röd filament.', test: () => !!S.fyndForklarat },
   { id: 'garage', namn: 'Pappa sover i garaget', rad: 'Mal 10 av mammas saker.', test: () => (S.burkMalda || 0) >= 10 },
   { id: 'kalrot', namn: 'Kålrot frivilligt', rad: 'Kompostera 10 av mammas matlådor.', test: () => (S.komposterat || 0) >= 10 },
-  { id: 'arlig', namn: 'Ärlig in i märgen', rad: 'Säg nej till Rolfs fiffel tre gånger.', test: () => (S.rolf.heder || 0) >= 3 },
+  { id: 'arlig', namn: 'Ärlig som fan', rad: 'Säg nej till Rolfs fiffel tre gånger.', test: () => (S.rolf.heder || 0) >= 3 },
   { id: 'fiffel', namn: 'Fiffelkungen', rad: 'Chefen (också Rolf) vet.', test: () => (S.rolf.ja || 0) >= 3 },
   { id: 'holk', namn: 'Fåglarna flyttar in', rad: 'Sätt upp en fågelholk.', test: () => harPlacerat('fagelholk') },
   { id: 'rocker', namn: 'Rock på väggen', rad: 'Häng upp Rolfs Rockers-affischen.', test: () => harPlacerat('r_affisch') },
@@ -10766,7 +10766,7 @@ function byggFynd(f) {
 }
 // kolla regelbundet om ny mark blivit tillgänglig (respekten kan växa när som helst)
 // Bengt-Åke skriker från skogen när man går nära staketet
-const BENGT_SKRIK = ['BORT FRÅN MITT STAKET, SA JAG!', 'JAG SER DIG! JAG HAR KIKARE!', 'EN GÅNG TILL SÅ SLÄPPER JAG LÖS HUNDEN!', 'FÖRSVINN, SOPUNGE!', 'DETTA ÄR PRIVAT MARK, FÖR TUSAN!', 'JAG RINGER POLISEN! … NÄR JAG HITTAR TELEFONEN!'];
+const BENGT_SKRIK = ['BORT FRÅN MITT STAKET FÖR FAN!', 'JAG SER DIG! JAG HAR KIKARE!', 'EN GÅNG TILL SÅ SLÄPPER JAG LÖS HUNDEN!', 'DRA ÅT HELVETE, SOPUNGE!', 'DETTA ÄR PRIVAT MARK, JÄVLAR!', 'JAG RINGER POLISEN! … NÄR JAG HITTAR TELEFONEN!'];
 let bengtTid = 0;
 function kollaBengt(dt) {
   bengtTid -= dt; if (bengtTid > 0 || !ui.igang || sover) return;
@@ -10937,7 +10937,7 @@ if (S.pappaBesok && !S.sackkarra) { S.sackkarra = true; setTimeout(() => { try {
 if (S.hem?.taklampa && S.kapitelKlart) S.lampaFinal = true;   // CL
 setTimeout(() => { try { ritaGast(); flyttaHelen(); ritaHelen(); } catch (e) { console.warn(e); } }, 500);   // CS
 // ---------- Introt: varför bor du vid en soptipp? ----------
-const MAMMA_SVAR_K1 = ['HAHA träplankor?!', 'Vad är det där för nåt? Du har ju inte ens TAPETER på väggarna.', 'Och var är badrummet?? Du duschar väl??', 'Pappa säger "aha, vad lugnt då". Pappa säger det om allt.'];
+const MAMMA_SVAR_K1 = ['HAHA träplankor?!', 'Vad är det för skit? Du har ju inte ens TAPETER på väggarna.', 'Och var är badrummet?? Du duschar väl??', 'Pappa säger "aha, vad lugnt då". Pappa säger det om allt.'];
 // sista raden: mamma säger något fint om det du faktiskt har
 const MAMMA_K1_SLUT = { gardin: '…men gardinerna i fönstret var fina. Har du gjort dem själv? ❤️', fonster: '…men fönstret var fint. Det kommer in ljus i alla fall. ❤️', annars: '…men du har en säng. Det är en början. Jag är stolt. Säg inte det till pappa. ❤️' };
 const mammaK1Slut = () => harPlacerat('r_gardin') ? MAMMA_K1_SLUT.gardin : (S.hem?.fonster?.length ? MAMMA_K1_SLUT.fonster : MAMMA_K1_SLUT.annars);
@@ -11947,7 +11947,7 @@ function kapitelSlut() {
       <div class="ph-tel-kropp">${bild ? `<img class="ph-tel-bild" src="${bild}" alt="">` : ''}<div class="ph-tel-jag">Kolla här. Jag har det faktiskt rätt bra.</div><div class="ph-tel-svar"></div></div>
       <button class="fp-knapp" disabled>…</button></div>`;
     const svar = el.querySelector('.ph-tel-svar'), knapp = el.querySelector('button');
-    const MAMMA_SVAR = ['Mamma skriver…', ...MAMMA_SVAR_K1, mammaK1Slut()]; void ['Mamma skriver…', 'HAHA träplankor?!', 'Vad är det där för nåt? Du har ju inte ens TAPETER på väggarna.', 'Och var är badrummet?? Du duschar väl??', 'Pappa säger "aha, vad lugnt då". Pappa säger det om allt.', '…men gardinerna i fönstret var fina. Har du gjort dem själv? ❤️'];
+    const MAMMA_SVAR = ['Mamma skriver…', ...MAMMA_SVAR_K1, mammaK1Slut()]; void ['Mamma skriver…', 'HAHA träplankor?!', 'Vad är det för skit? Du har ju inte ens TAPETER på väggarna.', 'Och var är badrummet?? Du duschar väl??', 'Pappa säger "aha, vad lugnt då". Pappa säger det om allt.', '…men gardinerna i fönstret var fina. Har du gjort dem själv? ❤️'];
     let i = 0;
     const nasta = () => {
       if (i === 0) { svar.innerHTML = '<div class="ph-tel-mamma"><span class="prickar"><span>.</span><span>.</span><span>.</span></span></div>'; i++; setTimeout(nasta, 1600); return; }

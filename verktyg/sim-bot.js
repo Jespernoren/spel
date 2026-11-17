@@ -409,7 +409,7 @@
     }
     if (/^Printa en kolfiberstol/.test(txt)) { await printa({ typ: 'n3_stol' }); return; }
     if (/^Ställ in en gamersak i boden|^Inred boden/.test(txt)) { const t = H.nastaGamer?.(); if (t && !t.startsWith('byggsats:')) { if (!H.harRecept(t)) await kopRecept(t); if (!H.antalInv(t)) await printa({ typ: t }); if (H.antalInv(t)) await placera(t); } else await tjana(S.mynt + 300); return; }
-    if (/^Bjud Rolf på fika/.test(txt)) { const ok = await ali(async () => { const k = [...document.querySelectorAll('[data-kopnu]')].find((b) => /sopbil|fika/i.test(b.dataset.kopnu)); if (k) { k.click(); await vanta(0.6); } }, 'bjuda Rolf på fika'); if ((H.trimNiva?.('sopbil') || 0) < 1) await tjana(S.mynt + 1500, 'fikat'); return; }
+    if (/^Bjud Rolf på fika|^Köp mutor till Rolf/.test(txt)) { const ok = await ali(async () => { const k = [...document.querySelectorAll('[data-kopnu]')].find((b) => /sopbil|fika|mutor/i.test(b.dataset.kopnu)); if (k) { k.click(); await vanta(0.6); } }, 'bjuda Rolf på fika'); if ((H.trimNiva?.('sopbil') || 0) < 1) await tjana(S.mynt + 1500, 'fikat'); return; }
     if (/^Printa en designvas/.test(txt)) { if (!H.harRecept('n2_vas')) await kopRecept('n2_vas'); await printa({ typ: 'n2_vas' }); return; }
     if (/^Sälj designvasen/.test(txt)) { if (!H.antalInv('n2_vas')) await printa({ typ: 'n2_vas' }); await ali(() => saljAllt(), 'sälja vasen'); return; }
     if (/^Lägg 3 vaser i säljlådan/.test(txt)) {

@@ -415,10 +415,10 @@
   "var": "Rolfs tack för presenter, jobblappar och fynd"
  },
  {
-  "id": "rolf-bd0b8d17",
+  "id": "rolf-21d9a842",
   "figur": "rolf",
-  "text": "Nämen.. Kajsa spinner som en motor. Ja la Birgittas gardiner i lådan. Hon stickade dôm i husvagnen. Ja har int kunnat titta på dôm sen hon dog. Du får dôm. Dôm ä granna. Jaja. /R",
-  "kalla": "Kajsa spinner som en motor. Ja la Birgittas gardiner i lådan. Hon stickade dom i husvagnen. Ja har inte kunnat titta på dom sen hon dog. Du får dom. Dom e fina. Jaja. /R",
+  "text": "Kajsa spinner som en motor. Ja la Birgittas gardiner i lådan. Hon stickade dôm i husvagnen. Ja har int kunnat titta på dôm sen hon dog. Du får dôm. Dôm ä granna. Fan. /R",
+  "kalla": "Kajsa spinner som en motor. Ja la Birgittas gardiner i lådan. Hon stickade dom i husvagnen. Ja har inte kunnat titta på dom sen hon dog. Du får dom. Dom e fina. Fan. /R",
   "var": "Rolfs tack för presenter, jobblappar och fynd"
  },
  {
@@ -686,9 +686,9 @@
   "var": "Rolfs sms om marken och säljlådan"
  },
  {
-  "id": "bror-376f44c4",
+  "id": "bror-023f5ef5",
   "figur": "bror",
-  "text": "VA?! Fick du igång den?? Jag försökte i typ ett år. Den bara pep. 😳",
+  "text": "VA FAN?! Fick du igång den?? Jag försökte i typ ett år. Den bara pep. 😳",
   "var": "Brorsans sms dag 1 (punkt AS)"
  },
  {
@@ -2180,9 +2180,9 @@
   "var": "Repliker ute i världen och när Ali säger nej"
  },
  {
-  "id": "ali-f8751f9b",
+  "id": "ali-be144f16",
   "figur": "ali",
-  "text": "Mammas sylt? Sånt köper jag inte. Ät upp den.",
+  "text": "Mammas sylt? Sån skit köper jag inte. Ät upp den.",
   "var": "Repliker ute i världen och när Ali säger nej"
  },
  {
@@ -2276,9 +2276,9 @@
   "var": "Mammas svar om burkarna"
  },
  {
-  "id": "mamma-fa22f22f",
+  "id": "mamma-1d59f40d",
   "figur": "mamma",
-  "text": "Vad är det där för nåt? Du har ju inte ens TAPETER på väggarna.",
+  "text": "Vad är det för skit? Du har ju inte ens TAPETER på väggarna.",
   "var": "Mammas svar om burkarna"
  },
  {
@@ -4033,6 +4033,12 @@
   "id": "du-77b6d980",
   "figur": "du",
   "text": "Däcket ville inte stanna. Jag förstår det.",
+  "var": "Dina tankar, tips och varningar"
+ },
+ {
+  "id": "du-f480b323",
+  "figur": "du",
+  "text": "Flaggan uppe. Nu får Rolf hämta den.",
   "var": "Dina tankar, tips och varningar"
  },
  {
