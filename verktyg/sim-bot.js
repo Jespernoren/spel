@@ -201,7 +201,7 @@
       const tipp = S.tippNyckel && gardsSkrap().length <= H.gardMal();
       let n = await plockaLass({ tippen: tipp });
       if (!n && !tipp && S.tippNyckel && !H.hand.saker.length) n = await plockaLass({ tippen: true });
-      if (!n && !H.hand.saker.length) { if (!S.kvarn.tratt) { handling('inget skräp kvar att mala – väntar på sopbilen'); if (varv > 4) return false; await vanta(20); continue; } }
+      if (!n && !H.hand.saker.length) { if (!S.kvarn.tratt) { handling('inget skräp kvar att mala – väntar på sopbilen' + (varv === 1 ? ` [skräp ${H.skrapLista.length}: lätta ${H.skrapLista.filter((x) => !x.userData.tung).length}, osynliga ${H.skrapLista.filter((x) => x.visible === false).length}, utan interaktion ${H.skrapLista.filter((x) => !x.userData.interaktion).length}, tippen ${H.skrapLista.filter((x) => H.paTippen(x.position.x, x.position.z)).length}, ej lyftbara ${H.skrapLista.filter((x) => !H.kanLyfta(x)).length}, sorter ${[...new Set(H.skrapLista.filter((x) => x.visible === false || !x.userData.interaktion).map((x) => x.userData.sort))].join('/')}]` : '')); if (varv > 4) return false; await vanta(20); continue; } }
       await tomIKvarnen(); await mal();
     }
     return fil(sk) >= gram || (fil(sk) >= 1 && (lin === 'bla' ? H.extruderFull() : !H.tornPlats(lin)));
