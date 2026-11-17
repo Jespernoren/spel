@@ -3981,6 +3981,8 @@ const replikId = (t) => { let h = 2166136261; for (const c of rens(String(t))) {
 let sagtSet = null;
 const sagtMangd = () => { if (!sagtSet) { S.sagt = S.sagt || []; sagtSet = new Set(S.sagt); } return sagtSet; };
 const POST_FLAGGA_T = 'Flaggan uppe. Nu får Rolf hämta den.';
+/* A-043: pappas första besök väntar tills mammas förvarning har synts (den får aldrig komma efter) */
+function forvarningSedd() { if (S.pappaBesok) return true; const t = (S.smsSkickat || []).find((x) => /Pappa kommer förbi i morgon/.test(x)); return !t || (S.sms || []).some((m) => m.text === t) || performance.now() - dagStartTid > 180000; }   /* reserv: aldrig dödläge */
 function harSagt(t) { return sagtMangd().has(replikId(t)); }
 function markeraSagt(t, vem = '') {
   const id = replikId(t), m = sagtMangd();
@@ -6172,7 +6174,7 @@ const vidKvarn = () => [kvarn];
 const MONTERA = {
   'byggsats:generator': { namn: 'Montera generatorn på bakhjulet', mal: () => [vagCykel], hinder: () => S.cykelOmbyggd ? 'Cykeln är redan ombyggd' : !S.skrivareStar ? 'Ställ ut skrivaren först' : '', gor: () => byggOmCykeln() },   /* EF15 */
   'byggsats:tippnyckel': { namn: 'Sätt nyckeln i låset', mal: () => [grind], gor: () => { S.tippNyckel = true; ljud.plock(); oppnaGrind(); }, kvitto: TIPPEN_T },   /* EQ 39: nyckeln vrids i hänglåset, låset faller och grinden svänger upp */
-  'byggsats:powerbank': { namn: 'Koppla powerbanken till cykeln', mal: () => [cykel], hinder: () => S.powerbank ? 'Powerbanken sitter redan' : '', gor: () => { S.powerbank = true; ritaMonterat(); }, kvitto: 'Nu sparas lite ström. En nyckelring, typ.' },
+  'byggsats:powerbank': { namn: 'Koppla powerbanken till cykeln', mal: () => [cykel], hinder: () => S.powerbank ? 'Powerbanken sitter redan' : '', gor: () => { S.powerbank = true; ritaMonterat(); skratt('powerbanken på cykeln'); }, kvitto: 'Nu sparas lite ström. En nyckelring, typ. Framtiden är här, och den sitter fast med eltejp.' },   /* A-041: dag 1 får ett skratt i mitten */
   'byggsats:cykelbatteri': { namn: 'Koppla in bilbatteriet vid cykeln', mal: () => [cykel], gor: () => { S.batteriKopt = true; ritaMonterat(); ritaStart(); kedja('dag2'); }, toast: '🔋 Bilbatteriet är inkopplat – skrivaren printar klart även när du slutar trampa' },
   'byggsats:hylla': { namn: 'Sätt upp hyllan i skjulet', mal: () => [skjulYta], gor: () => { S.hylla = true; for (let i = 0; i < 8; i++) S.kistan.push(null); ritaMonterat(); }, toast: '🗄️ Hyllan sitter i skjulet – 8 platser till i förrådet' },
   'byggsats:spis': { namn: 'Ställ in spisen i skjulet', mal: () => [skjulYta], gor: () => { S.spis = true; S.spisDag = S.dag; ritaMonterat(); }, toast: '🍳 Spisen står i skjulet – maten mättar mer nu' },
@@ -6326,7 +6328,7 @@ function kollaAli() {
 }
 paHandelse('morgonkortStangt', ({ dag }) => {
   if (dag === 2) { S.aliNya = []; if (!S.aliStoryVisad && !S.ritningar.includes('grip')) paket([{ sms: ['ali', lappInfo('salt')[1]] }, { ge: () => { S.aliStoryVisad = true; } }], { om: 5000, villkor: () => !S.ritningar.includes('grip') && !S.aliStoryVisad }); return; }   // EA #14: Alis berättelse kommer dag 1 – här bara för gamla sparfiler
-  const nya = S.aliNya || []; S.aliNya = [];
+  const nya = (S.aliNya || []).filter((x) => !kopt(x)); S.aliNya = [];   /* SEKVENS: inget nyhets-sms om det man redan köpt */
   const st = STEG[S.steg], hk = st ? HUVUDKOP[st.del] : null;
   const id = nya.find((x) => ALI_SPECIAL[x]) || (hk && nya.includes(hk) ? hk : null);
   if (!id) return;
@@ -6557,7 +6559,7 @@ function vand(g, mot) { g.rotation.y = Math.atan2(mot.x - g.position.x, mot.z - 
 function uppdateraPappa(dt) {
   if (!pappaBesok.aktiv) {
     const dags = !S.pappaBesok ? S.pappaForstaDag === S.dag : S.dag >= (S.pappaNasta || 0);   // B4 L3: första besöket är morgonens story-händelse dag 6
-    if (dags && ui.igang && !pausad && !sover && performance.now() > lugnTill + 2000 && !menyOppen() && (!S.pappaBesok ? kanalLedig() && !kanal.length : Math.hypot(spelare.pos.x - SKJUL.x, spelare.pos.z - SKJUL.z) < 14 && Math.random() < dt / 20)) startaPappaBesok();
+    if (dags && forvarningSedd() && ui.igang && !pausad && !sover && performance.now() > lugnTill + 2000 && !menyOppen() && (!S.pappaBesok ? kanalLedig() && !kanal.length : Math.hypot(spelare.pos.x - SKJUL.x, spelare.pos.z - SKJUL.z) < 14 && Math.random() < dt / 20)) startaPappaBesok();
     return;
   }
   const b = pappaBesok, P = b.P, R = P.clone().add(new THREE.Vector3(1.3, 0, 0.3));
