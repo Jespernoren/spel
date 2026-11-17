@@ -2626,16 +2626,16 @@ const karraFull = (g = 0) => karraGram() + Math.max(g, 1) > KARRA_KAP;
 const kanLyfta = (s) => s.userData.sort !== 'kajak' && (!s.userData.tung || !!S.sackkarra);
 const KAJAK_LANG = 'För lång. Den måste med bandet.';   /* DE: kajaken väntar på kolfiberlinjen */   // CM: tunga saker lyfts bara med säckkärran (pappas, dag 6)
 function plockaSkrap(s, tyst = false) {
-  if (s.userData.sort === 'kajak') { if (!tyst && !enGang(STOR_T, 'DJ: för stor')) ljudH('fel'); return; }   /* DJ */
-  if (s.userData.tung && valdTyp() === 'karra') { if (!tyst && !enGang(KARRA_TUNG_T, 'DJ: tunna i kärran')) ljudH('fel'); return; }
+  if (s.userData.sort === 'kajak') { if (!tyst && !enGang(STOR_T, 'DJ: för stor')) { ljudH('fel'); ui.toast(STOR_T, 'fel'); } return; }   /* DJ */
+  if (s.userData.tung && valdTyp() === 'karra') { if (!tyst && !enGang(KARRA_TUNG_T, 'DJ: tunna i kärran')) { ljudH('fel'); ui.toast(KARRA_TUNG_T, 'fel'); } return; }
   if (s.userData.tung && !valdSack()) { if (!tyst) tungMiss(); return; }   /* DG: kanoten kommer bara med bandet – tanken avslöjar inte hur */   /* DF: kajaken kommer bara med bandet */
   if (!kanLyfta(s)) { if (!tyst) tungMiss(); return; }
   if (s.userData.tung && !valdSack()) {   // CM: tunga saker tar man med säckkärran
     if (tyst) return;
-    if (valdTyp() === 'karra') { if (!varnadTid.rodPirra) { varnadTid.rodPirra = 1; tanke('Den röda tar jag med pirran.', 'CY', 'REAKTION'); } else ljud.fel(); return; }
+    if (valdTyp() === 'karra') { if (!varnadTid.rodPirra) { varnadTid.rodPirra = 1; tanke('Den röda tar jag med pirran.', 'CY', 'REAKTION'); } else { ljud.fel(); ui.toast('Den röda tar jag med pirran.', 'fel'); } return; }
     if (!valjTyp('sackkarra')) { ui.toast('Säckkärran ligger i förrådet – lägg den i verktygsraden', 'fel'); ljud.fel(); return; }
   }
-  if (valdSack() && !s.userData.tung) { if (!tyst && !enGang(PIRRA_LITEN, 'DG: småskräp med pirran')) ljudH('fel'); return; }   /* DG: pirran tar bara tunnor och röda backar */
+  if (valdSack() && !s.userData.tung) { if (!tyst && !enGang(PIRRA_LITEN, 'DG: småskräp med pirran')) { ljudH('fel'); ui.toast(PIRRA_LITEN, 'fel'); } return; }   /* DG: pirran tar bara tunnor och röda backar */
   if (valdSack() && (!s.userData.tung || S.karraLast.length >= pirraKap())) { if (!tyst) { ljud.fel(); if (!s.userData.tung && !varnadTid.sackLatt) { varnadTid.sackLatt = 1; tanke('Pirran är för de röda sakerna. Skräpet tar jag med händerna.', 'CM', 'REAKTION'); } else karraPuls = 0.5; } return; }
   if (valdKarra()) {
     if (karraFull(s.userData.gram)) { if (!tyst) karraOverfull(); return; }   // CJ: syns på kärran, ljudet fel
@@ -2861,7 +2861,7 @@ function linjeFor(key) {
   if (VAROR[id] && !VAROR[id].lyx && !VAROR[id].niva && VAROR[id].pris > 0) return 'bla';
   return '';
 }
-function kortTanke(id, t) { if (!varnadTid['kt:' + id]) { varnadTid['kt:' + id] = 1; tanke(t, 'CY', 'REAKTION'); } else ljud.fel(); }   // CY: en kort tanke första gången, sedan bara ljudet
+function kortTanke(id, t) { if (!varnadTid['kt:' + id]) { varnadTid['kt:' + id] = 1; tanke(t, 'CY', 'REAKTION'); } else { ljud.fel(); ui.toast(t, 'fel'); } }   /* ED 9: ingen tyst nej – andra gången en kort ruta */   // CY: en kort tanke första gången, sedan bara ljudet
 let tungMissSagt = false;
 const NOLAS = '\u2060';
 const PAUS_T = 'Den stannar när jag slutar trampa. Ström som sparas hade varit nåt.', HANDER_T = 'Jag behöver nånstans att göra av det här.', BROR_RULLE_T = 'Storebrors rulle. Den räcker inte länge.';   /* DT */   /* DJ: etikett utan [E] – det går inte */
@@ -2878,13 +2878,13 @@ function skrapEtikett(s) {   /* DJ: etiketten utgår från det du håller i hand
 const TUNG_T = 'Den är för tung. Jag behöver något att köra den på.', KANOT_T = 'En hel kanot. Vem slänger en kanot?';   /* DG: tidiga ledtrådar */
 const PIRRA_LITEN = 'Nä, den där är för liten för pirran. Den tar jag med handen.', PIRRA_STOR = 'Den där kan jag inte lyfta med pirran. Den är för stor. Jag får komma på något annat sätt.';
 const enGang = (t, varfor, villkor) => { if (varnadTid['dg:' + t] || harSagt(t)) return false; varnadTid['dg:' + t] = 1; tanke(t, varfor, 'REAKTION', villkor); return true; };
-function tungMiss() { if (!enGang(TUNG_T, 'DG: tunnan före pirran')) ljudH('fel'); }
+function tungMiss() { if (!enGang(TUNG_T, 'DG: tunnan före pirran')) { ljudH('fel'); ui.toast(TUNG_T, 'fel'); } }   /* ED 9: andra gången en kort ruta i stället för ett tyst nej */
 function karraOverfull() { ljud.fel(); karraPuls = 0.5; if (!varnadTid.karraForsta) { varnadTid.karraForsta = 1; ui.toast(VARN.karra || 'Kärran är full – töm den i kvarnen', 'fel'); } }
 function karraKlick() {   // returnerar true om klicket hanterades
   const m = karraKand || karraMal();
   if (m) { plockaSkrap(m); textLogg('karraKlick', 'du', 'träff', ''); return true; }
   textLogg('karraKlick', 'du', 'miss', '');
-  if (!karraMissTanke) { karraMissTanke = true; tanke('Lite närmare.', 'CJ: miss med kärran', 'REAKTION'); } else ljud.fel();
+  if (!karraMissTanke) { karraMissTanke = true; tanke('Lite närmare.', 'CJ: miss med kärran', 'REAKTION'); } else { ljud.fel(); ui.toast('Lite närmare.', 'fel'); }
   return true;
 }
 function ritaKarraLast() {
@@ -4973,7 +4973,7 @@ interaktor.registrera(skjulYta, {
     if (false) {   // CL: lampskärmen sitter redan på taklampan
       taBortVald(); S.hem = { ...S.hem, skarm: true };
       HEM_DELAR.taklampa.userData.skarm.visible = true; HEM_DELAR.taklampa.userData.kon.visible = false;
-      ljudH('placera'); ui.toast('💡 Lampskärmen sitter på taklampan – så mysigt! Trivsel +6', 'guld'); uppdateraSkjul(); sparaSnart(); return;
+      ljudH('montera'); ui.toast('💡 Lampskärmen sitter på taklampan – så mysigt! Trivsel +6', 'guld'); uppdateraSkjul(); sparaSnart(); return;
     }
     const id = valdHemDel(); if (!id) return;
     if (id === 'fonster') {
@@ -5001,7 +5001,7 @@ interaktor.registrera(skjulYta, {
     } else {
       S.hem = { ...(S.hem || {}), [id]: true }; if (HEM_DELAR[id]) HEM_DELAR[id].visible = true;
       if (ROLF_HEM[id] && S.rolfNummer) paket([{ sms: ['rolf', ROLF_HEM[id]] }], { om: 30000 });   // punkt BD: placerat:<del> + 30 s
-      ljudH(id === 'tapeter' ? 'tapet' : 'hammare2'); ui.toast(id === 'tapeter' ? 'Tapeterna sitter! Klassisk 70-talstapet … Ali säljer snyggare mönster.' : trivselToast(MASKINER[id].namn, MASKINER[id].trivsel), 'guld');
+      ljudH(id === 'tapeter' ? 'tapet' : 'montera');   /* EF 14: montering på byggnaden = skruvdragaren */ ui.toast(id === 'tapeter' ? 'Tapeterna sitter! Klassisk 70-talstapet … Ali säljer snyggare mönster.' : trivselToast(MASKINER[id].namn, MASKINER[id].trivsel), 'guld');
     }
     uppdateraSkjul(); sparaSnart();
   },
@@ -11751,7 +11751,7 @@ interaktor.registrera(tradgard, {
   kanAktivera: () => !!S.tradgard?.brev,
   aktivera: () => {
     const T = S.tradgard = S.tradgard || {};
-    const mont = (id, nyckel) => { taBortInv(id); T[nyckel] = true; if (nyckel === 'vaxthus') T.vaxthusDag = S.dag; ljud.placera(); ui.toast(`${VAROR[id].namn} på plats.`, 'bra'); ritaTradgard(); sparaSnart(); if (T.spalje && T.vatten && (nyckel === 'spalje' || nyckel === 'vatten')) paket([{ sms: TRADGARD_REPLIK.tack }], { om: 6000 }); };
+    const mont = (id, nyckel) => { taBortInv(id); T[nyckel] = true; if (nyckel === 'vaxthus') T.vaxthusDag = S.dag; ljudH('montera'); ui.toast(`${VAROR[id].namn} på plats.`, 'bra'); ritaTradgard(); sparaSnart(); if (T.spalje && T.vatten && (nyckel === 'spalje' || nyckel === 'vatten')) paket([{ sms: TRADGARD_REPLIK.tack }], { om: 6000 }); };
     if (antalInv('t_spalje') > 0) return mont('t_spalje', 'spalje');
     if (antalInv('t_bevattning') > 0) return mont('t_bevattning', 'vatten');
     if (antalInv('t_vaxthus') > 0) return mont('t_vaxthus', 'vaxthus');
