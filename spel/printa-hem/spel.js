@@ -1398,7 +1398,7 @@ const bradhog = new THREE.Group();
   for (const [x, rz] of [[1.45, 0.35], [1.6, 0.5]]) { const m = box(0.2, 1.3, 0.04, mat(0x8a6a3f)); m.position.set(x, 0.6, -0.1); m.rotation.z = rz; bradhog.add(m); }
   const skaft = box(0.03, 0.03, 0.32, mat(0x6b4a2a)); skaft.position.set(1.05, 0.2, 0.2); skaft.rotation.y = 0.5; bradhog.add(skaft);
   const huvud = box(0.12, 0.05, 0.05, mat(0x444444)); huvud.position.set(1.12, 0.2, 0.34); huvud.rotation.y = 0.5; bradhog.add(huvud);
-  bradhog.position.set(VAG_SKYLT.x + 0.1, 0, VAG_SKYLT.z - 0.4); scen.add(bradhog);
+  bradhog.position.set(VAG_SKYLT.x - 1.3, 0, VAG_SKYLT.z - 0.1); scen.add(bradhog);   /* A-062 v3: vid sidan av, inte framför kameran */
 }
 // kapitelkort: stor rubrik mitt i bild några sekunder – säger vad kapitlet går ut på, inget mer
 function visaKapitelKort(nr, namn, mal) {
@@ -4899,7 +4899,7 @@ function uppdateraBlick(dt) {
 let aliHarRopat = false;
 function aliRopar() { if (aliHarRopat) return; aliHarRopat = true; tittaMot(ALI.x, ALI.z, 1.6); setTimeout(() => prata('ali', ALI_ROP), 500); }
 // B33: DU_SANG ("3D-modellen till sängen kostar 60 spänn…") är struken
-const DU_GULD = 'Se så mycket skräp. Det här är ingen soptipp. Det är en guldgruva.';   /* A-062 */
+const DU_GULD = 'Se så mycket skräp här är. Det är ju en guldgruva!';   /* A-062 v3 */
 const DU_BYGG = 'Men först en skylt, så att alla vet var jag bor.';   /* A-062/A-063 */
 // DT: pilen räknar höjden från sakens egen topp – närmaste kända sak inom 1,5 m från målpunkten
 const pilBox = new THREE.Box3(), pilV = new THREE.Vector3(); let pilCache = { p: null, y: 0, t: 0 };
@@ -4930,7 +4930,8 @@ function uppdateraMalPil() {
   if (!p || !ui.igang) { malPil.visible = false; }
   else { const stor = !S.skyltUppe && S.steg <= 1; malPil.scale.setScalar(stor ? Math.max(1.3, Math.min(2, Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z) / 9)) : Math.min(2, Math.max(1, Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z) / 9))); malPil.visible = true; malPil.position.copy(p).add(new THREE.Vector3(stor ? 0.65 : 0, 0, 0)); malPil.position.y = pilTopp(p) + 0.3 + Math.abs(Math.sin(performance.now() / 300)) * 0.15;   /* ED5: spetsen 0,3 m ovanför det man ser, gungar max 0,15 m */ malPil.rotation.y += 0.04; }
   // din egen röst när dagboken är läst: dags att spika skylten
-  if (!S.skyltUppe && S.steg <= 1 && !sagtBygg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas) { sagtBygg = true; bud(() => { if (!S.skyltUppe) { if (!S.kap1Visad) { S.kap1Visad = true; visaKapitelKort(1, KAP1_NAMN, KAP1_MAL); sparaSnart(); } tittaMot(VAG_SKYLT.x, VAG_SKYLT.z, 1.8); setTimeout(() => { kanalLagg({ vikt: 'STORY', vem: 'du', text: DU_GULD, delar: [{ text: DU_GULD }, { text: DU_BYGG }], villkor: () => !S.skyltUppe, lugnOk: true, forst: true });   /* A-063: prompten före handlingen – stryks om skylten redan sitter */ }, 1000); } }); }
+  if (!S.skyltUppe && S.steg <= 1 && !sagtBygg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas) { sagtBygg = true; bud(() => { if (!S.skyltUppe) { setTimeout(() => { kanalLagg({ vikt: 'STORY', vem: 'du', text: DU_GULD, delar: [{ text: DU_GULD }, { text: DU_BYGG, visa: () => tittaMot(VAG_SKYLT.x, VAG_SKYLT.z, 1.8) }], villkor: () => !S.skyltUppe, lugnOk: true, forst: true,   /* A-063: prompten före handlingen – stryks om skylten redan sitter */
+      efter: () => { if (!S.kap1Visad) { S.kap1Visad = true; visaKapitelKort(1, KAP1_NAMN, KAP1_MAL); sparaSnart(); } } });   /* A-062 v3: tankarna → målet → kapitelkortet tyst */ }, 1000); setTimeout(() => { if (!S.kap1Visad && ui.igang) { S.kap1Visad = true; visaKapitelKort(1, KAP1_NAMN, KAP1_MAL); sparaSnart(); } }, 30000); } }); }
   // instruktionen läses först när dagboken är läst och (i ett nytt spel) skylten är uppe
   // punkt 15: ett nytt mål är en sak i kanalen. Målrutan visar det klara målet med ✓ tills det nya målets tur kommer –
   // då byts rutan och berättaren läser upp målet (finns ingen uppläsning byts rutan tyst).
@@ -8729,7 +8730,7 @@ function startRuta(titel = ui.o.titel, text = ui.o.text, knappText = 'Starta') {
     <button class="br-tyck" data-tyck>${ik('brev')} Tyck till om spelet</button>
     <a class="fp-tillbaka" href="../../index.html">← Alla spel</a></div>`;
   ui.overlay.hidden = false;
-  ui.overlay.querySelector('.br-starta').onclick = () => { if (!S.spelarNamn) fragaNamn(() => ui.starta()); else ui.starta(); };
+  ui.overlay.querySelector('.br-starta').onclick = () => { const vidare = () => visaDag1(() => ui.starta()); if (!S.spelarNamn) fragaNamn(vidare); else vidare(); };   /* A-062 v3: meny → dagboken sida 1 → spelet */
   ui.overlay.querySelector('[data-sparplatser]').onclick = () => ui.o.onSparplatser?.();
   { const ty = ui.overlay.querySelector('[data-tyck]'); if (ty) ty.onclick = () => oppnaTyckTill(ui.overlay.querySelector('.br-start')); }
   ui.overlay.querySelector('[data-ljudval]').onclick = () => oppnaLjud(ui.overlay.querySelector('.br-start'));
@@ -11283,6 +11284,14 @@ function spelKamera(vy) {
     const fran = new THREE.Vector3(-1.5 - sk.x, 0, TOMT + 2.5 - sk.z).normalize();
     cam.position.set(sk.x + fran.x * 1.25 + fran.z * 0.35, sk.y + 0.42, sk.z + fran.z * 1.25 - fran.x * 0.35); cam.lookAt(sk.x, sk.y - 0.05, sk.z);
   }
+  else if (vy === 'gard') { cam.position.set(2.5, 5.5, TOMT + 9); cam.lookAt(1.5, 0, 5); cam.fov = 62; }   /* A-062 v3 ruta 11: bred bild från vägen, ingen cykel */
+  else if (/^(tak|dorrhal|ratta)$/.test(vy)) {   /* A-062 v3 ruta 13: närbilder på skjulet */
+    const zf = SKJUL.z + SKJUL.d / 2;
+    if (vy === 'tak') { cam.position.set(SKJUL.x + 0.2, 1.2, SKJUL.z + 0.4); cam.lookAt(SKJUL.x - 0.1, SKJUL.h + 4, SKJUL.z - 0.9); }   // inifrån: hålet i taket mot himlen
+    else if (vy === 'dorrhal') { cam.position.set(SKJUL.x + 0.15, 1.15, zf + 2.1); cam.lookAt(SKJUL.x, 1.0, zf); }
+    else { cam.position.set(SKJUL.x - 0.05, 0.38, zf + 1.25); cam.lookAt(SKJUL.x - 0.35, 0.14, zf - 0.05); }
+    cam.fov = 55;
+  }
   else { cam.position.set(-1.5, 1.6, TOMT + 2.5); cam.rotation.set(-0.08, 0.2, 0); }   // startpositionen (nyttSpel)
   cam.aspect = 16 / 10; cam.updateProjectionMatrix(); cam.updateMatrixWorld(true); return cam;
 }
@@ -11290,18 +11299,27 @@ function spelBild(vy) {
   if (spelBildCache[vy]) return spelBildCache[vy];
   try {
     const cam = spelKamera(vy), r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio();
-    r.setPixelRatio(1); r.setSize(1280, 800, false); r.render(scen, cam);
+    const dold = (vy === 'gard' ? [vagCykel, malPil] : vy === 'start' ? [malPil] : /^(tak|dorrhal|ratta)$/.test(vy) ? [malPil, sangSpoke, sangSkylt, planMesh] : []).filter((o) => o?.visible);   /* närbilderna: inga spelskyltar */ dold.forEach((o) => { o.visible = false; });
+    let ratta = null; if (vy === 'ratta') {   /* A-062 v3: en råtta tittar ut ur dörrhålet */
+      const gra = mat(0x6d6259); ratta = new THREE.Group(); const kr = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), gra); kr.scale.set(1, 0.7, 1.5); kr.position.y = 0.05; ratta.add(kr);
+      ratta.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), gra), 0, 0.07, 0.1)); for (const x of [-0.03, 0.03]) { ratta.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 6), mat(0x8a7d72)), x, 0.115, 0.09)); ratta.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.008, 6, 4), mat(0x111111)), x * 0.6, 0.085, 0.14)); }
+      ratta.position.set(SKJUL.x - 0.35, 0, SKJUL.z + SKJUL.d / 2 - 0.05); ratta.lookAt(cam.position.x, 0, cam.position.z); scen.add(ratta);
+    }
+    r.setPixelRatio(1); r.setSize(1280, 800, false); r.render(scen, cam); dold.forEach((o) => { o.visible = true; }); if (ratta) scen.remove(ratta);
     const C = document.createElement('canvas'); C.width = 1280; C.height = 800; C.getContext('2d').drawImage(r.domElement, 0, 0, 1280, 800);
     r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); spelBildCache[vy] = C.toDataURL('image/jpeg', 0.86);
   } catch (e) { console.warn('spelBild', e); spelBildCache[vy] = 'intro/gard.webp'; }
   return spelBildCache[vy];
 }
 function kritaSvg(vy) {
-  const cam = spelKamera(vy === 'skjul' ? 'start' : 'skrivare'), v = new THREE.Vector3();
+  const cam = spelKamera(/^skjul/.test(vy) ? 'start' : 'skrivare'), v = new THREE.Vector3();
   const pt = (x, y, z) => { v.set(x, y, z).project(cam); return [((v.x + 1) / 2 * 100).toFixed(2), ((1 - v.y) / 2 * 62.5).toFixed(2)]; };
   const pl = (a) => a.map((p) => p.join(',')).join(' ');
   let streck = '';
-  if (vy === 'skjul') {   // tak och dörr i krita på skjulet
+  if (vy === 'skjul3') {   /* A-062 v3: tak, dörr och ett tänt fönster ritas fram */
+    const x1 = SKJUL.x - SKJUL.b / 2, x2 = SKJUL.x + SKJUL.b / 2, zf = SKJUL.z + SKJUL.d / 2, h = SKJUL.h, f = [pt(x1 + 0.45, 1.15, zf + 0.02), pt(x1 + 0.45, 1.65, zf + 0.02), pt(x1 + 1.05, 1.65, zf + 0.02), pt(x1 + 1.05, 1.15, zf + 0.02)];
+    streck = `<polyline data-r="3" points="${pl([pt(x1 - 0.3, h, zf + 0.2), pt(SKJUL.x, h + 1.1, zf + 0.2), pt(x2 + 0.3, h, zf + 0.2)])}"/><polyline data-r="3" style="animation-delay:.6s" points="${pl([pt(SKJUL.x - 0.5, 0, zf), pt(SKJUL.x - 0.5, 2, zf), pt(SKJUL.x + 0.5, 2, zf), pt(SKJUL.x + 0.5, 0, zf)])}"/><polyline data-r="3" style="animation-delay:1.2s" points="${pl([...f, f[0]])}"/><polygon class="ph-fonsterljus" points="${pl(f)}" fill="#ffd43b" stroke="none"/>`;
+  } else if (vy === 'skjul') {   // tak och dörr i krita på skjulet
     const x1 = SKJUL.x - SKJUL.b / 2, x2 = SKJUL.x + SKJUL.b / 2, zf = SKJUL.z + SKJUL.d / 2, h = SKJUL.h;
     streck = `<polyline data-r="0" points="${pl([pt(x1 - 0.3, h, zf + 0.2), pt(SKJUL.x, h + 1.1, zf + 0.2), pt(x2 + 0.3, h, zf + 0.2)])}"/><polyline data-r="1" points="${pl([pt(SKJUL.x - 0.5, 0, zf), pt(SKJUL.x - 0.5, 2, zf), pt(SKJUL.x + 0.5, 2, zf), pt(SKJUL.x + 0.5, 0, zf)])}"/>`;
   } else {   // en flaska → ett stort frågetecken → skrivaren
@@ -11435,7 +11453,8 @@ function visaCitat(klar) {
   setTimeout(ga, 3600);
   (window.__introLogg ||= []).push({ kort: 'citat', h: 'visas', t: Math.round(performance.now()) });
 }
-function visaIntro(klar) {
+function visaIntro(klar) { return visaIntro3(klar); }   /* A-062 v3 */
+function visaIntroV2(klar) {
   introPagar = true;
   forladdaRepliker(INTRO_TAL()).then(forladdaElFigurer);   // punkt AZ: introts alla repliker avkodas redan på startrutan
   const el = document.createElement('div'); el.className = 'ph-intro';
@@ -11524,6 +11543,192 @@ function visaIntro(klar) {
   rostKlar.then(() => { for (const [v, t] of INTRO_TAL()) { const k = rostKlipp(v, t); if (k) hamtaPack(k[0]); } });
   const borja = () => { el.onclick = nasta; addEventListener('keydown', tangent, true); try { ljudCtx(); } catch {} el.innerHTML = ''; visa(); };
   el.onclick = (e) => { e.stopPropagation(); borja(); };
+}
+
+/* ---------- A-062 v3: introt enligt storyboard v3 (mockupen godkänd 13:09) ----------
+   intro (Enter hoppar över) → startmenyn → dagboken sida 1 (Börja) → spelet. Varje ruta har en fast längd,
+   0,5 s tystnad innan texten, 0,3 s mellan raderna, och ingen ruta byts medan någon pratar.
+   Mammas repliker är bubblor BREDVID huvudet (pilen mot henne) – huvudets plats kommer ur renderingen (BUB3). */
+const BUB3 = { v3dag2: [60.6, 36.5], v3dag3: [58, 38], v3dag4: [55.4, 39.6], v3dag5: [52.6, 41.1], v3dag6: [50.2, 43.1], v3kort7: [51.2, 43.1] };   // huvudet i % av bilden (verktyg/ai3.mjs PTS)
+const IB3 = (namn, extra = {}) => ({ id: extra.id || namn, src: `intro/${namn}.webp`, ...extra });
+const KAL3 = (dag, fore) => ({ id: 'kal', kal: dag, fore, cls: 'vanster' });
+const IDE3 = {   /* ruta 12: idéskissen i vita konturer, i ordningen skräp → kvarn → filament → skrivare → allt man kan printa */
+  skrap: '<rect x="60" y="250" width="40" height="100" rx="12"/><rect x="72" y="230" width="16" height="20"/><path d="M110 350 L120 290 L170 300 L165 350 Z"/><circle cx="150" cy="270" r="18"/>',
+  pil1: '<path d="M175 290 L235 285 M222 276 L235 285 L222 294"/>',
+  kvarn: '<rect x="250" y="220" width="130" height="120"/><path d="M240 220 L315 150 L390 220"/><circle cx="315" cy="280" r="26"/><line x1="380" y1="300" x2="420" y2="300"/>',
+  fraga: '<text x="228" y="150" class="ph-fraga">?</text><text x="398" y="140" class="ph-fraga">?</text><text x="212" y="345" class="ph-fraga">?</text><text x="408" y="365" class="ph-fraga">?</text>',
+  pil2: '<path d="M425 290 L460 290 M449 282 L460 290 L449 298"/>',
+  filament: '<circle cx="520" cy="290" r="55"/><circle cx="520" cy="290" r="18"/>',
+  pil3: '<path d="M580 290 L690 250 M676 246 L690 250 L681 262"/>',
+  skrivare: '<circle cx="680" cy="380" r="45"/><circle cx="830" cy="380" r="45"/><path d="M680 380 L740 300 L830 380 M740 300 L790 300"/><rect x="700" y="200" width="110" height="95"/><line x1="700" y1="250" x2="810" y2="250"/>',
+  sang: '<rect x="120" y="470" width="120" height="50"/><rect x="120" y="440" width="35" height="30"/>',
+  tak: '<path d="M330 520 L330 470 L400 430 L470 470 L470 520 Z"/>',
+  jacuzzi: '<ellipse cx="610" cy="490" rx="70" ry="28"/><path d="M560 470 Q575 450 590 470 M620 470 Q635 450 650 470"/>',
+  hus: '<rect x="760" y="440" width="140" height="90"/><path d="M745 445 L830 390 L915 445"/><rect x="815" y="480" width="30" height="50"/>',
+};
+const INTRO3 = [
+  { tid: 3500, ljud: 'spel', lager: [IB3('v3rum1')], tal: [['berattare', 'Ditt rum.'], ['berattare', 'Ungefär som vanligt.']] },
+  { tid: 3000, lager: [IB3('v3dag2', { id: 'dag' }), KAL3('MÅNDAG')], tal: [['mamma', 'Snälla du, kan du inte städa ditt rum?', { b: 'v3dag2' }]] },
+  { tid: 1400, ljud: 'riv', lager: [IB3('v3dag3', { id: 'dag' }), KAL3('TISDAG', 'MÅNDAG')], tal: [['berattare', 'Hon sa det igen.'], ['mamma', 'STÄDA!', { b: 'v3dag3', cls: 'rop1' }]] },
+  { tid: 1400, ljud: 'riv', lager: [IB3('v3dag4', { id: 'dag' }), KAL3('ONSDAG', 'TISDAG')], tal: [['berattare', 'Och igen.'], ['mamma', 'STÄDA!!', { b: 'v3dag4', cls: 'rop2' }]] },
+  { tid: 1400, ljud: 'riv', lager: [IB3('v3dag5', { id: 'dag' }), KAL3('TORSDAG', 'ONSDAG')], tal: [['berattare', 'Och igen.'], ['mamma', 'STÄDA!!!', { b: 'v3dag5', cls: 'rop3' }]] },
+  { tid: 2500, ljud: 'dorr', lager: [IB3('v3dag6', { id: 'dag' }), IB3('v3dorr6', { cls: 'small' }), KAL3('FREDAG', 'TORSDAG')], tal: [['mamma', 'Det ser ut som en SOPTIPP här inne!', { b: 'v3dag6', fore: 500 }]] },
+  { tid: 3000, tyst: 1000, lager: [IB3('v3kort7'), { id: 'vinjett', vinjett: true }], tal: [['mamma', 'Du kan lika gärna BO på en soptipp!', { b: 'v3kort7', cls: 'rop2' }]] },
+  { tid: 4000, ljud: 'gitarr', lager: [IB3('v3kort8a', { r: 0 }), IB3('v3kort8b', { r: 1 })], tal: [['du', 'Okej.'], ['du', 'Då gör jag väl det.']] },
+  { tid: 4000, ljud: 'band', lager: [IB3('v3pack9')], tal: [['du', 'Jag packar ryggan med sånt som kan vara bra att ha.'], ['du', 'Och surrar fast brorsans gamla 3D-skrivare på cykeln.']] },
+  { tid: 5000, musik: true, lager: [{ id: 'vagloop', loop: 'intro/vag.webp' }, { id: 'cyklist', sprite: 'intro/cyklist-tramp.webp', n: 4 }], tal: [['berattare', 'Förbi skolan.'], ['berattare', 'Förbi affären.'], ['berattare', 'Förbi där husen tar slut.']] },
+  { tid: 3500, ljud: 'masar', lager: [{ id: 'spelgard', spel: 'gard' }], tal: [['berattare', 'Vid soptippen står ett gammalt skjul.'], ['berattare', 'Och en gård full av skräp.']] },
+  { tid: 7000, lager: [{ id: 'tavla', tavla: true }], tal: [['berattare', 'Skräp är plast.', { rita: [['skrap', 0]] }], ['berattare', 'En kvarn gör det till filament.', { rita: [['pil1', 0], ['kvarn', 200], ['fraga', 700], ['pil2', 1200], ['filament', 1300]] }], ['berattare', 'Och med filament kan man printa… allt.', { rita: [['pil3', 0], ['skrivare', 200], ['sang', 1300], ['tak', 1750], ['jacuzzi', 2200], ['hus', 2650]] }], ['du', 'Jag behöver bara komma på hur.']] },
+  { tid: 6000, lager: [{ id: 'n0', spel: 'tak', r: 0 }, { id: 'n1', spel: 'dorrhal', r: 1 }, { id: 'natt', natt: true, r: 1 }, { id: 'n2', spel: 'ratta', r: 2 }, { id: 'n3', spel: 'start', r: 3, cls: 'zoomut' }, { id: 'k3', krita: 'skjul3', r: 3 }],
+    tal: [['berattare', 'Inget tak.'], ['berattare', 'Ingen dörr.'], ['berattare', 'Ingen mamma som tjatar.', { pip: true }], ['berattare', 'Tänk om det här kunde bli ett riktigt hem?', { fore: 3200 }]], slut: true },
+];
+const introCss3 = document.createElement('style');
+introCss3.textContent = `
+.ph-il.kal.vanster{right:auto;left:5%}
+.ph-bub{position:absolute;z-index:6;background:#fff;color:#1d1a24;font:800 clamp(14px,2.1vw,22px)/1.2 "Comic Sans MS","Chalkboard SE",system-ui;padding:.45em .8em;border-radius:16px;box-shadow:0 4px 0 rgba(0,0,0,.25);max-width:36%;animation:phBub .25s ease-out}
+.ph-bub:after{content:"";position:absolute;top:50%;margin-top:-10px;border:10px solid transparent}
+.ph-bub.hoger:after{left:-24px;border-right:16px solid #fff}.ph-bub.vanster:after{right:-24px;border-left:16px solid #fff}
+.ph-bub.rop1{font-size:clamp(22px,3.4vw,38px)}.ph-bub.rop2{font-size:clamp(28px,4.4vw,50px)}.ph-bub.rop3{font-size:clamp(34px,5.6vw,64px)}
+@keyframes phBub{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.ph-tavla{background:#23302a}
+.ph-tavla svg{position:absolute;inset:0;width:100%;height:100%}
+.ph-tavla g{opacity:0}.ph-tavla g.rita{opacity:1}
+.ph-tavla path,.ph-tavla rect,.ph-tavla circle,.ph-tavla line,.ph-tavla ellipse{fill:none;stroke:#f4f1e6;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:900;stroke-dashoffset:900}
+.ph-tavla g.rita path,.ph-tavla g.rita rect,.ph-tavla g.rita circle,.ph-tavla g.rita line,.ph-tavla g.rita ellipse{animation:phTavla 1.1s ease-out forwards}
+.ph-tavla .ph-fraga{fill:#ffd43b;stroke:none;font:700 34px "Comic Sans MS",system-ui}
+@keyframes phTavla{to{stroke-dashoffset:0}}
+.ph-il.zoomut{transition:transform 2.6s ease-in-out,opacity .4s}
+.ph-krita .ph-fonsterljus{opacity:0;animation:phLjus .6s 2.4s forwards}.ph-krita.sen polyline{animation-delay:1.2s}
+@keyframes phLjus{to{opacity:.8}}
+.ph-natt{position:absolute;inset:0}
+.ph-vinjett{background:radial-gradient(circle at 50% 38%,transparent 30%,rgba(122,0,0,.55) 80%)}
+.ph-intro3 .ph-intro-ord{min-height:5.2em}
+.ph-intro3 .ph-intro-rad .ph-vem{font:800 11px system-ui;letter-spacing:.1em;opacity:.6;margin-right:6px;text-transform:uppercase}
+.ph-dag1{position:fixed;inset:0;z-index:9500;display:grid;place-items:center;background:#2b1d16;opacity:0;transition:opacity .6s}
+.ph-dag1.syns{opacity:1}
+.ph-dag1-sida{width:min(560px,86vw);background:#f6eedb;color:#2a2018;border-radius:6px;padding:36px 44px;font:400 clamp(20px,2.6vw,28px)/1.6 "Bradley Hand","Segoe Print","Comic Sans MS",cursive;box-shadow:0 10px 0 rgba(0,0,0,.35);background-image:repeating-linear-gradient(#f6eedb 0 43px,#d9cfb8 44px)}
+.ph-dag1-sida div{opacity:0;transition:opacity .5s}.ph-dag1-sida div.syns{opacity:1}
+.ph-dag1-sida .fp-knapp{margin-top:20px;font-family:system-ui}
+.ph-tona-in{position:fixed;inset:0;z-index:9400;background:#000;opacity:1;transition:opacity 1.2s;pointer-events:none}
+`;
+document.head.appendChild(introCss3);
+function introLjud3(typ) {
+  try {
+    ljudCtx();
+    if (typ === 'spel') { ton(660, 0.08, 0.07, 'square'); ton(880, 0.08, 0.07, 'square', 0.12); ton(990, 0.12, 0.07, 'square', 0.24); ton(1320, 0.18, 0.06, 'square', 0.4); }
+    else if (typ === 'riv') { ton(320, 0.25, 0.12, 'sawtooth'); ton(160, 0.2, 0.08, 'sawtooth', 0.06); }
+    else if (typ === 'dorr') { ton(90, 0.25, 0.25, 'square'); ton(60, 0.35, 0.2, 'sawtooth', 0.05); }
+    else if (typ === 'gitarr') { ton(196, 1.3, 0.16, 'triangle'); ton(247, 1.1, 0.1, 'triangle', 0.06); ton(294, 1.0, 0.08, 'triangle', 0.12); }
+    else if (typ === 'band') { ton(240, 0.12, 0.07, 'sawtooth'); ton(200, 0.28, 0.07, 'sawtooth', 0.15); ton(170, 0.3, 0.06, 'sawtooth', 1.4); }
+    else if (typ === 'masar') { ton(1500, 0.25, 0.04, 'sine'); ton(1250, 0.3, 0.04, 'sine', 0.35); ton(1600, 0.2, 0.03, 'sine', 1.1); }
+    else if (typ === 'krita') { ton(2400, 0.14, 0.02, 'sawtooth'); }
+    else if (typ === 'pling') { ton(880, 0.25, 0.09, 'sine'); }
+    else if (typ === 'pip') { ton(1700, 0.1, 0.06, 'square'); ton(1950, 0.09, 0.05, 'square', 0.14); }
+    else if (typ === 'penna') { for (let i = 0; i < 7; i++) ton(2600 + (i % 3) * 300, 0.08, 0.015, 'sawtooth', i * 0.12); }
+  } catch {}
+}
+function introLager3Html(l) {
+  if (l.tavla) return `<div class="ph-il ph-tavla"><svg viewBox="0 0 1000 625">${Object.entries(IDE3).map(([k, v]) => `<g data-del="${k}">${v}</g>`).join('')}</svg></div>`;
+  if (l.natt) return `<svg class="ph-il ph-natt" viewBox="0 0 100 62.5" preserveAspectRatio="none"><g fill="none" stroke="rgba(240,240,240,.75)" stroke-width=".18">${[0, 1, 2, 3, 4].map((i) => `<path d="M38 14 L${38 + 12 * Math.cos(i * 0.39)} ${14 + 12 * Math.sin(i * 0.39)}"/>`).join('')}${[3, 6, 9].map((r) => `<path d="M${38 + r} 14 Q${38 + r * 0.8} ${14 + r * 0.45} ${38 + r * 0.92} ${14 + r * 0.92} Q${38 + r * 0.45} ${14 + r * 0.8} 38 ${14 + r}"/>`).join('')}</g></svg>`;
+  if (l.vinjett) return '<div class="ph-il ph-vinjett"></div>';
+  if (l.spel) return `<img class="ph-il ph-spelbild ${l.cls || ''}" src="${spelBild(l.spel)}" alt="" draggable="false">`;
+  if (l.krita) return kritaSvg(l.krita);
+  return introLagerHtml({ ...l, r: undefined });   // r styr när lagret kommer, inte radlager-klassen
+}
+function visaIntro3(klar) {
+  introPagar = true;
+  const TAL3 = INTRO3.flatMap((p) => p.tal.map(([v, t]) => [v, t]));
+  forladdaRepliker(TAL3).then(forladdaElFigurer);
+  const el = document.createElement('div'); el.className = 'ph-intro ph-intro3'; document.body.appendChild(el);
+  let i = 0, scenEl = null, textEl = null, kor = 0, slutat = false;
+  const logg = (h, x = '') => { (window.__introLogg ||= []).push({ kort: i + 1, h, x, t: Math.round(performance.now()) }); };
+  const timers = new Set(), vanta = (ms, k) => new Promise((ok, nej) => { const t = setTimeout(() => { timers.delete(t); k === kor ? ok() : nej('avbrutet'); }, ms); timers.add(t); });
+  const sag = (vem, text, k) => new Promise((ok, nej) => { let klar = false; const slut = () => { if (klar) return; klar = true; k === kor ? ok() : nej('avbrutet'); };
+    prata(vem, text, 'STORY', { direkt: true, start: () => logg('röstStart', text), slut: () => { logg('röstSlut', text); slut(); } }); const t = setTimeout(slut, 900 + text.length * 75 + 3500); timers.add(t); });
+  const avbryt = () => { kor++; timers.forEach(clearTimeout); timers.clear(); try { tystna(); } catch {} pratKo.length = 0; };
+  const bubbla = (p, text, o) => {
+    const h = BUB3[o.b] || [50, 30], hoger = h[0] < 58, b = document.createElement('div');
+    b.className = `ph-bub hoger ${o.cls || ''}`; void hoger; b.textContent = text;
+    b.style.top = `${Math.max(3, h[1] - 9)}%`; b.style.left = `${h[0] + 8}%`; b.style.maxWidth = `${Math.max(22, 98 - h[0] - 8)}%`;   /* alltid till höger om mamma, aldrig över ditt eller hennes ansikte */
+    scenEl.appendChild(b);
+    requestAnimationFrame(() => { const s = scenEl.getBoundingClientRect(), r = b.getBoundingClientRect(); logg('bubbla', JSON.stringify({ bub: [(r.left - s.left) / s.width * 100, (r.top - s.top) / s.height * 100, (r.right - s.left) / s.width * 100, (r.bottom - s.top) / s.height * 100].map((v) => +v.toFixed(1)), huvud: h, text })); });
+    return b;
+  };
+  const pa = new Map();
+  const visaLager = (l) => { const t = document.createElement('div'); t.innerHTML = introLager3Html(l); const e = t.firstElementChild; scenEl.appendChild(e); pa.set(l.id, e); requestAnimationFrame(() => requestAnimationFrame(() => e.classList.add('syns'))); return e; };
+  const tona = (e) => { e.classList.remove('syns'); setTimeout(() => e.remove(), 450); };
+  const zoomut = (e) => {   // kameran åker bakåt till exakt startbilden: bilden börjar inzoomad på dörrhålet
+    try { const v = new THREE.Vector3(SKJUL.x, 1.0, SKJUL.z + SKJUL.d / 2).project(spelKamera('start')); e.style.transformOrigin = `${((v.x + 1) / 2 * 100).toFixed(1)}% ${((1 - v.y) / 2 * 100).toFixed(1)}%`; } catch {}
+    e.style.transform = 'scale(2.6)'; requestAnimationFrame(() => requestAnimationFrame(() => { e.style.transform = 'scale(1)'; }));
+  };
+  const spelaRuta = async (p, k) => {
+    scenEl.querySelectorAll('.ph-bub').forEach((b) => b.remove());
+    const nya = new Set(p.lager.filter((l) => l.r == null).map((l) => l.id + '|' + (l.src || l.kal || l.spel || l.loop || '')));
+    for (const [id, e] of pa) { if (!nya.has(e.dataset.nyckel)) { tona(e); pa.delete(id); } }
+    for (const l of p.lager.filter((x) => x.r == null)) { const n = l.id + '|' + (l.src || l.kal || l.spel || l.loop || ''); if ([...pa.values()].some((e) => e.dataset.nyckel === n)) continue; const e = visaLager(l); e.dataset.nyckel = n; }
+    el.querySelector('.ph-intro-kort').classList.toggle('skak', p.ljud === 'dorr');
+    logg('visas', p.lager.map((l) => l.id + '|' + (l.src || l.spel || l.kal || '')).join(' '));
+    textEl.innerHTML = '';
+    if (p.ljud) introLjud3(p.ljud); if (p.musik) introMusik.start();
+    const t0 = performance.now();
+    await vanta(500, k);
+    let sistaR = null;
+    for (let j = 0; j < p.tal.length; j++) {
+      const [vem, text, o = {}] = p.tal[j];
+      const rl = p.lager.filter((l) => l.r === j);
+      if (rl.length) { if (sistaR) sistaR.forEach(tona); sistaR = rl.map((l) => { const e = visaLager(l); if (/zoomut/.test(l.cls || '')) zoomut(e); return e; }); logg('ritning', j); }
+      if (o.fore) await vanta(o.fore, k);
+      if (o.rita) for (const [del, ms] of o.rita) { const t = setTimeout(() => { scenEl.querySelector(`[data-del="${del}"]`)?.classList.add('rita'); introLjud3(/sang|tak|jacuzzi|hus/.test(del) ? 'pling' : 'krita'); }, ms); timers.add(t); }
+      if (o.pip) setTimeout(() => introLjud3('pip'), 300);
+      if (vem === 'mamma' && o.b) bubbla(p, text, o);
+      else { const d = document.createElement('div'); d.className = 'ph-intro-text ph-intro-rad'; d.innerHTML = (vem === 'du' ? '<span class="ph-vem">Du</span>' : '') + rens(text); textEl.appendChild(d); requestAnimationFrame(() => d.classList.add('syns')); }
+      logg('rad', j);
+      await sag(vem, text, k); await vanta(300, k);
+    }
+    await vanta(Math.max(0, p.tid - (performance.now() - t0)) + (p.tyst || 0), k);
+  };
+  const korFran = async (fran) => {
+    avbryt(); const k = kor;
+    try { for (i = fran; i < INTRO3.length; i++) await spelaRuta(INTRO3[i], k); await vanta(800, k); slut(); } catch (e) { if (e !== 'avbrutet') { console.warn('intro', e); slut(); } }
+  };
+  const tangent = (e) => {
+    if (['Enter', 'Escape'].includes(e.code) || e.key === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); slut(); }   // Enter hoppar över introt
+    else if (['Space', 'ArrowRight'].includes(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); if (i < INTRO3.length - 1) korFran(i + 1); else slut(); }
+  };
+  function slut() {
+    if (slutat) return; slutat = true; avbryt(); introPagar = false; introMusik.stopp(S.introSett ? 2 : 6);
+    removeEventListener('keydown', tangent, true); el.classList.add('ut'); el.style.transition = 'opacity .8s'; el.style.opacity = 0; setTimeout(() => el.remove(), 800);
+    S.introSett = true; sparaSnart(); logg('slut'); klar?.();
+  }
+  // ett klick först: webbläsaren spelar bara ljud efter ett klick
+  el.innerHTML = `<div class="ph-intro-kort"><div class="ph-intro-titel" style="margin:0 0 18px">${logo({ bredd: 480 })}</div><div class="ph-intro-text">Slå på ljudet – berättaren läser upp historien.</div><button class="fp-knapp" style="margin-top:22px">Börja</button></div>`;
+  rostKlar.then(() => { for (const [v, t] of TAL3) { const kl = rostKlipp(v, t); if (kl) hamtaPack(kl[0]); } });
+  const borja = () => {
+    el.onclick = () => { if (i < INTRO3.length - 1) korFran(i + 1); };
+    addEventListener('keydown', tangent, true); try { ljudCtx(); } catch {}
+    el.innerHTML = `<button class="ph-intro-hoppa">Hoppa över ⏎</button><div class="ph-intro-kort"><div class="ph-is"></div><div class="ph-intro-ord"></div></div>`;
+    scenEl = el.querySelector('.ph-is'); textEl = el.querySelector('.ph-intro-ord'); scenEl.classList.add('kor');   // animationerna (krita, kalenderbladet) får gå
+    el.querySelector('.ph-intro-hoppa').onclick = (e) => { e.stopPropagation(); slut(); };
+    Promise.race([rostKlar, new Promise((ok) => setTimeout(ok, 2000))]).then(() => korFran(0));
+  };
+  el.onclick = (e) => { e.stopPropagation(); borja(); };
+  window.__intro3 = { slut, korFran, INTRO3 };
+}
+/* A-062 v3: dagboken sida 1 – efter startmenyn, före spelet. Handskriven, pennan hörs, knappen Börja. */
+function visaDag1(klar) {
+  if (S.dag1Sida || S.steg > 0 || S.skyltUppe) { klar(); return; }
+  const el = document.createElement('div'); el.className = 'ph-dag1';
+  el.innerHTML = `<div class="ph-dag1-sida"><div><b>Dag 1.</b></div><div>Äntligen fri från tjat.</div><div>Nu ska jag bygga något som är mitt!</div><button class="fp-knapp" disabled>Börja</button></div>`;
+  document.body.appendChild(el); requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('syns')));
+  const rader = [...el.querySelectorAll('.ph-dag1-sida div')], knapp = el.querySelector('button');
+  rader.forEach((r, j) => setTimeout(() => { r.classList.add('syns'); introLjud3('penna'); }, 500 + j * 900));
+  setTimeout(() => { knapp.disabled = false; }, 500 + rader.length * 900);
+  textLogg('lapp', '📔 Dagbok', 'Dag 1. Äntligen fri från tjat. Nu ska jag bygga något som är mitt!');
+  const ga = () => { if (knapp.disabled) return; S.dag1Sida = true; sparaSnart(); removeEventListener('keydown', tangent, true); el.classList.remove('syns'); setTimeout(() => el.remove(), 600);
+    const svart = document.createElement('div'); svart.className = 'ph-tona-in'; document.body.appendChild(svart); requestAnimationFrame(() => requestAnimationFrame(() => { svart.style.opacity = 0; })); setTimeout(() => svart.remove(), 1400);   // spelet tonas in
+    klar(); };
+  const tangent = (e) => { if (['Enter', 'Space', 'KeyE'].includes(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); ga(); } };
+  addEventListener('keydown', tangent, true); knapp.onclick = ga;
 }
 // hoppfull musik i introt från "Du packar det viktigaste" – byggs upp lager för lager (Web Audio, inga filer)
 const introMusik = (() => {
@@ -13489,8 +13694,9 @@ function introLager(namn, W = 1000, H = 625) {
   const aterstall = () => { R.dorr.rotation.y = -1.25; R.damm.visible = false; R.sack.visible = false; R.skriv.visible = false; R.lampa.intensity = 14; poseFigur(R.du, { synlig: false }); poseFigur(R.mamma, { synlig: false }); stok(0, 1); };
   aterstall();
   const kamDorr = [1.45, 1.55, 0.45], mammaDorr = [2.5, -0.4], kd = () => introKamera(kamDorr, [mammaDorr[0], 1.3, mammaDorr[1]], 58, W / H);
-  R.kal.visible = !/^(rum|stok|mamma|dorr)/.test(namn) || namn === 'rum1';   // kalendern är ett eget lager (SVG) i kort 2–6
+  R.kal.visible = !/^(rum|stok|mamma|dorr|v3dag|v3dorr)/.test(namn) || namn === 'rum1';   // kalendern är ett eget lager (SVG) i kort 2–6
   const ut = (c, pts) => ({ url: c.toDataURL('image/png'), pts });
+  R.du.position.y = 0; R.du.userData.ben.forEach((b) => { b.rotation.x = 0; });
   // DEL 1 – rummet
   if (namn === 'rum1') { stok(0, 1); poseFigur(R.mamma, { synlig: false }); return ut(introRendera(sc, introKamera([1.95, 1.15, 1.85], [-0.4, 0.25, -0.4], 60, W / H), W, H, 3.0)); }
   if (namn === 'rum') { stok(0, 0); return ut(introRendera(sc, kd(), W, H, 1.7)); }   // samma vy kort 2–6: dörren öppen, ingen mamma, inget stök
@@ -13525,6 +13731,45 @@ function introLager(namn, W = 1000, H = 625) {
     poseFigur(R.mamma, { x: mp.x, z: mp.z, rot: Math.atan2(d.x, d.z) });
     const k = introKamera(cam.toArray(), [-0.2, 1.4, 0.3], 46, W / H);
     return ut(introRendera(sc, k, W, H, 2.1, { nara: true }));
+  }
+  /* A-062 v3: nya bilder – du vid datorn, mamma som kommer närmare och lägre för varje dag, ruta 7, 8 och 9 */
+  const sitt = (f, x, z, rot) => { poseFigur(f, { x, z, rot }); f.position.y = -0.33; const u = f.userData; u.ben.forEach((b) => { b.rotation.x = -Math.PI / 2; }); for (const a of [u.hoger, u.vanster]) a.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, -0.35, 1).normalize()); };
+  const huvudPts = (kam, f) => { f.updateMatrixWorld(true); const v = f.userData.huvud.getWorldPosition(new THREE.Vector3()).project(kam); return { huvud: [+((v.x + 1) / 2 * 100).toFixed(1), +((1 - v.y) / 2 * 100).toFixed(1)] }; };
+  const DU_STOL = [1.0, -0.95], DU_HUVUD = [1.0, 1.25, -0.95];   /* Jesper 15:56: mamma pratar med dig vid datorn – hon tittar på dig, inte in i rummet */
+  const DAGKAM = (k) => { const t = k / 4, lerp = (a, b) => a + (b - a) * t; return introKamera([lerp(-0.9, 0.2), lerp(1.6, 0.55), lerp(1.5, 0.7)], [lerp(1.85, 2.05), lerp(1.25, 1.45), lerp(-0.75, -0.55)], lerp(56, 70), W / H); };
+  if (namn === 'v3rum1') { stok(0, 1); R.dorr.rotation.y = 0; sitt(R.du, 1.0, -0.95, Math.PI + 0.35); return ut(introRendera(sc, introKamera([1.55, 1.6, 1.55], [0.9, 0.9, -1.2], 60, W / H), W, H, 2.6)); }
+  if (/^v3dag[2-6]$/.test(namn)) {
+    const k = +namn[5] - 2, kam = DAGKAM(k); stok(0, [0.25, 0.4, 0.6, 0.85, 1][k]);
+    sitt(R.du, DU_STOL[0], DU_STOL[1], Math.PI + 0.35); R.dorr.rotation.y = -1.6;   // du sitter vid datorn och gamar, dörren uppslagen mot väggen
+    const opt = [{ humor: 'neutral' }, { humor: 'arg', handerISidan: true }, { humor: 'arg', pekaMot: DU_HUVUD }, { humor: 'rasande', armarUpp: true }, { humor: 'rasande', armarUpp: true }][k];
+    const mx = mammaDorr[0] - [0, 0.1, 0.2, 0.3, 0.35][k], mz = mammaDorr[1] - [0, 0.05, 0.1, 0.15, 0.2][k];   // hon kommer närmare för varje dag
+    poseFigur(R.mamma, { x: mx, z: mz, motKamera: [DU_STOL[0], 0, DU_STOL[1]], ...opt }); R.mamma.userData.huvud.lookAt(...DU_HUVUD);
+    return ut(introRendera(sc, kam, W, H, 2.3), huvudPts(kam, R.mamma));
+  }
+  if (namn === 'v3dorr6') { R.dorr.rotation.y = 0; return ut(matta(sc, DAGKAM(4), W, H, [R.dorr])); }
+  if (namn === 'v3kort7') {
+    /* ur din synvinkel vid datorn: hon står över dig, tittar på dig och pekar bakåt mot den öppna dörren */
+    R.dorr.rotation.y = -1.6; R.lampa.intensity = 9; const kam = introKamera([1.05, 1.0, -1.05], [1.75, 1.6, -0.35], 72, W / H);
+    poseFigur(R.mamma, { x: 1.75, z: -0.3, motKamera: [1.05, 0, -1.05], humor: 'rasande', pekaMot: [2.45, 1.95, -1.25] }); R.mamma.userData.huvud.lookAt(1.05, 1.0, -1.05);
+    const roda = []; R.mamma.userData.huvud.traverse((o) => { if (o.isMesh && o.geometry?.parameters?.radius === 0.03 && o.material.color.getHex() === 0xffffff) { roda.push([o, o.material]); o.material = mat(0xff9c8c, { emissive: 0x7a1010, emissiveIntensity: 0.35 }); } });   // rödsprängda ögon
+    const c = introRendera(sc, kam, W, H, 1.4); roda.forEach(([o, m]) => { o.material = m; });
+    return ut(c, huvudPts(kam, R.mamma));
+  }
+  if (namn === 'v3kort8a') { stok(0, 1); sitt(R.du, 1.0, -0.95, Math.PI + 0.35); return ut(introRendera(sc, introKamera([-0.35, 1.45, -0.55], [0.95, 1.2, -1.05], 52, W / H), W, H, 1.4)); }   // du sitter kvar vid datorn, lugn
+  if (namn === 'v3kort8b') {   // du har rest dig och går förbi mamma ut genom dörren
+    stok(0, 1); poseFigur(R.du, { x: 2.15, z: -0.55, rot: Math.PI / 2 + 0.2 }); const u = R.du.userData; u.ben[0].rotation.x = -0.4; u.ben[1].rotation.x = 0.35;
+    poseFigur(R.mamma, { x: 2.0, z: 0.55, motKamera: [2.15, 0, -0.55], humor: 'arg', handerISidan: true });
+    return ut(introRendera(sc, introKamera([-0.6, 1.5, 1.2], [2.2, 1.2, -0.2], 55, W / H), W, H, 3.0));
+  }
+  if (namn === 'v3pack9') {   // ryggan packas och skrivaren surras fast på pakethållaren med spännband
+    const sc2 = introLjusScen(0xa8d4f0); byggVilla(sc2);
+    const c = vagCykel.clone(true); c.children.forEach((o) => { o.visible = true; }); c.position.set(0.6, 0, 2.3); c.rotation.set(0, -Math.PI / 2 + 0.25, 0); sc2.add(c);
+    const sk = c.children.find((o) => o.type === 'Group' && o.position.y > 0.7 && Math.abs(o.position.z + 0.5) < 0.05);
+    if (sk) for (const dz of [-0.09, 0.09]) { const b = at(box(0.5, 0.03, 0.05, mat(0xff8a1f)), 0, 0.27, dz); b.rotation.z = Math.PI / 2; const b2 = at(box(0.42, 0.03, 0.05, mat(0xff8a1f)), 0, 0.27 + 0.2, dz); sk.add(b, b2); }
+    const du = introFigur('du'); poseFigur(du, { x: 1.35, z: 2.85, rot: -Math.PI / 2 - 0.5 }); sc2.add(du);
+    const u = du.userData; for (const a of [u.hoger, u.vanster]) a.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, -0.3, 1).normalize());
+    const sack = introRum.sack.clone(true); sack.visible = true; sack.position.set(1.85, 0, 3.05); sack.rotation.y = -0.6; sc2.add(sack);
+    return ut(introRendera(sc2, introKamera([3.9, 1.45, 2.0], [0.9, 0.85, 2.6], 46, W / H), W, H, 3.2));
   }
   // DEL 2 – iväg
   if (namn === 'kort9') {
