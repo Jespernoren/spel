@@ -4,10 +4,11 @@ const url = process.argv[2] || 'http://127.0.0.1:8765/printa-hem.html';
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const p = await (await b.newContext({ viewport: { width: 1280, height: 720 } })).newPage(); const fel = [];
 p.on('pageerror', (e) => fel.push('sidfel: ' + e.message));
+await p.addInitScript(() => { if (!sessionStorage.getItem('gast')) { sessionStorage.setItem('gast', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ introSett: true, spelarNamn: 'Test', dag1Sida: true, skyltUppe: true })); } });   /* hoppa över introt */
 await p.goto(url); await p.waitForTimeout(6000);
 for (let i = 0; i < 60 && !(await p.evaluate(() => !!window.__printahem?.ui?.igang)); i++) {
   const namn = await p.$('.ph-namn input'); if (namn) { await namn.fill('Test'); await p.keyboard.press('Enter'); }
-  else await p.evaluate(() => { for (const k of document.querySelectorAll('button')) { const r = k.getBoundingClientRect(); if (r.width && /Börja$|BÖRJA|Hoppa över|Starta|Fortsätt/i.test(k.textContent.trim())) { k.click(); return; } } });
+  else await p.evaluate(() => { for (const k of document.querySelectorAll('button')) { const r = k.getBoundingClientRect(); if (r.width && /Börja|BÖRJA|Hoppa|Starta|Fortsätt/i.test(k.textContent.trim())) { k.click(); return; } } });
   await p.waitForTimeout(1000);
 }
 const H = (f) => p.evaluate(f);
@@ -19,7 +20,7 @@ await H(() => { const h = window.__printahem, r = h.rolfBesok.position; h.spelar
 ut.push(['samtalet startar', await H(() => window.__printahem.gastScen.fas === 'pratar')]);
 for (let i = 0; i < 200 && (await H(() => window.__printahem.gastScen.fas)) !== ''; i++) { await H(() => { const h = window.__printahem, r = h.rolfBesok.position; h.spelare.pos.set(r.x + 1, 0, r.z + 1); }); await p.waitForTimeout(1000); }
 console.log('d', await H(() => { const h = window.__printahem; return [h.spelare.pos.x.toFixed(1), h.rolfBesok.position.x.toFixed(1), JSON.stringify(h.spelare.granser)].join(' '); }));
-console.log('fas', await H(() => window.__printahem.gastScen.fas + ' steg ' + window.__printahem.gastScen.steg + ' meny ' + !window.__printahem.ui.overlay.hidden + !window.__printahem.ui.butiksOverlay.hidden + ' gast ' + JSON.stringify(window.__printahem.S.gast) + ' pos ' + window.__printahem.husvagn().position.x.toFixed(1)));
+console.log('overlay', await H(() => window.__printahem.ui.overlay.textContent.slice(0, 200))); console.log('fas', await H(() => window.__printahem.gastScen.fas + ' steg ' + window.__printahem.gastScen.steg + ' meny ' + !window.__printahem.ui.overlay.hidden + !window.__printahem.ui.butiksOverlay.hidden + ' gast ' + JSON.stringify(window.__printahem.S.gast) + ' pos ' + window.__printahem.husvagn().position.x.toFixed(1)));
 ut.push(['husvagnen står hemma', await H(() => { const h = window.__printahem, g = h.husvagn(); return !!h.S.gast?.hemma && g.visible && Math.abs(g.position.x - 16.5) < 0.2; })]);
 await H(() => { const h = window.__printahem; ['tak', 'isolering', 'dorr'].forEach((k) => h.gastDelKlar(k)); });
 ut.push(['gäststugan klar', await H(() => !!window.__printahem.S.gast?.klar)]);
