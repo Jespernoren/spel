@@ -578,7 +578,7 @@ const sovSteg = (dag, del) => ({ del, sov: true, text: 'Klart för idag – sov 
 // kapitel 2–4: en dag = en nivå, precis som kapitel 1
 const R6 = 'Dag 6 – Röd PETG', R7 = 'Dag 7 – PETG-skrivaren', R8 = 'Dag 8 – Magnetpistolen', R9 = 'Dag 9 – Solcellsparken', R10 = 'Dag 10 – Skrivare L och hösten';
 const F11 = 'Dag 11 – Kolfiberlinjen', F12 = 'Dag 12 – Kolfiberskrivaren', F13 = 'Dag 13 – Gamingboden', F14 = 'Dag 14 – Jetmotorn', F15 = 'Dag 15 – Fristaden';
-const M16 = 'Dag 16 – Egen mark', M17 = 'Dag 17 – Ängen', M18 = 'Dag 18 – Ett riktigt hus', M19 = 'Dag 19 – Diamantkvarnen', M20 = 'Dag 20 – Vintern', M21 = 'Dag 21 – Folkbokförd', M22 = 'Dag 22 – Jul på Soptippsvägen 1';
+const M16 = 'Dag 16 – Egen mark', M17 = 'Dag 17 – Ängen', M18 = 'Dag 18 – Diamantkvarnen och grunden', M19 = 'Dag 19 – Ett riktigt hus', M20 = 'Dag 20 – Vintern', M21 = 'Dag 21 – Folkbokförd', M22 = 'Dag 22 – Jul på Soptippsvägen 1';
 const K2 = R6;   // första dagen i kapitel 2 (äldre kod letar efter den)
 const KAPITEL = [null,
   { namn: 'Ett hem att bo i', mal: 'Bygg ett hem där du inte fryser – och som är lite trevligt.' },
@@ -733,11 +733,12 @@ const STEG = [
   sovSteg(16, M16),
   { del: M17, text: 'Köp ängen i öster – tavlan vid vägen', klar: () => agerMark('oster') },
   sovSteg(17, M17),
-  { del: M18, text: 'Bygg ett riktigt hus på ängen – tavlan vid vägen', klar: () => agerMark('huset') },
-  { del: M18, text: 'Flytta in i huset', klar: () => !!S.flyttatIn },
+  { del: M18, bild: 'byggsats:diamantkniv', text: 'Bygg diamantkvarnen', klar: () => (S.kvarn.kniv || 0) >= 2 },
+  { del: M18, bild: 'fynd4', text: 'Mal en rulle guld', klar: () => (S.stat.maltNiva?.[4] || 0) >= 1 || antalInv('rulle4') > 0 },   // B54: Tippium hör till efterspelet
+  { del: M18, text: 'Gjut grunden till huset – tavlan vid vägen', klar: () => agerMark('husgrund') || agerMark('huset') },   /* A-043: huset på två dagar */
   sovSteg(18, M18),
-  { del: M19, bild: 'byggsats:diamantkniv', text: 'Bygg diamantkvarnen', klar: () => (S.kvarn.kniv || 0) >= 2 },
-  { del: M19, bild: 'fynd4', text: 'Mal en rulle guld', klar: () => (S.stat.maltNiva?.[4] || 0) >= 1 || antalInv('rulle4') > 0 },   // B54: Tippium hör till efterspelet
+  { del: M19, text: 'Bygg huset på grunden – tavlan vid vägen', klar: () => agerMark('huset') },
+  { del: M19, text: 'Flytta in i huset', klar: () => !!S.flyttatIn },
   sovSteg(19, M19),
   { del: M20, bild: 'kamin', text: 'Printa och ställ ut en vedkamin', klar: () => harPlacerat('kamin') },
   { del: M20, text: 'Gör skjulet varmt inför vintern – en kamin', klar: () => varme() >= 9 },
@@ -5366,7 +5367,7 @@ let morgonKo = null;
 const DAG_STORY = ['Få igång skrivaren och sova i en egen säng.', 'Städa upp – och kanske träffa grannarna.', 'Bära mer och få tak över huvudet.', 'Sluta trampa och stänga ute kylan.', 'Fler skrivare och ett riktigt mysigt skjul.',
   'Tunga saker kan bli ny plast.', 'Printa i rött och sälja dyrare.', 'Bära det tunga utan att slita ut sig.', 'Mer ström till fler skrivare.', 'Bli klar innan hösten kommer.',
   'Låta skräpet komma till dig.', 'Låta maskinerna göra jobbet.', 'Sälja medan du sover.', 'Mer fart i kvarnen.', 'Bygga det du kom hit för.',
-  'Äga marken du bor på.', 'Något värdefullt i Rolfs rester.', 'Ett riktigt hus.', 'Guld.', 'Klara vintern.', 'Bli en riktig invånare.', 'Jul på Soptippsvägen.'];
+  'Äga marken du bor på.', 'Något värdefullt i Rolfs rester.', 'Guld och en grund.', 'Ett riktigt hus.', 'Klara vintern.', 'Bli en riktig invånare.', 'Jul på Soptippsvägen.'];
 // BN: morgontanken – din egen utvärdering av gårdagen. Max en per dag, inte samma två dagar i rad, aldrig något redan köpt eller låst.
 const MORGON_TANKAR = [
   /* EN 32: kvällstanken om rullstället är borta – flaskhalsen låser upp rullstället och tanken kommer när det händer (KLAGO.rullstall) */
@@ -7797,7 +7798,7 @@ const DUBBEL_PRIS = ['bank', 'sol', 'solpark'];
 const antalAv = (id) => placerade.filter((p) => p.typ === id).length + antalInv('byggsats:' + id);
 const ritPris = (id) => DUBBEL_PRIS.includes(id) ? MASKINER[id].ritning * 2 ** antalAv(id) : MASKINER[id].ritning;
 // dagens huvudköp: ungefär dubbelt så dyrt varje dag (dörr → tak → solpanel → Skrivare M). Annars det billigaste du kan köpa hos Ali.
-const HUVUDKOP = { [N1]: 'dorr', [N2]: 'tak', [N3]: 'skrivare2', [N4]: 'recept:lampskarm', [R6]: 'petgkvarn', [R7]: 'skrivarepetg', [R8]: 'magnet', [R9]: 'solpark', [R10]: 'tapeter', [F11]: 'kolfkvarn', [F12]: 'kolfskrivare', [F13]: 'gamingbod', [F14]: 'jetmotor', [F15]: 'gamingbod', [M16]: 'mark:egen', [M17]: 'mark:oster', [M18]: 'mark:huset', [M19]: 'diamantkniv', [M20]: 'recept:kamin' };
+const HUVUDKOP = { [N1]: 'dorr', [N2]: 'tak', [N3]: 'skrivare2', [N4]: 'recept:lampskarm', [R6]: 'petgkvarn', [R7]: 'skrivarepetg', [R8]: 'magnet', [R9]: 'solpark', [R10]: 'tapeter', [F11]: 'kolfkvarn', [F12]: 'kolfskrivare', [F13]: 'gamingbod', [F14]: 'jetmotor', [F15]: 'gamingbod', [M16]: 'mark:egen', [M17]: 'mark:oster', [M18]: 'diamantkniv', [M19]: 'mark:huset', [M20]: 'recept:kamin' };
 let nastaKopCache = null, nastaKopT = 0;
 function nastaKop() {
   if (performance.now() - nastaKopT < 1000) return nastaKopCache;
@@ -10665,7 +10666,8 @@ const MARK_TOMTER = [
   { id: 'tippkant', namn: 'Marken runt tippen', text: 'Stenig och skräpig. Plats för allt som är för fult för gården.', kraver: 'egen', rekt: { minX: TIPP.x - TIPP.r - 18, maxX: -TOMT, minZ: -TOMT, maxZ: TOMT } },
   { id: 'tippen', namn: 'Rolfs soptipp', text: 'Rolf kör sopbilen åt dig nu. Det känns "konstigt men bra".', kraver: 'tippkant' },
   { id: 'rolfhus', namn: 'Garage och hus åt Rolf', text: 'Garage för sopbilen och ett litet hus. Husvagn sedan 2009 räcker.', kraver: 'tippen' },
-  { id: 'huset', namn: 'Ett riktigt hus på ängen', text: 'Två rum, kök och sovloft. Inget skjul längre – ett HUS.', kraver: 'oster' },
+  { id: 'husgrund', namn: 'Grunden till huset på ängen', text: 'En gjuten platta. Huset kommer på den i morgon.', kraver: 'oster' },   /* A-043: huset på två dagar */
+  { id: 'huset', namn: 'Ett riktigt hus på ängen', text: 'Två rum, kök och sovloft. Inget skjul längre – ett HUS.', kraver: 'husgrund' },
   { id: 'norr', namn: 'Backen i norr', text: 'Lite skog, lite sten. Plats för allt som inte får plats annars.', kraver: 'egen', rekt: { minX: -TOMT, maxX: TOMT, minZ: -TOMT - 22, maxZ: -TOMT } },
 ];for (const m of MARK_TOMTER) Object.assign(m, B.MARK_PRIS[m.id]);
 const MARK_GER = {
@@ -10674,6 +10676,7 @@ const MARK_GER = {
   tippkant: 'Plats runt tippen – Rolfs soptipp går att köpa',
   tippen: 'Tippen blir din – och Rolfs hus går att köpa',
   rolfhus: 'Rolf och Kajsa flyttar in med veranda',
+  husgrund: 'Grunden – i morgon kan huset byggas på den',
   huset: 'Ett riktigt hus – folkbokföring ihop med tomten',
   norr: '42 × 22 m till – kanske en begravd Volvo',
 };
@@ -10696,7 +10699,7 @@ function uppdateraMark() {
   if (tillgang('tippkant')) g.minX = TIPP.x - TIPP.r - 20;
   for (const t of MARK_TOMTER) if (t.rekt && agerMark(t.id)) miljo.rojUt(t.rekt);
   for (const f of FYND) if (f.g) f.g.visible = tillgang(f.mark) && !S.fynd.includes(f.id);
-  rolfHus.visible = agerMark('rolfhus'); storHus.visible = agerMark('huset');
+  rolfHus.visible = agerMark('rolfhus'); storHus.visible = agerMark('huset'); if (husGrundMesh) husGrundMesh.visible = agerMark('husgrund') && !agerMark('huset');
   spelare.granser = g;
   miljo.byggStaket(g); oppnadGrans = JSON.stringify(g);
   markTavla.visible = S.mark.tips;
@@ -10734,6 +10737,7 @@ function oppnaMark() {
 }
 const ROLF_MARK = {
   egen: `Bengt-Åke sa ja! Han ville först ha ${(B.MARK_PRIS.egen.pris + 10000).toLocaleString('sv-SE')} men ja sa att du städat hela hans skräpiga mark gratis. Då blev de ${B.MARK_PRIS.egen.pris / 1000}. Grattis, markägare. /R`,   // punkt BD: beloppet följer balans.js
+  husgrund: 'Grunden ä gjuten. Ja sto å tittade i en timme. Betong ä vackert när den torkar. Säg inte de till nån. /R',
   oster: 'Ängen e din. Bengt-Åke frågade vad du ska ha den till. Ja sa solpaneler. Han trodde ja sa "sol-paella". Han va glad ändå. /R',
   tippkant: 'Marken runt tippen e din. Bengt-Åke sa att han e glad att bli av me den. Han kalla den "stenåkern". Ja kallar den "framtiden". /R',
   tippen: 'Du äger tippen nu. Ja kör fortfarande sopbilen. Men nu e du chefen. Rudolf ä sur. Hä hä. Kajsa bryr sej int. /R',
@@ -10934,6 +10938,7 @@ function kollaTillgang(dt) {
   if (fore && fore !== oppnadGrans) ui.toast('🚧 Gärdesgården har flyttats ut! Du får utforska ny mark – men bara ställa saker på mark du äger.', 'guld');
 }
 // ---------- Ett riktigt hus på ängen: två rum, kök, soffa och en trappa upp till en sovloft ----------
+let husGrundMesh = null;   /* A-043: grunden dag 18 */
 const storHus = new THREE.Group();
 {
   const HX = TOMT + 11, HZ = -6, W = 8, D = 6, VAN = 2.6, H = 5.0, T = 0.15;
@@ -10976,6 +10981,7 @@ const storHus = new THREE.Group();
   del(1.9, 0.4, 1.0, mat(0xf0e6d0), 2.6, VAN + 0.26, -1.9, false); del(1.9, 0.5, 0.1, tra, 2.6, VAN + 0.4, -2.45, false);
   del(1.6, 0.02, 1.2, mat(0xb03a3a), 1.6, VAN + 0.07, -0.4, false);
   const lampa = new THREE.PointLight(0xffd9a0, 6, 9); lampa.position.set(0, VAN - 0.3, 0); storHus.add(lampa);
+  husGrundMesh = at(box(W + 0.4, 0.25, D + 0.4, mat(0x9a9a92, { roughness: 0.95 })), HX, 0.12, HZ); husGrundMesh.visible = agerMark('husgrund') && !agerMark('huset'); scen.add(husGrundMesh);
   storHus.position.set(HX, 0, HZ); storHus.visible = false; scen.add(storHus);
   storHus.traverse((o) => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
   // flytta in: ett klick på huset (kapitel 4, dag 18)
@@ -13373,7 +13379,7 @@ const KEDJA_MAL = {
   d8: () => !!S.magnet, magnet: () => harPlacerat('bank'), d9: () => harPlacerat('solpark'), solpark: () => (S.rullstall || 0) >= 2,
   lastarm: () => !!S.auto?.arm, d10: () => harPlacerat('skrivare3'), d11: () => !!S.auto?.band, d12: () => !!S.auto?.lastarm,
   d13: () => !!S.auto?.lada, d14: () => !!S.kvarn.jet, d15: () => !!S.bod, d16: () => agerMark('egen'), d17: () => agerMark('oster'),
-  d18: () => agerMark('huset'), d19: () => (S.kvarn.kniv || 0) >= 2, d20: () => harPlacerat('kamin'), d21: () => !!S.folkbokford,
+  d18: () => agerMark('husgrund') || agerMark('huset'), d19: () => agerMark('huset'), d20: () => harPlacerat('kamin'), d21: () => !!S.folkbokford,
   d22: () => antalInv('julbord') > 0 || !!S.julBordKlart || !!S.julFirad,
 };
 // ordningen målen kommer i (efter CF). Används för att hitta nästa varför-replik när den egna redan är inaktuell.
