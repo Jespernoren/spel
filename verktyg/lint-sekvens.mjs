@@ -69,6 +69,13 @@ for (const f of [fil, ...fs.readdirSync(fil.replace(/[^/]+$/, '')).filter((n) =>
   const r2 = fs.readFileSync(f, 'utf8').split('\n');
   r2.forEach((r, i) => { const k = r.search(/\/\/(?!.*['"`]\s*\+)/); if (k < 0 || /https?:$/.test(r.slice(0, k)) || (r.slice(0, k).split(/['"`]/).length % 2 === 0)) return; const efter = r.slice(k + 2); const m = efter.match(/(^|[\s;])([a-zA-Z_$][\w$]*(\.[a-zA-Z_$][\w$]*)+\([^)]*\)|(const|let) [a-zA-Z_$][\w$]* =[^;]+);\s*($|\/\*|\/\/)/); if (m) fel.push({ nr: i + 1, regel: 'KOD EFTER KOMMENTAR', text: `${f.split('/').pop()}: ${m[2].slice(0, 60)}`, rad: r.trim().slice(0, 140) }); });
 }
+// FEL BELOPP (A-067): ett belopp på 1 000 kr eller mer som står direkt i en text ska komma från balans.js (krT(B.…)).
+// Medvetna undantag har en kommentar /* BELOPP: skäl */ på samma rad (t.ex. Volvons kaffeburk, ett skämt och inte ekonomi).
+rader.forEach((r, i) => { if (/BELOPP:/.test(r)) return; const m = r.match(/['"`][^'"`]*?[^0-9.,]([1-9]\d?[\u00a0 ]?\d{3}) kr[^'"`]*['"`]/); if (m && !/^\s*\/\//.test(r)) fel.push({ nr: i + 1, regel: 'FEL BELOPP', text: `${m[1]} kr står i texten – hämta beloppet ur balans.js`, rad: r.trim().slice(0, 140) }); });
+// STEG UTAN ID (A-069 §5): varje mål i STEG har ett eget id – AX och testerna matchar på id, inte på måltexten
+{ const s0 = rader.findIndex((r) => r.startsWith('const STEG = [')), s1 = rader.findIndex((r, i) => i > s0 && r.startsWith('];')); const sett = new Map();
+  for (let i = s0 + 1; i < s1; i++) { const r = rader[i]; if (!/^  (\{ |\.\.\.\(\(r\))/.test(r) || /^  \{ \.\.\.sovSteg/.test(r)) continue; const m = r.match(/\bid: '([^']+)'/);
+    if (!m) fel.push({ nr: i + 1, regel: 'STEG UTAN ID', text: 'målet saknar id', rad: r.trim().slice(0, 140) }); else if (sett.has(m[1])) fel.push({ nr: i + 1, regel: 'STEG UTAN ID', text: `id '${m[1]}' finns redan på rad ${sett.get(m[1])}`, rad: r.trim().slice(0, 140) }); else sett.set(m[1], i + 1); } }
 // SYNTAXFEL: hela modulen (och dess egna moduler) ska gå att tolka – en //-kommentar mitt på en rad kan svälja resten (A-075)
 { const { execFileSync } = await import('node:child_process'), os = await import('node:os'), path = await import('node:path');
   const mapp = path.dirname(fil);

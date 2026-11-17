@@ -36,8 +36,8 @@ await H(() => { const P = window.__printahem, S = P.S; S.skrivareLastad = true; 
 await p.waitForTimeout(1500);
 const sk = await H(() => { const P = window.__printahem, g = P.skrivare.find((x) => x.id === 'g1'); const v = g.mesh.getWorldPosition(g.mesh.position.clone()); return [v.x, v.z]; });
 await titta([sk[0] + 3, sk[1] + 2.5], sk, 0.6); await p.screenshot({ path: dir + 'skrivaren-utan-strom.png' });
-const g0 = await H(() => ({ mal: window.__printahem.stegText(), kontur: window.__printahem.konturMal()?.[0] || '' }));
-ut.push([`målet ”${g0.mal}” utan konturer`, /ström/.test(g0.mal) && !/cykel@|generator@/.test(g0.kontur)]);
+const g0 = await H(() => ({ mal: window.__printahem.stegText(), id: window.__printahem.stegId(), kontur: window.__printahem.konturMal()?.[0] || '' }));
+ut.push([`målet ”${g0.mal}” utan konturer`, g0.id === 'strom' && !/cykel@|generator@/.test(g0.kontur)]);
 // 5. hjälpen efter 20 s tänder konturerna
 await p.waitForTimeout(22000);
 const g1 = await H(() => ({ hjalp: !!window.__printahem.S.stromHjalp, kontur: window.__printahem.konturMal()?.[0] || '' }));

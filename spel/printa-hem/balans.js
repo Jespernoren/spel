@@ -57,6 +57,9 @@ export const TRAMP_PER_S = 12;          // ström per sekund när man trampar
 export const SOL_PER_S = 4;             // ström per sekund per solpanel – en panel driver Skrivare S (4/s) helt själv
 export const VINDKRAFT_PER_S = 40;     // EE tillägg 2: vindkraftverket på backen – guldlinjen drar mycket
 export const SOLPARK_PER_S = 14;        // en solcellspark: sex paneler – mer än du hinner trampa
+// A-069 §2: strömdraget per linje, satt efter progressionskartan – strömmen ska ta stopp när en linje startar:
+// röda kvarnen dag 6, kolfiberkvarnen dag 11 och extraktorn dag 19 (svaren: solpanelen, batteribank 2 och vindkraftverket)
+export const STROM_DRAG = { rod_kvarn: 7, kolf_kvarn: 14, extraktor: 30, guldskrivare: 30 };
 export const MOTOR_STROM = 1;           // ström per sekund när motorn mal
 
 // ---------- Bära och förvara ----------
@@ -222,7 +225,8 @@ export const MASKIN_SIFFROR = {
   rullband: { ritning: 12670, delar: 4, gram: 900, tid: 16 },
   kolfkvarn: { ritning: 10000, delar: 4, gram: 900, tid: 18 },     // DF: linje 3, ca 6 000 kr
   kolfband: { ritning: 12670, delar: 4, gram: 900, tid: 16 },      // DF: rullbandet från tippen till kolfiberkvarnen, ca 7 600 kr
-  kolfskrivare: { ritning: 8330, delar: 5, gram: 1000, tid: 18 },  // DF: ca 5 000 kr
+  kolfskrivare: { ritning: 8330, delar: 5, gram: 1000, tid: 18 },
+  guldskrivare: { ritning: 8330, delar: 5, gram: 1200, tid: 20 },   // A-069 §4: priset räknas om av värdetrappan (dag 19)  // DF: ca 5 000 kr
   kolfslang: { ritning: 9170, delar: 3, gram: 800, tid: 16 },      // DF: slangfördelaren, ca 5 500 kr
   lastarm: { ritning: 7500, delar: 4, gram: 1000, tid: 18 },
   robotarm: { ritning: 9170, delar: 4, gram: 1000, tid: 18 },
@@ -238,7 +242,7 @@ export const FORSTA_PRINT_S = 5;        // DT: de tre första printarna tar ca 5
 
 // ---------- EE: flaskhalsstyrd upplåsning ----------
 // Nästa sak i en kedja låses upp när kedjans flaskhals har tagit stopp så här länge (s) eller så många gånger (bara: turer med fulla händer, inkomst: sålda nyckelringar)
-export const FLASK_GRANS = { bara: 6, mala: 10, trampa: 10, strom: 15, skrivare: 75, inkomst: 6 };   // efter AX 17/11: boten vevar och trampar mycket snabbare än ett barn – ett barn når gränsen senare, ordningen är densamma
+export const FLASK_GRANS = { bara: 6, mala: 10, trampa: 10, strom: 15, skrivare: 75, inkomst: 6, skrivare_rod: 75, skrivare_kolf: 75 };   /* A-069 §3: linjernas egna skrivarkedjor */   // efter AX 17/11: boten vevar och trampar mycket snabbare än ett barn – ett barn når gränsen senare, ordningen är densamma
 // ordningen i varje kedja – en i taget
 export const FLASK_KEDJA = {
   bara: ['grip', 'ryggkorg', 'matarband', 'magnet'],   // sopsäcken från Rolf (EL 28), kärran är Rolfs tack (A-050), sophållaren töms med kärran
@@ -246,8 +250,89 @@ export const FLASK_KEDJA = {
   mala: ['kvarnmotor', 'turbomotor'],
   trampa: ['vindsnurra'],
   strom: ['cykelbatteri', 'vindsnurra2', 'vindsnurra3', 'sol', 'bank', 'solpark', 'bank2', 'solpark2', 'vindkraft'],   /* EE tillägg 2: ett batteri för alla linjer – ny kapacitet på ny plats: taket (d6) → gården (d8–9) → bank 2 (d12) → ängen (d17) → backen (d19) */   // EE tillägg: vindsnurra 3 (blå nivå 5), sedan sol – Skrivare M och L drar mer än vinden ger
-  skrivare: ['rullstall', 'trim_skrivare', 'skrivare2', 'trim_skrivare2', 'trim_skrivare3', 'skrivare3', 'kolfskrivare'],   /* EE tillägg 2: L efter PETG-skrivaren (d8), kolfiberskrivaren av flaskhalsen (d12) */   /* EE: rullställ och skrivartrim dag 2, Skrivare M dag 3, trim 2 dag 4, trim 3 dag 5, L dag 6 */
+  skrivare: ['rullstall', 'trim_skrivare', 'skrivare2', 'trim_skrivare2', 'trim_skrivare3', 'skrivare3', 'kolfskrivare', 'guldskrivare'],   /* A-069 §4: guldskrivaren av skrivarflaskhalsen när den första guldrullen finns (d19) */   /* EE tillägg 2: L efter PETG-skrivaren (d8), kolfiberskrivaren av flaskhalsen (d12) */   /* EE: rullställ och skrivartrim dag 2, Skrivare M dag 3, trim 2 dag 4, trim 3 dag 5, L dag 6 */
   inkomst: ['kruka'],
+  skrivare_rod: ['trim_rod1', 'trim_rod2', 'trim_rod3'],      /* A-069 §3: röda linjens skrivare hinner inte – trim röd 1 (d9) → 2 (d10) → 3 */
+  skrivare_kolf: ['trim_kolf1', 'trim_kolf2', 'trim_kolf3'],   /* A-069 §3: kolfiberskrivarna – trim 1–3 dag 13–15 */
 };
 // reserv: står ett mål och väntar på sin flaskhals så här länge (s spelad tid) låses det upp ändå, så att ingen fastnar
 export const FLASK_RESERV = 180;
+
+// ============================================================================
+// A-067: värdetrappan – från kolfiber är varje linje värd ca ×6 per gram mot linjen före,
+// och priserna i kapitel 3–4 och efterspelet räknas fram ur inkomsten:  pris = målminuter × inkomst per minut.
+// verktyg/ekonomi.mjs skriver tabellen (dag, mål, pris, inkomst, minuter) och flaggar DYR DAG, BILLIG DAG och PLATT STEG.
+// ============================================================================
+export const TRAPP_STEG = 6;
+export const VARDE_PER_GRAM = { bla: 0.25, rod: 1.45, kolf: 8, guld: 50, tippium: 300 };   // kr per gram hos Ali (blå och röd som förut)
+// Mätningen som allt utgår från (AX g53/g54, b3544ff): kr per minut för boten och dagarnas längd med de gamla priserna.
+export const INKOMST_AX = { 1: 144, 2: 602, 3: 1138, 4: 3866 };
+export const DAG_MIN_AX = { 11: 4.4, 12: 4.2, 13: 3.1, 14: 5.2, 15: 18.0, 16: 4.9, 17: 3.9, 18: 3.9, 19: 3.7, 20: 1.6, 21: 0.9, 22: 14.7, 23: 10 };
+export const DAG_MAL_MIN = 10;   // målet för en dag (8–15 min, aldrig under 6 eller över 20)
+// Gram som fabriken gör per minut (inkomsten delad med det gamla kr per gram): kapitel 3 ≈ 430 g/min kolfiber, guldlinjen ≈ 1 300 g/min.
+export const GRAM_PER_MIN = { kolf: 430, guld: 1290, tippium: 1290 };
+// Guldlinjen tjänar först när guldskrivaren finns (A-069, dag 19). Tills dess är kapitel 4 kolfiber + råguld, och priserna räknas på det.
+// Sätt true när guldskrivaren är byggd – då räknas kapitel 4 och efterspelet om på guldets ×6.
+export const GULDLINJEN = false;
+export const kapitelFor = (dag) => dag <= 5 ? 1 : dag <= 10 ? 2 : dag <= 15 ? 3 : 4;
+// Förväntad inkomst per minut dag för dag med den nya trappan (verktyg/ekonomi.mjs skriver ut den)
+export function inkomstPerMin(dag) {
+  if (dag <= 10) return INKOMST_AX[kapitelFor(dag)];
+  if (dag === 11) return 700;                                           // kolfiberlinjen byggs – röd linje betalar
+  if (dag === 12) return Math.round(GRAM_PER_MIN.kolf * VARDE_PER_GRAM.kolf * 0.7);   // första kolfibern, halva dagen
+  if (dag <= 17) return GRAM_PER_MIN.kolf * VARDE_PER_GRAM.kolf;       // kolfiber (dag 17 + vaskningen, som ger ungefär lika mycket)
+  if (!GULDLINJEN) return Math.round(0.75 * GRAM_PER_MIN.kolf * VARDE_PER_GRAM.kolf);  // utan guldskrivaren: bara kolfiberfabriken (uppmätt ca 2 550 kr/min dag 18 i AX 82)
+  if (dag === 18) return Math.round(GRAM_PER_MIN.guld * VARDE_PER_GRAM.guld * 0.4);   // diamantkvarnen först, sedan guld halva dagen
+  if (dag <= 22) return GRAM_PER_MIN.guld * VARDE_PER_GRAM.guld;
+  return GRAM_PER_MIN.tippium * VARDE_PER_GRAM.tippium * 0.5;          // efterspelet: Tippium (labbet) halva tiden
+}
+// Pris med samma målminuter som förut, men i den nya inkomsten – och dagar som var för korta (eller långa) justeras mot DAG_MAL_MIN.
+// Justering efter AX 83 (dag 16–21 med den nya trappan): boten tjänar ca 4 000 kr/min dag 18 men diamantkvarnen och guldrullen tar ca 8 min först,
+// och dag 20 tog kaminen bara 3,5 min. Faktorn läggs på trappans pris för målet.
+export const AX_JUSTERING = { husgrund: 0.6, kamin: 2.5 };
+export function trappPris(gammalt, dag) {
+  const kap = kapitelFor(Math.min(dag, 22)), langd = Math.min(7, Math.max(0.6, DAG_MAL_MIN / (DAG_MIN_AX[dag] || DAG_MAL_MIN)));
+  return runda(gammalt * inkomstPerMin(dag) / INKOMST_AX[kap] * langd);
+}
+// Avrundning som ser ut som priser: 2–3 värdesiffror
+export function runda(n) { const s = n < 1000 ? 10 : n < 10000 ? 50 : n < 100000 ? 500 : n < 1000000 ? 5000 : 50000; return Math.max(s, Math.round(n / s) * s); }
+// Den första maskinen i en ny linje kostar ca 10 min av den FÖRRA linjens inkomst (den betalas med gamla pengar)
+export const FORSTA_I_LINJEN = { kolfkvarn: 11, diamantkniv: 18 };
+const forstaPris = (dag) => runda(10 * inkomstPerMin(dag - 1));
+// Vilken dag varje mål köps på (för trappPris). Ritningar anges som Alis pris (PRIS_SKALA räknas bort nedan).
+export const TRAPP_MAL = {
+  maskin: { kolfband: 11, kolfskrivare: 12, kolfslang: 12, lastarm: 13, robotarm: 14, utlada: 14, jetmotor: 14, guldskrivare: 19, gamingbod: 13, vindkraft: 19, solpark2: 17, bank2: 17 },
+  mark: { egen: 16, oster: 17, husgrund: 18, huset: 19, norr: 23, tippkant: 23, tippen: 23, rolfhus: 23 },
+  lyx: { gamingstol: 13, hogtalare: 13, gamingbord: 13, ledpinne: 13, akustik: 13, neonskylt: 13, figurhylla: 13, projektor: 15, arkad: 15, simrig: 15, biljard: 15, dator: 13, jacuzzi: 15, kamin: 20 },
+  recept: { pkajak: 12, t_vaxthus: 20 },
+  present: { p_trummor: 13, p_konsert: 15, p_resa: 17 },
+  proto: 23,
+};
+// Varor i de nya linjerna: gram × linjens kr per gram × varans faktor
+export const LINJE_VAROR = { n3_stol: ['kolf', 1.0], pkajak: ['kolf', 1.0], n4_staty: ['guld', 1.0], n5_drake: ['tippium', 1.0] };
+for (const [id, [linje, f]] of Object.entries(LINJE_VAROR)) { const v = VARA_SIFFROR[id]; if (v) v.pris = runda(v.gram * VARDE_PER_GRAM[linje] * f); }
+for (const [id, dag] of Object.entries(TRAPP_MAL.recept)) { const v = VARA_SIFFROR[id]; if (v?.recept) v.recept = Math.round(trappPris(v.recept * PRIS_SKALA, dag) / PRIS_SKALA); }
+for (const [id, dag] of Object.entries(TRAPP_MAL.present)) { const v = VARA_SIFFROR[id]; if (v?.present) v.present = trappPris(v.present, dag); }
+for (const v of Object.values(VARA_SIFFROR)) if (v.protoPris) v.protoPris = trappPris(v.protoPris, TRAPP_MAL.proto);
+for (const [id, dag] of Object.entries(TRAPP_MAL.maskin)) { const m = MASKIN_SIFFROR[id]; if (m?.ritning) m.ritning = Math.round(trappPris(m.ritning * PRIS_SKALA, dag) / PRIS_SKALA); }
+for (const [id, dag] of Object.entries(FORSTA_I_LINJEN)) { const m = MASKIN_SIFFROR[id]; if (m) m.ritning = Math.round(forstaPris(dag) / PRIS_SKALA); }
+for (const [id, dag] of Object.entries(TRAPP_MAL.mark)) { const m = MARK_PRIS[id]; if (m) m.pris = runda(trappPris(m.pris, dag) * (AX_JUSTERING[id] || 1)); }
+// Lyx-recept (gamingsakerna, jacuzzin, kaminen) och andra priser som stod i spel.js (A-067 §3: en enda källa)
+export const LYX_RECEPT = { gamingstol: 900, hogtalare: 700, kamin: 3330, kyl: 1200, gamingbord: 1800, soffa: 2200, ledpinne: 500, akustik: 600, neonskylt: 900, figurhylla: 1200, projektor: 2500, arkad: 3000, simrig: 4500, biljard: 5000, jacuzzi: 15000, dator: 3500 };
+for (const [id, dag] of Object.entries(TRAPP_MAL.lyx)) LYX_RECEPT[id] = Math.round(runda(trappPris(LYX_RECEPT[id] * PRIS_SKALA, dag) * (AX_JUSTERING[id] || 1)) / PRIS_SKALA);
+export const DIREKT_RITNING = { webbdator: 500, hylla: 250, spis: 600, gs_tak: 400, gs_isolering: 500, gs_dorr: 300 };
+export const TAPET_PRIS = [500, 900, 1500, 3000, 6000];
+// Trimsatser: bas och växt per linje. Kolfiberns bas följer trappan (dag 13).
+export const TRIM_KOST = { kvarn: [300, 1.6], skrivare: [400, 1.6], pris: [500, 1.7], sopbil: [250, 1.5], batteri: [200, 1.5], utlager: [120, 1.9], band: [600, 1.6],
+  kvarn_rod: [900, 1.6], skrivare_rod: [1000, 1.6], torn_rod: [800, 1.7], kvarn_kolf: [1800, 1.6], skrivare_kolf: [2000, 1.6], torn_kolf: [1600, 1.7], arm: [700, 1.65] };
+for (const id of ['kvarn_kolf', 'skrivare_kolf', 'torn_kolf']) TRIM_KOST[id][0] = trappPris(TRIM_KOST[id][0], 13);
+// Råguldet (A-067 §1): Ali köper guldsanden från dag 17. Priset är satt så att vaskning för hand ger ungefär lika mycket per minut
+// som fabriken dag 17 (ca 7 fynd per minut vid floden → ca 3 400 kr/min). Det är ca 1 % av ett gram guldprint per gram, inte 25 %: se loggen.
+export const RAGULD = { dag: 17, pris: runda(inkomstPerMin(17) / 7) };
+// Rudolfs böter: taket är 10 minuter av kapitlets inkomst i stället för 2 500 kr
+export const BOTER_MAX_MIN = 10;
+export const boterMax = (dag) => Math.max(BOTER_MAX, runda(BOTER_MAX_MIN * inkomstPerMin(dag)));
+// "Ali köper den för 300 kr" (en tvåa av ett fynd) följer trappan
+export const FYND_TVAA = (dag) => dag >= 11 ? trappPris(300, Math.min(dag, 22)) : 300;
+// Dag 21 var 0,9 min (folkbokföringen var gratis). Lagfarten på huset blir dagens mål: ca 6 min av guldlinjens inkomst.
+export const LAGFART = runda(6 * inkomstPerMin(21));

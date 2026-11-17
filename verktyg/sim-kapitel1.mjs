@@ -51,6 +51,7 @@ await p.click('.br-starta').catch(() => {}); await p.waitForTimeout(2000);
 for (let i = 0; i < 30 && !(await p.evaluate(() => !!window.__printahem?.S).catch(() => false)); i++) await p.waitForTimeout(1000);
 p.on('pageerror', (e) => console.log('[sidfel]', e.message));
 await p.evaluate(([u, m]) => { window.__vt.start(); window.__simUtforlig = u; window.__simStegMax = m; }, [!!process.env.UTFORLIG, +(process.env.SIM_STEGMAX || 15)]);
+await p.evaluate((k) => { window.__stegKanon = k; }, JSON.parse(fs.readFileSync(new URL('./steg-kanon.json', import.meta.url), 'utf8')));   // A-069 §5: boten matchar på steg-id
 await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.meta.url), 'utf8') });
 // SIM_FRAN=fil: börja från en sparfil · varje ny dag sparas till /tmp/sim-dag<N>.json så att en lång körning kan tas om från en dag
 let sparadDag = 0; const kollaDag = setInterval(async () => { try { const [d, sp, mem] = await p.evaluate(() => [window.__printahem.S.dag, localStorage.getItem('spar:printahem2:v1'), [Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6), window.__printahem.skrapLista.length, window.__printahem.placerade.length, document.querySelectorAll('*').length]]); if (process.env.SIM_MINNE) console.log('[minne]', d, JSON.stringify(mem)); if (d !== sparadDag && sp) { sparadDag = d; fs.writeFileSync(`${process.env.SIM_SPAR || '/tmp/sim-dag'}${d}.json`, sp); } } catch {} }, 15000);

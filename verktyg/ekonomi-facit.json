@@ -1,0 +1,173 @@
+{
+ "trappan": {
+  "bla": 0.25,
+  "rod": 1.45,
+  "kolf": 8,
+  "guld": 50,
+  "tippium": 300
+ },
+ "rader": [
+  {
+   "dag": 1,
+   "inkomst": 144,
+   "mal": "",
+   "summa": 0,
+   "minuter": 10
+  },
+  {
+   "dag": 2,
+   "inkomst": 144,
+   "mal": "",
+   "summa": 0,
+   "minuter": 10
+  },
+  {
+   "dag": 3,
+   "inkomst": 144,
+   "mal": "",
+   "summa": 0,
+   "minuter": 10
+  },
+  {
+   "dag": 4,
+   "inkomst": 144,
+   "mal": "",
+   "summa": 0,
+   "minuter": 10
+  },
+  {
+   "dag": 5,
+   "inkomst": 144,
+   "mal": "",
+   "summa": 0,
+   "minuter": 10
+  },
+  {
+   "dag": 6,
+   "inkomst": 602,
+   "mal": "",
+   "summa": 0,
+   "minuter": 10
+  },
+  {
+   "dag": 7,
+   "inkomst": 602,
+   "mal": "",
+   "summa": 0,
+   "minuter": 10
+  },
+  {
+   "dag": 8,
+   "inkomst": 602,
+   "mal": "",
+   "summa": 0,
+   "minuter": 10
+  },
+  {
+   "dag": 9,
+   "inkomst": 602,
+   "mal": "",
+   "summa": 0,
+   "minuter": 10
+  },
+  {
+   "dag": 10,
+   "inkomst": 602,
+   "mal": "",
+   "summa": 0,
+   "minuter": 10
+  },
+  {
+   "dag": 11,
+   "inkomst": 700,
+   "mal": "Kolfiberkvarnen 6 000 kr · Rullbandet 10 500 kr",
+   "summa": 16500,
+   "minuter": 8.3
+  },
+  {
+   "dag": 12,
+   "inkomst": 2408,
+   "mal": "Kolfiberskrivaren 25 000 kr · Slangfördelaren 27 500 kr",
+   "summa": 52500,
+   "minuter": 8.3
+  },
+  {
+   "dag": 13,
+   "inkomst": 3440,
+   "mal": "Gamingboden 115 000 kr · En gamersak 5 250 kr",
+   "summa": 120250,
+   "minuter": 7.9
+  },
+  {
+   "dag": 14,
+   "inkomst": 3440,
+   "mal": "Jetmotorn 46 500 kr · Leveranslådan 52 500 kr",
+   "summa": 99000,
+   "minuter": 8.6
+  },
+  {
+   "dag": 15,
+   "inkomst": 3440,
+   "mal": "Inred boden (3) 8 100 kr · Jacuzzin 16 500 kr",
+   "summa": 24600,
+   "minuter": 13
+  },
+  {
+   "dag": 16,
+   "inkomst": 3440,
+   "mal": "Tomten 36 500 kr",
+   "summa": 36500,
+   "minuter": 8.5
+  },
+  {
+   "dag": 17,
+   "inkomst": 3440,
+   "mal": "Ängen 82 000 kr",
+   "summa": 82000,
+   "minuter": 8.2
+  },
+  {
+   "dag": 18,
+   "inkomst": 2580,
+   "mal": "Diamantkvarnen 34 500 kr · Grunden 26 000 kr",
+   "summa": 60500,
+   "minuter": 8.2
+  },
+  {
+   "dag": 19,
+   "inkomst": 2580,
+   "mal": "Huset 54 000 kr",
+   "summa": 54000,
+   "minuter": 8.1
+  },
+  {
+   "dag": 20,
+   "inkomst": 2580,
+   "mal": "Vedkaminen 21 000 kr",
+   "summa": 21000,
+   "minuter": 7.5
+  },
+  {
+   "dag": 21,
+   "inkomst": 2580,
+   "mal": "Lagfarten (folkbokföringen) 15 500 kr",
+   "summa": 15500,
+   "minuter": 6.9
+  },
+  {
+   "dag": 22,
+   "inkomst": 2580,
+   "mal": "Julbordet 0 kr",
+   "summa": 0,
+   "minuter": 11.4
+  },
+  {
+   "dag": 23,
+   "inkomst": 2580,
+   "mal": "Svackan 23 500 kr · Marken runt tippen 40 000 kr · Rolfs soptipp 80 000 kr · Rolfs hus 53 500 kr",
+   "summa": 197000,
+   "minuter": 19.1
+  }
+ ],
+ "flaggor": []
+}

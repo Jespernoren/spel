@@ -268,7 +268,7 @@
     await webbJobb();   // CR: beställningar från webbshoppen först – de betalar mer
     if ((S.kapitel || 1) >= 4 && mal - S.mynt > 5000) for (const sk of H.skrivare) sk.upprepaPa = false;   /* A-042: boten säljer själv hos Ali – autoprinten till leveranslådan ger bara grossistpris en gång per dygn */
     while (S.mynt < mal && varv++ < 30) {
-      const kand = Object.keys(H.VAROR).filter((t) => !tjanaFel.has(t) && t !== 'spagetti' && H.VAROR[t].gram > 0 && !/^(g_|h_|hf_|ra_|r_|p_|fynd|burk|rulle|n_)/.test(t) && H.VAROR[t].pris > 0 && !H.VAROR[t].lyx && (!H.VAROR[t].niva || (H.VAROR[t].niva === 2 && H.harPlacerat('skrivarepetg')) || (H.VAROR[t].niva === 3 && H.harPlacerat('kolfskrivare'))) && H.harRecept(t) && (H.VAROR[t].syns?.() ?? true) && !H.VAROR[t].gava && H.VAROR[t].gram > 0);
+      const kand = Object.keys(H.VAROR).filter((t) => !tjanaFel.has(t) && t !== 'spagetti' && H.VAROR[t].gram > 0 && !/^(g_|h_|hf_|ra_|r_|p_|fynd|burk|rulle|n_)/.test(t) && H.VAROR[t].pris > 0 && !H.VAROR[t].lyx && (!H.VAROR[t].niva || (H.VAROR[t].niva === 2 && H.harPlacerat('skrivarepetg')) || (H.VAROR[t].niva === 3 && H.harPlacerat('kolfskrivare')) || (H.VAROR[t].niva === 4 && H.harPlacerat('guldskrivare') && H.antalInv('rulle4') > 0)) && H.harRecept(t) && (H.VAROR[t].syns?.() ?? true) && !H.VAROR[t].gava && H.VAROR[t].gram > 0);
       kand.sort((a, b) => H.prisNu(b) / H.VAROR[b].tid - H.prisNu(a) / H.VAROR[a].tid);
       const t = kand[0]; if (!t) { handling('inget att printa och sälja – väntar på sopbilen'); tjanaFel.clear(); await vanta(30); return; }
       handling(`tjänar pengar${varfor ? ' till ' + varfor : ''}: ${S.mynt}/${mal} kr → printar ${H.VAROR[t].namn.toLowerCase()} (${H.prisNu(t)} kr)`);
@@ -370,7 +370,7 @@
     if (H.MONTERA) for (const t of Object.keys(H.MONTERA)) { if (!H.antalInv(t)) continue; const m = H.MONTERA[t], mal = m.mal()[0]; if (!mal || m.hinder?.()) continue; valj(t); await klick(mal, m.namn.toLowerCase()); return; }
     if (H.antalInv('korv')) { valj('korv'); H.ata('korv'); }
     if (!S.skyltUppe && S.dag === 1) { await klick(H.bradhog, 'brädhögen'); await vanta(4); return; }
-    const id = H.stegId(), txt = H.stegText() || '', st = H.STEG[S.steg];
+    const id = H.stegId(), st = H.STEG[S.steg], txt = (typeof st?.text !== 'function' && window.__stegKanon?.[id]) || H.stegText() || '';   /* A-069 §5: målet hittas på sitt id – en ändrad måltext gör inget (texter som beror på läget läses som de står) */
     if (!st && S.julFirad) {   /* A-042: efterspelet – köp marken som är kvar när pengarna räcker, tjäna under tiden, sov när dagen är slut */
       if (H.sovDags()) { await klick(H.taltSang, 'sängen'); await vantaPaMorgon(); return; }
       const t = H.MARK_TOMTER.find((x) => ['norr', 'tippkant', 'tippen', 'rolfhus'].includes(x.id) && !(S.mark?.agt || []).includes(x.id) && S.mynt >= x.pris);
@@ -386,7 +386,7 @@
     /* EE: målet väntar på sin flaskhals – gör det man gör under tiden (plocka, mala, printa, sälja) */
     if (st.las && H.upplast && !H.upplast(st.las)) { await tjana(S.mynt + 40, `väntar på flaskhalsen för ${st.las}`); return; }
     /* A-066: solcellsparkens plats är igenvuxen – gå dit (tanken om motorsågen), vänta på pappas motorsåg, såga bort slyet */
-    if (/solcellspark/i.test(String(H.stegText?.() || '')) && !S.slyRojt) {
+    if (H.stegId() === 'r9-bygg-solcellspark' && !S.slyRojt) {
       const kvar = (H.slyKlumpar || []).filter((k) => !k.borta);
       if (!H.antalInv('motorsag') && S.motorsagFatt) { const ki = (S.kistan || []).findIndex((x) => x?.typ === 'motorsag');   /* AX g77: fulla fickor – sågen hamnade i kistan, hämta den */
         if (ki >= 0) { const k = S.hotbar.findIndex((x, j) => j > 0 && x && x.typ !== 'motorsag'); if (k > 0) { S.kistan.push({ ...S.hotbar[k] }); S.hotbar[k] = null; } S.kistan.splice(ki, 1); H.laggTill('motorsag'); handling('hämtar pappas motorsåg ur kistan'); return; } }
@@ -497,7 +497,7 @@
         await gaTill(H.markTavla, 1.8, 'tavlan vid vägen'); H.kopMark(id); handling(`köper ${t.namn.toLowerCase()} (${t.pris} kr)`); await vanta(2); return; } }
     if (/^Lägg (guld)?flagan i Bengt-Åkes brevlåda/.test(txt)) { if (!H.antalInv('guldflaga')) { await vanta(3); return; } valj('guldflaga'); await klick(H.bengtLada, 'Bengt-Åkes brevlåda', 1.4); H.byt(0); return; }
     if (/^Printa en kapskiva|^Ge Rolf en kapskiva/.test(txt)) { if (!H.antalInv('kapskiva')) { await printa({ typ: 'kapskiva' }); return; } valj('kapskiva'); await klick(H.postlada, 'Rolfs postlåda (kapskivan)', 1.4); H.byt(0); return; }
-    if (/^Vaska (guld )?i bäcken/.test(txt)) { if (!H.antalInv('vaskpanna')) { await tjana(S.mynt + 300, 'väntar på Rolf'); return; } valj('vaskpanna'); await gaTill(H.ader, 1.2, 'bäcken'); for (let i = 0; i < 3; i++) { H.vaskSlapp(1.9); await vanta(2); } H.byt(0); handling('vaskar i bäcken'); return; }
+    if (/^Vaska (guld )?i (bäcken|floden)/.test(txt)) { if (!H.antalInv('vaskpanna')) { await tjana(S.mynt + 300, 'väntar på Rolf'); return; } valj('vaskpanna'); await gaTill(H.ader, 1.2, 'bäcken'); for (let i = 0; i < 3; i++) { H.vaskSlapp(1.9); await vanta(2); } H.byt(0); handling('vaskar i bäcken'); return; }
     if (/^Flytta in i huset/.test(txt)) { await klick(H.storHus, 'huset', 3); await vanta(2); return; }
     if (/^Mal en rulle guld/.test(txt)) {
       if (H.antalInv('fynd4')) { valj('fynd4'); await klick(H.kvarn, 'kvarnen (guld)'); H.byt(0); return; }
