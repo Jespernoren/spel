@@ -13465,7 +13465,7 @@ function kjelleText(igar) {
   return `Radio Tippen, Kjelle här. ${vid} ${nytt.slice(0, 2).join(' och ')}. ${slut}`;
 }
 function kjelleSand(text, varfor) {
-  replik('kjelle', text, '📻 Radio Tippen: ' + text, 'REAKTION', { varfor }); textLogg('radio', 'kjelle', text, varfor);
+  replik('kjelle', text, '📻 Radio Tippen: ' + text, 'REAKTION', { varfor }); textLogg('radio', 'kjelle', text, varfor); skratt('Radio-Kjelle');
 }
 {
   const bygg = () => { const ut = []; const hem = S.hem || {}; for (const [k, t] of Object.entries(KJELLE_HEM)) if (hem[k]) ut.push(k + ':' + t); return ut; };
