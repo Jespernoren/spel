@@ -319,7 +319,7 @@ const MASKINER = {
   vindsnurra: { namn: 'Vindsnurra till skjultaket', ikon: '', syns: () => S.dag >= 3 && antalSnurror() < VIND_MAX, monteras: true, beskr: 'En propeller på taket med en rem ner till cykeln. Den trampar åt dig när det blåser – ungefär halva din fart, hela tiden. Tre snurror driver nästan Skrivare M – resten får du trampa.' },   // BL
   rullstall: { namn: 'Rullställ till rulltornet', ikon: '', syns: () => { const l = S.rullstall || 0; return l === 0 ? true : l === 1 ? S.dag >= 4 : (S.kapitel || 1) >= 3; },   /* EN 32: första nivån låses upp av flaskhalsen (upplast) */ beskr: 'Rulltornet vid kvarnen växer ett steg – fler färdiga rullar får plats innan kvarnen stannar. Skrivarna tar plasten direkt från tornet genom slangen.', monteras: true },   // CA: ett steg i taget
   hardkniv: { namn: 'Härdade kvarnknivar', ikon: '', syns: () => false,   /* DF: kolfiber mals bara i kolfiberkvarnen – gamla knivar fungerar */ monteras: true, beskr: 'Knivar av härdat stål. Utan dem klarar kvarnen inte Rolfs svartgrå kolfiberrester – med dem blir de filament nivå 3.' },
-  diamantkniv: { namn: 'Diamantkvarn', ikon: '', syns: () => S.kapitel >= 4 && (S.kvarn.kniv || 0) >= 1, monteras: true, beskr: 'Diamantbelagda knivar. Klarar guldkomposit – filament nivå 4.' },
+  diamantkniv: { namn: 'Diamantkvarn', ikon: '', syns: () => S.kapitel >= 4 && (S.kvarn.kniv || 0) < 2, monteras: true, beskr: 'Diamantbelagda knivar. Klarar guldkomposit – filament nivå 4.' },
   stortratt: { namn: 'Stor kvarntratt', ikon: '🪣', syns: () => false, beskr: 'Bred tratt med kross – nu får regntunnor och röda backar plats i kvarnen', monteras: true },
   // bygg ut skjulet till ett riktigt hem – printa delarna, välj dem och klicka på skjulet för att montera
   dorr: { namn: 'Dörr', ikon: '🚪', hem: true, monteras: true, syns: () => S.sang, trivsel: 8, beskr: 'En riktig dörr – slut på drag och nyfikna katter' },
@@ -4462,7 +4462,7 @@ function migreraDK() {
   if (S.kvarn.stor) S.kvarn.stor = false; byt('byggsats:stortratt', null); S.ritningar = S.ritningar.filter((r) => r !== 'stortratt');
   if (S.kvarn.jet) { S.kvarn.jet = false; S.kvarn.turbo = true; }
   if (S.kvarn.turbo) { S.kvarn.turbo = false; try { turboDel.visible = false; } catch (e) {} laggTill('byggsats:turbomotor'); }   /* EO 35: turbon på blå kvarnen kommer tillbaka i handen */
-  if (S.kvarn.kniv) S.kvarn.kniv = 0;
+  if (S.kvarn.kniv === 1) S.kvarn.kniv = 0;   /* bara de gamla härdade knivarna – diamantkvarnen (2) får sitta kvar */
   byt('fynd5', 'fynd4');   /* A-044: gamla titanfynd blir guldfynd, tyst */
   if (S.trim) { if ((S.trim.kvarn || 0) > 2) S.trim.kvarn = 2; if ((S.trim.skrivare || 0) > 3) S.trim.skrivare = 3; }   /* EO 35 tillägg: den gemensamma trimmen blir blå linjens, med blås tak */
   if (S.trimKopt) { for (const k of ['kvarn', 'skrivare']) if ((S.trimKopt[k] || 0) > (TRIM[k].max)) S.trimKopt[k] = TRIM[k].max; }
@@ -4623,7 +4623,6 @@ interaktor.registrera(kvarn, {
     if (valdTyp() === 'byggsats:hardkniv' || valdTyp() === 'byggsats:diamantkniv') {
       const n = valdTyp() === 'byggsats:hardkniv' ? 1 : 2;
       if ((S.kvarn.kniv || 0) >= n) { ui.toast('De knivarna sitter redan i kvarnen', 'fel'); return; }
-      if (n === 2 && !S.kvarn.kniv) { ui.toast('Sätt i de härdade knivarna först', 'fel'); return; }
       taBortVald(); S.kvarn.kniv = n; ljudH('montera'); sparaSnart();
       ui.toast(n === 1 ? 'Härdade knivar i kvarnen! Nu klarar den röd PETG och kolfiber.' : 'Diamantkvarnen sitter! Guldet – kom an.', 'guld'); return;
     }
