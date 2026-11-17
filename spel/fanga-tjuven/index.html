@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script src="../../delat/rost.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#5ec8f0">
+<title>Fånga tjuven</title>
+<link rel="stylesheet" href="../../delat/familjespel.css">
+<style>
+  :root { --fs-accent:#e8590c; --fs-skugga:#a33d06; --fs-text:#3a2410; --fs-sloja:rgba(255,246,225,.75); }
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
+  html,body { height:100%; overflow:hidden; overscroll-behavior:none; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:#3a2410; touch-action:manipulation;
+    background: linear-gradient(#5ec8f0 0%, #9fe0f7 22%, #3fb6d9 22%, #2aa3c9 27%, #f6dfa5 27%, #f0cf86 100%); }
+  .sol { position:fixed; right:8vw; top:6vh; width:64px; height:64px; border-radius:50%; background:#ffd43b; box-shadow:0 0 30px #ffe38a; }
+  .topp { position:fixed; left:0; right:0; top:0; z-index:5; display:flex; align-items:center; gap:10px; padding:max(10px, env(safe-area-inset-top)) 12px 0; }
+  .poang { font-size:30px; font-weight:900; color:#fff; text-shadow:0 2px 0 #3a2410; }
+  .tid { margin-left:auto; position:relative; width:56px; height:56px; }
+  .tid svg { width:56px; height:56px; transform:rotate(-90deg); }
+  .tid b { position:absolute; inset:0; display:grid; place-items:center; font-size:19px; font-weight:900; color:#fff; text-shadow:0 2px 0 #3a2410; }
+  .serie { position:fixed; left:0; right:0; top:calc(max(10px, env(safe-area-inset-top)) + 62px); text-align:center; font-weight:900; font-size:20px; color:#fff; text-shadow:0 2px 0 #e8590c; height:26px; z-index:5; }
+
+  .falt { position:fixed; left:50%; bottom:max(13vh, env(safe-area-inset-bottom)); transform:translateX(-50%); width:min(94vw, 480px); display:grid; grid-template-columns:repeat(3, 1fr); gap:4vw 3vw; }
+  .hal { position:relative; aspect-ratio: 1 / 1.05; touch-action:manipulation; }
+  .hal .vall { position:absolute; left:-2%; right:-2%; bottom:2%; height:38%; border-radius:50%; background: radial-gradient(ellipse at 50% 30%, #f9e3ac 0%, #e9c27a 70%, #d8a95a 100%); box-shadow:0 6px 10px rgba(120,80,20,.25); }
+  .hal .grop { position:absolute; left:12%; right:12%; bottom:12%; height:22%; border-radius:50%; background: radial-gradient(ellipse at 50% 70%, #2a1808 0%, #4a2e12 60%, #6b4520 100%); }
+  .hal .ficka { position:absolute; left:0; right:0; top:-10%; bottom:23%; overflow:hidden; }
+  .figur { position:absolute; left:14%; right:14%; bottom:-100%; height:92%; transition: bottom .16s cubic-bezier(.3,1.4,.5,1); display:grid; place-items:end center; pointer-events:none; }
+  .figur svg { width:100%; height:100%; }
+  .hal.uppe .figur { bottom:0; }
+  .hal .kant { position:absolute; left:12%; right:12%; bottom:12%; height:11%; border-radius:0 0 50% 50% / 0 0 100% 100%; background:#6b4520; }
+  .traff .figur { animation: smisk .25s; }
+  @keyframes smisk { 50% { transform: scale(1.15, .8); } }
+  .plus { position:fixed; z-index:6; font-size:28px; font-weight:900; color:#fff; text-shadow:0 2px 0 #e8590c, 0 0 8px rgba(0,0,0,.3); pointer-events:none; animation: upp .8s forwards; }
+  .plus.minus { text-shadow:0 2px 0 #c2255c; }
+  @keyframes upp { to { transform: translateY(-70px); opacity:0; } }
+</style>
+</head>
+<body>
+  <div class="sol"></div>
+  <div class="topp" id="topp" hidden>
+    <span id="spelare"></span>
+    <div class="poang" id="poang">0</div>
+    <div class="tid">
+      <svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="rgba(255,255,255,.45)" stroke="rgba(58,36,16,.2)" stroke-width="6"/>
+        <circle id="tidRing" cx="28" cy="28" r="24" fill="none" stroke="#e8590c" stroke-width="6" stroke-linecap="round" stroke-dasharray="151" stroke-dashoffset="0"/></svg>
+      <b id="tid">45</b>
+    </div>
+  </div>
+  <div class="serie" id="serie"></div>
+  <div class="falt" id="falt"></div>
+  <script type="module" src="spel.js"></script>
+  <script src="../../delat/hem.js"></script>
+</body>
+</html>
