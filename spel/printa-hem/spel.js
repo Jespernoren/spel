@@ -802,6 +802,7 @@ const gardSkrap = () => {
 };
 // dag 2: det räcker att städa ungefär halva gården innan Rolf hör av sig (resten kan vänta)
 const gardMal = () => { if (S.gardStart == null) { S.gardStart = gardSkrap(); } return Math.max(GARD_KVAR, Math.floor(S.gardStart / 2)); };
+const stegNyckel = (i) => { const st = STEG[i]; if (!st) return 'slut:' + i; return st.id ? 'id:' + st.id : `${st.del}#${STEG.slice(0, i).filter((x) => x.del === st.del).length}`; };   /* A-042 */
 const stegText = (st) => !st ? '' : typeof st.text === 'function' ? st.text() : st.text;
 
 // ---------- Sparning ----------
@@ -818,12 +819,14 @@ const spar = new Sparning(SPAR_ID, {
 if (MOLN?.data && (MOLN.data.sparadTid || 0) > (spar.data.sparadTid || 0)) {
   spar.data = { ...structuredClone(spar.standard), ...MOLN.data };
 }
+/* A-042: en sparfil från före stegnyckeln och kand() (före 2026-11-17) – målnumret pekar in i en äldre mållista */
+const GAMMAL_STEG = !spar.data.stegNyckel && !spar.data.kand && (spar.data.steg || 0) > 0;
 // varje sparning: stämpla tiden, spara lokalt och (lite mer sällan) i molnet
 {
   const lokalt = spar.spara.bind(spar);
   let senast = '', skriver = false, nasta = 0;
   spar.spara = (direkt) => {
-    spar.data.sparadTid = Date.now();
+    spar.data.sparadTid = Date.now(); try { spar.data.stegNyckel = stegNyckel(spar.data.steg); } catch {}   /* A-042: målet sparas med namn, inte bara nummer */
     lokalt(direkt);
     if (!MOLN?.ref) return;
     if (skriver) return direkt ? spar.molnSkrivning?.then(() => spar.spara(true)) : undefined;
@@ -4492,7 +4495,7 @@ function uppdateraPetg(dt) {
   }
 }
 // ---------- DF: linje 3 – kolfiberkvarnen, rullbandet från tippen, slangfördelaren och jetmotorn ----------
-const KOLF_DAG_K4 = 3;   /* A-042: kajaker per dag med sopbilen i kapitel 4 (+0–1) */
+const KOLF_DAG_K4 = 2;   /* A-042: kajaker per dag med sopbilen i kapitel 4 (+0–1) */
 const KOLF_FART = 140, KOLF_STROM = 6, KOLF_MAX = 6, KOLFBAND_TID = 14;
 const kolfMax = () => KOLF_MAX + VANING_PLUS[trimNiva('torn_kolf')];   /* gram/s, ström/s, rullar på kvarnen, sekunder mellan varje kajak på bandet */
 const KOLF_FORSTA = 'Den åker själv. Jag står bara och tittar. Det här är framtiden.';
@@ -4523,7 +4526,26 @@ function migreraDK() {
   sparaSnart();
 }
 function taBortSkrap(x) { scen.remove(x); interaktor.avregistrera(x); const i = skrapLista.indexOf(x); if (i >= 0) skrapLista.splice(i, 1); }
-setTimeout(() => { try { migreraDK(); } catch (e) { console.warn('migreraDK', e); } }, 50);
+setTimeout(() => { try { migreraDK(); } catch (e) { console.warn('migreraDK', e); } try { migreraSteg(); } catch (e) { console.warn('migreraSteg', e); } }, 50);
+/* A-042: gamla sparfiler – målet letas upp på namnet, och i en fil från före stegnyckeln börjar dagen om på dagens första mål som inte redan är gjort */
+function migreraSteg() {
+  if (S.stegNyckel && stegNyckel(S.steg) !== S.stegNyckel) { const i = STEG.findIndex((_, j) => stegNyckel(j) === S.stegNyckel); if (i >= 0) { textLogg('migrering', 'steg', `${S.steg} → ${i}`, 'stegnyckel'); S.steg = i; } return; }
+  if (!GAMMAL_STEG) return;
+  const gammalHar = (id) => S.ritningar.includes(id) || S.ritningar.includes('recept:' + id) || (S.placerade || []).some((p) => p.typ === id) || antalInv('byggsats:' + id) > 0 || (id === 'kvarnmotor' && !!S.kvarn?.motor) || (id === 'grip' && !!S.grip) || (/^vindsnurra/.test(id) && antalSnurror() >= (+id.slice(10) || 1)) || (id === 'cykelbatteri' && !!S.batteriKopt);
+  if (S.kolf && ((S.placerade || []).some((p) => p.typ === 'kolfkvarn') || S.kolf.rullar > 0)) { S.stat.kolfRullar = Math.max(S.stat.kolfRullar || 0, S.kolf.rullar || 0, 1); }   /* gammal fil: kolfiberrullar räknades inte */
+  try { if (S.post?.tillRolf && ROLF[S.rolf?.i]?.vara === S.post.tillRolf) rolfMorgonTack(); } catch {}   /* gamla filer: Rolf hade redan fått gåvan – i den gamla versionen räknades den direkt */
+  const dagFor = (st) => +((String(st?.del || '').match(/^Dag (\d+)/) || [])[1] || 99);
+  let i = 0; while (STEG[i] && dagFor(STEG[i]) <= S.dag) { if (!STEG[i].sov) { let k = false; try { k = STEG[i].klar() || (STEG[i].las && gammalHar(STEG[i].las)); } catch {} if (!k) break; } i++; }   /* första mål som inte är gjort – också från tidigare dagar (det nya som saknas i filen) */
+  textLogg('migrering', 'steg', `${S.steg} → ${i}`, 'gammal sparfil'); S.steg = i;
+  /* flaskhalskedjan fanns inte i den gamla versionen: det man redan har, och allt före det i kedjan, räknas som upplåst */
+  const f = flaskS();
+  for (const lista of Object.values(B.FLASK_KEDJA)) {
+    const forstaMal = lista.findIndex((id) => STEG.findIndex((x) => x.las === id) >= i);   /* det som saknar eget mål och ligger före nästa mål i kedjan har man passerat */
+    let sista = forstaMal >= 0 ? forstaMal - 1 : lista.reduce((m, id, j) => { const mi = STEG.findIndex((x) => x.las === id); return mi >= 0 && mi < i ? j : m; }, -1);
+    lista.forEach((id, j) => { let har = false; try { har = gammalHar(id); } catch {} if (har) sista = Math.max(sista, j); });
+    lista.slice(0, sista + 1).forEach((id) => { if (!f.upp.includes(id)) f.upp.push(id); });
+  } malKoSteg = -1; malVisasSteg = -1; sparaSnart();
+}
 const kolfKvarn = () => placerade.find((p) => p.typ === 'kolfkvarn');
 function kolfText() {
   { const r = rullTornText('kolf'); if (r) return r; }

@@ -419,7 +419,7 @@
     if (/^Skicka två paket från datorn/.test(txt)) { webbDag = 0; await webbJobb(); await tjana(S.mynt + 60, 'väntar på fler beställningar'); await vanta(2); return; }   // dag 9-målet
     if (/^Sopbilen kommer förbi under dagen|^Rolf lämnar något med sopbilen|^Vänta på sopbilen/.test(txt)) { await tjana(S.mynt + 60, 'väntar på sopbilen (BO)'); await vanta(1); return; }   // BO: gör något vettigt medan brevet är på väg
     if (/^Läs brevet i Rolfs postlåda/.test(txt)) { await klick(H.postlada, 'Rolfs postlåda'); await stangPopups(); return; }
-    if (/^Printa /.test(txt) && H.aktivGava()) { const v = H.aktivGava(); if (!H.antalInv(v)) await printa({ typ: v }); return; }
+    if (/^Printa /.test(txt) && H.aktivGava() && (st.mom === 'Rolfs brev' || txt.toLowerCase().includes(String(H.VAROR[H.aktivGava()]?.namn || '§').toLowerCase()))) {   /* AX gs3: bara när målet gäller gåvan – inte "Printa vindsnurran" */ const v = H.aktivGava(); if (!H.antalInv(v)) await printa({ typ: v }); return; }
     if (/^Lägg .* i Rolfs postlåda|^Ge Rolf (?!en kapskiva)/.test(txt)) { await gePresent(H.aktivGava()); return; }
     if (/^Hämta 5 skräp på soptippen/.test(txt)) { await plockaLass({ tippen: true }); await tomIKvarnen(); await mal(); return; }
     if (/^Lyft en tunna med säckkärran och mal|^Mal en tunna i röda kvarnen/.test(txt) && !S.sackkarra) { const p = H.placerade.find((x) => x.typ === 'sackkarra'); if (p) { await klick(p.mesh, 'säckkärran i högen'); return; } }
