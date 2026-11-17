@@ -145,8 +145,8 @@ export const PORTRATT = {
   // grå mustasch + sur mun
   + `<path d="M37 65c4-4 9-4 13-2 4-2 9-2 13 2-4 1-8 1-13 0-5 1-9 1-13 0z" fill="#c9c9c9"/><path d="M43 70q7-3 14 0" stroke="#6a2a20" stroke-width="2" stroke-linecap="round" fill="none"/>`),
 };
-// chefen (också Rolf) och berättaren lånar ansikten tills de får egna
-PORTRATT.chefen = PORTRATT.rolf; PORTRATT.berattare = PORTRATT.du;
+// A-053: Rudolf (chefen) har Rolfs form men egna färger (slips och kostym i stället för varselkläder) tills han får ett eget ansikte; berättaren lånar ditt
+PORTRATT.chefen = PORTRATT.rolf.replace(/#6f7d3a/g, '#7a1f1f').replace(/#2f3a19/g, '#3a0e0e').replace(/#e06a12|#ff7a1a/g, '#2b2b33').replace(/#23703f|#2e8a4f/g, '#1d1d24'); PORTRATT.berattare = PORTRATT.du;
 export const portratt = (vem, storlek = 40) => `<span class="ui-portratt" style="width:${storlek}px;height:${storlek}px">${PORTRATT[vem] || PORTRATT.du}</span>`;
 
 // ---------- Tar bort emojis ur text (UI ska vara emojifritt) ----------
