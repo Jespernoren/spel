@@ -66,7 +66,7 @@ for (const h of mal) {
   const v = m ? m.tot - h.tot - +((String(m.varfor || '').match(/meny ([\d.]+) s/) || [])[1] || 0) : null;   // tid i butiken och på pausade sidor räknas inte
   rader.push({ t: h.tot, id: (h.text.match(/id=(\S+)/) || [])[1] || h.text, kv: kv ? `${kv.vem}: ${kv.text}` : '', mal: m?.text || '', v, sida: !!sida });
 }
-const brott = L.filter((e) => e.kalla === 'brott' && ['SEN KVITTENS', 'SPÖKE', 'FEL BYGGEFFEKT', 'NÄSTA UTAN KONTUR', 'GENERISK MARKERING', 'FAST I HANDEN'].includes(e.vem));
+const brott = L.filter((e) => e.kalla === 'brott' && ['SEN KVITTENS', 'SPÖKE', 'FEL BYGGEFFEKT', 'NÄSTA UTAN KONTUR', 'GENERISK MARKERING', 'FAST I HANDEN', 'TYST MÅL', 'PIL UTOM BILD', 'MÅL UTAN BILD'].includes(e.vem));
 const skylt = L.find((e) => (e.kalla === 'händelse' && e.vem === 'skyltKlar') || (e.kalla === 'varför' && e.varfor === 'skylt')), sidaSkylt = skylt && L.find((e) => e.kalla === 'meddelande' && e.tot >= skylt.tot && /MITT/.test(e.text));
 const promptSkylt = L.find((e) => ['sak', 'sak-del'].includes(e.kalla) && /Men först en skylt/.test(e.text));
 const duns = L.filter((e) => e.kalla === 'duns'), print = L.filter((e) => e.kalla === 'brott' && e.vem === 'FEL BYGGEFFEKT');
@@ -79,7 +79,9 @@ ut.push([`dagbokssidan om skylten ${sidaSkylt ? (sidaSkylt.tot - skylt.tot).toFi
 ut.push([`storebrors skrivare och kvarnen ställs ner med en duns (${duns.length} dunsar)`, duns.length >= 2]);
 { const pl = L.filter((e) => e.kalla === 'händelse' && e.vem === 'placerat' && /sak=(cykel|generator)$/.test(e.text)).map((e) => e.text.replace('sak=', '')), omb = L.find((e) => e.kalla === 'händelse' && e.vem === 'ombyggd');
   ut.push([`A-071: ${pl.join(' → ')} → monterad (${process.env.CYKEL_FORST ? 'cykeln först' : 'generatorn först'})`, pl.length === 2 && pl[0] === (process.env.CYKEL_FORST ? 'cykel' : 'generator') && !!omb && omb.tot >= Math.max(...L.filter((e) => e.kalla === 'händelse' && e.vem === 'placerat' && /sak=(cykel|generator)$/.test(e.text)).map((e) => e.tot))]); }
-ut.push([`0 SEN KVITTENS, 0 SPÖKE, 0 FEL BYGGEFFEKT, 0 NÄSTA UTAN KONTUR, 0 GENERISK MARKERING, 0 FAST I HANDEN: ${brott.map((e) => `${e.vem} ${e.text}`).join(' · ') || 'inga'}`, !brott.length]);
+{ const skyltT = (skylt || { tot: 0 }).tot, rutor = L.filter((e) => e.kalla === 'pil' && e.tot > skyltT), tysta = rutor.filter((m) => /reserven/.test(m.varfor || '') || !L.some((e) => e.kalla === 'röst' && e.tot >= m.tot - 0.3 && e.tot <= m.tot + 1 && (/· MÅL$/.test(e.text) || e.vem === 'du'))), nickar = L.filter((e) => e.kalla === 'nick').length;
+  ut.push([`A-072: nästa steg sägs inom 1 s när pilen flyttas, ${rutor.length - tysta.length} av ${rutor.length} mål${tysta.length ? ' – tyst: ' + tysta.map((m) => m.text.slice(0, 30)).join(', ') : ''} · kameran nickade ${nickar} gånger`, !tysta.length]); }
+ut.push([`0 SEN KVITTENS, 0 SPÖKE, 0 FEL BYGGEFFEKT, 0 NÄSTA UTAN KONTUR, 0 GENERISK MARKERING, 0 FAST I HANDEN, 0 TYST MÅL, 0 PIL UTOM BILD, 0 MÅL UTAN BILD: ${brott.map((e) => `${e.vem} ${e.text}`).join(' · ') || 'inga'}`, !brott.length]);
 for (const [t, ok] of ut) console.log(ok ? '✓' : '✗', t);
 console.log(`${n} skärmdumpar (verktyg/a063-steg-NN.png)`); console.log(sidfel.length ? 'sidfel: ' + sidfel.slice(0, 3).join(' · ') : 'inga sidfel');
 await b.close(); process.exit(ut.every((x) => x[1]) && !sidfel.length ? 0 : 1);

@@ -60,7 +60,7 @@ export const SOLPARK_PER_S = 14;        // en solcellspark: sex paneler – mer 
 export const MOTOR_STROM = 1;           // ström per sekund när motorn mal
 
 // ---------- Bära och förvara ----------
-export const BARA_SKRAP = [1, 3, 6, 10, 22];   // punkt AX: händer 1 → skräpgrip 3 → sopsäck 6 (dag 2) → ryggkorg 10 (dag 3) → magnetpistol 22 (kapitel 2)
+export const BARA_SKRAP = [3, 6, 10, 16, 30];   // A-072: händer 3 → skräpgrip 6 → sopsäck 10 (dag 2) → ryggkorg 16 (dag 3) → magnetpistol 30 (kapitel 2)
 export const HOTBAR = 9;                // platser i verktygsraden (plats 1 = verktyget/famnen)
 export const KISTA_PLATSER = 27, STACK = 20;   // kistan har 27 platser, max 20 av samma sak per plats
 export const RYGG_BAS = 18, RYGG_STOR = 27;     // ryggsäcken: 18 platser, 27 med Större ryggsäck

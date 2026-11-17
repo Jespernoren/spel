@@ -275,7 +275,7 @@ body.mus-fri .hud-flik{box-shadow:0 0 0 2px var(--fil);animation:hudPuls 1.2s ea
 .br-dagmal{list-style:none;margin:12px auto 4px;padding:0;display:flex;flex-direction:column;gap:6px;max-width:380px;text-align:left}
 .br-dagmal li{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.07);font:700 14.5px/1.3 system-ui}
 .br-dagmal li .ui-ik{width:22px;height:22px;flex:none;color:#7dffb0}
-.ph-mal-text.nasta .nasta-ik.bild{background:rgba(255,255,255,.9);overflow:hidden}.ph-mal-text.nasta .nasta-ik.bild img{width:36px;height:36px;object-fit:contain}
+.ph-mal-text.nasta .nasta-ik.bild{background:rgba(255,255,255,.9);overflow:visible}.ph-mal-text.nasta .nasta-ik{position:relative;overflow:visible;cursor:pointer}.ph-mal-text.nasta .nasta-ik.flera{flex:0 0 auto!important;width:auto!important;padding:0 6px;gap:4px;display:flex;align-items:center}.ph-mal-text.nasta .nasta-ik.flera img{width:30px!important;height:30px!important}.ph-mal-text.nasta .nasta-ik.bild img{width:36px;height:36px;object-fit:contain}
 .ph-humor-ram{position:relative;display:inline-block;flex:none}.ph-humor-ram .ui-portratt{width:100%!important;height:100%!important}
 .ph-humor{position:absolute;right:-5px;top:-5px;width:45%;height:45%;min-width:14px;min-height:14px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));animation:humorStuds 1.2s ease-in-out infinite}.ph-humor svg{width:100%;height:100%;display:block}
 @keyframes humorStuds{50%{transform:translateY(-2px) scale(1.08)}}

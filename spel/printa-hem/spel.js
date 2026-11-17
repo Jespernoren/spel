@@ -4246,7 +4246,7 @@ function kanalLagg(it) {
   const nu0 = performance.now(); it.t = it.t0 ?? nu0; it.vikt = it.vikt || 'REAKTION';
   { const fg = [...kanal, ...kanalSenare].find((x) => Math.abs(x.t - it.t) < EA_GRUPP_MS); it.grupp = it.grupp ?? (fg ? fg.grupp : it.t); }   // EA: samma händelse = samma grupp (gruppens starttid)
   // kön får inte växa: max en sak per figur i kön (STORY stryks aldrig – den väntar)
-  if (it.vikt !== 'STORY' && it.vem) { const i = kanal.findIndex((x) => x.vem === it.vem && x.vikt !== 'STORY' && !x.kvitto && !(it.paket && x.paket === it.paket) && !(it.sms && x.sms));   /* A-063: en kvittens trängs inte undan av en nyare tanke */   /* EA: delar i samma paket och olika sms tar inte ut varandra */ if (i >= 0) { textLogg('struken', kanal[i].vem, kanal[i].text || '', 'en nyare från samma'); kanal.splice(i, 1); } }
+  if (it.vikt !== 'STORY' && it.vem) { const i = kanal.findIndex((x) => x.vem === it.vem && x.vikt !== 'STORY' && x.vikt !== 'MÅL' && !x.kvitto && !(it.paket && x.paket === it.paket) && !(it.sms && x.sms));   /* A-063: en kvittens trängs inte undan av en nyare tanke */   /* EA: delar i samma paket och olika sms tar inte ut varandra */ if (i >= 0) { textLogg('struken', kanal[i].vem, kanal[i].text || '', 'en nyare från samma'); kanal.splice(i, 1); } }
   if (String(it.vem || '').startsWith('notis:') && it.text) {   /* A-065: samma sort inom 30 s blir en notis med antal */
     const n = notisNyckel(it.text), fore = [...kanal, ...kanalSenare].find((x) => String(x.vem || '').startsWith('notis:') && notisNyckel(x.text || '') === n);
     if (fore) { fore.antal = (fore.antal || 1) + 1; textLogg('sammanslagen', it.vem, it.text, `A-065: ×${fore.antal}`); return; }
@@ -4939,6 +4939,19 @@ const malPil = new THREE.Group();
   const kon = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.5, 4), gul); kon.rotation.x = Math.PI; kon.position.y = 0.25; malPil.add(kon);
   const stav = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.45, 0.12), gul); stav.position.y = 0.72; malPil.add(stav);
   malPil.traverse((o) => { o.renderOrder = 10; }); malPil.visible = false; scen.add(malPil); }
+/* A-072: samma bild som i målrutan, liten ovanför pilen och vänd mot kameran */
+const pilBildSprite = new THREE.Sprite(new THREE.SpriteMaterial({ depthTest: false, transparent: true })); pilBildSprite.position.y = 1.35; pilBildSprite.scale.set(0.62, 0.62, 1); pilBildSprite.renderOrder = 11; pilBildSprite.visible = false; malPil.add(pilBildSprite);
+let pilBildTyp = '';
+function sattPilBild(typ, verb = '') {
+  const nyckel = (typ || '') + '|' + verb; if (nyckel === pilBildTyp) return; pilBildTyp = nyckel;
+  const url = typ ? ikonBild(typ) : null; if (!url && !verb) { pilBildSprite.visible = false; return; }
+  const rita = (img) => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+    g.fillStyle = 'rgba(30,36,46,0.85)'; g.beginPath(); g.arc(64, 64, 62, 0, Math.PI * 2); g.fill(); g.lineWidth = 5; g.strokeStyle = '#ffd43b'; g.stroke();
+    if (img) g.drawImage(img, 18, 18, 92, 92); else { g.font = '64px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(verb, 64, 68); }   // ingen bild: symbolen för vad man gör
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; pilBildSprite.material.map?.dispose?.(); pilBildSprite.material.map = t; pilBildSprite.material.needsUpdate = true; pilBildSprite.visible = true; };
+  if (!url) { rita(null); return; }
+  const img = new Image(); img.onload = () => rita(img); img.src = url;
+}
 // kapitel 1 efter dag 1: pilen visar postlådan (Rolfs brev och gåvor), gårdens skräp och tippen
 function postMal() {
   const st = STEG[S.steg]; if (!st || st.sov || S.kapitel > 1) return null;
@@ -5031,14 +5044,15 @@ addEventListener('mousemove', (e) => { if (Math.abs(e.movementX || 0) + Math.abs
 function tittaMot(x, z, tid = 1.4, o = {}) {
   const nyckel = o.nyckel || `${S.steg}:${Math.round(x)}:${Math.round(z)}`;
   if (!o.tvang && (!vridPa || blickGjorda.has(nyckel) || performance.now() - musSenast < 2000)) return;
-  blickGjorda.add(nyckel); blickMal = { x, z, kvar: Math.min(tid, 0.9), tvang: !!o.tvang };
+  blickGjorda.add(nyckel); blickMal = { x, z, y: o.y, kvar: Math.min(tid, 0.9), tvang: !!o.tvang, nyckel, vidSlut: o.vidSlut };
 }
 function uppdateraBlick(dt) {
   if (!blickMal) return;
   const mal = Math.atan2(-(blickMal.x - spelare.pos.x), -(blickMal.z - spelare.pos.z));
   let d = mal - spelare.yaw; d = Math.atan2(Math.sin(d), Math.cos(d));
-  spelare.yaw += d * Math.min(1, dt * 3.5); spelare.pitch += (0.02 - spelare.pitch) * Math.min(1, dt * 3);
-  blickMal.kvar -= dt; if (blickMal.kvar <= 0) blickMal = null;
+  const pMal = blickMal.y == null ? 0.02 : Math.max(-0.6, Math.min(0.5, Math.atan2(blickMal.y - (spelare.pos.y + 1.6), Math.hypot(blickMal.x - spelare.pos.x, blickMal.z - spelare.pos.z))));   /* A-072: nicken siktar på pilens höjd */
+  spelare.yaw += d * Math.min(1, dt * 3.5); spelare.pitch += (pMal - spelare.pitch) * Math.min(1, dt * 3);
+  blickMal.kvar -= dt; if (blickMal.kvar <= 0) { const f = blickMal.vidSlut; blickMal = null; try { f?.(); } catch {} }
 }
 let aliHarRopat = false;
 function aliRopar() { if (aliHarRopat) return; aliHarRopat = true; tittaMot(ALI.x, ALI.z, 1.6); setTimeout(() => prata('ali', ALI_ROP), 500); }
@@ -5071,7 +5085,7 @@ function pilTopp(p) {
 }
 function uppdateraMalPil() {
   const p = malPunkt();
-  if (!p || !ui.igang) { malPil.visible = false; }
+  if (!p || !ui.igang || (malPilSteg !== S.steg && (S.skyltUppe || S.steg > 1))) { malPil.visible = false; }   /* A-072: pilen flyttas när nästa steg sägs */
   else { const stor = !S.skyltUppe && S.steg <= 1; malPil.scale.setScalar(stor ? Math.max(1.3, Math.min(2, Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z) / 9)) : Math.min(2, Math.max(1, Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z) / 9))); malPil.visible = true; malPil.position.copy(p).add(new THREE.Vector3(stor ? 0.65 : 0, 0, 0)); malPil.position.y = pilTopp(p) + 0.3 + Math.abs(Math.sin(performance.now() / 300)) * 0.15;   /* ED5: spetsen 0,3 m ovanför det man ser, gungar max 0,15 m */ malPil.rotation.y += 0.04; }
   // din egen röst när dagboken är läst: dags att spika skylten
   if (!S.skyltUppe && S.steg <= 1 && !sagtBygg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas) { sagtBygg = true; bud(() => { if (!S.skyltUppe) { setTimeout(() => { kanalLagg({ vikt: 'STORY', vem: 'du', text: DU_GULD, delar: [{ text: DU_GULD }, { text: DU_BYGG, visa: () => tittaMot(VAG_SKYLT.x, VAG_SKYLT.z, 1.8) }], villkor: () => !S.skyltUppe, lugnOk: true, forst: true,   /* A-063: prompten före handlingen – stryks om skylten redan sitter */
@@ -5081,15 +5095,59 @@ function uppdateraMalPil() {
   // då byts rutan och berättaren läser upp målet (finns ingen uppläsning byts rutan tyst).
   if (malKoSteg !== S.steg && !morgonVantar && (S.skyltUppe || S.steg > 1)) {
     const st = S.steg, id = stegId(); malKoSteg = st;
-    const tal = id === 'salj' ? '' : stegTal(id);   // B33: DU_SANG är struken – berättaren läser målet som vanligt
+    /* A-072: nästa steg sägs högt direkt när rutan byts – din knuff om målet har en, annars berättaren. Aldrig båda. */
+    const ny = STEG[st], knuff = ny?.knuff && !harSagt(ny.knuff) && !(typeof ny.klar === 'function' && ny.klar()) ? ny.knuff : null;
+    const tal = knuff || stegTal(id) || malMening(ny);
     const vid = String(stegText(STEG[st]) || '').slice(0, 12);
-    kanalLagg({ vikt: 'MÅL', vem: 'berattare', text: tal, rost: !!tal, minMs: tal ? 1500 : 0, tidigast: performance.now() + 400,
-      stryksOm: () => S.steg !== st, villkor: () => String(stegText(STEG[st]) || '').slice(0, 12) === vid });   /* EA #16: berättaren läser målet som står i rutan */
+    const malIt = { vikt: 'MÅL', vem: knuff ? 'du' : 'berattare', text: tal, rost: !!tal, minMs: tal ? 1500 : 0, tidigast: performance.now() + 150,
+      visa: () => { if (!knuff && String(stegText(STEG[st]) || '').slice(0, 12) !== vid) malIt.text = malMening(STEG[st]); malRuta(); malPilNu(); if (knuff) notisVisa('💭 ' + knuff, 'tanke', { tid: 4500 }); },   /* EA #16: berättaren läser målet som står i rutan */
+      stryksOm: () => S.steg !== st };
+    kanalLagg(malIt);
   }
-  if (malVisasSteg !== S.steg && !morgonVantar && (performance.now() - malKlartTid - (menyTot - menyVidKlart) > MAL_SENAST_MS || !eaHallerMal())) {   // EA/EC#5: nästa mål när förklaringen (högst två delar) har visats – senast 10 s
-    malVisadTid = performance.now();
-    malVisasSteg = S.steg; try { textLogg('målruta', '', stegText(STEG[S.steg]) || '', `nytt mål i rutan · meny ${((menyTot - menyVidKlart) / 1000).toFixed(1)} s`); } catch {}
+  if (malVisasSteg !== S.steg && !morgonVantar && (performance.now() - malKlartTid - (menyTot - menyVidKlart) > MAL_SENAST_MS || !eaHallerMal())) {   // EA/EC#5: rutan visar nästa mål när förklaringen har visats – senast 10 s
+    malRuta();
+    const mi = [...kanal, ...kanalSenare].find((x) => x.vikt === 'MÅL' && x.vem !== 'bud'); if (mi) mi.forst = true;   /* A-072: målet sägs först av allt i kön */
   }
+  if (malPilSteg !== S.steg && malVisasSteg === S.steg && performance.now() - malRutaT > 12000 && ![...kanal, ...kanalSenare].some((x) => x.vikt === 'MÅL' && x.vem !== 'bud') && kanalAktiv?.vikt !== 'MÅL') malPilNu(true);   // reserven: pilen kommer ändå (TYST MÅL)
+}
+/* A-072: rutan byts, pilen flyttas och nästa steg sägs – i samma ögonblick. Kameran nickar mot pilen om den är utom bild. */
+const malMening = (st) => rens(String(stegText(st) || '')).split(' · ')[0].replace(/\s*\(.*\)\s*$/, '').trim() + '.';
+let malRutaT = 0;
+function malRuta() {
+  if (malVisasSteg === S.steg) return;
+  malVisadTid = performance.now(); malRutaT = malVisadTid;
+  malVisasSteg = S.steg; try { textLogg('målruta', '', stegText(STEG[S.steg]) || '', `nytt mål i rutan · meny ${((menyTot - menyVidKlart) / 1000).toFixed(1)} s`); } catch {}
+}
+let malPilSteg = -1, malPilT = 0;
+function malPilNu(tyst = false) {   /* A-072: pilen flyttas i samma ögonblick som nästa steg sägs */
+  if (malPilSteg === S.steg) return;
+  malPilSteg = S.steg; malPilT = performance.now(); const st0 = S.steg;
+  textLogg('pil', '', stegText(STEG[st0]) || '', tyst ? 'A-072: reserven – ingen mening' : 'A-072: pilen flyttas');
+  if (tyst && (S.skyltUppe || S.steg > 1)) laggFynd(tystMal, `”${rens(String(stegText(STEG[st0]) || '')).slice(0, 50)}” sades inte`);
+  setTimeout(() => { try { if (S.steg === st0) malNick('nick:' + st0); } catch {} }, 350);
+  setTimeout(() => malPaminn(st0), 20000);
+}
+const tystMal = [], pilUtom = [];
+const pilNdc = () => { const v = malPil.getWorldPosition(new THREE.Vector3()).project(kamera); return `x ${v.x.toFixed(2)} y ${v.y.toFixed(2)} z ${v.z.toFixed(2)} avst ${Math.hypot(malPil.position.x - spelare.pos.x, malPil.position.z - spelare.pos.z).toFixed(1)} m`; };
+function pilIBild() {   // pilen syns i bild (inom 80 % av skärmen och framför kameran)
+  if (!malPil.visible) return true;
+  kamera.position.set(spelare.pos.x, spelare.pos.y + spelare.hojd, spelare.pos.z); kamera.rotation.set(spelare.pitch, spelare.yaw, 0, 'YXZ'); kamera.updateMatrixWorld(true);   // färska matriser även när ingen bild ritas
+  const v = malPil.getWorldPosition(new THREE.Vector3()).project(kamera); return v.z < 1 && Math.abs(v.x) < 0.8 && Math.abs(v.y) < 0.85;
+}
+function malNick(nyckel) {
+  if (!ui.igang || pausad || pilIBild()) return;
+  const p = malPil.position, y0 = spelare.yaw;
+  if (Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z) < 2.5) return;   // man står redan vid målet
+  tittaMot(p.x, p.z, 1.2, { nyckel, y: p.y + 0.5, vidSlut: () => { const onsk = Math.atan2(-(p.x - spelare.pos.x), -(p.z - spelare.pos.z)), avv = Math.abs(Math.atan2(Math.sin(onsk - spelare.yaw), Math.cos(onsk - spelare.yaw))); if (avv < 0.35 && !pilIBild() && performance.now() - musSenast > 1500) laggFynd(pilUtom, `pilen utom bild efter nicken (${nyckel}) ${pilNdc()}`); } });   // kontrollen görs när nicken är klar
+  if (!blickGjorda.has(nyckel)) return;   // spelaren tittar själv (musen) eller har stängt av vridningen
+  textLogg('nick', '', nyckel, 'A-072: kameran nickar mot pilen');
+}
+function malPaminn(st0) {   /* A-072: 20 s utan att komma närmare – meningen en gång till, och en nick. Sedan tyst. */
+  if (S.steg !== st0 || !ui.igang || pausad || !malPil.visible) return;
+  const p = malPil.position; if (Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z) < 4) return;
+  const st = STEG[st0], tal = stegTal(stegId()) || malMening(st);
+  kanalLagg({ vikt: 'REAKTION', vem: 'berattare', text: tal, rost: true, minMs: 1500, gammalMs: 8000, stryksOm: () => S.steg !== st0 });
+  malNick('paminn:' + st0);
 }
 // EA: målrutan väntar medan story (och reaktioner från samma händelse) står i kön eller visas
 function eaHallerMal() {
@@ -9319,13 +9377,22 @@ function nuTips(t) {
   if (/Sälj|Tjäna/.test(t)) return 'Printa saker och sälj hos Ali';
   return 'Följ pilen';
 }
+const MAL_VERB = [[/\bsov\b|^Sov|sängen/i, '🌙'], [/\bmal\b|^Mata|^Töm|^Fyll|kvarnen/i, '🌀'], [/^(Ställ|Sätt|Lägg|Bygg|Montera|Koppla|Skruva)/, '👇'], [/^(Mal|Mata|Töm|Fyll)/, '🌀'], [/^Sälj|Tjäna/, '🪙'], [/^(Printa|Trampa)/, '🖨️'], [/^(Sov|Ställ sängen)|sov\b/i, '🌙'], [/^(Fråga|Prata|Läs|Ge )/, '💬'], [/^Köp/, '🛒'], [/^(Plocka|Städa|Hämta|Ta |Lyft|Lasta)/, '✋']];
+const malVerb = (t) => (MAL_VERB.find(([re]) => re.test(rens(String(t || '')))) || [null, '👉'])[1];
+const verbHtml = (v) => `<b class="nasta-verb" style="position:absolute;right:-8px;top:-8px;width:auto;height:auto;font-size:16px;line-height:1;filter:drop-shadow(0 1px 1px #0008)">${v}</b>`;
+const malDelar = () => stegId() === 'bygg' && !S.cykelOmbyggd ? [['cykelS', !!S.cykelStar], ['byggsats:generator', !!S.generatorStar]] : null;
+addEventListener('click', (e) => { const el = e.target?.closest?.('[data-lasupp]'); if (!el) return; const tal = stegTal(stegId()) || malMening(STEG[S.steg]); if (tal) prataNu('berattare', tal, 'MÅL'); });   /* A-072: klick på bilden läser upp målet */
 function ritaNasta() {
   const text = malRaw; const [ikon, t] = nastaAtgard(text);
   const bild = t === text ? stegBild(text) : null;
   const sl = /^Köp /.test(text) ? slagForTyp(STEG[S.steg]?.bild || stegBild(text)) : null;   // punkt AK: köpmålen har samma märke som hos Ali
   // storylinen syns alltid: är nästa handling något annat (ta ut, ladda …) står kapitelmålet under
   // tre nivåer: kapitel/dag (rubriken ovanför) → dagens mål (stor rad) → nästa sak att göra nu (med ikon)
-  const ikonHtml2 = `<span class="nasta-ik${bild ? ' bild' : ''}">${bild ? ikonHtml(bild, 36) : ik(ikon)}</span>`;
+  /* A-072: bilden av saken + en symbol för vad man gör (för den som inte läser). Mål med två delar får en bild per del, som bockas av. */
+  const verb = malVerb(text), delar = malDelar(); try { sattPilBild(delar ? delar.find(([, k]) => !k)?.[0] : bild, verb); } catch {}
+  const ikonHtml2 = delar
+    ? `<span class="nasta-ik bild flera" data-lasupp title="Läs upp målet">${delar.map(([t, klar]) => `<span style="position:relative;display:inline-block;opacity:${klar ? 0.45 : 1}">${ikonHtml(t, 32)}${klar ? '<b style="position:absolute;right:-2px;bottom:-4px;color:#4ade80;font-size:16px">✓</b>' : ''}</span>`).join('')}${verbHtml(verb)}</span>`
+    : `<span class="nasta-ik${bild ? ' bild' : ''}" data-lasupp title="Läs upp målet" style="position:relative">${bild ? ikonHtml(bild, 36) : ik(ikon)}${verbHtml(verb)}</span>`;
   const h = t !== text && text
     ? `<span class="nasta-rubrik">${rens(text)}${slagChip(sl, true)}</span><span class="nasta-rad" data-konkret>${ikonHtml2}<span class="nasta-t"><small>Nu:</small> ${rens(t)}</span></span>`
     : `<span class="nasta-rubrik">${rens(t)}${slagChip(sl, true)}</span><span class="nasta-rad">${ikonHtml2}<span class="nasta-t">${rens(nuTips(t))}</span></span>`;
@@ -10688,7 +10755,7 @@ function uppdatera(dt) {
     // mål-guiden
     while (S.steg < STEG.length && STEG[S.steg].klar()) {
       const st = STEG[S.steg]; const sags = st.tanke && (stegVisat === S.steg || st.tankeForst); S.steg++;
-      { const ny = STEG[S.steg]; if (ny?.knuff && !harSagt(ny.knuff) && !(typeof ny.klar === 'function' && ny.klar())) { const ni = S.steg; tanke(ny.knuff, 'ED6: knuff före målet', 'STORY', () => S.steg === ni && !STEG[ni]?.klar?.(), { efterMal: true }); } }   /* A-063: knuffen stryks om saken redan står på plats (SPÖKE) */   /* ED6: en kort hur-tanke när målet inte är självklart */
+      /* A-072: knuffen före nästa mål sägs nu av målet självt (en mening, aldrig två) – se malRuta() */
       if (sags && !harSagt(st.tanke)) { const nastaI = S.steg; if (st.tankeForst) tanke(st.tanke, 'mål klart', 'STORY', () => S.steg <= nastaI, { forst: true, kvitto: { t: performance.now(), fri: kvittoFri(), meny: menyTot, steg: S.steg, namn: 'mål klart' } });   /* EA: tanken förklarar nästa mål – kastas om det redan är gjort */ else paket([{ tanke: st.tanke }], { om: 1200, vikt: 'REAKTION', varfor: 'mål klart', kvitto: true }); }   /* DT: skräptanken kommer före nästa mål */   /* högst en tanke per mål, en gång */
       malBockText = malRaw; if (malKlartTid <= malVisadTid) { malKlartTid = performance.now(); menyVidKlart = menyTot; }   /* EC#5: fristen räknas från första mål som klarats sedan rutan senast byttes */ senastMalKlartT = performance.now(); kvittoBock(st); handelse('malKlart', { id: st.id || 'steg' + (S.steg - 1), del: st.del, nasta: STEG[S.steg]?.id || 'steg' + S.steg });
       if (st.lapp && !S.lappar.includes(st.lapp)) visaLapp(st.lapp);
@@ -14911,6 +14978,9 @@ if (ui) {
   regelvakt.regel('SEN KVITTENS', () => senKvittens.slice(-5));   /* A-063 */
   regelvakt.regel('SAKNAD KVITTENS', () => saknadKvittens.slice(-5));   /* A-065 lager 2 */
   regelvakt.regel('NÄSTA UTAN KONTUR', () => nastaUtanKontur());   /* A-071 */
+  regelvakt.regel('TYST MÅL', () => tystMal.slice(-5));   /* A-072 */
+  regelvakt.regel('PIL UTOM BILD', () => pilUtom.slice(-5));   /* A-072 */
+  regelvakt.regel('MÅL UTAN BILD', () => { if (!ui.igang || !malText.firstElementChild) return []; const ik = document.querySelector('.dn-uppg .bild') || malText.querySelector('.nasta-ik'); return ik && ik.querySelector('img, svg') && ik.querySelector('.nasta-verb') ? [] : [`”${rens(String(malRaw)).slice(0, 50)}” har ingen bild`]; });   /* A-072 */
   regelvakt.regel('GENERISK MARKERING', () => [kvarnMark, spokeRuta].filter((m) => m.visible).map((m) => (m === kvarnMark ? 'ringen vid kvarnen' : 'skivan under spöket') + ' syns'));   /* A-071 */
   regelvakt.regel('FAST I HANDEN', () => { if (!ui.igang) return []; const t = valdTyp(); return t && fastIHanden(t) ? [`${t} i handen har ingen plats och kan inte monteras`] : []; });   /* A-071 */
   regelvakt.regel('DUBBEL KVITTENS', () => dubbelKvittens.slice(-5));   /* A-065 lager 2 */
@@ -15214,7 +15284,11 @@ function ritaDN() {
   if (dnC.uppg !== text) {
     dnC.uppg = text;
     const [ikon, t] = nastaAtgard(malRaw); const bild = stegBild(malRaw);
-    u.querySelector('.bild').innerHTML = bild ? ikonHtml(bild, 46) : ik(ikon || 'mal');
+    /* A-072: bilden av saken + symbolen för vad man gör. Två delar = en bild per del, bockas av. Klick läser upp målet. */
+    const verb = malVerb(malRaw), delar = malDelar(), bEl = u.querySelector('.bild');
+    bEl.innerHTML = (delar ? `<span style="display:flex;gap:4px;width:auto;height:auto">${delar.map(([t, klar]) => `<span style="position:relative;width:34px;height:34px;opacity:${klar ? 0.5 : 1}">${ikonHtml(t, 34)}${klar ? '<b style="position:absolute;right:-3px;bottom:-5px;color:#4ade80;font-size:15px">✓</b>' : ''}</span>`).join('')}</span>` : bild ? ikonHtml(bild, 46) : ik(ikon || 'mal')) + verbHtml(verb);
+    bEl.style.position = 'relative'; bEl.style.overflow = 'visible'; bEl.style.cursor = 'pointer'; bEl.dataset.lasupp = '1'; bEl.title = 'Läs upp målet'; Object.assign(bEl.style, delar ? { width: 'auto', minWidth: '64px', flex: '0 0 auto', padding: '0 8px', display: 'flex', alignItems: 'center', justifyContent: 'center' } : { width: '', minWidth: '', flex: '', padding: '', display: '', alignItems: '', justifyContent: '' });
+    try { sattPilBild(delar ? delar.find(([, k]) => !k)?.[0] : bild, verb); } catch {}
     u.querySelector('.tips').textContent = rens(t !== malRaw ? t : nuTips(t));
   }
   { const mi = momentInfo(); dnSatt(u.querySelector('.nu'), 'textContent', mi ? `NU · ${mi.namn.toUpperCase()} ${mi.steg}/${mi.av}` : 'NU'); dnSatt(u.querySelector('.rub'), 'textContent', r.rub); }   /* EI 21 · A-062: momentet på egen rad, målet ensamt i rubriken */
