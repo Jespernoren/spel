@@ -236,7 +236,7 @@ export const FLASK_KEDJA = {
   mala: ['kvarnmotor', 'turbomotor'],
   trampa: ['vindsnurra'],
   strom: ['cykelbatteri', 'vindsnurra2', 'vindsnurra3', 'sol', 'bank', 'solpark'],   // EE tillägg: vindsnurra 3 (blå nivå 5), sedan sol – Skrivare M och L drar mer än vinden ger
-  skrivare: ['rullstall', 'trim_skrivare', 'skrivare2', 'skrivare3'],   /* EE: skrivartrim dag 2, Skrivare M dag 3, L i kapitel 2 */
+  skrivare: ['rullstall', 'trim_skrivare', 'skrivare2', 'trim_skrivare2', 'skrivare3'],   /* EE: skrivartrim dag 2, Skrivare M dag 3, L i kapitel 2 */
   inkomst: ['kruka'],
 };
 // reserv: står ett mål och väntar på sin flaskhals så här länge (s spelad tid) låses det upp ändå, så att ingen fastnar
