@@ -13302,7 +13302,7 @@ function kjelleSand(text, varfor) {
 {
   const bygg = () => { const ut = []; const hem = S.hem || {}; for (const [k, t] of Object.entries(KJELLE_HEM)) if (hem[k]) ut.push(k + ':' + t); return ut; };
   let snapDag = S.dag, snap = bygg();
-  paHandelse('placerat', ({ sak }) => { const n = VAROR[sak]?.namn || MASKINER[sak]?.namn; if (!n) return; S.kjelleIdag = [...new Set([...(S.kjelleIdag || []), `har fått ${n.toLowerCase().replace(/ \(.*\)$/, '')}`])].slice(-4); });
+  paHandelse('placerat', ({ sak }) => { const n = VAROR[sak]?.namn || MASKINER[sak]?.namn; if (!n || /storebror/i.test(n)) return; S.kjelleIdag = [...new Set([...(S.kjelleIdag || []), `har fått ${n.toLowerCase().replace(/ \(.*\)$/, '')}`])].slice(-4); });
   paHandelse('lastatAv', () => { if (S.kjelleForsta) return; S.kjelleForsta = true; setTimeout(() => kjelleSand(KJELLE_FORSTA, 'A-047: dag 1, efter avlastningen'), 200000); });
   setInterval(() => {
     if (!ui.igang || sover) return;
