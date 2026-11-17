@@ -318,7 +318,7 @@
       valj(bs); return klick(H.skjulYta, 'skjulet', 2.5);
     }
     if (id === 'gamingbod') { valj(bs); await gaTill(H.skjulYta, 4, 'platsen vänster om skjulet'); const ok = H.byggBodTest(); handling(ok ? 'bygger gamingboden' : 'gamingboden fick inte plats'); return ok; }   // boden har en egen placering (spöket), inte placera()
-    if (['kvarnmotor', 'stortratt', 'matarband'].includes(id)) { valj(bs); return klick(H.kvarn, 'kvarnen'); }
+    if (['kvarnmotor', 'stortratt', 'matarband', 'hardkniv', 'diamantkniv'].includes(id)) { valj(bs); return klick(H.kvarn, 'kvarnen'); }   /* AX g47: diamantkvarnen monteras i kvarnen, den ställs inte ut */
     if (['kolfband', 'kolfslang', 'jetmotor'].includes(id)) { const pk = H.placerade.find((p) => p.typ === 'kolfkvarn'); valj(bs); return klick(pk.mesh, 'kolfiberkvarnen'); }
     if (['petgtorn', 'petgcontainer'].includes(id)) { const pk = H.placerade.find((p) => p.typ === 'petgkvarn'); valj(bs); return klick(pk.mesh, 'röda kvarnen'); }
     if (id.startsWith('spolhallare')) { const sk = skrivareAlla().find((x) => (x.spolNiva || 0) < (id === 'spolhallare' ? 1 : id === 'spolhallare2' ? 2 : 3)) || skrivareAlla()[0]; valj(bs); return klick(sk.mesh, 'skrivaren (spolhållare)'); }
