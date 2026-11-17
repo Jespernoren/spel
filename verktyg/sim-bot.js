@@ -220,7 +220,10 @@
   const skrivareAlla = (petg = false) => H.skrivare.filter((x) => x.mesh?.visible !== false && (petg === 3 ? x.gen === 5 : (x.gen === 4) === petg && x.gen !== 5));
   // kapitel 2: PETG-skrivaren (gen 4) tar bara röd PETG (nivå 2) – vanliga saker går på de vanliga skrivarna
   const arPetg = (val) => { const n = val?.maskin ? H.printLinje(val.maskin) : (val?.typ && H.VAROR[val.typ]?.niva) || 1; return n === 3 ? 3 : n === 2; };   // DO: byggsatser printas på sin egen linje
-  const ledig = (val) => { const petg = arPetg(val); const l = skrivareAlla(petg); return l.filter((x) => !x.jobb && !x.klar).sort((a, b) => b.gen - a.gen)[0] || l[0] || skrivareAlla()[0]; };
+  const ledig = (val) => { const petg = arPetg(val); const l = skrivareAlla(petg).slice().sort((a, b) => b.gen - a.gen);
+    const g = val.maskin ? 0 : (H.VAROR[val.typ]?.gram || 0), stor = g >= 2000 && l.some((x) => x.gen >= 2);   /* AX g48: stora saker (kaminen) får inte plats på Skrivare S – ta den största, hellre i kö */
+    const fri = l.filter((x) => !x.jobb && !x.klar && (!stor || x.gen >= 2));
+    return fri[0] || (stor ? l.find((x) => x.gen >= 2) : null) || l[0] || skrivareAlla()[0]; };
   async function taUt(sk) { if (!sk.klar) return; const n = H.antalUt(sk); await klick(sk.mesh, 'skrivaren'); handling(`tar ut ${n} st ur skrivaren`); }
   async function printa(val, { vantaKlart = true } = {}) {
     const namn = val.maskin ? H.MASKINER[val.maskin].namn : H.VAROR[val.typ].namn;
