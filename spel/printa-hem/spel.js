@@ -12568,7 +12568,7 @@ setInterval(() => { try {
   if (!f.tipplager && S.tippNyckel && (TIPP_FRO.some((x) => x.g === hv) || froNara(TIPP.x, TIPP.z, TIPP.r + 1.5))) froSett('tipplager');   // de pressade balarna i högen syns så fort man står på tippen
   const fram = [-Math.sin(spelare.yaw), -Math.cos(spelare.yaw)], iSikte = (x, z) => { const dx = x - spelare.pos.x, dz = z - spelare.pos.z, d = Math.hypot(dx, dz); return d < 3.5 || (d < 5 && (dx * fram[0] + dz * fram[1]) / d > 0.6) || (k === 1 && (S.dag || 1) >= 3 && d < 8); };   // K1 dag 3–5: man rör sig på tippen – då syns de
   for (const s of skrapLista) { if (!s.userData.tung || !iSikte(s.position.x, s.position.z)) continue; const id = s.userData.sort === 'kajak' ? 'kanot' : s.userData.sort === 'tunna' ? 'tunna' : s.userData.sort === 'rodback' ? 'rodback' : null; if (id && !f[id]) { froSett(id); break; } }
-  if ((S.dag || 1) >= 2 && !S.grindKapad) { if (!f.grind && froNara(GRIND.x, GRIND.z, 4.5)) froSett('grind'); else if (f.grind && !f.baeck && froNara(GRIND.x, GRIND.z, 3)) froSett('baeck'); }
+  if ((S.dag || 1) >= 2 && !S.grindKapad) { if (!f.grind && froNara(GRIND.x, GRIND.z, 9)) froSett('grind'); else if (f.grind && !f.baeck && froNara(GRIND.x, GRIND.z, 7) && (S.dag || 1) > 2) froSett('baeck'); }   // grinden syns från tippens västra kant
   if (!f.husvagn78 && !S.h78 && spelare.pos.x < BAS_GRANS.minX + 3.5 && spelare.pos.z > -2 && spelare.pos.z < 10) froSett('husvagn78');
   if (k >= 2 && !f.servett && froNara(ALI.x, ALI.z, 3.2)) froSett('servett');
   if (k >= 2 && !f.gunbritt && !S.gunBritt && froNara(VAG_SKYLT.x, VAG_SKYLT.z, 14)) froSett('gunbritt');
