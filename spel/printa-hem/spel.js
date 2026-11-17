@@ -2689,6 +2689,7 @@ const KANOT_PLATS = [TIPP.x + 4.6, TIPP.z - 1.2], TIPP_TUNNOR = [[TIPP.x + 4.2, 
 function ledtradarPaTippen() {
   if (!S.dgKanot) { S.dgKanot = true; if (!skrapLista.some((x) => x.userData.sort === 'kajak' && Math.hypot(x.position.x - KANOT_PLATS[0], x.position.z - KANOT_PLATS[1]) < 1)) laggSkrap(KANOT_PLATS[0], KANOT_PLATS[1], variantFor('kajak'), 0.5); }
   if (!S.dgTunnor) { S.dgTunnor = true; TIPP_TUNNOR.forEach(([x, z], i) => laggSkrap(x, z, variantFor('tunna'), 1.1 + i * 0.9)); }
+  if (!S.dgRodback) { S.dgRodback = true; laggSkrap(TIPP.x + 2.4, TIPP.z + 3.9, variantFor('rodback'), 0.4); }   /* A-057: en röd back på tippen redan i K1 – fröet */
 }
 setTimeout(ledtradarPaTippen, 0);   /* efter att resten av modulen har laddats */
 
@@ -12560,12 +12561,14 @@ setInterval(() => { try {
     else if (hv.userData.sort === 'kajak' && !f.kanot) froSett('kanot');
   }
   if (!f.tipplager && TIPP_FRO.some((x) => x.g === hv || x.g?.visible && froNara(TIPP.x + x.g.position.x, TIPP.z + x.g.position.z, 2.2))) froSett('tipplager');
-  for (const s of skrapLista) { if (!s.userData.tung || !froNara(s.position.x, s.position.z, 1.6)) continue; const id = s.userData.sort === 'kajak' ? 'kanot' : s.userData.sort === 'tunna' ? 'tunna' : s.userData.sort === 'rodback' ? 'rodback' : null; if (id && !f[id]) { froSett(id); break; } }
+  const fram = [-Math.sin(spelare.yaw), -Math.cos(spelare.yaw)], iSikte = (x, z) => { const dx = x - spelare.pos.x, dz = z - spelare.pos.z, d = Math.hypot(dx, dz); return d < 1.6 || (d < 5 && (dx * fram[0] + dz * fram[1]) / d > 0.6); };
+  for (const s of skrapLista) { if (!s.userData.tung || !iSikte(s.position.x, s.position.z)) continue; const id = s.userData.sort === 'kajak' ? 'kanot' : s.userData.sort === 'tunna' ? 'tunna' : s.userData.sort === 'rodback' ? 'rodback' : null; if (id && !f[id]) { froSett(id); break; } }
   if ((S.dag || 1) >= 2 && !S.grindKapad) { if (!f.grind && froNara(GRIND.x, GRIND.z, 4.5)) froSett('grind'); else if (f.grind && !f.baeck && froNara(GRIND.x, GRIND.z, 3)) froSett('baeck'); }
   if (!f.husvagn78 && !S.h78 && spelare.pos.x < BAS_GRANS.minX + 3.5 && spelare.pos.z > -2 && spelare.pos.z < 10) froSett('husvagn78');
   if (k >= 2 && !f.servett && froNara(ALI.x, ALI.z, 3.2)) froSett('servett');
-  if (k >= 2 && !f.gunbritt && !S.gunBritt && froNara(VAG_SKYLT.x, VAG_SKYLT.z, 12)) froSett('gunbritt');
-  if (k >= 3 && !f.kuvert && !S.gunBritt && froNara(postlada.position.x, postlada.position.z, 3)) froSett('kuvert');
+  if (k >= 2 && !f.gunbritt && !S.gunBritt && froNara(VAG_SKYLT.x, VAG_SKYLT.z, 14)) froSett('gunbritt');
+  if (k >= 3 && !f.kuvert && !S.gunBritt && froNara(postlada.position.x, postlada.position.z, 8)) froSett('kuvert');
+  if (k >= 2 && !f.kikare && bengt.visible && !S.bengtAvslojad) froSett('kikare');   // gubben med kikaren vid staketet räknas som fröet
   // avslöjandet: när första gången, och SPOILER om fröet inte har synts minst ett kapitel innan
   S.froAvsl ||= {};
   for (const [id, v] of Object.entries(STORYLAGER)) { if (S.froAvsl[id]) continue; let a = false; try { a = v(); } catch {} if (!a) continue; S.froAvsl[id] = k; sparaSnart();
@@ -14366,7 +14369,7 @@ if (ui) {
     if (!ui.igang) return []; const ut = [];
     for (const [v, t] of synligaTexter()) { const m = /(\d+)\s*\/\s*(\d+) kr/.exec(t); if (m && +m[1] !== Math.floor(S.mynt) && v !== 'HUD') ut.push(`${v} säger ${m[1]} kr, du har ${Math.floor(S.mynt)}: "${t.slice(0, 60)}"`); }
     const kr = dnMat.querySelector('[data-dn="kr"] .v')?.textContent, fel = kr && parseInt(kr.replace(/\s/g, ''), 10) !== Math.round(S.mynt);
-    if (fel && ui.butiksOverlay.hidden) { fsHud ||= performance.now(); if (performance.now() - fsHud > 2500) ut.push(`HUD visar ${kr}, du har ${Math.round(S.mynt)} kr`); } else fsHud = 0;   // en kort eftersläpning är ingen felsiffra
+    if (fel && ui.butiksOverlay.hidden) { fsHud ||= Date.now(); if (Date.now() - fsHud > 2500) ut.push(`HUD visar ${kr}, du har ${Math.round(S.mynt)} kr`); } else fsHud = 0;   // en kort eftersläpning är ingen felsiffra – mätt i riktig tid, som HUD:en ritas (AX kör spelets tid fortare)
     return ut;
   });
   regelvakt.regel('INAKTUELL RAD', () => ui.igang ? synligaTexter().filter(([v, t]) => v === 'NU-rutan' && /kom tillbaka imorgon/i.test(t)).map(([, t]) => t.slice(0, 80)) : []);
