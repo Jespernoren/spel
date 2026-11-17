@@ -456,6 +456,9 @@
       for (const [re, id] of MARK) if (re.test(txt)) { const t = H.MARK_TOMTER.find((x) => x.id === id);
         if (S.mynt < t.pris) { await tjana(t.pris, t.namn.toLowerCase()); return; }
         await gaTill(H.markTavla, 1.8, 'tavlan vid vägen'); H.kopMark(id); handling(`köper ${t.namn.toLowerCase()} (${t.pris} kr)`); await vanta(2); return; } }
+    if (/^Lägg guldflagan i Bengt-Åkes brevlåda/.test(txt)) { if (!H.antalInv('guldflaga')) { await vanta(3); return; } valj('guldflaga'); await klick(H.bengtLada, 'Bengt-Åkes brevlåda', 1.4); H.byt(0); return; }
+    if (/^Printa en kapskiva/.test(txt)) { if (!H.antalInv('kapskiva')) { await printa({ typ: 'kapskiva' }); return; } valj('kapskiva'); await klick(H.postlada, 'Rolfs postlåda (kapskivan)', 1.4); H.byt(0); return; }
+    if (/^Vaska i bäcken/.test(txt)) { if (!H.antalInv('vaskpanna')) { await tjana(S.mynt + 300, 'väntar på Rolf'); return; } valj('vaskpanna'); await gaTill(H.ader, 1.2, 'bäcken'); for (let i = 0; i < 3; i++) { H.vaskSlapp(1.9); await vanta(2); } H.byt(0); handling('vaskar i bäcken'); return; }
     if (/^Flytta in i huset/.test(txt)) { await klick(H.storHus, 'huset', 3); await vanta(2); return; }
     if (/^Mal en rulle guld/.test(txt)) {
       if (H.antalInv('fynd4')) { valj('fynd4'); await klick(H.kvarn, 'kvarnen (guld)'); H.byt(0); return; }
