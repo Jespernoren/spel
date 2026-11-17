@@ -12,7 +12,7 @@ const ANTAL_GRAS = 900;        // grästuvor (instansierade, billiga)
 const ANTAL_BLOMMOR = 0;
 const VIND = 0.025;            // hur mycket träden vajar (radianer)
 
-export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans, hojd }) {   /* hojd: valfri (x, z) => markens höjd (A-064/A-066) */
+export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans, hojd, markFarg }) {   /* hojd: valfri (x, z) => markens höjd (A-064/A-066) */
   let fro = 11;
   const rnd = () => ((fro = (fro * 9301 + 49297) % 233280) / 233280);
   const mellan = (a, b) => a + rnd() * (b - a);
@@ -42,7 +42,7 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans, hojd }) {   /* ho
   const barrLista = [];   // marken – spelet siktar mot den när man ställer ut saker
   // ---------- Marken: fläckigt gräs, mörkare och ljusare partier, lite jord ----------
   {
-    const geo = new THREE.PlaneGeometry(160, 160, 96, 96); geo.rotateX(-Math.PI / 2);
+    const geo = new THREE.PlaneGeometry(160, 160, hojd ? 160 : 96, hojd ? 160 : 96); geo.rotateX(-Math.PI / 2);   // A-066: tätare rutnät när marken har höjd (svackan)
     const p = geo.attributes.position, farg = [];
     const bas = new THREE.Color(0x7fae5a), mork = new THREE.Color(0x5f8f45), ljus = new THREE.Color(0x9cc06a), jord = new THREE.Color(0x8b7a55);
     const brus = (x, z) => Math.sin(x * 0.11 + Math.sin(z * 0.07) * 2) * 0.5 + Math.sin(z * 0.13 - x * 0.05) * 0.35 + Math.sin((x + z) * 0.31) * 0.15;
@@ -51,8 +51,9 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans, hojd }) {   /* ho
       if (n > 0.35) c.lerp(mork, Math.min(1, (n - 0.35) * 1.6)); else if (n < -0.3) c.lerp(ljus, Math.min(1, (-n - 0.3) * 1.8));
       if (Math.sin(x * 0.23 + 1) * Math.sin(z * 0.19) > 0.82) c.lerp(jord, 0.55);
       skifta(c, 0, 0, (rnd() - 0.5) * 0.03);
+      const y = hojd ? hojd(x, z) : 0; if (markFarg) markFarg(x, z, y, c);   // A-066: marken kan färgas efter platsen (svackan)
       farg.push(c.r, c.g, c.b);
-      if (hojd) p.setY(i, hojd(x, z));
+      if (hojd) p.setY(i, y);
     }
     if (hojd) geo.computeVertexNormals();
     geo.setAttribute('color', new THREE.Float32BufferAttribute(farg, 3)); markBas = Float32Array.from(farg);

@@ -22,6 +22,7 @@ export class Spelare {
     this.hinder = [];                    // THREE.Box3[] som man inte kan gå igenom
     this.markFn = opt.markFn || null;    // valfri (x, z) => markens höjd (backar, gropar, svackor). Utan den är marken 0
     this.maxKlattra = opt.maxKlattra ?? 0.6;  // med markFn: högsta kant man kan kliva upp på i ett steg (brantare = vägg)
+    this.sparr = opt.sparr || null;      // valfri (x, z) => true där man inte får gå (t.ex. branta slänter)
     this.yaw = opt.yaw ?? 0;
     this.pitch = 0;
     this.vy = 0;
@@ -149,7 +150,7 @@ export class Spelare {
   #flytta(dx, dz) {
     // står man redan fast i något (t.ex. landat i ett hinder) får man alltid gå ut
     const fast = this.#krock();
-    const brant = () => this.markFn && this.markFn(this.pos.x, this.pos.z) - this.pos.y > this.maxKlattra;   // för brant uppför = vägg
+    const brant = () => (this.markFn && this.markFn(this.pos.x, this.pos.z) - this.pos.y > this.maxKlattra) || (this.sparr && this.sparr(this.pos.x, this.pos.z));   // för brant uppför eller spärrat = vägg
     this.pos.x += dx; if (!fast && (this.#krock() || brant())) this.pos.x -= dx;
     this.pos.z += dz; if (!fast && (this.#krock() || brant())) this.pos.z -= dz;
     const g = this.granser;

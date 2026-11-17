@@ -64,6 +64,11 @@ const tillatna = PRINTVAG.map(kropp).filter(Boolean);
   }
 }
 
+// 5. kod efter en //-kommentar på samma rad körs aldrig (felet har slagit ut både tippens yta och marken)
+for (const f of [fil, ...fs.readdirSync(fil.replace(/[^/]+$/, '')).filter((n) => n.endsWith('.js') && !fil.endsWith(n)).map((n) => fil.replace(/[^/]+$/, n))]) {
+  const r2 = fs.readFileSync(f, 'utf8').split('\n');
+  r2.forEach((r, i) => { const k = r.search(/\/\/(?!.*['"`]\s*\+)/); if (k < 0 || /https?:$/.test(r.slice(0, k)) || (r.slice(0, k).split(/['"`]/).length % 2 === 0)) return; const efter = r.slice(k + 2); const m = efter.match(/(^|[\s;])([a-zA-Z_$][\w$]*(\.[a-zA-Z_$][\w$]*)+\([^)]*\)|(const|let) [a-zA-Z_$][\w$]* =[^;]+);\s*($|\/\*|\/\/)/); if (m) fel.push({ nr: i + 1, regel: 'KOD EFTER KOMMENTAR', text: `${f.split('/').pop()}: ${m[2].slice(0, 60)}`, rad: r.trim().slice(0, 140) }); });
+}
 console.log(`lint-sekvens: ${fel.length} fel, ${undantag.length} undantag (${fil.split('/').slice(-2).join('/')})`);
 for (const f of fel) console.log(`  ✗ ${f.regel} rad ${f.nr}: ${f.text}\n      ${f.rad}`);
 for (const u of undantag) console.log(`  ~ UNDANTAG ${u.regel} rad ${u.nr}: ${u.text}`);

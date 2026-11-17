@@ -385,6 +385,13 @@
     }
     /* EE: målet väntar på sin flaskhals – gör det man gör under tiden (plocka, mala, printa, sälja) */
     if (st.las && H.upplast && !H.upplast(st.las)) { await tjana(S.mynt + 40, `väntar på flaskhalsen för ${st.las}`); return; }
+    /* A-066: solcellsparkens plats är igenvuxen – gå dit (tanken om motorsågen), vänta på pappas motorsåg, såga bort slyet */
+    if (/solcellspark/i.test(String(H.stegText?.() || '')) && !S.slyRojt) {
+      const kvar = (H.slyKlumpar || []).filter((k) => !k.borta);
+      if (H.antalInv('motorsag') && kvar.length) { valj('motorsag'); await klick(kvar[0].g, 'slyet (motorsåg)', 2.6); await vanta(2.5); return; }
+      if (!S.motorsagTanke && kvar.length) { await gaTill(kvar[0].g, 3.2, 'slyet bakom tippen'); await vanta(2); return; }
+      await tjana(S.mynt + 120, 'väntar på pappas motorsåg'); return;
+    }
     switch (id) {
       case 'saljKruka': if (!H.antalInv('kruka')) { await printa({ typ: 'kruka' }); return; } await ali(() => saljAllt(), 'sälja krukan'); return;   /* EF17 */
       case 'lasta': await klick(H.vagCykel, 'cykeln vid vägen'); return;

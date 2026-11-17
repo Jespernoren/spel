@@ -43,7 +43,7 @@ export const FABRIK_PLATSER = [
   { id: 'sol', typ: 'sol', kapitel: 1, x: 8.1, z: 7.6, y: 2.45, b: 1.6, d: 1.2, text: 'Solpanelen på skjulets tak', farg: '#ffd43b' },   // EE tillägg 2: taket först
   { id: 'sol3', typ: 'sol', kapitel: 1, x: 9.9, z: 7.6, y: 2.45, b: 1.6, d: 1.2, text: 'En solpanel till på taket', farg: '#ffd43b' },   // CP: fyra platser från dag 4
   { id: 'bank', typ: 'bank', kapitel: 2, x: -6.2, z: -14.4, b: 1.4, d: 1.2, text: 'Batteribanken', farg: '#ffd43b' },
-  { id: 'solpark', typ: 'solpark', kapitel: 2, x: 15.0, z: 5.0, b: 5.0, d: 2.4, text: 'Solcellsparken på gården bakom skjulet', farg: '#ffd43b' },
+  { id: 'solpark', typ: 'solpark', kapitel: 2, x: -30.0, z: -1.0, b: 5.0, d: 2.4, text: 'Solcellsparken bakom tippen, där slyet var', farg: '#ffd43b' },   // A-066
   { id: 'sol2', typ: 'sol', kapitel: 1, x: -18.2, z: -14.6, b: 2.2, d: 1.6, text: 'En solpanel till', farg: '#ffd43b' },
   { id: 'sol4', typ: 'sol', kapitel: 1, x: -15.4, z: -14.6, b: 2.2, d: 1.6, text: 'Den soliga ytan – plats för en solpanel till', farg: '#ffd43b' },
   { id: 'bank2', typ: 'bank', kapitel: 2, x: -4.4, z: -14.4, b: 1.4, d: 1.2, text: 'En batteribank till', farg: '#ffd43b' },

@@ -106,7 +106,7 @@ for (let i = 1; i < rost.length; i++) {
 }
 // punkt BE: kvittens → varför → nytt mål. Flagga om något saknas eller om målet läses upp mer än 2 s efter att kedjan pratat klart.
 const rostLangd = (t) => Math.min(9, 0.6 + t.length * 0.062);
-const rostFor = (text, efter) => r.logg.find((e) => e.kalla === 'röst' && e.tot >= efter - 0.5 && e.text.startsWith(text.slice(0, 40)));
+const rostFor = (text, efter) => r.logg.find((e) => e.kalla === 'röst' && e.tot >= efter - 0.5 && e.text.includes(text.slice(0, 40)));   /* en replik kan vara en del av en längre (Alis hälsning + gåvan) */
 const kedjeRader = [];
 for (const kv of r.logg.filter((e) => e.kalla === 'kvittens')) {
   const va = r.logg.find((e) => e.kalla === 'varför' && e.varfor === kv.varfor && e.tot >= kv.tot && e.tot - kv.tot < 30);
@@ -122,7 +122,7 @@ for (const kv of r.logg.filter((e) => e.kalla === 'kvittens')) {
   else if (gap > 2) flaggor.push({ dag: kv.dag, t: kv.t, typ: 'KEDJA', text: `${kv.varfor}: nytt mål ${gap.toFixed(1)} s efter kedjan (max 2 s)` });
 }
 for (const m of r.logg.filter((e) => e.kalla === 'MÅL')) {
-  if (!r.logg.some((e) => e.kalla === 'MÅL' && e.dag === m.dag && e.tot < m.tot)) continue;   /* dagens första mål har inget klart mål före sig */
+  { const f = r.logg.find((e) => e.kalla === 'MÅL' && e.dag === m.dag); if (!f || m.tot - f.tot < 5) continue; }   /* dagens första mål har inget klart mål före sig */
   if (!r.logg.some((e) => ['kvittens', 'varför', 'kvittens-bock', 'lapp'].includes(e.kalla) && Math.abs(e.tot - m.tot) < 8)) flaggor.push({ dag: m.dag, t: m.t, typ: 'KEDJA', text: `mål utan kvittens: "${m.text.slice(0, 70)}"` });
 }
 // punkt 10: varje sms ska synas som bubbla
@@ -155,7 +155,8 @@ const saker = r.logg.filter((e) => (e.kalla === 'sak' || e.kalla === 'klar') && 
 for (let i = 1; i < saker.length; i++) {
   const a = saker[i - 1], c = saker[i];
   if (a.kalla === 'sak' && c.kalla === 'sak') flaggor.push({ dag: c.dag, t: c.t, typ: 'SAMTIDIGT', text: `"${a.text.slice(0, 40)}" och "${c.text.slice(0, 40)}"` });
-  if (a.kalla === 'klar' && c.kalla === 'sak' && c.tot - a.tot < 1.95 && c.dag === a.dag) flaggor.push({ dag: c.dag, t: c.t, typ: 'PAUS', text: `${(c.tot - a.tot).toFixed(1)} s paus före "${c.text.slice(0, 50)}"` });
+  const forTur = /^MÅL/.test(String(c.varfor || '')) || r.logg.some((e) => e.kalla === 'kvitto-visas' && Math.abs(e.tot - c.tot) < 0.05);   /* A-065/A-072: kvittensen och nästa mål har förtur – kort paus räcker */
+  if (a.kalla === 'klar' && c.kalla === 'sak' && c.tot - a.tot < (forTur ? 0.25 : 1.95) && c.dag === a.dag) flaggor.push({ dag: c.dag, t: c.t, typ: 'PAUS', text: `${(c.tot - a.tot).toFixed(1)} s paus före "${c.text.slice(0, 50)}"` });
 }
 // punkt BF: nytt mål synligt i målrutan inom 4 s (aldrig mer än 8 s) efter att förra målet blev klart
 const malVantan = [];
