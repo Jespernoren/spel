@@ -218,14 +218,14 @@ const VAROR = {
   julbord: { namn: 'Julbord med ljusstakar', ikon: '', jul: true, syns: () => S.dag >= 22 && !S.julFirad && !antalInv('julbord'), beskr: 'Långbord och ljusstakar. Gratis – det är jul.' },
   g_kapsyl: { namn: 'Kapsyl från Göran', ikon: '', kop: true, beskr: 'Blank. Göran tyckte den var fin.' },
   guldflaga: { namn: 'Guldflaga från Göran', ikon: '', kop: true, pris: 40, beskr: 'Den glimmar. Göran kom med den från gropen bakom tippen.' },   /* A-045 */
-  vaskpanna: { namn: 'Birgittas vaskpanna', ikon: '', kop: true, beskr: 'Klicka och håll i bäcken i grustaget. Släpp när det glittrar mest.' },
+  vaskpanna: { namn: 'Birgittas vaskpanna', ikon: '', kop: true, beskr: 'Klicka och håll i floden i svackan. Släpp när det glittrar mest.' },
   kapskiva: { namn: 'Kapskiva i kolfiber', ikon: '', gram: 150, tid: 25, pris: 0, niva: 3, beskr: 'Till Rolfs vinkelslip. Lägg den i hans postlåda.' },   /* A-056 */
   motorsag: { namn: 'Pappas motorsåg', ikon: '', gram: 500, tid: 40, pris: 0, beskr: 'Pappas motorsåg från rean. Röjer slyet bakom tippen.' },   /* A-066 */
-  hacka: { namn: 'Pappa Eriks hacka', ikon: '', gram: 400, tid: 40, pris: 0, beskr: 'Bengt-Åkes pappas. Bryter det fastpressade i tippen och malm ur ådern i grustaget.' },
+  hacka: { namn: 'Pappa Eriks hacka', ikon: '', gram: 400, tid: 40, pris: 0, beskr: 'Bengt-Åkes pappas. Bryter det fastpressade i tippen och malm ur ådern i gruvan.' },
   malm: { namn: 'Guldmalm', ikon: '', kop: true, beskr: 'Sten med guld i. Bär den till extraktorn.' },
   guldklump: { namn: 'Första guldklumpen', ikon: '', kop: true, beskr: 'Den är Bengt-Åkes. Den ska till hans pappas grav.' },
   ring: { namn: 'Birgittas vigselring', ikon: '', kop: true, beskr: 'Det står Rolf & Birgitta 1979 på insidan.' },
-  guldranna: { namn: 'Guldrännan (Rolfs takrännor)', ikon: '', kop: true, placerbar: true, radie: 0.6, beskr: 'Vattnet rinner, glittret fastnar i ribborna. Lägg den i bäcken i grustaget.' },
+  guldranna: { namn: 'Guldrännan (Rolfs takrännor)', ikon: '', kop: true, placerbar: true, radie: 0.6, beskr: 'Vattnet rinner, glittret fastnar i ribborna. Lägg den i floden i svackan.' },
   extraktor: { namn: 'Extraktorn (Alis servett)', ikon: '', kop: true, placerbar: true, radie: 0.5, beskr: 'En gammal diskmaskin med jetmotor. Den säger pling vid guld.' },
   g_skruv: { namn: 'Blank skruv från Göran', ikon: '', kop: true, beskr: 'Rostfri. Göran har smak.' },
   fagelskramma: { namn: 'Fågelskrämma', ikon: '', trivsel: 3, placerbar: true, radie: 0.35, syns: () => S.dag >= 6 && (!!S.goranSedd || STEG[S.steg]?.id === 'goran6'), lyx: 'Skrämmer fåglar. Enligt förpackningen.' },
@@ -736,7 +736,7 @@ const STEG = [
   { del: M16, bild: 'kapskiva', text: 'Ge Rolf en kapskiva i kolfiber', klar: () => !!S.kapskivaHosRolf || !!S.grindKapad },
   sovSteg(16, M16),
   { del: M17, text: 'Köp ängen i öster – tavlan vid vägen', klar: () => agerMark('oster') },
-  { del: M17, bild: 'vaskpanna', text: 'Vaska guld i bäcken', klar: () => (S.vask || 0) >= 1 },   /* A-056 */
+  { del: M17, bild: 'vaskpanna', text: 'Vaska guld i floden', klar: () => (S.vask || 0) >= 1 },   /* A-056 */
   sovSteg(17, M17),
   { del: M18, bild: 'byggsats:diamantkniv', text: 'Bygg diamantkvarnen', klar: () => (S.kvarn.kniv || 0) >= 2 },
   { del: M18, bild: 'fynd4', text: 'Mal en rulle guld', klar: () => (S.stat.maltNiva?.[4] || 0) >= 1 || antalInv('rulle4') > 0 },   // B54: Tippium hör till efterspelet
@@ -14627,6 +14627,10 @@ const grop = new THREE.Group();
   { const v = new THREE.Group(); v.add(at(box(1.8, 0.9, 4.2, mat(0x5a6e8a, { metalness: 0.4, roughness: 0.7 })), 0, 0.45, 0), at(box(1.6, 0.7, 2, mat(0x4a5a72, { metalness: 0.4, roughness: 0.7 })), 0, 1.1, -0.3), at(box(1.5, 0.5, 0.05, mat(0x2a3440, { roughness: 0.2 })), 0, 1.15, 0.72)); v.rotation.set(-0.45, 2.2, 0.15); v.position.set(4, svackaBas(-27.5) - 0.3, -27.5); scen.add(v); grop.userData.volvo = v; }
   scen.add(grop); }
 gruvaOppen = () => !!S.grindKapad;
+{ const v = grop.userData.volvo; traffYta(v, 2.2, 1.6, 4.4); interaktor.registrera(v, { text: () => 'Pappas Volvo', aktivera: () => tanke('Pappas Volvo. Han begravde den när han gick i konkurs.', 'A-070 nr 31: Volvon i svackan', 'REAKTION') }); }
+/* A-070 nr 4: försöker man gå ner för slänten utanför grusvägen */
+let brantSagt = 0;
+setInterval(() => { try { if (!ui.igang || pausad || !S.grindKapad) return; const p = spelare.pos; if (p.z < SVACKA.kant + 1.2 && p.z > SVACKA.kant - 0.6 && svackaSparr(p.x, p.z - 0.8) && spelare.rorelse > 0.3 && performance.now() - brantSagt > 60000 && !harSagt('För brant. Jag är ingen get.')) { brantSagt = performance.now(); tanke('För brant. Jag är ingen get.', 'A-070 nr 4: svackans kant', 'REAKTION'); } } catch {} }, 700);
 /* ---------- A-066 §4: solcellsparkens plats bakom tippen är igenvuxen – pappas motorsåg (d9) röjer den ---------- */
 const SLY = { minX: -38, maxX: -22, minZ: -6, maxZ: 4 };
 const SLY_T = { fro: 'Alldeles igenvuxet. Här kommer man inte fram.', vill: 'Om man bara hade en… motorsåg.', pappa: 'Äntligen träd. /Pappa', klar: 'Där. Perfekt plats för solen.' };
@@ -14677,20 +14681,20 @@ const grusGrind = new THREE.Group();
   const sly = new THREE.Group(); for (let i = 0; i < 14; i++) { const r = 0.6 + Math.random() * 0.6; sly.add(at(new THREE.Mesh(new THREE.SphereGeometry(r, 7, 5), mat(0x3d6a2e, { roughness: 1 })), -1.2 - Math.random() * 2.5, r * 0.7, -3 + Math.random() * 6)); }
   grusGrind.add(sly); grusGrind.userData.sly = sly;
   grusGrind.position.set(GRIND.x, 0, GRIND.z); grusGrind.rotation.y = Math.PI / 2; scen.add(grusGrind); traffYta(grusGrind, 0.8, 1.9, 2.8);
-  { const sk = skylt('GRUS & SAND · E. LINDQVIST', 1.6, 0.3, '#3a3a3a', '#f2e6c8'); sk.position.set(GRIND.x + 2, 1.45, GRIND.z - 0.1); scen.add(sk); const st = cyl(0.04, 0.04, 1.4, mat(0x777777), 6); st.position.set(GRIND.x + 2, 0.7, GRIND.z - 0.12); scen.add(st); } }
+  { const sk = skylt('GRUVAN · E. LINDQVIST · TILLTRÄDE FÖRBJUDET', 2.0, 0.3, '#3a3a3a', '#f2e6c8')   /* A-070 nr 5 */; sk.position.set(GRIND.x + 2, 1.45, GRIND.z - 0.1); scen.add(sk); const st = cyl(0.04, 0.04, 1.4, mat(0x777777), 6); st.position.set(GRIND.x + 2, 0.7, GRIND.z - 0.12); scen.add(st); } }
 const GRUS_T = {
   grind: 'Igensvetsad. Någon ville verkligen inte in här.',
   bengtVakt: 'HÅLL DIG BORTA FRÅN PAPPAS GRUVA.',   /* A-070 nr 7 */
   goran: 'Guld? Där nere?',
   bengtSvar: 'PAPPA LETADE HELA LIVET. HMPF. GÅ IN DÅ. FÖRSTA KLUMPEN ÄR MIN. DEN SKA TILL PAPPAS GRAV.',
-  rolfBrev: 'Gamla grustaget. Ja å Birgitta badade där. Ja har vinkelslipen, men skivan e slut. Printa en kapskiva åt mej, i kolfiber. /R',
+  rolfBrev: 'Svackan. Ja å Birgitta badade i floden där. Ja har vinkelslipen, men skivan e slut. Printa en kapskiva åt mej, i kolfiber. /R',
   rolfKapar: 'Hon älska å bada hä. Gå du. Ja står hä en stund.',
   panna: 'Birgittas. Hon vaska för skoj. Hitta aldrig nåt.',
   klump: 'Första klumpen. Den är Bengt-Åkes. Den ska till hans pappas grav.',
   graven: '…HMPF. Tack.',
 };
 interaktor.registrera(grusGrind, {
-  text: () => S.grindKapad ? (kand('grustaget') ? 'Grinden till grustaget står öppen' : 'Grinden står öppen') : GRUS_T.grind,
+  text: () => S.grindKapad ? (kand('grustaget') ? 'Grinden till svackan står öppen' : 'Grinden står öppen') : GRUS_T.grind,
   aktivera: () => { if (!S.grindKapad) tanke(GRUS_T.grind, 'A-056: grinden', 'REAKTION'); },
 });
 function ritaGrustag() {
@@ -15107,7 +15111,7 @@ const KAND_ORD = [
   [/Soptippsvägen 1/, 'adress'], [/Rolfs bänk/, 'rolfsBank'],
   [/\bRolfs?\b/, 'rolf'], [/\bAlis?\b/, 'ali'], [/\btornet\b|\btorn\b|rulltorn/i, 'torn'], [/\bpowerbank/i, 'powerbank'], [/bilbatteri/i, 'bilbatteri'],
   [/batteribank/i, 'batteribank'], [/sopbil/i, 'sopbil'], [/\btippen\b/i, 'tippen'], [/\bslang/i, 'slang'], [/\btratt/i, 'tratt'], [/rullställ/i, 'rullstall'],
-  [/PETG|röda linjen/i, 'petg'], [/kolfiber/i, 'kolfiber'], [/\bboden\b/i, 'boden'], [/gäststug/i, 'gaststugan'], [/\bHelens?\b/, 'helen'], [/\bBengt/, 'bengt'], [/\bGörans?\b/, 'goran'], [/\bRudolfs?\b/, 'rudolf'], [/grustag/i, 'grustaget'],
+  [/PETG|röda linjen/i, 'petg'], [/kolfiber/i, 'kolfiber'], [/\bboden\b/i, 'boden'], [/gäststug/i, 'gaststugan'], [/\bHelens?\b/, 'helen'], [/\bBengt/, 'bengt'], [/\bGörans?\b/, 'goran'], [/\bRudolfs?\b/, 'rudolf'], [/grustag|svackan|gruvan/i, 'grustaget'],
 ];
 const okandaOrd = (t) => { t = String(t).replace(/Radio Tippen/g, ''); return KAND_ORD.filter(([re, k]) => re.test(t) && !kand(k)).map(([, k]) => k); };   /* stationens namn är ett namn, inte platsen */
 
