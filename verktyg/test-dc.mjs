@@ -5,15 +5,16 @@ const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args
 const p = await (await b.newContext({ viewport: { width: 1280, height: 720 } })).newPage(); const fel = [];
 p.on('pageerror', (e) => fel.push('sidfel: ' + e.message));
 await p.goto(url); await p.waitForTimeout(6000);
-for (let i = 0; i < 60 && !(await p.evaluate(() => !!window.__printahem?.ui?.igang)); i++) {
+for (let i = 0; i < 25; i++) {
   const namn = await p.$('.ph-namn input'); if (namn) { await namn.fill('Test'); await p.keyboard.press('Enter'); }
-  else await p.evaluate(() => { for (const k of document.querySelectorAll('button')) { const r = k.getBoundingClientRect(); if (r.width && /Börja$|BÖRJA|Hoppa över|Starta|Fortsätt/i.test(k.textContent.trim())) { k.click(); return; } } });
+  else await p.evaluate(() => { for (const k of document.querySelectorAll('button')) { const r = k.getBoundingClientRect(); const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); if (r.width && top && (top === k || k.contains(top)) && /Börja$|BÖRJA|Hoppa över|Starta|Fortsätt/i.test(k.textContent.trim())) { k.click(); return; } } });
   await p.waitForTimeout(1000);
 }
 const H = (f, a) => p.evaluate(f, a); const ut = [];
 await p.waitForTimeout(2500);
 await H(() => { document.querySelectorAll('.ph-kap').forEach((x) => x.remove()); const h = window.__printahem, S = h.S; S.dag = 4; S.kapitel = 1; S.skyltUppe = true; S.mynt = 40; S.aliVill = { dag: 4, typ: 'pall' }; h.laggTill('kruka', 4); h.laggTill('nyckelring', 3); h.laggTill('pall', 2); h.oppnaMarknad(); });
-await p.waitForTimeout(500);
+await p.waitForTimeout(800);
+await p.screenshot({ path: '/home/claude/jespernoren/spel/verktyg/test-em-butik.png' });   /* EM: skärmdump av butiken */
 const a = await H(() => ({ kort: document.querySelectorAll('.dc-k2 [data-kopnu]').length, ny: document.querySelectorAll('.dc-k2-lapp.ny').length, salj: [...document.querySelectorAll('[data-saljen]')].map((x) => x.dataset.saljen), vill: document.querySelector('.dc-s2.ali [data-saljen]')?.dataset.saljen, allt: !!document.querySelector('[data-saljallt]'), bubbla: (document.querySelector('.dc-bubbla')?.textContent || '').length }));
 ut.push([`EM 33: varje köpkort har en egen knapp (${a.kort}) och Ny-lappar (${a.ny})`, a.kort >= 2 && a.ny > 0]);
 ut.push([`dagens vara först med Alis gula list (${a.salj.join(', ')}), och ett Sälj allt-kort`, a.vill === 'pall' && a.salj[0] === 'pall' && a.allt]);

@@ -7866,7 +7866,7 @@ function aliKopLista() {
   }
   // punkt AL: dag 1 visar Ali bara stegen i dagens mål – rullställ, dörr och resten kommer från dag 2
   if (S.dag <= 1) for (let i = L.length - 1; i >= 0; i--) if (!DAG1_ALI.includes(L[i].key)) L.splice(i, 1);
-  for (const x of L) { Object.assign(x, aliDuFar(x)); if (/^(m|r|g):|^sang$/.test(x.key)) { const typ = x.key === 'sang' ? 'sang' : x.key.startsWith('m:') ? 'byggsats:' + x.key.slice(2) : x.key.slice(2); if (!printatEn(typ)) x.bild = bpImg(typ); } }   // BH2: blått papper tills saken printats en gång   // punkt BH: ritningar som blått papper
+  for (const x of L) { Object.assign(x, aliDuFar(x)); if (/^(m|r|g):|^sang$/.test(x.key)) { const typ = x.key === 'sang' ? 'sang' : x.key.startsWith('m:') ? 'byggsats:' + x.key.slice(2) : x.key.slice(2); x.bild = bpImg(typ); } }   /* EM 37: ritningar i butiken har alltid ritningspapper */   // punkt BH: ritningar som blått papper
   const { lista, dolda } = aliSalla(L); aliDolda = dolda;
   return lista;
 }
@@ -13611,6 +13611,7 @@ if (ui) {
   regelvakt.regel('MÅL OKÄNT', () => { if (!ui.igang) return []; const k = malKontrakt(); return k && !k.kanGoras() && k.namner.some((n) => !kand(n)) ? [`målet nämner ${k.namner.filter((n) => !kand(n)).join(', ')} som inte är känt`] : []; });
   regelvakt.regel('FEL YTA', () => { if (!ui.igang) return []; const ut = []; const kolla = (o, l, n, namn) => { const fel = o && o.userData.ytaNyckel && o.userData.ytaNyckel !== l + Math.max(1, Math.min(5, n)); if (!fel) { if (o) o.userData.ytaFelSedan = 0; return; } o.userData.ytaFelSedan ||= performance.now(); if (performance.now() - o.userData.ytaFelSedan > 3500) ut.push(`${namn} har ${o.userData.ytaNyckel}, ska vara ${l}${n}`); };   /* ytan ritas om var 1,5 s – fel först efter 3,5 s */
     { kolla(kvarn, 'bla', kvarnNiva(), 'blå kvarnen'); for (const sk of skrivare) kolla(sk.mesh, skrivarLinje(sk), skrivarNiva(sk), 'skrivare ' + sk.id); } return ut; });   /* EO 35: maskinen har linjens färg och sin nivås yta */
+  regelvakt.regel('FEL BAKGRUND', () => [...document.querySelectorAll('[data-kopnu]')].filter((b) => /^(m|r|g):/.test(b.dataset.kopnu) && b.getBoundingClientRect().width && !b.closest('[data-kort]')?.querySelector('.ph-bp')).map((b) => `ritningen ${b.dataset.kopnu} i butiken saknar ritningspapper`));   /* EM 37 */
   regelvakt.regel('SAKNAD STORYSAK', () => !ui.igang ? [] : STORY_BEHOV.filter((b) => b.nar() && !harStorysak(b.t) && (S.storyGiven || {})[b.t] && S.dag > S.storyGiven[b.t] + 1).map((b) => `${b.t} behövs men finns inte`));   /* A-050 */
   regelvakt.starta();
 }

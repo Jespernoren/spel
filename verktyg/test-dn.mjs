@@ -5,9 +5,9 @@ const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args
 const p = await (await b.newContext({ viewport: { width: +(process.env.BREDD || 1280), height: Math.round((process.env.BREDD || 1280) * 9 / 16) } })).newPage(); const fel = [];
 p.on('pageerror', (e) => fel.push('sidfel: ' + e.message));
 await p.goto(url); await p.waitForTimeout(6000);
-for (let i = 0; i < 60 && !(await p.evaluate(() => !!window.__printahem?.ui?.igang)); i++) {
+for (let i = 0; i < 25; i++) {
   const namn = await p.$('.ph-namn input'); if (namn) { await namn.fill('Test'); await p.keyboard.press('Enter'); }
-  else await p.evaluate(() => { for (const k of document.querySelectorAll('button')) { const r = k.getBoundingClientRect(); if (r.width && /Börja$|BÖRJA|Hoppa över|Starta|Fortsätt/i.test(k.textContent.trim())) { k.click(); return; } } });
+  else await p.evaluate(() => { for (const k of document.querySelectorAll('button')) { const r = k.getBoundingClientRect(); const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); if (r.width && top && (top === k || k.contains(top)) && /Börja$|BÖRJA|Hoppa över|Starta|Fortsätt/i.test(k.textContent.trim())) { k.click(); return; } } });
   await p.waitForTimeout(1000);
 }
 const H = (f, a) => p.evaluate(f, a); const ut = [];
@@ -37,6 +37,7 @@ await H(() => window.__printahem.ui.stangButik?.());
 ut.push(['inga varningsrutor eller flaskhals i HUD:en', await H(() => ['.hud-flask', '.ph-varningar', '.hud-flikar'].every((s) => { const e = document.querySelector(s); return !e || getComputedStyle(e).display === 'none'; }))]);
 // Ali vill ha idag i skrivarmenyn
 const ali = await H(() => { const h = window.__printahem, S = h.S; h.ui.stangButik?.(); S.dag = Math.max(2, S.dag); S.aliVill = { dag: S.dag, typ: 'nyckelring' }; const t = h.aliVill(); if (!t) return { t }; if (!S.ritningar.includes(t)) S.ritningar.push(t); const sk = h.skrivare.find((x) => x.id === 'g1'); sk.fil = 5000; h.oppnaPrintMeny(sk); const el = document.querySelector(`[data-printa][data-vara="${t}"]`)?.closest('.pk'); const forsta = document.querySelector('.pk [data-printa]'); return { t, kant: el?.classList.contains('ali'), etikett: /Ali vill ha idag/.test(el?.querySelector('.pk-list')?.textContent || ''), pris: el?.querySelector('.pk-pris s')?.textContent, forst: forsta?.dataset.vara}; });
+await p.waitForTimeout(800); await p.screenshot({ path: '/home/claude/jespernoren/spel/verktyg/test-em-printer.png' });   /* EM: skärmdump av printern */
 console.log(JSON.stringify(ali));
 ut.push([`Ali vill ha idag: gul kant, etikett, överstruket pris (${ali.pris}) och överst`, !ali.t || (ali.kant && ali.etikett && !!ali.pris)]);
 for (const [t, ok] of ut) console.log(ok ? '✓' : '✗', t);
