@@ -190,6 +190,7 @@ const VAROR = {
   tillstand: { namn: 'Parkeringstillstånd för husvagn', ikon: '', gava: true },
   sang: { storlek: 1, namn: 'Säng', ikon: '🛏️', hem: true },          // 2 rullar. Kräver instruktionen hos Ali. Säljs inte.
   nyckelring: { namn: 'Nyckelring', ikon: '🔑' },      // 10 % rulle = en halv flaska
+  cykelS: { namn: 'Cykeln', ikon: '🚲', beskr: 'Ställ den på den lysande rutan vid skrivaren.' },   /* A-068 */
   skrivareS: { namn: 'Storebrors Skrivare S', ikon: '🖨️', beskr: 'Långsam och låter konstigt – men den funkar. Ställ den på den lysande rutan i linje 1.' },   // punkt AS
   kruka: { namn: 'Blomkruka', ikon: '🪴', trivsel: 5, placerbar: true, radie: 0.3, syns: () => !!S.krukaErbjuden || S.ritningar.includes('recept:kruka') || upplast('kruka') },   /* ED: receptet köps hos Ali, inga gratisrecept */   // punkt AX: receptet dag 2, gratis från Ali   // punkt AG: receptet får man av Ali vid första försäljningen
   pall: { namn: 'Pall', ikon: '🪑', trivsel: 10, placerbar: true, radie: 0.35, syns: () => S.dag >= 3 },   // punkt AX: dag 3, 80 kr
@@ -596,7 +597,8 @@ const printat = (typ) => (S.printTot || {})[typ] || 0;
 const STEG_TAL = {
   lasta: 'Klicka på cykeln och lasta av storebrors skrivare.',
   stall: 'Ställ skrivaren på den lysande platsen i linje ett.',
-  bygg: 'Gör om cykeln till en strömkälla.',
+  taGen: 'Ta generatorn från cykeln.', lyftCykel: 'Lyft cykeln och bär den.', stallCykel: 'Ställ cykeln vid skrivaren.',
+  bygg: 'Montera generatorn på cykeln.',
   rullSlut: 'Printa och sälj tills rullen är slut.',   /* DT: korta mål, max ca 8 ord */
   trampa: 'Trampa och printa en nyckelring.',
   salj: 'Sälj nyckelringen hos Ali.',
@@ -628,7 +630,11 @@ const STEG = [
   // DT (AS-ordningen): skylten → lasta av → ställ skrivaren → gör om cykeln → trampa med storebrors rulle → sälj (powerbanken) → rullen tar slut, skräptanken → kvarnen
   { id: 'lasta', mom: 'Första printen', del: D1, text: 'Lasta av skrivaren från cykeln', klar: () => !!S.skrivareLastad },
   { knuff: 'Den lysande rutan. Där ska skrivaren stå.', id: 'stall', mom: 'Första printen', del: D1, text: 'Ställ skrivaren på rutan', klar: () => !!S.skrivareStar },
-  { knuff: 'Storebror hade en generator till cykeln. Den gör el av trampandet.', id: 'bygg', mom: 'Första printen', del: D1, bild: () => S.generatorTagen && !S.cykelOmbyggd ? 'byggsats:generator' : undefined, text: () => S.generatorTagen && !S.cykelOmbyggd ? 'Montera generatorn på cykeln' : 'Gör om cykeln till en strömkälla', klar: () => !!S.cykelOmbyggd },
+  /* A-068: strömmaskinen byggs för hand – generatorn i handen, cykeln i famnen, cykeln på rutan, sedan generatorn */
+  { id: 'taGen', mom: 'Första printen', del: D1, text: 'Ta generatorn från cykeln', klar: () => !!S.generatorTagen || !!S.cykelOmbyggd },
+  { id: 'lyftCykel', mom: 'Första printen', del: D1, text: 'Lyft cykeln och bär den', klar: () => !!S.cykelBuren || !!S.cykelStar || !!S.cykelOmbyggd },
+  { knuff: 'Den ska stå vid skrivaren.', id: 'stallCykel', mom: 'Första printen', del: D1, text: 'Ställ cykeln vid skrivaren', klar: () => !!S.cykelStar || !!S.cykelOmbyggd },
+  { id: 'bygg', mom: 'Första printen', del: D1, bild: 'byggsats:generator', text: 'Montera generatorn på cykeln', klar: () => !!S.cykelOmbyggd },
   { id: 'trampa', mom: 'Första printen', del: D1, bild: 'nyckelring', text: 'Trampa och printa en nyckelring', klar: () => printat('nyckelring') >= 1 || S.stat.printat >= 1 },
   { knuff: 'Affären på andra sidan vägen kanske köper sånt här.', id: 'salj', mom: 'Första printen', del: D1, text: 'Sälj nyckelringen hos Ali', klar: () => (S.stat.salt || 0) >= 1 },
   { id: 'rullSlut', mom: 'Egen plast', del: D1, bild: 'nyckelring', text: () => { const f = skrivare.find((x) => x.id === 'g1')?.fil || 0; return f >= 100 ? `Printa och sälj tills rullen är slut · ${Math.floor(f / 100)} kvar` : 'Sälj nyckelringarna hos Ali'; },
@@ -1934,6 +1940,7 @@ function tintaBla(g, fro, niva = 1) {
 function skapaVara(typ) { const g = skapaVaraGrund(typ); return blaSaljvara(typ) ? tintaBla(g, varaFro ?? typ) : g; }
 function skapaVaraGrund(typ) {
   if (typ === 'skrivareS') { const sk = skapaSkrivare(1); sk.scale.setScalar(0.7); return sk; }   // punkt AS
+  if (typ === 'cykelS') { const c = vagCykel.clone(true); c.visible = true; c.position.set(0, 0, 0); c.rotation.set(0, 0, 0); c.children.forEach((o) => { o.visible = true; }); const sk = c.userData.skrivare; if (sk) sk.visible = false; try { c.userData.generator.visible = false; } catch {} c.scale.setScalar(0.6); return c; }   /* A-068: cykeln i famnen, 60 % */
   const g = new THREE.Group();
   if (typ === 'spagetti') { const m = mat(0x2d6cdf, { roughness: 0.6 }); for (let i = 0; i < 14; i++) { const t = new THREE.Mesh(new THREE.TorusGeometry(0.03 + Math.random() * 0.05, 0.006, 5, 12, Math.PI * (1 + Math.random())), m); t.position.set((Math.random() - 0.5) * 0.12, 0.03 + Math.random() * 0.1, (Math.random() - 0.5) * 0.12); t.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3); g.add(t); } return g; }   /* A-041: en misslyckad print */
   if (typ === 'nyckelkopia') {
@@ -4000,28 +4007,34 @@ kvarnMark.rotation.x = -Math.PI / 2; kvarnMark.position.set(kvarn.position.x, 0.
 // ett ställe där skrivaren och kvarnen ställs: en osynlig yta på rätt ruta
 const startYta = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.2, 1.8), traffMat); scen.add(startYta);
 const startPlats = (id) => PLAN.FABRIK_PLATSER.find((p) => p.id === id);
-const startHall = () => valdTyp() === 'skrivareS' ? startPlats('L1-skrivare1') : valdTyp() === 'byggsats:gammalkvarn' ? startPlats('L1-kvarn') : null;
-const GENERATOR_T = 'Storebrors gamla generator. Kopplar jag den till bakhjulet blir det el när jag trampar.';   /* EF15 */
+const CYKEL_RUTA = { id: 'L1-cykel', x: -12.6, z: 13.9 };   /* A-068: den lysande rutan bredvid skrivaren, där stället står */
+const startHall = () => valdTyp() === 'skrivareS' ? startPlats('L1-skrivare1') : valdTyp() === 'byggsats:gammalkvarn' ? startPlats('L1-kvarn') : valdTyp() === 'cykelS' && !S.cykelStar ? CYKEL_RUTA : null;
+const GENERATOR_T = 'Storebrors generator. Den gör el av trampandet.';   /* A-070 nr 13 */   /* EF15 */
 function ritaStart() {
   try { vagCykel.userData.generator.visible = !S.generatorTagen && !S.cykelOmbyggd; } catch (e) {}
   try { ritaMonterat(); } catch (e) {}
   kvarn.visible = !!S.kvarnStar;
   gammal.visible = !!S.skrivareStar; ladGrupp.visible = false;   /* EF16: ingen låda som bara finns där */
-  cykel.visible = cykelStall.visible = !!S.cykelOmbyggd; if (startKabel) startKabel.visible = !!S.cykelOmbyggd;
+  cykel.visible = !!S.cykelOmbyggd; cykelStall.visible = !!S.cykelOmbyggd || !!S.cykelStar;   /* A-068 */
+  if (S.cykelStar && !S.cykelOmbyggd && !cykelAnim) { vagCykel.position.set(CYKEL_RUTA.x, 0.18, CYKEL_RUTA.z); vagCykel.rotation.set(0, 0.7 + Math.PI / 2, 0); cykelStall.scale.set(1, 1, 1); } if (startKabel) startKabel.visible = !!S.cykelOmbyggd;
   batteri.visible = !!S.batteriKopt;
   if (matarSlang) matarSlang.visible = !!S.skrivareStar;   /* DT: tornet och slangen står där från start */
   startTorn.visible = !!S.skrivareStar && !S.kvarnStar; kvarnMark.visible = !S.kvarnStar;   /* ED3: storebrors rulle följer med skrivaren – tornet är tomt tills skrivaren står */
-  if (!cykelAnim) vagCykel.visible = !S.cykelOmbyggd;
+  if (!cykelAnim) vagCykel.visible = !S.cykelOmbyggd && !S.cykelBuren;
   vagCykel.userData.skrivare.visible = !S.skrivareLastad; vagCykel.children.filter((o) => o.material?.color?.getHex() === 0xf28c28 && o.geometry?.type === 'BoxGeometry').forEach((o) => { o.visible = !S.skrivareLastad; });
   const pl = startHall(); startYta.visible = !!pl; if (pl) startYta.position.set(pl.x, 0.6, pl.z);
   uppdateraHinder();
 }
 interaktor.registrera(startYta, {
-  text: () => valdTyp() === 'skrivareS' ? '🖨️ Ställ skrivaren här' : '⚙️ Ställ kvarnen här',
+  text: () => valdTyp() === 'skrivareS' ? '🖨️ Ställ skrivaren här' : valdTyp() === 'cykelS' ? '🚲 Ställ cykeln här' : '⚙️ Ställ kvarnen här',
   kanAktivera: () => !!startHall(),
   aktivera: () => {
     const typ = valdTyp();
     if (typ === 'skrivareS') { taBortVald(); S.skrivareStar = true; ui.toast('🖨️ Storebrors skrivare står på sin plats i linje 1', 'bra'); }
+    else if (typ === 'cykelS') {   /* A-068: cykeln ställs ner på rutan med en duns, stället reser sig under den */
+      taBortVald(); S.cykelBuren = false; S.cykelStar = true; vagCykel.position.set(CYKEL_RUTA.x, 0.18, CYKEL_RUTA.z); vagCykel.rotation.set(0, 0.7 + Math.PI / 2, 0); vagCykel.visible = true;
+      cykelStall.visible = true; cykelStall.scale.set(1, 1, 1); ritaHotbar(); ritaStart(); sparaSnart(); handelse('placerat', { sak: 'cykel' }); dunsa([vagCykel, cykelStall]); return;
+    }
     else if (typ === 'byggsats:gammalkvarn') { taBortVald(); S.kvarnStar = true; /* D3: kvittensen "En flaska till …" säger det */ }
     else return;
     ritaHotbar(); ritaStart(); sparaSnart(); handelse('placerat', { sak: typ === 'skrivareS' ? 'skrivareS' : 'kvarnen' });
@@ -4029,8 +4042,8 @@ interaktor.registrera(startYta, {
   },
 });
 interaktor.registrera(vagCykel, {
-  text: () => !S.skrivareLastad ? '🖨️ Lasta av skrivaren från cykeln' : !S.generatorTagen ? '⚡ Ta generatorn från cykeln' : antalInv('byggsats:generator') ? 'Välj generatorn i verktygsraden och klicka på cykeln' : '🔧 Gör om cykeln så att den ger ström',   /* EF15 */
-  kanAktivera: () => !cykelAnim && (!S.skrivareLastad || (S.skrivareStar && !S.cykelOmbyggd)),
+  text: () => !S.skrivareLastad ? '🖨️ Lasta av skrivaren från cykeln' : !S.generatorTagen ? '⚡ Ta generatorn från cykeln' : !S.cykelStar ? (valdTyp() === 'byggsats:generator' ? '🔧 Montera generatorn' : '🚲 Lyft cykeln') : '🔧 Montera generatorn på cykeln',   /* A-068 */   /* EF15 */
+  kanAktivera: () => !cykelAnim && !S.cykelBuren && (!S.skrivareLastad || (S.skrivareStar && !S.cykelOmbyggd)),
   aktivera: () => {
     if (!S.skrivareLastad) {
       if (!harRumFor('skrivareS')) { ui.toast('Verktygsraden är full', 'fel'); return; }
@@ -4044,7 +4057,13 @@ interaktor.registrera(vagCykel, {
       S.generatorTagen = true; const i = laggTill('byggsats:generator'); if (typeof i === 'number') byt(i); ljud.plock(); ritaStart(); sparaSnart();
       paket([{ tanke: GENERATOR_T }], { vikt: 'REAKTION', varfor: 'EF15: generatorn' }); return;
     }
-    if (antalInv('byggsats:generator')) { ljud.fel(); ui.toast('Välj generatorn i verktygsraden och klicka på cykeln', 'fel'); return; }
+    if (S.cykelStar && valdTyp() === 'byggsats:generator') { taBortVald(); ritaHotbar(); byggOmCykeln(); return; }   /* A-068: generatorn monteras */
+    if (!S.cykelStar && !S.cykelBuren) {   /* A-068: cykeln lyfts i famnen */
+      if (valdTyp() === 'byggsats:generator') { cykelForst(); return; }
+      if (!harRumFor('cykelS')) { ui.toast('Verktygsraden är full', 'fel'); return; }
+      S.cykelBuren = true; vagCykel.visible = false; const i = laggTill('cykelS'); if (typeof i === 'number') byt(i); ljudH('utrustning'); textLogg('ljud', 'utrustning', 'Cykeln i famnen', 'A-068'); ritaStart(); sparaSnart(); handelse('lyft', { sak: 'cykel' }); return;
+    }
+    if (antalInv('byggsats:generator') && valdTyp() !== 'byggsats:generator') { ljud.fel(); ui.toast('Välj generatorn i verktygsraden och klicka på cykeln', 'fel'); return; }
     byggOmCykeln();
   },
 });
@@ -4272,21 +4291,17 @@ function paket(delar, o = {}) {
 // gamla anrop: koaText lägger sms i kanalen
 function koaText(kalla, vikt, visa, o = {}) { kanalLagg({ vikt, vem: kalla, text: o.text || '', visa, rost: false, stryksOm: o.stryksOm }); }
 function korTextKo() {}
+const CYKEL_FORST_T = 'Cykeln först. Den ska stå vid skrivaren.', CYKEL_HAR_T = 'Den ska stå vid skrivaren.';
+function cykelForst() { ljudH('fel'); if (!enGang(CYKEL_FORST_T, 'A-068: fel ordning')) ui.toast(CYKEL_FORST_T, 'fel'); }   /* en gång som tanke, sedan som förklaring (inget tyst nej) */
 function byggOmCykeln() {
   if (cykelAnim || S.cykelOmbyggd) return;
-  const fran = vagCykel.position.clone(), mal = new THREE.Vector3(-12.6, 0, 13.9), r0 = vagCykel.rotation.y, t0 = performance.now();
-  cykelAnim = { t0 }; tittaMot(mal.x, mal.z, 2.2, { tvang: true }); ljud.plock();
+  if (!S.cykelStar) { cykelForst(); return; }   /* A-068: cykeln först */
+  const t0 = performance.now() - 1400; spelaLjud('montera');   /* A-068: cykeln står redan på rutan – skruvdragaren, sedan dras sladden */
+  cykelAnim = { t0 };
   const kabelGeo = startKabel?.geometry, n = kabelGeo?.index ? kabelGeo.index.count : 0;
   const steg = () => {
     const t = (performance.now() - t0) / 1000;
-    if (t < 0.9) {   // rullar dit i en båge
-      const k = t / 0.9, e = k * k * (3 - 2 * k);
-      vagCykel.position.lerpVectors(fran, mal, e); vagCykel.position.y = Math.sin(k * Math.PI) * 1.2;
-      vagCykel.rotation.set(0, r0 + (0.7 + Math.PI / 2 - r0) * e, 0.08 * (1 - e));
-    } else if (t < 1.4) {   // stället reser sig, cykeln lyfts upp
-      const k = (t - 0.9) / 0.5; vagCykel.position.y = 0.18 * k;
-      cykelStall.visible = true; cykelStall.scale.set(1, k, 1);
-    } else if (t < 2.0) {   // nu är det en generator: sladden dras till skrivaren
+    if (t < 2.0) {   // nu är det en generator: sladden dras till skrivaren
       if (vagCykel.visible) { vagCykel.visible = false; cykel.visible = true; ljudH('placera'); if (startKabel) startKabel.visible = true; }
       const k = (t - 1.4) / 0.6; if (kabelGeo && n) kabelGeo.setDrawRange(0, Math.ceil(n * k / 3) * 3);
     } else {
@@ -4857,6 +4872,8 @@ function malPunkt() {
   switch (stegId()) {
     case 'lasta': return vagCykel.getWorldPosition(v).setY(1.3);
     case 'stall': return plats('L1-skrivare1');
+    case 'taGen': case 'lyftCykel': return vagCykel.visible ? vagCykel.getWorldPosition(v).setY(1.3) : null;
+    case 'stallCykel': return new THREE.Vector3(CYKEL_RUTA.x, 0.6, CYKEL_RUTA.z);
     case 'bygg': return vagCykel.visible ? vagCykel.getWorldPosition(v).setY(1.3) : null;
     case 'trampa': return S.strom < 2 && !skrivare.some((x) => x.jobb) ? cykel.getWorldPosition(v).setY(1.0) : skr();
     case 'kvarn': return plats('L1-kvarn');
@@ -6349,7 +6366,7 @@ const MONTERA_TIPS = {
 };
 const vidKvarn = () => [kvarn];
 const MONTERA = {
-  'byggsats:generator': { namn: 'Montera generatorn på bakhjulet', mal: () => [vagCykel], hinder: () => S.cykelOmbyggd ? 'Cykeln är redan ombyggd' : !S.skrivareStar ? 'Ställ ut skrivaren först' : '', gor: () => byggOmCykeln() },   /* EF15 */
+  'byggsats:generator': { namn: 'Montera generatorn på cykeln', mal: () => [vagCykel], hinder: () => S.cykelOmbyggd ? 'Cykeln är redan ombyggd' : !S.skrivareStar ? 'Ställ ut skrivaren först' : !S.cykelStar ? CYKEL_FORST_T : '', vidHinder: () => { if (S.cykelStar || S.cykelOmbyggd || !S.skrivareStar) return false; cykelForst(); return true; }, gor: () => byggOmCykeln() },   /* A-068 */   /* EF15 */
   'byggsats:tippnyckel': { namn: 'Sätt nyckeln i låset', mal: () => [grind], gor: () => { S.tippNyckel = true; ljud.plock(); oppnaGrind(); setTimeout(() => { try { tippSvep(); } catch (e) { console.warn(e); } }, 600); }, kvitto: TIPPEN_T },   /* A-061: kameran sveper över tippen */   /* EQ 39: nyckeln vrids i hänglåset, låset faller och grinden svänger upp */
   'byggsats:powerbank': { namn: 'Koppla powerbanken till cykeln', mal: () => [cykel], hinder: () => S.powerbank ? 'Powerbanken sitter redan' : '', gor: () => { S.powerbank = true; ritaMonterat(); skratt('powerbanken på cykeln'); }, kvitto: 'Nu sparas lite ström. En nyckelring, typ. Framtiden är här, och den sitter fast med eltejp.' },   /* A-041: dag 1 får ett skratt i mitten */
   'byggsats:cykelbatteri': { namn: 'Koppla in bilbatteriet vid cykeln', mal: () => [cykel], gor: () => { S.batteriKopt = true; ritaMonterat(); ritaStart(); kedja('dag2'); }, toast: '🔋 Bilbatteriet är inkopplat – skrivaren printar klart även när du slutar trampa' },
@@ -6409,7 +6426,7 @@ try { ritaTrimDekaler(); } catch (e) {}
 function monteraPa(o) { const m = MONTERA[valdTyp()]; return m && m.mal().includes(o) ? m : null; }
 function monteraGor(m, o) {
   const t = valdTyp(), h = m.hinder?.();
-  if (h) { ljud.fel(); ui.toast(h, 'fel'); return; }
+  if (h) { if (m.vidHinder?.()) return; ljud.fel(); ui.toast(h, 'fel'); return; }
   taBortVald(); m.gor(o); ljudH('montera'); sparaSnart();
   if (m.toast) ui.toast(m.toast, 'guld');
   if (m.kvitto) paket([{ tanke: m.kvitto }], { vikt: 'REAKTION', varfor: 'ED13: monterat', kvitto: true });
@@ -8686,6 +8703,7 @@ const ui = new FpUI({
     if (VAROR[valdTyp()]?.tapet != null) { tapetsera(valdTyp()); return; }
     if (valdKarra() && (!interaktor.hovrad || interaktor.hovrad.userData.typ === 'skrap') && (karraKand || skrapLista.some((x) => Math.hypot(x.position.x - spelare.pos.x, x.position.z - spelare.pos.z) < 4))) { karraKlick(); return; }   // CJ
     if (interaktor.hovrad && !(spoke.grupp?.visible && spoke.bord && paBord(valdTyp()))) { interaktor.aktivera(); return; }
+    if (valdTyp() === 'cykelS') { ljudH('fel'); if (!enGang(CYKEL_HAR_T, 'A-068: cykeln någon annanstans')) ui.toast(CYKEL_HAR_T, 'fel'); return; }   /* A-068 */
     if (TA_PA[valdTyp()]) { taPaVald(); return; }   /* ED13: det man bär på sig tar man på med ett klick */
     if (MONTERA[valdTyp()]) { ljud.fel(); ui.toast(MONTERA_TIPS[valdTyp()] || `${MONTERA[valdTyp()].namn} – sikta på rätt ställe`, 'fel'); return; }   /* ED9: inget tyst nej */
     stallNer();

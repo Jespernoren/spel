@@ -62,7 +62,7 @@ for (const h of mal) {
   /* en replik som redan pratade när det hände får prata klart (+ 2 s paus), som i regelvakten */
   const akt = [...L].reverse().find((e) => e.kalla === 'sak' && e.tot < h.tot); const aktSlut = akt && L.find((e) => e.kalla === 'klar' && e.text === akt.text && e.tot >= akt.tot);
   const grans = Math.max(h.tot, aktSlut && aktSlut.tot > h.tot ? aktSlut.tot + 2 : 0) + 4;
-  const kv = L.find((e) => ['sak', 'sak-del', 'toast', 'meddelande', 'notis', 'butiksbubbla', 'aliSalt', 'sms', 'varför', 'kvittens', 'duns', 'bubbla'].includes(e.kalla) && e.tot >= h.tot - 2 && e.tot <= grans && !/^\(/.test(e.text) && e.vem !== 'berattare');
+  const kv = L.find((e) => ['sak', 'sak-del', 'toast', 'meddelande', 'notis', 'butiksbubbla', 'aliSalt', 'sms', 'varför', 'kvittens', 'duns', 'bubbla', 'ljud'].includes(e.kalla) && e.tot >= h.tot - 2 && e.tot <= grans && !/^\(/.test(e.text) && e.vem !== 'berattare');
   const v = m ? m.tot - h.tot - +((String(m.varfor || '').match(/meny ([\d.]+) s/) || [])[1] || 0) : null;   // tid i butiken och på pausade sidor räknas inte
   rader.push({ t: h.tot, id: (h.text.match(/id=(\S+)/) || [])[1] || h.text, kv: kv ? `${kv.vem}: ${kv.text}` : '', mal: m?.text || '', v, sida: !!sida });
 }
