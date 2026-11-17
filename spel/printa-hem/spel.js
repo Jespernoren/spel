@@ -453,16 +453,25 @@ const niva = () => (S.magnet && S.hotbar?.[S.vald]?.typ === 'magnet') ? MAGNET_N
 const skrapLage = () => S.vald === 0 || S.hotbar?.[S.vald]?.typ === 'magnet';
 // Alis trimningar: oändliga uppgraderingar – varje nivå kostar mer (exponentiellt), effekten växer linjärt
 const TRIM = {
-  kvarn: { namn: 'Kvarntrim', ikon: '⚙️', max: 5, bas: 300, vaxt: 1.6, beskr: (l) => `Kvarnen mal ${l * 25} % snabbare` },
-  skrivare: { namn: 'Skrivartrim', ikon: '🖨️', max: 5, bas: 400, vaxt: 1.6, beskr: (l) => `Skrivarna printar ${l * 20} % snabbare` },
+  kvarn: { namn: 'Kvarntrim', ikon: '⚙️', max: 2, bas: 300, vaxt: 1.6, beskr: (l) => `Kvarnen mal ${l * 25} % snabbare` },
+  skrivare: { namn: 'Skrivartrim', ikon: '🖨️', max: 3, bas: 400, vaxt: 1.6, beskr: (l) => `Skrivarna printar ${l * 20} % snabbare` },
   pris: { namn: 'Säljsnack', ikon: '🪙', max: 5, bas: 500, vaxt: 1.7, beskr: (l) => `Ali betalar ${l * 10} % mer för prints` },
   sopbil: { namn: 'Mutor till Rolf', ikon: '🚛', max: 5, bas: 250, vaxt: 1.5, beskr: (l) => `Bullar? Rolf tar bullar. Å en tia. Han tippar mer: ${l * 3} skräp extra varje gång` },   // B53
-  batteri: { namn: 'Batteritrim', ikon: '🔋', max: 5, bas: 200, vaxt: 1.5, beskr: (l) => `+${l * 100} ström i batteriet` },
+  batteri: { namn: 'Batteritrim', ikon: '🔋', max: 5, bas: 200, vaxt: 1.5, syns: () => false, /* EO 35: blå ström nivå 5 är Vindsnurra 3 */ beskr: (l) => `+${l * 100} ström i batteriet` },
   utlager: { namn: 'Rullhållare vid kvarnen', ikon: '', max: 5, bas: 120, vaxt: 1.9, tidig: true, syns: () => false, /* CA: ersatt av rulltornet */ beskr: (l) => `Rymmer ${utlagerKap(l)} färdiga rullar innan kvarnen måste stanna` },
   band: { namn: 'Bandtrim', ikon: '', max: 5, bas: 600, vaxt: 1.6, syns: () => !!S.auto?.band, beskr: (l) => `Bandet går ${Math.round((1.25 ** l - 1) * 100)} % fortare och rymmer ${BAND_BAS + l * 3} saker` },
+  /* EO 35 tillägg: trimsatser per linje – blå påverkar inte röd och tvärtom */
+  kvarn_rod: { namn: 'Kvarntrim röd', linje: 'rod', ikon: '⚙️', max: 2, bas: 900, vaxt: 1.6, syns: () => !!S.petg?.turbo, beskr: (l) => `Röda kvarnen mal ${l * 25} % snabbare` },
+  skrivare_rod: { namn: 'Skrivartrim röd', linje: 'rod', ikon: '🖨️', max: 3, bas: 1000, vaxt: 1.6, syns: () => harPlacerat('skrivarepetg'), beskr: (l) => `PETG-skrivarna printar ${l * 20} % snabbare` },
+  torn_rod: { namn: 'Tornvåning röd', linje: 'rod', ikon: '', max: 3, bas: 800, vaxt: 1.7, syns: () => !!S.petg?.torn, beskr: (l) => `${VANING_NAMN[l - 1]}: ${(PETG_XL + VANING_PLUS[l])} rullar röd PETG` },
+  kvarn_kolf: { namn: 'Kvarntrim kolfiber', linje: 'kolf', ikon: '⚙️', max: 2, bas: 1800, vaxt: 1.6, syns: () => !!S.kolf?.jet, beskr: (l) => `Kolfiberkvarnen mal ${l * 25} % snabbare` },
+  skrivare_kolf: { namn: 'Skrivartrim kolfiber', linje: 'kolf', ikon: '🖨️', max: 4, bas: 2000, vaxt: 1.6, syns: () => harPlacerat('kolfskrivare'), beskr: (l) => `Kolfiberskrivarna printar ${l * 20} % snabbare` },
+  torn_kolf: { namn: 'Tornvåning kolfiber', linje: 'kolf', ikon: '', max: 3, bas: 1600, vaxt: 1.7, syns: () => !!S.kolf?.slang, beskr: (l) => `${VANING_NAMN[l - 1]}: ${(6 + VANING_PLUS[l])} rullar kolfiber` },
   arm: { namn: 'Armtrim', ikon: '', max: 5, bas: 700, vaxt: 1.65, syns: () => !!S.auto?.lastarm, beskr: (l) => `Lastarmen lyfter ${(armMax(l) / 1000).toLocaleString('sv-SE', { maximumFractionDigits: 1 })} kg och är ${Math.round((1 / 0.85 ** l - 1) * 100)} % snabbare` },
 };
 const trimNiva = (k) => S.trim?.[k] || 0;
+const VANING_PLUS = [0, 6, 12, 20], VANING_NAMN = ['Våning 2', 'Våning 3', 'Brett torn'];   /* EO 35 tillägg: röda och kolfiberlinjens torn */
+const trimLinje = (gen) => gen === 4 ? '_rod' : gen === 5 ? '_kolf' : '';
 // CA: rullarna lagras bara vid kvarnen, i ett rulltorn som växer: hållaren 1 · rullställ 3 · våning 2: 6 · våning 3: 10 · brett torn 16
 const TORN_KAP = [1, 3, 6, 10, 16], TORN_NAMN = ['Rullhållaren', 'Rullställ till rulltornet', 'Rulltornets andra våning', 'Rulltornets tredje våning', 'Brett rulltorn'];
 const utlagerKap = () => TORN_KAP[Math.min(4, S.rullstall || 0)];
@@ -684,6 +693,7 @@ const STEG = [
   sovSteg(7, R7),
   { las: 'magnet', del: R8, bild: 'byggsats:magnet', text: 'Bygg magnetpistolen', klar: () => !!S.magnet },
   { del: R8, text: () => `Mal tunga saker i PETG-kvarnen · ${Math.min(3, S.stat.tungMalt || 0)}/3`, klar: () => (S.stat.tungMalt || 0) >= 3 },
+  { las: 'skrivare3', del: R8, bild: 'byggsats:skrivare3', text: 'Bygg Skrivare L', klar: () => harPlacerat('skrivare3') },   /* EE tillägg: Skrivare L av skrivarflaskhalsen dag 6–8 */
   { las: 'bank', del: R8, bild: 'byggsats:bank', text: 'Bygg en batteribank', klar: () => harPlacerat('bank') },
   { id: 'hylla8', del: R8, bild: 'byggsats:hylla', text: 'Bygg hyllan', klar: () => !!S.hylla, tanke: 'En hylla. Jag har en hylla. Saker har en plats nu.' },   // dag 8: första tillägget i huset (CV)
   sovSteg(8, R8),
@@ -692,7 +702,6 @@ const STEG = [
   { id: 'paket9', del: R9, bild: 'paket', text: () => `Skicka två paket från datorn · ${Math.min(2, S.webbDag9 || 0)}/2`, klar: () => (S.webbDag9 || 0) >= 2 || !harPlacerat('webbdator') },   // dag 9: webbshoppen på riktigt
   { id: 'petgtorn9', del: R9, bild: 'byggsats:petgtorn', text: 'Bygg Rulltorn XL vid röda kvarnen', klar: () => !!S.petg.torn },   /* linje 2: rullarna – andra våningen kom redan i kapitel 1 */
   sovSteg(9, R9),
-  { las: 'skrivare3', del: R10, bild: 'byggsats:skrivare3', text: 'Bygg Skrivare L', klar: () => harPlacerat('skrivare3') },
   { id: 'tapeter', del: R10, bild: 'byggsats:tapeter', text: () => `Tapetsera skjulet · ${tapetKlara().length}/4`, klar: () => !!S.hem?.tapeter },
   { del: R10, text: 'Gör skjulet varmt inför hösten – tak, dörr och väggar', klar: () => varme() >= 4 },   // CV: värmen syns i välmåendet
   { id: 'spis10', del: R10, bild: () => S.spis ? 'burk_raggmunk' : 'byggsats:spis', text: 'Bygg spisen och laga en varm måltid', klar: () => (S.stat.lagat || 0) >= 1 || (!!S.spis && (S.spisDag || 0) < 10), tanke: 'Varm mat. I skjulet. Mamma skulle inte tro det.' },   // dag 10: mätt och varm
@@ -1205,7 +1214,7 @@ const VAGGAR = {
   }
 }
 // BL: vindsnurran på skjultaket – mast + tre blad som snurrar
-const VIND_ANDEL = 0.5, VIND_MAX = 2;   /* varje snurra trampar ca halva farten – två driver S och nästan M */
+const VIND_ANDEL = 0.5, VIND_MAX = 3;   /* EO 35: blå ström nivå 5 = Vindsnurra 3 */   /* varje snurra trampar ca halva farten – två driver S och nästan M */
 const antalSnurror = () => typeof S.vindsnurra === 'number' ? S.vindsnurra : S.vindsnurra ? 1 : 0;
 const vindEffekt = () => antalSnurror() * TRAMP_PER_S * VIND_ANDEL;
 const vindsnurra = new THREE.Group();
@@ -1216,6 +1225,7 @@ const vindsnurra = new THREE.Group();
   blad.add(new THREE.Mesh(new THREE.SphereGeometry(0.04, 10, 8), new THREE.MeshStandardMaterial({ color: 0xffd43b })));
   vindsnurra.position.set(SKJUL.b / 2 - 0.35, SKJUL.h + 0.15, -SKJUL.d / 2 + 0.4); vindsnurra.visible = !!S.vindsnurra; talt.add(vindsnurra); }
 const vindsnurra2 = vindsnurra.clone(true); vindsnurra2.userData.blad = vindsnurra2.children[1]; vindsnurra2.position.x = -SKJUL.b / 2 + 0.35; vindsnurra2.visible = antalSnurror() >= 2; talt.add(vindsnurra2);
+const vindsnurra3 = vindsnurra.clone(true); vindsnurra3.userData.blad = vindsnurra3.children[1]; vindsnurra3.position.set(0, SKJUL.h + 0.15, -SKJUL.d / 2 + 0.4); vindsnurra3.visible = antalSnurror() >= 3; talt.add(vindsnurra3);
 const skjulSkylt = skylt('MITT SKJUL', 0.9, 0.22, '#5e5246', '#ffe9b0'); skjulSkylt.position.set(0, 2.2, SKJUL.d / 2 + 0.06); skjulSkylt.rotation.z = -0.06; talt.add(skjulSkylt);
 // adressen: Soptippsvägen 1 – du spikar själv ihop skylten av lösa bräder från tippen.
 // Inte mycket för världen, men det är MITT. (S.skyltUppe)
@@ -3248,7 +3258,7 @@ const SLANG_T = 'Rullarna kommer genom slangen från tornet. Jag lägger den i t
 const tornFor = (sk) => genNiva(sk) === 2 ? 'rod' : genNiva(sk) === 3 ? 'kolf' : 'bla';
 const TORN_TYP = { bla: 'rulle', rod: 'rulle2', kolf: 'rulle3' };
 function tornRullar(l) { return l === 'rod' ? (S.petg.rullar || 0) : l === 'kolf' ? (S.kolf.rullar || 0) : (S.kvarnStar ? Math.floor(S.kvarn.ut / RULLE) : 0); }
-function tornPlats(l) { return l === 'rod' ? Math.max(0, petgMax() - (S.petg.rullar || 0)) : l === 'kolf' ? Math.max(0, KOLF_MAX - (S.kolf.rullar || 0)) : Math.max(0, utlagerKap() - Math.floor(S.kvarn.ut / RULLE)); }
+function tornPlats(l) { return l === 'rod' ? Math.max(0, petgMax() - (S.petg.rullar || 0)) : l === 'kolf' ? Math.max(0, kolfMax() - (S.kolf.rullar || 0)) : Math.max(0, utlagerKap() - Math.floor(S.kvarn.ut / RULLE)); }
 function tornLagg(l, n) { if (l === 'rod') S.petg.rullar = (S.petg.rullar || 0) + n; else if (l === 'kolf') S.kolf.rullar = (S.kolf.rullar || 0) + n; else S.kvarn.ut += n * RULLE; }
 function slangNar(sk) { const l = tornFor(sk); if (l === 'kolf') return !!S.kolf.slang || skrivare.find((x) => x.gen === KOLF_GEN) === sk; if (l === 'bla') return !!S.kvarnStar && kopplad(sk); return true; }
 /* EH: inne i maskinerna flyttas plasten i gram. Skrivaren drar det den behöver ur tornet, även ur en påbörjad rulle.
@@ -3357,7 +3367,7 @@ function taUt(typ, n = 1) {
     } else if (typ === 'byggsats:stortratt') {
       monteraTratt();
     } else if (typ === 'byggsats:vindsnurra') {   // BL: sitter direkt på taket
-      S.vindsnurra = Math.min(VIND_MAX, antalSnurror() + 1); vindsnurra.visible = true; vindsnurra2.visible = antalSnurror() >= 2; ljudH('montera'); sparaSnart(); handelse('placerat', { sak: 'vindsnurra' });
+      S.vindsnurra = Math.min(VIND_MAX, antalSnurror() + 1); vindsnurra.visible = true; vindsnurra2.visible = antalSnurror() >= 2; vindsnurra3.visible = antalSnurror() >= 3; ljudH('montera'); sparaSnart(); handelse('placerat', { sak: 'vindsnurra' });
       ui.toast('🌬️ Vindsnurran sitter på taket – den trampar cykeln åt dig när det blåser', 'guld');
     } else if (typ === 'byggsats:rullstall') {
       S.rullstall = Math.min(4, (S.rullstall || 0) + 1); ritaRullstall(); ljudH('montera'); sparaSnart();
@@ -3456,7 +3466,7 @@ const solEffekt = () => placerade.filter((p) => p.typ === 'sol').length * SOL_PE
 // hur mycket allt drar just nu när det kör (ström per sekund)
 const stromBehov = () => skrivare.filter((sk) => sk.jobb).reduce((a, sk) => a + GEN[sk.gen].strom, 0) + (S.kvarn.motor && S.kvarn.tratt > 0 ? MOTOR_STROM * motorStrom() : 0) + (S.petg?.ko > 0 ? PETG_STROM : 0);
 // BT: EN sanning per maskin – alla vyer (mätaren ovanför, rutan när man pekar, skrivarmenyn, notiser) läser härifrån
-const skrivFart = (sk) => GEN[sk.gen].fart * (1 + trimNiva('skrivare') * 0.2) * (sk.mod === 'm_turbo' ? 2 : 1) * (S.dag <= 2 ? 2 : 1);
+const skrivFart = (sk) => GEN[sk.gen].fart * (1 + trimNiva('skrivare' + trimLinje(sk.gen)) * 0.2) * (sk.mod === 'm_turbo' ? 2 : 1) * (S.dag <= 2 ? 2 : 1);
 function framsteg(sk) {
   const ko = sk.ko?.length ? ` · +${sk.ko.length} i kö` : '';
   if (!sk.jobb) return sk.klar ? { andel: 1, tidKvar: 0, text: 'Klar – ta ut', farg: 'klar' } : { andel: 0, tidKvar: 0, text: '', farg: '' };
@@ -4277,7 +4287,7 @@ const bandTyp = () => valdTyp() === 'byggsats:matarband';
 const PETG_FART = 220;      // gram per sekund kvarnen mal
 const PETG_STROM = 3;       // ström per sekund medan den mal
 const PETG_BAS = 4, PETG_XL = 12;   /* klara rullar på spolhållaren – 12 med Rulltorn XL */
-const petgMax = () => S.petg.torn ? PETG_XL : PETG_BAS;
+const petgMax = () => (S.petg.torn ? PETG_XL : PETG_BAS) + (S.petg.torn ? VANING_PLUS[trimNiva('torn_rod')] : 0);
 const pirraKap = () => 1;   /* DO: pirran tar alltid en sak i taget */
 const PETGBAND_TID = 16;    // sekunder mellan varje tungt fynd bandet hämtar från tippen
 S.petg = Object.assign({ ko: 0, ut: 0, rullar: 0, band: false }, S.petg || {});
@@ -4371,7 +4381,7 @@ function uppdateraPetg(dt) {
   if (S.petg.ko < 1 && (S.petg.cont || []).length) S.petg.ko += S.petg.cont.shift();   /* DO: containern matar en sak i taget */
   const kor = S.petg.ko > 0 && S.petg.rullar < petgMax() && S.strom >= PETG_STROM * dt;
   if (kor) {
-    const g = Math.min(S.petg.ko, PETG_FART * (S.petg.turbo ? 2.5 : 1) * dt); S.petg.ko -= g; S.petg.ut += g; S.strom -= PETG_STROM * dt;
+    const g = Math.min(S.petg.ko, PETG_FART * (S.petg.turbo ? 2.5 : 1) * (1 + trimNiva('kvarn_rod') * 0.25) * dt); S.petg.ko -= g; S.petg.ut += g; S.strom -= PETG_STROM * dt;
     if (S.petg.ko < 1) { S.petg.ut += S.petg.ko; S.petg.ko = 0; }
     while (S.petg.ut >= RULLE - 1 && S.petg.rullar < petgMax()) {
       S.petg.ut = Math.max(0, S.petg.ut - RULLE); S.petg.rullar++; ljudH('rulle-klar');
@@ -4404,7 +4414,8 @@ function uppdateraPetg(dt) {
   }
 }
 // ---------- DF: linje 3 – kolfiberkvarnen, rullbandet från tippen, slangfördelaren och jetmotorn ----------
-const KOLF_FART = 140, KOLF_STROM = 6, KOLF_MAX = 6, KOLFBAND_TID = 14;   /* gram/s, ström/s, rullar på kvarnen, sekunder mellan varje kajak på bandet */
+const KOLF_FART = 140, KOLF_STROM = 6, KOLF_MAX = 6, KOLFBAND_TID = 14;
+const kolfMax = () => KOLF_MAX + VANING_PLUS[trimNiva('torn_kolf')];   /* gram/s, ström/s, rullar på kvarnen, sekunder mellan varje kajak på bandet */
 const KOLF_FORSTA = 'Den åker själv. Jag står bara och tittar. Det här är framtiden.';
 S.kolf = Object.assign({ ko: 0, ut: 0, rullar: 0, band: false, jet: false, slang: false }, S.kolf || {});
 let kolfBandT = 0;
@@ -4418,6 +4429,8 @@ function migreraDK() {
   if (S.kvarn.turbo) { S.kvarn.turbo = false; try { turboDel.visible = false; } catch (e) {} laggTill('byggsats:turbomotor'); }   /* EO 35: turbon på blå kvarnen kommer tillbaka i handen */
   if (S.kvarn.kniv) S.kvarn.kniv = 0;
   byt('fynd5', 'fynd4');   /* A-044: gamla titanfynd blir guldfynd, tyst */
+  if (S.trim) { if ((S.trim.kvarn || 0) > 2) S.trim.kvarn = 2; if ((S.trim.skrivare || 0) > 3) S.trim.skrivare = 3; }   /* EO 35 tillägg: den gemensamma trimmen blir blå linjens, med blås tak */
+  if (S.trimKopt) { for (const k of ['kvarn', 'skrivare']) if ((S.trimKopt[k] || 0) > (TRIM[k].max)) S.trimKopt[k] = TRIM[k].max; }
   if (S.auto) { for (const k of ['band', 'lastarm', 'arm', 'laddare']) if (S.auto[k]) S.auto[k] = false; }
   S.kvarn.binge = (S.kvarn.binge || []).filter((g) => g >= 0);   /* blå kvarnen tar aldrig tunga saker */
   if ((S.karraLast || []).filter((v) => SKRAP_SORTER[skrapSort(v)]?.tung).length > 1) {   /* pirran: bara en sak */
@@ -4471,11 +4484,11 @@ function laggTillKolf(p) { interaktor.registrera(p.mesh, { text: kolfText, aktiv
 function uppdateraKolf(dt) {
   const p = kolfKvarn(); if (!p) return;
   const ud = p.mesh.userData;
-  const kor = S.kolf.ko > 0 && S.kolf.rullar < KOLF_MAX && S.strom >= KOLF_STROM * dt;
+  const kor = S.kolf.ko > 0 && S.kolf.rullar < kolfMax() && S.strom >= KOLF_STROM * dt;
   if (kor) {
-    const g = Math.min(S.kolf.ko, KOLF_FART * (S.kolf.jet ? 6 : 1) * dt); S.kolf.ko -= g; S.kolf.ut += g; S.strom -= KOLF_STROM * (S.kolf.jet ? 1.5 : 1) * dt;
+    const g = Math.min(S.kolf.ko, KOLF_FART * (S.kolf.jet ? 6 : 1) * (1 + trimNiva('kvarn_kolf') * 0.25) * dt); S.kolf.ko -= g; S.kolf.ut += g; S.strom -= KOLF_STROM * (S.kolf.jet ? 1.5 : 1) * dt;
     if (S.kolf.ko < 1) { S.kolf.ut += S.kolf.ko; S.kolf.ko = 0; }
-    while (S.kolf.ut >= RULLE - 1 && S.kolf.rullar < KOLF_MAX) { S.kolf.ut = Math.max(0, S.kolf.ut - RULLE); S.kolf.rullar++; S.stat.kolfRullar = (S.stat.kolfRullar || 0) + 1; S.stat.maltNiva = { ...(S.stat.maltNiva || {}), 3: (S.stat.maltNiva?.[3] || 0) + 1 }; ljudH('rulle-klar'); sparaSnart(); }
+    while (S.kolf.ut >= RULLE - 1 && S.kolf.rullar < kolfMax()) { S.kolf.ut = Math.max(0, S.kolf.ut - RULLE); S.kolf.rullar++; S.stat.kolfRullar = (S.stat.kolfRullar || 0) + 1; S.stat.maltNiva = { ...(S.stat.maltNiva || {}), 3: (S.stat.maltNiva?.[3] || 0) + 1 }; ljudH('rulle-klar'); sparaSnart(); }
   }
   if (ud.trumma) ud.trumma.rotation.x += kor ? dt * (S.kolf.jet ? 30 : 10) : 0;
   matarLinje(KOLF_GEN, S.kolf, 'rullar', !!S.kolf.slang);   /* DM: tornet matar kolfiberskrivarna – med slangfördelaren alla samtidigt */
@@ -6084,8 +6097,8 @@ const upplast = (id) => !UPPLAS_FLASK[id] || flaskS().upp.includes(id) || (id ==
 // förutsättningar: kedjan går i ordning, och vissa saker kräver att det förra finns
 const FLASK_FORE = {
   ryggkorg: () => !!S.korg, magnet: () => (S.kapitel || 1) >= 2 && !!S.karra, matarband: () => !!S.kvarn.motor && !!S.karra,   /* A-050: sophållaren töms med kärran – båda dag 4 */ turbomotor: () => (S.kapitel || 1) >= 2,
-  vindsnurra2: () => antalSnurror() >= 1, sol: () => (S.kapitel || 1) >= 2, bank: () => harPlacerat('sol'), solpark: () => harPlacerat('bank') || harPlacerat('sol'),
-  skrivare2: () => harPlacerat('bord'), trim_skrivare: () => S.dag >= 2,   /* EE: skrivartrim dag 2 – svaret på skrivarflaskhalsen innan Skrivare M */ skrivare3: () => (S.kapitel || 1) >= 2 && harPlacerat('skrivare2'), cykelbatteri: () => !!S.powerbank,
+  vindsnurra2: () => antalSnurror() >= 1, vindsnurra3: () => antalSnurror() >= 2 && S.dag >= 5, sol: () => (S.kapitel || 1) >= 2 && antalSnurror() >= 3, bank: () => harPlacerat('sol'), solpark: () => harPlacerat('bank') || harPlacerat('sol'),
+  skrivare2: () => harPlacerat('bord'), trim_skrivare: () => S.dag >= 2,   /* EE: skrivartrim dag 2 – svaret på skrivarflaskhalsen innan Skrivare M */ skrivare3: () => S.dag >= 6 && harPlacerat('skrivare2'),   /* EE tillägg: Skrivare L av skrivarflaskhalsen dag 6–8 */ cykelbatteri: () => !!S.powerbank,
 };
 // EG 18: klagotanken – en gång, när flaskhalsen faktiskt känns
 const KLAGO = {
@@ -6098,6 +6111,7 @@ const KLAGO = {
   vindsnurra: 'Mina ben är slut. Det blåser hela tiden här ute. Tänk om vinden kunde trampa åt mig.',
   cykelbatteri: 'Powerbanken räcker till en nyckelring. Sen är det trampa igen.',
   vindsnurra2: 'En snurra räcker inte. Skrivarna står still så fort det blir stilla.',
+  vindsnurra3: 'Skrivare M drar mer än två snurror ger. Jag trampar igen.',
   sol: 'Vindsnurran är för långsam. Och när det är stilla står allt. Solen är gratis.',
   bank: 'Tre skrivare drar mer ström än solen ger.',
   solpark: 'Solen räcker inte till alla skrivare.',
@@ -6113,6 +6127,7 @@ const ALI_UPPLAS = {
   ryggkorg: 'Ali här. En ryggkorg. AI:n ritade den efter en bild på min mormor. Den rymmer tio.',
   vindsnurra: 'Ali här. Vindsnurra till cykeln. Vinden trampar åt dig. Den är lat, men den jobbar gratis.',
   vindsnurra2: 'Ali här. En snurra till? Taket har plats för två. Vinden har inget emot det.',
+  vindsnurra3: 'Ali här. En tredje snurra. Mitt på taket. Sen är taket fullt. Sen får solen ta över.',
   rullstall: 'Ali här. Rullställ. Fyra rullar i stället för en. Har ett på hyllan.',
   trim_skrivare: 'Ali här. Skrivartrim. Jag skruvade på min egen skrivare i natt. Den går fortare nu. Nästan för fort.',
   bank: 'Ali här. Batteribank. Sparar solen till kvällen. Som en kyl, fast för ström.',
@@ -6127,7 +6142,7 @@ function flaskTick(dt, trampar, vevar) {
   if (!ui.igang || sover) return; flaskS();
   // vad tar stopp just nu?
   const stromStopp = skrivare.some((sk) => sk.jobb && sk.vantar === 'ingen ström!') || (S.kvarn.motor && S.kvarn.tratt > 0 && S.strom < 1);
-  if (stromStopp) flaskLagg('strom', dt);
+  if (stromStopp || (trampar && S.batteriKopt && stromBehov() > vindEffekt() + solEffekt())) flaskLagg('strom', dt);   /* EE tillägg: strömmen tar stopp även när man måste trampa för att maskinerna drar mer än vind och sol ger */
   if (trampar) flaskLagg('trampa', dt);
   if (S.kvarnStar && S.kvarn.tratt > 0 && extruderFull()) flaskLagg('skrivare', dt);   // kvarnen står med full hållare: skrivarna hinner inte
   if (vevar || (S.kvarn.motor && S.kvarn.tratt >= TRATT_MAX)) flaskLagg('mala', dt);   // vevar för hand, eller tratten är full med motor
@@ -6144,7 +6159,7 @@ function flaskTick(dt, trampar, vevar) {
   }
   // FAST: en tidsflaskhals har tagit stopp över 4 min sedan förra upplåsningen utan att något kan låsas upp
   if (S.fh.fastDag !== S.dag) { S.fh.fastDag = S.dag; S.fh.fastLogg = {}; }
-  for (const k of ['strom', 'skrivare', 'mala', 'trampa']) { const sed = Math.min(S.fh.sedan[k] || 0, S.fh.dag[S.dag]?.[k] || 0),   /* FAST räknas inom dagen: över 4 min stopp i dag utan att något nytt kommer */ steg = Math.floor(sed / 240); if (steg >= 1 && steg > (S.fh.fastLogg?.[k] || 0)) { S.fh.fastLogg = { ...(S.fh.fastLogg || {}), [k]: steg }; regelvakt.brott('FAST', `${k} har tagit stopp ${Math.round(sed)} s utan att något låses upp (nästa: ${B.FLASK_KEDJA[k].find((x) => !S.fh.upp.includes(x)) || 'inget kvar'})`); } }
+  for (const k of ['strom', 'skrivare', 'mala', 'trampa']) { const sed = Math.min(S.fh.sedan[k] || 0, S.fh.dag[S.dag]?.[k] || 0),   /* FAST räknas inom dagen: över 4 min stopp i dag utan att något nytt kommer */ steg = B.FLASK_KEDJA[k].some((x) => !S.fh.upp.includes(x)) ? Math.floor(sed / 240) : 0;   /* kedjan slut: svaret är fler av samma maskin, inget nytt att låsa upp */ if (steg >= 1 && steg > (S.fh.fastLogg?.[k] || 0)) { S.fh.fastLogg = { ...(S.fh.fastLogg || {}), [k]: steg }; regelvakt.brott('FAST', `${k} har tagit stopp ${Math.round(sed)} s utan att något låses upp (nästa: ${B.FLASK_KEDJA[k].find((x) => !S.fh.upp.includes(x)) || 'inget kvar'})`); } }
   if ((flaskSpar += dt) > 5) { flaskSpar = 0; sparaSnart(); }
 }
 function lasUpp(id, k, reserv = false) {
@@ -6156,7 +6171,7 @@ function lasUpp(id, k, reserv = false) {
   handelse('upplast', { id, flask: k });
   if (id === 'kruka') S.krukaErbjuden = true;
   const ursprung = id === 'grip' ? (S.aliStoryVisad ? null : { lapp: 'salt' }) : id === 'kruka' ? { sms: ['ali', ALI_KRUKA], gava: 'visa:kruka' }
-    : ALI_SPECIAL[id] ? { sms: ['ali', ALI_SPECIAL[id]], gava: 'visa:byggsats:' + id } : ALI_UPPLAS[id] ? { sms: ['ali', ALI_UPPLAS[id]], gava: 'visa:byggsats:' + id } : null;
+    : ALI_SPECIAL[id] ? { sms: ['ali', ALI_SPECIAL[id]], gava: 'visa:byggsats:' + id } : ALI_UPPLAS[id] ? { sms: ['ali', ALI_UPPLAS[id]], gava: 'visa:byggsats:' + (/^vindsnurra/.test(id) ? 'vindsnurra' : id) } : null;
   paket([KLAGO[id] && !reserv && { tanke: KLAGO[id] }, ursprung && { ...ursprung, villkor: () => id === 'kruka' || id === 'grip' || !kopt(id) }], { vikt: 'STORY', varfor: `EE: ${id} låses upp av flaskhalsen ${k}` });   /* SEKVENS: Ali presenterar inte det man redan köpt */
 }
 // låsta mål: medan målet väntar på sin flaskhals visar rutan vad man gör under tiden – och målet blir inte klart
@@ -6169,7 +6184,7 @@ for (const st of STEG) if (st.las) {
 }
 // butiken: kapacitetssaker syns först när flaskhalsen har låst upp dem
 for (const id of Object.keys(UPPLAS_FLASK)) { const m = MASKINER[id]; if (!m) continue; const s0 = m.syns; m.syns = () => upplast(id) && (s0 ? s0() : true); }
-MASKINER.vindsnurra.syns = () => upplast(antalSnurror() >= 1 ? 'vindsnurra2' : 'vindsnurra') && antalSnurror() < VIND_MAX;
+MASKINER.vindsnurra.syns = () => upplast(['vindsnurra', 'vindsnurra2', 'vindsnurra3'][Math.min(2, antalSnurror())]) && antalSnurror() < VIND_MAX;
 MASKINER.kvarnmotor.syns = () => upplast('kvarnmotor') && !S.kvarn.motor;
 MASKINER.ryggkorg.syns = () => upplast('ryggkorg') && !!S.korg && !S.ryggkorg;
 /* ---------- ED13: det man får ska man se och sätta på plats ----------
@@ -6206,7 +6221,7 @@ const MONTERA = {
   'byggsats:gs_dorr': { namn: 'Sätt dörren på husvagnen', mal: () => [husvagnG].filter(Boolean), gor: () => gastDelKlar('dorr') },
   'byggsats:kvarnmotor': { namn: 'Skruva fast kvarnmotorn', mal: vidKvarn, hinder: () => S.kvarn.motor ? 'Kvarnen har redan en motor' : '', gor: () => monteraMotor() },
   'byggsats:stortratt': { namn: 'Skruva fast den större tratten', mal: vidKvarn, hinder: () => S.kvarn.stor ? 'Den stora tratten sitter redan' : '', gor: () => monteraTratt() },
-  'byggsats:vindsnurra': { namn: 'Sätt vindsnurran på taket', mal: () => [skjulYta], hinder: () => antalSnurror() >= VIND_MAX ? 'Det får inte plats fler snurror på taket' : '', gor: () => { S.vindsnurra = Math.min(VIND_MAX, antalSnurror() + 1); vindsnurra.visible = true; vindsnurra2.visible = antalSnurror() >= 2; handelse('placerat', { sak: 'vindsnurra' }); }, toast: '🌬️ Vindsnurran sitter på taket – den trampar cykeln åt dig när det blåser' },
+  'byggsats:vindsnurra': { namn: 'Sätt vindsnurran på taket', mal: () => [skjulYta], hinder: () => antalSnurror() >= VIND_MAX ? 'Det får inte plats fler snurror på taket' : '', gor: () => { S.vindsnurra = Math.min(VIND_MAX, antalSnurror() + 1); vindsnurra.visible = true; vindsnurra2.visible = antalSnurror() >= 2; vindsnurra3.visible = antalSnurror() >= 3; handelse('placerat', { sak: 'vindsnurra' }); }, toast: '🌬️ Vindsnurran sitter på taket – den trampar cykeln åt dig när det blåser' },
   'byggsats:rullstall': { namn: 'Bygg på rulltornet', mal: vidKvarn, hinder: () => (S.rullstall || 0) >= 4 ? 'Tornet är så högt det kan bli' : '', gor: () => { S.rullstall = Math.min(4, (S.rullstall || 0) + 1); ritaRullstall(); ui.toast(`${TORN_NAMN[S.rullstall]} står klart – rulltornet rymmer ${utlagerKap()} rullar`, 'guld'); } },
   'byggsats:rullband': { namn: 'Montera rullbandet', mal: vidKvarn, gor: () => monteraAuto('rullband') },
   'byggsats:lastarm': { namn: 'Montera lastarmen', mal: vidKvarn, gor: () => monteraAuto('lastarm') },
@@ -6218,6 +6233,10 @@ const TRIM_SATS = {
   kvarn: { var: 'kvarnen', mal: vidKvarn }, band: { var: 'kvarnen', mal: vidKvarn }, arm: { var: 'kvarnen', mal: vidKvarn },
   skrivare: { var: 'en skrivare', mal: () => skrivare.map((sk) => sk.mesh).filter(Boolean) },
   batteri: { var: 'cykeln', mal: () => [cykel] },
+  kvarn_rod: { var: 'röda kvarnen', mal: () => [petgKvarn()?.mesh].filter(Boolean) }, torn_rod: { var: 'röda kvarnen', mal: () => [petgKvarn()?.mesh].filter(Boolean) },
+  skrivare_rod: { var: 'en PETG-skrivare', mal: () => skrivare.filter((sk) => sk.gen === PETG_GEN).map((sk) => sk.mesh).filter(Boolean) },
+  kvarn_kolf: { var: 'kolfiberkvarnen', mal: () => [kolfKvarn()?.mesh].filter(Boolean) }, torn_kolf: { var: 'kolfiberkvarnen', mal: () => [kolfKvarn()?.mesh].filter(Boolean) },
+  skrivare_kolf: { var: 'en kolfiberskrivare', mal: () => skrivare.filter((sk) => sk.gen === KOLF_GEN).map((sk) => sk.mesh).filter(Boolean) },
 };
 for (const [k, ts] of Object.entries(TRIM_SATS)) {
   MASKINER['trim_' + k] = { namn: `Trimsats: ${TRIM[k].namn.toLowerCase()}`, ikon: TRIM[k].ikon || '🔧', gava: true, syns: () => false, beskr: TRIM[k].beskr(1) };
@@ -6227,8 +6246,18 @@ const TRIM_FARG = [0x58d68d, 0x3a8be0, 0xb07cff, 0xf5c542, 0xff6b5b];
 function ritaTrimDekaler() {
   const satt = (obj, k, y) => { if (!obj) return; const n = trimNiva(k); let d = obj.userData.trimDekal; if (!n) { if (d) d.visible = false; return; }
     if (!d) { d = box(0.12, 0.12, 0.012, mat(0xffffff, { emissive: 0xffffff, emissiveIntensity: 0.25 })); d.position.set(0.18, y, 0.33); obj.add(d); obj.userData.trimDekal = d; }
-    d.visible = true; d.material.color.setHex(TRIM_FARG[Math.min(TRIM_FARG.length - 1, n - 1)]); d.material.emissive.setHex(TRIM_FARG[Math.min(TRIM_FARG.length - 1, n - 1)]); };
-  satt(kvarn, 'kvarn', 0.55); for (const sk of skrivare) satt(sk.mesh, 'skrivare', 0.35);
+    const fg = /_rod$/.test(k) ? 0xd63a2f : /_kolf$/.test(k) ? 0x9fd8ff : TRIM_FARG[Math.min(TRIM_FARG.length - 1, n - 1)]; d.visible = true; d.material.color.setHex(fg); d.material.emissive.setHex(fg); };
+  satt(kvarn, 'kvarn', 0.55); for (const sk of skrivare) satt(sk.mesh, 'skrivare' + trimLinje(sk.gen), 0.35);
+  const rk = placerade.find((p) => p.typ === 'petgkvarn'), kk = placerade.find((p) => p.typ === 'kolfkvarn');
+  if (rk) { satt(rk.mesh, 'kvarn_rod', 0.75); vaningar(rk.mesh, 'torn_rod', 0xd63a2f, 1.15); }
+  if (kk) { satt(kk.mesh, 'kvarn_kolf', 0.75); vaningar(kk.mesh, 'torn_kolf', 0x3a3d42, -1.15); }
+}
+/* EO 35 tillägg: tornvåningarna syns som lådor på linjens torn, i linjens färg */
+function vaningar(obj, k, farg, x) {
+  const n = trimNiva(k); let g = obj.userData.vaningar;
+  if (!g) { g = new THREE.Group(); g.userData.ytaFri = true; obj.add(g); obj.userData.vaningar = g; }
+  while (g.children.length < n) { const i = g.children.length, bred = i === 2; const v = box(bred ? 0.8 : 0.55, 0.32, bred ? 0.8 : 0.55, mat(farg, { roughness: 0.5, metalness: 0.4 })); v.position.set(x, 1.55 + i * 0.36, 0); g.add(v); }
+  g.children.forEach((c, i) => { c.visible = i < n; });
 }
 try { ritaTrimDekaler(); } catch (e) {}
 /* ED13: AX-flaggan OSYNLIG GÅVA – en flagga som ändrar mekaniken sätts utan att en sak monteras eller tas på */
@@ -7702,7 +7731,7 @@ const DUBBEL_PRIS = ['bank', 'sol', 'solpark'];
 const antalAv = (id) => placerade.filter((p) => p.typ === id).length + antalInv('byggsats:' + id);
 const ritPris = (id) => DUBBEL_PRIS.includes(id) ? MASKINER[id].ritning * 2 ** antalAv(id) : MASKINER[id].ritning;
 // dagens huvudköp: ungefär dubbelt så dyrt varje dag (dörr → tak → solpanel → Skrivare M). Annars det billigaste du kan köpa hos Ali.
-const HUVUDKOP = { [N1]: 'dorr', [N2]: 'tak', [N3]: 'skrivare2', [N4]: 'recept:lampskarm', [R6]: 'petgkvarn', [R7]: 'skrivarepetg', [R8]: 'magnet', [R9]: 'solpark', [R10]: 'skrivare3', [F11]: 'kolfkvarn', [F12]: 'kolfskrivare', [F13]: 'gamingbod', [F14]: 'jetmotor', [F15]: 'gamingbod', [M16]: 'mark:egen', [M17]: 'mark:oster', [M18]: 'mark:huset', [M19]: 'diamantkniv', [M20]: 'recept:kamin' };
+const HUVUDKOP = { [N1]: 'dorr', [N2]: 'tak', [N3]: 'skrivare2', [N4]: 'recept:lampskarm', [R6]: 'petgkvarn', [R7]: 'skrivarepetg', [R8]: 'magnet', [R9]: 'solpark', [R10]: 'tapeter', [F11]: 'kolfkvarn', [F12]: 'kolfskrivare', [F13]: 'gamingbod', [F14]: 'jetmotor', [F15]: 'gamingbod', [M16]: 'mark:egen', [M17]: 'mark:oster', [M18]: 'mark:huset', [M19]: 'diamantkniv', [M20]: 'recept:kamin' };
 let nastaKopCache = null, nastaKopT = 0;
 function nastaKop() {
   if (performance.now() - nastaKopT < 1000) return nastaKopCache;
@@ -7738,13 +7767,13 @@ const HYLLOR = [
   { klass: 'h-petg', ikon: 'rulle', namn: 'Röd PETG', sub: 'tunga saker → dyra saker', grupper: [['Röd PETG', 'Kvarn, skrivare och recept']] },
   { klass: 'h-unik', ikon: 'stjarna', namn: 'Unika fynd', sub: 'finns bara en gång', grupper: [['Rolfs önskan', 'Rolfs önskan'], ['Present till Rolf', 'Present till Rolf'], ['Alis prototyper – en av varje', 'Alis prototyper']] },
   { klass: 'h-hem', ikon: 'hus', namn: 'Hemmet', sub: 'bygg, tapetsera och inred', grupper: [['Bygg ut hemmet', 'Bygga'], ['Tapeter – för skjulet och boden', 'Tapeter'], ['Inredning', 'Inredning']] },
-  { klass: 'h-upp', ikon: 'kugghjul', namn: 'Fabriken', sub: 'nya maskiner och förbättringar', grupper: [['Material', 'Filament'], ['Uppgraderingar – bär mer, gör snabbare', 'Nya maskiner'], ['Trimning – tar aldrig slut', 'Trimma (nivåer)']] },
+  { klass: 'h-upp', ikon: 'kugghjul', namn: 'Fabriken', sub: 'nya maskiner och förbättringar', grupper: [['Material', 'Filament'], ['Uppgraderingar – bär mer, gör snabbare', 'Nya maskiner'], ['Trimning – blå linjen', 'Trimma blå linjen'], ['Trimning – röda linjen', 'Trimma röda linjen'], ['Trimning – kolfiberlinjen', 'Trimma kolfiberlinjen']] },
 ];
 // varje hylla har sin färg: recept guld, hemmet trä, uppgraderingar blå, inredning lila, tapeter turkos, material grå, trimning cyan
 const hyllKlass = (sk) => /^Röd PETG/.test(sk) ? 'h-petg' : /^Recept/.test(sk) ? 'h-recept' : /hemmet/.test(sk) ? 'h-hem' : /^Uppgrad/.test(sk) ? 'h-upp' : /^Inredning/.test(sk) ? 'h-inred' : /^Tapeter/.test(sk) ? 'h-tapet' : /^Material/.test(sk) ? 'h-mat' : /^Trimning/.test(sk) ? 'h-trim' : 'h-ovrigt';
 const HYLL_IKON = { 'h-recept': 'recept', 'h-hem': 'hus', 'h-upp': 'kugghjul', 'h-inred': 'soffa', 'h-tapet': 'hus', 'h-mat': 'rulle', 'h-trim': 'trim' };
 const HYLL_SUB = { 'h-recept': 'printa och sälj – tjäna pengar', 'h-hem': 'bygg ditt hem', 'h-inred': 'mysigt – ger trivsel', 'h-mat': 'filament att printa med' };
-const ALI_MAX = { 'Inredning': 3, 'Uppgraderingar – bär mer, gör snabbare': 3, 'Tapeter – för skjulet och boden': 2, 'Alis prototyper – en av varje': 2, 'Trimning – tar aldrig slut': 3 };
+const ALI_MAX = { 'Inredning': 3, 'Uppgraderingar – bär mer, gör snabbare': 3, 'Tapeter – för skjulet och boden': 2, 'Alis prototyper – en av varje': 2, 'Trimning – blå linjen': 3, 'Trimning – röda linjen': 3, 'Trimning – kolfiberlinjen': 3 };
 // ---------- Punkt AK: säljvara eller uppgradering ----------
 // säljvara = ett recept du printar och säljer till Ali · uppgradering = allt som gör dig snabbare, starkare eller trivsammare
 function kopSlag(key) {
@@ -7871,11 +7900,11 @@ function aliKopLista() {
       () => { if (kedjaLas(id)) { aliRepl = kedjaLas(id); return false; } S.ritningar.push('recept:' + id); aliRepl = `${v.namn}? Bra val. Folk köper sånt. Jag vet inte varför.`; return true; });
   }
   for (const [k, t] of Object.entries(TRIM)) {
-    if (!t.tidig && S.kapitel < 3 && !(UPPLAS_FLASK['trim_' + k] && upplast('trim_' + k))) continue;   // trimning är kapitel 3 – utom när flaskhalsen har låst upp den tidigare (EE/EO 35: skrivartrim efter Skrivare M)
+    if (!t.tidig && !t.linje && S.kapitel < 3 && !(UPPLAS_FLASK['trim_' + k] && upplast('trim_' + k))) continue;   // trimning är kapitel 3 – utom när flaskhalsen har låst upp den tidigare (EE/EO 35: skrivartrim efter Skrivare M)
     if (t.syns && !t.syns()) continue;
     if (trimNiva(k) >= (t.max || 5)) continue;   /* EO 35: högst 5 nivåer – sedan växer man med fler maskiner */
     if (TRIM_SATS[k] && (S.trimKopt?.[k] || 0) > trimNiva(k)) continue;   /* EI22: en sats i taget – montera den du har först */
-    add('Trimning – tar aldrig slut', 't:' + k, trimBild(k), `${t.namn} nivå ${trimNiva(k) + 1}`, t.beskr(trimNiva(k) + 1) + (trimNiva(k) ? ` (nu: ${t.beskr(trimNiva(k)).toLowerCase()})` : ''), trimPris(k), [['oandlig', `Nivå ${trimNiva(k)} → ${trimNiva(k) + 1}`]],
+    add(t.linje === 'rod' ? 'Trimning – röda linjen' : t.linje === 'kolf' ? 'Trimning – kolfiberlinjen' : 'Trimning – blå linjen', 't:' + k, trimBild(k), `${t.namn} nivå ${trimNiva(k) + 1}`, t.beskr(trimNiva(k) + 1) + (trimNiva(k) ? ` (nu: ${t.beskr(trimNiva(k)).toLowerCase()})` : ''), trimPris(k), [['oandlig', `Nivå ${trimNiva(k)} → ${trimNiva(k) + 1}`]],
       () => { const aliT = ['AI:n och jag optimerade hela natten. Ingen sömn. Värt det.', 'Trimmad. Snabbare än min pappa någonsin var.', 'Nästa nivå kostar mer. Så funkar teknik. Och mitt liv.'][Math.floor(Math.random() * 3)];
         if (TRIM_SATS[k]) {   /* EI22: trimningen är en sats i handen – den monteras på maskinen */
           const bs = 'byggsats:trim_' + k; if (!harRumFor(bs)) { aliRepl = 'Var ska du bära den? Fickorna är fulla.'; return false; }
@@ -7890,7 +7919,7 @@ function aliKopLista() {
   return lista;
 }
 // trimningens bild: saken som blir bättre + en bricka med vad som händer
-const TRIM_BILD = { kvarn: [null, '+25 % fart', 'kvarn'], skrivare: ['skrivare2', '+20 % fart'], pris: [null, '+10 % kr', 'mynt'], sopbil: [null, '+3 skräp', 'lastbil'], batteri: ['bank', '+100 ström'], utlager: ['rulle', 'fler rullar'], band: ['matarband', 'snabbare band'], arm: ['lastarm', 'lyfter mer'] };
+const TRIM_BILD = { kvarn_rod: ['petgkvarn', '+25 % fart'], skrivare_rod: ['skrivarepetg', '+20 % fart'], torn_rod: ['petgtorn', 'fler rullar'], kvarn_kolf: ['kolfkvarn', '+25 % fart'], skrivare_kolf: ['kolfskrivare', '+20 % fart'], torn_kolf: ['kolfslang', 'fler rullar'], kvarn: [null, '+25 % fart', 'kvarn'], skrivare: ['skrivare2', '+20 % fart'], pris: [null, '+10 % kr', 'mynt'], sopbil: [null, '+3 skräp', 'lastbil'], batteri: ['bank', '+100 ström'], utlager: ['rulle', 'fler rullar'], band: ['matarband', 'snabbare band'], arm: ['lastarm', 'lyfter mer'] };
 function trimBild(k) {
   const [typ, txt, ikon] = TRIM_BILD[k] || [null, '', 'trim'];
   let bild = ''; try { bild = typ ? tumme(typ, 50) : ''; } catch { bild = ''; }
@@ -10297,6 +10326,7 @@ function uppdatera(dt) {
     }
     if (S.vindsnurra) vindsnurra.userData.blad.rotation.z += dt * 4;
     if (antalSnurror() >= 2) vindsnurra2.userData.blad.rotation.z += dt * 4.4;
+    if (antalSnurror() >= 3) vindsnurra3.userData.blad.rotation.z += dt * 3.9;
 
     autoPlock();
     // håll inne gripklon och svep över skräpet
@@ -13580,11 +13610,17 @@ function linjeYta(obj, linje, niva) {
 }
 // nivån räknas av det som sitter på maskinen
 const kvarnNiva = () => Math.min(5, 1 + (S.kvarn.motor ? 1 : 0) + (S.kvarn.band ? 1 : 0) + Math.min(2, trimNiva('kvarn')));   /* EO 35: vevkvarn · motor · sophållare · trimsats 1 · trimsats 2 (blank) */
-const skrivarNiva = (sk) => Math.min(5, sk.gen >= PETG_GEN ? 1 + (sk.spolNiva || 0) + (sk.mod ? 1 : 0) + Math.min(2, trimNiva('skrivare')) : (sk.gen >= 2 ? 2 : 1) + Math.min(3, trimNiva('skrivare')));   /* EO 35: S · M · trimsats 1–3 (blank) */
+const skrivarNiva = (sk) => Math.min(5, sk.gen >= PETG_GEN ? 1 + (sk.spolNiva || 0) + (sk.mod ? 1 : 0) + trimNiva('skrivare' + trimLinje(sk.gen)) : (sk.gen >= 2 ? 2 : 1) + Math.min(3, trimNiva('skrivare')));   /* EO 35: S · M · trimsats 1–3 (blank) */
 const skrivarLinje = (sk) => sk.gen === PETG_GEN ? 'rod' : sk.gen === KOLF_GEN ? 'kolf' : 'bla';
+const ALI_NIVA5 = 'Ali här. Den går inte att göra bättre. Bygg en till.';
+function niva5Koll() {   /* EO 35 tillägg: första gången en maskin i en linje når nivå 5 */
+  const n = { 'kvarn:bla': kvarnNiva() };
+  for (const sk of skrivare) { const k = 'skrivare:' + skrivarLinje(sk); n[k] = Math.max(n[k] || 0, skrivarNiva(sk)); }
+  for (const [k, v] of Object.entries(n)) if (v >= 5 && !(S.niva5 || []).includes(k)) { S.niva5 = [...(S.niva5 || []), k]; paket([{ sms: ['ali', ALI_NIVA5] }], { vikt: 'SMÅPRAT', varfor: `EO 35: ${k} nivå 5` }); }
+}
 function ritaYtor() {
   try { linjeYta(kvarn, 'bla', kvarnNiva()); for (const sk of skrivare) linjeYta(sk.mesh, skrivarLinje(sk), skrivarNiva(sk));
-    for (const p of placerade) { if (p.typ === 'petgkvarn') linjeYta(p.mesh, 'rod', 1 + (S.petg.container ? 1 : 0) + (S.petg.torn ? 1 : 0) + (S.petg.turbo ? 1 : 0)); if (p.typ === 'kolfkvarn') linjeYta(p.mesh, 'kolf', 1 + (S.kolf.band ? 1 : 0) + (S.kolf.slang ? 1 : 0) + ((S.kvarn.kniv || 0) > 0 ? 1 : 0) + (S.kolf.jet ? 1 : 0)); } } catch (e) { console.warn('yta', e); }
+    for (const p of placerade) { if (p.typ === 'petgkvarn') linjeYta(p.mesh, 'rod', Math.min(5, 1 + (S.petg.container ? 1 : 0) + (S.petg.turbo ? 1 : 0) + trimNiva('kvarn_rod'))); if (p.typ === 'kolfkvarn') linjeYta(p.mesh, 'kolf', Math.min(5, 1 + (S.kolf.band ? 1 : 0) + (S.kolf.jet ? 1 : 0) + trimNiva('kvarn_kolf'))); } niva5Koll(); } catch (e) { console.warn('yta', e); }
 }
 setInterval(ritaYtor, 1500);
 /* ---------- EJ/EP: det spelaren känner till – kand(sak) ----------
