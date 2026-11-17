@@ -35,6 +35,7 @@ await p.addInitScript((fran) => {
         let nasta = null, nid2 = null;
         for (const [id, t] of T) if (t.at <= vt && (!nasta || t.at < nasta.at)) { nasta = t; nid2 = id; }
         if (!nasta) break;
+        if (g === 199 && !window.__vtSvalt) { window.__vtSvalt = 1; console.log('[sim] SVÄLT: 200 timers på en bildruta – ' + String(nasta.fn).replace(/\s+/g, ' ').slice(0, 200)); }   /* AX 88: en timer som lägger sig själv på 0 ms svälter boten */
         if (nasta.iv) nasta.at += nasta.iv; else T.delete(nid2);
         try { typeof nasta.fn === 'function' ? nasta.fn(...nasta.a) : null; } catch (e) { console.error('timer', e.message); }
       }

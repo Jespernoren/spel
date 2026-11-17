@@ -289,7 +289,7 @@ export function inkomstPerMin(dag) {
 // Pris med samma målminuter som förut, men i den nya inkomsten – och dagar som var för korta (eller långa) justeras mot DAG_MAL_MIN.
 // Justering efter AX 83 (dag 16–21 med den nya trappan): boten tjänar ca 4 000 kr/min dag 18 men diamantkvarnen och guldrullen tar ca 8 min först,
 // och dag 20 tog kaminen bara 3,5 min. Faktorn läggs på trappans pris för målet.
-export const AX_JUSTERING = { husgrund: 0.6, kamin: 2.5 };
+export const AX_JUSTERING = { husgrund: 0.6, kamin: 2.5, huset: 0.7 };   // huset efter AX 87: dag 19 tog 24 min med vindkraftverket och guldskrivaren
 export function trappPris(gammalt, dag) {
   const kap = kapitelFor(Math.min(dag, 22)), langd = Math.min(7, Math.max(0.6, DAG_MAL_MIN / (DAG_MIN_AX[dag] || DAG_MAL_MIN)));
   return runda(gammalt * inkomstPerMin(dag) / INKOMST_AX[kap] * langd);

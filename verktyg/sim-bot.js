@@ -217,9 +217,9 @@
   }
 
   // ---------- printa ----------
-  const skrivareAlla = (petg = false) => H.skrivare.filter((x) => x.mesh?.visible !== false && (petg === 3 ? x.gen === 5 : (x.gen === 4) === petg && x.gen !== 5));
+  const skrivareAlla = (petg = false) => H.skrivare.filter((x) => x.mesh?.visible !== false && (petg === 4 ? x.gen === 6 : petg === 3 ? x.gen === 5 : (x.gen === 4) === petg && x.gen !== 5 && x.gen !== 6));   /* A-069: guldskrivaren (gen 6) tar bara guld */
   // kapitel 2: PETG-skrivaren (gen 4) tar bara röd PETG (nivå 2) – vanliga saker går på de vanliga skrivarna
-  const arPetg = (val) => { const n = val?.maskin ? H.printLinje(val.maskin) : (val?.typ && H.VAROR[val.typ]?.niva) || 1; return n === 3 ? 3 : n === 2; };   // DO: byggsatser printas på sin egen linje
+  const arPetg = (val) => { const n = val?.maskin ? H.printLinje(val.maskin) : (val?.typ && H.VAROR[val.typ]?.niva) || 1; return n === 4 ? 4 : n === 3 ? 3 : n === 2; };   // DO: byggsatser printas på sin egen linje
   const ledig = (val) => { const petg = arPetg(val); const l = skrivareAlla(petg).slice().sort((a, b) => b.gen - a.gen);
     const g = val.maskin ? 0 : (H.VAROR[val.typ]?.gram || 0), stor = g >= 2000 && l.some((x) => x.gen >= 2);   /* AX g48: stora saker (kaminen) får inte plats på Skrivare S – ta den största, hellre i kö */
     const fri = l.filter((x) => !x.jobb && !x.klar && (!stor || x.gen >= 2));
@@ -373,7 +373,7 @@
     const id = H.stegId(), st = H.STEG[S.steg], txt = (typeof st?.text !== 'function' && window.__stegKanon?.[id]) || H.stegText() || '';   /* A-069 §5: målet hittas på sitt id – en ändrad måltext gör inget (texter som beror på läget läses som de står) */
     if (!st && S.julFirad) {   /* A-042: efterspelet – köp marken som är kvar när pengarna räcker, tjäna under tiden, sov när dagen är slut */
       if (H.sovDags()) { await klick(H.taltSang, 'sängen'); await vantaPaMorgon(); return; }
-      const t = H.MARK_TOMTER.find((x) => ['norr', 'tippkant', 'tippen', 'rolfhus'].includes(x.id) && !(S.mark?.agt || []).includes(x.id) && S.mynt >= x.pris);
+      const t = H.MARK_TOMTER.find((x) => ['norr', 'tippkant', 'tippen', 'rolfhus'].includes(x.id) && !(S.mark?.agt || []).includes(x.id) && S.mynt >= x.pris && (S.respekt || 0) >= (x.respekt || 0) && (!x.kraver || (S.mark?.agt || []).includes(x.kraver)));   /* AX 90: bara mark som går att köpa (respekt och ordning) */
       if (t) { await gaTill(H.markTavla, 1.8, 'tavlan vid vägen'); H.kopMark(t.id); handling(`efterspelet: köper ${t.namn.toLowerCase()} (${t.pris} kr)`); await vanta(2); return; }
       handling(`efterspelet: dag ${S.dag}, ${Math.round(S.dagTid || 0)} s`); await tjana(S.mynt + 500, 'efterspelet'); return;
     }
@@ -527,7 +527,7 @@
   async function vantaPaMorgon() {
     const dag = S.dag; const slutDag = tid - dagStart;
     dagar.push({ dag, sek: slutDag, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat, vantan: vantanIdag, flask: { ...(S.fh?.dag?.[dag] || {}) } }); vantanIdag = 0;
-    let n = 0; while (n++ < 400 && (S.dag === dag || !H.ui.igang)) { await vanta(0.5); }
+    let n = 0; while (n++ < 400 && (S.dag === dag || !H.ui.igang)) { await vanta(0.5); if (n % 40 === 0) console.log(`[sim] väntar på morgonen (${n}) dag ${S.dag} igång ${H.ui.igang} paus ${H.pausad()} med ${!H.medEl2?.hidden} kort ${!H.ui.overlay?.hidden} panel ${!H.ui.butiksOverlay?.hidden} ${(document.querySelector('.ph-jul, .ph-kap, .ph-kapkort, .ph-rangkort, .fp-modal')?.className || '')}`); }
     await vanta(1); dagStart = tid; handling(`— dag ${S.dag} börjar —`);
   }
 
