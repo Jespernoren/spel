@@ -685,6 +685,7 @@ const STEG = [
   { del: R6, bild: 'byggsats:petgkvarn', text: () => S.rodKvarnKopt ? 'Ställ den röda kvarnen i röda linjen' : 'Köp den röda kvarnen hos Ali', klar: () => harPlacerat('petgkvarn') },
   { del: R6, text: 'Mal tunnan i PETG-kvarnen', klar: () => (S.stat.tungMalt || 0) >= 1 },
   { id: 'goran6', del: R6, bild: () => harRecept('fagelskramma') || harRecept('fagelbad') ? (harRecept('fagelbad') ? 'fagelbad' : 'fagelskramma') : 'fagelskramma', text: 'Ge Göran ett eget ställe: fågelskrämma eller fågelbad', klar: () => harPlacerat('fagelskramma') || harPlacerat('fagelbad'), tanke: 'Göran har ett hem nu. Bättre än jag hade för en vecka sen.' },   /* dag 6: måsen får ett hem */
+  { las: 'skrivare3', del: R6, bild: 'byggsats:skrivare3', text: 'Bygg Skrivare L', klar: () => harPlacerat('skrivare3') },   /* EE tillägg: Skrivare L av skrivarflaskhalsen dag 6–8 */
   sovSteg(6, R6),
   { del: R7, bild: 'byggsats:skrivarepetg', text: 'Bygg PETG-skrivaren', klar: () => harPlacerat('skrivarepetg') },
   { del: R7, bild: 'n2_vas', text: 'Printa en designvas i röd PETG', klar: () => printat('n2_vas') >= 1 || (S.saltTot?.n2_vas || 0) >= 1 },
@@ -694,7 +695,6 @@ const STEG = [
   sovSteg(7, R7),
   { las: 'magnet', del: R8, bild: 'byggsats:magnet', text: 'Bygg magnetpistolen', klar: () => !!S.magnet },
   { del: R8, text: () => `Mal tunga saker i PETG-kvarnen · ${Math.min(3, S.stat.tungMalt || 0)}/3`, klar: () => (S.stat.tungMalt || 0) >= 3 },
-  { las: 'skrivare3', del: R8, bild: 'byggsats:skrivare3', text: 'Bygg Skrivare L', klar: () => harPlacerat('skrivare3') },   /* EE tillägg: Skrivare L av skrivarflaskhalsen dag 6–8 */
   { las: 'bank', del: R8, bild: 'byggsats:bank', text: 'Bygg en batteribank', klar: () => harPlacerat('bank') },
   { id: 'hylla8', del: R8, bild: 'byggsats:hylla', text: 'Bygg hyllan', klar: () => !!S.hylla, tanke: 'En hylla. Jag har en hylla. Saker har en plats nu.' },   // dag 8: första tillägget i huset (CV)
   sovSteg(8, R8),
@@ -749,6 +749,49 @@ const STEG = [
   { del: M22, text: 'Tänd skylten vid vägen', klar: () => !!S.skyltTand || !!S.julFirad },
   { del: M22, text: 'Öppna dörren – gästerna kommer', klar: () => !!S.julFirad },
 ];
+/* ED6: hur-tanken före målet – en kort tanke om VAD man gör och VARFÖR, i ens egen röst (spelchatten skrev dem, listas i loggen för granskning) */
+const KNUFF_T = [
+  [(x) => x.id === 'printGrip', 'Ritningen är min. Nu printar jag gripen.'],
+  [(x) => x.id === 'kopSang', 'Jag kan inte sova på betongen en natt till. Ali har en säng. Typ.'],
+  [(x) => x.id === 'printSang', 'Sängen tar lång tid. Den är värd det.'],
+  [(x) => x.id === 'monteraMotor', 'Motorn ska sitta där veven sitter. Printa den först.'],
+  [(x) => x.text === 'Bygg ett arbetsbord', 'Skrivare M behöver ett bord. Golvet räcker inte.'],
+  [(x) => x.text === 'Lägg plåttak på skjulet', 'Det regnar in. Plåt på taket, så slipper jag sova i en pöl.'],
+  [(x) => x.id === 'pall', 'Jag behöver något att sitta på. En pall. Lagom ambitiöst.'],
+  [(x) => x.bild === 'byggsats:vaggar', 'Det drar genom väggarna. Isolering, och sen blir det varmt.'],
+  [(x) => x.id === 'dator', 'Alis pappas dator. Med den kan jag sälja på nätet.'],
+  [(x) => x.id === 'lampskarm', 'En lampskärm. Folk betalar för ljus som ser fint ut.'],
+  [(x) => x.bild === 'sackkarra', 'Tunnorna är för tunga att bära. Säckkärran får lyfta.'],
+  [(x) => x.bild === 'byggsats:petgkvarn', 'Tunnorna är röd plast. Bra plast. Den behöver en egen kvarn.'],
+  [(x) => x.text === 'Mal tunnan i PETG-kvarnen', 'Tunnan i den röda kvarnen. Den låter som ett åskväder.'],
+  [(x) => x.bild === 'byggsats:skrivarepetg', 'Röd plast kräver en egen skrivare. Den vanliga vill inte.'],
+  [(x) => x.text === 'Printa en designvas i röd PETG', 'En vas. Röd. Design. Ali kommer att låtsas att han förstår den.'],
+  [(x) => x.text === 'Sälj designvasen', 'Vasen till Ali. Han betalar mer för röd.'],
+  [(x) => x.id === 'saljlada', 'En säljlåda. Då slipper jag springa till Ali med varje vas.'],
+  [(x) => x.id === 'saljlada3', 'Vaserna i lådan. Ali hämtar själv.'],
+  [(x) => x.bild === undefined && /tunga saker/.test(String(x.text)), 'Mer tungt i den röda kvarnen. Magneten tar tunnorna.'],
+  [(x) => x.bild === 'n2_hjalm', 'Cykelhjälmar i röd plast. Säljer bra, säger Ali.'],
+  [(x) => x.id === 'paket9', 'Det har kommit beställningar. Paketen ska iväg från datorn.'],
+  [(x) => x.id === 'petgtorn9', 'Den röda kvarnen står och väntar på plats för rullarna. Ett större torn.'],
+  [(x) => x.id === 'tapeter', 'Skjulet ska kännas som ett rum. Tapeter.'],
+  [(x) => /varmt inför hösten/.test(String(x.text)), 'Hösten kommer. Tak, dörr och väggar, så klarar jag kylan.'],
+  [(x) => x.id === 'kolfkvarn', 'Kajakerna på tippen är kolfiber. Det behövs en kvarn som tål det.'],
+  [(x) => x.id === 'kolfband', 'Kajakerna är för stora att bära. Ett band från tippen.'],
+  [(x) => x.id === 'kajak3', 'Bandet går. Nu ska kajakerna upp på det.'],
+  [(x) => x.id === 'kolfrulle', 'Kvarnen mal. Svartgrått. Det tar sin tid.'],
+  [(x) => x.id === 'kolfskrivare', 'Kolfiber kräver en egen skrivare. Igen.'],
+  [(x) => x.id === 'kolfslang', 'Rullarna ska fram till skrivaren utan mig. En slang.'],
+  [(x) => x.id === 'kolfstol', 'En kolfiberstol. Lätt som en fjäder, hård som Rolf.'],
+  [(x) => x.text === 'Bygg gamingboden', 'En bod för spel. Jag förtjänar det.'],
+  [(x) => x.text === 'Ställ in en gamersak i boden', 'Boden är tom. Något att spela på.'],
+  [(x) => x.id === 'jet14', 'Jetmotorn ska sitta på kolfiberkvarnen. Vad kan gå fel.'],
+  [(x) => x.bild === 'byggsats:utlada', 'En leveranslåda. Då säljer fabriken själv.'],
+  [(x) => /mutor till Rolf/.test(String(x.text)), 'Rolf tippar mer om han får bullar. Ali har bullar.'],
+  [(x) => x.id === 'gamer', 'Boden ska vara full. Tre saker.'],
+  [(x) => x.bild === 'jacuzzi', 'En jacuzzi. På en soptipp. Varför inte.'],
+  [(x) => /Världens bästa fristad/.test(String(x.text)), 'Det fattas lite till. Mer trivsel, så är det klart.'],
+];
+for (const st of STEG) if (!st.knuff && !st.las && !st.sov) { const k = KNUFF_T.find(([m]) => { try { return m(st); } catch { return false; } }); if (k) st.knuff = k[1]; }
 const SI = Object.fromEntries(STEG.map((x, i) => [x.id, i]).filter(([id]) => id));   // steg-id → index (dag 1)
 const stegId = () => STEG[S.steg]?.id || null;
 // gården räknas som städad när skräpet är borta – tunga saker räknas först när du har kärran, och högen vid kvarnen (när den är full) är ditt lager
@@ -6102,7 +6145,7 @@ const upplast = (id) => !UPPLAS_FLASK[id] || flaskS().upp.includes(id) || (id ==
 // förutsättningar: kedjan går i ordning, och vissa saker kräver att det förra finns
 const FLASK_FORE = {
   ryggkorg: () => !!S.korg, magnet: () => (S.kapitel || 1) >= 2 && !!S.karra, matarband: () => !!S.kvarn.motor && !!S.karra,   /* A-050: sophållaren töms med kärran – båda dag 4 */ turbomotor: () => (S.kapitel || 1) >= 2,
-  vindsnurra2: () => antalSnurror() >= 1, vindsnurra3: () => antalSnurror() >= 2 && S.dag >= 5, sol: () => (S.kapitel || 1) >= 2 && antalSnurror() >= 2, trim_skrivare2: () => harPlacerat('skrivare2') && S.dag >= 4, bank: () => harPlacerat('sol'), solpark: () => harPlacerat('bank') || harPlacerat('sol'),
+  vindsnurra2: () => antalSnurror() >= 1, vindsnurra3: () => antalSnurror() >= 2 && S.dag >= 5, sol: () => (S.kapitel || 1) >= 2 && antalSnurror() >= 2, trim_skrivare2: () => harPlacerat('skrivare2') && S.dag >= 4, trim_skrivare3: () => S.dag >= 5, bank: () => harPlacerat('sol'), solpark: () => harPlacerat('bank') || harPlacerat('sol'),
   skrivare2: () => harPlacerat('bord'), trim_skrivare: () => S.dag >= 2,   /* EE: skrivartrim dag 2 – svaret på skrivarflaskhalsen innan Skrivare M */ skrivare3: () => S.dag >= 6 && harPlacerat('skrivare2'),   /* EE tillägg: Skrivare L av skrivarflaskhalsen dag 6–8 */ cykelbatteri: () => !!S.powerbank,
 };
 // EG 18: klagotanken – en gång, när flaskhalsen faktiskt känns
@@ -6124,6 +6167,7 @@ const KLAGO = {
   skrivare2: 'Kvarnen hinner mer än skrivaren. Jag behöver en skrivare till.',
   skrivare3: 'Skrivarna står aldrig still. Jag behöver en större.',
   trim_skrivare2: 'Skrivare M hinner inte heller. Den kunde gå fortare.',
+  trim_skrivare3: 'Fortare. Den kan gå ännu fortare. Jag hör det på den.',
   kruka: 'Nyckelringar, nyckelringar. Ali kan inte vilja ha fler.',
 };
 // ED 11: ursprunget presenterar lösningen (Alis sms – det som saknar röst listas i loggen)
@@ -6135,6 +6179,7 @@ const ALI_UPPLAS = {
   vindsnurra2: 'Ali här. En snurra till? Taket har plats för två. Vinden har inget emot det.',
   vindsnurra3: 'Ali här. En tredje snurra. Mitt på taket. Sen är taket fullt. Sen får solen ta över.',
   rullstall: 'Ali här. Rullställ. Fyra rullar i stället för en. Har ett på hyllan.',
+  trim_skrivare3: 'Ali här. Sista skrivartrimmen. Efter den går den inte att göra bättre. Då får du bygga en större.',
   trim_skrivare2: 'Ali här. Skrivartrim igen. Nästa nivå. Den här gången skruvade jag åt rätt håll.',
   trim_skrivare: 'Ali här. Skrivartrim. Jag skruvade på min egen skrivare i natt. Den går fortare nu. Nästan för fort.',
   bank: 'Ali här. Batteribank. Sparar solen till kvällen. Som en kyl, fast för ström.',
@@ -6149,7 +6194,7 @@ function flaskTick(dt, trampar, vevar) {
   if (!ui.igang || sover) return; flaskS();
   // vad tar stopp just nu?
   const stromStopp = skrivare.some((sk) => sk.jobb && sk.vantar === 'ingen ström!') || (S.kvarn.motor && S.kvarn.tratt > 0 && S.strom < 1);
-  if (stromStopp || (trampar && S.batteriKopt && stromBehov() > vindEffekt() + solEffekt())) flaskLagg('strom', dt);   /* EE tillägg: strömmen tar stopp även när man måste trampa för att maskinerna drar mer än vind och sol ger */
+  if (stromStopp || (S.batteriKopt && stromBehov() > vindEffekt() + solEffekt() && S.strom < stromMax() * 0.5)) flaskLagg('strom', dt);   /* EE tillägg: strömmen tar stopp även när batteriet sjunker under hälften för att maskinerna drar mer än vind och sol ger */
   if (trampar) flaskLagg('trampa', dt);
   if (S.kvarnStar && S.kvarn.tratt > 0 && extruderFull()) flaskLagg('skrivare', dt);   // kvarnen står med full hållare: skrivarna hinner inte
   if (vevar || (S.kvarn.motor && S.kvarn.tratt >= TRATT_MAX)) flaskLagg('mala', dt);   // vevar för hand, eller tratten är full med motor
@@ -6178,7 +6223,7 @@ function lasUpp(id, k, reserv = false) {
   handelse('upplast', { id, flask: k });
   if (id === 'kruka') S.krukaErbjuden = true;
   const ursprung = id === 'grip' ? (S.aliStoryVisad ? null : { lapp: 'salt' }) : id === 'kruka' ? { sms: ['ali', ALI_KRUKA], gava: 'visa:kruka' }
-    : ALI_SPECIAL[id] ? { sms: ['ali', ALI_SPECIAL[id]], gava: 'visa:byggsats:' + id } : ALI_UPPLAS[id] ? { sms: ['ali', ALI_UPPLAS[id]], gava: 'visa:byggsats:' + (/^vindsnurra/.test(id) ? 'vindsnurra' : id === 'trim_skrivare2' ? 'trim_skrivare' : id) } : null;
+    : ALI_SPECIAL[id] ? { sms: ['ali', ALI_SPECIAL[id]], gava: 'visa:byggsats:' + id } : ALI_UPPLAS[id] ? { sms: ['ali', ALI_UPPLAS[id]], gava: 'visa:byggsats:' + (/^vindsnurra/.test(id) ? 'vindsnurra' : /^trim_skrivare\d$/.test(id) ? 'trim_skrivare' : id) } : null;
   paket([KLAGO[id] && !reserv && { tanke: KLAGO[id] }, ursprung && { ...ursprung, villkor: () => id === 'kruka' || id === 'grip' || !kopt(id) }], { vikt: 'STORY', varfor: `EE: ${id} låses upp av flaskhalsen ${k}` });   /* SEKVENS: Ali presenterar inte det man redan köpt */
 }
 // låsta mål: medan målet väntar på sin flaskhals visar rutan vad man gör under tiden – och målet blir inte klart
@@ -7909,7 +7954,7 @@ function aliKopLista() {
   for (const [k, t] of Object.entries(TRIM)) {
     if (!t.tidig && !t.linje && S.kapitel < 3 && !(UPPLAS_FLASK['trim_' + k] && upplast('trim_' + k))) continue;   // trimning är kapitel 3 – utom när flaskhalsen har låst upp den tidigare (EE/EO 35: skrivartrim efter Skrivare M)
     if (t.syns && !t.syns()) continue;
-    if (k === 'skrivare' && trimNiva(k) >= 1 && S.kapitel < 3 && !upplast('trim_skrivare2')) continue;   /* EE tillägg: nästa skrivartrim kommer av skrivarflaskhalsen efter Skrivare M */
+    if (k === 'skrivare' && S.kapitel < 3 && ((trimNiva(k) >= 1 && !upplast('trim_skrivare2')) || (trimNiva(k) >= 2 && !upplast('trim_skrivare3')))) continue;   /* EE tillägg: nästa skrivartrim kommer av skrivarflaskhalsen efter Skrivare M */
     if (trimNiva(k) >= (t.max || 5)) continue;   /* EO 35: högst 5 nivåer – sedan växer man med fler maskiner */
     if (TRIM_SATS[k] && (S.trimKopt?.[k] || 0) > trimNiva(k)) continue;   /* EI22: en sats i taget – montera den du har först */
     add(t.linje === 'rod' ? 'Trimning – röda linjen' : t.linje === 'kolf' ? 'Trimning – kolfiberlinjen' : 'Trimning – blå linjen', 't:' + k, trimBild(k), `${t.namn} nivå ${trimNiva(k) + 1}`, t.beskr(trimNiva(k) + 1) + (trimNiva(k) ? ` (nu: ${t.beskr(trimNiva(k)).toLowerCase()})` : ''), trimPris(k), [['oandlig', `Nivå ${trimNiva(k)} → ${trimNiva(k) + 1}`]],
@@ -11245,6 +11290,7 @@ function visaIntro(klar) {
           if (INTRO[i] !== p) return; borja();
           textEl.querySelector(`[data-rad="${j}"]`)?.classList.add('syns'); logg('rad', j);
           scenEl.querySelectorAll(`[data-r="${p.logo ? Math.min(2, j) : j}"]`).forEach((x) => x.classList.add('rita')); logg('ritning', j);
+          { const slag = (x) => x.classList.contains('kal') ? 'kal' : 'bild', nya = new Set([...scenEl.querySelectorAll(`.radlager[data-r="${j}"]`)].map(slag)); scenEl.querySelectorAll('.radlager.rita').forEach((x) => { if (+x.dataset.r < j && nya.has(slag(x))) x.classList.remove('rita'); }); }   /* ED1: förra radens bild och kalender byts ut, de ligger inte kvar under */
           if (j === p.rader.length - 1 && p.logo) scenEl.querySelectorAll('polyline').forEach((x) => { x.style.stroke = '#ffe9a8'; });
         }, slut: () => { if (INTRO[i] !== p) return; logg('röstSlut', j); tid(nastaRad, INTRO_PAUS); } });
       };
