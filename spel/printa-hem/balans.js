@@ -235,7 +235,7 @@ export const FLASK_KEDJA = {
   mala: ['kvarnmotor', 'matarband', 'turbomotor'],
   trampa: ['vindsnurra'],
   strom: ['cykelbatteri', 'vindsnurra2', 'sol', 'bank', 'solpark'],
-  skrivare: ['rullstall', 'skrivare2', 'trim_skrivare', 'skrivare3'],   /* EE: skrivartrim som svar på skrivarflaskhalsen mellan M och L */
+  skrivare: ['rullstall', 'trim_skrivare', 'skrivare2', 'skrivare3'],   /* EE: skrivartrim dag 2, Skrivare M dag 3, L i kapitel 2 */
   inkomst: ['kruka'],
 };
 // reserv: står ett mål och väntar på sin flaskhals så här länge (s spelad tid) låses det upp ändå, så att ingen fastnar

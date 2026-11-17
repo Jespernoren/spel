@@ -28,7 +28,7 @@ console.log(JSON.stringify(m));
 ut.push(['tunga rullbandet → stor container (även byggsatsen)', !m.band && m.cont && !m.petgband && m.contInv]);
 ut.push(['sparfilen med kolfiberlinjen laddas', await H(() => !!window.__printahem.kolfKvarn?.() && window.__printahem.skrivare.some((x) => x.gen === 5))]);
 ut.push(['stora tratten borta', !m.stor && !m.stortratt]);
-ut.push(['jetmotorn på blå kvarnen → turbo', !m.jet && m.turbo]);
+ut.push(['jet/turbo på blå kvarnen → turbon i handen (EO 35)', !m.jet && !m.turbo && /turbomotor/.test(m.inv)]);
 ut.push(['knivarna på blå kvarnen borta', !m.kniv]);
 ut.push(['rullband, lastarm och slangfördelare på linje 1 borta (leveranslådan kvar)', !m.auto.some(Boolean) && m.lada]);
 ut.push([`högst 8 kajaker och 14 tunga (${m.kajak}, ${m.tunga})`, m.kajak <= 8 && m.tunga <= 14]);
