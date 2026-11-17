@@ -578,11 +578,11 @@ const F11 = 'Dag 11 – Kolfiberlinjen', F12 = 'Dag 12 – Kolfiberskrivaren', F
 const M16 = 'Dag 16 – Egen mark', M17 = 'Dag 17 – Ängen', M18 = 'Dag 18 – Diamantkvarnen och grunden', M19 = 'Dag 19 – Ett riktigt hus', M20 = 'Dag 20 – Vintern', M21 = 'Dag 21 – Folkbokförd', M22 = 'Dag 22 – Jul på Soptippsvägen 1';
 const K2 = R6;   // första dagen i kapitel 2 (äldre kod letar efter den)
 const KAPITEL = [null,
-  { namn: 'Ett hem att bo i', mal: 'Bygg ett hem där du inte fryser – och som är lite trevligt.' },
-  { namn: 'Röda fabriken', mal: 'Tunga saker blir röd PETG. Bygg en egen röd fabrik bredvid den blå – och klara hösten.' },
-  { namn: 'Fabriken sköter sig själv', mal: 'Bygg maskiner som jobbar åt dig – sen en gamingbod och en jacuzzi.' },
-  { namn: 'Folkbokförd', mal: 'Köp marken, bygg ett riktigt hus och bli skriven på Soptippsvägen 1 före jul.' }];
-const KAP1_NAMN = 'Ett hem att bo i', KAP1_MAL = 'Bygg ett hem där du inte fryser – och som är lite trevligt.';
+  { namn: 'Ett hem att bo i', mal: 'Ett varmt hem. Lite mysigt också.' },
+  { namn: 'Röda fabriken', mal: 'Tunga saker blir röd plast.' },
+  { namn: 'Fabriken sköter sig själv', mal: 'Maskiner som jobbar åt dig.' },
+  { namn: 'Folkbokförd', mal: 'Mark, ett hus och en adress före jul.' }];
+const KAP1_NAMN = 'Ett hem att bo i', KAP1_MAL = 'Ett varmt hem. Lite mysigt också.';   /* A-062: en mening per rad */
 const D1 = 'Dag 1 – Kom igång', N1 = 'Dag 2 – Tippen och Rolf', N2 = 'Dag 3 – En skrivare till och taket', N3 = 'Dag 4 – Kärran och mer vind', N4 = 'Dag 5 – Tätt och mysigt';
 const KAP1_DELAR = [D1, N1, N2, N3, N4];   // en dag = en nivå – du sover dig vidare
 const KAP_DELAR = [null, KAP1_DELAR, [R6, R7, R8, R9, R10], [F11, F12, F13, F14, F15], [M16, M17, M18, M19, M20, M21, M22]];
@@ -12376,7 +12376,7 @@ setInterval(() => {
     if (!ui.igang || sover || pausad) return;
     const p = spelare.pos, g = bengtHus.userData.glimt; g.visible = Math.sin(performance.now() / 700) > 0.6;
     const dHus = Math.hypot(p.x - BENGT_HUS.x, p.z - BENGT_HUS.z), dGrav = Math.hypot(p.x - BENGT_GRAV.x, p.z - BENGT_GRAV.z);
-    if (dHus < 14 && !harSagt(BENGT_T.kikare)) tanke(BENGT_T.kikare, 'A-058: frö – kikaren', 'REAKTION');
+    if (dHus < 14 && !harSagt(BENGT_T.kikare)) { tanke(BENGT_T.kikare, 'A-058: frö – kikaren', 'REAKTION'); froSett('kikare', false); }   /* A-057: samma frö som i skogen */
     if (dGrav < 6 && harSagt(BENGT_T.kikare) && !harSagt(BENGT_T.grav)) tanke(BENGT_T.grav, 'A-058: frö – graven', 'REAKTION');
     // K2, respekt ≥ 15: han står vid brevlådan och tittar, en gång
     if ((S.kapitel || 1) >= 2 && S.respekt >= 15 && !S.bengtLadaHmpf && Math.hypot(p.x - BENGT_LADA.x, p.z - BENGT_LADA.z) < 7) {
@@ -12561,7 +12561,7 @@ setInterval(() => { try {
     else if (hv.userData.sort === 'kajak' && !f.kanot) froSett('kanot');
   }
   if (!f.tipplager && TIPP_FRO.some((x) => x.g === hv || x.g?.visible && froNara(TIPP.x + x.g.position.x, TIPP.z + x.g.position.z, 2.2))) froSett('tipplager');
-  const fram = [-Math.sin(spelare.yaw), -Math.cos(spelare.yaw)], iSikte = (x, z) => { const dx = x - spelare.pos.x, dz = z - spelare.pos.z, d = Math.hypot(dx, dz); return d < 1.6 || (d < 5 && (dx * fram[0] + dz * fram[1]) / d > 0.6); };
+  const fram = [-Math.sin(spelare.yaw), -Math.cos(spelare.yaw)], iSikte = (x, z) => { const dx = x - spelare.pos.x, dz = z - spelare.pos.z, d = Math.hypot(dx, dz); return d < 3.5 || (d < 5 && (dx * fram[0] + dz * fram[1]) / d > 0.6); };
   for (const s of skrapLista) { if (!s.userData.tung || !iSikte(s.position.x, s.position.z)) continue; const id = s.userData.sort === 'kajak' ? 'kanot' : s.userData.sort === 'tunna' ? 'tunna' : s.userData.sort === 'rodback' ? 'rodback' : null; if (id && !f[id]) { froSett(id); break; } }
   if ((S.dag || 1) >= 2 && !S.grindKapad) { if (!f.grind && froNara(GRIND.x, GRIND.z, 4.5)) froSett('grind'); else if (f.grind && !f.baeck && froNara(GRIND.x, GRIND.z, 3)) froSett('baeck'); }
   if (!f.husvagn78 && !S.h78 && spelare.pos.x < BAS_GRANS.minX + 3.5 && spelare.pos.z > -2 && spelare.pos.z < 10) froSett('husvagn78');

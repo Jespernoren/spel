@@ -453,7 +453,9 @@
     const bild = typeof st.bild === 'function' ? st.bild() : st.bild;
     if (bild?.startsWith('byggsats:')) { const m = bild.split(':')[1]; await bygg(m); return; }
     if (/trivsel/.test(txt)) {
-      const t = H.nastaInred();
+      let t = H.nastaInred();
+      if (!t) t = Object.entries(H.VAROR).filter(([, v]) => v.placerbar && v.trivsel > 0 && !v.gava && (!v.syns || v.syns())).sort((a, b) => (a[1].recept || 0) / a[1].trivsel - (b[1].recept || 0) / b[1].trivsel)[0]?.[0];   /* AX g39: inget förslag kvar – ta det som ger mest trivsel per krona */
+      if (!t) { await tjana(S.mynt + 300, 'trivseln'); return; }
       if (t.startsWith('byggsats:')) await bygg(t.split(':')[1]);
       else { await kopRecept(t); await printa({ typ: t }); if (H.antalInv(t)) await placera(t); }
       return;
