@@ -450,6 +450,23 @@
       else { await kopRecept(t); await printa({ typ: t }); if (H.antalInv(t)) await placera(t); }
       return;
     }
+    // ---------- A-042: kapitel 4 – marken, huset, guldet, kaminen, folkbokföringen och julen ----------
+    { const MARK = [[/^Köp tomten du bor på/, 'egen'], [/^Köp ängen i öster/, 'oster'], [/^Bygg ett riktigt hus på ängen/, 'huset']];
+      for (const [re, id] of MARK) if (re.test(txt)) { const t = H.MARK_TOMTER.find((x) => x.id === id);
+        if (S.mynt < t.pris) { await tjana(t.pris, t.namn.toLowerCase()); return; }
+        await gaTill(H.markTavla, 1.8, 'tavlan vid vägen'); H.kopMark(id); handling(`köper ${t.namn.toLowerCase()} (${t.pris} kr)`); await vanta(2); return; } }
+    if (/^Flytta in i huset/.test(txt)) { await klick(H.storHus, 'huset', 3); await vanta(2); return; }
+    if (/^Mal en rulle guld/.test(txt)) {
+      if (H.antalInv('fynd4')) { valj('fynd4'); await klick(H.kvarn, 'kvarnen (guld)'); H.byt(0); return; }
+      if (H.antalInv('vaskpanna') && H.ader?.visible) { valj('vaskpanna'); await gaTill(H.ader, 1.2, 'ådern'); for (let i = 0; i < 4; i++) { H.vaskSlapp(1.9); await vanta(2); } H.byt(0); handling('vaskar guld i ådern'); return; }
+      await tjana(S.mynt + 300, 'väntar på guldet'); return;
+    }
+    if (/^Gör skjulet varmt inför vintern/.test(txt)) { if (!H.harPlacerat('kamin')) { await kopRecept('kamin'); await printa({ typ: 'kamin' }); if (H.antalInv('kamin')) await placera('kamin'); return; }
+      const t = H.nastaInred(); if (t?.startsWith('byggsats:')) { await bygg(t.split(':')[1]); return; } await tjana(S.mynt + 300, 'värmen'); return; }
+    if (/^Bli folkbokförd/.test(txt)) { await gaTill(H.markTavla, 1.8, 'tavlan vid vägen'); if (H.kanFolkbokfora()) { H.folkbokfor(); handling('blir folkbokförd'); } else await tjana(S.mynt + 500, 'folkbokföringen'); await vanta(2); return; }
+    if (/^Printa julbordet/.test(txt)) { await kopRecept('julbord'); await printa({ typ: 'julbord' }); return; }
+    if (/^Tänd skylten vid vägen/.test(txt)) { await klick(H.adressSkylt, 'skylten vid vägen', 1.8); await vanta(2); return; }
+    if (/^Öppna dörren – gästerna kommer/.test(txt)) { await klick(H.julKrans, 'kransen på dörren', 1.6); await vanta(3); for (let i = 0; i < 40 && !S.julFirad; i++) { await stangPopups(); await vanta(3); } return; }
     handling(`vet inte vad jag ska göra: "${txt}"`); await vanta(5);
   }
   // kärran: lyft det närmaste tunga skräpet och tippa det i PETG-kvarnen (finns den inte: vid kvarnen, B51)
