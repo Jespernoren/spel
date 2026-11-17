@@ -261,7 +261,13 @@
       const t = kand[0]; if (!t) { handling('inget att printa och sälja – väntar på sopbilen'); tjanaFel.clear(); await vanta(30); return; }
       handling(`tjänar pengar${varfor ? ' till ' + varfor : ''}: ${S.mynt}/${mal} kr → printar ${H.VAROR[t].namn.toLowerCase()} (${H.prisNu(t)} kr)`);
       const sk = ledig({ typ: t }); const antal = Math.max(1, Math.min(4, Math.floor(fil(sk) / H.VAROR[t].gram)));   // BP: även röd PETG
-      let gick = 0; for (let i = 0; i < antal && S.mynt + i * H.prisNu(t) < mal; i++) { if (!(await printa({ typ: t }))) break; gick++; }
+      let gick = 0;
+      const lediga = skrivareAlla(arPetg({ typ: t })).filter((x) => !x.jobb);
+      if (lediga.length >= 2) {   /* EE: en spelare med flera skrivare kör dem samtidigt – då syns strömmen som flaskhals */
+        const startade = []; for (const x of lediga) { if (S.mynt + startade.length * H.prisNu(t) >= mal) break; const sk2 = await printa({ typ: t }, { vantaKlart: false }); if (!sk2) break; startade.push(sk2); }
+        let v = 0; while (startade.some((x) => x.jobb) && v++ < 50) await vantaPaPrint(startade.find((x) => x.jobb));
+        for (const x of startade) await taUt(x); gick = startade.length;
+      } else for (let i = 0; i < antal && S.mynt + i * H.prisNu(t) < mal; i++) { if (!(await printa({ typ: t }))) break; gick++; }
       if (!gick && !H.antalInv(t)) { tjanaFel.add(t); handling(`${H.VAROR[t].namn.toLowerCase()} gick inte att printa – tar nästa`); }
       await ali(() => saljAllt(BEHALL().filter((x) => x !== t)), 'sälja');   // det som printades för pengar säljs (en pall/kruka får vara kvar till trivseln)
     }
