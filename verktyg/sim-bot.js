@@ -394,7 +394,8 @@
     if (/^Printa /.test(txt) && H.aktivGava()) { const v = H.aktivGava(); if (!H.antalInv(v)) await printa({ typ: v }); return; }
     if (/^Lägg .* i Rolfs postlåda/.test(txt)) { await gePresent(H.aktivGava()); return; }
     if (/^Hämta 5 skräp på soptippen/.test(txt)) { await plockaLass({ tippen: true }); await tomIKvarnen(); await mal(); return; }
-    if (/^Mal tunnan i PETG-kvarnen|^Mal tunga saker i PETG-kvarnen/.test(txt)) { await tungtTillPetg(); return; }
+    if (/^Lyft en tunna med säckkärran och mal/.test(txt) && !S.sackkarra) { const p = H.placerade.find((x) => x.typ === 'sackkarra'); if (p) { await klick(p.mesh, 'säckkärran i högen'); return; } }
+    if (/^Mal tunnan i PETG-kvarnen|^Mal tunga saker i PETG-kvarnen|^Lyft en tunna med säckkärran och mal/.test(txt)) { await tungtTillPetg(); return; }
     if (/^Printa och sälj en sak i röd PETG/.test(txt)) { if (!H.harPlacerat('skrivarepetg')) { await bygg('skrivarepetg'); return; } if (!H.harRecept('n2_vas')) await kopRecept('n2_vas'); if (!H.antalInv('n2_vas')) await printa({ typ: 'n2_vas' }); await ali(() => saljAllt(), 'sälja PETG'); return; }   // dag 6
     if (/^Bygg hyllan|^Bygg spisen och laga/.test(txt)) {   // dag 8 och 10: direktköp hos Ali, sedan laga mat
       const id = /hyllan/.test(txt) ? 'hylla' : 'spis', har = id === 'hylla' ? S.hylla : S.spis;

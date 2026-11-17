@@ -680,10 +680,9 @@ const STEG = [
   { ...sovSteg(5, N4), k1Slut: true, sms: ['mamma', 'Pappa kommer förbi i morgon. Han säger inget men han vill. ❤️'] },   // CM/CQ: förvarning kvällen före – pappa sms:ar aldrig själv   // B50: kapitel 1 slutar med telefonscenen och sömnen – kapitel 2 börjar morgonen dag 6
   // ---------- Kapitel 2 – Röda fabriken (dag 6–10) ----------
   { id: 'pappa6', del: R6, text: () => pappaBesok.fas === 'vantar' || pappaBesok.fas === 'kommer' ? 'Hälsa på pappa vid grinden' : pappaBesok.aktiv ? 'Prata med pappa' : 'Pappa kommer förbi idag', klar: () => !!S.pappaBesok },   // CM
-  { del: R6, bild: 'sackkarra', text: 'Lyft en tunna med säckkärran', klar: () => (S.stat.tunga || 0) >= 1 },
   { id: 'sol6', las: 'sol', del: R6, bild: 'byggsats:sol', text: 'Bygg en solpanel', klar: () => harPlacerat('sol'), tanke: 'Den röda kvarnen drar mer än vinden orkar. Solen får hjälpa till.' },   /* linje 2: solpanelen flyttad hit */
   { del: R6, bild: 'byggsats:petgkvarn', text: () => S.rodKvarnKopt ? 'Ställ den röda kvarnen i röda linjen' : 'Köp den röda kvarnen hos Ali', klar: () => harPlacerat('petgkvarn') },
-  { del: R6, text: 'Mal tunnan i PETG-kvarnen', klar: () => (S.stat.tungMalt || 0) >= 1 },
+  { del: R6, bild: 'sackkarra', text: 'Lyft en tunna med säckkärran och mal den i den röda kvarnen', klar: () => (S.stat.tungMalt || 0) >= 1 },   /* EE tillägg: ett moment färre dag 6, Skrivare L får plats */
   { id: 'goran6', del: R6, bild: () => harRecept('fagelskramma') || harRecept('fagelbad') ? (harRecept('fagelbad') ? 'fagelbad' : 'fagelskramma') : 'fagelskramma', text: 'Ge Göran ett eget ställe: fågelskrämma eller fågelbad', klar: () => harPlacerat('fagelskramma') || harPlacerat('fagelbad'), tanke: 'Göran har ett hem nu. Bättre än jag hade för en vecka sen.' },   /* dag 6: måsen får ett hem */
   { las: 'skrivare3', del: R6, bild: 'byggsats:skrivare3', text: 'Bygg Skrivare L', klar: () => harPlacerat('skrivare3') },   /* EE tillägg: Skrivare L av skrivarflaskhalsen dag 6–8 */
   sovSteg(6, R6),
@@ -761,9 +760,8 @@ const KNUFF_T = [
   [(x) => x.bild === 'byggsats:vaggar', 'Det drar genom väggarna. Isolering, och sen blir det varmt.'],
   [(x) => x.id === 'dator', 'Alis pappas dator. Med den kan jag sälja på nätet.'],
   [(x) => x.id === 'lampskarm', 'En lampskärm. Folk betalar för ljus som ser fint ut.'],
-  [(x) => x.bild === 'sackkarra', 'Tunnorna är för tunga att bära. Säckkärran får lyfta.'],
-  [(x) => x.bild === 'byggsats:petgkvarn', 'Tunnorna är röd plast. Bra plast. Den behöver en egen kvarn.'],
-  [(x) => x.text === 'Mal tunnan i PETG-kvarnen', 'Tunnan i den röda kvarnen. Den låter som ett åskväder.'],
+    [(x) => x.bild === 'byggsats:petgkvarn', 'Tunnorna är röd plast. Bra plast. Den behöver en egen kvarn.'],
+  [(x) => /^Lyft en tunna med säckkärran och mal/.test(String(x.text)), 'Tunnorna är för tunga att bära. Säckkärran lyfter, den röda kvarnen mal.'],
   [(x) => x.bild === 'byggsats:skrivarepetg', 'Röd plast kräver en egen skrivare. Den vanliga vill inte.'],
   [(x) => x.text === 'Printa en designvas i röd PETG', 'En vas. Röd. Design. Ali kommer att låtsas att han förstår den.'],
   [(x) => x.text === 'Sälj designvasen', 'Vasen till Ali. Han betalar mer för röd.'],
@@ -6206,7 +6204,7 @@ function flaskTick(dt, trampar, vevar) {
     if (FLASK_FORE[id] && !FLASK_FORE[id]()) continue;
     const malIndex = STEG.findIndex((x) => x.las === id);
     if (malIndex >= 0 && S.steg < malIndex) continue;   // story-ordningen: målet kommer inte före sin plats i dagen
-    const flask = (S.fh.sedan[k] || 0) >= B.FLASK_GRANS[k], reserv = (S.fh.vantat[id] || 0) >= B.FLASK_RESERV;
+    const flask = Math.min(S.fh.sedan[k] || 0, k === 'bara' || k === 'inkomst' ? Infinity : S.fh.dag[S.dag]?.[k] || 0) >= B.FLASK_GRANS[k],   /* EE: tidsflaskhalsarna räknar dagens stopp – nästa sak kommer när det börjar ta stopp i dag, inte av gårdagens */ reserv = (S.fh.vantat[id] || 0) >= B.FLASK_RESERV;
     if (flask || reserv) lasUpp(id, k, reserv);
   }
   // FAST: en tidsflaskhals har tagit stopp över 4 min sedan förra upplåsningen utan att något kan låsas upp
@@ -7311,7 +7309,7 @@ const VARN = { ryggsack: 'Ryggsäcken. Tryck E så öppnar jag den.', vrid: 'Try
 const varnadTid = {};
 function varna(id) {
   const t = VARN[id];
-  if (id === 'full' && varnadTid.fullSett) { ljud.fel(); const h = document.querySelector('.fp-hotbar .vald, .hotbar .vald, .fp-hotbar'); if (h?.animate) h.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }], { duration: 260 }); return; }   /* EG 18: "Fullt i händerna" bara första gången, sedan skakar handen */
+  if (id === 'full' && varnadTid.fullSett) { textLogg('toast', 'skak', 'handen skakar: fullt'); ljud.fel(); const h = document.querySelector('.fp-hotbar .vald, .hotbar .vald, .fp-hotbar'); if (h?.animate) h.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }], { duration: 260 }); return; }   /* EG 18: "Fullt i händerna" bara första gången, sedan skakar handen */
   if (id === 'full') varnadTid.fullSett = 1;
   ui.toast(t, 'fel'); ljud.fel();
   if (performance.now() - (varnadTid[id] || -1e9) > 6000 && !pratarVem) { varnadTid[id] = performance.now(); prata('du', t); }
@@ -9698,6 +9696,7 @@ for (const namn of ['klar', 'plock', 'fel', 'stor', 'mynt', 'kop', 'placera', 'b
   ljud[namn] = (...a) => { if (performance.now() - klickTid < 1500 || anvandNere) return orig(...a); };
 }
 function korsToast(text, typ = '') {
+  textLogg('toast', typ, String(text), 'kors');
   document.querySelector('.hud-kors-lapp')?.remove();
   const d = document.createElement('div'); d.className = 'hud-plats hud-kors-lapp ' + typ; d.textContent = rens(text);
   document.body.appendChild(d); setTimeout(() => { d.style.opacity = '0'; }, 2000); setTimeout(() => d.remove(), 2500);
@@ -9720,6 +9719,7 @@ function skrivarNotis(sk, text, typ = '', viktig = false, slag = '') {
   } catch { /* skrivaren finns inte längre */ }
 }
 function platsToast(text, obj, typ = '') {
+  textLogg('toast', typ, String(text), 'plats');
   platsLappar.forEach((l) => { if (l.obj === obj) l.slut = 0; });
   const d = document.createElement('div'); d.className = 'hud-plats ' + typ; d.textContent = rens(text);
   document.body.appendChild(d);
