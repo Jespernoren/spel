@@ -38,6 +38,8 @@ ut.push(['inga varningsrutor eller flaskhals i HUD:en', await H(() => ['.hud-fla
 // Ali vill ha idag i skrivarmenyn
 const ali = await H(() => { const h = window.__printahem, S = h.S; h.ui.stangButik?.(); S.dag = Math.max(2, S.dag); S.aliVill = { dag: S.dag, typ: 'nyckelring' }; const t = h.aliVill(); if (!t) return { t }; if (!S.ritningar.includes(t)) S.ritningar.push(t); const sk = h.skrivare.find((x) => x.id === 'g1'); sk.fil = 5000; h.oppnaPrintMeny(sk); const el = document.querySelector(`[data-printa][data-vara="${t}"]`)?.closest('.pk'); const forsta = document.querySelector('.pk [data-printa]'); return { t, kant: el?.classList.contains('ali'), etikett: /Ali vill ha idag/.test(el?.querySelector('.pk-list')?.textContent || ''), pris: el?.querySelector('.pk-pris s')?.textContent, forst: forsta?.dataset.vara}; });
 await p.waitForTimeout(800); await p.screenshot({ path: '/home/claude/jespernoren/spel/verktyg/test-em-printer.png' });   /* EM: skärmdump av printern */
+await H(() => { const h = window.__printahem, S = h.S; for (const r of ['sang', 'grip', 'kvarnmotor']) if (!S.ritningar.includes(r)) S.ritningar.push(r); S.post = S.post || {}; h.oppnaPrintMeny(h.skrivare.find((x) => x.id === 'g1')); });
+await p.waitForTimeout(800); await p.screenshot({ path: '/home/claude/jespernoren/spel/verktyg/test-em-printer-alla.png', fullPage: true });   /* EM: sälj-, skjul- och ritningskort */
 console.log(JSON.stringify(ali));
 ut.push([`Ali vill ha idag: gul kant, etikett, överstruket pris (${ali.pris}) och överst`, !ali.t || (ali.kant && ali.etikett && !!ali.pris)]);
 for (const [t, ok] of ut) console.log(ok ? '✓' : '✗', t);

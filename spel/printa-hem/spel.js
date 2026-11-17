@@ -7422,7 +7422,7 @@ function printKort(x, sk, { forStor, kanInte, saknarRulle }) {
   const syfte = salj ? `<div class="pk-pris salj">Säljs för ${krT(prisNu(x.id))} kr${prisNu(x.id) !== v.pris ? ` <s>${krT(v.pris)}</s>` : ''}</div>`
     : x.flik === 'gava' ? `<div class="pk-pris till"><b>${x.id === aktivGava() ? 'Gåva till Rolf' : 'Gåva'}</b><small>${rens(String(x.info || '').replace(/^[^\p{L}]+/u, ''))}</small></div>`
     : x.flik === 'hem' ? `<div class="pk-pris till"><b>Till skjulet</b><small>${x.id === 'sang' ? 'Ställ den i skjulet' : v?.lyx ? 'Ställ den i din fristad' : MASKINER[x.id]?.hem ? 'Klicka på skjulet med den i handen' : 'Ställ den där du vill'}</small></div>`
-    : `<div class="pk-pris till"><b>Till fabriken</b><small>${rens(MONTERA_TIPS[k] ? MONTERA_TIPS[k].replace(/^[^\p{L}]+/u, '').replace(/^.*? – /, '') : TA_PA[k] ? 'Klicka för att ta på dig den' : MONTERA[k] ? MONTERA[k].namn : 'Ställ den på gården')}</small></div>`;
+    : `<div class="pk-pris till"><b>${TA_PA[k] ? 'Att bära' : 'Till fabriken'}</b><small>${rens(MONTERA_TIPS[k] ? MONTERA_TIPS[k].replace(/^[^\p{L}]+/u, '').replace(/^.*? – /, '') : TA_PA[k] ? 'Klicka för att ta på dig den' : MONTERA[k] ? MONTERA[k].namn : 'Ställ den på gården')}</small></div>`;
   const hinder = forStor(x) ? `Kräver skrivare ${STORLEK_NAMN[storlekFor(x.id)]}` : saknarRulle(x) ? `Saknar ${nivaText(saknarRulle(x)).toLowerCase()}` : kanInte(x) ? 'Plasten fylls på – printen startar och pausar tills kvarnen fyller på' : '';
   return `<div class="pk${ali ? ' ali' : ''}" data-kort>${ali ? `<div class="pk-list">Ali vill ha idag · +${Math.round((ALI_VILL_BONUS - 1) * 100)} %</div>` : '<div class="pk-list tom"></div>'}
     <div class="pk-bild">${bp ? bpImg(k, 64) : tumme(k, 64) + '<span class="pk-igen" title="Har printats förut">⟳</span>'}</div>
@@ -7445,7 +7445,7 @@ function oppnaPrintMeny(sk) {
   const lagg = (flik, id, attr, ikon, namn, gram, tid, info, pris) => saker.push({ flik, id, attr, ikon, namn, gram, tid, info, pris });
   const petg = !!genNiva(sk), gn = genNiva(sk);
   for (const [id, v] of Object.entries(VAROR)) {
-    if (v.kop) continue;
+    if (v.kop || !v.gram) continue;   /* A-041: plastspagetti (gram 0) går inte att printa */
     if (petg && v.tradgard) { if (v.niva === gn && harRecept(id) && v.syns()) lagg('gava', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, '🌹 Till Birgittas trädgård bakom tippen'); continue; }
     if (petg) { if (v.niva === gn && harRecept(id)) lagg('salj', id, `data-vara="${id}"`, ikonHtml(id, 54), v.namn, v.gram, v.tid, `🪙 ${prisNu(id)} kr hos Ali idag${id === aliVill() ? ' ⭐ Ali vill ha den idag (+50 %)' : ''} · ${Math.round(v.pris / v.gram * RULLE)} kr per rulle röd PETG${v.trivsel ? ' · kan också ställas ut' : ''}`, prisNu(id)); continue; }
     if (v.niva === 2 || v.niva === 3) continue;   // röd PETG och kolfiber printas bara på sina egna skrivare
