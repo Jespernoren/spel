@@ -5,6 +5,13 @@
 // (Punkt T i bygglistan: bara flytt, inga värden ändrade.)
 // ============================================================================
 
+// ---------- A-053: Rudolfs böter ----------
+// Vartannat ja till Rolfs fiffel ger böter: 30 % av pengarna man har just då, minst 100 kr och högst 2 500 kr,
+// aldrig mer än man har. Avrundas till jämna 50 kr.
+export const BOTER_ANDEL = 0.30;
+export const BOTER_MIN = 100;
+export const BOTER_MAX = 2500;
+
 // ---------- Priser hos Ali ----------
 // PRIS_SKALA: Ali betalar runt 60 kr per rulle i början, så ritningar och lyx-recept är skalade efter det.
 // Varje `ritning` i MASKIN_SIFFROR och varje `recept` på en lyxvara (VAROR med lyx: true) som är 150 kr
