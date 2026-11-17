@@ -6065,7 +6065,7 @@ const upplast = (id) => !UPPLAS_FLASK[id] || flaskS().upp.includes(id) || (id ==
 const FLASK_FORE = {
   ryggkorg: () => !!S.korg, magnet: () => (S.kapitel || 1) >= 2 && !!S.karra, matarband: () => !!S.kvarn.motor && !!S.karra,   /* A-050: sophållaren töms med kärran – båda dag 4 */ turbomotor: () => (S.kapitel || 1) >= 2,
   vindsnurra2: () => antalSnurror() >= 1, sol: () => (S.kapitel || 1) >= 2, bank: () => harPlacerat('sol'), solpark: () => harPlacerat('bank') || harPlacerat('sol'),
-  skrivare2: () => harPlacerat('bord'), skrivare3: () => (S.kapitel || 1) >= 2 && harPlacerat('skrivare2'), cykelbatteri: () => !!S.powerbank,
+  skrivare2: () => harPlacerat('bord'), trim_skrivare: () => harPlacerat('skrivare2'), skrivare3: () => (S.kapitel || 1) >= 2 && harPlacerat('skrivare2'), cykelbatteri: () => !!S.powerbank,
 };
 // EG 18: klagotanken – en gång, när flaskhalsen faktiskt känns
 const KLAGO = {
@@ -6094,6 +6094,7 @@ const ALI_UPPLAS = {
   vindsnurra: 'Ali här. Vindsnurra till cykeln. Vinden trampar åt dig. Den är lat, men den jobbar gratis.',
   vindsnurra2: 'Ali här. En snurra till? Taket har plats för två. Vinden har inget emot det.',
   rullstall: 'Ali här. Rullställ. Fyra rullar i stället för en. Har ett på hyllan.',
+  trim_skrivare: 'Ali här. Skrivartrim. Jag skruvade på min egen skrivare i natt. Den går fortare nu. Nästan för fort.',
   bank: 'Ali här. Batteribank. Sparar solen till kvällen. Som en kyl, fast för ström.',
   solpark: 'Ali här. Solcellspark. Sex paneler på rad. Solen jobbar dubbelt nu.',
 };
@@ -6122,7 +6123,8 @@ function flaskTick(dt, trampar, vevar) {
     if (flask || reserv) lasUpp(id, k, reserv);
   }
   // FAST: en tidsflaskhals har tagit stopp över 4 min sedan förra upplåsningen utan att något kan låsas upp
-  for (const k of ['strom', 'skrivare', 'mala', 'trampa']) { const sed = S.fh.sedan[k] || 0, steg = Math.floor(sed / 240); if (steg >= 1 && steg > (S.fh.fastLogg?.[k] || 0)) { S.fh.fastLogg = { ...(S.fh.fastLogg || {}), [k]: steg }; regelvakt.brott('FAST', `${k} har tagit stopp ${Math.round(sed)} s utan att något låses upp (nästa: ${B.FLASK_KEDJA[k].find((x) => !S.fh.upp.includes(x)) || 'inget kvar'})`); } }
+  if (S.fh.fastDag !== S.dag) { S.fh.fastDag = S.dag; S.fh.fastLogg = {}; }
+  for (const k of ['strom', 'skrivare', 'mala', 'trampa']) { const sed = Math.min(S.fh.sedan[k] || 0, S.fh.dag[S.dag]?.[k] || 0),   /* FAST räknas inom dagen: över 4 min stopp i dag utan att något nytt kommer */ steg = Math.floor(sed / 240); if (steg >= 1 && steg > (S.fh.fastLogg?.[k] || 0)) { S.fh.fastLogg = { ...(S.fh.fastLogg || {}), [k]: steg }; regelvakt.brott('FAST', `${k} har tagit stopp ${Math.round(sed)} s utan att något låses upp (nästa: ${B.FLASK_KEDJA[k].find((x) => !S.fh.upp.includes(x)) || 'inget kvar'})`); } }
   if ((flaskSpar += dt) > 5) { flaskSpar = 0; sparaSnart(); }
 }
 function lasUpp(id, k, reserv = false) {
@@ -6134,7 +6136,7 @@ function lasUpp(id, k, reserv = false) {
   if (id === 'kruka') S.krukaErbjuden = true;
   const ursprung = id === 'grip' ? (S.aliStoryVisad ? null : { lapp: 'salt' }) : id === 'kruka' ? { sms: ['ali', ALI_KRUKA], gava: 'visa:kruka' }
     : ALI_SPECIAL[id] ? { sms: ['ali', ALI_SPECIAL[id]], gava: 'visa:byggsats:' + id } : ALI_UPPLAS[id] ? { sms: ['ali', ALI_UPPLAS[id]], gava: 'visa:byggsats:' + id } : null;
-  paket([KLAGO[id] && !reserv && { tanke: KLAGO[id] }, ursprung], { vikt: 'STORY', varfor: `EE: ${id} låses upp av flaskhalsen ${k}` });
+  paket([KLAGO[id] && !reserv && { tanke: KLAGO[id] }, ursprung && { ...ursprung, villkor: () => id === 'kruka' || id === 'grip' || !kopt(id) }], { vikt: 'STORY', varfor: `EE: ${id} låses upp av flaskhalsen ${k}` });   /* SEKVENS: Ali presenterar inte det man redan köpt */
 }
 // låsta mål: medan målet väntar på sin flaskhals visar rutan vad man gör under tiden – och målet blir inte klart
 const FLASK_FYLL = { bara: 'Plocka skräp och mal det', mala: 'Mal skräp, printa och sälj', trampa: 'Trampa, printa och sälj', strom: 'Printa och sälj', skrivare: 'Printa och sälj', inkomst: 'Printa och sälj nyckelringar' };
@@ -7845,7 +7847,7 @@ function aliKopLista() {
       () => { if (kedjaLas(id)) { aliRepl = kedjaLas(id); return false; } S.ritningar.push('recept:' + id); aliRepl = `${v.namn}? Bra val. Folk köper sånt. Jag vet inte varför.`; return true; });
   }
   for (const [k, t] of Object.entries(TRIM)) {
-    if (!t.tidig && S.kapitel < 3) continue;   // trimning är kapitel 3 – rullhållaren (tidig) får finnas från start
+    if (!t.tidig && S.kapitel < 3 && !(UPPLAS_FLASK['trim_' + k] && upplast('trim_' + k))) continue;   // trimning är kapitel 3 – utom när flaskhalsen har låst upp den tidigare (EE/EO 35: skrivartrim efter Skrivare M)
     if (t.syns && !t.syns()) continue;
     if (trimNiva(k) >= (t.max || 5)) continue;   /* EO 35: högst 5 nivåer – sedan växer man med fler maskiner */
     if (TRIM_SATS[k] && (S.trimKopt?.[k] || 0) > trimNiva(k)) continue;   /* EI22: en sats i taget – montera den du har först */

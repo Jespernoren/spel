@@ -21,23 +21,24 @@
   "var": "Rolfs brev och tack i postlådan (kapitel 1)"
  },
  {
-  "id": "rolf-ce0df756",
+  "id": "rolf-b29f8163",
   "figur": "rolf",
-  "text": "Nämen. Kajsa knuffa ner min flasköppnare i tippen. Kan du göra en ny, mä magnet? Kärran vid lådan ä din. /Rolf",
-  "kalla": "Kajsa knuffa ner min flasköppnare i tippen. Kan du göra en ny, me magnet? Kärran vid lådan ä din. /Rolf",
+  "text": "Nämen. Kajsa knufaf ner min flasköppnare i tippen. Kan du göra en ny, mä magnet? /Rolf\n*knuffa",
+  "kalla": "Kajsa knuffa ner min flasköppnare i tippen. Kan du göra en ny, me magnet? /Rolf",
   "var": "Rolfs brev och tack i postlådan (kapitel 1)"
  },
  {
-  "id": "rolf-3887bd8b",
+  "id": "rolf-34b4d88e",
   "figur": "rolf",
-  "text": "PERFEKT öppnare! Skriv ditt nummer på en lapp i lådan, så slipper ja skriva brev.. MVH ROLF",
-  "kalla": "PERFEKT öppnare! Skriv ditt nummer på en lapp i lådan, så slipper ja skriva brev. /Rolf",
+  "text": "Nämen. Kajsa knuffa ner min flasköppnare i tippen. Kan du göra en ny, mä magnet? /Rolf",
+  "kalla": "Kajsa knuffa ner min flasköppnare i tippen. Kan du göra en ny, me magnet? /Rolf",
   "var": "Rolfs brev och tack i postlådan (kapitel 1)"
  },
  {
-  "id": "rolf-13f1ad10",
+  "id": "rolf-3bc3de15",
   "figur": "rolf",
-  "text": "PERFEKT öppnare! Skriv ditt nummer på en lapp i lådan, så slipper ja skriva brev. /Rolf",
+  "text": "Nämen. PERFEKT öppnare! Kärran vid lådan ä din. Den gnisslar. Precis som ja. Skriv ditt nummer på en lapp, så slipper ja skriva brev. /Rolf",
+  "kalla": "PERFEKT öppnare! Kärran vid lådan ä din. Den gnisslar. Precis som ja. Skriv ditt nummer på en lapp, så slipper ja skriva brev. /Rolf",
   "var": "Rolfs brev och tack i postlådan (kapitel 1)"
  },
  {
@@ -1870,6 +1871,12 @@
   "var": "Sms med svarsalternativ och småprat"
  },
  {
+  "id": "pappa-fea79df9",
+  "figur": "pappa",
+  "text": "Scanian står i garaget. Den går inte. Den ska gå.",
+  "var": "Sms med svarsalternativ och småprat"
+ },
+ {
   "id": "bror-a391efda",
   "figur": "bror",
   "text": "Mamma pratar bara om sylten. Pappa har slutat säga \"aha, vad lugnt då\". Han säger bara \"mm\". Det är värre.",
@@ -2183,6 +2190,12 @@
   "id": "ali-be144f16",
   "figur": "ali",
   "text": "Mammas sylt? Sån skit köper jag inte. Ät upp den.",
+  "var": "Repliker ute i världen och när Ali säger nej"
+ },
+ {
+  "id": "ali-6460ff38",
+  "figur": "ali",
+  "text": "Den där köper jag inte. Den är din mammas.",
   "var": "Repliker ute i världen och när Ali säger nej"
  },
  {
@@ -4402,9 +4415,9 @@
   "var": "Dina tankar, tips och varningar"
  },
  {
-  "id": "du-7cb7423e",
+  "id": "du-a542c120",
   "figur": "du",
-  "text": "Nu sparas lite ström. En nyckelring, typ.",
+  "text": "Nu sparas lite ström. En nyckelring, typ. Framtiden är här, och den sitter fast med eltejp.",
   "var": "Dina tankar, tips och varningar"
  },
  {
@@ -5331,6 +5344,12 @@
   "var": "Sms i kompostera"
  },
  {
+  "id": "mamma-108949b2",
+  "figur": "mamma",
+  "text": "Vem har stickat det här?? Det är FINT. Jag gör klart den.",
+  "var": "Sms i startaPappaBesok"
+ },
+ {
   "id": "rolf-d3e382b3",
   "figur": "rolf",
   "text": "Jo jo. Hoppa in. Ja väntar. Nåja, två minuter. /R",
@@ -5629,6 +5648,19 @@
   "id": "pappa-bade44bc",
   "figur": "pappa",
   "text": "Ja … är stolt över dej. Aha. Vad lugnt då.",
+  "var": "JULSCEN_REPLIK"
+ },
+ {
+  "id": "rolf-5b011b94",
+  "figur": "rolf",
+  "text": "Jo jo.. …Dä ä fredag nånstans.",
+  "kalla": "…Dä ä fredag nånstans.",
+  "var": "JULSCEN_REPLIK"
+ },
+ {
+  "id": "rolf-d0492def",
+  "figur": "rolf",
+  "text": "Precis som 1987.",
   "var": "JULSCEN_REPLIK"
  },
  {
