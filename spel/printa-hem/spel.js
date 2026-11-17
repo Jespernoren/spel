@@ -561,7 +561,7 @@ const rolfSteg = (i, del) => {
   const v = () => ROLF[i].vara, nm = () => VAROR[v()].namn.toLowerCase();
   return [
     // tre steg: brevet (med 3D-modellen) → printa → lägg i lådan. Rolfs tack ligger i lådan nästa morgon.
-    { mom: 'Rolfs brev', del, text: () => S.brevVantar?.lapp === 'rolf:' + i ? 'Rolf lämnar något med sopbilen' : 'Läs brevet i Rolfs postlåda', klar: () => S.rolf.i > i || (S.rolf.i === i && (S.rolf.aktiv || S.post.tillRolf === v() || S.rolf.hamtad === i)), startPost: 'rolf:' + i },
+    { mom: 'Rolfs brev', del, text: () => S.brevVantar?.lapp === 'rolf:' + i ? 'Vänta på sopbilen. Den lämnar något.' : 'Läs brevet i Rolfs postlåda', klar: () => S.rolf.i > i || (S.rolf.i === i && (S.rolf.aktiv || S.post.tillRolf === v() || S.rolf.hamtad === i)), startPost: 'rolf:' + i },
     { mom: 'Rolfs brev', del, text: () => `Printa ${nm()}`, klar: () => S.rolf.i > i || harGava(v()) || S.rolf.hamtad === i },
     { mom: 'Rolfs brev', del, text: () => `Ge Rolf ${nm()}`, klar: () => S.rolf.i > i || S.post.tillRolf === v() || S.rolf.hamtad === i },
   ];
@@ -12566,7 +12566,7 @@ setInterval(() => { try {
     else if (hv.userData.sort === 'kajak' && !f.kanot) froSett('kanot');
   }
   if (!f.tipplager && TIPP_FRO.some((x) => x.g === hv || x.g?.visible && froNara(TIPP.x + x.g.position.x, TIPP.z + x.g.position.z, 2.2))) froSett('tipplager');
-  const fram = [-Math.sin(spelare.yaw), -Math.cos(spelare.yaw)], iSikte = (x, z) => { const dx = x - spelare.pos.x, dz = z - spelare.pos.z, d = Math.hypot(dx, dz); return d < 3.5 || (d < 5 && (dx * fram[0] + dz * fram[1]) / d > 0.6); };
+  const fram = [-Math.sin(spelare.yaw), -Math.cos(spelare.yaw)], iSikte = (x, z) => { const dx = x - spelare.pos.x, dz = z - spelare.pos.z, d = Math.hypot(dx, dz); return d < 3.5 || (d < 5 && (dx * fram[0] + dz * fram[1]) / d > 0.6) || (k === 1 && (S.dag || 1) >= 3 && d < 8); };   // K1 dag 3–5: man rör sig på tippen – då syns de
   for (const s of skrapLista) { if (!s.userData.tung || !iSikte(s.position.x, s.position.z)) continue; const id = s.userData.sort === 'kajak' ? 'kanot' : s.userData.sort === 'tunna' ? 'tunna' : s.userData.sort === 'rodback' ? 'rodback' : null; if (id && !f[id]) { froSett(id); break; } }
   if ((S.dag || 1) >= 2 && !S.grindKapad) { if (!f.grind && froNara(GRIND.x, GRIND.z, 4.5)) froSett('grind'); else if (f.grind && !f.baeck && froNara(GRIND.x, GRIND.z, 3)) froSett('baeck'); }
   if (!f.husvagn78 && !S.h78 && spelare.pos.x < BAS_GRANS.minX + 3.5 && spelare.pos.z > -2 && spelare.pos.z < 10) froSett('husvagn78');

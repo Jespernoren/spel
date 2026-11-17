@@ -403,7 +403,7 @@
     }
     if (/^Städa (klart )?gården/.test(txt)) { if (H.extruderFull() && S.kvarn.tratt >= H.TRATT_MAX - 1) { await tjana(S.mynt + 60, 'kvarnen är full – printa av filamentet'); return; } const sk = ledig(); await plockaLass({}); await tomIKvarnen(); await mal(); return; }
     if (/^Skicka två paket från datorn/.test(txt)) { webbDag = 0; await webbJobb(); await tjana(S.mynt + 60, 'väntar på fler beställningar'); await vanta(2); return; }   // dag 9-målet
-    if (/^Sopbilen kommer förbi under dagen|^Rolf lämnar något med sopbilen/.test(txt)) { await tjana(S.mynt + 60, 'väntar på sopbilen (BO)'); await vanta(1); return; }   // BO: gör något vettigt medan brevet är på väg
+    if (/^Sopbilen kommer förbi under dagen|^Rolf lämnar något med sopbilen|^Vänta på sopbilen/.test(txt)) { await tjana(S.mynt + 60, 'väntar på sopbilen (BO)'); await vanta(1); return; }   // BO: gör något vettigt medan brevet är på väg
     if (/^Läs brevet i Rolfs postlåda/.test(txt)) { await klick(H.postlada, 'Rolfs postlåda'); await stangPopups(); return; }
     if (/^Printa /.test(txt) && H.aktivGava()) { const v = H.aktivGava(); if (!H.antalInv(v)) await printa({ typ: v }); return; }
     if (/^Lägg .* i Rolfs postlåda|^Ge Rolf (?!en kapskiva)/.test(txt)) { await gePresent(H.aktivGava()); return; }
