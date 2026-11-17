@@ -12565,7 +12565,7 @@ setInterval(() => { try {
     else if (hv.userData.sort === 'rodback' && !f.rodback) froSett('rodback');
     else if (hv.userData.sort === 'kajak' && !f.kanot) froSett('kanot');
   }
-  if (!f.tipplager && TIPP_FRO.some((x) => x.g === hv || x.g?.visible && froNara(TIPP.x + x.g.position.x, TIPP.z + x.g.position.z, 2.2))) froSett('tipplager');
+  if (!f.tipplager && S.tippNyckel && (TIPP_FRO.some((x) => x.g === hv) || froNara(TIPP.x, TIPP.z, TIPP.r + 1.5))) froSett('tipplager');   // de pressade balarna i högen syns så fort man står på tippen
   const fram = [-Math.sin(spelare.yaw), -Math.cos(spelare.yaw)], iSikte = (x, z) => { const dx = x - spelare.pos.x, dz = z - spelare.pos.z, d = Math.hypot(dx, dz); return d < 3.5 || (d < 5 && (dx * fram[0] + dz * fram[1]) / d > 0.6) || (k === 1 && (S.dag || 1) >= 3 && d < 8); };   // K1 dag 3–5: man rör sig på tippen – då syns de
   for (const s of skrapLista) { if (!s.userData.tung || !iSikte(s.position.x, s.position.z)) continue; const id = s.userData.sort === 'kajak' ? 'kanot' : s.userData.sort === 'tunna' ? 'tunna' : s.userData.sort === 'rodback' ? 'rodback' : null; if (id && !f[id]) { froSett(id); break; } }
   if ((S.dag || 1) >= 2 && !S.grindKapad) { if (!f.grind && froNara(GRIND.x, GRIND.z, 4.5)) froSett('grind'); else if (f.grind && !f.baeck && froNara(GRIND.x, GRIND.z, 3)) froSett('baeck'); }
