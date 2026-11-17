@@ -339,6 +339,8 @@
   const foreSett = new Set();
   async function gorSteg() {
     await stangPopups();
+    /* A-061: Rolf tutar – hoppa in och åk upp till bänken (dag 3) eller kör statyn dit */
+    if ((S.utsikt === 'bjuden' || S.statyBank === 'bjuden') && H.bilFas?.() === 'resaVantar') { await klick(H.sopbil, 'sopbilen (Rolfs bänk)', 2.5); let w = 0; while (H.kameraAk?.() && w++ < 200) await vanta(0.5); await stangPopups(); handling('tillbaka från Rolfs bänk'); return; }
     /* EA: som en riktig spelare – boten gör nästa mål först när det syns i målrutan (högst 60 s) */
     for (let w = 0; w < 120 && H.malSynligt && !H.malSynligt(); w++) await vanta(0.5);
     if (S.post.tillMig?.length || S.post.lapp) { await klick(H.postlada, 'Rolfs postlåda'); await stangPopups(); }
@@ -359,8 +361,6 @@
     if (!S.skyltUppe && S.dag === 1) { await klick(H.bradhog, 'brädhögen'); await vanta(4); return; }
     const id = H.stegId(), txt = H.stegText() || '', st = H.STEG[S.steg];
     if (!st) return 'slut';
-    /* A-061: Rolf tutar – hoppa in och åk upp till bänken (dag 3) eller kör statyn dit */
-    if ((S.utsikt === 'bjuden' || S.statyBank === 'bjuden') && H.bilFas?.() === 'resaVantar') { await klick(H.sopbil, 'sopbilen (Rolfs bänk)', 2.5); let w = 0; while (H.kameraAk?.() && w++ < 200) await vanta(0.5); await stangPopups(); handling('tillbaka från Rolfs bänk'); return; }
     if (st.sov && S.utsikt === 'bjuden') { let w = 0; while (H.bilFas?.() !== 'resaVantar' && w++ < 60) await vanta(1); if (H.bilFas?.() === 'resaVantar') return; }
     if (st.sov) {
       if (H.sovDags()) { await klick(H.taltSang, 'sängen'); await vantaPaMorgon(); return; }

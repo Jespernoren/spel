@@ -7160,10 +7160,10 @@ function uppdateraSopbil(dt) {
     bil.fart = Math.min(10, 1 + kvar * 0.6);
     sopbil.position.x = Math.min(TIPP.x, sopbil.position.x + bil.fart * dt);
     if (kvar < 0.01 && S.brevVantar && (S.vakenTid || 0) >= S.brevVantar.tidigast) brevMedSopbilen();   // BO
-    if (kvar < 0.01) { bil.fart = 0; bil.t = 0; bil.fas = (S.resa === 'bjuden' || utsiktBjuden()) ? 'resaVantar' : S.post.tillRolf ? 'rolf' : 'svang'; if (bil.fas === 'rolf') startaArende();
+    if (kvar < 0.01) { bil.fart = 0; bil.t = 0; bil.fas = (S.resa === 'bjuden' || utsiktVantar()) ? 'resaVantar' : S.post.tillRolf ? 'rolf' : 'svang'; if (bil.fas === 'rolf') startaArende();
       if (bil.fas === 'resaVantar') { tuta(); setTimeout(tuta, 700); if (S.resa === 'bjuden' && !S.resaVantSms) { S.resaVantSms = true; sms('rolf', 'Hoppa in. Ja väntar. Nåja, två minuter. /R'); } } }   // CN regel 5: ingen timer
   } else if (bil.fas === 'resaVantar') {
-    bil.fart = 0; if ((S.resa !== 'bjuden' && !utsiktBjuden()) || bil.t > 120) { bil.fas = 'svang'; bil.t = 0; }   /* "Nåja, två minuter" – sen tippar Rolf och frågar igen nästa gång */
+    bil.fart = 0; if ((S.resa !== 'bjuden' && !utsiktVantar()) || bil.t > 120) { bil.fas = 'svang'; bil.t = 0; }   /* "Nåja, två minuter" – sen tippar Rolf och frågar igen nästa gång */
   } else if (bil.fas === 'rolf') {
     uppdateraRolf(dt);
     if (!arende.aktiv) { bil.fas = 'svang'; bil.t = 0; }
@@ -12472,7 +12472,8 @@ function tippSvep() {
 // 2. dag 3 i skymningen: Rolf tutar – Hoppa in. Ja ska visa dej en grej.
 const UTSIKT_T = { bjud: 'Hoppa in. Ja ska visa dej en grej.', ol: 'Kall öl ä viktigt.', varje: 'Ja kommer hit varje kväll. Förr va vi två på bänken.', bengt: 'Dä där ä Bengt-Åke. Vinka int.', hare: 'Den ä skyldig mej pengar.',
   staty1: '…Dä där e ju ja.', staty2: 'Nu ä vi två igen.', foreEfter: 'Tre dagar. Tänk om tre veckor.' };
-const utsiktBjuden = () => S.utsikt === 'bjuden' || S.statyBank === 'bjuden';
+const utsiktBjuden = () => (S.utsikt === 'bjuden' && (STEG[S.steg]?.sov || (klockan() ?? 0) >= 17 * 60)) || S.statyBank === 'bjuden';   // bänken i skymningen; statyn när som helst
+const utsiktVantar = () => utsiktBjuden() && !S.post?.tillRolf && !pappaBesok.aktiv;   // Rolfs ärenden och pappas besök går först
 function kollaUtsikt() {
   if (!ui.igang || sover || scenPagar() || kameraAk) return;
   const k = klockan();
@@ -12482,7 +12483,7 @@ function kollaUtsikt() {
   }
   if (!S.statyBank && harPlacerat('n4_staty') && S.statyRolf) { S.statyBank = 'bjuden'; sparaSnart(); if (bil.fas === 'borta') bil.t = 0;
     paket([{ replik: ['rolf', UTSIKT_T.bjud, `Rolf: ”${UTSIKT_T.bjud}”`] }], { om: 20000, vikt: 'STORY', varfor: 'A-061: statyn till bänken' }); }
-  if (utsiktBjuden() && bil.fas === 'borta' && bil.t < -10) bil.t = -10;   // Rolf kommer snart tillbaka och väntar
+  if (utsiktVantar() && bil.fas === 'borta' && bil.t < -10) bil.t = -10;   // Rolf kommer snart tillbaka och väntar
 }
 setInterval(() => { try { kollaUtsikt(); } catch (e) { console.warn(e); } }, 2000);
 function startaUtsikt() {
