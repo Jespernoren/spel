@@ -201,7 +201,7 @@
       const tipp = S.tippNyckel && gardsSkrap().length <= H.gardMal();
       let n = await plockaLass({ tippen: tipp });
       if (!n && !tipp && S.tippNyckel && !H.hand.saker.length) n = await plockaLass({ tippen: true });
-      if (!n && !H.hand.saker.length) { if (!S.kvarn.tratt) { handling('inget skräp kvar att mala – väntar på sopbilen'); if (varv > 30) return false; await vanta(20); continue; } }
+      if (!n && !H.hand.saker.length) { if (!S.kvarn.tratt) { handling('inget skräp kvar att mala – väntar på sopbilen'); if (varv > 4) return false; await vanta(20); continue; } }
       await tomIKvarnen(); await mal();
     }
     return fil(sk) >= gram || (fil(sk) >= 1 && (lin === 'bla' ? H.extruderFull() : !H.tornPlats(lin)));

@@ -5260,7 +5260,7 @@ function sov() {
     const STORY_MORGON = [pappaForsta, kollaPolett, kollaSamtal, helenMorgon, kollaResa, kollaMarkTips];
     const enStory = () => { for (const f of STORY_MORGON) if (f()) return true; return false; };
     morgonKo = () => { morgonRolf(); enStory(); senareIdag(() => { familjSms(); enStory(); }); };   // B4 L4: Rolfs fynd ligger i lådan med morgonbrevet
-    const morgonRolf = () => { if (S.dag >= 6 && S.kapitel >= 2 && !(S.filGava || []).includes(0) && !(S.filGava || []).includes(2)) { S.filGava = [...(S.filGava || []), 0]; S.post.tillMig = [...S.post.tillMig, 'sak:rulle2', 'sak:rulle2', 'sak:rulle2']; visaPostInne(); paket([{ sms: ['rolf', ROLF_RODA] }], { om: 1500 }); } };   // BI: tre rullar röd PETG direkt dag 6
+    const morgonRolf = () => { if (S.dag >= 6 && S.kapitel >= 2 && S.pappaBesok && !(S.filGava || []).includes(0) && !(S.filGava || []).includes(2)) { S.filGava = [...(S.filGava || []), 0]; S.post.tillMig = [...S.post.tillMig, 'sak:rulle2', 'sak:rulle2', 'sak:rulle2']; visaPostInne(); paket([{ sms: ['rolf', ROLF_RODA] }], { om: 1500 }); } };   // BI: tre rullar röd PETG direkt dag 6
     setTimeout(sparaDagBokmarke, 1500);
     skymning = 0; sover = false; sol.position.set(14, 24, 8); if (hemiLjus) hemiLjus.intensity = 1.4; if (skjulLampa) skjulLampa.intensity = skjulLampa.userData.bas || 4;
     satLjus(DAG); sl.innerHTML = `<div><svg viewBox="0 0 160 120" style="width:min(340px,70vw);display:block;margin:0 auto 10px">${kalenderSvg('DAG ' + S.dag, 40, 14, 'DAG ' + natt)}</svg>☀️ ${['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag'][(S.dag - 1) % 7]}</div>`;   /* morgonen: snarkningen räcker */
@@ -13609,8 +13609,8 @@ if (ui) {
     return ut;
   });
   regelvakt.regel('MÅL OKÄNT', () => { if (!ui.igang) return []; const k = malKontrakt(); return k && !k.kanGoras() && k.namner.some((n) => !kand(n)) ? [`målet nämner ${k.namner.filter((n) => !kand(n)).join(', ')} som inte är känt`] : []; });
-  regelvakt.regel('FEL YTA', () => { if (!ui.igang) return []; const ut = []; const kolla = (o, l, n, namn) => { if (o && o.userData.ytaNyckel && o.userData.ytaNyckel !== l + Math.max(1, Math.min(5, n))) ut.push(`${namn} har ${o.userData.ytaNyckel}, ska vara ${l}${n}`); };
-    if (performance.now() % 1500 < 1000) { kolla(kvarn, 'bla', kvarnNiva(), 'blå kvarnen'); for (const sk of skrivare) kolla(sk.mesh, skrivarLinje(sk), skrivarNiva(sk), 'skrivare ' + sk.id); } return ut; });   /* EO 35: maskinen har linjens färg och sin nivås yta */
+  regelvakt.regel('FEL YTA', () => { if (!ui.igang) return []; const ut = []; const kolla = (o, l, n, namn) => { const fel = o && o.userData.ytaNyckel && o.userData.ytaNyckel !== l + Math.max(1, Math.min(5, n)); if (!fel) { if (o) o.userData.ytaFelSedan = 0; return; } o.userData.ytaFelSedan ||= performance.now(); if (performance.now() - o.userData.ytaFelSedan > 3500) ut.push(`${namn} har ${o.userData.ytaNyckel}, ska vara ${l}${n}`); };   /* ytan ritas om var 1,5 s – fel först efter 3,5 s */
+    { kolla(kvarn, 'bla', kvarnNiva(), 'blå kvarnen'); for (const sk of skrivare) kolla(sk.mesh, skrivarLinje(sk), skrivarNiva(sk), 'skrivare ' + sk.id); } return ut; });   /* EO 35: maskinen har linjens färg och sin nivås yta */
   regelvakt.regel('SAKNAD STORYSAK', () => !ui.igang ? [] : STORY_BEHOV.filter((b) => b.nar() && !harStorysak(b.t) && (S.storyGiven || {})[b.t] && S.dag > S.storyGiven[b.t] + 1).map((b) => `${b.t} behövs men finns inte`));   /* A-050 */
   regelvakt.starta();
 }
