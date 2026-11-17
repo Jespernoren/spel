@@ -69,6 +69,11 @@ for (const f of [fil, ...fs.readdirSync(fil.replace(/[^/]+$/, '')).filter((n) =>
   const r2 = fs.readFileSync(f, 'utf8').split('\n');
   r2.forEach((r, i) => { const k = r.search(/\/\/(?!.*['"`]\s*\+)/); if (k < 0 || /https?:$/.test(r.slice(0, k)) || (r.slice(0, k).split(/['"`]/).length % 2 === 0)) return; const efter = r.slice(k + 2); const m = efter.match(/(^|[\s;])([a-zA-Z_$][\w$]*(\.[a-zA-Z_$][\w$]*)+\([^)]*\)|(const|let) [a-zA-Z_$][\w$]* =[^;]+);\s*($|\/\*|\/\/)/); if (m) fel.push({ nr: i + 1, regel: 'KOD EFTER KOMMENTAR', text: `${f.split('/').pop()}: ${m[2].slice(0, 60)}`, rad: r.trim().slice(0, 140) }); });
 }
+// SYNTAXFEL: hela modulen (och dess egna moduler) ska gå att tolka – en //-kommentar mitt på en rad kan svälja resten (A-075)
+{ const { execFileSync } = await import('node:child_process'), os = await import('node:os'), path = await import('node:path');
+  const mapp = path.dirname(fil);
+  for (const f of fs.readdirSync(mapp).filter((x) => x.endsWith('.js'))) { const tmp = path.join(os.tmpdir(), 'lint-' + f.replace(/\.js$/, '.mjs')); fs.copyFileSync(path.join(mapp, f), tmp);
+    try { execFileSync(process.execPath, ['--check', tmp], { stdio: 'pipe' }); } catch (e) { const m = String(e.stderr || e.message).match(/:(\d+)\n/); fel.push({ nr: m ? +m[1] : 0, regel: 'SYNTAXFEL', text: `${f}: ${String(e.stderr || e.message).split('\n').find((x) => /Error/.test(x)) || 'kan inte tolkas'}`, rad: '' }); } } }
 console.log(`lint-sekvens: ${fel.length} fel, ${undantag.length} undantag (${fil.split('/').slice(-2).join('/')})`);
 for (const f of fel) console.log(`  ✗ ${f.regel} rad ${f.nr}: ${f.text}\n      ${f.rad}`);
 for (const u of undantag) console.log(`  ~ UNDANTAG ${u.regel} rad ${u.nr}: ${u.text}`);

@@ -35,7 +35,9 @@ await vy(-42, 7, -52, 7, 'backen-adern');
 // vaska tills ringen kommer, hackan, malm, klumpen
 const r4 = await p.evaluate(async () => { const h = window.__printahem, S = h.S; for (let i = 0; i < 9 && !S.ringFunnen; i++) h.vaskSlapp(1.9);
   h.laggTill('hacka'); const i = S.hotbar.findIndex((x) => x?.typ === 'hacka'); if (i >= 0) h.byt(i);
-  const berg = h.grop.children.find((c) => c.userData?.interaktion); berg.userData.interaktion.aktivera();
+  h.gruvTillGrotta(); h.bergYta.userData.interaktion.aktivera();   /* A-075: ådern sitter i grottan längst ner i gruvan */
+  h.gruvAk(false); h.gruvFard() && (h.gruvFard().t = 0);   /* upp igen innan extraktorn ställs */
+  for (let k = 0; k < 50 && h.gruvLage(); k++) await new Promise((x) => setTimeout(x, 200));
   h.placera({ id: 'ex1', typ: 'extraktor', x: h.spelare.pos.x + 1, z: h.spelare.pos.z, r: 0, r8: 0 });
   for (let k = 0; k < 8 && !h.antalInv('guldklump'); k++) await new Promise((x) => setTimeout(x, 1000));
   return { ring: S.ringFunnen, malm: S.forstaKlump || h.antalInv('malm'), klump: h.antalInv('guldklump') }; });

@@ -928,6 +928,13 @@ const traffYta = (g, w, h, d, x = 0, y = h / 2, z = 0) => { const m = new THREE.
 const vag = new THREE.Mesh(new THREE.PlaneGeometry(160, 5), mat(0x55585e));
 vag.rotation.x = -Math.PI / 2; vag.position.set(0, 0.02, TOMT + 3); vag.receiveShadow = true; scen.add(vag);
 
+/* A-075: hjälpare för kuliss som ritas som InstancedMesh */
+const instanser = (geo, material, lista) => {   // lista: [{ p: [x, y, z], r: [x, y, z], s: [x, y, z], c: hex }]
+  const m = new THREE.InstancedMesh(geo, material, Math.max(1, lista.length)), M4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), c = new THREE.Color();
+  lista.forEach((o, i) => { e.set(...(o.r || [0, 0, 0])); q.setFromEuler(e); M4.compose(new THREE.Vector3(...o.p), q, new THREE.Vector3(...(o.s || [1, 1, 1]))); m.setMatrixAt(i, M4); m.setColorAt(i, c.setHex(o.c ?? 0xffffff)); });
+  m.castShadow = true; m.receiveShadow = true; m.computeBoundingSphere(); return m;
+};
+const lambert = () => new THREE.MeshLambertMaterial({ flatShading: true });
 // ---------- A-066: svackan längs tomtens bakkant – ca 10 m djup, floden på botten, gruvan i norra bergväggen ----------
 // z ökar söderut. Kanten vid z −23, södra slänten ner till z −30, botten z −30…−35 med floden, bergväggen z −35…−37,5.
 const SVACKA = { kant: -23, botten1: -30, botten2: -36, vagg: -38.5, djup: 10, flod: -32.6, flodB: 2.4 };
@@ -936,6 +943,8 @@ const GRUVA = { x: 8.2, z: SVACKA.botten2 - 0.1, b: 2.5, h: 2.5, l: 8 };   // gr
 const SVACKA_VAG = [[-19, -21.4, 0], [-19, -24.2, -0.4], [-6, -24.2, -3.6], [-4.5, -25.4, -3.8], [-6, -26.6, -4.0], [-19, -26.6, -7.2], [-20.5, -27.8, -7.4], [-19, -29, -7.6], [-6, -29, -10], [-4.5, -30.6, -10]];
 const VAG_B = 1.35;   // halva vägbredden
 const smoothstep = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+/* A-075 §1.3: svackan slingrar sig – rak vid tomten, grusvägen och gruvan (|x| < 24), mer och mer längre bort (mockupens OFF, nollad här) */
+const SVACKA_OFF = (x) => 5 * Math.sin(x * 0.028 + 1.1) * smoothstep(26, 56, Math.abs(x)) + 1.2 * Math.sin(x * 0.07 + 0.4) * smoothstep(24, 36, Math.abs(x));
 function svackaBas(z) {   // dalens tvärsnitt (utan vägen)
   if (z >= SVACKA.kant) return 0;
   if (z >= SVACKA.botten1) return -SVACKA.djup * smoothstep(SVACKA.kant, SVACKA.botten1, z);
@@ -953,12 +962,14 @@ function svackaVag(x, z) {   // [avstånd till vägens mitt, vägens höjd där]
   return bast;
 }
 function svackaHojd(x, z) {
-  if (z > SVACKA.kant + 0.5) return 0;
-  const bas = svackaBas(z);
+  const zs = z - SVACKA_OFF(x);   // A-075: i svackans egna koordinater
+  if (zs > SVACKA.kant + 0.5) return 0;
+  const bas = svackaBas(zs);
   if (x > -23 && x < -2 && z < SVACKA.kant + 1.6 && z > SVACKA.botten1 - 1.5) { const [d, h] = svackaVag(x, z); if (d < VAG_B + 1.6) return h + (bas - h) * smoothstep(VAG_B, VAG_B + 1.6, d); }
   return bas;
 }
-function svackaFarg(x, z, y, c) {   /* A-066: slänterna är sand och grus med sly, botten grus, norra sidan blottat berg */
+function svackaFarg(x, z0, y, c) {   /* A-066: slänterna är sand och grus med sly, botten grus, norra sidan blottat berg */
+  const z = z0 - SVACKA_OFF(x);   // A-075: slingrar
   if (z > SVACKA.kant + 0.3 || z < SVACKA.vagg - 6) return c;
   const n = Math.sin(x * 0.9 + z * 0.4) * 0.5 + Math.sin(x * 0.23 - z * 1.3) * 0.5;
   if (z <= SVACKA.botten2 + 0.1 && y > -SVACKA.djup + 0.2) return c.setHex(n > 0.4 ? 0x7a756c : 0x6a665f);   // bergväggen
@@ -969,10 +980,10 @@ function svackaFarg(x, z, y, c) {   /* A-066: slänterna är sand och grus med s
 const iGruvan = (x, z) => x > GRUVA.x - GRUVA.b / 2 && x < GRUVA.x + GRUVA.b / 2 && z < GRUVA.z + 0.4 && z > GRUVA.z - GRUVA.l;
 // var man kan gå: tomten, grusvägen, botten och (när den är öppen) gruvan. Slänterna och bergväggen går inte att klättra på.
 let gruvaOppen = () => false, slySparr = () => false;
-function svackaSparr(x, z) {
+function svackaSparr(x, z0) {
+  const z = z0 - SVACKA_OFF(x);   // A-075: slingrar
   if (z > SVACKA.kant + 0.2) return false;
   if (z <= SVACKA.botten1 - 0.2 && z >= SVACKA.botten2 + 0.25) return false;   // botten
-  if (gruvaOppen() && iGruvan(x, z)) return false;
   if (x > -23 && x < -2 && svackaVag(x, z)[0] < VAG_B) return false;   // grusvägen
   return true;
 }
@@ -1000,7 +1011,7 @@ const tippHojd = (x, z) => {
 };
 let tippSparrT = 0; const TIPP_I_VAGEN_T = 'Tippen är i vägen. Jag kommer inte fram. Än.';
 const tippSparr = (x, z) => { if (S.tippNyckel || tippU(x, z) >= 1) return false; tippSparrT = performance.now(); return true; };   /* A-074: utan stängsel – tippen själv är i vägen tills Rolf ger nyckeln */
-const markY = (x, z) => tippHojd(x, z) + svackaHojd(x, z) + (gruvaOppen() && iGruvan(x, z) ? -SVACKA.djup - svackaHojd(x, z) : 0);   /* A-064/A-066: höjden man går på – tippen, svackan och gruvans golv */
+const markY = (x, z) => gruvLage === 'grotta' ? GRUV_GOLV : tippHojd(x, z) + svackaHojd(x, z);   /* A-064/A-066/A-075: höjden man går på – tippen och svackan; i grottan dess golv (gruvan går bara att åka i) */   /* A-064/A-066: höjden man går på – tippen, svackan och gruvans golv */
 const tippMarkUnder = (x, z) => { const u = tippU(x, z); return (u < 1 ? -2.2 * Math.min(1, (1 - u) / 0.2) : 0) + svackaHojd(x, z); };   // gräset viker undan under tippen (ner till under gropens botten)
 const tippFarg = (u, dx, dz, s, ut = new THREE.Color()) => {   // PAL[lagerBorta·(1−u²) + slingrande brus], mjuk blandning mellan banden
   const b = Math.max(0, s * (1 - u * u) + (s > 0 ? 0.55 * (Math.sin(dx * 0.9 + dz * 0.6) + Math.sin(dz * 1.4 - dx * 0.5) + Math.sin(dx * 2.3 + dz * 1.9) * 0.5) * (1 - u) : 0));
@@ -1128,7 +1139,7 @@ for (const z of [TOMT + 0.3, TOMT + 5.7]) {
 const spelare = new Spelare(kamera, renderer.domElement, {
   start: [LAGER.x, 0, LAGER.z + 5], fart: 4.5,
   granser: { ...BAS_GRANS }, touch: false,   // punkt AO: bara dator – tangentbord och mus
-  markFn: (x, z) => markY(x, z), maxKlattra: 0.4, sparr: (x, z) => svackaSparr(x, z) || slySparr(x, z) || tippSparr(x, z),   /* A-064/A-066/A-074: marken har höjd (tippens berg och grop, svackan) */
+  markFn: (x, z) => markY(x, z), maxKlattra: 0.4, sparr: (x, z) => gruvLage === 'grotta' ? Math.hypot(x - GRUV_GC.x, z - GRUV_GC.z) > 5.4 : (svackaSparr(x, z) || slySparr(x, z) || tippSparr(x, z)),   /* A-064/A-066/A-074: marken har höjd (tippens berg och grop, svackan) */
 });
 // ställ spelaren där hen var senast
 const nyttSpel = !S.skyltUppe && (S.steg || 0) === 0 && (S.dag || 1) === 1;
@@ -3231,7 +3242,7 @@ const paBord = (t) => SMASAK(t) || !!(t && MASKINER[placeringsTyp(t)]?.kraverBor
 const SMASAK = (typ) => !!VAROR[typ] && (VAROR[typ].radie || 0.4) <= 0.35 && !YTOR[typ];
 function placera(p, nytt = true) {
   const typ = p.typ;
-  varaFro = p.id ?? null; const mesh = SKRIVARTYP[typ] ? skapaSkrivare(SKRIVARTYP[typ]) : (VAROR[typ] ? skapaVara(typ) : skapaMaskin(typ)); varaFro = null;   // CZ: nyansen följer sakens id
+  varaFro = p.id ?? null; const mesh = typ === 'solpark' && !p.pa && vidSlyPlatsen(p.x, p.z) ? solparkStor() : SKRIVARTYP[typ] ? skapaSkrivare(SKRIVARTYP[typ]) : (VAROR[typ] ? skapaVara(typ) : skapaMaskin(typ)); varaFro = null;   /* A-075 §3.4: den stora parken på slyets plats */   // CZ: nyansen följer sakens id
   if (p.pa) {
     const bord = placerade.find((b) => b.id === p.pa);
     if (!bord) return null;
@@ -5181,7 +5192,7 @@ function malNick(nyckel) {
   if (!ui.igang || pausad || pilIBild()) return;
   const p = malPil.position, y0 = spelare.yaw;
   if (Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z) < 2.5) return;   // man står redan vid målet
-  tittaMot(p.x, p.z, 1.2, { nyckel, y: p.y + 0.5, vidSlut: () => { const onsk = Math.atan2(-(p.x - spelare.pos.x), -(p.z - spelare.pos.z)), avv = Math.abs(Math.atan2(Math.sin(onsk - spelare.yaw), Math.cos(onsk - spelare.yaw))); if (avv < 0.35 && !pilIBild() && performance.now() - musSenast > 1500) laggFynd(pilUtom, `pilen utom bild efter nicken (${nyckel}) ${pilNdc()}`); } });   // kontrollen görs när nicken är klar
+  tittaMot(p.x, p.z, 1.2, { nyckel, y: p.y + 0.5, vidSlut: () => { const onsk = Math.atan2(-(p.x - spelare.pos.x), -(p.z - spelare.pos.z)), avv = Math.abs(Math.atan2(Math.sin(onsk - spelare.yaw), Math.cos(onsk - spelare.yaw))); if (avv < 0.35 && Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z) >= 2.5 && !pilIBild() && performance.now() - musSenast > 1500) laggFynd(pilUtom, `pilen utom bild efter nicken (${nyckel}) ${pilNdc()}`); } });   // kontrollen görs när nicken är klar
   if (!blickGjorda.has(nyckel)) return;   // spelaren tittar själv (musen) eller har stängt av vridningen
   textLogg('nick', '', nyckel, 'A-072: kameran nickar mot pilen');
 }
@@ -10872,7 +10883,7 @@ function uppdatera(dt) {
   // matarbandet flyttar skräp från bingen till tratten (drar lite ström)
   if (!STEG[S.steg] && !sover) { const fore = S.dagTid || 0; S.dagTid = Math.min(DAG_LANGD, fore + dt); if (Math.floor(fore / 30) !== Math.floor(S.dagTid / 30)) sparaSnart(); }
   if (harProto('m_fusion')) S.strom = Math.min(stromMax(), S.strom + dt * 0.8);
-  uppdateraAuto(dt); try { uppdateraGast(dt); } catch (e) { console.warn(e); gastScen.fas = ''; } try { uppdateraLampFinal(dt); } catch (e) { console.warn(e); lampFin = null; S.lampaFinal = true; } try { uppdateraKameraAk(); } catch (e) { console.warn(e); kameraAk = null; spelare.aktiv = true; }   /* A-061: åket går även när ingen bild ritas (AX) */ try { rolfSackKoll(dt); } catch (e) { console.warn(e); } uppdateraMalSkylt(dt); try { uppdateraFigurer(dt); uppdateraLiv(dt); } catch (e) { if (!figurFel) { figurFel = true; console.warn('figurer', e); } } uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraBlick(dt); uppdateraMalPil(); ritaStopp(); ritaSkrivBarer(); matFlaskhals(dt); ritaPlatsLappar(); korBud(); kollaPuffar(dt); visaRullstall(); kollaRaddning(dt); for (const sk of skrivare) visaSpolar(sk);
+  uppdateraAuto(dt); try { uppdateraGast(dt); } catch (e) { console.warn(e); gastScen.fas = ''; } try { uppdateraLampFinal(dt); } catch (e) { console.warn(e); lampFin = null; S.lampaFinal = true; } try { uppdateraKameraAk(); } catch (e) { console.warn(e); kameraAk = null; spelare.aktiv = true; } try { uppdateraGruvFard(dt); } catch (e) { console.warn(e); gruvFard = null; gruvLage = null; spelare.aktiv = true; }   /* A-061: åket går även när ingen bild ritas (AX) */ try { rolfSackKoll(dt); } catch (e) { console.warn(e); } uppdateraMalSkylt(dt); try { uppdateraFigurer(dt); uppdateraLiv(dt); } catch (e) { if (!figurFel) { figurFel = true; console.warn('figurer', e); } } uppdateraPappa(dt); miljo.uppdatera(performance.now() / 1000); uppdateraLukt(performance.now() / 1000); uppdateraKompost(dt); miljo.uppdateraSno(dt, kamera); kollaTillgang(dt); kollaBengt(dt); kollaAliSteg(); uppdateraBlick(dt); uppdateraMalPil(); ritaStopp(); ritaSkrivBarer(); matFlaskhals(dt); ritaPlatsLappar(); korBud(); kollaPuffar(dt); visaRullstall(); kollaRaddning(dt); for (const sk of skrivare) visaSpolar(sk);
   if (S.kvarn.band) {
     const kor = S.kvarn.binge.length > 0 && S.kvarn.tratt < TRATT_MAX && S.strom > 0.5;
     if (kor) {
@@ -11062,9 +11073,11 @@ const BOMMAR = { vanster: { x: BAS_GRANS.minX + 0.4, oppen: () => (S.dag || 1) >
 function bomOppen(id) { try { return BOMMAR[id].oppen(); } catch { return false; } }
 for (const [id, b] of Object.entries(BOMMAR)) {
   const g = new THREE.Group(); g.position.set(b.x, 0, TOMT + 3);
-  g.add(at(box(0.22, 1.1, 0.22, mat(0x555555)), 0, 0.55, -3.2), at(box(0.22, 0.7, 0.22, mat(0x555555)), 0, 0.35, 3.2));
-  const arm = new THREE.Group(); arm.position.set(0, 1.0, -3.2); for (let i = 0; i < 8; i++) arm.add(at(box(0.09, 0.12, 0.8, mat(i % 2 ? 0xffffff : 0xd8262c)), 0, 0, 0.4 + i * 0.8)); g.add(arm);
-  const sk = skylt('Avstängt. /Kommunen', 0.9, 0.24, '#f2f2f2', '#b01e1e'); sk.position.set(0.14, 1.35, -3.2); sk.rotation.y = id === 'vanster' ? -Math.PI / 2 : Math.PI / 2; g.add(sk);
+  /* A-075 §4.1: svart stolpe med motvikt, röd och vit arm, ett stöd på andra sidan vägen, skylten på egen stolpe (1,3 × 0,65 m, läsbar på 8 m) */
+  const svart = mat(0x2e2e2e, { roughness: 0.8 });
+  g.add(at(box(0.3, 1.1, 0.3, svart), 0, 0.55, -3.2), at(box(0.08, 1.7, 0.08, svart), 0, 0.85, -3.2), at(box(0.12, 0.9, 0.12, svart), 0, 0.45, 3.0));
+  const arm = new THREE.Group(); arm.position.set(0, 1.0, -3.2); for (let i = 0; i < 7; i++) arm.add(at(box(0.12, 0.16, 0.95, mat(i % 2 ? 0xf2f2f2 : 0xc8282a)), 0, 0, 0.475 + i * 0.95)); arm.add(at(box(0.35, 0.35, 0.35, svart), 0, 0, -0.45)); g.add(arm);
+  const sx = id === 'vanster' ? 0.9 : -0.9, sk = skylt('Avstängt. /Kommunen', 1.3, 0.65, '#f4f1e8', '#b01e20'); sk.position.set(sx, 1.35, -4.0); sk.rotation.y = id === 'vanster' ? Math.PI / 2 : -Math.PI / 2; g.add(sk, at(box(0.07, 1.4, 0.07, svart), sx - Math.sign(sx) * 0.03, 0.7, -4.0));
   scen.add(g); b.g = g; b.arm = arm; b.vinkel = b.oppen?.() ? -1.45 : 0; arm.rotation.x = b.vinkel;
 }
 setInterval(() => { try {
@@ -11077,6 +11090,15 @@ setInterval(() => { try {
   }
 } catch (e) { console.warn('bom', e); } }, 250);
 var privatSkyltarRef = null;   // var: uppdateraMark körs innan skyltarna är byggda
+/* A-075 §4.2: ängen i öster – högt gräs med blommor (gula, vita, lila, rosa) och en låg gärdesgård mot vägen. Slås när man äger ängen. */
+var angGrupp = new THREE.Group(); scen.add(angGrupp);
+{ let fro = 21; const r = () => ((fro = (fro * 16807) % 2147483647) / 2147483647); const gras = [], blom = [], A = { x0: TOMT + 1, x1: VARLD.bengtX - 10, z0: -TOMT + 2, z1: TOMT + 0.5 };
+  for (let i = 0; i < 1600; i++) { const x = A.x0 + r() * (A.x1 - A.x0), z = A.z0 + r() * (A.z1 - A.z0), h = 0.4 + r() * 0.5; gras.push({ p: [x, h / 2, z], s: [1, h, 1], r: [(r() - 0.5) * 0.3, 0, (r() - 0.5) * 0.3], c: r() < 0.6 ? 0x9ab04e : 0xb8b060 });
+    if (r() < 0.18) blom.push({ p: [x, h, z], s: [0.07, 0.07, 0.07], c: [0xf2e14a, 0xffffff, 0x8a7ad8, 0xd85a8a][Math.floor(r() * 4)] }); }
+  angGrupp.add(instanser(new THREE.ConeGeometry(0.05, 1, 3), lambert(), gras), instanser(new THREE.IcosahedronGeometry(1, 0), lambert(), blom));
+  const gard = []; for (let x = A.x0; x <= A.x1 + 4; x += 3) gard.push({ p: [x, 0.45, TOMT + 1.3], s: [0.1, 0.9, 0.1], c: 0x8a8070 });
+  try { miljo.rojUt({ minX: A.x0, maxX: A.x1, minZ: A.z0, maxZ: A.z1 }); } catch {}   // ängen är öppen – skogen står runt om
+  angGrupp.add(instanser(new THREE.BoxGeometry(1, 1, 1), lambert(), gard)); angGrupp.add(at(box(A.x1 + 4 - A.x0, 0.04, 0.04, mat(0x9a9a9a)), (A.x0 + A.x1 + 4) / 2, 0.7, TOMT + 1.3)); }
 function uppdateraMark() {
   const g = { ...BAS_GRANS };
   /* A-066: högra bommen (d15, avslöjandet) öppnar vägen till ängen och Bengt-Åkes hus, vänstra bommen (d11) till Rolfs husvagn */
@@ -11084,6 +11106,7 @@ function uppdateraMark() {
   if (tillgang('tippkant') || bomOppen('vanster')) g.minX = VARLD.tradX - 8;
   if (S.grindKapad || tillgang('norr')) g.minZ = GRUVA.z - GRUVA.l - 0.6;   /* A-056/A-066: grinden är kapad – svackan (ner bara via grusvägen) */
   for (const t of MARK_TOMTER) if (t.rekt && agerMark(t.id)) miljo.rojUt(t.rekt);
+  if (angGrupp) angGrupp.visible = !agerMark('oster');   /* A-075: ängen slås när den är din */
   for (const f of FYND) if (f.g) f.g.visible = f.id === 'husvagn' || (tillgang(f.mark) && !S.fynd.includes(f.id));   /* A-074: husvagnen sticker upp ur tippen hela tiden */
   rolfHus.visible = agerMark('rolfhus'); storHus.visible = agerMark('huset'); if (husGrundMesh) husGrundMesh.visible = agerMark('husgrund') && !agerMark('huset');
   spelare.granser = g;
@@ -12957,24 +12980,95 @@ function visaBengt(text) {
 /* ---------- A-058: Bengt-Åkes hus vid vägen, brevlådan och pappas grav ----------
    Ett slitet hus efter Alis butik, på andra sidan vägen. Man ser det från vägen men kommer inte in på tomten.
    Brevlådan står vid vägen (där lägger man sånt till honom), pappas gravsten syns i trädgården. */
-const BENGT_HUS = { x: VARLD.bengtX, z: TOMT + 14.5 }, BENGT_LADA = { x: VARLD.bengtX - 3.3, z: TOMT + 8.2 }, BENGT_GRAV = { x: VARLD.bengtX + 1, z: TOMT + 20 };   /* A-066: förbi ängen, brevlådan vid vägen, graven på husets baksida */
+const BENGT_HUS = { x: VARLD.bengtX, z: TOMT + 12 }, BENGT_LADA = { x: VARLD.bengtX - 1.8, z: TOMT + 6 }, BENGT_GRAV = { x: VARLD.bengtX - 2, z: TOMT + 19.5 };   /* A-066/A-075: förbi ängen, brevlådan vid vägen bredvid grusgången, graven bakom huset */
+/* A-075 §4: Bengt-Åkes hus och trädgård – mockupens vag.js med fronten mot vägen (norr). bP(dx, dz) räknar mockupens läge relativt huset till spelets (z speglas, x behålls: kikaren sitter mot väster, mot tomten). */
+const bP = (dx, dz) => [BENGT_HUS.x + dx, BENGT_HUS.z - dz];
+const texturRader = (rader, w = 512, h = 256, bg = '#f2efe6', fg = '#2a2a2a', px = 64) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d');
+  g.fillStyle = bg; g.fillRect(0, 0, w, h); g.fillStyle = fg; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `bold ${px}px sans-serif`;
+  rader.forEach((t, i) => g.fillText(t, w / 2, h / 2 + (i - (rader.length - 1) / 2) * px * 1.25)); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
+const lamb = (c, o = {}) => new THREE.MeshLambertMaterial({ color: c, flatShading: true, ...o });
+const bBox = (par, w, h, d, c, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), typeof c === 'number' ? lamb(c) : c); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; par.add(m); return m; };
+function sadeltak(par, b, d, y0, hojd, takFarg, vaggFarg) {   // två takfall + gavelspetsar i väggens färg, nocken längs x
+  const lut = Math.atan2(hojd, d / 2), lang = Math.hypot(d / 2 + 0.35, hojd + 0.25);
+  for (const s of [-1, 1]) { const t = new THREE.Mesh(new THREE.BoxGeometry(b + 0.6, 0.14, lang), lamb(takFarg)); t.rotation.x = s * lut; t.position.set(0, y0 + hojd / 2, s * (d / 4 + 0.1)); t.castShadow = true; par.add(t); }
+  const form = new THREE.Shape(); form.moveTo(-d / 2, 0); form.lineTo(d / 2, 0); form.lineTo(0, hojd); form.closePath();
+  for (const s of [-1, 1]) { const g = new THREE.Mesh(new THREE.ShapeGeometry(form), lamb(vaggFarg, { side: THREE.DoubleSide })); g.rotation.y = Math.PI / 2; g.position.set(s * b / 2, y0, 0); par.add(g); }
+}
 const bengtHus = new THREE.Group();
-{ const vagg = mat(0x8c7b63, { roughness: 1 }), tak = mat(0x4a3a32), list = mat(0xd8d0c0);
-  bengtHus.add(at(box(4.6, 2.6, 3.8, vagg), 0, 1.3, 0), at(box(0.9, 1.8, 0.06, mat(0x4a3424)), -0.8, 0.9, -1.93));
-  const t1 = box(5.0, 0.12, 2.3, tak); t1.position.set(0, 2.95, -0.95); t1.rotation.x = -0.5; bengtHus.add(t1);
-  const t2 = box(5.0, 0.12, 2.3, tak); t2.position.set(0, 2.95, 0.95); t2.rotation.x = 0.5; bengtHus.add(t2);
-  for (const x of [0.9, 1.7]) { bengtHus.add(at(box(0.7, 0.8, 0.05, list), x, 1.5, -1.92), at(box(0.6, 0.7, 0.04, mat(0x6a2a2a)), x, 1.5, -1.95)); }   // fördragna gardiner
-  const glimt = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffffff })); glimt.position.set(1.55, 1.62, -1.98); bengtHus.add(glimt); bengtHus.userData.glimt = glimt;   // kikaren blänker
-  bengtHus.position.set(BENGT_HUS.x, 0, BENGT_HUS.z); bengtHus.rotation.y = 0; scen.add(bengtHus); }
-const bengtLada = new THREE.Group();
-{ bengtLada.add(at(box(0.08, 1.05, 0.08, mat(0x5a4632)), 0, 0.52, 0), at(box(0.32, 0.26, 0.48, mat(0x7a7d70)), 0, 1.15, 0));
-  const sk = skylt('B-Å. HMPF', 0.3, 0.12, '#e8e2d0', '#222'); sk.position.set(0, 1.15, -0.25); sk.rotation.y = Math.PI; bengtLada.add(sk);
+{ const H = bengtHus; H.position.set(BENGT_HUS.x, 0, BENGT_HUS.z); scen.add(H);
+  // huset: rött med vita knutar, raka sadeltak, skorsten, vita fönsterkarmar, dörr med trappa mot vägen (−z)
+  bBox(H, 9, 4, 6.5, 0x9b2a20, 0, 2, 0);
+  for (const [x, z] of [[-4.5, -3.25], [4.5, -3.25], [-4.5, 3.25], [4.5, 3.25]]) bBox(H, 0.25, 4.1, 0.25, 0xf2f0ea, x, 2, z);
+  sadeltak(H, 9, 6.5, 4, 2.4, 0x2e2b28, 0x9b2a20);
+  bBox(H, 0.7, 1.4, 0.7, 0x7a6a5a, 2.2, 6.0, 0.9);
+  for (const [x, z, ry] of [[-2.2, -3.26, Math.PI], [2.2, -3.26, Math.PI], [-4.51, 0, -Math.PI / 2], [4.51, 0, Math.PI / 2], [-2.2, 3.26, 0], [2.2, 3.26, 0]]) {
+    const f = new THREE.Group(); f.position.set(x, 2.3, z); f.rotation.y = ry; H.add(f); bBox(f, 1.3, 1.4, 0.08, 0xf2f0ea, 0, 0, 0); bBox(f, 1.0, 1.1, 0.1, 0x2e3e4c, 0, 0, 0.02); }
+  // kikaren sticker ut genom västra fönstret, med en vit blänk som syns från tomten
+  const kik = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.4, 8), lamb(0x222222)); kik.rotation.z = Math.PI / 2; kik.position.set(-4.45, 2.4, -0.15); H.add(kik);
+  const glimt = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffffff })); glimt.position.set(-4.7, 2.4, -0.15); H.add(glimt); H.userData.glimt = glimt;
+  bBox(H, 1.1, 2.2, 0.1, 0x3a2a1e, 0, 1.1, -3.28); bBox(H, 2.4, 0.2, 1.4, 0x7a6a5a, 0, 0.1, -3.9);   // dörr och trappa
+  // ladan bredvid (utanför staketet i öster), samma raka sadeltak
+  const L = new THREE.Group(); L.position.set(10, 0, 3); H.add(L); bBox(L, 7, 4.5, 6, 0x8a2a20, 0, 2.25, 0); sadeltak(L, 7, 6, 4.5, 2.6, 0x3a3632, 0x8a2a20);
+  traffYta(H, 9, 6, 6.5);
+}
+// trädgården: vitt spjälstaket med grind, gräsmatta, grusgång med kantstenar, rabatter, syrener, äppel- och plommonträd, vinbär, flaggstång, bänk, potatisland, skottkärra
+const bengtTradgard = new THREE.Group(); scen.add(bengtTradgard);
+{ const T = bengtTradgard, X0 = -9, X1 = 6.5, Z0 = -13, Z1 = 6;   // mockupens gränser relativt huset (Z1 = mot vägen)
+  let fro = 9; const r = () => ((fro = (fro * 16807) % 2147483647) / 2147483647);
+  const ut = (dx, dz, y = 0) => { const [x, z] = bP(dx, dz); return [x, y, z]; };
+  { const gr = new THREE.Mesh(new THREE.PlaneGeometry(X1 - X0, Z1 - Z0), lamb(0x79a84c)); gr.rotation.x = -Math.PI / 2; gr.position.set(...ut((X0 + X1) / 2, (Z0 + Z1) / 2, 0.04)); gr.receiveShadow = true; T.add(gr); }
+  const vit = lamb(0xf4f2ec), spjal = [];
+  const staket = (x0, z0, x1, z1, lucka) => { const n = Math.round(Math.hypot(x1 - x0, z1 - z0) / 0.32);
+    for (let i = 0; i <= n; i++) { const t = i / n, x = x0 + (x1 - x0) * t, z = z0 + (z1 - z0) * t; if (lucka != null && Math.abs(x - lucka) < 0.8) continue; spjal.push({ p: ut(x, z, 0.4), s: [0.08, 0.8, 0.05], r: [0, -Math.atan2(-(z1 - z0), x1 - x0), 0], c: 0xf4f2ec }); }
+    const Lg = Math.hypot(x1 - x0, z1 - z0); for (const y of [0.3, 0.62]) { const m = new THREE.Mesh(new THREE.BoxGeometry(Lg, 0.06, 0.04), vit); m.position.set(...ut((x0 + x1) / 2, (z0 + z1) / 2, y)); m.rotation.y = -Math.atan2(-(z1 - z0), x1 - x0); T.add(m); } };
+  staket(X0, Z1, X1, Z1, 0); staket(X0, Z0, X0, Z1); staket(X1, Z0, X1, Z1); staket(X0, Z0, X1, Z0);
+  T.add(instanser(new THREE.BoxGeometry(1, 1, 1), lambert(), spjal));
+  for (const dx of [-0.9, 0.9]) bBox(T, 0.12, 1.3, 0.12, vit, ...ut(dx, Z1, 0.65));   // grindstolpar vid vägen
+  const buske = (dx, dz, rr, c) => { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(rr, 1), lamb(c)); b.position.set(...ut(dx, dz, rr * 0.8)); b.scale.y = 0.85; b.castShadow = true; T.add(b); return b; };
+  // syrenbuskar med lila klasar – ingen skymmer kikaren från tomten (västra främre busken står bakom huset)
+  for (const [dx, dz] of [[X0 + 1.4, -4.5], [X1 - 1.4, Z1 - 1.6], [X0 + 1.6, Z0 + 4]]) { buske(dx, dz, 1.4, 0x4f7f34); for (let i = 0; i < 10; i++) { const k = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.35, 5), lamb(0xa07ad0)); k.position.set(...ut(dx + (r() - 0.5) * 2, dz + (r() - 0.5) * 2, 1.4 + r() * 0.8)); T.add(k); } }
+  // rabatter längs husets framsida
+  for (const sx of [-1, 1]) { const rb = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.12, 0.9), lamb(0x5a4232)); rb.position.set(...ut(sx * 2.8, 3.8, 0.08)); T.add(rb);
+    for (let i = 0; i < 26; i++) { const f = new THREE.Mesh(new THREE.IcosahedronGeometry(0.08, 0), lamb([0xd8344a, 0xf2e14a, 0xffffff, 0xe87ab0, 0xf29a3a][i % 5])); f.position.set(...ut(sx * 2.8 + (r() - 0.5) * 3, 3.8 + (r() - 0.5) * 0.7, 0.3 + r() * 0.25)); T.add(f); }
+    for (let i = 0; i < 3; i++) buske(sx * (1.6 + i * 1.1), 3.6, 0.32, 0x3f6a2c); }
+  // grusgång från grinden till trappan med kantstenar
+  { const g = new THREE.Mesh(new THREE.PlaneGeometry(1.4, Z1 - 4.4), lamb(0xb8ab90)); g.rotation.x = -Math.PI / 2; g.position.set(...ut(0, (Z1 + 4.4) / 2, 0.06)); T.add(g); }
+  const kant = []; for (let z = 4.8; z < Z1; z += 0.5) for (const sx of [-0.8, 0.8]) kant.push({ p: ut(sx, z, 0.08), s: [0.12, 0.1, 0.4], c: 0x9a968e }); T.add(instanser(new THREE.BoxGeometry(1, 1, 1), lambert(), kant));
+  // äppelträd och plommonträd framför huset
+  const trad = (dx, dz, c, frukt) => { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.17, 1.8, 6), lamb(0x6a5034)); st.position.set(...ut(dx, dz, 0.9)); st.castShadow = true; T.add(st);
+    const kr = new THREE.Mesh(new THREE.IcosahedronGeometry(1.5, 1), lamb(c)); kr.position.set(...ut(dx, dz, 2.5)); kr.scale.y = 0.8; kr.castShadow = true; T.add(kr);
+    for (let i = 0; i < 12; i++) { const a = new THREE.Mesh(new THREE.IcosahedronGeometry(0.09, 0), lamb(frukt)); const v = r() * 6.28; a.position.set(...ut(dx + Math.cos(v) * 1.35, dz + Math.sin(v) * 1.35, 2.2 + (r() - 0.3))); T.add(a); } };
+  trad(-5.8, 3.6, 0x5a8a3a, 0xc0302a); trad(4.6, 4.2, 0x4e7e36, 0x6a3a7a);
+  // vinbärsbuskar längs västra staketet
+  for (let i = 0; i < 4; i++) { buske(X0 + 0.9, -1 - i * 1.4, 0.55, 0x4a7a32); for (let k = 0; k < 6; k++) { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.05, 0), lamb(0xc0202a)); b.position.set(...ut(X0 + 0.9 + (r() - 0.5) * 0.9, -1 - i * 1.4 + (r() - 0.5) * 0.9, 0.5 + r() * 0.3)); T.add(b); } }
+  // flaggstång med blågul vimpel
+  { const fs = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 7, 8), vit); fs.position.set(...ut(5.2, 0.5, 3.5)); T.add(fs);
+    const vp = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.22, 2.2), lamb(0x2a5aa8)); vp.position.set(...ut(5.2, 1.6, 6.7)); T.add(vp); const gu = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.08, 2.2), lamb(0xf2c41a)); gu.position.set(...ut(5.2, 1.6, 6.7)); T.add(gu); }
+  // vit bänk mot husväggen, potatisland och skottkärra på baksidan
+  bBox(T, 1.5, 0.08, 0.45, vit, ...ut(3.2, 3.6, 0.45)); bBox(T, 1.5, 0.4, 0.06, vit, ...ut(3.2, 3.38, 0.7)); for (const dx of [-0.65, 0.65]) bBox(T, 0.06, 0.45, 0.4, vit, ...ut(3.2 + dx, 3.6, 0.22));
+  bBox(T, 4, 0.2, 2.6, 0x5a4232, ...ut(X1 - 2.6, -5, 0.1));
+  const pot = []; for (let rad = 0; rad < 4; rad++) for (let i = 0; i < 6; i++) pot.push({ p: ut(X1 - 4.3 + i * 0.68, -6 + rad * 0.65, 0.3), s: [0.2, 0.2, 0.2], c: 0x5a8a3a }); T.add(instanser(new THREE.IcosahedronGeometry(1, 0), lambert(), pot));
+  bBox(T, 0.7, 0.3, 1.0, 0x4a7a8a, ...ut(X1 - 5.4, -3.8, 0.4)).rotation.y = -0.4;
+  // graven: ett eget litet rum med en låg häck runt och en öppning in (mot huset)
+  const GX = -2, GZ = -7.5, hack = [];
+  for (let i = 0; i < 26; i++) { const a = i / 26 * Math.PI * 2; if (Math.abs(a - Math.PI / 2) < 0.35) continue; hack.push({ p: ut(GX + Math.cos(a) * 2.6, GZ + Math.sin(a) * 2.2, 0.28), s: [0.6, 0.55, 0.5], r: [0, a, 0], c: 0x3f6a2c }); }
+  T.add(instanser(new THREE.BoxGeometry(1, 1, 1), lambert(), hack));
+  { const g = new THREE.Mesh(new THREE.CircleGeometry(1.5, 24), lamb(0xcfc8b8)); g.rotation.x = -Math.PI / 2; g.position.set(...ut(GX, GZ, 0.07)); g.receiveShadow = true; T.add(g);
+    for (let k = 1; k <= 4; k++) { const ring = new THREE.Mesh(new THREE.RingGeometry(k * 0.32, k * 0.32 + 0.03, 32), lamb(0xa9a290)); ring.rotation.x = -Math.PI / 2; ring.position.set(...ut(GX, GZ, 0.08)); T.add(ring); } }
+  { const [ax, , az] = ut(X0 - 1, Z1 + 1), [bx, , bz] = ut(X1 + 11, Z0 - 1); miljo.rojUt({ minX: Math.min(ax, bx), maxX: Math.max(ax, bx), minZ: Math.min(az, bz), maxZ: Math.max(az, bz) }); }   // inga skogsträd i trädgården eller vid ladan
+}
+const bengtLada = new THREE.Group();   // brevlådan: blå, LINDQVIST, vid vägen bredvid grusgången
+{ bBox(bengtLada, 0.12, 1.1, 0.12, 0x6a5a48, 0, 0.55, 0); const L = new THREE.Group(); L.position.y = 1.2; bengtLada.add(L);
+  bBox(L, 0.32, 0.3, 0.5, 0x2f6a9a, 0, 0, 0); const lock = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.5, 10, 1, false, 0, Math.PI), lamb(0x2f6a9a)); lock.rotation.set(Math.PI / 2, 0, Math.PI / 2); lock.position.y = 0.15; L.add(lock);
+  const namn = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.12), new THREE.MeshBasicMaterial({ map: texturRader(['LINDQVIST'], 512, 140, '#f4f1e8', '#222', 90) })); namn.position.set(0, 0.02, -0.26); namn.rotation.y = Math.PI; L.add(namn);
   bengtLada.position.set(BENGT_LADA.x, 0, BENGT_LADA.z); scen.add(bengtLada); traffYta(bengtLada, 0.6, 1.4, 0.6); }
-const bengtGrav = new THREE.Group();
-{ bengtGrav.add(at(box(1.4, 0.04, 1.0, mat(0xcfc6b0, { roughness: 1 })), 0, 0.02, 0), at(box(0.55, 0.75, 0.16, mat(0x8d8d8a)), 0, 0.4, 0.3));   // krattat grus och stenen
-  bengtGrav.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 6), mat(0xc0392b)), -0.35, 0.1, -0.1));   // en blomma
-  { const h = new THREE.Group(); h.add(at(box(0.05, 1.0, 0.05, mat(0x8a6a44)), 0, 0.5, 0), at(box(0.5, 0.07, 0.07, mat(0x6d6f72, { metalness: 0.5 })), 0.08, 1.0, 0)); h.position.set(0.32, 0, 0.42); h.rotation.z = 0.32; bengtGrav.add(h); bengtGrav.userData.hacka = h; }   /* A-058 tillägg 09:05: pappa Eriks hacka lutar mot stenen – ett frö */
-  bengtGrav.position.set(BENGT_GRAV.x, 0, BENGT_GRAV.z); bengtGrav.rotation.y = Math.PI; scen.add(bengtGrav); }
+const bengtGrav = new THREE.Group();   // gravstenen på krattat grus, ERIK / LINDQVIST / 1941–2003, hackan lutad mot stenen till d15
+{ const G = bengtGrav, sten = lamb(0x8a8780);
+  bBox(G, 0.9, 1.0, 0.22, sten, 0, 0.5, 0); bBox(G, 0.7, 0.12, 0.22, sten, 0, 1.06, 0); bBox(G, 0.4, 0.1, 0.22, sten, 0, 1.16, 0);
+  const in_ = new THREE.Mesh(new THREE.PlaneGeometry(0.75, 0.55), new THREE.MeshLambertMaterial({ map: texturRader(['ERIK', 'LINDQVIST', '1941–2003'], 512, 380, '#8a8780', '#1e1d1b', 86) })); in_.position.set(0, 0.6, 0.12); G.add(in_);
+  G.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 6), mat(0xc0392b)), -0.45, 0.1, 0.4));   // en blomma
+  { const h = new THREE.Group(); h.add(at(cyl(0.03, 0.03, 0.95, mat(0x7a5532), 6), 0, 0, 0), at(box(0.6, 0.06, 0.06, mat(0x55524e)), 0, 0.47, 0)); h.position.set(0.55, 0.45, 0.2); h.rotation.z = 0.32; G.add(h); G.userData.hacka = h; }
+  G.position.set(BENGT_GRAV.x, 0.05, BENGT_GRAV.z); G.rotation.y = Math.PI; scen.add(G); }
 bengtGrav.userData.hacka.visible = !S.hackaFatt;
 /* A-058 tillägg 08:38: skyltarna på staketet – PRIVAT MARK och en handmålad HMPF – står tills kartan öppnas */
 const privatSkyltar = new THREE.Group();
@@ -13645,12 +13739,13 @@ function ritningMal() {
   if (!fran) return null;
   const [pl, typ] = fran;
   if (!pl || platsFylld(pl) || !(MASKINER[typ] || SKRIVARTYP[typ])) return null;
-  return [typ + '@' + pl.id, () => { const m = SKRIVARTYP[typ] ? skapaSkrivare(SKRIVARTYP[typ]) : skapaMaskin(typ); m.position.set(pl.x, 0, pl.z); m.updateMatrixWorld(true); return [m]; }];
+  return [typ + '@' + pl.id, () => { const m = typ === 'solpark' && vidSlyPlatsen(pl.x, pl.z) ? solparkStor() : SKRIVARTYP[typ] ? skapaSkrivare(SKRIVARTYP[typ]) : skapaMaskin(typ); m.position.set(pl.x, 0, pl.z); m.updateMatrixWorld(true); return [m]; }];
 }
 /* A-071: allt som ska ställas eller monteras härnäst syns som kontur (ritning) på sin plats – flera samtidigt */
 function konturMal() {
   const lista = [];
   const r = ritningMal(); if (r) lista.push(r);
+  if (S.slyRojt && !placerade.some((p) => p.typ === 'solpark' && vidSlyPlatsen(p.x, p.z)) && !(r && /^solpark@/.test(r[0]))) { const pl = PLATS.solpark; lista.push(['solpark@slyet', () => { const g = solparkStor(); g.position.set(pl?.x ?? -30, 0, pl?.z ?? -1); g.updateMatrixWorld(true); return [g]; }]); }   /* A-075 §3.3: när sista klumpen fallit syns parken som kontur på sin plats */
   if (S.skrivareStar && !S.cykelOmbyggd && (S.stromHjalp || S.generatorTagen || S.generatorStar || S.cykelBuren)) {   // cykeln och generatorn vid skrivaren, i valfri ordning
     if (!S.cykelStar) lista.push(['cykel@' + CYKEL_RUTA.id, () => { const c = vagCykel.clone(true); c.traverse((o) => { o.visible = true; }); if (c.userData.skrivare) {} c.children.forEach((o, i) => { const k = vagCykel.children[i]; if (k === vagCykel.userData.skrivare || k === vagCykel.userData.generator || (k?.material?.color?.getHex?.() === 0xf28c28 && k.geometry?.type === 'BoxGeometry')) o.visible = false; }); c.position.set(CYKEL_RUTA.x, 0.18, CYKEL_RUTA.z); c.rotation.set(0, 0.7 + Math.PI / 2, 0); const st = cykelStall.clone(true); st.visible = true; st.scale.set(1, 1, 1); c.updateMatrixWorld(true); return [c, st]; }]);
     if (!S.generatorStar) lista.push(['generator@gen', () => { const g = genStar.clone(true); g.visible = true; g.updateMatrixWorld(true); return [g]; }]);
@@ -14603,20 +14698,26 @@ const grop = new THREE.Group();
 { const Y = -SVACKA.djup, berg = mat(0x6e6a64, { roughness: 0.95 }), timmer = mat(0x6a4a2a, { roughness: 1 }), mork = new THREE.MeshBasicMaterial({ color: 0x0b0906 });
   // floden: rinnande vatten från västra kanten till östra kanten
   const vt = (() => { const c = document.createElement('canvas'); c.width = 256; c.height = 64; const g = c.getContext('2d'); g.fillStyle = '#3f7fa8'; g.fillRect(0, 0, 256, 64); for (let i = 0; i < 70; i++) { g.fillStyle = `rgba(255,255,255,${0.08 + Math.random() * 0.2})`; g.fillRect(Math.random() * 256, Math.random() * 64, 10 + Math.random() * 30, 1.5); } const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(30, 1); t.colorSpace = THREE.SRGBColorSpace; return t; })();
-  const flod = new THREE.Mesh(new THREE.PlaneGeometry(170, SVACKA.flodB, 1, 1), new THREE.MeshStandardMaterial({ map: vt, roughness: 0.15, metalness: 0.1, transparent: true, opacity: 0.88 })); flod.rotation.x = -Math.PI / 2; flod.position.set(0, Y - 0.12, SVACKA.flod); scen.add(flod); grop.userData.flodTex = vt;
+  const flodGeo = new THREE.PlaneGeometry(170, SVACKA.flodB, 170, 1); { const q = flodGeo.attributes.position; for (let i = 0; i < q.count; i++) q.setY(i, q.getY(i) - SVACKA_OFF(q.getX(i))); }   /* A-075: floden slingrar med svackan */
+  const flod = new THREE.Mesh(flodGeo, new THREE.MeshStandardMaterial({ map: vt, roughness: 0.15, metalness: 0.1, transparent: true, opacity: 0.88 })); flod.rotation.x = -Math.PI / 2; flod.position.set(0, Y - 0.12, SVACKA.flod); scen.add(flod); grop.userData.flodTex = vt;
   // grusbankar
-  for (const [x, w] of [[-14, 5], [-1.2, 4.5], [13, 6], [30, 4]]) { const b = new THREE.Mesh(new THREE.CircleGeometry(1, 16), mat(0xc9b48a, { roughness: 1 })); b.rotation.x = -Math.PI / 2; b.scale.set(w / 2, 0.9, 1); b.position.set(x, Y + 0.02, SVACKA.flod + SVACKA.flodB / 2 + 0.55); scen.add(b); }
+  for (const [x, w] of [[-14, 5], [-1.2, 4.5], [13, 6], [30, 4]]) { const b = new THREE.Mesh(new THREE.CircleGeometry(1, 16), mat(0xc9b48a, { roughness: 1 })); b.rotation.x = -Math.PI / 2; b.scale.set(w / 2, 0.9, 1); b.position.set(x, Y + 0.02, SVACKA.flod + SVACKA.flodB / 2 + 0.55 + SVACKA_OFF(x)); scen.add(b); }
   // stenblock vid bergväggen
-  for (let i = 0; i < 18; i++) { const r = 0.4 + (i * 37 % 10) / 12, x = -60 + i * 7 + (i % 3); scen.add(at(new THREE.Mesh(new THREE.DodecahedronGeometry(r, 0), berg), x, Y + r * 0.5, SVACKA.botten2 + 0.3)); }
+  /* A-075: stenblocken vid foten ritas med bergväggens block (svackaBlock) */
   // gruvöppningen: timmerstöttor, mörkt hål, plankor för (innan d17), rälsbit och tippvagn
   const ing = new THREE.Group(); ing.position.set(GRUVA.x, Y, GRUVA.z);
-  ing.add(at(box(0.25, GRUVA.h, 0.25, timmer), -GRUVA.b / 2, GRUVA.h / 2, 0), at(box(0.25, GRUVA.h, 0.25, timmer), GRUVA.b / 2, GRUVA.h / 2, 0), at(box(GRUVA.b + 0.6, 0.3, 0.3, timmer), 0, GRUVA.h, 0));
-  const hal = new THREE.Mesh(new THREE.PlaneGeometry(GRUVA.b - 0.1, GRUVA.h - 0.1), mork); hal.position.set(0, GRUVA.h / 2, -0.05); ing.add(hal); ing.userData.hal = hal;
-  const plankor = new THREE.Group(); for (let i = 0; i < 6; i++) { const pl = box(GRUVA.b + 0.2, 0.32, 0.06, mat([0x8a6a44, 0x7a5c3a, 0x96764c][i % 3], { roughness: 1 })); pl.position.set(0, 0.3 + i * 0.4, 0.12); pl.rotation.z = (i % 2 ? 1 : -1) * 0.06; plankor.add(pl); }
-  { const sk = skylt('E. LINDQVIST', 1.3, 0.28, '#7a5c3a', '#f2e6c8'); sk.position.set(0, 1.5, 0.17); plankor.add(sk); }
+  /* A-075 §1.4: öppningen går från marken upp till överliggaren – stolparna når ner i marken, ett trägolv i öppningen, en båge av stenblock runt */
+  ing.add(at(box(0.28, 3.6, 0.28, timmer), -1.3, 1.3, 0.15), at(box(0.28, 3.6, 0.28, timmer), 1.3, 1.3, 0.15), at(box(3.1, 0.3, 0.35, timmer), 0, 2.75, 0.15));
+  const hal = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.9), mork); hal.position.set(0, 1.05, 0.05); ing.add(hal); ing.userData.hal = hal;
+  ing.add(at(box(2.6, 0.3, 2.2, mat(0x9a8e78, { roughness: 1 })), 0, -0.12, 0.9));
+  { const bm = mat(0x77746e, { roughness: 1, flatShading: true }); let f = 3; const r = () => ((f = (f * 16807) % 2147483647) / 2147483647);
+    for (let k = 0; k < 10; k++) { const a = Math.PI * k / 9, b = box(1.1, 0.9, 1.0, bm); b.position.set(Math.cos(a) * 2.25, Math.sin(a) * 3.35, -0.45); b.rotation.set((r() - 0.5) * 0.3, (r() - 0.5) * 0.3, a - Math.PI / 2 + (r() - 0.5) * 0.2); ing.add(b); } }
+  const plankor = new THREE.Group(); for (let i = 0; i < 6; i++) { const pl = box(2.7, 0.3, 0.06, mat(i % 2 ? 0x8a6a45 : 0x7d5e3c, { roughness: 1 })); pl.position.set(0, 0.3 + i * 0.4, 0.3); pl.rotation.z = (i % 2 ? 1 : -1) * 0.04; plankor.add(pl); }
+  { const sk = skylt('E. LINDQVIST', 2.0, 0.42, '#7d5e3c', '#efe6d0'); sk.position.set(0, 1.5, 0.35); plankor.add(sk); }
   ing.add(plankor); ing.userData.plankor = plankor;
-  for (const dx of [-0.35, 0.35]) ing.add(at(box(0.06, 0.06, 1.6, mat(0x7a4a2a, { metalness: 0.5, roughness: 0.8 })), dx, 0.05, 0.7));
-  { const v = new THREE.Group(); v.add(at(box(0.9, 0.5, 0.7, mat(0x6a3a22, { metalness: 0.4, roughness: 0.8 })), 0, 0.45, 0)); for (const [x, z] of [[-0.3, -0.25], [0.3, -0.25], [-0.3, 0.25], [0.3, 0.25]]) { const h = cyl(0.12, 0.12, 0.06, mat(0x333333), 8); h.rotation.x = Math.PI / 2; h.position.set(x, 0.14, z); v.add(h); } v.position.set(2.2, 0, 0.9); v.rotation.y = 0.5; ing.add(v); }
+  for (const dx of [-0.45, 0.45]) ing.add(at(box(0.06, 0.06, 3.2, mat(0x6e5a4a, { metalness: 0.5, roughness: 0.8 })), dx, 0.1, 1.6));   // rälsen ut ur gruvan
+  for (let k = 0; k < 6; k++) ing.add(at(box(1.3, 0.06, 0.2, mat(0x5a4030, { roughness: 1 })), 0, 0.05, 0.3 + k * 0.55));
+  { const v = new THREE.Group(); v.add(at(box(1.1, 0.6, 1.3, mat(0x8a5a3a, { roughness: 0.9 })), 0, 0.55, 0), at(box(0.95, 0.5, 1.15, mat(0x3a2618)), 0, 0.62, 0)); for (const [x, z] of [[-0.45, -0.4], [0.45, -0.4], [-0.45, 0.4], [0.45, 0.4]]) { const h = cyl(0.16, 0.16, 0.08, mat(0x3a3430), 10); h.rotation.z = Math.PI / 2; h.position.set(x, 0.18, z); v.add(h); } v.position.set(0, 0.1, 2.6); v.rotation.y = 0.05; ing.add(v); ing.userData.vagn = v; }   /* A-075 §2: gruvvagnen man åker i */
   scen.add(ing); grop.userData.ingang = ing;
   // orten: en kort tunnel in i berget, ådern i bortre väggen, en fotogenlykta
   const ort = new THREE.Group(); ort.position.set(GRUVA.x, Y, GRUVA.z); const vagg = mat(0x4a443e, { roughness: 1, side: THREE.DoubleSide });
@@ -14629,7 +14730,6 @@ const grop = new THREE.Group();
   // glittret: guldsand på grusbanken (vaskning) och ådern i ortens bortre vägg (brytning)
   const glitter = new THREE.Group(); const gm = mat(0xf2c94c, { emissive: 0xc89a00, emissiveIntensity: 1.3, metalness: 0.8, roughness: 0.2 });
   for (let i = 0; i < 26; i++) glitter.add(at(box(0.05, 0.03, 0.05, gm), VASK.x - 1.6 + Math.random() * 3.2, Y + 0.06, VASK.z - 0.6 + Math.random() * 1.2));
-  for (let i = 0; i < 34; i++) glitter.add(at(box(0.08, 0.08, 0.05, gm), GRUVA.x - 1 + Math.random() * 2, Y + 0.4 + Math.random() * 1.8, GRUVA.z - GRUVA.l + 0.02));
   glitter.visible = false; scen.add(glitter); grop.userData.glitter = glitter;
   // spången över floden, pappa Eriks grejer: grävskopan på slänten, vaskrännan vid floden, och pappas Volvo halvt nedgrävd i södra slänten
   { const sp = new THREE.Group(); for (let i = 0; i < 5; i++) sp.add(at(box(0.32, 0.08, SVACKA.flodB + 1.6, mat(0x8a6a44, { roughness: 1 })), -0.7 + i * 0.35, 0, 0)); sp.position.set(GRUVA.x, Y + 0.1, SVACKA.flod); scen.add(sp); }
@@ -14637,6 +14737,54 @@ const grop = new THREE.Group();
   { const r = new THREE.Group(); r.add(at(box(0.5, 0.1, 3, mat(0x9a7a4a)), 0, 0.3, 0), at(box(0.06, 0.3, 3, mat(0x9a7a4a)), -0.25, 0.4, 0), at(box(0.06, 0.3, 3, mat(0x9a7a4a)), 0.25, 0.4, 0), at(box(0.08, 0.5, 0.08, mat(0x6a4a2a)), 0, 0.15, 1.2)); r.rotation.set(0, 1.4, 0.1); r.position.set(VASK.x + 3.5, Y, VASK.z + 0.4); scen.add(r); }
   { const v = new THREE.Group(); v.add(at(box(1.8, 0.9, 4.2, mat(0x5a6e8a, { metalness: 0.4, roughness: 0.7 })), 0, 0.45, 0), at(box(1.6, 0.7, 2, mat(0x4a5a72, { metalness: 0.4, roughness: 0.7 })), 0, 1.1, -0.3), at(box(1.5, 0.5, 0.05, mat(0x2a3440, { roughness: 0.2 })), 0, 1.15, 0.72)); v.rotation.set(-0.45, 2.2, 0.15); v.position.set(4, svackaBas(-27.5) - 0.3, -27.5); scen.add(v); grop.userData.volvo = v; }
   scen.add(grop); }
+/* ---------- A-075 §1: svackan v2 – tätt sly längs bakkanten (bara grinden är ett glapp), granar i slänten bakom grinden, bergväggen av stora block ----------
+   Allt ritas som InstancedMesh (några få ritanrop). Det som ligger utanför spelytan är kuliss utan kollision. Facit: claude/soptippsvagen-mockup-varlden.md (svacka.js). */
+const svackaKuliss = new THREE.Group(); scen.add(svackaKuliss);
+{
+  let fro = 11; const r = () => ((fro = (fro * 16807) % 2147483647) / 2147483647);
+  const X0 = -80, X1 = 80, Y = -SVACKA.djup;
+  // bakkantens sly: två rader buskar 1,5–2,5 m och enstaka granar 5–8 m bakom. Glappet är grinden.
+  const busk = [], gran = [];
+  for (let x = X0; x <= X1; x += 0.8) {
+    if (Math.abs(x - GRIND.x) < 2.3) continue;
+    for (let k = 0; k < 2; k++) {
+      const z = SVACKA.kant + 1.2 - r() * 2.4 + SVACKA_OFF(x), rr = 0.75 + r() * 0.55, sy = 1.2 + r() * 0.5, xx = x + r() * 0.5;
+      busk.push({ p: [xx, svackaHojd(xx, z) + rr * 0.85, z], s: [rr, rr * sy, rr], r: [0, r() * 6, 0], c: [0x4f7f34, 0x5b8a3a, 0x46722f][Math.floor(r() * 3)] });
+    }
+    if (r() < 0.22) { const z = SVACKA.kant - 1.2 - r() * 1.6 + SVACKA_OFF(x), h = 5 + r() * 3; gran.push({ p: [x, svackaHojd(x, z) + h / 2, z], s: [1.3 + r() * 0.5, h, 1.3 + r() * 0.5], c: r() < 0.5 ? 0x3f7a3a : 0x4f8a45 }); }
+  }
+  // bakom grinden: 4–5 granar i slänten (7–9 m) som skymmer botten och bergväggen – inte på grusvägen
+  for (const [dx, dz, h] of [[-3.2, -1.2, 8.5], [-4.6, -2.6, 9], [-3.0, -3.4, 10], [-5.8, -1.4, 8], [-2.6, -5.6, 9.5]]) {   // väster om grusvägen (öster om grinden går serpentinerna tätt)
+    let x = GRIND.x + dx, z = SVACKA.kant + dz; for (let f = 0; f < 6 && svackaVag(x, z)[0] < VAG_B + 1.4; f++) z -= 0.6;
+    gran.push({ p: [x, svackaHojd(x, z) + h / 2, z], s: [1.7, h, 1.7], c: 0x3f7a3a });
+  }
+  svackaKuliss.add(instanser(new THREE.IcosahedronGeometry(1, 0), lambert(), busk));
+  svackaKuliss.add(instanser(new THREE.ConeGeometry(1, 1, 7), lambert(), gran));
+  // bergväggen: stora grå block i fem lager, lite snett staplade, gröna tuvor på ungefär vart femte, lösa block vid foten
+  const gra = [0x6f6c66, 0x7c7973, 0x8a867e, 0x65625c, 0x777168], block = [], tuva = [], fot = [];
+  for (let x = X0; x <= X1; x += 1.6) {
+    const bas = SVACKA.botten2 + SVACKA_OFF(x);
+    for (let rad = 0; rad < 5; rad++) {
+      if (Math.abs(x - GRUVA.x) < 2.6 && rad < 2) continue;   // gruvans öppning
+      const w = 1.6 + r() * 1.8, h = 1.6 + r() * 1.4, d = 1.2 + r() * 1.4, t = rad / 5;
+      const p = [x + (r() - 0.5) * 0.8, Y + rad * 2.15 + h * 0.4, bas - 0.4 - t * 1.3 - r() * 0.5];
+      block.push({ p, s: [w, h, d], r: [(r() - 0.5) * 0.35, (r() - 0.5) * 0.5, (r() - 0.5) * 0.3], c: gra[Math.floor(r() * gra.length)] });
+      if (r() < 0.18) { const rr = 0.35 + r() * 0.3; tuva.push({ p: [p[0], p[1] + h / 2, p[2] + d / 2], s: [rr, rr, rr], c: 0x5f8c3c }); }
+    }
+    if (r() < 0.5 && Math.abs(x - GRUVA.x) > 3) { const rr = 0.4 + r() * 0.7; fot.push({ p: [x + r(), Y + 0.2, bas + 0.8 + r() * 1.5], s: [rr, rr, rr], r: [r() * 3, r() * 3, 0], c: 0x7c7973 }); }
+  }
+  // gruvöppningens stenbåge sitter ihop med väggen: inga block framför hålet
+  svackaKuliss.add(instanser(new THREE.BoxGeometry(1, 1, 1), lambert(), block));
+  svackaKuliss.add(instanser(new THREE.IcosahedronGeometry(1, 0), lambert(), tuva));
+  svackaKuliss.add(instanser(new THREE.DodecahedronGeometry(1, 0), lambert(), fot));
+  // liv på slänten: tuvor och stenar (inte på grusvägen)
+  const sl = [], st = [];
+  for (let i = 0; i < 520; i++) { const x = X0 + r() * (X1 - X0), z = SVACKA.kant - 0.8 - r() * (SVACKA.kant - SVACKA.botten1 - 1) + SVACKA_OFF(x); if (Math.abs(x + 12) < 12 && svackaVag(x, z)[0] < VAG_B + 0.6) continue; const t = r();
+    if (t < 0.65) { const rr = 0.25 + r() * 0.25, h = 0.4 + r() * 0.4; sl.push({ p: [x, svackaHojd(x, z) + h * 0.35, z], s: [rr, h, rr], c: r() < 0.5 ? 0x6f9a44 : 0x88ad55 }); }
+    else { const rr = 0.2 + r() * 0.5; st.push({ p: [x, svackaHojd(x, z) + 0.05, z], s: [rr, rr, rr], r: [r() * 3, r() * 3, 0], c: 0x8b877e }); } }
+  svackaKuliss.add(instanser(new THREE.ConeGeometry(1, 1, 5), lambert(), sl));
+  svackaKuliss.add(instanser(new THREE.DodecahedronGeometry(1, 0), lambert(), st));
+}
 gruvaOppen = () => !!S.grindKapad;
 { const v = grop.userData.volvo; traffYta(v, 2.2, 1.6, 4.4); interaktor.registrera(v, { text: () => 'Pappas Volvo', aktivera: () => tanke('Pappas Volvo. Han begravde den när han gick i konkurs.', 'A-070 nr 31: Volvon i svackan', 'REAKTION') }); }
 /* A-070 nr 4: försöker man gå ner för slänten utanför grusvägen */
@@ -14646,18 +14794,61 @@ setInterval(() => { try { if (!ui.igang || pausad || !S.grindKapad) return; cons
 const SLY = { minX: -38, maxX: -22, minZ: -6, maxZ: 4 };
 const SLY_T = { fro: 'Alldeles igenvuxet. Här kommer man inte fram.', vill: 'Om man bara hade en… motorsåg.', pappa: 'Äntligen träd. /Pappa', klar: 'Där. Perfekt plats för solen.' };
 const slyKlumpar = [];
-{ const gron = [0x3d6a2e, 0x4a7a34, 0x34602a, 0x5a7a3a], tagg = mat(0x5a4a2e, { roughness: 1 });
-  [[-35, -3], [-30.5, -4.2], [-26, -2.6], [-34, 1.8], [-29.4, 0.6], [-24.6, 2.4]].forEach(([x, z], k) => {
-    const g = new THREE.Group(); for (let i = 0; i < 9; i++) { const r = 0.7 + ((i * 7 + k) % 5) * 0.18; g.add(at(new THREE.Mesh(new THREE.DodecahedronGeometry(r, 0), mat(gron[(i + k) % 4], { roughness: 1 })), (i % 3 - 1) * 1.1, r * 0.8 + (i > 5 ? 0.6 : 0), (Math.floor(i / 3) - 1) * 1.0)); }
-    for (let i = 0; i < 5; i++) { const st = cyl(0.03, 0.03, 1.6, tagg, 4); st.position.set((i - 2) * 0.5, 0.8, 0.9); st.rotation.z = (i - 2) * 0.25; g.add(st); }
-    g.position.set(x, 0, z); scen.add(g); traffYta(g, 2.8, 2.2, 2.8);
-    const kl = { g, k, borta: false }; slyKlumpar.push(kl);
+/* A-075 §3: slyet v2 – sex klumpar (9 täta buskar, 5 tunna slyträd 2–4 m, högt gult och grönt gräs, nypon), sly och skog runt om som inte går att såga,
+   ett gammalt lutande stängsel längs bortre kanten. Motorsågen: klumpen tippar och faller, sågspån yr, kvar blir en ljusare rundel med 4 stubbar och ris. */
+const SLY_MITT = { x: (SLY.minX + SLY.maxX) / 2, z: (SLY.minZ + SLY.maxZ) / 2 - 0.4 };
+const slyRundlar = new THREE.Group(); scen.add(slyRundlar);
+{ let fro = 5; const r = () => ((fro = (fro * 16807) % 2147483647) / 2147483647);
+  const lam = (c) => new THREE.MeshLambertMaterial({ color: c, flatShading: true });
+  const bm = [0x3f6a2c, 0x4d7a33, 0x56632e, 0x355e28].map(lam), stamM = lam(0x8a7a62), kronM = lam(0x7aa046), gras = [lam(0xb5a85a), lam(0x9aa34e)], nypM = lam(0x8a3a4a);
+  const ico = new THREE.IcosahedronGeometry(1, 0), kon = new THREE.ConeGeometry(0.05, 1, 3), tet = new THREE.TetrahedronGeometry(0.12);
+  [[-4.5, -3], [0, -3.3], [4.5, -2.8], [-4.3, 2], [0.2, 2.4], [4.6, 2.1]].forEach(([dx, dz], k) => {
+    const x = SLY_MITT.x + dx, z = SLY_MITT.z + dz, g = new THREE.Group(), inre = new THREE.Group(); g.add(inre);
+    for (let i = 0; i < 9; i++) { const rr = 0.7 + r() * 0.7, b = new THREE.Mesh(ico, bm[Math.floor(r() * 4)]); b.scale.set(rr, rr * (0.9 + r() * 0.8), rr); b.position.set((r() - 0.5) * 3, rr * 0.8, (r() - 0.5) * 3); b.castShadow = true; inre.add(b); }
+    for (let i = 0; i < 5; i++) { const h = 2.2 + r() * 1.8, st = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.07, h, 5), stamM); st.position.set((r() - 0.5) * 2.6, h / 2, (r() - 0.5) * 2.6); st.rotation.set((r() - 0.5) * 0.3, 0, (r() - 0.5) * 0.3); inre.add(st);
+      const kr = new THREE.Mesh(ico, kronM), kk = 0.5 + r() * 0.4; kr.scale.setScalar(kk); kr.position.set(st.position.x, h, st.position.z); kr.castShadow = true; inre.add(kr); }
+    for (const gm of gras) { const lista = []; for (let i = 0; i < 20; i++) { const h = 0.8 + r() * 0.9; lista.push({ p: [(r() - 0.5) * 3.6, h / 2, (r() - 0.5) * 3.6], s: [1, h, 1], r: [(r() - 0.5) * 0.5, 0, (r() - 0.5) * 0.5], c: 0xffffff }); } inre.add(instanser(kon, gm, lista)); }
+    for (let i = 0; i < 6; i++) { const t = new THREE.Mesh(tet, nypM); t.position.set((r() - 0.5) * 2.6, 0.6 + r() * 1.2, (r() - 0.5) * 2.6); inre.add(t); }
+    g.position.set(x, 0, z); scen.add(g); traffYta(g, 3.4, 2.4, 3.4);
+    // det som blir kvar: en ljusare, nedtrampad rundel med 4 stubbar och lite ris
+    const kvar = new THREE.Group(); kvar.position.set(x, 0, z);
+    { const m = new THREE.Mesh(new THREE.CircleGeometry(2.1, 12), lam(0xa3b06a)); m.rotation.x = -Math.PI / 2; m.position.y = 0.03; m.receiveShadow = true; kvar.add(m); }
+    for (let i = 0; i < 4; i++) kvar.add(at(new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.15, 6), lam(0xd8c39a)), (r() - 0.5) * 2, 0.08, (r() - 0.5) * 2));
+    for (let i = 0; i < 10; i++) { const ri = new THREE.Mesh(new THREE.BoxGeometry(0.5 + r() * 0.5, 0.03, 0.04), lam(0x8a7a5a)); ri.position.set((r() - 0.5) * 3, 0.06, (r() - 0.5) * 3); ri.rotation.y = r() * 3; kvar.add(ri); }
+    kvar.visible = false; slyRundlar.add(kvar);
+    const kl = { g, k, borta: false, kvar }; slyKlumpar.push(kl);
     interaktor.registrera(g, {
       text: () => !g.visible ? '' : valdTyp() === 'motorsag' ? '🪚 Såga bort slyet' : 'Sly och taggbuskar',
       kanAktivera: () => g.visible,
       aktivera: () => { if (valdTyp() !== 'motorsag') { if (!enGang(S.motorsagTanke ? SLY_T.vill : SLY_T.fro, 'A-066: slyet')) ui.toast('Det behövs en motorsåg', 'fel'); return; } sagaSly(kl); },
     });
-  }); }
+  });
+  // runt platsen: sly och skog som står kvar (öppet mot tippen i söder och mot tomten i öster), och ett gammalt rostigt stängsel längs bortre kanten
+  const ring = [], skog = [];
+  for (let i = 0; i < 80; i++) { const a = r() * Math.PI * 2, R = 9.5 + r() * 4, x = SLY_MITT.x + Math.cos(a) * R * 1.15, z = SLY_MITT.z + Math.sin(a) * R * 0.85 - 1;
+    if (z > SLY_MITT.z + 4.5 || x > SLY.maxX - 1 || z < SVACKA.kant + 2.5) continue; const rr = 0.9 + r() * 0.8; ring.push({ p: [x, rr * 0.9, z], s: [rr, rr * (1.2 + r() * 0.8), rr], c: [0x3f6a2c, 0x4d7a33, 0x355e28][Math.floor(r() * 3)] }); }
+  for (let i = 0; i < 40; i++) { const x = SLY.minX - 14 + r() * 22, z = SLY.minZ - 3 - r() * 12; if (z < SVACKA.kant + 2) continue; const h = 5 + r() * 4; skog.push({ p: [x, h / 2, z], s: [1.3 + r(), h, 1.3 + r()], c: r() < 0.5 ? 0x3f7a3a : 0x4f8a45 }); }
+  scen.add(instanser(ico, lambert(), ring), instanser(new THREE.ConeGeometry(1, 1, 7), lambert(), skog));
+  for (let x = SLY.minX; x <= SLY.maxX; x += 2) { const s = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.6, 5), lam(0x7a5a40)); s.position.set(x, 0.75, SLY.minZ - 0.9); s.rotation.z = (r() - 0.5) * 0.3; scen.add(s); }
+  { const tr = new THREE.Mesh(new THREE.BoxGeometry(SLY.maxX - SLY.minX, 0.04, 0.04), lam(0x8a6a50)); tr.position.set(SLY_MITT.x, 1.2, SLY.minZ - 0.9); tr.rotation.z = 0.03; scen.add(tr); }
+}
+/* A-075 §3.4: solcellsparken på slyets plats – tre rader med fem paneler (2,5 × 1,6 m) lutade mot solen på ställningar, mörkblå med ljusa linjer,
+   en vit växelriktare vid sidan och en svart kabel bort mot tomten. Kontur = samma modell (A-071). */
+function vidSlyPlatsen(x, z) { return Math.abs(x + 30) < 6 && Math.abs(z + 1.4) < 5; }   // slyets plats bakom tippen (SLY)
+function solparkStor() {
+  const g = new THREE.Group(), panelM = mat(0x22344e, { roughness: 0.35, metalness: 0.3 }), linM = mat(0x9fb0c0), stM = mat(0x9a9a9a);
+  for (let rad = 0; rad < 3; rad++) for (let k = 0; k < 5; k++) {
+    const x = -5.6 + k * 2.8, z = -3 + rad * 3.2;
+    const pnl = box(2.5, 0.06, 1.6, panelM); pnl.position.set(x, 1.15, z); pnl.rotation.x = 0.55; g.add(pnl);
+    for (let j = 1; j < 4; j++) { const l = box(0.02, 0.07, 1.6, linM); l.position.set(x - 1.25 + j * 0.625, 1.15, z); l.rotation.x = 0.55; g.add(l); }
+    for (const dx of [-1, 1]) for (const [dz, h] of [[-0.5, 1.5], [0.5, 0.85]]) g.add(at(box(0.08, h, 0.08, stM), x + dx, h / 2, z + dz));
+  }
+  g.add(at(box(0.8, 1.1, 0.4, mat(0xd8d8d0)), 7.8, 0.55, 3.2));
+  /* kabeln mot tomten ritas av spelets vanliga strömkabel */
+  g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  return g;
+}
+
 slySparr = (x, z) => !S.slyRojt && x > SLY.minX && x < SLY.maxX && z > SLY.minZ && z < SLY.maxZ;
 let sagar = null;
 function sagaSly(kl) {   // motorsågen: ca 1,5 s, klumpen faller och försvinner
@@ -14665,15 +14856,17 @@ function sagaSly(kl) {   // motorsågen: ca 1,5 s, klumpen faller och försvinne
   const iv = setInterval(() => { try { ton(110 + Math.random() * 40, 0.12, 0.08, 'sawtooth'); ton(220 + Math.random() * 60, 0.1, 0.04, 'square'); } catch {} kl.g.rotation.z = Math.sin(performance.now() / 30) * 0.02; }, 110);
   setTimeout(() => {
     clearInterval(iv); kl.borta = true;
-    const fall = () => { const k = Math.min(1, (performance.now() - t0 - 1500) / 600); kl.g.rotation.z = k * 1.3; kl.g.scale.setScalar(1 - k * 0.9); if (k < 1) requestAnimationFrame(fall); else kl.g.visible = false; };
-    fall(); setTimeout(() => { kl.g.visible = false; }, 800);
+    const fall = () => { const k = Math.min(1, (performance.now() - t0 - 1500) / 900), e = k * k; kl.g.children[0].rotation.z = -e * 1.45; kl.g.children[0].position.x = e * 0.6; if (k < 1) requestAnimationFrame(fall); else { kl.g.visible = false; kl.kvar.visible = true; } };   /* A-075: klumpen tippar och faller */
+    { const sp = new THREE.Group(), sm = new THREE.MeshBasicMaterial({ color: 0xe8d29a }); for (let i = 0; i < 40; i++) { const b = at(box(0.06, 0.06, 0.06, sm), kl.g.position.x + 1.2 + (Math.random() - 0.5) * 1.2, 0.4 + Math.random() * 1.2, kl.g.position.z + 1.5 + (Math.random() - 0.5) * 1.2); b.userData.v = (Math.random() - 0.3) * 0.04; sp.add(b); } scen.add(sp); const ts = performance.now();
+      const yr = () => { const t = (performance.now() - ts) / 1000; sp.children.forEach((b) => { b.position.y = Math.max(0.03, b.position.y + b.userData.v - t * 0.02); b.position.x += 0.01; }); if (t < 2.5) requestAnimationFrame(yr); else scen.remove(sp); }; yr(); }   /* sågspån yr */
+    fall(); setTimeout(() => { kl.g.visible = false; kl.kvar.visible = true; }, 1200);
     S.slyBort = [...new Set([...(S.slyBort || []), kl.k])]; sagar = null; textLogg('ljud', 'motorsag', 'Slyet faller', 'A-066');
     if (S.slyBort.length >= slyKlumpar.length && !S.slyRojt) { S.slyRojt = S.dag; paket([{ tanke: SLY_T.klar }], { vikt: 'STORY', varfor: 'A-066: slyet är röjt', kvitto: true }); try { uppdateraMark(); } catch {} }
     sparaSnart();
   }, 1500);
 }
 setInterval(() => { try {
-  for (const kl of slyKlumpar) if (!kl.borta && (S.slyBort || []).includes(kl.k)) { kl.borta = true; kl.g.visible = false; }
+  for (const kl of slyKlumpar) if (!kl.borta && (S.slyBort || []).includes(kl.k)) { kl.borta = true; kl.g.visible = false; kl.kvar.visible = true; }
   if (!ui.igang || sover || pausad) return;
   const p = spelare.pos, nara = p.x > SLY.minX - 3 && p.x < SLY.maxX + 3 && p.z > SLY.minZ - 3 && p.z < SLY.maxZ + 3;
   const solMal = /solcellspark/i.test(String(stegText(STEG[S.steg]) || ''));
@@ -14710,10 +14903,10 @@ interaktor.registrera(grusGrind, {
 });
 function ritaGrustag() {
   const oppen = !!S.grindKapad;
-  grusGrind.userData.blad.visible = !oppen; grusGrind.userData.sly.visible = !oppen;
+  grusGrind.userData.blad.visible = !oppen; grusGrind.userData.sly.visible = false;   /* A-075: grinden är bakkantens enda glapp – inget sly framför den */
   grop.userData.glitter.visible = !!S.guldAder;
-  grop.userData.ingang.userData.plankor.visible = !oppen; grop.userData.ort.visible = oppen;   /* A-066: plankorna för gruvan tas bort när grinden är kapad */
-  { const p = spelare.pos, inne = oppen && iGruvan(p.x, p.z); grop.userData.ort.userData.lykta.intensity = inne ? 1.6 : 0; }
+  grop.userData.ingang.userData.plankor.visible = !oppen; grop.userData.ort.visible = false;   /* A-066: plankorna för gruvan tas bort när grinden är kapad */
+  { const p = spelare.pos; if (oppen && !gruvLage && !harSagt(GRUV_T.fro) && Math.hypot(p.x - GRUVA.x, p.z - GRUVA.z - 2) < 4) tanke(GRUV_T.fro, 'A-075: frö – gruvvagnen', 'REAKTION'); }   /* A-075 §2: första gången i gruvöppningen efter d17 */
 }
 let gnistor = null;
 function rolfKaparGrinden() {
@@ -14742,15 +14935,137 @@ bengtLadaHandlare.push({
 // klumpen på pappas grav dagen efter
 const gravKlump = at(new THREE.Mesh(new THREE.DodecahedronGeometry(0.07, 0), mat(0xf2c94c, { metalness: 0.9, roughness: 0.25, emissive: 0x4a3500 })), 0, 0.82, 0.3); gravKlump.visible = false; bengtGrav.add(gravKlump);
 // hackan bryter malm ur ådern i bergväggen
-const bergYta = at(box(GRUVA.b, 2.2, 0.6, traffMat), GRUVA.x, -SVACKA.djup + 1.1, GRUVA.z - GRUVA.l + 0.3); scen.add(bergYta);   /* A-066: ådern sitter i ortens bortre vägg */
+/* ---------- A-075 §2: gruvan – åk gruvvagnen 80 m som en berg- och dalbana ner till grottan med ådern, och tillbaka upp ----------
+   Gruvan är en egen scen (gruvScen) i världens koordinater, under svackan. Den ritas i stället för världen medan man åker eller står i grottan,
+   så att varken världens ritanrop eller dess ljus kostar något där nere. Facit: mockupens gruva.js (BANA, grottan, lyktorna, dimman 4–26 m). */
+const GRUV_O = new THREE.Vector3(GRUVA.x, -SVACKA.djup, GRUVA.z);   // ingångens golv; banans z < 0 går in i berget (norrut)
+const GRUV_BANA = new THREE.CatmullRomCurve3([
+  [0, 0, 4], [0, 0, 0], [0, 0, -8], [0, -0.2, -11], [-0.5, -5, -18], [-2, -6.6, -22], [-5.5, -4.6, -27],
+  [-10, -4.1, -29.5], [-15, -9, -30.5], [-20, -10.6, -28], [-24, -9.5, -23.5], [-26.5, -10, -18.5],
+  [-27.5, -12.6, -12], [-27.5, -13.2, -7], [-27.5, -13.3, -3]].map((p) => new THREE.Vector3(...p).add(GRUV_O)), false, 'catmullrom', 0.3);
+const GRUV_LANGD = GRUV_BANA.getLength();
+const GRUV_GC = new THREE.Vector3(-27.5, -12.8, -0.8).add(GRUV_O);   // grottans mitt
+const GRUV_GOLV = GRUV_GC.y - 0.42;
+const GRUV_START_T = 4 / GRUV_LANGD, GRUV_SLUT_T = 1 - 0.6 / GRUV_LANGD;   // vagnen står vid ingången (4 m in på banan) och stannar vid bocken
+const GRUV_T = { fro: 'Räls. Och en vagn. Det här måste jag testa.' };   /* A-075 §2: frö, listas i loggen för granskning */
+const gruvScen = new THREE.Scene(); gruvScen.background = new THREE.Color(0x050403); gruvScen.fog = new THREE.Fog(0x050403, 4, 26);
+const gruvRam = (t) => { const p = GRUV_BANA.getPointAt(t), tan = GRUV_BANA.getTangentAt(t), sida = new THREE.Vector3().crossVectors(tan, new THREE.Vector3(0, 1, 0)).normalize(); return { p, tan, sida }; };
+const iGrottanP = (p) => p.distanceTo(GRUV_GC) < 6.2;
+{ const sc = gruvScen; let fro = 7; const r = () => ((fro = (fro * 16807) % 2147483647) / 2147483647);
+  sc.add(new THREE.HemisphereLight(0x8a8070, 0x1a140e, 0.45));
+  const GRA = [0x5c5852, 0x66615a, 0x524e48, 0x6e685f, 0x48443f], dummy = new THREE.Object3D(), M4 = new THREE.Matrix4();
+  const lista = (geo, mt) => ({ geo, mt, ms: [], cs: [] }), lagg = (L, m, c) => { L.ms.push(m.clone()); L.cs.push(c); };
+  const bygg = (L) => { const m = new THREE.InstancedMesh(L.geo, L.mt, Math.max(1, L.ms.length)), c = new THREE.Color(); L.ms.forEach((x, i) => { m.setMatrixAt(i, x); m.setColorAt(i, c.setHex(L.cs[i] ?? 0xffffff)); }); m.computeBoundingSphere(); m.frustumCulled = false; sc.add(m); return m; };
+  const sten = lista(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({ flatShading: true })), golvL = lista(new THREE.BoxGeometry(3.4, 0.3, 0.9), new THREE.MeshLambertMaterial({ color: 0x3e3830, flatShading: true }));
+  const blockM = (p, w, h, d, rx, ry, rz) => { dummy.position.copy(p); dummy.rotation.set(rx, ry, rz); dummy.scale.set(w, h, d); dummy.updateMatrix(); return dummy.matrix; };
+  // väggar, tak och golv av block längs banan
+  const N = Math.floor(GRUV_LANGD / 0.7);
+  for (let i = 0; i <= N; i++) { const t = i / N, { p, sida, tan } = gruvRam(t); if (iGrottanP(p)) break;
+    for (const s of [-1, 1]) for (let k = 0; k < 3; k++) { const q = p.clone().addScaledVector(sida, s * (1.75 + r() * 0.35)).add(new THREE.Vector3(0, 0.3 + k * 1.0, 0)); lagg(sten, blockM(q, 0.9 + r() * 0.6, 1.0 + r() * 0.6, 0.9 + r() * 0.5, (r() - 0.5) * 0.15, (r() - 0.5) * 0.3, (r() - 0.5) * 0.15), GRA[Math.floor(r() * 5)]); }
+    for (let k = -1; k <= 1; k++) { const q = p.clone().addScaledVector(sida, k * 1.1).add(new THREE.Vector3(0, 3.0 + r() * 0.3, 0)); lagg(sten, blockM(q, 1.3, 0.8, 1.0, (r() - 0.5) * 0.15, (r() - 0.5) * 0.4, (r() - 0.5) * 0.15), GRA[Math.floor(r() * 5)]); }
+    dummy.position.copy(p).add(new THREE.Vector3(0, -0.35, 0)); dummy.scale.set(1, 1, 1); dummy.rotation.set(0, 0, 0); dummy.lookAt(p.clone().add(tan).add(new THREE.Vector3(0, -0.35, 0))); dummy.updateMatrix(); lagg(golvL, dummy.matrix, 0xffffff); }
+  // grottan längst ner: rund, ca 13 m bred, öppning mot banan
+  for (let i = 0; i < 260; i++) { const u = r() * Math.PI * 2, v = r() * Math.PI * 0.55, R = 6.5 + r() * 1.2;
+    const dir = new THREE.Vector3(Math.cos(u) * Math.sin(v + 0.5), Math.cos(v + 0.5) * 0.75, Math.sin(u) * Math.sin(v + 0.5)), q = GRUV_GC.clone().addScaledVector(dir, R);
+    if (q.z < GRUV_GC.z - 3 && Math.abs(q.x - GRUV_GC.x) < 2.5 && q.y < GRUV_GC.y + 3.5) continue;
+    lagg(sten, blockM(q, 1.6 + r(), 1.4 + r(), 1.4 + r(), r(), r(), r()), GRA[Math.floor(r() * 5)]); }
+  bygg(sten); bygg(golvL);
+  { const g = new THREE.Mesh(new THREE.CircleGeometry(8, 20), new THREE.MeshLambertMaterial({ color: 0x3a342d, flatShading: true })); g.rotation.x = -Math.PI / 2; g.position.set(GRUV_GC.x, GRUV_GOLV, GRUV_GC.z); sc.add(g); }
+  // räls och syllar längs hela banan
+  for (const s of [-0.45, 0.45]) { const pts = []; for (let i = 0; i <= 300; i++) { const { p, sida } = gruvRam(i / 300); pts.push(p.clone().addScaledVector(sida, s).add(new THREE.Vector3(0, -0.05, 0))); }
+    sc.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 400, 0.045, 5), new THREE.MeshLambertMaterial({ color: 0x7a6a5e, flatShading: true }))); }
+  const syll = lista(new THREE.BoxGeometry(1.3, 0.07, 0.2), new THREE.MeshLambertMaterial({ color: 0x4a3626, flatShading: true }));
+  for (let d = 0; d < GRUV_LANGD; d += 0.55) { const { p, tan } = gruvRam(d / GRUV_LANGD); dummy.position.copy(p).add(new THREE.Vector3(0, -0.13, 0)); dummy.scale.set(1, 1, 1); dummy.rotation.set(0, 0, 0); dummy.lookAt(dummy.position.clone().add(tan)); dummy.updateMatrix(); lagg(syll, dummy.matrix, 0xffffff); }
+  bygg(syll);
+  // timmerramar var tredje meter och fotogenlyktor var sjätte
+  const timmer = lista(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({ color: 0x5e4128, flatShading: true })), lykt = lista(new THREE.BoxGeometry(0.16, 0.24, 0.16), new THREE.MeshBasicMaterial({ color: 0xffc46a }));
+  const LYKTOR = [];
+  for (let d = 1.5; d < GRUV_LANGD; d += 3) { const { p, tan, sida } = gruvRam(d / GRUV_LANGD); if (iGrottanP(p)) break;
+    dummy.position.copy(p); dummy.rotation.set(0, 0, 0); dummy.scale.set(1, 1, 1); dummy.lookAt(p.clone().add(tan)); dummy.updateMatrix(); const F = dummy.matrix.clone();
+    for (const [x, y, w, h, dd] of [[-1.35, 1.1, 0.22, 2.9, 0.22], [1.35, 1.1, 0.22, 2.9, 0.22], [0, 2.6, 3.0, 0.24, 0.26]]) lagg(timmer, F.clone().multiply(M4.compose(new THREE.Vector3(x, y, 0), new THREE.Quaternion(), new THREE.Vector3(w, h, dd))), 0xffffff);
+    if (Math.round(d / 3) % 2 === 0) { const lp = p.clone().addScaledVector(sida, 1.2).add(new THREE.Vector3(0, 2.0, 0)); LYKTOR.push(lp); lagg(lykt, M4.makeTranslation(lp.x, lp.y, lp.z).clone(), 0xffffff); } }
+  bygg(timmer); bygg(lykt);
+  // ljuset: tre lyktsken som följer med vagnen till de närmaste lyktorna, och grottans två lyktor + skenet från ådern
+  const sken = [0, 1, 2].map(() => { const l = new THREE.PointLight(0xffa64a, 2.2, 7, 1.6); sc.add(l); return l; });
+  for (const [x, z] of [[-3, 1], [3, 0]]) { const l = new THREE.PointLight(0xffa64a, 2.5, 9, 1.5); l.position.set(GRUV_GC.x + x, GRUV_GC.y + 2.4, GRUV_GC.z + z); sc.add(l); const lb = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.24, 0.16), new THREE.MeshBasicMaterial({ color: 0xffc46a })); lb.position.copy(l.position); sc.add(lb); }
+  { const gl = new THREE.PointLight(0xffd36a, 3, 9, 1.4); gl.position.set(GRUV_GC.x, GRUV_GC.y + 1.5, GRUV_GC.z + 4); sc.add(gl); }
+  gruvScen.userData.sken = sken; gruvScen.userData.lyktor = LYKTOR;
+  // ådern: ett glimmande band i bortre väggen
+  const ad = lista(new THREE.TetrahedronGeometry(1), new THREE.MeshLambertMaterial({ color: 0xffcf40, emissive: 0xa77a10, flatShading: true }));
+  for (let i = 0; i < 70; i++) { const a = -0.9 + (i / 70) * 1.8, q = new THREE.Vector3(GRUV_GC.x + Math.sin(a) * 6.0, GRUV_GC.y + 1.0 + Math.sin(a * 3) * 0.6 + (r() - 0.5) * 0.4, GRUV_GC.z + Math.cos(a) * 6.0 - 0.3); lagg(ad, blockM(q, 0.12 + r() * 0.18, 0.12 + r() * 0.18, 0.12 + r() * 0.18, r(), r(), r()), 0xffffff); }
+  bygg(ad);
+  // stoppbocken, hackan vid ådern och en liten vattenpöl
+  { const b = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.5, 0.4), new THREE.MeshLambertMaterial({ color: 0x7a3a20, flatShading: true })); b.position.set(GRUV_O.x - 27.5, GRUV_O.y - 13.0, GRUV_O.z - 2.5); sc.add(b); }
+  { const v = new THREE.Mesh(new THREE.CircleGeometry(1.4, 12), new THREE.MeshLambertMaterial({ color: 0x2c4a5a, emissive: 0x0a1a22 })); v.rotation.x = -Math.PI / 2; v.position.set(GRUV_GC.x - 3.2, GRUV_GOLV + 0.02, GRUV_GC.z - 1.5); sc.add(v); }
+  // dagsljuset vid ingången
+  { const dag = new THREE.Mesh(new THREE.PlaneGeometry(3, 3), new THREE.MeshBasicMaterial({ color: 0xdfeaf2, fog: false })); dag.position.set(GRUV_O.x, GRUV_O.y + 1.0, GRUV_O.z + 5.2); dag.rotation.y = Math.PI; sc.add(dag);
+    const dl = new THREE.PointLight(0xdfeaf2, 1.6, 6, 1.6); dl.position.set(GRUV_O.x, GRUV_O.y + 1.5, GRUV_O.z + 4.6); sc.add(dl); }
+}
+// vagnen i gruvan (den man sitter i) och händerna på kanten
+const gruvVagn = new THREE.Group();
+{ const lm = (c) => new THREE.MeshLambertMaterial({ color: c, flatShading: true });
+  gruvVagn.add(at(new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.6, 1.4), lm(0x8a5a3a)), 0, 0.4, 0), at(new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.5, 1.25), lm(0x3a2618)), 0, 0.5, 0));
+  for (const x of [-0.5, 0.5]) for (const z of [-0.45, 0.45]) { const h = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.08, 10), lm(0x333333)); h.rotation.z = Math.PI / 2; h.position.set(x, 0.05, z); gruvVagn.add(h); }
+  for (const s of [-1, 1]) gruvVagn.add(at(new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.1, 0.22), lm(0xd2a27c)), s * 0.42, 0.72, -0.45));
+  gruvScen.add(gruvVagn); traffYta(gruvVagn, 1.4, 1.2, 1.7); }
+const gruvPlacera = (obj, t, riktning = 1) => { const { p, tan } = gruvRam(Math.max(0, Math.min(1, t))); obj.position.copy(p).add(new THREE.Vector3(0, -0.1, 0)); obj.lookAt(p.clone().addScaledVector(tan, riktning < 0 ? 1 : -1).add(new THREE.Vector3(0, -0.1, 0))); };
+gruvPlacera(gruvVagn, GRUV_SLUT_T);
+// ådern i grottan: brytningen som i A-056, på den här platsen
+const bergYta = new THREE.Group(); { const a = new THREE.Vector3(GRUV_GC.x, GRUV_GC.y + 1.0, GRUV_GC.z + 5.7); bergYta.position.copy(a); traffYta(bergYta, 4.5, 2.4, 1.0, 0, 0, 0); gruvScen.add(bergYta); }
 interaktor.registrera(bergYta, {
-  text: () => !S.guldAder ? '' : valdTyp() === 'hacka' ? '⛏️ Bryt malm ur ådern' : 'Ådern i bergväggen. Det glittrar. Med en hacka …',
-  kanAktivera: () => !!S.guldAder,
+  text: () => gruvLage !== 'grotta' ? '' : valdTyp() === 'hacka' ? '⛏️ Bryt malm ur ådern' : 'Ådern i bergväggen. Det glittrar. Med en hacka …',
+  kanAktivera: () => gruvLage === 'grotta',
   aktivera: () => { if (valdTyp() !== 'hacka') { tanke('Jag behöver en hacka.', 'A-056', 'REAKTION'); return; }
     if (performance.now() - (S._hacka || 0) < 2500) return; S._hacka = performance.now();
     try { ton(180, 0.12, 0.2, 'square'); } catch {}
-    if (!harRumFor('malm')) { varna('full'); return; } laggTill('malm'); sparaSnart(); },
+    if (!harRumFor('malm')) { varna('full'); return; } laggTill('malm'); S.stat.malmBruten = (S.stat.malmBruten || 0) + 1; sparaSnart(); },
 });
+// pappas hacka ligger vid ådern – den som inte har någon hacka får den här
+const gruvHacka = new THREE.Group();
+{ gruvHacka.add(at(cyl(0.03, 0.03, 0.9, mat(0x7a5532), 6), 0, 0, 0), at(box(0.6, 0.06, 0.06, mat(0x55524e)), 0, 0.45, 0)); gruvHacka.position.set(GRUV_GC.x + 1.6, GRUV_GOLV + 0.35, GRUV_GC.z + 3.2); gruvHacka.rotation.z = 0.5; traffYta(gruvHacka, 0.8, 1.0, 0.8, 0, 0, 0); gruvScen.add(gruvHacka); }
+interaktor.registrera(gruvHacka, { text: () => gruvLage === 'grotta' && !(antalInv('hacka') > 0) ? 'Ta pappas hacka' : '', kanAktivera: () => gruvLage === 'grotta' && !(antalInv('hacka') > 0), aktivera: () => { laggTill('hacka'); ljudH('plock'); sparaSnart(); } });
+// åkturen
+var gruvLage = null, gruvFard = null;   // gruvLage: 'fard' | 'grotta' | null
+const gruvFart = (t, ner) => { if (!ner) return 5.1; const y = GRUV_BANA.getPointAt(t).y - GRUV_O.y, lut = GRUV_BANA.getTangentAt(t).y; return Math.max(1.2, 1.6 + 0.49 * -y - 2.2 * Math.max(0, lut)); };   // långsam upp mot krönen, snabb nedför
+function gruvAk(ner) {
+  if (gruvFard) return;
+  const forst = !(S.gruvFarder > 0); S.gruvFarder = (S.gruvFarder || 0) + 1; sparaSnart();
+  gruvFard = { t: ner ? GRUV_START_T : GRUV_SLUT_T, ner, kanHoppa: !forst, klick: 0, sus: 0 };
+  gruvLage = 'fard'; spelare.aktiv = false; try { ui.stang?.(); } catch {}
+  for (const g of [gruvVagn]) g.visible = true;
+  textLogg('ljud', 'gruva', ner ? 'Åker ner i gruvan' : 'Åker upp ur gruvan', 'A-075');
+}
+function gruvFramme() {
+  const f = gruvFard; gruvFard = null;
+  if (f.ner) { gruvLage = 'grotta'; gruvPlacera(gruvVagn, GRUV_SLUT_T); spelare.pos.set(GRUV_GC.x + 1.2, GRUV_GOLV, GRUV_GC.z - 1.5); spelare.yaw = Math.PI; spelare.pitch = -0.05; spelare.aktiv = true;
+    try { ljudH('placera'); } catch {} }
+  else { gruvLage = null; grop.userData.ingang.userData.vagn.visible = true; spelare.pos.set(GRUVA.x + 0.8, -SVACKA.djup, GRUVA.z + 4.2); spelare.yaw = 0; spelare.pitch = -0.05; spelare.aktiv = true; }
+}
+function uppdateraGruvFard(dt) {
+  const f = gruvFard; if (!f) return;
+  const v = gruvFart(f.t, f.ner), d = v * Math.min(dt, 0.1) / GRUV_LANGD;
+  f.t += f.ner ? d : -d;
+  if (f.ner && f.t >= GRUV_SLUT_T || !f.ner && f.t <= GRUV_START_T) { f.t = f.ner ? GRUV_SLUT_T : GRUV_START_T; gruvFramme(); return; }
+  gruvPlacera(gruvVagn, f.t, f.ner ? 1 : -1);
+  // ljud: skramlet ökar med farten, ett sus i fallen
+  f.klick -= dt * v * 2.2; if (f.klick <= 0) { f.klick = 1; try { ton(90 + Math.random() * 60, 0.05, 0.03 + Math.min(0.05, v * 0.006), 'square'); } catch {} }
+  const lut = GRUV_BANA.getTangentAt(f.t).y; f.sus -= dt; if (f.ner && lut < -0.3 && f.sus <= 0) { f.sus = 0.35; try { ton(260 + v * 25, 0.4, 0.025, 'sawtooth'); } catch {} }
+}
+function gruvSken(t) {   // lyktskenen flyttas till de tre lyktor som ligger närmast vagnen
+  const p = GRUV_BANA.getPointAt(t), L = gruvScen.userData.lyktor.map((q) => [q, q.distanceToSquared(p)]).sort((a, b) => a[1] - b[1]);
+  gruvScen.userData.sken.forEach((l, i) => { const q = L[i]?.[0]; if (q) l.position.copy(q); });
+}
+function gruvKamera() {   // kameran sitter i vagnen, kanterna och händerna syns i nederkant
+  const f = gruvFard; if (!f) return;
+  gruvSken(f.t); const s = f.ner ? 1 : -1, fram = gruvRam(Math.max(0, Math.min(1, f.t + s * 1.2 / GRUV_LANGD))).p, mal = gruvRam(Math.max(0, Math.min(1, f.t + s * 11 / GRUV_LANGD))).p;
+  kamera.position.copy(fram).add(new THREE.Vector3(0, 1.3, 0)); kamera.lookAt(mal.x, mal.y + 0.2, mal.z);
+}
+addEventListener('keydown', (e) => { if (e.code === 'Space' && gruvFard?.kanHoppa) { e.preventDefault(); e.stopPropagation(); gruvFard.t = gruvFard.ner ? GRUV_SLUT_T : GRUV_START_T; gruvFramme(); } }, true);   /* från andra åkturen: Mellanslag hoppar över */
+{ const rend = renderer.render.bind(renderer); renderer.render = (sc, cam) => { if (gruvLage && sc === scen && cam === kamera) { try { gruvKamera(); } catch (e) { console.warn(e); } cam.updateMatrixWorld(true); return rend(gruvScen, cam); }   /* kameran sitter i världens scen – dess matris räknas inte av gruvScen */ return rend(sc, cam); }; }
+// vagnen vid ingången: "Åk ner". I grottan: "Åk upp".
+{ const v = grop.userData.ingang.userData.vagn; traffYta(v, 1.4, 1.2, 1.7);
+  interaktor.registrera(v, { text: () => gruvaOppen() && !gruvLage ? '🚃 Åk ner' : '', kanAktivera: () => gruvaOppen() && !gruvLage, aktivera: () => { v.visible = false; gruvAk(true); } }); }
+interaktor.registrera(gruvVagn, { text: () => gruvLage === 'grotta' ? '🚃 Åk upp' : '', kanAktivera: () => gruvLage === 'grotta', aktivera: () => gruvAk(false) });
 setInterval(() => {
   try {
     if (!ui.igang || sover || pausad) return;
@@ -15236,7 +15551,7 @@ function malKontrakt(st = STEG[S.steg]) {
   const text = String(stegText(st) || ''), namner = [...new Set(KAND_ORD.filter(([re]) => re.test(text)).map(([, k]) => k))];
   return { namner, kanGoras: () => (!st.las || upplast(st.las)) && namner.every((n) => kand(n)), klar: st.klar, rad: () => { try { return nastaAtgard(malRaw)?.[1] || ''; } catch (e) { return ''; } } };
 }
-window.__printahem = { renderer, slyKlumpar, SVACKA, GRUVA, SVACKA_VAG, svackaHojd, svackaSparr, BOMMAR, grop, VASK, stegText: () => stegText(STEG[S.steg]), oppnaMarknad: () => oppnaMarknad(), ritningNu: () => ritning, fastIHanden, konturMal, genStar, GEN_PLATS, CYKEL_RUTA, sangSpoke, kvarnMark, tippHojd, markY, sattTippSteg: (n, snap = true) => { S.tippSteg = n; ritaTippHog(0.05, snap); return tippStegNu; }, tippStegNu: () => tippStegNu, tippU, tippKant, TIPP_HV, husvagnG: () => husvagnG, husvagnHinder, TIPP_INB, tippMalSteg: () => tippMalSteg(), tippSparr, STORYKEDJA, STORYKEDJA_VERSION, KEDJA_TEXT, besokTick: (dt) => uppdateraBesok(dt), froSett: (id, s) => froSett(id, s), froSpoiler, STORYLAGER, FRO_T, kameraAkSteg: (t, frys = false) => { if (!kameraAk) return false; kameraAk.start = performance.now() - t * 1000; kameraAk.frys = frys ? t : null; uppdateraKameraAk(); renderer.render(scen, kamera); return true; }, startaUtsikt: () => startaUtsikt(), tippSvep: () => tippSvep(), visaForeEfter: () => visaForeEfter(), kulle, kameraAk: () => kameraAk, kollaUtsikt: () => kollaUtsikt(), bilFas: () => bil.fas, sopbil, kollaBengt: (dt) => kollaBengt(dt), bengtFig: bengt, privatSkyltar, bengtGrav, stromBehov, solEffekt, FLASK_FORE, spelBild, spelBildCache, startBild: () => { const r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio(); kamera.aspect = 1.6; kamera.updateProjectionMatrix(); r.setPixelRatio(1); r.setSize(1280, 800, false); r.render(scen, kamera); const C = document.createElement('canvas'); C.width = 1280; C.height = 800; C.getContext('2d').drawImage(r.domElement, 0, 0); r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); kamera.aspect = gs.x / gs.y; kamera.updateProjectionMatrix(); return C.toDataURL('image/jpeg', 0.86); }, tidigFanfar, bengtLada, GROP, GRIND, grop, grusGrind, rolfKaparGrinden: () => rolfKaparGrinden(), ritaGrustag: () => ritaGrustag(), kollaBengtAvslojande: () => kollaBengtAvslojande(), BENGT_HUS, BENGT_LADA, BENGT_GRAV, bengtLadaHandlare, ritaNyckelSkylt: () => ritaNyckelSkylt(), kjelleText: (x) => kjelleText(x), HUMOR_T, boterFor: (m) => boterFor(m), boterSyns: (b) => boterSyns(b), CHEFEN, labb, LABB, BAGAR, TRADAR, aktivaTradar, kollaBagar: (t) => kollaBagar(t), kollaLabb: () => kollaLabb(), efterspelTest: () => efterspelTest(), vaskSlapp: (t) => vaskSlapp(t), ader, ritaStart: () => ritaStart(), vev3d: () => vev, dagMoment: (d) => dagMoment(d), SAKER, malKontrakt, rullLapp, THREE, TS, visaLapp: (id) => visaLapp(id), fotografera: (p) => fotografera(p), POLAROID, aliNejFor: (t) => aliNejFor(t), ROLF_LISTA: () => ROLF, STORY_SAKER, hoppaOver, prataNu, volym, rostLage: () => rostLage(), pratarNu: () => performance.now() < pratarTill, valjOsagd, sakModell, ikonModell, ikonLista, renderaIkon, kand, regelvakt, upplast, lasUpp, UPPLAS_FLASK, finns, startTorn, vevEl, MONTERA, TA_PA, taPaVald, monteraPa, notis, malSynligt: () => malVisasSteg === S.steg, kanalLage: () => ({ pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: !medEl2.hidden, butik: !ui.butiksOverlay.hidden, overlay: !ui.overlay.hidden, aktiv: kanalAktiv?.text?.slice(0, 40), fri: kanalFri - performance.now(), pratar: pratarTill - performance.now(), lugn: lugnTill - performance.now(), n: kanal.length }), paket, oppnaSaljlada, TRATT_MAX, giAliBonus, tangentTips, stromMax, byggBodTest: () => { Object.assign(bodVal, { ok: true, x: BOD.x, z: BOD.z, r: BOD.r }); byggBodHar(); return !!S.bod; }, aliVill, smsKortKlart, smsFram, smsBubbla, ritaDN, markeraAliIdag, dnRaknare, filTillg, dragTorn, tornPlats, tornRullar, slangNar, rullTornAktivera, flyttaSkrivarRullar, anvandSkrivare,
+window.__printahem = { renderer, gruvTillGrotta: () => { gruvFard = { t: GRUV_SLUT_T, ner: true }; gruvLage = 'fard'; gruvFramme(); return gruvLage; }, gruvFart: (t, n) => gruvFart(t, n), gruvKameraVid: (t, ner = true) => { const g = gruvFard; gruvFard = { t, ner }; gruvPlacera(gruvVagn, t, ner ? 1 : -1); gruvKamera(); gruvFard = g; }, gruvAk: (ner) => gruvAk(ner), gruvLage: () => gruvLage, gruvFard: () => gruvFard, gruvScen, GRUV_BANA, GRUV_LANGD, GRUV_GC, GRUV_SLUT_T, gruvVagn, bergYta, bengtHus, bengtTradgard, slyKlumpar, sagaSly: (kl) => sagaSly(kl), solparkStor: () => solparkStor(), uppdateraRitning: (dt) => uppdateraRitning(dt), SVACKA, GRUVA, SVACKA_VAG, svackaHojd, svackaSparr, BOMMAR, grop, VASK, stegText: () => stegText(STEG[S.steg]), oppnaMarknad: () => oppnaMarknad(), ritningNu: () => ritning, fastIHanden, konturMal, genStar, GEN_PLATS, CYKEL_RUTA, sangSpoke, kvarnMark, tippHojd, markY, sattTippSteg: (n, snap = true) => { S.tippSteg = n; ritaTippHog(0.05, snap); return tippStegNu; }, tippStegNu: () => tippStegNu, tippU, tippKant, TIPP_HV, husvagnG: () => husvagnG, husvagnHinder, TIPP_INB, tippMalSteg: () => tippMalSteg(), tippSparr, STORYKEDJA, STORYKEDJA_VERSION, KEDJA_TEXT, besokTick: (dt) => uppdateraBesok(dt), froSett: (id, s) => froSett(id, s), froSpoiler, STORYLAGER, FRO_T, kameraAkSteg: (t, frys = false) => { if (!kameraAk) return false; kameraAk.start = performance.now() - t * 1000; kameraAk.frys = frys ? t : null; uppdateraKameraAk(); renderer.render(scen, kamera); return true; }, startaUtsikt: () => startaUtsikt(), tippSvep: () => tippSvep(), visaForeEfter: () => visaForeEfter(), kulle, kameraAk: () => kameraAk, kollaUtsikt: () => kollaUtsikt(), bilFas: () => bil.fas, sopbil, kollaBengt: (dt) => kollaBengt(dt), bengtFig: bengt, privatSkyltar, bengtGrav, stromBehov, solEffekt, FLASK_FORE, spelBild, spelBildCache, startBild: () => { const r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio(); kamera.aspect = 1.6; kamera.updateProjectionMatrix(); r.setPixelRatio(1); r.setSize(1280, 800, false); r.render(scen, kamera); const C = document.createElement('canvas'); C.width = 1280; C.height = 800; C.getContext('2d').drawImage(r.domElement, 0, 0); r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); kamera.aspect = gs.x / gs.y; kamera.updateProjectionMatrix(); return C.toDataURL('image/jpeg', 0.86); }, tidigFanfar, bengtLada, GROP, GRIND, grop, grusGrind, rolfKaparGrinden: () => rolfKaparGrinden(), ritaGrustag: () => ritaGrustag(), kollaBengtAvslojande: () => kollaBengtAvslojande(), BENGT_HUS, BENGT_LADA, BENGT_GRAV, bengtLadaHandlare, ritaNyckelSkylt: () => ritaNyckelSkylt(), kjelleText: (x) => kjelleText(x), HUMOR_T, boterFor: (m) => boterFor(m), boterSyns: (b) => boterSyns(b), CHEFEN, labb, LABB, BAGAR, TRADAR, aktivaTradar, kollaBagar: (t) => kollaBagar(t), kollaLabb: () => kollaLabb(), efterspelTest: () => efterspelTest(), vaskSlapp: (t) => vaskSlapp(t), ader, ritaStart: () => ritaStart(), vev3d: () => vev, dagMoment: (d) => dagMoment(d), SAKER, malKontrakt, rullLapp, THREE, TS, visaLapp: (id) => visaLapp(id), fotografera: (p) => fotografera(p), POLAROID, aliNejFor: (t) => aliNejFor(t), ROLF_LISTA: () => ROLF, STORY_SAKER, hoppaOver, prataNu, volym, rostLage: () => rostLage(), pratarNu: () => performance.now() < pratarTill, valjOsagd, sakModell, ikonModell, ikonLista, renderaIkon, kand, regelvakt, upplast, lasUpp, UPPLAS_FLASK, finns, startTorn, vevEl, MONTERA, TA_PA, taPaVald, monteraPa, notis, malSynligt: () => malVisasSteg === S.steg, kanalLage: () => ({ pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: !medEl2.hidden, butik: !ui.butiksOverlay.hidden, overlay: !ui.overlay.hidden, aktiv: kanalAktiv?.text?.slice(0, 40), fri: kanalFri - performance.now(), pratar: pratarTill - performance.now(), lugn: lugnTill - performance.now(), n: kanal.length }), paket, oppnaSaljlada, TRATT_MAX, giAliBonus, tangentTips, stromMax, byggBodTest: () => { Object.assign(bodVal, { ok: true, x: BOD.x, z: BOD.z, r: BOD.r }); byggBodHar(); return !!S.bod; }, aliVill, smsKortKlart, smsFram, smsBubbla, ritaDN, markeraAliIdag, dnRaknare, filTillg, dragTorn, tornPlats, tornRullar, slangNar, rullTornAktivera, flyttaSkrivarRullar, anvandSkrivare,
   framsteg, skrivarText, framstegKvarn,
   dbgKanal: () => ({ nu: performance.now(), pratarTill, pratarVem, kanalFri, aktiv: kanalAktiv && kanalAktiv.text, n: kanal.length, pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: medEl2.hidden, butik: ui.butiksOverlay.hidden, ov: ui.overlay.hidden }),
   textLogg: () => TEXTLOGG.slice(), pratar: () => !!kanalAktiv || kanal.length > 0 || performance.now() < pratarTill || performance.now() < kanalFri, kanal: () => ({ aktiv: kanalAktiv && { vem: kanalAktiv.vem, text: kanalAktiv.text, vikt: kanalAktiv.vikt }, ko: kanal.map((x) => ({ vem: x.vem, text: x.text, vikt: x.vikt })) }), rostMatning, renderaIkon, ikonLista, handelseLogg, ritningInfo: () => { const c = ritning ? new THREE.Box3().setFromObject(ritning).getCenter(new THREE.Vector3()) : null; return { nyckel: ritningNyckel, linjer: ritning?.children.length || 0, printar: printarFram.size, mitt: c && [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(2)] }; }, prata, elHelFig: () => [...(elHel || [])], avkodat, forladdaRepliker, introLager, trampa: (sek) => { trampTest = sek; }, veva: (sek) => { vevTest = sek; }, siktaVagg: (v) => { vaggTest = v; }, vaggarKlara: () => vaggarKlara(), tapetKlara: () => tapetKlara(), nastaInred, prisNu, helaRullar, extruderFull, gardMal, kanLyfta, karraFull, harGava, valdKarra, BARA_SKRAP, SKRAP_RACKVIDD, utlagerKap, startPlats, sattFonster: () => { const n = fonsterLista().length; S.hem = { ...(S.hem || {}), fonster: [...fonsterLista(), { vagg: Object.keys(VAGGAR).filter((k) => !/dorr|fram/i.test(k))[n % 3] || Object.keys(VAGGAR)[0], u: 0.5 }] }; ritaFonster(); uppdateraSkjul(); sparaSnart(); }, medKo, medEl2, uppdatera, stegText: () => { const st = STEG[S.steg]; return st ? (typeof st.text === 'function' ? st.text() : st.text) : ''; }, valdTyp: () => valdTyp(), ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, husvagnFri: () => husvagnFri(), oppnaSkapet: () => oppnaSkapet(), goran: goranTest, polaroid: polaroidTest,  tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, webbOrdrar, oppnaDator, BESOK, besok, startaBesok, ata, MAT_VARDE, printLinje, migreraDK, kolfKvarn, kolfAktivera, uppdateraKolf, nastaGamer, trimNiva, plockaUppPlacerad, plockaSkrap, karraRing, foremal, variantFor, valjTyp, husvagnKlick, gastScen, gastDelKlar, husvagn: () => husvagnG, rolfBesok, sackRulle, karraKlick, karraMal, pappaGubbe, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
