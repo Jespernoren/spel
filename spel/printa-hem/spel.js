@@ -2688,8 +2688,7 @@ else {
 const KANOT_PLATS = [TIPP.x + 4.6, TIPP.z - 1.2], TIPP_TUNNOR = [[TIPP.x + 4.2, TIPP.z + 2.2], [TIPP.x + 3.3, TIPP.z + 3.1]];   /* DG: syns från gården */
 function ledtradarPaTippen() {
   if (!S.dgKanot) { S.dgKanot = true; if (!skrapLista.some((x) => x.userData.sort === 'kajak' && Math.hypot(x.position.x - KANOT_PLATS[0], x.position.z - KANOT_PLATS[1]) < 1)) laggSkrap(KANOT_PLATS[0], KANOT_PLATS[1], variantFor('kajak'), 0.5); }
-  if (!S.dgTunnor) { S.dgTunnor = true; TIPP_TUNNOR.forEach(([x, z], i) => laggSkrap(x, z, variantFor('tunna'), 1.1 + i * 0.9)); }
-  if (!S.dgRodback) { S.dgRodback = true; laggSkrap(TIPP.x + 2.4, TIPP.z + 3.9, variantFor('rodback'), 0.4); }   /* A-057: en röd back på tippen redan i K1 – fröet */
+  if (!S.dgTunnor) { S.dgTunnor = true; TIPP_TUNNOR.forEach(([x, z], i) => laggSkrap(x, z, variantFor(i ? 'rodback' : 'tunna'), 1.1 + i * 0.9)); }   /* A-057: en tunna och en röd back på tippen redan i K1 – fröna (högst två tunga innan röda linjen) */
 }
 setTimeout(ledtradarPaTippen, 0);   /* efter att resten av modulen har laddats */
 
@@ -12380,7 +12379,7 @@ setInterval(() => {
     if (!ui.igang || sover || pausad) return;
     const p = spelare.pos, g = bengtHus.userData.glimt; g.visible = Math.sin(performance.now() / 700) > 0.6;
     const dHus = Math.hypot(p.x - BENGT_HUS.x, p.z - BENGT_HUS.z), dGrav = Math.hypot(p.x - BENGT_GRAV.x, p.z - BENGT_GRAV.z);
-    if (dHus < 14 && !harSagt(BENGT_T.kikare)) { tanke(BENGT_T.kikare, 'A-058: frö – kikaren', 'REAKTION'); froSett('kikare', false); }   /* A-057: samma frö som i skogen */
+    if (dHus < 16 && !harSagt(BENGT_T.kikare)) { tanke(BENGT_T.kikare, 'A-058: frö – kikaren', 'REAKTION'); froSett('kikare', false); }   /* A-057: samma frö som i skogen */
     if (dGrav < 6 && harSagt(BENGT_T.kikare) && !harSagt(BENGT_T.grav)) tanke(BENGT_T.grav, 'A-058: frö – graven', 'REAKTION');
     // K2, respekt ≥ 15: han står vid brevlådan och tittar, en gång
     if ((S.kapitel || 1) >= 2 && S.respekt >= 15 && !S.bengtLadaHmpf && Math.hypot(p.x - BENGT_LADA.x, p.z - BENGT_LADA.z) < 7) {
