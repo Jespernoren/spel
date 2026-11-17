@@ -13714,7 +13714,7 @@ function humorDack() {   /* A-041: ett däck rullar iväg efter tippningen och l
 }
 function humorRap() { ton(95, 0.22, 0.07, 'sawtooth'); ton(70, 0.3, 0.06, 'sawtooth', 0.12); skratt('kvarnen rapar'); }
 const nyckelSkylt = skylt('NYCKELRINGAR: MAX 10 PER KUND. GÄLLER DIG.', 1.6, 0.24, '#fff6d6', '#7a1f1f');   /* A-054 nr 10 */
-const ritaNyckelSkylt = () => { nyckelSkylt.visible = !!S.humorN50; }; nyckelSkylt.position.set(0, 0.55, 0.43); nyckelSkylt.visible = false; marknad.add(nyckelSkylt);
+const ritaNyckelSkylt = () => { nyckelSkylt.visible = !!S.humorN50; }; nyckelSkylt.position.set(0, 1.22, -0.22); nyckelSkylt.rotation.z = 0.04;   /* A-055: mellan stolparna, ovanför disken och under Alis ansikte */ nyckelSkylt.visible = false; marknad.add(nyckelSkylt);
 function humorNyckelringar() {
   const n = S.saltTot?.nyckelring || 0;
   if (n >= 30 && !S.humorN30) { S.humorN30 = true; aliRepl = HUMOR_T.nyckel30; skratt('Nyckelringsmannen'); }
