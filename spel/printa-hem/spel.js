@@ -217,7 +217,7 @@ const VAROR = {
   guldflaga: { namn: 'Guldflaga från Göran', ikon: '', kop: true, pris: 40, beskr: 'Den glimmar. Göran kom med den från gropen bakom tippen.' },   /* A-045 */
   vaskpanna: { namn: 'Birgittas vaskpanna', ikon: '', kop: true, beskr: 'Klicka och håll i bäcken i grustaget. Släpp när det glittrar mest.' },
   kapskiva: { namn: 'Kapskiva i kolfiber', ikon: '', gram: 150, tid: 25, pris: 0, niva: 3, beskr: 'Till Rolfs vinkelslip. Lägg den i hans postlåda.' },   /* A-056 */
-  hacka: { namn: 'Hacka', ikon: '', gram: 400, tid: 40, pris: 0, beskr: 'Bryt malm ur ådern i grustagets bergvägg.' },
+  hacka: { namn: 'Pappa Eriks hacka', ikon: '', gram: 400, tid: 40, pris: 0, beskr: 'Bengt-Åkes pappas. Bryter det fastpressade i tippen och malm ur ådern i grustaget.' },
   malm: { namn: 'Guldmalm', ikon: '', kop: true, beskr: 'Sten med guld i. Bär den till extraktorn.' },
   guldklump: { namn: 'Första guldklumpen', ikon: '', kop: true, beskr: 'Den är Bengt-Åkes. Den ska till hans pappas grav.' },
   ring: { namn: 'Birgittas vigselring', ikon: '', kop: true, beskr: 'Det står Rolf & Birgitta 1979 på insidan.' },
@@ -10715,7 +10715,8 @@ function uppdateraMark() {
 function kollaMarkTips() {
   // markköpen kommer senare: när kapitel 1 är klart, man har Rolfs nummer och det börjar bli fullt (eller dag 8)
   if (S.mark.tips || !S.bengtAvslojad || S.dag <= S.bengtAvslojad) return;   /* A-058: morgonen efter Bengt-Åkes avslöjande vid skylten – då öppnas kartan */
-  S.mark.tips = true; markTavla.visible = true; sparaSnart();
+  S.mark.tips = true; markTavla.visible = true; if (!S.hackaFatt) { S.hackaFatt = S.dag; laggTill('hacka'); } sparaSnart();   /* A-060: pappa Eriks hacka från Bengt-Åke */
+  paket([{ tanke: 'En hacka lutar mot skylten. Det sitter en lapp på skaftet: "PAPPAS. HMPF."' }], { vikt: 'STORY', varfor: 'A-060: pappa Eriks hacka' });
   paket([{ sms: ['rolf', 'Ja har snackat me Bengt-Åke. Han e fortfarande förbannad på hela världen. Men ja berätta om allt du gjort, att du städa, hjälpt mej o sagt nej till skumma grejer. Han lyssna. Han e villig att sälja. Säj int att ja sa att han e snäll. Han e int snäll. Kolla tavlan vid vägen. /R'] }], { om: 3000 });
   return true;
 }
@@ -11775,11 +11776,42 @@ function grav(f) {
   else { laggTill(f.id); ui.toast(`Du hittade: ${VAROR[f.id].namn}!`, 'guld'); }
   ljudH('plock'); sparaSnart();
 }
+/* ---------- A-060: tippen är en hög i lager som sjunker ----------
+   Baslagret: pressade balar och flak i lagrens färger (90-tal brokigt → 1987 rostbrunt → 1962 grått/svart). Det går inte att plocka.
+   Lösa saker ligger runt och plockas. Ett lager släpper när kapitlet, procenten och verktyget finns – då sjunker högen med ett dunk. */
+const TIPP_HOG = { x: TIPP.x - 2.6, z: TIPP.z - 1.2, r: 2.9 };
+const LAGER_VERKTYG = { 2: { har: () => !!S.magnet, namn: 'magnetpistolen' }, 3: { har: () => !!S.kolf?.band, namn: 'rullbandet' }, 4: { har: () => antalInv('hacka') > 0 || !!S.hackaFatt, namn: 'pappa Eriks hacka' } };
+const tippHog = new THREE.Group();
+{ const band = [[0x5a524a, 0x4a443e], [0x3a3a3c, 0x6e6e70], [0x8a5a3a, 0x6e4228], [0xc0503a, 0x3a7ac0, 0xe0b040, 0x4aa060, 0xb05ab0]];   // marken/bas, 1962, 1987, 90-tal
+  band.forEach((farger, i) => { const r = TIPP_HOG.r * (1 - i * 0.17);
+    for (let k = 0; k < 14; k++) { const a = k / 14 * Math.PI * 2 + i * 0.3, w = 0.9 + ((k * 7 + i * 3) % 5) * 0.12;
+      const b = box(w, 0.95, 0.8, mat(farger[(k + i) % farger.length], { roughness: 1 })); b.position.set(Math.cos(a) * r * 0.72, i + 0.48, Math.sin(a) * r * 0.72); b.rotation.set((k % 3) * 0.08, -a, (k % 2) * 0.1); tippHog.add(b); }
+    const karna = cyl(r * 0.75, r * 0.85, 1, mat(farger[0], { roughness: 1 }), 12); karna.position.y = i + 0.5; tippHog.add(karna); });
+  tippHog.position.set(TIPP_HOG.x, 0, TIPP_HOG.z); scen.add(tippHog); }
+// frön som sticker ut ur lagret under: tjock-tv (90-tal), trumstock (1987), husvagnstaket (1962)
+const TIPP_FRO = [
+  { n: 2, y: 2.6, a: 0.6, g: () => { const g = new THREE.Group(); g.add(at(box(0.6, 0.45, 0.5, mat(0x2a2a2a)), 0, 0, 0), at(box(0.4, 0.3, 0.02, mat(0x5a6a7a, { emissive: 0x111822 })), 0, 0, 0.26)); return g; } },
+  { n: 3, y: 1.6, a: 2.4, g: () => { const g = new THREE.Group(); const s = cyl(0.025, 0.02, 0.6, mat(0xd8b080), 6); s.rotation.z = 1.1; g.add(s); return g; } },
+  { n: 4, y: 0.6, a: 4.2, g: () => { const g = new THREE.Group(); const t = box(1.2, 0.08, 0.7, mat(0xd8d0b8)); t.rotation.z = 0.25; g.add(t, at(box(1.2, 0.12, 0.05, mat(0x9a5a2a)), 0, -0.05, 0.36)); return g; } },
+].map((f) => { const g = f.g(), r = TIPP_HOG.r * (1 - (5 - f.n) * 0.17) * 0.85; g.position.set(Math.cos(f.a) * r, f.y, Math.sin(f.a) * r); tippHog.add(g); traffYta(g, 0.8, 0.6, 0.8); interaktor.registrera(g, { text: () => 'Fastpressad. Den sitter som i betong.', aktivera: () => tanke('Fastpressad. Den sitter som i betong.', 'A-060: frö i lagret', 'REAKTION') }); return { ...f, g }; });
+let hogY = null;
+function ritaTippHog(dt = 1) {
+  const n = S.tippLager || 1, nasta = TLAGER[n + 1];
+  // höjden: 4 m på lager 1, 3 på 2, 2 på 3, 1 på 4 – och sjunker gradvis (högst en halv meter) mot nästa lagers procent
+  let mal = -(n - 1);
+  if (nasta) { const fore = n === 1 ? 0 : TLAGER[n].stadat, andel = Math.max(0, Math.min(1, (tippStadat() - fore) / Math.max(0.01, nasta.stadat - fore))); mal -= 0.5 * andel; }
+  if (hogY == null) hogY = mal; hogY += (mal - hogY) * Math.min(1, dt * 1.5); tippHog.position.y = hogY;
+  for (const f of TIPP_FRO) f.g.visible = n < f.n;   // fröet syns tills dess lager har släppt
+}
+function lagerVantarVerktyg() {
+  const n = (S.tippLager || 1) + 1, L = TLAGER[n], v = LAGER_VERKTYG[n];
+  return L && S.kapitel >= L.kap && tippStadat() >= L.stadat && v && !v.har() ? v : null;
+}
 function oppnaLager(n, tyst = false) {
   S.tippLager = n; sparaSnart();
   if (window.__tippKulle) window.__tippKulle.material.color.setHex(TLAGER[n]?.farg ?? 0x7b7466);
   byggLagerFynd();
-  if (!tyst) { ui.toast('Tippen har ett nytt lager. Äldre skräp.', 'guld'); paket([{ sms: LAGER_REPLIK[n] }], { om: 8000 }); }
+  if (!tyst) { try { ton(55, 0.5, 0.35, 'sine'); ton(40, 0.6, 0.3, 'triangle', 0.05); } catch {} ui.toast('Högen sjönk. Ett äldre lager kom fram.', 'guld'); paket([{ sms: LAGER_REPLIK[n] }], { om: 8000 }); }   /* A-060: ett dovt dunk */
 }
 // husvagnen från -78 vid tippkanten: skåpet med fotot och stickningen (kapitel 3, när marken går att nå)
 const h78 = new THREE.Group();
@@ -11792,10 +11824,12 @@ interaktor.registrera(h78, { text: () => h78.visible ? '🔍 Skåpet i husvagnen
 function kollaLager() {
   if (S.tippLager == null) { S.tippLager = 1; }
   if (!byggLagerFynd.klar) { byggLagerFynd.klar = true; if (S.tippLager > 1) oppnaLager(S.tippLager, true); }
-  h78.visible = !S.h78 && S.kapitel >= 3 && tillgang('tippkant');
+  h78.visible = !S.h78 && S.kapitel >= 3 && tillgang('tippkant') && (S.tippLager || 1) >= 3;   /* A-060: husvagnen nås när 1987-lagret är framgrävt */
+  ritaTippHog(2);
   if (!ui.igang || sover || pausad) return;
   const n = (S.tippLager || 1) + 1, L = TLAGER[n];
-  if (L && S.kapitel >= L.kap && tippStadat() >= L.stadat) oppnaLager(n);
+  const v = LAGER_VERKTYG[n];
+  if (L && S.kapitel >= L.kap && tippStadat() >= L.stadat) { if (v && !v.har()) { if (S.lagerVerktygSagt !== n) { S.lagerVerktygSagt = n; tanke(n === 2 ? 'Fastpressat. Jag behöver något starkare.' : `Fastpressat. Jag behöver ${v.namn}.`, 'A-060: lagret väntar på verktyget', 'REAKTION'); } } else oppnaLager(n); }
 }
 setInterval(kollaLager, 2000);
 // testkrok: __printahem.lager(n) öppnar lager n
@@ -13644,7 +13678,7 @@ setInterval(() => {
   if (S.ringHosRolf && S.dag > S.ringHosRolf && !S.rannaGiven) { S.rannaGiven = true; S.rolfRing = true; S.post.tillMig = [...S.post.tillMig, 'sak:guldranna']; visaPostInne(); paket([{ brev: ['rolf', GULD_T.ringTack, 'Brev från Rolf'] }], { vikt: 'STORY', varfor: 'A-045: ringen tillbaka' }); }
   // 4. Alis servett: extraktorn två dagar efter rännan
   if (S.rannaGiven && harPlacerat('guldranna') && !S.extraktorGiven && S.dag >= (S.guldAder || 99) + 3) { S.extraktorGiven = true; laggTill('extraktor'); paket([{ sms: ['ali', GULD_T.servett], gava: 'extraktor' }], { vikt: 'STORY', varfor: 'A-045: Alis servett' }); }
-  if (S.rannaGiven && harPlacerat('guldranna') && !S.ritningar.includes('recept:hacka')) { S.ritningar.push('recept:hacka'); paket([{ tanke: 'Bäcken ger flagor. Klumparna sitter i berget. Jag behöver en hacka.' }], { vikt: 'STORY', varfor: 'A-056: hackan' }); sparaSnart(); }   /* A-056: nivå 3 */
+  if (S.rannaGiven && harPlacerat('guldranna') && !S.ritningar.includes('recept:hacka') && !antalInv('hacka') && !S.hackaFatt) { S.ritningar.push('recept:hacka'); paket([{ tanke: 'Bäcken ger flagor. Klumparna sitter i berget. Jag behöver en hacka.' }], { vikt: 'STORY', varfor: 'A-056: hackan' }); sparaSnart(); }   /* A-056: nivå 3 */
   // 5. porslinshunden vid rännan ger dubbel chans en dag
   const r = placerade.find((p) => p.typ === 'guldranna'), h = placerade.find((p) => p.typ === 'burk_porslin');
   if (r && h && h.mesh.position.distanceTo(r.mesh.position) < 4 && S.porslinDag !== S.dag) { S.porslinDag = S.dag; if (!S.porslinSms) { S.porslinSms = true; paket([{ sms: ['mamma', GULD_T.porslin] }], { om: 4000, varfor: 'A-045: porslinshunden' }); } }
