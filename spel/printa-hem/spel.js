@@ -3456,6 +3456,7 @@ function laggUt(sk, typ) {
   sk.klarL = sk.klarL || { [sk.klar]: 1 }; sk.klarL[typ] = (sk.klarL[typ] || 0) + 1;
 }
 function startaJobb(sk, val) {
+  if (val?.typ === 'spagetti') return 'nej';   /* AX g41: plastspagetti är en misslyckad print, inget man printar (gram 0 och tid 0 gav en oändlig autoprint) */
   if (sk.jobb) {
     if (kanKo(sk) && (sk.ko?.length || 0) < KO_MAX_SKRIVARE && (val.maskin || (storlekFor(val.typ) <= skrivStorlek(sk) && !(VAROR[val.typ]?.niva === 2)))) { sk.ko = [...(sk.ko || []), val]; sparaSkrivare(); return 'ko'; }
     return 'upptagen';
@@ -3514,6 +3515,7 @@ function avbrytJobb(sk) {
 function nastaJobb(sk, forra) {
   if (plattaFull(sk)) { if (sk.ko?.length || (forra && sk.upprepa === forra)) plattanFull(sk); return false; }   // punkt 11: plattan är full – skrivaren väntar
   if (sk.ko?.length) { const v = sk.ko.shift(); if (startaDirekt(sk, v) === true) { skrivarNotis(sk, `Startar nästa i kön: ${(v.maskin ? MASKINER[v.maskin].namn : VAROR[v.typ].namn).toLowerCase()}`, 'bra'); return true; } }
+  if (forra === 'spagetti' || sk.upprepa === 'spagetti') sk.upprepa = null;
   if (forra && sk.upprepa === forra) {
     const g = VAROR[forra].gram * (sk.mod === 'm_snal' ? 0.65 : 1);
     if (filTillg(sk) + 0.5 >= g) { const u = sk.upprepa; const ok = startaDirekt(sk, { typ: forra }) === true; sk.upprepa = u; return ok; }

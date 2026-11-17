@@ -261,7 +261,7 @@
     await webbJobb();   // CR: beställningar från webbshoppen först – de betalar mer
     if ((S.kapitel || 1) >= 4 && mal - S.mynt > 5000) for (const sk of H.skrivare) sk.upprepaPa = false;   /* A-042: boten säljer själv hos Ali – autoprinten till leveranslådan ger bara grossistpris en gång per dygn */
     while (S.mynt < mal && varv++ < 30) {
-      const kand = Object.keys(H.VAROR).filter((t) => !tjanaFel.has(t) && !/^(g_|h_|hf_|ra_|r_|p_|fynd|burk|rulle|n_)/.test(t) && H.VAROR[t].pris > 0 && !H.VAROR[t].lyx && (!H.VAROR[t].niva || (H.VAROR[t].niva === 2 && H.harPlacerat('skrivarepetg')) || (H.VAROR[t].niva === 3 && H.harPlacerat('kolfskrivare'))) && H.harRecept(t) && (H.VAROR[t].syns?.() ?? true) && !H.VAROR[t].gava && H.VAROR[t].gram > 0);
+      const kand = Object.keys(H.VAROR).filter((t) => !tjanaFel.has(t) && t !== 'spagetti' && H.VAROR[t].gram > 0 && !/^(g_|h_|hf_|ra_|r_|p_|fynd|burk|rulle|n_)/.test(t) && H.VAROR[t].pris > 0 && !H.VAROR[t].lyx && (!H.VAROR[t].niva || (H.VAROR[t].niva === 2 && H.harPlacerat('skrivarepetg')) || (H.VAROR[t].niva === 3 && H.harPlacerat('kolfskrivare'))) && H.harRecept(t) && (H.VAROR[t].syns?.() ?? true) && !H.VAROR[t].gava && H.VAROR[t].gram > 0);
       kand.sort((a, b) => H.prisNu(b) / H.VAROR[b].tid - H.prisNu(a) / H.VAROR[a].tid);
       const t = kand[0]; if (!t) { handling('inget att printa och sälja – väntar på sopbilen'); tjanaFel.clear(); await vanta(30); return; }
       handling(`tjänar pengar${varfor ? ' till ' + varfor : ''}: ${S.mynt}/${mal} kr → printar ${H.VAROR[t].namn.toLowerCase()} (${H.prisNu(t)} kr)`);
