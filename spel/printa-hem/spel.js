@@ -13713,8 +13713,13 @@ function humorDack() {   /* A-041: ett däck rullar iväg efter tippningen och l
   if (!harSagt(HUMOR_T.dack) && Math.hypot(spelare.pos.x - d.position.x, spelare.pos.z - d.position.z) < 25) paket([{ tanke: HUMOR_T.dack }], { vikt: 'REAKTION', varfor: 'A-041: däck rullar' });
 }
 function humorRap() { ton(95, 0.22, 0.07, 'sawtooth'); ton(70, 0.3, 0.06, 'sawtooth', 0.12); skratt('kvarnen rapar'); }
-const nyckelSkylt = skylt('NYCKELRINGAR: MAX 10 PER KUND. GÄLLER DIG.', 1.6, 0.24, '#fff6d6', '#7a1f1f');   /* A-054 nr 10 */
-const ritaNyckelSkylt = () => { nyckelSkylt.visible = !!S.humorN50; }; nyckelSkylt.position.set(0, 1.22, -0.22); nyckelSkylt.rotation.z = 0.04;   /* A-055: mellan stolparna, ovanför disken och under Alis ansikte */ nyckelSkylt.visible = false; marknad.add(nyckelSkylt);
+const nyckelSkylt = new THREE.Group();   /* A-055: tre rader utanför högra stolpen, på en konsol – bredvid ALIS MARKNAD, aldrig under */
+{ const rader = [['NYCKELRINGAR', 0.13], ['MAX 10 PER KUND', 0.13], ['GÄLLER DIG.', 0.13]];
+  rader.forEach(([t, h], k) => { const r = skylt(t, 0.8, h, '#fff6d6', k === 2 ? '#c01818' : '#7a1f1f'); r.position.set(0, 0.15 - k * 0.15, 0); nyckelSkylt.add(r); });
+  nyckelSkylt.add(at(box(0.6, 0.04, 0.04, mat(0x6b4a2f)), -0.25, 0.32, 0));   // konsolen från stolpen
+  for (const x of [-0.3, 0.3]) nyckelSkylt.add(at(box(0.01, 0.12, 0.01, mat(0x333333)), x, 0.26, 0));   // snörena
+  nyckelSkylt.position.set(1.48, 1.68, -0.3); nyckelSkylt.rotation.z = -0.05; nyckelSkylt.visible = false; marknad.add(nyckelSkylt); }
+const ritaNyckelSkylt = () => { nyckelSkylt.visible = !!S.humorN50; };
 function humorNyckelringar() {
   const n = S.saltTot?.nyckelring || 0;
   if (n >= 30 && !S.humorN30) { S.humorN30 = true; aliRepl = HUMOR_T.nyckel30; skratt('Nyckelringsmannen'); }

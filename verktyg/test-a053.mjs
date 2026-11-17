@@ -22,6 +22,8 @@ ut.push([`HUD räknas ner: ${unika.join(' → ')}; röd "−900 kr" flyger ut: $
 await p.evaluate(() => { const h = window.__printahem; h.S.mynt = 3000; h.boterSyns(900); h.S.mynt -= 900; });
 await p.waitForTimeout(150); await p.screenshot({ path: 'verktyg/test-a053-boter.png' });
 await p.evaluate(() => { const h = window.__printahem; h.S.humorN50 = true; h.ritaNyckelSkylt(); h.spelare.pos.x = h.ALI.x; h.spelare.pos.z = h.ALI.z - 3.2; h.tittaMot(h.ALI.x, h.ALI.z, 0.7); });
-await p.waitForTimeout(1500); await p.screenshot({ path: 'verktyg/test-a054-skylt.png' });
+await p.waitForTimeout(1500); await p.screenshot({ path: 'verktyg/test-a055-disken.png' });
+await p.evaluate(() => { const h = window.__printahem; h.spelare.pos.x = h.ALI.x + 0.6; h.spelare.pos.z = h.ALI.z - 4.5; h.tittaMot(h.ALI.x + 0.4, h.ALI.z, 0.7); });
+await p.waitForTimeout(1500); await p.screenshot({ path: 'verktyg/test-a055-4m.png' });
 for (const [t, ok] of ut) console.log(ok ? '✓' : '✗', t);
 console.log(fel.length ? fel.join('\n') : 'inga sidfel'); await b.close(); process.exit(ut.every((x) => x[1]) && !fel.length ? 0 : 1);
