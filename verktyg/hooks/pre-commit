@@ -1,0 +1,3 @@
+#!/bin/sh
+# A-065 lager 4: sekvensreglerna kollas före varje commit
+node verktyg/lint-sekvens.mjs || { echo "lint-sekvens stoppade committen (se ovan)"; exit 1; }

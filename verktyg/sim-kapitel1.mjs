@@ -87,11 +87,14 @@ for (const st of r.logg.filter((e) => e.kalla === 'händelse' && e.vem === 'morg
     else if (e.kalla === 'sms') flaggor.push({ dag: e.dag, t: e.t, typ: 'LUGN', text: `sms ${d.toFixed(1)} s efter BÖRJA DAGEN (minst 30 s): "${String(e.text).slice(0, 60)}"` });
   }
 }
-// krockar: två synliga texter inom 5 s (samma text i två kanaler räknas inte)
+// krockar: två synliga texter inom 4 s (A-065: talutrymmet håller 4 s) (samma text i två kanaler räknas inte)
 const syn = r.logg.filter(synlig);
+/* A-065: en kvittens har förtur – den får komma 2 s efter det som syntes före (allt annat 4 s) */
+const kvittoText = new Set(r.logg.filter((e) => e.kalla === 'kvitto-visas' || e.kalla === 'kvittens' || e.kalla === 'varför').map((e) => String(e.text).slice(0, 30)));
+const arKv = (e) => kvittoText.has(String(e.text).replace(/^💭 /, '').slice(0, 30));
 for (let i = 1; i < syn.length; i++) {
   const a = syn[i - 1], c = syn[i];
-  if (c.dag === a.dag && c.tot - a.tot < 5 && a.text !== c.text && !a.text.includes(c.text.slice(0, 30)) && !c.text.includes(a.text.slice(0, 30)) && !['bubbla'].includes(a.kalla + c.kalla)) {
+  if (c.dag === a.dag && c.tot - a.tot < (arKv(c) ? 2 : 4) && a.text !== c.text && !a.text.includes(c.text.slice(0, 30)) && !c.text.includes(a.text.slice(0, 30)) && !['bubbla'].includes(a.kalla + c.kalla) && c.kalla !== 'morgonkort') {   /* morgonkortet kommer efter sömnen – en egen scen */
     flaggor.push({ dag: c.dag, t: c.t, typ: 'KROCK', text: `${(c.tot - a.tot).toFixed(1)} s mellan [${a.kalla}] "${a.text.slice(0, 60)}" och [${c.kalla}] "${c.text.slice(0, 60)}"` });
   }
 }
@@ -107,17 +110,20 @@ const rostFor = (text, efter) => r.logg.find((e) => e.kalla === 'röst' && e.tot
 const kedjeRader = [];
 for (const kv of r.logg.filter((e) => e.kalla === 'kvittens')) {
   const va = r.logg.find((e) => e.kalla === 'varför' && e.varfor === kv.varfor && e.tot >= kv.tot && e.tot - kv.tot < 30);
-  const sista = va || kv, rs = rostFor(sista.text, sista.tot), slut = rs ? rs.tot + rostLangd(sista.text) : null;
-  const mal = r.logg.find((e) => e.kalla === 'röst' && /· MÅL$/.test(e.text) && e.tot >= (rs?.tot ?? sista.tot));
+  let sista = va || kv, rs = rostFor(sista.text, sista.tot); if (!rs && va) { sista = kv; rs = rostFor(kv.text, kv.tot); }   /* varför-raden kan strykas (målet har en egen knuff) */
+  const slut = rs ? rs.tot + rostLangd(sista.text) : null;
+  const mal = r.logg.find((e) => ((e.kalla === 'röst' && /· MÅL$/.test(e.text)) || (e.kalla === 'sak' && e.vem === 'berattare')) && e.tot >= (rs?.tot ?? sista.tot));   /* A-065: ett mål utan uppläsning byts tyst i rutan */
   const gap = slut != null && mal ? mal.tot - slut : null;
   kedjeRader.push({ dag: kv.dag, t: kv.t, id: kv.varfor, kv: kv.text, va: va?.text || '', gap, mal: mal?.text.replace(/ · MÅL$/, '') || '' });
   if (!rs) flaggor.push({ dag: kv.dag, t: kv.t, typ: 'KEDJA', text: `${kv.varfor}: kvittensen lästes aldrig upp` });
-  else if (!r.logg.some((e) => e.kalla === 'MÅL' && Math.abs(e.tot - kv.tot) < 10)) { /* kvittens mitt i ett mål – inget nytt mål väntas */ }
+  else if (!r.logg.some((e) => e.kalla === 'händelse' && e.vem === 'malKlart' && e.tot - kv.tot > -2 && e.tot - kv.tot < 1.5)) { /* kvittens mitt i ett mål – inget nytt mål väntas */ }
   else if (!mal || mal.tot - slut > 20) flaggor.push({ dag: kv.dag, t: kv.t, typ: 'KEDJA', text: `${kv.varfor}: inget nytt mål lästes upp efter kedjan` });
+  else if (gap > 2 && r.logg.some((e) => (e.kalla === 'meddelande' || (e.kalla === 'lapp' && /^Dag \d/.test(e.text))) && e.tot >= slut - 0.5 && e.tot <= mal.tot)) { /* en dagbokssida (pausad scen) får stå mellan kedjan och målet */ }
   else if (gap > 2) flaggor.push({ dag: kv.dag, t: kv.t, typ: 'KEDJA', text: `${kv.varfor}: nytt mål ${gap.toFixed(1)} s efter kedjan (max 2 s)` });
 }
 for (const m of r.logg.filter((e) => e.kalla === 'MÅL')) {
-  if (!r.logg.some((e) => ['kvittens', 'varför'].includes(e.kalla) && Math.abs(e.tot - m.tot) < 8)) flaggor.push({ dag: m.dag, t: m.t, typ: 'KEDJA', text: `mål utan kvittens: "${m.text.slice(0, 70)}"` });
+  if (!r.logg.some((e) => e.kalla === 'MÅL' && e.dag === m.dag && e.tot < m.tot)) continue;   /* dagens första mål har inget klart mål före sig */
+  if (!r.logg.some((e) => ['kvittens', 'varför', 'kvittens-bock', 'lapp'].includes(e.kalla) && Math.abs(e.tot - m.tot) < 8)) flaggor.push({ dag: m.dag, t: m.t, typ: 'KEDJA', text: `mål utan kvittens: "${m.text.slice(0, 70)}"` });
 }
 // punkt 10: varje sms ska synas som bubbla
 for (const sm of r.logg.filter((e) => e.kalla === 'sms')) {

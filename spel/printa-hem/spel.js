@@ -55,6 +55,7 @@ const MOLN = await laddaMoln();
 // ---------- Inställningar (lek fritt med dessa) ----------
 // ---------- Punkt 15: EN SAK I TAGET (claude/soptippsvagen-en-sak-i-taget.md) ----------
 const ROST_PAUS = 2000;     // ms paus mellan två olika saker som berättas (röst, sms, notis, nytt mål …)
+const KEDJA_MAL_PAUS = 300;  // ms från att kvittensen pratat klart till att nya målet läses (A-065: max 2 s)
 const DIALOG_PAUS = 800;    // ms mellan repliker inom samma samtal (pappas besök, telefonen, sopbilsresan, julen, Helen)
 const KANAL_GAMMAL = 10000; // EA: reaktioner och toasts har bäst före 10 s – annars kastas de
 const BONUS_MELLAN = (dag) => dag <= 1 ? Infinity : dag <= 3 ? 240000 : 180000;   // EA: bonusbudget (mamma, brorsan, Alis småprat delar)
@@ -3641,7 +3642,7 @@ function monteraAuto(id) {
     for (const p of placerade.filter((x) => x.typ === 'saljlada')) { scen.remove(p.mesh); p.mesh.parent?.remove(p.mesh); interaktor.avregistrera(p.mesh); placerade.splice(placerade.indexOf(p), 1); }
     S.placerade = (S.placerade || []).filter((x) => x.typ !== 'saljlada');
   }
-  if (id === 'lastarm') setTimeout(() => kedja('lastarm'), 1500);   // CA: varför slangfördelaren
+  if (id === 'lastarm') kedja('lastarm');   /* A-065: kvittensen fördröjs inte för hand – kön tar den när det är dess tur */   // CA: varför slangfördelaren
   S.auto[{ rullband: 'band', lastarm: 'lastarm', robotarm: 'arm', utlada: 'lada' }[id]] = true; byggAuto(); ljudH('montera'); sparaSnart();
   ui.toast({ rullband: 'Rullbandet står klart! Bär skräp till inmatningen vid tippen – bandet tar det till sophållaren.', lastarm: 'Lastarmen sitter vid tippen och lägger skräp på bandet åt dig. Den orkar bara lätta saker – trimma den hos Ali.', robotarm: 'Robotarmen sitter vid kvarnen – färdiga rullar laddas in i skrivarna automatiskt.', utlada: 'Leveranslådan står vid skrivaren. Välj en sak på skrivaren och slå på Autoprint – Ali hämtar lådan varje morgon.' }[id], 'guld');
 }
@@ -4150,11 +4151,15 @@ function bonusOk(nu) {   // EA/EC#2: dag 1 ingen bonus, sedan en per 4 min (dag 
 const kanal = []; let kanalAktiv = null, kanalFri = 0, senastStory = -1e9;
 // BV: lugn start på dagen
 const LUGN_START = 5300, SMS_TIDIGAST = 30500;
+let iKanalVisa = 0, senastSynlig = -1e9; const SYNLIG_MELLAN = 4200, KVITTO_MELLAN = 2000;   /* kvittensen har förtur men får minst 2 s efter det som syntes före */   /* A-065 tillägg: ett talutrymme */
+const senastNyckel = new Map();   // notisnyckel → när den senast visades (samma sort inom 30 s slås ihop)   /* A-065: sant medan kön visar något – då får det synas direkt */
 let menyTot = 0, menyVidKlart = 0;   /* A-063: tid i menyer och pausade sidor räknas inte mot målrutans 4 s */
 let lugnTill = 0, dagStartTid = -1e9; const kanalSenare = [];
 function lugnStart() { lugnTill = performance.now() + LUGN_START; dagStartTid = performance.now(); }
 paHandelse('morgonkortStangt', lugnStart);
 paHandelse('morgonkortStangt', () => { morgonVantar = false; malKlartTid = performance.now(); });
+const arKvitto = (x) => (x.kedja || x.kvitto) && x.vikt !== 'MÅL' ? 1 : 0;   /* A-065 lager 1: kvittensen har förtur framför allt annat i kön */
+const notisNyckel = (t) => String(t).replace(/[\d%]+/g, '#').replace(/×#/g, '').trim();
 function kanalLagg(it) {
   if (it.sms && performance.now() - dagStartTid < SMS_TIDIGAST) it.tidigast = Math.max(it.tidigast || 0, dagStartTid + SMS_TIDIGAST);   // BV: inget sms de första 30 s
   if (it.text && !/^\(/.test(it.text) && [kanalAktiv, ...kanal, ...kanalSenare].some((x) => x && x.vem === it.vem && x.text === it.text)) { textLogg('struken', it.vem || '', it.text, 'EC#4: står redan i kön'); return; }   // EC#4: samma text köas aldrig två gånger
@@ -4162,6 +4167,11 @@ function kanalLagg(it) {
   { const fg = [...kanal, ...kanalSenare].find((x) => Math.abs(x.t - it.t) < EA_GRUPP_MS); it.grupp = it.grupp ?? (fg ? fg.grupp : it.t); }   // EA: samma händelse = samma grupp (gruppens starttid)
   // kön får inte växa: max en sak per figur i kön (STORY stryks aldrig – den väntar)
   if (it.vikt !== 'STORY' && it.vem) { const i = kanal.findIndex((x) => x.vem === it.vem && x.vikt !== 'STORY' && !x.kvitto && !(it.paket && x.paket === it.paket) && !(it.sms && x.sms));   /* A-063: en kvittens trängs inte undan av en nyare tanke */   /* EA: delar i samma paket och olika sms tar inte ut varandra */ if (i >= 0) { textLogg('struken', kanal[i].vem, kanal[i].text || '', 'en nyare från samma'); kanal.splice(i, 1); } }
+  if (String(it.vem || '').startsWith('notis:') && it.text) {   /* A-065: samma sort inom 30 s blir en notis med antal */
+    const n = notisNyckel(it.text), fore = [...kanal, ...kanalSenare].find((x) => String(x.vem || '').startsWith('notis:') && notisNyckel(x.text || '') === n);
+    if (fore) { fore.antal = (fore.antal || 1) + 1; textLogg('sammanslagen', it.vem, it.text, `A-065: ×${fore.antal}`); return; }
+    if (nu0 - (senastNyckel.get(n) ?? -1e9) < 30000) { textLogg('struken', it.vem, it.text, 'A-065: samma sort visades nyss'); return; }
+  }
   kanal.push(it); textLogg('väntar', it.vem || '', it.text || '', it.vikt + (it.tidigast && it.tidigast > nu0 ? ` · om ${((it.tidigast - nu0) / 1000).toFixed(1)} s` : '')); kanalRaknare();
 }
 const animationPagar = () => !!(spikar || cykelAnim || printarFram.size || kapkortKvar() || document.querySelector('.ph-kap') || sover);
@@ -4171,7 +4181,8 @@ const kanalLedig = () => !kanalAktiv && performance.now() >= kanalFri;
 function startaDel(a, nu) {
   const d = a.delar[a.delNr];
   if (d.typ === 'varför' || a.delNr === a.delar.length - 1) a.malSlapp = true;   // nya målet får synas när varför-repliken börjar
-  try { d.visa?.(); } catch (e) { console.warn(e); }
+  iKanalVisa++; try { d.visa?.(); } catch (e) { console.warn(e); } finally { iKanalVisa--; }
+  senastSynlig = nu;   /* A-065: en kedjedel syns också – talutrymmet räknas från den */
   if (a.delNr > 0) textLogg('sak-del', a.vem || '', d.text, a.vikt);
   prataNu(a.vem, d.text, a.vikt); a.slut = Math.max(nu + 1500, pratarTill, nu + 600 + String(d.text || '').length * 62);   /* A-063: en del i ett inslag får tala klart innan nästa del */
 }
@@ -4190,9 +4201,9 @@ function korKanal() {
       if (nu < a.nastaDel) return;
       a.nastaDel = 0; a.delNr++; startaDel(a, nu); return;
     }
-    kanalAktiv = null; kanalFri = nu + (a.utanPaus ? 0 : ROST_PAUS); if (a.paket) paketStart.set(a.paket, nu); textLogg('klar', a.vem || '', a.text || '(nytt mål i rutan)', a.vikt); try { a.efter?.(); } catch (e) { console.warn(e); } kanalRaknare();
+    kanalAktiv = null; kanalFri = nu + (a.utanPaus ? 0 : (a.kedja || a.kvitto) ? KEDJA_MAL_PAUS : ROST_PAUS);   /* A-065: efter en kvittens kommer nya målet direkt (annat väntar ändå på talutrymmets 4 s) */ if (a.paket) paketStart.set(a.paket, nu); textLogg('klar', a.vem || '', a.text || '(nytt mål i rutan)', a.vikt); try { a.efter?.(); } catch (e) { console.warn(e); } kanalRaknare();
   }
-  if (!kanal.length || nu < kanalFri || nu < pratarTill + DIALOG_PAUS) return;   // B25: kanalen avbryter aldrig någon som pratar direkt (Ali i butiken, samtal)
+  if (!kanal.length || nu < pratarTill + DIALOG_PAUS || (nu < kanalFri && !kanal.some((x) => arKvitto(x) && !(x.tidigast > nu)))) return;   /* A-065: en kvittens väntar bara tills rösten pratat klart, inte på pausen mellan två saker */   // B25: kanalen avbryter aldrig någon som pratar direkt (Ali i butiken, samtal)
   // B25: i Alis butik får Alis egna STORY-repliker (t.ex. varför-raden efter bonusen) komma, när ingen pratar
   let endastAli = false;
   if (kanalPausad()) {
@@ -4202,7 +4213,7 @@ function korKanal() {
   // BV: lugn start – de första 5 s efter BÖRJA DAGEN (och efter introt och kapitelkort) kommer ingenting
   if (nu < lugnTill && !kanal.some((x) => x.lugnOk)) return;   /* A-063: prompten före skylten får gå före lugnet */
   // EA: fast ordning – rang (story/reaktion, mål, bonus) → händelse → den som pratar före min tanke → tid
-  kanal.sort((a, b) => (b.forst ? 1 : 0) - (a.forst ? 1 : 0) || rang(a) - rang(b) || a.grupp - b.grupp || (a.paket && a.paket === b.paket ? a.ord - b.ord : 0) || arTalare(b) - arTalare(a) || a.t - b.t);
+  kanal.sort((a, b) => (b.forst ? 1 : 0) - (a.forst ? 1 : 0) || arKvitto(b) - arKvitto(a) || rang(a) - rang(b) || a.grupp - b.grupp || (a.paket && a.paket === b.paket ? a.ord - b.ord : 0) || arTalare(b) - arTalare(a) || a.t - b.t);
   const senare = kanalSenare;
   while (kanal.length) {
     const ia = endastAli ? kanal.findIndex((x) => x.vem === 'ali' && x.vikt === 'STORY') : 0; if (ia < 0) break;
@@ -4216,6 +4227,8 @@ function korKanal() {
       bonusSenast = nu;
     }
     if (it.sms && nu - dagStartTid < SMS_TIDIGAST) it.tidigast = Math.max(it.tidigast || 0, dagStartTid + SMS_TIDIGAST);   // BV: kontrolleras vid leverans
+    if (it.gammalMs && nu - it.t - (it.menyMs || 0) > it.gammalMs) { textLogg('struken', it.vem || '', it.text || '', 'A-065: för gammal – tappat sitt sammanhang'); continue; }
+    { const mel = arKvitto(it) ? KVITTO_MELLAN : SYNLIG_MELLAN; if (it.vikt !== 'MÅL' && nu - senastSynlig < mel) it.tidigast = Math.max(it.tidigast || 0, senastSynlig + mel); }   /* A-065: minst 4 s mellan två saker som syns */
     if (it.tidigast && nu < it.tidigast) { senare.push(it); continue; }   // BV: väntar på sin tid – nästa sak i kön får gå före
     if (it.paket && !paketStart.has(it.paket)) paketStart.set(it.paket, nu);
     kanalAktiv = it; it.slut = nu + (it.minMs ?? 2500); if (it.vikt === 'STORY') senastStory = nu;   // BO
@@ -4224,7 +4237,12 @@ function korKanal() {
     if (it.vem === 'ali' && it.sms) sekvensKoll(it.text);
     if (it.delar) { it.delar = it.delar.filter((d) => !d.stryk?.()); if (!it.delar.length) { kanalAktiv = null; textLogg('struken', it.vem || '', it.text || '', 'CG: målet redan gjort'); return; } it.delNr = 0; startaDel(it, nu); kanalRaknare(); return; }
     if (it.kvitto) senKvittensKoll(it.kvitto, it.text || it.vem || '');   /* A-063 */
-    try { it.visa?.(); } catch (e) { console.warn(e); }
+    if (!arKvitto(it) && it.vikt !== 'MÅL' && kanal.some((x) => arKvitto(x) && x.t <= it.t)) laggFynd(koForeKvittens, `”${String(it.text || it.vem || '').slice(0, 40)}” före kvittensen ”${String(kanal.find((x) => arKvitto(x))?.text || '').slice(0, 40)}”`);   /* A-065 lager 2 */
+    if (arKvitto(it)) textLogg('kvitto-visas', it.vem || '', it.text || '', 'A-065');
+    iKanalVisa++; try { it.visa?.(); } catch (e) { console.warn(e); } finally { iKanalVisa--; }
+    if (it.vikt !== 'MÅL') senastSynlig = nu;
+    if (it.antal > 1) textLogg('sammanslagen', it.vem || '', `${it.text} ×${it.antal}`, 'A-065: samma sort');
+    if (String(it.vem || '').startsWith('notis:')) senastNyckel.set(notisNyckel(it.text), nu);
     if (it.rost !== false && it.text) { prataNu(it.vem, it.text, it.vikt, { start: it.start }); it.slut = Math.max(it.slut, pratarTill); }
     kanalRaknare(); return;
   }
@@ -4233,8 +4251,32 @@ function korKanal() {
 // "2 väntar" vid meddelandeikonen
 /* A-063: SEN KVITTENS – kvittensen ska komma inom 2 s, och aldrig efter att nästa mål är gjort */
 const senKvittens = [];
+/* A-065 lager 1: STORYKEDJA – ett steg per mål, dag 1 → julen → efterspelet. Byggs ur STEG (enda källan för mål, prompt och tanke)
+   och KEDJA_TEXT (kvittens + varför per händelse). Versionsnumret höjs när ordningen ändras – sparfiler flyttas via stegNyckel/migreraSteg. */
+const STORYKEDJA_VERSION = 1;
+let storykedjaCache = null;
+function STORYKEDJA() {
+  if (storykedjaCache) return storykedjaCache;
+  storykedjaCache = STEG.map((st, i) => ({ id: storyId(i), nr: i, prompt: st.knuff || null, handelse: st.id || null, kvittens: st.tanke || (KEDJA_TEXT[st.id] || [])[0] || null, nasta: STEG[i + 1] ? storyId(i + 1) : null, del: st.del || null }));
+  return storykedjaCache;
+}
+const storyId = (i) => stegNyckel(i).replace(/^id:/, '');   /* steg utan eget id får sin sparnyckel (del#nr) – samma nyckel som sparfilerna använder */
+const STORYKEDJA_ID = () => new Set(STORYKEDJA().map((k) => k.id).filter(Boolean));
+const saknadKvittens = [], dubbelKvittens = [], koForeKvittens = [];
+const visadeKvittenser = new Map();   // text → dag
+function kvittensVisad(text, id) {   /* DUBBEL KVITTENS: samma kvittens två gånger samma dag (en ny dag får upprepa en vardagsreplik) */
+  const k = String(text || '').trim(); if (!k) return;
+  if (visadeKvittenser.get(k) === S.dag) laggFynd(dubbelKvittens, `”${k.slice(0, 50)}” (${id || '?'}) visades två gånger dag ${S.dag}`);
+  visadeKvittenser.set(k, S.dag);
+}
 let senastMalKlartT = -1e9;
-const kvittoFri = () => kanalAktiv ? Math.max(kanalAktiv.slut || 0, pratarTill) + ROST_PAUS : 0;   /* A-063: när förra målet blev klart – en kvittens får inte komma efter att nästa mål är gjort */
+/* A-065: varje klarat mål får en kvittens. Har steget ingen egen replik inom 4 s är bocken i målrutan kvittensen – och det loggas */
+function kvittoBock(st) {
+  const t0 = performance.now(), d0 = S.dag;
+  setTimeout(() => { const fick = TEXTLOGG.some((e) => e.t >= t0 - 1500 && ['kvittens', 'varför', 'lapp', 'meddelande'].includes(e.kalla)); const ska = STORYKEDJA()[STEG.indexOf(st)]?.kvittens; if (S.dag === d0 && ska && !fick && !TEXTLOGG.some((e) => e.t >= t0 - 1500 && String(e.text).includes(String(ska).slice(0, 25)))) laggFynd(saknadKvittens, `${st.id}: ”${String(ska).slice(0, 40)}” kom inte inom 4 s`); if (S.dag === d0 && !fick) textLogg('kvittens-bock', '', '✓ ' + rens(String(stegText(st) || st.id || '')), 'A-065: bocken i målrutan är kvittensen'); }, 4000);
+  return t0;
+}
+const kvittoFri = () => Math.max(kanalAktiv ? Math.max(kanalAktiv.slut || 0, pratarTill) + ROST_PAUS : 0, senastSynlig + KVITTO_MELLAN);   /* A-063: när förra målet blev klart – en kvittens får inte komma efter att nästa mål är gjort */
 const laggFynd = (lista, t) => { if (!lista.includes(t)) lista.push(t); };
 function senKvittensKoll(k, text) {
   const ms = performance.now() - Math.max(k.t, k.fri || 0) - (menyTot - (k.meny ?? menyTot));   /* en replik som redan pratade när det hände får prata klart */
@@ -9363,6 +9405,12 @@ function notis(text, typ = '', o = {}) {
   return null;
 }
 function notisVisa(text, typ = '', o = {}) {
+  /* A-065 tillägg: ett talutrymme – en notis som inte kommer från kön läggs i kön (utom sms/lappar och det som uttryckligen är direkt) */
+  if (!iKanalVisa && !o.direkt && !o.lagTill && typ !== 'sms' && typ !== 'lapp' && ui.igang && !scenPagar()) { kanalLagg({ vikt: o.vikt || 'REAKTION', vem: 'notis:' + text.slice(0, 40), text, rost: false, minMs: 2500, gammalMs: 20000, visa: () => notisVisa(text, typ, { ...o, direkt: true }) }); return null; }
+  if (o.lagTill) {   // nästa del i samma inslag (kvittens → varför): samma kort, en rad till
+    const forra = [...notisEl.children].find((k) => !k.classList.contains('ut') && k.classList.contains(typ || 'x'));
+    if (forra) { forra.querySelector('.kropp').insertAdjacentHTML('beforeend', '<br>' + rens(text)); clearTimeout(forra._t); forra._t = setTimeout(() => taBort(forra), NOTIS_TID); textLogg('notis-del', typ, text); return forra; }
+  }
   // samma text igen inom kort: förnya kortet i stället för att lägga ett nytt
   const el = typ === 'sms' || typ === 'lapp' ? medEl : notisEl;   // meddelanden till vänster, notiser till höger
   const finns = [...el.children].find((k) => k.dataset.text === text && !k.classList.contains('ut'));
@@ -9903,18 +9951,21 @@ const morgonToasts = [];   // sker under natten, visas när morgonkortet stängs
 const morgonToast = (text, typ) => { if (!morgonToasts.some(([t]) => t === text)) morgonToasts.push([text, typ]); };
 paHandelse('morgonkortStangt', () => { morgonToasts.splice(0).forEach(([t, typ], i) => paket([{ toast: [t, typ] }], { om: 600 + i * 2500, vikt: 'REAKTION' })); });
 function efterPratBort(vem, fn) { const t0 = performance.now(); const v = () => { if (performance.now() - t0 < 20000 && pratarVem === vem && performance.now() < pratarTill) { setTimeout(v, 250); return; } fn(); }; setTimeout(v, 400); }
-const DAGBOK_STORA = ['start', 'skylt', 'klart', 'polett'];   /* EK 25 */
+const DAGBOK_STORA = ['start', 'skylt', 'klart', 'polett'];
+const LAPP_FLAGGA = { salt: 'aliStoryVisad' };   /* A-065: en lapp som sätter en flagga står i data, inte som specialfall i visaLapp */   /* EK 25 */
 function visaLapp(id, bas = {}) {   /* EA: bas = paketets fält (ordning, villkor) */
   if (!lappInfo(id)) { textLogg('struken', 'lapp', id, 'lappen finns inte längre'); return; }
   if (!S.lappar.includes(id)) S.lappar.push(id);
   const [titel, text] = lappInfo(id);
-  if (!titel.includes('Dagbok') && /Storebror|^🧺 Ali/.test(titel)) textLogg('lapp', titel, text);   /* EA: dagbok och brev loggas när de visas */
+  if (!titel.includes('Dagbok') && /Storebror|^🧺 Ali/.test(titel)) textLogg('lapp-kö', titel, text, 'A-065: syns som sms-bubbla när det blir dess tur');   /* EA: dagbok och brev loggas när de visas */
   if (/Storebror/.test(titel)) { smsFram('bror', text, null, { ...bas, vikt: 'STORY' }); sparaSnart(); return; }
-  if (/^🧺 Ali/.test(titel)) { if (id === 'salt') S.aliStoryVisad = true; smsFram('ali', text, null, { ...bas, vikt: 'STORY' }); sparaSnart(); return; }
+  if (/^🧺 Ali/.test(titel)) { if (LAPP_FLAGGA[id]) S[LAPP_FLAGGA[id]] = true; smsFram('ali', text, null, { ...bas, vikt: 'STORY' }); sparaSnart(); return; }
   // de stora dagboksögonblicken (dag 1, skylten) visas på pausad skärm och läses upp med din röst – innan någon instruktion
   /* EK 25: de stora sidorna är en egen scen – spelet pausar, din röst läser, sidan ligger kvar tills Fortsätt */
-  if (id === 'skylt') { textLogg('lapp', titel, text); medKo.unshift({ typ: 'dagbok', titel: 'Dagbok', text, id, knapp: 'Fortsätt', kvitto: { t: performance.now(), meny: menyTot, steg: S.steg, namn: 'dagbok ' + id } }); if (medEl2.hidden && !dagbokLas) visaNastaMeddelande(); sparaSnart(); return; }   /* A-063: kvittensen på skylten kommer direkt och pausar – den köar inte bakom något */
-  if (titel.includes('Dagbok') && DAGBOK_STORA.includes(id)) { kanalLagg({ ...bas, vikt: 'STORY', vem: 'du', text, rost: false, minMs: 400, visa: () => { textLogg('lapp', titel, text); medKo.push({ typ: 'dagbok', titel: 'Dagbok', text, id, knapp: 'Fortsätt' }); } }); sparaSnart(); return; }
+  if (titel.includes('Dagbok') && DAGBOK_STORA.includes(id) && !iKanalVisa && (kanalAktiv || performance.now() < pratarTill)) {   /* A-065: ett talutrymme – pratar någon väntar sidan först i kön (kvittens = förtur) */
+    kanalLagg({ ...bas, vikt: 'STORY', vem: 'du', text, rost: false, minMs: 400, kvitto: { t: performance.now(), fri: kvittoFri(), meny: menyTot, steg: S.steg, namn: 'dagbok ' + id }, visa: () => visaLapp(id, bas) }); return;
+  }
+  if (titel.includes('Dagbok') && DAGBOK_STORA.includes(id)) { textLogg('lapp', titel, text); medKo.unshift({ typ: 'dagbok', titel: 'Dagbok', text, id, knapp: 'Fortsätt', kvitto: { t: performance.now(), meny: menyTot, steg: S.steg, namn: 'dagbok ' + id } }); if (medEl2.hidden && !dagbokLas) visaNastaMeddelande(); sparaSnart(); return; }   /* A-063: kvittensen på skylten kommer direkt och pausar – den köar inte bakom något */
   /* EK 25: de små sidorna är ett story-paket med din röst, och bubblan ligger kvar tills den är uppläst + 2 s */
   if (titel.includes('Dagbok')) inkorg({ bas, vem: 'du', titel: 'Dagbok', text, lapp: true, block: false, tyst: false, fore: () => textLogg('lapp', titel, text), klar: () => handelse('brevLast', { id }) });
   else smsFram(vemAvTitel(titel), text, null, { ...bas, vikt: 'STORY', brev: /^rolf:|Rolf|brev/i.test(id + titel), namn: rens(titel).replace(/^[^\p{L}]+/u, ''), efter: () => handelse('brevLast', { id }) });   /* DN: lappar och gåvor kommer som sms */
@@ -10550,7 +10601,7 @@ function uppdatera(dt) {
       const st = STEG[S.steg]; const sags = st.tanke && (stegVisat === S.steg || st.tankeForst); S.steg++;
       { const ny = STEG[S.steg]; if (ny?.knuff && !harSagt(ny.knuff) && !(typeof ny.klar === 'function' && ny.klar())) { const ni = S.steg; tanke(ny.knuff, 'ED6: knuff före målet', 'STORY', () => S.steg === ni && !STEG[ni]?.klar?.(), { efterMal: true }); } }   /* A-063: knuffen stryks om saken redan står på plats (SPÖKE) */   /* ED6: en kort hur-tanke när målet inte är självklart */
       if (sags && !harSagt(st.tanke)) { const nastaI = S.steg; if (st.tankeForst) tanke(st.tanke, 'mål klart', 'STORY', () => S.steg <= nastaI, { forst: true, kvitto: { t: performance.now(), fri: kvittoFri(), meny: menyTot, steg: S.steg, namn: 'mål klart' } });   /* EA: tanken förklarar nästa mål – kastas om det redan är gjort */ else paket([{ tanke: st.tanke }], { om: 1200, vikt: 'REAKTION', varfor: 'mål klart', kvitto: true }); }   /* DT: skräptanken kommer före nästa mål */   /* högst en tanke per mål, en gång */
-      malBockText = malRaw; if (malKlartTid <= malVisadTid) { malKlartTid = performance.now(); menyVidKlart = menyTot; }   /* EC#5: fristen räknas från första mål som klarats sedan rutan senast byttes */ senastMalKlartT = performance.now(); handelse('malKlart', { id: st.id || 'steg' + (S.steg - 1), del: st.del, nasta: STEG[S.steg]?.id || 'steg' + S.steg });
+      malBockText = malRaw; if (malKlartTid <= malVisadTid) { malKlartTid = performance.now(); menyVidKlart = menyTot; }   /* EC#5: fristen räknas från första mål som klarats sedan rutan senast byttes */ senastMalKlartT = performance.now(); kvittoBock(st); handelse('malKlart', { id: st.id || 'steg' + (S.steg - 1), del: st.del, nasta: STEG[S.steg]?.id || 'steg' + S.steg });
       if (st.lapp && !S.lappar.includes(st.lapp)) visaLapp(st.lapp);
       if (nasta0(S.steg)?.sov && STEG[S.steg].sms && !(S.smsSkickat || []).includes(STEG[S.steg].sms[1])) { const sv = STEG[S.steg]; S.smsSkickat = [...(S.smsSkickat || []), sv.sms[1]]; paket([{ sms: sv.sms }], { om: 4000, vikt: 'STORY', varfor: 'EC: kvällens förvarning (A-043: stryks aldrig – somnar man kommer den först i morgon)' }); }
       if (st.sms && !st.sov && !(S.smsSkickat || []).includes(st.lapp || st.sms[1])) { S.smsSkickat = [...(S.smsSkickat || []), st.lapp || st.sms[1]]; sms(st.sms[0], st.sms[1]); }
@@ -12548,6 +12599,7 @@ const ALI_FORBI = [...LIV_ROST.slice(0, 6).map((x) => x[1]),   // CT: 20 nya, ro
 // pratbubblor som sitter fast på något i världen
 const varldsBubblor = [];
 function varldsBubbla(obj, text, sek = 3.5, hojd = 2.3, klass = '') {
+  if (!iKanalVisa && ui.igang && !scenPagar()) { kanalLagg({ vikt: 'REAKTION', vem: 'värld:' + String(text).slice(0, 30), text, rost: false, minMs: Math.min(3000, sek * 1000), gammalMs: 20000, visa: () => varldsBubbla(obj, text, sek, hojd, klass) }); return; }   /* A-065 tillägg: bubblor från världen går också genom kön */
   textLogg('bubbla', obj?.userData?.namn || '', text);
   const el = document.createElement('div'); el.className = 'ph-vbubbla ' + klass; el.textContent = rens(text); document.body.appendChild(el);
   varldsBubblor.push({ obj, el, slut: performance.now() + sek * 1000, hojd });
@@ -12892,7 +12944,7 @@ function uppdateraLiv(dt) {
   }
   kajsa.position.set(katt.x, tippHojd(katt.x, katt.z), katt.z);
   kajsa.userData.svans.rotation.y = Math.sin(nu / 300) * 0.4;
-  if (Math.hypot(p.x - katt.x, p.z - katt.z) < 2.5 && nu > katt.nastaMjau) { katt.nastaMjau = nu + 30000; varldsBubbla(kajsa, 'Mjau.', 2.2, 0.75); ton(880, 0.12, 0.03, 'triangle'); ton(660, 0.18, 0.03, 'triangle', 0.12); }
+  if (Math.hypot(p.x - katt.x, p.z - katt.z) < 2.5 && nu > katt.nastaMjau) { katt.nastaMjau = nu + 30000; if (!kanalAktiv && !kanal.length && performance.now() > pratarTill) varldsBubbla(kajsa, 'Mjau.', 2.2, 0.75); else textLogg('ljud', 'kajsa', 'Mjau', 'A-065: bara ljud när någon pratar'); ton(880, 0.12, 0.03, 'triangle'); ton(660, 0.18, 0.03, 'triangle', 0.12); }
   if (bengt.visible && nu > bengtSynsTill) bengt.visible = false;
 }
 
@@ -14115,14 +14167,16 @@ function varforFor(id) {   // CG: [id, text] för den varför-replik som ska sä
   }
   return null;
 }
+const KEDJA_VARFOR_NU = { rolf3: () => VAGG_KVAR_TEXT[Math.max(0, 4 - vaggarKlara().length)] };   /* A-065: varför-rader som räknas fram när kedjan körs (data, inte specialfall) */
 function kedja(id) {
   S.kedja = S.kedja || []; if (S.kedja.includes(id)) return; S.kedja.push(id); sparaSnart();
   let [kv, va, vem = 'du'] = KEDJA_TEXT[id] || [];
-  if (id === 'rolf3') va = VAGG_KVAR_TEXT[Math.max(0, 4 - vaggarKlara().length)];   // BX
+  if (KEDJA_VARFOR_NU[id]) va = KEDJA_VARFOR_NU[id]();   // BX
   let malId = id;
-  if (va || id === 'rolf3') { const v = varforFor(id); if (v) [malId, va] = v; else va = null; if (vem !== 'du' && malId !== id) vem = 'du'; }   // CG
+  if (va || KEDJA_VARFOR_NU[id]) { const v = varforFor(id); if (v) [malId, va] = v; else va = null; if (vem !== 'du' && malId !== id) vem = 'du'; }   // CG
   const st0 = S.steg;   // det som pekar bakåt stryks: varför-raden när målet den förklarar redan är klart, kvittensen när spelaren hunnit två mål till
-  const del = (typ, t) => { textLogg(typ, vem, t, id); return { text: t, typ, stryk: typ === 'varför' ? () => !!KEDJA_MAL[malId]?.() : null, visa: () => notisVisa((vem === 'du' ? '💭 ' : '') + t, vem === 'du' ? 'tanke' : '', { tid: 5000 }) }; };
+  const del = (typ, t) => { textLogg(typ, vem, t, id); return { text: t, typ, stryk: typ === 'varför' ? () => !!KEDJA_MAL[malId]?.() || (S.steg > st0 && !!STEG[S.steg]?.knuff) : null,   /* A-065: har nya målet en egen knuff är den målets varför – två förklaringar till olika mål krockar */ visa: () => { if (typ === 'kvittens') kvittensVisad(t, id); notisVisa((vem === 'du' ? '💭 ' : '') + t, vem === 'du' ? 'tanke' : '', { tid: 5000, lagTill: delarVisade++ > 0 }); } }; };
+  let delarVisade = 0;
   const delar = [kv && S.steg <= st0 + 1 && del('kvittens', kv), va && del('varför', va)].filter(Boolean);
   if (!delar.length) return;
   // punkt BF: kvittens och varför från samma röst är ETT inslag med DIALOG_PAUS emellan. Nya målet syns i rutan när varför-repliken börjar.
@@ -14149,8 +14203,8 @@ paHandelse('placerat', ({ sak }) => { if (sak !== 'saljlada' || S.rolfSaljlada) 
 paHandelse('ombyggd', () => kedja('cykel'));
 paHandelse('placerat', ({ sak }) => { if (sak === 'skrivareS' && !harSagt(BROR_RULLE_T)) { ljud.placera(); paket([{ tanke: BROR_RULLE_T }], { om: 600, vikt: 'REAKTION', varfor: 'ED3: rullen kommer med skrivaren' }); } });
 paHandelse('printStart', ({ sak }) => { if (sak === 'nyckelring' && S.dag === 1) kedja('printStart'); });
-paHandelse('printKlar', ({ sak, n }) => { if (sak === 'nyckelring' && n === 1) kedja('printKlar'); });
-paHandelse('forstaForsaljning', () => setTimeout(() => kedja('aliKvarn'), 400));
+paHandelse('printKlar', ({ sak, n }) => { if (sak === 'nyckelring' && n === 1) kedja('printKlar'); else if (sak === 'kruka' && S.dag <= 1) kedja('krukaD1'); });   /* A-065: krukmålet klaras när krukan är printad – kvittensen hör till samma händelse */
+paHandelse('forstaForsaljning', () => kedja('aliKvarn'));   /* A-065: direkt – kön väntar själv tills Ali pratat klart */
 paHandelse('tagitUrPrint', ({ sak }) => {
   if (sak === 'byggsats:grip') kedja('grip'); else if (sak === 'sang') kedja('sang'); else if (sak === 'kruka') kedja(S.dag <= 1 ? 'krukaD1' : S.kedja?.includes('krukaD1') ? '' : 'kruka');
   else if (sak === 'pall') kedja('pall'); else if (sak === 'byggsats:magnet') kedja('magnet');
@@ -14705,6 +14759,10 @@ if (ui) {
   regelvakt.regel('FÖR TIDIG FANFAR', () => tidigFanfar.slice(-5));   /* A-062 */
   regelvakt.regel('SPOILER', () => froSpoiler.slice(-5));   /* A-057 */
   regelvakt.regel('SEN KVITTENS', () => senKvittens.slice(-5));   /* A-063 */
+  regelvakt.regel('SAKNAD KVITTENS', () => saknadKvittens.slice(-5));   /* A-065 lager 2 */
+  regelvakt.regel('DUBBEL KVITTENS', () => dubbelKvittens.slice(-5));   /* A-065 lager 2 */
+  regelvakt.regel('KÖ FÖRE KVITTENS', () => koForeKvittens.slice(-5));   /* A-065 lager 2 */
+  regelvakt.regel('OREGISTRERAT MÅL', () => { if (!ui.igang || S.steg >= STEG.length) return []; const st = STEG[S.steg]; return st && !STORYKEDJA_ID().has(storyId(S.steg)) ? [`"${rens(String(stegText(st) || '')).slice(0, 50)}" saknar id i STORYKEDJA`] : []; });   /* A-065 lager 2 */
   regelvakt.regel('SPÖKE', () => spokeFynd.slice(-5));   /* A-063 */
   regelvakt.regel('FEL BYGGEFFEKT', () => felByggeffekt.slice(-5));   /* A-063 */
   regelvakt.regel('RADBRYTNING', () => radbrott());   /* A-062: en mening per rad, högst RAD_MAX tecken */
@@ -14768,7 +14826,7 @@ function malKontrakt(st = STEG[S.steg]) {
   const text = String(stegText(st) || ''), namner = [...new Set(KAND_ORD.filter(([re]) => re.test(text)).map(([, k]) => k))];
   return { namner, kanGoras: () => (!st.las || upplast(st.las)) && namner.every((n) => kand(n)), klar: st.klar, rad: () => { try { return nastaAtgard(malRaw)?.[1] || ''; } catch (e) { return ''; } } };
 }
-window.__printahem = { besokTick: (dt) => uppdateraBesok(dt), froSett: (id, s) => froSett(id, s), froSpoiler, STORYLAGER, FRO_T, kameraAkSteg: (t, frys = false) => { if (!kameraAk) return false; kameraAk.start = performance.now() - t * 1000; kameraAk.frys = frys ? t : null; uppdateraKameraAk(); renderer.render(scen, kamera); return true; }, startaUtsikt: () => startaUtsikt(), tippSvep: () => tippSvep(), visaForeEfter: () => visaForeEfter(), kulle, kameraAk: () => kameraAk, kollaUtsikt: () => kollaUtsikt(), bilFas: () => bil.fas, sopbil, kollaBengt: (dt) => kollaBengt(dt), bengtFig: bengt, privatSkyltar, bengtGrav, stromBehov, solEffekt, FLASK_FORE, spelBild, spelBildCache, startBild: () => { const r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio(); kamera.aspect = 1.6; kamera.updateProjectionMatrix(); r.setPixelRatio(1); r.setSize(1280, 800, false); r.render(scen, kamera); const C = document.createElement('canvas'); C.width = 1280; C.height = 800; C.getContext('2d').drawImage(r.domElement, 0, 0); r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); kamera.aspect = gs.x / gs.y; kamera.updateProjectionMatrix(); return C.toDataURL('image/jpeg', 0.86); }, tidigFanfar, bengtLada, GROP, GRIND, grop, grusGrind, rolfKaparGrinden: () => rolfKaparGrinden(), ritaGrustag: () => ritaGrustag(), kollaBengtAvslojande: () => kollaBengtAvslojande(), BENGT_HUS, BENGT_LADA, BENGT_GRAV, bengtLadaHandlare, ritaNyckelSkylt: () => ritaNyckelSkylt(), kjelleText: (x) => kjelleText(x), HUMOR_T, boterFor: (m) => boterFor(m), boterSyns: (b) => boterSyns(b), CHEFEN, labb, LABB, BAGAR, TRADAR, aktivaTradar, kollaBagar: (t) => kollaBagar(t), kollaLabb: () => kollaLabb(), efterspelTest: () => efterspelTest(), vaskSlapp: (t) => vaskSlapp(t), ader, ritaStart: () => ritaStart(), vev3d: () => vev, dagMoment: (d) => dagMoment(d), SAKER, malKontrakt, rullLapp, THREE, TS, visaLapp: (id) => visaLapp(id), fotografera: (p) => fotografera(p), POLAROID, aliNejFor: (t) => aliNejFor(t), ROLF_LISTA: () => ROLF, STORY_SAKER, hoppaOver, prataNu, volym, rostLage: () => rostLage(), pratarNu: () => performance.now() < pratarTill, valjOsagd, sakModell, ikonModell, ikonLista, renderaIkon, kand, regelvakt, upplast, lasUpp, UPPLAS_FLASK, finns, startTorn, vevEl, MONTERA, TA_PA, taPaVald, monteraPa, notis, malSynligt: () => malVisasSteg === S.steg, kanalLage: () => ({ pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: !medEl2.hidden, butik: !ui.butiksOverlay.hidden, overlay: !ui.overlay.hidden, aktiv: kanalAktiv?.text?.slice(0, 40), fri: kanalFri - performance.now(), pratar: pratarTill - performance.now(), lugn: lugnTill - performance.now(), n: kanal.length }), paket, oppnaSaljlada, TRATT_MAX, giAliBonus, tangentTips, stromMax, byggBodTest: () => { Object.assign(bodVal, { ok: true, x: BOD.x, z: BOD.z, r: BOD.r }); byggBodHar(); return !!S.bod; }, aliVill, smsKortKlart, smsFram, smsBubbla, ritaDN, markeraAliIdag, dnRaknare, filTillg, dragTorn, tornPlats, tornRullar, slangNar, rullTornAktivera, flyttaSkrivarRullar, anvandSkrivare,
+window.__printahem = { STORYKEDJA, STORYKEDJA_VERSION, KEDJA_TEXT, besokTick: (dt) => uppdateraBesok(dt), froSett: (id, s) => froSett(id, s), froSpoiler, STORYLAGER, FRO_T, kameraAkSteg: (t, frys = false) => { if (!kameraAk) return false; kameraAk.start = performance.now() - t * 1000; kameraAk.frys = frys ? t : null; uppdateraKameraAk(); renderer.render(scen, kamera); return true; }, startaUtsikt: () => startaUtsikt(), tippSvep: () => tippSvep(), visaForeEfter: () => visaForeEfter(), kulle, kameraAk: () => kameraAk, kollaUtsikt: () => kollaUtsikt(), bilFas: () => bil.fas, sopbil, kollaBengt: (dt) => kollaBengt(dt), bengtFig: bengt, privatSkyltar, bengtGrav, stromBehov, solEffekt, FLASK_FORE, spelBild, spelBildCache, startBild: () => { const r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio(); kamera.aspect = 1.6; kamera.updateProjectionMatrix(); r.setPixelRatio(1); r.setSize(1280, 800, false); r.render(scen, kamera); const C = document.createElement('canvas'); C.width = 1280; C.height = 800; C.getContext('2d').drawImage(r.domElement, 0, 0); r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); kamera.aspect = gs.x / gs.y; kamera.updateProjectionMatrix(); return C.toDataURL('image/jpeg', 0.86); }, tidigFanfar, bengtLada, GROP, GRIND, grop, grusGrind, rolfKaparGrinden: () => rolfKaparGrinden(), ritaGrustag: () => ritaGrustag(), kollaBengtAvslojande: () => kollaBengtAvslojande(), BENGT_HUS, BENGT_LADA, BENGT_GRAV, bengtLadaHandlare, ritaNyckelSkylt: () => ritaNyckelSkylt(), kjelleText: (x) => kjelleText(x), HUMOR_T, boterFor: (m) => boterFor(m), boterSyns: (b) => boterSyns(b), CHEFEN, labb, LABB, BAGAR, TRADAR, aktivaTradar, kollaBagar: (t) => kollaBagar(t), kollaLabb: () => kollaLabb(), efterspelTest: () => efterspelTest(), vaskSlapp: (t) => vaskSlapp(t), ader, ritaStart: () => ritaStart(), vev3d: () => vev, dagMoment: (d) => dagMoment(d), SAKER, malKontrakt, rullLapp, THREE, TS, visaLapp: (id) => visaLapp(id), fotografera: (p) => fotografera(p), POLAROID, aliNejFor: (t) => aliNejFor(t), ROLF_LISTA: () => ROLF, STORY_SAKER, hoppaOver, prataNu, volym, rostLage: () => rostLage(), pratarNu: () => performance.now() < pratarTill, valjOsagd, sakModell, ikonModell, ikonLista, renderaIkon, kand, regelvakt, upplast, lasUpp, UPPLAS_FLASK, finns, startTorn, vevEl, MONTERA, TA_PA, taPaVald, monteraPa, notis, malSynligt: () => malVisasSteg === S.steg, kanalLage: () => ({ pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: !medEl2.hidden, butik: !ui.butiksOverlay.hidden, overlay: !ui.overlay.hidden, aktiv: kanalAktiv?.text?.slice(0, 40), fri: kanalFri - performance.now(), pratar: pratarTill - performance.now(), lugn: lugnTill - performance.now(), n: kanal.length }), paket, oppnaSaljlada, TRATT_MAX, giAliBonus, tangentTips, stromMax, byggBodTest: () => { Object.assign(bodVal, { ok: true, x: BOD.x, z: BOD.z, r: BOD.r }); byggBodHar(); return !!S.bod; }, aliVill, smsKortKlart, smsFram, smsBubbla, ritaDN, markeraAliIdag, dnRaknare, filTillg, dragTorn, tornPlats, tornRullar, slangNar, rullTornAktivera, flyttaSkrivarRullar, anvandSkrivare,
   framsteg, skrivarText, framstegKvarn,
   dbgKanal: () => ({ nu: performance.now(), pratarTill, pratarVem, kanalFri, aktiv: kanalAktiv && kanalAktiv.text, n: kanal.length, pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: medEl2.hidden, butik: ui.butiksOverlay.hidden, ov: ui.overlay.hidden }),
   textLogg: () => TEXTLOGG.slice(), pratar: () => !!kanalAktiv || kanal.length > 0 || performance.now() < pratarTill || performance.now() < kanalFri, kanal: () => ({ aktiv: kanalAktiv && { vem: kanalAktiv.vem, text: kanalAktiv.text, vikt: kanalAktiv.vikt }, ko: kanal.map((x) => ({ vem: x.vem, text: x.text, vikt: x.vikt })) }), rostMatning, renderaIkon, ikonLista, handelseLogg, ritningInfo: () => { const c = ritning ? new THREE.Box3().setFromObject(ritning).getCenter(new THREE.Vector3()) : null; return { nyckel: ritningNyckel, linjer: ritning?.children.length || 0, printar: printarFram.size, mitt: c && [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(2)] }; }, prata, elHelFig: () => [...(elHel || [])], avkodat, forladdaRepliker, introLager, trampa: (sek) => { trampTest = sek; }, veva: (sek) => { vevTest = sek; }, siktaVagg: (v) => { vaggTest = v; }, vaggarKlara: () => vaggarKlara(), tapetKlara: () => tapetKlara(), nastaInred, prisNu, helaRullar, extruderFull, gardMal, kanLyfta, karraFull, harGava, valdKarra, BARA_SKRAP, SKRAP_RACKVIDD, utlagerKap, startPlats, sattFonster: () => { const n = fonsterLista().length; S.hem = { ...(S.hem || {}), fonster: [...fonsterLista(), { vagg: Object.keys(VAGGAR).filter((k) => !/dorr|fram/i.test(k))[n % 3] || Object.keys(VAGGAR)[0], u: 0.5 }] }; ritaFonster(); uppdateraSkjul(); sparaSnart(); }, medKo, medEl2, uppdatera, stegText: () => { const st = STEG[S.steg]; return st ? (typeof st.text === 'function' ? st.text() : st.text) : ''; }, valdTyp: () => valdTyp(), ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest,  tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, webbOrdrar, oppnaDator, BESOK, besok, startaBesok, ata, MAT_VARDE, printLinje, migreraDK, kolfKvarn, kolfAktivera, uppdateraKolf, nastaGamer, trimNiva, plockaUppPlacerad, plockaSkrap, karraRing, foremal, variantFor, valjTyp, husvagnKlick, gastScen, gastDelKlar, husvagn: () => husvagnG, rolfBesok, sackRulle, karraKlick, karraMal, pappaGubbe, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
