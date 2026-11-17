@@ -11031,7 +11031,7 @@ function kollaBengt(dt) {
   bengtTid = 40;
   /* A-058 tillägg 08:38 – trappan: skyltar och en kikare (K1 d1–2) → bara rösten, prassel och en hund (K1 d3–5, två skrik) → gubben vid staketet (K2) → tyst, han nickar (K3, respekt ≥ 30) */
   const kap = S.kapitel || 1;
-  if (kap <= 1 && (S.dag || 1) <= 2) { if (!S.bengtKikare) { S.bengtKikare = true; kikarGlimt(); tanke('Något blänker i skogen. En kikare?', 'A-058: fröet vid staketet', 'REAKTION'); sparaSnart(); } return; }
+  if (kap <= 1 && (S.dag || 1) <= 2) { if (!S.bengtKikare) { S.bengtKikare = true; kikarGlimt(); tanke('Något blänker i fönstret där borta. En kikare?', 'A-058: fröet vid staketet', 'REAKTION'); sparaSnart(); } return; }
   if (kap <= 1 && (S.bengtSkrik || 0) >= 2) return;   // K1: bara två skrik
   if (kap === 3 && S.respekt >= 30) { visaBengtTyst(); return; }
   S.bengtSkrik = (S.bengtSkrik || 0) + 1;
@@ -12635,6 +12635,11 @@ for (const [text, x, z, ry, bg, fg] of [['PRIVAT MARK', -2, -TOMT - 0.75, 0, '#f
 }
 privatSkyltar.visible = !S.bengtAvslojad; scen.add(privatSkyltar); privatSkyltarRef = privatSkyltar;
 const bengtLadaHandlare = [];   // A-056 m.fl.: { text: () => '…' | '', aktivera: () => true om den tog hand om klicket }
+/* A-070 nr 32: fynden från 1962 i hans brevlåda – Bengt-Åke svarar */
+const FYND_1962 = ['h_telefon', 'h_mjolkpall', 'h_kaffepanna'], BENGT_MOR = 'Mor ringde på den. HMPF.';
+bengtLadaHandlare.push({ text: () => FYND_1962.includes(valdTyp()) ? `Lägg ${namnFor(valdTyp()).toLowerCase()} i Bengt-Åkes brevlåda` : '',
+  aktivera: () => { const t = valdTyp(); if (!FYND_1962.includes(t)) return false; taBortVald(); ritaHotbar(); ljudH('placera'); S.fynd1962Bengt = [...(S.fynd1962Bengt || []), t]; sparaSnart();
+    paket([{ bubbla: ['bengt', BENGT_MOR, bengtLada, 4] }], { vikt: 'REAKTION', varfor: 'A-070: 1962 i brevlådan', kvitto: true }); return true; } });
 interaktor.registrera(bengtLada, {
   text: () => { for (const h of bengtLadaHandlare) { const t = h.text(); if (t) return t; } return 'Bengt-Åkes brevlåda. "B-Å. HMPF"'; },
   aktivera: () => { for (const h of bengtLadaHandlare) if (h.aktivera()) return; ui.toast('Den är tom. Den luktar kaffe.', ''); },
@@ -12645,7 +12650,7 @@ setInterval(() => {
     const p = spelare.pos, g = bengtHus.userData.glimt; g.visible = Math.sin(performance.now() / 700) > 0.6;
     const dHus = Math.hypot(p.x - BENGT_HUS.x, p.z - BENGT_HUS.z), dGrav = Math.hypot(p.x - BENGT_GRAV.x, p.z - BENGT_GRAV.z);
     if (dHus < 16 && !harSagt(BENGT_T.kikare)) { tanke(BENGT_T.kikare, 'A-058: frö – kikaren', 'REAKTION'); froSett('kikare', false); }   /* A-057: samma frö som i skogen */
-    if (dGrav < 6 && harSagt(BENGT_T.kikare) && !harSagt(BENGT_T.grav)) tanke(BENGT_T.grav, 'A-058: frö – graven', 'REAKTION');
+    if (dGrav < 6 && (S.dag || 1) >= 15 && !harSagt(BENGT_T.grav))   /* A-070 nr 28: första gången man står vid graven, d15 eller senare */ tanke(BENGT_T.grav, 'A-058: frö – graven', 'REAKTION');
     // K2, respekt ≥ 15: han står vid brevlådan och tittar, en gång
     if ((S.kapitel || 1) >= 2 && S.respekt >= 15 && !S.bengtLadaHmpf && Math.hypot(p.x - BENGT_LADA.x, p.z - BENGT_LADA.z) < 7) {
       S.bengtLadaHmpf = S.dag; sparaSnart(); bengt.position.set(BENGT_LADA.x + 0.9, 0, BENGT_LADA.z + 0.8); bengt.lookAt(p.x, 0, p.z); bengt.visible = true; bengtSynsTill = performance.now() + 6000; varldsBubbla(bengt, 'HMPF.', 4, 2.3, 'arg');
@@ -12654,7 +12659,7 @@ setInterval(() => {
   } catch (e) { console.warn('A-058', e); }
 }, 1500);
 const BENGT_T = {
-  kikare: 'Något blänker. En kikare?',
+  kikare: 'Något blänker i fönstret där borta. En kikare?',   /* A-070 nr 42 */
   grav: 'Någon krattar runt den. Varje dag.',
   avslojande: 'Pappa grävde här bakom i hela sitt liv. Du har gjort mer på ett halvår. HMPF.',
   hacka: 'Pappas. Han hade velat att nån använde den. HMPF.',   /* A-058 tillägg 09:05 */
@@ -12804,9 +12809,9 @@ function visaForeEfter() {
    Den visar en spärr eller något konstigt och säger aldrig lösningen. SPOILER: ett element avslöjas utan att fröet har synts minst ett kapitel innan. ---------- */
 const FRO_T = {
   tunna: 'Tratten är stor som en kaffekopp. Tunnan är stor som jag.', rodback: 'Hård plast. Lilla kvarnen skulle explodera. Eller jag.', kanot: 'En hel kanot. Kvarnen skulle äta upp sig själv.',
-  grind: 'Igensvetsad. Någon ville verkligen inte in här.', baeck: 'Det porlar där nere. Vatten?', husvagn78: 'Tippen är i vägen. Jag kommer inte fram. Än.',
+  grind: 'Igensvetsad. Någon ville verkligen inte in här.', baeck: 'En flod. Bakom tomten. Ingen sa nåt om en flod.',   /* A-070 nr 41 */ husvagn78: 'Tippen är i vägen. Jag kommer inte fram. Än.',
   tipplager: 'Fastpressad. Den sitter som i betong.', servett: 'Servetter. Massor. Ali flyttar lådan när jag tittar.', gunnar: 'Vem är Gunnar?',
-  kikare: 'Något blänker i skogen. En kikare?', kuvert: 'Byggnadsnämnden. Igentejpat. Mycket tejp.', gunbritt: 'Någon från kommunen fotograferade skylten. Länge.',
+  kikare: 'Något blänker i fönstret där borta. En kikare?', kuvert: 'Byggnadsnämnden. Igentejpat. Mycket tejp.', gunbritt: 'Någon från kommunen fotograferade skylten. Länge.',
 };
 // när elementet räknas som avslöjat
 const STORYLAGER = {
@@ -14234,7 +14239,7 @@ const grusGrind = new THREE.Group();
   grusGrind.position.set(GRIND.x, 0, GRIND.z); scen.add(grusGrind); traffYta(grusGrind, 0.8, 1.9, 2.8); }
 const GRUS_T = {
   grind: 'Igensvetsad. Någon ville verkligen inte in här.',
-  bengtVakt: 'HÅLL DIG BORTA FRÅN PAPPAS GROP. HMPF.',
+  bengtVakt: 'HÅLL DIG BORTA FRÅN PAPPAS GRUVA.',   /* A-070 nr 7 */
   goran: 'Guld? Där nere?',
   bengtSvar: 'PAPPA LETADE HELA LIVET. HMPF. GÅ IN DÅ. FÖRSTA KLUMPEN ÄR MIN. DEN SKA TILL PAPPAS GRAV.',
   rolfBrev: 'Gamla grustaget. Ja å Birgitta badade där. Ja har vinkelslipen, men skivan e slut. Printa en kapskiva åt mej, i kolfiber. /R',

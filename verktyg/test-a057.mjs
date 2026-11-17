@@ -17,7 +17,7 @@ let f = await ga(tunna[0] + 1, tunna[1], { kapitel: 1, dag: 1 });
 ut.push([`tunnan: fröet när man går nära (kapitel ${f.tunna})`, f.tunna === 1]);
 const g = await p.evaluate(() => [window.__printahem.GRIND.x, window.__printahem.GRIND.z]);
 f = await ga(g[0] + 2, g[1], { dag: 2 }); ut.push([`grustagets grind dag 2 (${f.grind})`, f.grind === 1]);
-f = await ga(g[0] + 1.5, g[1], { dag: 3 }); ut.push([`bäcken: "Det porlar där nere" efter grinden (${f.baeck})`, f.baeck === 1]);
+f = await ga(g[0] + 1.5, g[1], { dag: 3 }); ut.push([`bäcken: "En flod. Bakom tomten." efter grinden (${f.baeck})`, f.baeck === 1]);
 const n = await p.evaluate(() => window.__printahem.textLogg().filter((x) => /Tratten är stor som en kaffekopp|Igensvetsad/.test(x.text || x[2] || JSON.stringify(x))).length);
 f = await ga(g[0] + 2, g[1]);
 const n2 = await p.evaluate(() => window.__printahem.textLogg().filter((x) => /Tratten är stor som en kaffekopp|Igensvetsad/.test(x.text || x[2] || JSON.stringify(x))).length);
