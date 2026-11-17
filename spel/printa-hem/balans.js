@@ -73,7 +73,7 @@ export const LASTARM_MAX = 700;   // gram lastarmen orkar lyfta utan trim – ta
 
 // ---------- Marken (Bengt-Åke) ----------
 export const MARK_PRIS = {
-  egen: { pris: 30000, respekt: 0 },
+  egen: { pris: 20000, respekt: 0 },   // AX g41–g42: 30 000 kr tog över 20 min dag 16 (man börjar dagen med ca 3 000 kr efter jacuzzin)
   oster: { pris: 36000, respekt: 0 },   // A-043: kapitel 4 får inte ha dagar över 20 min
   husgrund: { pris: 25000, respekt: 0 },   // A-043/A-045: huset delas på två dagar – grunden dag 18
   tippkant: { pris: 60000, respekt: 70 },
