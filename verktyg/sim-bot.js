@@ -116,6 +116,9 @@
   function valj(typ) {
     let i = S.hotbar.findIndex((x) => x?.typ === typ);
     if (i < 0 && H.antalInv(typ)) { const n = H.antalInv(typ); H.taBortInv(typ, n); H.laggTill(typ, n); i = S.hotbar.findIndex((x) => x?.typ === typ); }
+    if (i < 0 && H.antalInv(typ)) {   /* AX g37: fulla fickor – lägg en annan sak i kistan så att det man behöver får plats i handen */
+      const k = S.hotbar.findIndex((x, j) => j > 0 && x && x.typ !== typ); if (k > 0) { S.kistan.push({ ...S.hotbar[k] }); S.hotbar[k] = null; const n = H.antalInv(typ); H.taBortInv(typ, n); H.laggTill(typ, n); i = S.hotbar.findIndex((x) => x?.typ === typ); }
+    }
     if (i < 0) return false; H.byt(i); return true;
   }
 
