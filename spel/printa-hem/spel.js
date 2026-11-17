@@ -7012,12 +7012,12 @@ const ROLF_PAKET_SEN = 'Kajsa har fått lax tre dar i rad. Tack vare dina paket.
 const webbOrdrar = () => (S.webb?.ordrar || []);
 function modemLjud() { if (ljudH('modem')) return; for (let i = 0; i < 6; i++) ton([1200, 2100, 980, 2400, 1650, 1300][i], 0.18, 0.05, i % 2 ? 'sawtooth' : 'square', i * 0.2); }
 function webbRecept() {   // bara saker man har recept på och kan printa
-  return Object.entries(VAROR).filter(([id, v]) => v.pris > 0 && !v.lyx && !v.gava && !v.kop && !v.proto && !v.burk && harRecept(id) && (!v.niva || (v.niva === 2 && harPlacerat('skrivarepetg')))).map(([id]) => id);
+  return Object.entries(VAROR).filter(([id, v]) => v.pris > 0 && v.gram > 0 && id !== 'spagetti' && !v.lyx && !v.gava && !v.kop && !v.proto && !v.burk && harRecept(id) && (!v.niva || (v.niva === 2 && harPlacerat('skrivarepetg')))).map(([id]) => id);
 }
 function webbNyDag() {
   if (!harPlacerat('webbdator')) return;
   S.webb = S.webb || { ordrar: [], nr: 0 };
-  S.webb.ordrar = S.webb.ordrar.filter((o) => !o.levererad && (o.iLadan || S.dag <= o.senast));   // det som inte hann levereras försvinner
+  S.webb.ordrar = S.webb.ordrar.filter((o) => !o.levererad && o.typ !== 'spagetti' && (o.iLadan || S.dag <= o.senast));   // AX g43: plastspagetti går inte att beställa   // det som inte hann levereras försvinner
   const rec = webbRecept(); if (!rec.length) return;   // alla recept man har
   const n = 1 + Math.floor(Math.random() * 2);   // CR: 1–2 beställningar om dagen (ca +25 % mot Ali ensam)
   const minst = S.dag === 9 ? 2 : 0;   // dag 9: målet är att skicka två paket
