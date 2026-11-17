@@ -559,9 +559,9 @@ const rolfSteg = (i, del) => {
   const v = () => ROLF[i].vara, nm = () => VAROR[v()].namn.toLowerCase();
   return [
     // tre steg: brevet (med 3D-modellen) → printa → lägg i lådan. Rolfs tack ligger i lådan nästa morgon.
-    { mom: 'Rolfs brev', del, text: () => S.brevVantar?.lapp === 'rolf:' + i ? 'Sopbilen kommer förbi under dagen – Rolf brukar lämna något' : 'Läs brevet i Rolfs postlåda', klar: () => S.rolf.i > i || (S.rolf.i === i && (S.rolf.aktiv || S.post.tillRolf === v() || S.rolf.hamtad === i)), startPost: 'rolf:' + i },
+    { mom: 'Rolfs brev', del, text: () => S.brevVantar?.lapp === 'rolf:' + i ? 'Rolf lämnar något med sopbilen' : 'Läs brevet i Rolfs postlåda', klar: () => S.rolf.i > i || (S.rolf.i === i && (S.rolf.aktiv || S.post.tillRolf === v() || S.rolf.hamtad === i)), startPost: 'rolf:' + i },
     { mom: 'Rolfs brev', del, text: () => `Printa ${nm()}`, klar: () => S.rolf.i > i || harGava(v()) || S.rolf.hamtad === i },
-    { mom: 'Rolfs brev', del, text: () => `Lägg ${nm()} i Rolfs postlåda`, klar: () => S.rolf.i > i || S.post.tillRolf === v() || S.rolf.hamtad === i },
+    { mom: 'Rolfs brev', del, text: () => `Ge Rolf ${nm()}`, klar: () => S.rolf.i > i || S.post.tillRolf === v() || S.rolf.hamtad === i },
   ];
 };
 function sopbilText() {
@@ -644,11 +644,11 @@ const STEG = [
   { knuff: 'Sängen ska in i skjulet. Sen sover jag.', id: 'sov1', mom: 'Sängen', del: D1, text: 'Ställ sängen i skjulet och sov', klar: () => S.sang && S.dag >= 2 },   /* B34 · EA #18: mammas sms dag 2 är bara det arga, på morgonen */
   // punkt AX: dag 2 – sopsäcken och krukan, sedan gården, Rolf, tippen och dörren
   { id: 'kopMotor', mom: 'Kvarnmotorn', las: 'kvarnmotor', del: N1, bild: 'byggsats:kvarnmotor', text: () => S.mynt >= 50 ? 'Köp kvarnmotorn hos Ali (50 kr)' : `Printa och sälj mer · ${S.mynt}/50 kr till kvarnmotorn`, klar: () => S.ritningar.includes('kvarnmotor') || S.kvarn.motor },
-  { id: 'monteraMotor', mom: 'Kvarnmotorn', del: N1, bild: 'byggsats:kvarnmotor', text: 'Printa kvarnmotorn och sätt den på kvarnen', klar: () => !!S.kvarn.motor },   // B27
+  { id: 'monteraMotor', mom: 'Kvarnmotorn', del: N1, bild: 'byggsats:kvarnmotor', text: 'Printa kvarnmotorn till kvarnen', klar: () => !!S.kvarn.motor },   // B27
   { id: 'kopSack', mom: 'Städa gården', del: N1, bild: 'byggsats:korg', text: () => antalInv('byggsats:korg') ? 'Ta på dig sopsäcken' : sackRulle.visible && S.sackLagd ? 'Kolla vad som flög ut från sopbilen' : 'Städa gården',   /* EL 28: ingen räknare, ingen förvarning */   /* EA #16/#17: rutan byts när Rolfs sms har visats */ klar: () => !!S.korg || !!S.ryggkorg },   // CH
   { knuff: 'Halva gården är ren. Tar jag resten blir det fint på riktigt.', mom: 'Städa gården', del: N1, text: () => 'Städa klart gården',   /* EL 28: ingen räknare */ klar: () => gardSkrap() <= gardMal() || S.rolf.i >= 1 || S.post.tillRolf, lapp: 'gard' },   /* EA #18: mammas städ-sms flyttat till dag 3+ (poolen) */
   ...rolfSteg(0, N1),
-  { id: 'vindsnurra', mom: 'Vindsnurran', las: 'vindsnurra', del: N1, bild: 'byggsats:vindsnurra', text: 'Printa vindsnurran och sätt den på taket', klar: () => !!S.vindsnurra || harPlacerat('sol') },   // BL
+  { id: 'vindsnurra', mom: 'Vindsnurran', las: 'vindsnurra', del: N1, bild: 'byggsats:vindsnurra', text: 'Printa vindsnurran till taket', klar: () => !!S.vindsnurra || harPlacerat('sol') },   // BL
   { knuff: 'Det drar från dörrhålet. En dörr kan jag printa.', mom: 'Dörren', del: N1, bild: 'byggsats:dorr', text: 'Bygg en dörr till skjulet', klar: () => S.hem?.dorr },
   sovSteg(2, N1),
   ...((r) => [r[0], { knuff: 'Nyckeln till tippen. Där ligger skräpet i högar.', mom: 'Rolfs brev', del: N2, text: 'Hämta 5 skräp på soptippen', klar: () => S.stat.tipp >= 5 }, r[1], r[2]])(rolfSteg(1, N2)),   /* EQ 39: nyckeln kommer med tacket för ölhållaren – tippen dag 3 */
@@ -660,7 +660,7 @@ const STEG = [
   { mom: 'Taket', del: N2, bild: 'byggsats:tak', text: 'Lägg plåttak på skjulet', klar: () => S.hem?.tak },
   sovSteg(3, N2),
   ...rolfSteg(2, N3),
-  { knuff: 'Kärran rymmer massor. Fyll den och tippa allt i kvarnen.', mom: 'Kärran', del: N3, bild: 'karra', text: 'Fyll kärran med skräp och töm den i kvarnen', klar: () => (S.stat.karraTomt || 0) >= 1 || S.kapitelKlart },
+  { knuff: 'Kärran rymmer massor. Fyll den och tippa allt i kvarnen.', mom: 'Kärran', del: N3, bild: 'karra', text: 'Töm en full kärra i kvarnen', klar: () => (S.stat.karraTomt || 0) >= 1 || S.kapitelKlart },
   { id: 'sophallare', mom: 'Kärran', las: 'matarband', del: N3, bild: 'byggsats:matarband', text: 'Bygg sophållaren', klar: () => !!S.kvarn.band || S.kapitelKlart },   // B3
   { id: 'pall', mom: 'Pallen', del: N3, bild: 'pall', text: 'Printa en pall', klar: () => printat('pall') >= 1 },
   { id: 'vind4', mom: 'Mer vind', las: 'vindsnurra2', del: N3, bild: 'byggsats:vindsnurra', text: 'Bygg en vindsnurra till', klar: () => antalSnurror() >= 2 || harPlacerat('sol'), lapp: 'sol' },   /* linje 1: två snurror driver S och nästan M */
@@ -678,13 +678,13 @@ const STEG = [
   { las: 'skrivare3', del: R6, bild: 'byggsats:skrivare3', text: 'Bygg Skrivare L', klar: () => harPlacerat('skrivare3') },   /* EE tillägg: Skrivare L av skrivarflaskhalsen dag 6–8 */
   { id: 'sol6', las: 'sol', del: R6, bild: 'byggsats:sol', text: 'Bygg en solpanel', klar: () => harPlacerat('sol'), tanke: 'Den röda kvarnen drar mer än vinden orkar. Solen får hjälpa till.' },   /* linje 2: solpanelen flyttad hit */
   { del: R6, bild: 'byggsats:petgkvarn', text: () => S.rodKvarnKopt ? 'Ställ den röda kvarnen i röda linjen' : 'Köp den röda kvarnen hos Ali', klar: () => harPlacerat('petgkvarn') },
-  { del: R6, bild: 'sackkarra', text: 'Lyft en tunna med säckkärran och mal den i den röda kvarnen', klar: () => (S.stat.tungMalt || 0) >= 1 },   /* EE tillägg: ett moment färre dag 6, Skrivare L får plats */
-  { id: 'goran6', del: R6, bild: () => harRecept('fagelskramma') || harRecept('fagelbad') ? (harRecept('fagelbad') ? 'fagelbad' : 'fagelskramma') : 'fagelskramma', text: 'Ge Göran ett eget ställe: fågelskrämma eller fågelbad', klar: () => harPlacerat('fagelskramma') || harPlacerat('fagelbad'), tanke: 'Göran har ett hem nu. Bättre än jag hade för en vecka sen.' },   /* dag 6: måsen får ett hem */
+  { del: R6, bild: 'sackkarra', text: 'Mal en tunna i röda kvarnen', klar: () => (S.stat.tungMalt || 0) >= 1 },   /* EE tillägg: ett moment färre dag 6, Skrivare L får plats */
+  { id: 'goran6', del: R6, bild: () => harRecept('fagelskramma') || harRecept('fagelbad') ? (harRecept('fagelbad') ? 'fagelbad' : 'fagelskramma') : 'fagelskramma', text: 'Ge Göran ett eget ställe', klar: () => harPlacerat('fagelskramma') || harPlacerat('fagelbad'), tanke: 'Göran har ett hem nu. Bättre än jag hade för en vecka sen.' },   /* dag 6: måsen får ett hem */
   sovSteg(6, R6),
   { del: R7, bild: 'byggsats:skrivarepetg', text: 'Bygg PETG-skrivaren', klar: () => harPlacerat('skrivarepetg') },
   { del: R7, bild: 'n2_vas', text: 'Printa en designvas i röd PETG', klar: () => printat('n2_vas') >= 1 || (S.saltTot?.n2_vas || 0) >= 1 },
   { del: R7, bild: 'n2_vas', text: 'Sälj designvasen', klar: () => (S.saltTot?.n2_vas || 0) >= 1 },
-  { id: 'saljlada', del: R7, bild: 'byggsats:saljlada', text: 'Bygg säljlådan vid fabrikens samlingsplats', klar: () => harPlacerat('saljlada') || !!S.auto?.lada },   // punkt BF: säljlådan i kapitel 2
+  { id: 'saljlada', del: R7, bild: 'byggsats:saljlada', text: 'Bygg säljlådan vid samlingsplatsen', klar: () => harPlacerat('saljlada') || !!S.auto?.lada },   // punkt BF: säljlådan i kapitel 2
   { id: 'saljlada3', del: R7, bild: 'n2_vas', text: () => `Lägg 3 vaser i säljlådan · ${Math.min(3, S.saljLagt?.n2_vas || 0)}/3`, klar: () => (S.saljLagt?.n2_vas || 0) >= 3 || !!S.auto?.lada },
   sovSteg(7, R7),
   { las: 'magnet', del: R8, bild: 'byggsats:magnet', text: 'Bygg magnetpistolen', klar: () => !!S.magnet },
@@ -698,7 +698,7 @@ const STEG = [
   { id: 'petgtorn9', del: R9, bild: 'byggsats:petgtorn', text: 'Bygg Rulltorn XL vid röda kvarnen', klar: () => !!S.petg.torn },   /* linje 2: rullarna – andra våningen kom redan i kapitel 1 */
   sovSteg(9, R9),
   { id: 'tapeter', del: R10, bild: 'byggsats:tapeter', text: () => `Tapetsera skjulet · ${tapetKlara().length}/4`, klar: () => !!S.hem?.tapeter },
-  { del: R10, text: 'Gör skjulet varmt inför hösten – tak, dörr och väggar', klar: () => varme() >= 4 },   // CV: värmen syns i välmåendet
+  { del: R10, text: 'Gör skjulet varmt inför hösten', klar: () => varme() >= 4 },   // CV: värmen syns i välmåendet
   { id: 'spis10', del: R10, bild: () => S.spis ? 'burk_raggmunk' : 'byggsats:spis', text: 'Bygg spisen och laga en varm måltid', klar: () => (S.stat.lagat || 0) >= 1 || (!!S.spis && (S.spisDag || 0) < 10), tanke: 'Varm mat. I skjulet. Mamma skulle inte tro det.' },   // dag 10: mätt och varm
   sovSteg(10, R10),
   // ---------- Kapitel 3 – Fabriken sköter sig själv (dag 11–15) ----------
@@ -708,7 +708,7 @@ const STEG = [
   { id: 'kolfrulle', del: F11, bild: 'rulle3', text: 'Vänta på den första svartgrå rullen', klar: () => (S.stat.kolfRullar || 0) >= 1 },
   sovSteg(11, F11),
   { id: 'kolfskrivare', del: F12, bild: 'byggsats:kolfskrivare', text: 'Bygg kolfiberskrivaren i linje 3', klar: () => harPlacerat('kolfskrivare') },
-  { id: 'kolfslang', del: F12, bild: 'byggsats:kolfslang', text: 'Bygg slangfördelaren vid kolfiberkvarnen', klar: () => !!S.kolf.slang },
+  { id: 'kolfslang', del: F12, bild: 'byggsats:kolfslang', text: 'Bygg slangfördelaren', klar: () => !!S.kolf.slang },
   { id: 'kolfstol', del: F12, bild: 'n3_stol', text: 'Printa en kolfiberstol', klar: () => printat('n3_stol') >= 1 },
   sovSteg(12, F12),
   { del: F13, bild: 'byggsats:gamingbod', text: 'Bygg gamingboden', klar: () => !!S.bod },
@@ -716,7 +716,7 @@ const STEG = [
   sovSteg(13, F13),
   { id: 'jet14', del: F14, bild: 'byggsats:jetmotor', text: 'Montera jetmotorn på kolfiberkvarnen', klar: () => !!S.kolf.jet },
   { del: F14, bild: 'byggsats:utlada', text: 'Bygg leveranslådan', klar: () => !!S.auto?.lada },
-  { del: F14, text: 'Köp mutor till Rolf hos Ali – då tippar sopbilen mer', klar: () => trimNiva('sopbil') >= 1 },
+  { del: F14, text: 'Köp mutor till Rolf hos Ali', klar: () => trimNiva('sopbil') >= 1 },
   sovSteg(14, F14),
   { del: F15, bild: 'byggsats:gamingbod', text: 'Bygg gamingboden', klar: () => !!S.bod },
   { id: 'gamer', del: F15, bild: () => nastaGamer(), text: () => `Inred boden · ${Math.min(3, gamerSaker())}/3 gamersaker`, klar: () => gamerSaker() >= 3 },
@@ -724,22 +724,22 @@ const STEG = [
   { del: F15, bild: () => nastaInred(), text: () => `Världens bästa fristad · trivsel ${trivsel()}/300`, klar: () => trivsel() >= 300 },
   sovSteg(15, F15),
   // ---------- Kapitel 4 – Folkbokförd (dag 16–22) ----------
-  { del: M16, text: 'Köp tomten du bor på – tavlan vid vägen', klar: () => agerMark('egen') },
-  { del: M16, bild: 'guldflaga', text: 'Lägg guldflagan i Bengt-Åkes brevlåda vid vägen', klar: () => !!S.flagaBengt || !!S.grindKapad },   /* A-056 */
-  { del: M16, bild: 'kapskiva', text: 'Printa en kapskiva i kolfiber och lägg den i Rolfs postlåda', klar: () => !!S.kapskivaHosRolf || !!S.grindKapad },
+  { del: M16, text: 'Köp tomten du bor på', klar: () => agerMark('egen') },
+  { del: M16, bild: 'guldflaga', text: 'Lägg flagan i Bengt-Åkes brevlåda', klar: () => !!S.flagaBengt || !!S.grindKapad },   /* A-056 */
+  { del: M16, bild: 'kapskiva', text: 'Ge Rolf en kapskiva i kolfiber', klar: () => !!S.kapskivaHosRolf || !!S.grindKapad },
   sovSteg(16, M16),
   { del: M17, text: 'Köp ängen i öster – tavlan vid vägen', klar: () => agerMark('oster') },
-  { del: M17, bild: 'vaskpanna', text: 'Vaska i bäcken i grustaget med Birgittas panna', klar: () => (S.vask || 0) >= 1 },   /* A-056 */
+  { del: M17, bild: 'vaskpanna', text: 'Vaska guld i bäcken', klar: () => (S.vask || 0) >= 1 },   /* A-056 */
   sovSteg(17, M17),
   { del: M18, bild: 'byggsats:diamantkniv', text: 'Bygg diamantkvarnen', klar: () => (S.kvarn.kniv || 0) >= 2 },
   { del: M18, bild: 'fynd4', text: 'Mal en rulle guld', klar: () => (S.stat.maltNiva?.[4] || 0) >= 1 || antalInv('rulle4') > 0 },   // B54: Tippium hör till efterspelet
-  { del: M18, text: 'Gjut grunden till huset – tavlan vid vägen', klar: () => agerMark('husgrund') || agerMark('huset') },   /* A-043: huset på två dagar */
+  { del: M18, text: 'Gjut grunden till huset', klar: () => agerMark('husgrund') || agerMark('huset') },   /* A-043: huset på två dagar */
   sovSteg(18, M18),
-  { del: M19, text: 'Bygg huset på grunden – tavlan vid vägen', klar: () => agerMark('huset') },
+  { del: M19, text: 'Bygg huset på grunden', klar: () => agerMark('huset') },
   { del: M19, text: 'Flytta in i huset', klar: () => !!S.flyttatIn },
   sovSteg(19, M19),
   { del: M20, bild: 'kamin', text: 'Printa och ställ ut en vedkamin', klar: () => harPlacerat('kamin') },
-  { del: M20, text: 'Gör skjulet varmt inför vintern – en kamin', klar: () => varme() >= 9 },
+  { del: M20, text: 'Ställ in en kamin i skjulet', klar: () => varme() >= 9 },
   sovSteg(20, M20),
   { del: M21, text: 'Bli folkbokförd – tavlan vid vägen', klar: () => !!S.folkbokford },
   sovSteg(21, M21),
@@ -14406,7 +14406,7 @@ function ritaDN() {
     u.querySelector('.bild').innerHTML = bild ? ikonHtml(bild, 46) : ik(ikon || 'mal');
     u.querySelector('.tips').textContent = rens(t !== malRaw ? t : nuTips(t));
   }
-  { const mi = momentInfo(); dnSatt(u.querySelector('.rub'), 'textContent', mi ? `${mi.namn} · steg ${mi.steg} av ${mi.av}: ${r.rub}` : r.rub); }   /* EI 21 */
+  { const mi = momentInfo(); dnSatt(u.querySelector('.nu'), 'textContent', mi ? `NU · ${mi.namn.toUpperCase()} ${mi.steg}/${mi.av}` : 'NU'); dnSatt(u.querySelector('.rub'), 'textContent', r.rub); }   /* EI 21 · A-062: momentet på egen rad, målet ensamt i rubriken */
   const rk = u.querySelector('.rakn'); rk.hidden = r.har == null;
   if (r.har != null) { dnSatt(rk.querySelector('b'), 'textContent', String(r.har)); dnSatt(rk.querySelector('span'), 'textContent', r.txt); dnSatt(rk.querySelector('em'), 'textContent', r.kvar); }
   document.documentElement.style.setProperty('--dn-topp-h', Math.round(dnTopp.getBoundingClientRect().height) + 'px');

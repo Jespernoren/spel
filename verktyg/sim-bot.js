@@ -396,13 +396,13 @@
     }
     if (/^Städa (klart )?gården/.test(txt)) { if (H.extruderFull() && S.kvarn.tratt >= H.TRATT_MAX - 1) { await tjana(S.mynt + 60, 'kvarnen är full – printa av filamentet'); return; } const sk = ledig(); await plockaLass({}); await tomIKvarnen(); await mal(); return; }
     if (/^Skicka två paket från datorn/.test(txt)) { webbDag = 0; await webbJobb(); await tjana(S.mynt + 60, 'väntar på fler beställningar'); await vanta(2); return; }   // dag 9-målet
-    if (/^Sopbilen kommer förbi under dagen/.test(txt)) { await tjana(S.mynt + 60, 'väntar på sopbilen (BO)'); await vanta(1); return; }   // BO: gör något vettigt medan brevet är på väg
+    if (/^Sopbilen kommer förbi under dagen|^Rolf lämnar något med sopbilen/.test(txt)) { await tjana(S.mynt + 60, 'väntar på sopbilen (BO)'); await vanta(1); return; }   // BO: gör något vettigt medan brevet är på väg
     if (/^Läs brevet i Rolfs postlåda/.test(txt)) { await klick(H.postlada, 'Rolfs postlåda'); await stangPopups(); return; }
     if (/^Printa /.test(txt) && H.aktivGava()) { const v = H.aktivGava(); if (!H.antalInv(v)) await printa({ typ: v }); return; }
-    if (/^Lägg .* i Rolfs postlåda/.test(txt)) { await gePresent(H.aktivGava()); return; }
+    if (/^Lägg .* i Rolfs postlåda|^Ge Rolf (?!en kapskiva)/.test(txt)) { await gePresent(H.aktivGava()); return; }
     if (/^Hämta 5 skräp på soptippen/.test(txt)) { await plockaLass({ tippen: true }); await tomIKvarnen(); await mal(); return; }
-    if (/^Lyft en tunna med säckkärran och mal/.test(txt) && !S.sackkarra) { const p = H.placerade.find((x) => x.typ === 'sackkarra'); if (p) { await klick(p.mesh, 'säckkärran i högen'); return; } }
-    if (/^Mal tunnan i PETG-kvarnen|^Mal tunga saker i PETG-kvarnen|^Lyft en tunna med säckkärran och mal/.test(txt)) { await tungtTillPetg(); return; }
+    if (/^Lyft en tunna med säckkärran och mal|^Mal en tunna i röda kvarnen/.test(txt) && !S.sackkarra) { const p = H.placerade.find((x) => x.typ === 'sackkarra'); if (p) { await klick(p.mesh, 'säckkärran i högen'); return; } }
+    if (/^Mal tunnan i PETG-kvarnen|^Mal tunga saker i PETG-kvarnen|^Lyft en tunna med säckkärran och mal|^Mal en tunna i röda kvarnen/.test(txt)) { await tungtTillPetg(); return; }
     if (/^Printa och sälj en sak i röd PETG/.test(txt)) { if (!H.harPlacerat('skrivarepetg')) { await bygg('skrivarepetg'); return; } if (!H.harRecept('n2_vas')) await kopRecept('n2_vas'); if (!H.antalInv('n2_vas')) await printa({ typ: 'n2_vas' }); await ali(() => saljAllt(), 'sälja PETG'); return; }   // dag 6
     if (/^Bygg hyllan|^Bygg spisen och laga/.test(txt)) {   // dag 8 och 10: direktköp hos Ali, sedan laga mat
       const id = /hyllan/.test(txt) ? 'hylla' : 'spis', har = id === 'hylla' ? S.hylla : S.spis;
@@ -432,13 +432,13 @@
       if (H.pappaBesok.fas === 'pratar' || H.pappaBesok.fas === 'rolfKommer') { await gaTill(H.pappaGubbe, 2.5, 'pappa'); await vanta(2); return; }
       await vanta(2); return;
     }
-    if (/^Lyft en tunna/.test(txt) && !S.sackkarra) { const p = H.placerade.find((x) => x.typ === 'sackkarra'); if (p) { await klick(p.mesh, 'säckkärran i högen'); return; } }
-    if (/^Lyft en tunna/.test(txt)) {
+    if (/^Lyft en tunna|^Mal en tunna i röda/.test(txt) && !S.sackkarra) { const p = H.placerade.find((x) => x.typ === 'sackkarra'); if (p) { await klick(p.mesh, 'säckkärran i högen'); return; } }
+    if (/^Lyft en tunna|^Mal en tunna i röda/.test(txt)) {
       valj('sackkarra'); const t = H.skrapLista.filter((x) => x.userData.tung && x.userData.interaktion && x.userData.sort !== 'kajak' && H.kanLyfta(x)).sort((a, b) => Math.hypot(a.position.x - H.spelare.pos.x, a.position.z - H.spelare.pos.z) - Math.hypot(b.position.x - H.spelare.pos.x, b.position.z - H.spelare.pos.z))[0];
       if (!t) { handling('ingen tunna att lyfta'); await vanta(5); return; }
       await gaTill(t, 1.2, 'en tunna'); t.userData.interaktion.aktivera(); await vanta(1); handling('lyfter en tunna med säckkärran'); await klick(H.kvarn, 'kvarnen'); await mal(); H.byt(0); return;
     }
-    if (/^Fyll kärran/.test(txt)) {
+    if (/^Fyll kärran|^Töm en full kärra/.test(txt)) {
       valj('karra'); let n = 0;
       while (!H.karraFull(200) && n < 8) { const l = gardsSkrap().length ? gardsSkrap() : tippSkrap(); if (!l.length) break; const p = H.spelare.pos; l.sort((a, b) => Math.hypot(a.position.x - p.x, a.position.z - p.z) - Math.hypot(b.position.x - p.x, b.position.z - p.z)); await gaTill(l[0], 1.6); { const q = H.spelare.pos, dx = l[0].position.x - q.x, dz = l[0].position.z - q.z; H.spelare.yaw = Math.atan2(-dx, -dz) + (Math.random() - 0.5) * 0.6; } await vanta(0.2); if (H.karraKlick) H.karraKlick(); else l[0].userData.interaktion.aktivera(); await vanta(0.6); n++; }   // CJ: slarvigt sikte
       handling(`fyller kärran med ${n} skräp`); await klick(H.kvarn, 'kvarnen'); await mal(); H.byt(0); return;
@@ -456,16 +456,16 @@
       for (const [re, id] of MARK) if (re.test(txt)) { const t = H.MARK_TOMTER.find((x) => x.id === id);
         if (S.mynt < t.pris) { await tjana(t.pris, t.namn.toLowerCase()); return; }
         await gaTill(H.markTavla, 1.8, 'tavlan vid vägen'); H.kopMark(id); handling(`köper ${t.namn.toLowerCase()} (${t.pris} kr)`); await vanta(2); return; } }
-    if (/^Lägg guldflagan i Bengt-Åkes brevlåda/.test(txt)) { if (!H.antalInv('guldflaga')) { await vanta(3); return; } valj('guldflaga'); await klick(H.bengtLada, 'Bengt-Åkes brevlåda', 1.4); H.byt(0); return; }
-    if (/^Printa en kapskiva/.test(txt)) { if (!H.antalInv('kapskiva')) { await printa({ typ: 'kapskiva' }); return; } valj('kapskiva'); await klick(H.postlada, 'Rolfs postlåda (kapskivan)', 1.4); H.byt(0); return; }
-    if (/^Vaska i bäcken/.test(txt)) { if (!H.antalInv('vaskpanna')) { await tjana(S.mynt + 300, 'väntar på Rolf'); return; } valj('vaskpanna'); await gaTill(H.ader, 1.2, 'bäcken'); for (let i = 0; i < 3; i++) { H.vaskSlapp(1.9); await vanta(2); } H.byt(0); handling('vaskar i bäcken'); return; }
+    if (/^Lägg (guld)?flagan i Bengt-Åkes brevlåda/.test(txt)) { if (!H.antalInv('guldflaga')) { await vanta(3); return; } valj('guldflaga'); await klick(H.bengtLada, 'Bengt-Åkes brevlåda', 1.4); H.byt(0); return; }
+    if (/^Printa en kapskiva|^Ge Rolf en kapskiva/.test(txt)) { if (!H.antalInv('kapskiva')) { await printa({ typ: 'kapskiva' }); return; } valj('kapskiva'); await klick(H.postlada, 'Rolfs postlåda (kapskivan)', 1.4); H.byt(0); return; }
+    if (/^Vaska (guld )?i bäcken/.test(txt)) { if (!H.antalInv('vaskpanna')) { await tjana(S.mynt + 300, 'väntar på Rolf'); return; } valj('vaskpanna'); await gaTill(H.ader, 1.2, 'bäcken'); for (let i = 0; i < 3; i++) { H.vaskSlapp(1.9); await vanta(2); } H.byt(0); handling('vaskar i bäcken'); return; }
     if (/^Flytta in i huset/.test(txt)) { await klick(H.storHus, 'huset', 3); await vanta(2); return; }
     if (/^Mal en rulle guld/.test(txt)) {
       if (H.antalInv('fynd4')) { valj('fynd4'); await klick(H.kvarn, 'kvarnen (guld)'); H.byt(0); return; }
       if (H.antalInv('vaskpanna') && H.ader?.visible) { valj('vaskpanna'); await gaTill(H.ader, 1.2, 'ådern'); for (let i = 0; i < 4; i++) { H.vaskSlapp(1.9); await vanta(2); } H.byt(0); handling('vaskar guld i ådern'); return; }
       await tjana(S.mynt + 300, 'väntar på guldet'); return;
     }
-    if (/^Gör skjulet varmt inför vintern/.test(txt)) { if (!H.harPlacerat('kamin')) { await kopRecept('kamin'); await printa({ typ: 'kamin' }); if (H.antalInv('kamin')) await placera('kamin'); return; }
+    if (/^Gör skjulet varmt inför vintern|^Ställ in en kamin/.test(txt)) { if (!H.harPlacerat('kamin')) { await kopRecept('kamin'); await printa({ typ: 'kamin' }); if (H.antalInv('kamin')) await placera('kamin'); return; }
       const t = H.nastaInred(); if (t?.startsWith('byggsats:')) { await bygg(t.split(':')[1]); return; } await tjana(S.mynt + 300, 'värmen'); return; }
     if (/^Bli folkbokförd/.test(txt)) { await gaTill(H.markTavla, 1.8, 'tavlan vid vägen'); if (H.kanFolkbokfora()) { H.folkbokfor(); handling('blir folkbokförd'); } else await tjana(S.mynt + 500, 'folkbokföringen'); await vanta(2); return; }
     if (/^Printa julbordet/.test(txt)) { await kopRecept('julbord'); await printa({ typ: 'julbord' }); return; }
