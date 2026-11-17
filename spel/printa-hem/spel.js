@@ -7760,7 +7760,7 @@ const prisNu = (t, extra = 0) => { const b = saljPris(t); return t.startsWith('b
 // ---------- Ali vill ha idag: en vara du har recept på, +50 % hela dagen. Slumpas varje morgon. ----------
 function aliVillVal() {
   // bara sånt du faktiskt kan printa nu: rätt skrivare och rätt filament
-  const kan = (id, v) => v.pris > 0 && !v.lyx && !v.gava && !v.kop && !v.proto && harRecept(id) && (!v.niva || (v.niva === 2 ? harPlacerat('skrivarepetg') : antalInv('rulle' + v.niva) > 0)) && storlekFor(id) <= Math.max(1, ...skrivare.filter((x) => x.gen !== 4).map((x) => GEN[x.gen].storlek));
+  const kan = (id, v) => v.pris > 0 && v.gram > 0 && !v.lyx && !v.gava && !v.kop && !v.proto && harRecept(id) && (!v.niva || (v.niva === 2 ? harPlacerat('skrivarepetg') : antalInv('rulle' + v.niva) > 0)) && storlekFor(id) <= Math.max(1, ...skrivare.filter((x) => x.gen !== 4).map((x) => GEN[x.gen].storlek));
   // CB: Ali vill ha något som lönar sig – ett av de två senaste recepten, med bonusen minst lika bra kr/s som ditt bästa, aldrig samma två dagar i rad
   const L = Object.entries(VAROR).filter(([id, v]) => kan(id, v)).map(([id]) => id);
   const kps = (id) => (VAROR[id].pris || 0) / (VAROR[id].tid || 1);
