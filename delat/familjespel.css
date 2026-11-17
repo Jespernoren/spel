@@ -1,0 +1,29 @@
+/* =============================================================
+   Familjespel – gemensam stil för start, "vem spelar?" och resultat.
+   Varje spel kan ändra färgerna med:
+     :root { --fs-accent: #e2338f; --fs-skugga: #9c1a5c; --fs-text: #1d1550; --fs-slöja: rgba(255,255,255,.55); }
+   ============================================================= */
+:root { --fs-accent:#e2338f; --fs-skugga:#9c1a5c; --fs-text:#1d1550; --fs-sloja:rgba(255,255,255,.6); --fs-kort:#fff; }
+.fs-meny { position:fixed; inset:0; z-index:50; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  padding:max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom)); text-align:center;
+  background:var(--fs-sloja); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); color:var(--fs-text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow-y:auto; }
+.fs-meny[hidden] { display:none !important; }
+.fs-meny h1 { font-size:clamp(30px, 9vw, 46px); font-weight:900; line-height:1.05; color:var(--fs-accent); text-shadow:0 4px 0 #fff, 0 6px 14px rgba(0,0,0,.18); white-space:nowrap; }
+.fs-meny p { font-size:17px; max-width:330px; font-weight:600; line-height:1.35; }
+.fs-meny button { font:inherit; color:inherit; border:0; background:none; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+.fs-stor { padding:18px 42px; border-radius:22px; font-size:26px !important; font-weight:900 !important; background:var(--fs-accent) !important; color:#fff !important; box-shadow:0 7px 0 var(--fs-skugga); }
+.fs-stor:active { transform:translateY(4px); box-shadow:0 3px 0 var(--fs-skugga); }
+.fs-lank { font-weight:800; font-size:16px; padding:8px 14px !important; border-radius:14px; background:rgba(255,255,255,.85) !important; }
+.fs-familj { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.fs-familj button { display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px; border-radius:22px; background:var(--fs-kort) !important; font-weight:800; font-size:18px; box-shadow:0 5px 0 rgba(0,0,0,.12); }
+.fs-avatar { position:relative; display:inline-grid; place-items:center; flex:0 0 auto; border-radius:50%; overflow:hidden; background:var(--f); box-shadow:0 0 0 3px #fff, 0 3px 8px rgba(0,0,0,.2); vertical-align:middle; }
+.fs-avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.fs-stort { font-size:76px; font-weight:900; color:var(--fs-accent); line-height:1; text-shadow:0 4px 0 #fff; }
+.fs-nytt { font-size:24px; font-weight:900; color:var(--fs-accent); animation:fs-studs 1s infinite; }
+@keyframes fs-studs { 30% { transform:scale(1.12); } }
+.fs-topp { width:100%; max-width:320px; display:flex; flex-direction:column; gap:6px; }
+.fs-topp div { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:16px; background:var(--fs-kort); font-weight:800; }
+.fs-topp div b { margin-left:auto; color:var(--fs-accent); }
+.fs-topp div.jag { box-shadow:0 0 0 3px var(--fs-accent); }
+#fs-konfetti { position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:60; }

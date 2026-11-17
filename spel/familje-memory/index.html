@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script src="../../delat/rost.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f7a6a">
+<title>Familje-Memory</title>
+<link rel="stylesheet" href="../../delat/familjespel.css">
+<style>
+  :root { --fs-accent:#0f9d84; --fs-skugga:#086353; --fs-text:#103b36; --fs-sloja:rgba(232,255,248,.72); }
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
+  html,body { height:100%; overflow:hidden; overscroll-behavior:none; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:#103b36; touch-action:manipulation;
+    background: radial-gradient(130% 90% at 50% 0%, #b7f5e4, #5fd3bb 55%, #1aa38a); }
+
+  .topp { position:fixed; left:0; right:0; top:0; display:flex; align-items:center; gap:12px; padding:max(12px, env(safe-area-inset-top)) 14px 0; font-weight:900; }
+  .ruta { padding:6px 12px; border-radius:14px; background:rgba(255,255,255,.75); font-size:17px; }
+  .ruta.hoger { margin-left:auto; }
+
+  .bord { position:fixed; left:50%; top:calc(50% + 24px); transform:translate(-50%,-50%); display:grid; gap:10px; }
+  .kort { position:relative; perspective:600px; border:0; background:none; padding:0; touch-action:manipulation; }
+  .kort .inre { position:absolute; inset:0; transition: transform .35s cubic-bezier(.3,1.3,.5,1); transform-style:preserve-3d; }
+  .kort.vand .inre, .kort.klar .inre { transform: rotateY(180deg); }
+  .sida { position:absolute; inset:0; border-radius:18%; backface-visibility:hidden; -webkit-backface-visibility:hidden; display:grid; place-items:center; box-shadow:0 5px 0 rgba(0,0,0,.18); }
+  .baksida { background: linear-gradient(135deg, #0f9d84, #0b6f8f); border:4px solid #fff; }
+  .baksida::after { content:'?'; font-size:40%; font-weight:900; color:rgba(255,255,255,.85); font-size:calc(var(--k) * .42); }
+  .framsida { background:#fff; transform: rotateY(180deg); border:4px solid #fff; overflow:hidden; }
+  .framsida .emoji { font-size:calc(var(--k) * .55); line-height:1; }
+  .framsida img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .framsida .namn { position:absolute; bottom:4%; left:0; right:0; text-align:center; font-weight:900; font-size:calc(var(--k) * .14); color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.7); }
+  .kort.klar .framsida { box-shadow:0 0 0 4px #ffd43b, 0 5px 0 rgba(0,0,0,.18); animation: hopp .5s; }
+  @keyframes hopp { 40% { transform: rotateY(180deg) scale(1.12); } }
+  .meddelande { position:fixed; left:0; right:0; bottom:max(18px, env(safe-area-inset-bottom)); text-align:center; font-weight:900; font-size:20px; color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.25); height:28px; }
+</style>
+</head>
+<body>
+  <div class="topp">
+    <span id="spelare"></span>
+    <span class="ruta" id="par">0 / 0 par</span>
+    <span class="ruta hoger" id="drag">0 drag</span>
+    <span class="ruta" id="tid">0 s</span>
+  </div>
+  <div class="bord" id="bord"></div>
+  <div class="meddelande" id="meddelande"></div>
+  <script type="module" src="spel.js"></script>
+  <script src="../../delat/hem.js"></script>
+</body>
+</html>

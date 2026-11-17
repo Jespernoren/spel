@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script src="../../delat/rost.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#3d8f3a">
+<title>Krangs korvjakt</title>
+<link rel="stylesheet" href="../../delat/familjespel.css">
+<style>
+  :root { --fs-accent:#c0571d; --fs-skugga:#7a3410; --fs-text:#2b1a0c; --fs-sloja:rgba(240,255,230,.72); }
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
+  html,body { height:100%; overflow:hidden; overscroll-behavior:none; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:#fff; touch-action:none; background:#2f7a2c; }
+  .topp { position:fixed; left:0; right:0; top:0; z-index:3; display:flex; align-items:center; gap:10px; padding:max(10px, env(safe-area-inset-top)) 12px 0; }
+  .poang { font-size:28px; font-weight:900; text-shadow:0 2px 0 rgba(0,0,0,.35); }
+  .info { margin-left:auto; font-weight:900; font-size:17px; padding:6px 12px; border-radius:14px; background:rgba(0,0,0,.2); }
+  #duk { position:fixed; left:50%; transform:translateX(-50%); border-radius:16px; box-shadow:0 6px 0 rgba(0,0,0,.25); touch-action:none; }
+  .hjalp { position:fixed; left:0; right:0; bottom:max(10px, env(safe-area-inset-bottom)); text-align:center; font-weight:800; font-size:16px; opacity:.9; text-shadow:0 1px 0 rgba(0,0,0,.3); }
+</style>
+</head>
+<body>
+  <div class="topp" id="topp" hidden>
+    <span id="spelare"></span>
+    <span class="poang" id="poang">0 🌭</span>
+    <span class="info" id="info"></span>
+  </div>
+  <canvas id="duk"></canvas>
+  <div class="hjalp" id="hjalp"></div>
+  <script type="module" src="spel.js"></script>
+  <script src="../../delat/hem.js"></script>
+</body>
+</html>

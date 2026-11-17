@@ -129,3 +129,6 @@ Läggs först i `<head>` i alla spel. Gör om ensamma stora bokstäver till små
 
 ### Familjespel och profiler: `delat/familj.js`
 `FAMILJ`, `inloggad()` (vem som är inloggad i appen), `sparaRekord(mapp, id, poang)` (sparar `rekord:<mapp>:<id>` och `rekord:<mapp>`), `familjensTopp(mapp)`. Appen läser personliga rekord först, så topplistan blir rätt även när flera spelar på samma telefon. Mattekampen är första spelet byggt så.
+
+### Familjespel-ramen: `delat/familjespel.js` + `delat/familjespel.css`
+Start, "Vem spelar?", resultat med familjens topplista, ljud (`ton`, `pling`, `buu`, `fanfar`), svensk röst (`saga`) och `konfetti`. `skapaRam({ id, titel, startText, onStart, onMeny })` → `ram.slut(poang, text, rubrik)`. Används av Familje-Simon, Familje-Memory, Fånga tjuven och Krangs korvjakt.

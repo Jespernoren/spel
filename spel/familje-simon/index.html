@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script src="../../delat/rost.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1b1140">
+<title>Familje-Simon</title>
+<link rel="stylesheet" href="../../delat/familjespel.css">
+<style>
+  :root { --fs-accent:#ffd43b; --fs-skugga:#b08a00; --fs-text:#fff; --fs-sloja:rgba(18,10,48,.82); --fs-kort:rgba(255,255,255,.12); }
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
+  html,body { height:100%; overflow:hidden; overscroll-behavior:none; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:#fff; touch-action:manipulation;
+    background: radial-gradient(120% 80% at 50% 0%, #3b1d8f, #1b1140 60%); }
+  .fs-stor { color:#1b1140 !important; }
+  .fs-lank { color:#1b1140 !important; }
+  .fs-topp div b { color:var(--fs-accent); }
+
+  .topp { position:fixed; left:0; right:0; top:0; display:flex; align-items:center; gap:10px; padding:max(12px, env(safe-area-inset-top)) 14px 0; }
+  .runda { font-size:22px; font-weight:900; }
+  .liv { margin-left:auto; font-size:24px; letter-spacing:2px; }
+  .status { position:fixed; left:0; right:0; top:calc(max(12px, env(safe-area-inset-top)) + 58px); text-align:center; font-weight:900; font-size:20px; color:#ffd43b; height:28px; }
+
+  .bradet { position:fixed; left:50%; top:52%; transform:translate(-50%,-50%); width:min(92vw, 62vh, 460px); aspect-ratio:1; display:grid; grid-template-columns:1fr 1fr; gap:4%; }
+  .knapp { position:relative; border-radius:30%; border:0; background:var(--f); opacity:.55; filter:saturate(.8);
+    box-shadow: inset 0 -10px 0 rgba(0,0,0,.25), 0 8px 0 rgba(0,0,0,.35); display:grid; place-items:center;
+    transition: opacity .08s, transform .08s, filter .08s; touch-action:manipulation; }
+  .knapp:nth-child(1) { border-radius:50% 18% 18% 18%; }
+  .knapp:nth-child(2) { border-radius:18% 50% 18% 18%; }
+  .knapp:nth-child(3) { border-radius:18% 18% 18% 50%; }
+  .knapp:nth-child(4) { border-radius:18% 18% 50% 18%; }
+  .knapp.lyser { opacity:1; filter:saturate(1.2) brightness(1.25); transform:scale(1.04); box-shadow: 0 0 40px var(--f), inset 0 -10px 0 rgba(0,0,0,.2); }
+  .knapp .fs-avatar { box-shadow:0 0 0 5px rgba(255,255,255,.9), 0 4px 12px rgba(0,0,0,.3); }
+  .knapp b { position:absolute; bottom:10%; font-size:clamp(14px, 4vw, 18px); font-weight:900; color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.4); }
+  .mitt { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:28%; aspect-ratio:1; border-radius:50%;
+    background:#1b1140; box-shadow:0 0 0 6px #2c1a66; display:grid; place-items:center; font-size:clamp(26px, 8vw, 40px); font-weight:900; pointer-events:none; }
+  .bradet.las .knapp { pointer-events:none; }
+  .fel { animation: skaka .4s; }
+  @keyframes skaka { 25% { transform:translate(-52%,-50%); } 75% { transform:translate(-48%,-50%); } }
+</style>
+</head>
+<body>
+  <div class="topp"><span id="spelare"></span><span class="runda" id="runda"></span><span class="liv" id="liv"></span></div>
+  <div class="status" id="status"></div>
+  <div class="bradet las" id="bradet">
+    <button class="knapp" data-i="0"></button>
+    <button class="knapp" data-i="1"></button>
+    <button class="knapp" data-i="2"></button>
+    <button class="knapp" data-i="3"></button>
+    <div class="mitt" id="mitt">🎵</div>
+  </div>
+  <script type="module" src="spel.js"></script>
+  <script src="../../delat/hem.js"></script>
+</body>
+</html>
