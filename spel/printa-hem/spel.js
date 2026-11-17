@@ -13509,6 +13509,9 @@ const KAND_AUTO = {
   kolfiber: () => (S.kapitel || 1) >= 3,
   boden: () => !!S.bod || !!S.bodPlan,
   gaststugan: () => !!S.gast?.hemma,
+  helen: () => !!S.helen,   /* EP: alla figurer presenteras innan de nämns */
+  bengt: () => (S.bengtSkrik || 0) > 0 || (S.kapitel || 1) >= 3,
+  goran: () => !!S.goranSedd || !!S.goranForsta,
 };
 function kand(sak) {
   if ((S.kand || []).includes(sak)) return true;
@@ -13531,7 +13534,7 @@ function smsOrdning(fran, text) {
 const KAND_ORD = [
   [/\bRolfs?\b/, 'rolf'], [/\bAlis?\b/, 'ali'], [/\btornet\b|\btorn\b|rulltorn/i, 'torn'], [/\bpowerbank/i, 'powerbank'], [/bilbatteri/i, 'bilbatteri'],
   [/batteribank/i, 'batteribank'], [/sopbil/i, 'sopbil'], [/\btippen\b/i, 'tippen'], [/\bslang/i, 'slang'], [/\btratt/i, 'tratt'], [/rullställ/i, 'rullstall'],
-  [/PETG|röda linjen/i, 'petg'], [/kolfiber/i, 'kolfiber'], [/\bboden\b/i, 'boden'], [/gäststug/i, 'gaststugan'],
+  [/PETG|röda linjen/i, 'petg'], [/kolfiber/i, 'kolfiber'], [/\bboden\b/i, 'boden'], [/gäststug/i, 'gaststugan'], [/\bHelens?\b/, 'helen'], [/\bBengt/, 'bengt'], [/\bGörans?\b/, 'goran'],
 ];
 const okandaOrd = (t) => { t = String(t).replace(/Radio Tippen/g, ''); return KAND_ORD.filter(([re, k]) => re.test(t) && !kand(k)).map(([, k]) => k); };   /* stationens namn är ett namn, inte platsen */
 
