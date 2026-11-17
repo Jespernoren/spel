@@ -352,7 +352,7 @@ const DEL_NAMN = {
   kvarnmotor: ['Motorhus', 'Fläkthjul'], bank: ['Batterilåda', 'Lock med kontakter'], korg: ['Säck'], ryggkorg: ['Korg', 'Axelremmar'], ryggsack2: ['Säck', 'Axelremmar'],
   karra: ['Korg', 'Hjul', 'Handtag'], saljlada: ['Låda', 'Lock med skylt'], petgkvarn: ['Kvarnhus', 'Kross', 'Spolhållare'], skrivarepetg: ['Stålram', 'Byggbädd', 'Härdat munstycke', 'Kapsling', 'Styrkort'], petgband: ['Bandram', 'Gummiband', 'Gripklo'], magnet: ['Pistolkropp', 'Magnetspole', 'Batterilucka'], stortratt: ['Tratt', 'Krosskäftar'], hardkniv: ['Knivhållare', 'Härdade knivar'], diamantkniv: ['Knivtrumma', 'Diamantknivar', 'Lager'],
   grip: ['Käftar', 'Skaft med avtryckare'], bord: ['Bordsskiva', 'Ben', 'Ben'], sol: ['Panelram', 'Solceller', 'Stativ'], solpark: ['Panelrad', 'Solceller', 'Solceller', 'Växelriktare'],
-  skrivare2: ['Ram', 'Byggbädd', 'Skrivhuvud', 'Extruder', 'Styrkort'],
+  skrivare2: ['Ram', 'Byggbädd', 'Skrivhuvud', 'Trådmatare', 'Styrkort'],   /* A-059 */
   spolhallare3: ['Torn', 'Axlar', 'Fot', 'Hylsor'],
   rullband: ['Motorrulle', 'Bandsektioner', 'Ben', 'Styrlåda'], lastarm: ['Fot', 'Vridled', 'Lyftarm', 'Gripklo'], robotarm: ['Bas', 'Axel', 'Underarm', 'Gripklo'], utlada: ['Låda', 'Lock', 'Rutschkana'],
   skrivare3: ['Stålram', 'Stor byggbädd', 'Linjärskenor', 'Dubbelt skrivhuvud', 'Kapsling', 'Styrkort'],
@@ -1583,13 +1583,16 @@ motor.position.set(0.48, 0.0, -0.1);
 }
 // stor osynlig träffyta på veven så att den är lätt att sikta på
 const vevYta = traffYta(kvarn, 0.5, 0.6, 0.45, 0.2, 0.4, 0.55);
-// extrudern: smälter plastkrosset från kvarnen och spolar upp det till filament
+// A-059: kvarnen gör tråden själv – pappas köttkvarn har en varm hålskiva och ett munstycke, krosset pressas ut som tråd
+// (gruppen heter fortfarande `extruder` internt: rör, värmeringar, hålskiva och tråden ner på rullen – ingen orange låda)
 const extruder = new THREE.Group();
-extruder.add(at(box(0.55, 0.62, 0.5, mat(0xd9822b)), 0, 0.31, 0));
-extruder.add(at(box(0.57, 0.05, 0.52, mat(0x5b3a1a)), 0, 0.64, 0));
-const extrTratt = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.06, 0.2, 10, 1, true), mat(0x9aa9b8, { side: THREE.DoubleSide })); extrTratt.position.set(0.1, 0.76, -0.05); extruder.add(extrTratt);
+const extrTratt = new THREE.Group();   /* gamla tratten finns inte längre */
+extruder.add(at(box(0.05, 0.45, 0.05, mat(0x555555, { metalness: 0.5 })), 0.05, 0.22, 0.28));   // ett ben under röret
 const varmMat = mat(0xff5a2a, { emissive: 0xff3a10, emissiveIntensity: 0.4 });
-const pipa = cyl(0.07, 0.07, 0.5, mat(0x777777, { metalness: 0.6, roughness: 0.4 }), 12); pipa.rotation.z = Math.PI / 2; pipa.position.set(0, 0.45, 0.28); extruder.add(pipa);
+const pipa = cyl(0.07, 0.07, 0.95, mat(0x777777, { metalness: 0.6, roughness: 0.4 }), 12); pipa.rotation.z = Math.PI / 2; pipa.position.set(0.22, 0.45, 0.28); extruder.add(pipa);   // röret ut ur kvarnen
+const halskiva = cyl(0.1, 0.1, 0.03, varmMat, 16); halskiva.rotation.z = Math.PI / 2; halskiva.position.set(-0.26, 0.45, 0.28); extruder.add(halskiva);   // den varma hålskivan
+const trad = new THREE.Mesh(new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(new THREE.Vector3(-0.3, 0.45, 0.32), new THREE.Vector3(-0.32, 0.36, 0.48), new THREE.Vector3(-0.2, 0.33, 0.55)), 10, 0.008, 5), mat(FIL1, { emissive: FIL1, emissiveIntensity: 0.4 }));
+trad.visible = false; extruder.add(trad);   // tråden ringlar ner på rullen när kvarnen mal
 for (const x of [-0.12, 0.05]) { const ring = cyl(0.085, 0.085, 0.06, varmMat, 12); ring.rotation.z = Math.PI / 2; ring.position.set(x, 0.45, 0.28); extruder.add(ring); }
 const munstyckeE = cyl(0.03, 0.05, 0.08, mat(0xc9a227, { metalness: 0.7 }), 8); munstyckeE.rotation.x = Math.PI / 2; munstyckeE.position.set(-0.27, 0.45, 0.32); extruder.add(munstyckeE);
 const extrSkylt = skylt('EXTRUDER', 0.48, 0.13, '#5b3a1a', '#ffe9b0'); extrSkylt.position.set(0, 0.22, 0.252); extrSkylt.visible = false; extruder.add(extrSkylt);   // punkt BC: kvarnen och extrudern är en maskin – ingen skylt
@@ -6122,7 +6125,7 @@ function vibrera() {
 // Ali blir nästan glad ibland – men bara nästan
 // punkt AS: det begagnade hos Ali
 const ALI_KOP_REPL = { korg: 'En sopsäck. Den är ren. Nästan.' };   // punkt AX
-const ALI_GAMMALKVARN = 'Ali här. En kvarn? Jag har en. Den har legat i lagret sen 2011. Den luktar korv, men den funkar.';   /* DT */
+const ALI_GAMMALKVARN = 'Ali här. En kvarn? Jag har pappas. Han värmde hålskivan. Nu kommer det tråd i stället för köttfärs. Ät inte den.';   /* A-059 */   /* DT */
 const ALI_BATTERI = 'Ali här. Batteriet ur min gamla Volvo. Bilen dog 2016. Batteriet vägrade.';   /* DT: Alis gamla bilbatteri */
 const ALI_POWERBANK = 'Ali här. Jag såg dig cykla. Det ser jobbigt ut. Testa koppla på den här. Bra kunder får bonus.';   /* ED8: efter kvarnens första rulle, med gåvokortet */
 function kopDirekt(id) {
@@ -10576,7 +10579,7 @@ function uppdatera(dt) {
     const ka = hb.querySelector('.ph-hb-karra'); if (ka) { const t = S.karraLast.length ? `${Math.round(karraGram() / KARRA_KAP * 100)}%` : ''; if (ka.textContent !== t) ka.textContent = t; }
     if (hb.firstChild?.dataset.niva !== String(S.grip ? 1 : 0)) ritaHotbar();
     kistLock.rotation.z += ((kistaOppen && !ui.butiksOverlay.hidden ? -1.15 : 0) - kistLock.rotation.z) * Math.min(1, dt * 8);
-    varmMat.emissiveIntensity = malAnimation > 0 ? 0.9 + Math.sin(performance.now() / 90) * 0.3 : 0.35;
+    varmMat.emissiveIntensity = malAnimation > 0 ? 0.9 + Math.sin(performance.now() / 90) * 0.3 : 0.35; trad.visible = malAnimation > 0;   /* A-059: hålskivan glöder och tråden syns */
   }
   forradText.textContent = antalIForrad();
   smsChip.style.display = S.sms.length ? '' : 'none';
@@ -13889,7 +13892,9 @@ function niva5Koll() {   /* EO 35 tillägg: första gången en maskin i en linje
   for (const [k, v] of Object.entries(n)) if (v >= 5 && !(S.niva5 || []).includes(k)) { S.niva5 = [...(S.niva5 || []), k]; paket([{ sms: ['ali', ALI_NIVA5] }], { vikt: 'SMÅPRAT', varfor: `EO 35: ${k} nivå 5` }); }
 }
 function ritaYtor() {
-  try { linjeYta(kvarn, 'bla', kvarnNiva()); for (const sk of skrivare) linjeYta(sk.mesh, skrivarLinje(sk), skrivarNiva(sk));
+  try { linjeYta(kvarn, 'bla', kvarnNiva()); kvarn.scale.setScalar(0.92 + 0.04 * (kvarnNiva() - 1));   /* A-059: kvarnen växer per nivå och per linje */
+    for (const p of placerade) { if (p.typ === 'petgkvarn' && p.mesh) p.mesh.scale.setScalar(1.25); if (p.typ === 'kolfkvarn' && p.mesh) p.mesh.scale.setScalar(1.5); }
+    for (const sk of skrivare) linjeYta(sk.mesh, skrivarLinje(sk), skrivarNiva(sk));
     for (const p of placerade) { if (p.typ === 'petgkvarn') linjeYta(p.mesh, 'rod', Math.min(5, 1 + (S.petg.container ? 1 : 0) + (S.petg.turbo ? 1 : 0) + trimNiva('kvarn_rod'))); if (p.typ === 'kolfkvarn') linjeYta(p.mesh, 'kolf', Math.min(5, 1 + (S.kolf.band ? 1 : 0) + (S.kolf.jet ? 1 : 0) + trimNiva('kvarn_kolf'))); } niva5Koll(); } catch (e) { console.warn('yta', e); }
 }
 setInterval(ritaYtor, 1500);
