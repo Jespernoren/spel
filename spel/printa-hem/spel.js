@@ -73,7 +73,7 @@ const TIPP_START = 55;           // skräp på tippen från start
 const MAX_SKRAP = 170;           // mer än så ligger aldrig ute samtidigt
 const SOPBIL_FORSTA = 45;        // sekunder tills första sopbilen kommer
 const SOPBIL_VAR = 80;           // sekunder mellan sopbilarna
-const SOPBIL_LAST = 15;          // skräp per last
+const SOPBIL_LAST = 20;          // skräp per last – AX g44: 15 räckte inte till gamersakerna och jacuzzin dag 15
 const RULLE = 1000;              // 1 filamentrulle = 1000 g. Allt visas i rullar.
 // Skräp ger olika mycket: påse 15 g, flaska 25 g, en stor dunk (sällsynt) 100 g
 // Grundenhet: 5 flaskor = 1 rulle → en flaska = 20 % av en rulle. Allt räknas i hela 10 %.
