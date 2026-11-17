@@ -236,7 +236,7 @@ const VAROR = {
 
 // dyra saker man köper hos Ali (printas inte) – det är dessa man sparar till
 Object.assign(VAROR, {
-  gamingstol: { namn: 'Gamingstol', ikon: '🪑', recept: 900, pris: 0, gram: 3000, tid: 50, trivsel: 10, placerbar: true, radie: 0.35, syns: () => S.kapitel >= 3 && !!S.bod, lyx: 'Alis AI-modell nr 7. Han skrev prompten på en servett.' },
+  gamingstol: { namn: 'Gamingstol', ikon: '🪑', recept: 900, pris: 0, gram: 2000, tid: 50, trivsel: 10, placerbar: true, radie: 0.35, syns: () => S.kapitel >= 3 && !!S.bod, lyx: 'Alis AI-modell nr 7. Han skrev prompten på en servett.' },
   hogtalare: { namn: 'Högtalare', ikon: '🔊', recept: 700, pris: 0, gram: 1500, tid: 30, trivsel: 8, placerbar: true, radie: 0.2, syns: () => S.kapitel >= 3 && !!S.bod, lyx: 'Lådan printar du – Ali lägger med högtalarelementen.' },
   r_radio: { namn: 'Rörradio från jordkällaren (spelar dansband)', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 45, unik: true, radie: 0.3 },
   ra_flipper: { namn: 'Gammalt flipperspel (Rolfs hemliga ställe)', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 90, unik: true, radie: 0.5 },
@@ -247,7 +247,7 @@ Object.assign(VAROR, {
   ra_fatgrill: { namn: 'Grill av ett oljefat', ikon: '', gram: 0, tid: 0, pris: 0, placerbar: true, trivsel: 45, unik: true, radie: 0.4 },
   kamin: { namn: 'Vedkamin', ikon: '🔥', recept: 3330, pris: 0, gram: 4000, tid: 60, trivsel: 25, placerbar: true, radie: 0.35, syns: () => S.kapitel >= 4, lyx: 'Gjutjärnslook. Ställ den i skjulet så fryser du inte i vinter.' },
   kyl: { namn: 'Minikylskåp', ikon: '🧊', recept: 1200, pris: 0, gram: 4000, tid: 60, trivsel: 10, placerbar: true, radie: 0.3, syns: () => S.kapitel >= 2, lyx: 'Skalet printar du – kylaggregatet följer med ritningen.' },
-  gamingbord: { namn: 'Gamingbord med skärm', ikon: '🖥️', recept: 1800, pris: 0, gram: 5000, tid: 70, trivsel: 15, placerbar: true, radie: 0.6, syns: () => S.kapitel >= 3, lyx: 'Bordet och skärmramen printar du – panelen ingår.' },
+  gamingbord: { namn: 'Gamingbord med skärm', ikon: '🖥️', recept: 1800, pris: 0, gram: 3000, tid: 70, trivsel: 15, placerbar: true, radie: 0.6, syns: () => S.kapitel >= 3, lyx: 'Bordet och skärmramen printar du – panelen ingår.' },
   soffa: { namn: 'Soffa', ikon: '🛋️', recept: 2200, pris: 0, gram: 7000, tid: 80, trivsel: 15, placerbar: true, radie: 0.8, syns: () => S.kapitel >= 2, lyx: 'Alis stolthet. Han har aldrig suttit i den.' },
   ledpinne: { namn: 'RGB-ljuspinne', ikon: '🌈', recept: 500, pris: 0, gram: 600, tid: 16, trivsel: 6, placerbar: true, radie: 0.15, syns: () => S.kapitel >= 3, lyx: 'AI:n föreslog ”mer RGB”. Den har rätt. Alltid mer RGB.' },
   akustik: { namn: 'Akustikpaneler', ikon: '🔲', recept: 600, pris: 0, gram: 1500, tid: 24, trivsel: 6, placerbar: true, radie: 0.3, syns: () => S.kapitel >= 3, lyx: 'Ljudisolering. Så mamma inte hör när du skriker i Discord.' },
@@ -258,8 +258,9 @@ Object.assign(VAROR, {
   simrig: { namn: 'Racingsimulator', ikon: '🏎️', recept: 4500, pris: 0, gram: 10000, tid: 90, trivsel: 22, placerbar: true, radie: 0.7, syns: () => S.kapitel >= 3, lyx: 'Racingstol, ratt och pedaler. Snabbare än sopbilen.' },
   biljard: { namn: 'Biljardbord', ikon: '🎱', recept: 5000, pris: 0, gram: 15000, tid: 110, trivsel: 20, placerbar: true, radie: 1.1, syns: () => S.kapitel >= 3, lyx: 'Rolf säger att han är ”proffs”. Han är inte proffs.' },
   jacuzzi: { namn: 'Jacuzzi', ikon: '🛁', recept: 15000,   /* dag 15: ca 9 000 kr hos Ali (×0,6). AX g30/g31: 9 000 g tog 30 min (skräpet räcker inte) → 6 000 g */ pris: 0, gram: 6000, tid: 120, trivsel: 30, placerbar: true, radie: 1.1, syns: () => S.kapitel >= 3, lyx: 'Varmt bubbelbad vid soptippen. Lyx är relativt.' },
-  dator: { namn: 'Gamingdator med RGB', ikon: '💻', recept: 3500, pris: 0, gram: 2500, tid: 60, trivsel: 20, placerbar: true, radie: 0.25, syns: () => S.kapitel >= 3, lyx: 'Chassit printar du – Ali har en låda med begagnade datordelar.' },
+  dator: { namn: 'Gamingdator med RGB', ikon: '💻', recept: 3500, pris: 0, gram: 2000, tid: 60, trivsel: 20, placerbar: true, radie: 0.25, syns: () => S.kapitel >= 3, lyx: 'Chassit printar du – Ali har en låda med begagnade datordelar.' },
 });
+/* AX g44–g46: de tre första gamersakerna väger 7 000 g i stället för 10 500 – dag 15 har också jacuzzin */
 const GAMER = ['gamingstol', 'gamingbord', 'dator', 'hogtalare', 'ledpinne', 'akustik', 'neonskylt', 'figurhylla', 'projektor', 'arkad', 'simrig', 'biljard', 'soffa', 'kyl'];
 // nästa gamer-sak att jobba på: den du redan håller på med, annars den billigaste du kan printa
 for (const g of GAMER) if (VAROR[g]) { const f = VAROR[g].syns; VAROR[g].syns = () => (f ? f() : true) && (malAktiv('gamer') || (S.kapitel || 1) >= 4); }   // CK
