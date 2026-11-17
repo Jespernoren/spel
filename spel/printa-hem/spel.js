@@ -2777,6 +2777,7 @@ function fullaFickor(typ, n = 1) {
   const t = alltFullt ? ALLT_FULLT_TANKE : FICKA_TANKE;
   if (!harSagt(t)) tanke(t, 'DD', 'REAKTION');
   fickSkylt(alltFullt ? 'Allt är fullt' : 'Fulla fickor · tryck Tab för ryggsäcken', alltFullt);
+  textLogg('toast', 'fickskylt', alltFullt ? 'Allt är fullt' : 'Fulla fickor');
   textLogg('fullaFickor', 'du', typ, alltFullt ? 'allt fullt' : 'fickorna');
   return true;
 }

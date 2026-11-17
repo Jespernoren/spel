@@ -289,7 +289,7 @@
     let n = 0; while (H.antalInv('paket') && n++ < 6) { valj('paket'); await klick(H.postlada, 'Rolfs postlåda (paket)'); }
     handling(`webbshop: ${H.webbOrdrar().filter((x) => x.iLadan && !x.levererad).length} paket i postlådan`);
   }
-  const BEHALL = () => [...(H.webbOrdrar ? H.webbOrdrar().filter((o) => !o.packad && !o.levererad).map((o) => o.typ) : []), 'sang', 'pall', 'kruka', 'lampskarm', 'fagelholk', ...(H.aktivGava() ? [H.aktivGava()] : [])].filter((t) => !(t === 'kruka' && H.antalInv('kruka') > 2));
+  const BEHALL = () => [...(H.webbOrdrar ? H.webbOrdrar().filter((o) => !o.packad && !o.levererad).map((o) => o.typ) : []), 'sang', 'pall', 'kruka', 'lampskarm', 'fagelholk', ...(H.aktivGava() ? [H.aktivGava()] : [])].filter((t) => !(t === 'kruka' && H.antalInv('kruka') > 2) && !(['pall', 'lampskarm', 'fagelholk'].includes(t) && H.antalInv(t) > 1));   /* fickorna fylls inte av pallar */
   async function kopMaskin(id) {
     if (S.ritningar.includes(id)) return true;
     const pris = H.MASKINER[id].ritning; if (S.mynt < pris) await tjana(pris, H.MASKINER[id].namn.toLowerCase());

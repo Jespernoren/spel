@@ -228,7 +228,7 @@ export const FORSTA_PRINT_S = 5;        // DT: de tre första printarna tar ca 5
 
 // ---------- EE: flaskhalsstyrd upplåsning ----------
 // Nästa sak i en kedja låses upp när kedjans flaskhals har tagit stopp så här länge (s) eller så många gånger (bara: turer med fulla händer, inkomst: sålda nyckelringar)
-export const FLASK_GRANS = { bara: 6, mala: 25, trampa: 20, strom: 30, skrivare: 75, inkomst: 6 };   // efter AX 17/11: boten vevar och trampar mycket snabbare än ett barn – ett barn når gränsen senare, ordningen är densamma
+export const FLASK_GRANS = { bara: 6, mala: 10, trampa: 10, strom: 15, skrivare: 75, inkomst: 6 };   // efter AX 17/11: boten vevar och trampar mycket snabbare än ett barn – ett barn når gränsen senare, ordningen är densamma
 // ordningen i varje kedja – en i taget
 export const FLASK_KEDJA = {
   bara: ['grip', 'ryggkorg', 'matarband', 'magnet'],   // sopsäcken från Rolf (EL 28), kärran är Rolfs tack (A-050), sophållaren töms med kärran
