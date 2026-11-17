@@ -143,10 +143,10 @@ const VAROR = {
   fynd2: { namn: 'Fynd nivå 2: röd PETG-back', ikon: '', malTill: 2, beskr: 'Råmaterial: riktigt bra plast. Lägg den i den röda PETG-kvarnen – den blir en rulle röd PETG, filament nivå 2.' },
   fynd3: { namn: 'Fynd nivå 3: kolfiberrester', ikon: '', malTill: 3, beskr: 'Råmaterial. Kräver härdade kvarnknivar – blir en rulle kolfiber, nivå 3.' },
   fynd4: { namn: 'Fynd nivå 4: guldglittrig dunk', ikon: '', malTill: 4, beskr: 'Råmaterial. Kräver diamantkvarn – blir en rulle guldkomposit, nivå 4.' },
-  fynd5: { namn: 'Fynd nivå 5: titanspån', ikon: '', malTill: 5, beskr: 'Råmaterial. Kräver diamantkvarn – blir en rulle titanblandning, nivå 5.' },
+  fynd5: { namn: 'Fynd nivå 5 (utgått)', ikon: '', malTill: 4, beskr: 'Gammalt fynd. Blir guld i kvarnen.' },   /* A-044: titan finns inte – Tippium blandas i labbet */
   rulle3: { namn: 'Filament nivå 3 – svartgrå kolfiber', ikon: '', fil: 3 },
   rulle4: { namn: 'Filament nivå 4 – guldkomposit', ikon: '', fil: 4 },
-  rulle5: { namn: 'Filament nivå 5 – titanblandning', ikon: '', fil: 5 },
+  rulle5: { namn: 'Tippium', ikon: '', fil: 5 },   /* A-044: blandas i labbet av blå + röd + kolfiber + guld (A-048) */
   // PETG-linjen: printas bara på den röda PETG-skrivaren. Dyra saker – varje rulle röd PETG är värd 5–10 vanliga.
   n2_vas: { namn: 'Designvas i röd PETG', ikon: '', trivsel: 8, placerbar: true, radie: 0.2, niva: 2, syns: () => S.kapitel >= 2 },
   n2_hjalm: { namn: 'Cykelhjälm i PETG', ikon: '', niva: 2, syns: () => harRecept('n2_vas') },
@@ -154,7 +154,7 @@ const VAROR = {
   n2_paddel: { namn: 'Kajakpaddel i PETG', ikon: '', niva: 2, syns: () => harRecept('n2_neon') },
   n3_stol: { namn: 'Kolfiberstol', ikon: '', trivsel: 90, placerbar: true, radie: 0.4, niva: 3 },
   n4_staty: { namn: 'Guldstaty av Rolf', ikon: '', trivsel: 180, placerbar: true, radie: 0.45, niva: 4 },
-  n5_drake: { namn: 'Titandrake', ikon: '', trivsel: 350, placerbar: true, radie: 0.6, niva: 5 },
+  n5_drake: { namn: 'Tippiumdrake', ikon: '', trivsel: 350, placerbar: true, radie: 0.6, niva: 5 },
   // mammas burkar som pappa lämnar – helt oanvändbara, tar bara plats
   burk_honung: { namn: 'Burk honung från mamma', ikon: '', placerbar: true, trivsel: 0, radie: 0.2, burk: true },
   burk_lingon: { namn: 'Burk lingonsylt från mamma', ikon: '', placerbar: true, trivsel: 0, radie: 0.2, burk: true },
@@ -314,7 +314,7 @@ const MASKINER = {
   vindsnurra: { namn: 'Vindsnurra till skjultaket', ikon: '', syns: () => S.dag >= 3 && antalSnurror() < VIND_MAX, monteras: true, beskr: 'En propeller på taket med en rem ner till cykeln. Den trampar åt dig när det blåser – ungefär halva din fart, hela tiden. Två snurror driver Skrivare S och nästan M.' },   // BL
   rullstall: { namn: 'Rullställ till rulltornet', ikon: '', syns: () => { const l = S.rullstall || 0; return l === 0 ? true : l === 1 ? S.dag >= 4 : (S.kapitel || 1) >= 3; },   /* EN 32: första nivån låses upp av flaskhalsen (upplast) */ beskr: 'Rulltornet vid kvarnen växer ett steg – fler färdiga rullar får plats innan kvarnen stannar. Skrivarna tar plasten direkt från tornet genom slangen.', monteras: true },   // CA: ett steg i taget
   hardkniv: { namn: 'Härdade kvarnknivar', ikon: '', syns: () => false,   /* DF: kolfiber mals bara i kolfiberkvarnen – gamla knivar fungerar */ monteras: true, beskr: 'Knivar av härdat stål. Utan dem klarar kvarnen inte Rolfs svartgrå kolfiberrester – med dem blir de filament nivå 3.' },
-  diamantkniv: { namn: 'Diamantkvarn', ikon: '', syns: () => S.kapitel >= 4 && (S.kvarn.kniv || 0) >= 1, monteras: true, beskr: 'Diamantbelagda knivar. Klarar guldkomposit och titanspån – filament nivå 4 och 5.' },
+  diamantkniv: { namn: 'Diamantkvarn', ikon: '', syns: () => S.kapitel >= 4 && (S.kvarn.kniv || 0) >= 1, monteras: true, beskr: 'Diamantbelagda knivar. Klarar guldkomposit – filament nivå 4.' },
   stortratt: { namn: 'Stor kvarntratt', ikon: '🪣', syns: () => false, beskr: 'Bred tratt med kross – nu får regntunnor och röda backar plats i kvarnen', monteras: true },
   // bygg ut skjulet till ett riktigt hem – printa delarna, välj dem och klicka på skjulet för att montera
   dorr: { namn: 'Dörr', ikon: '🚪', hem: true, monteras: true, syns: () => S.sang, trivsel: 8, beskr: 'En riktig dörr – slut på drag och nyfikna katter' },
@@ -370,7 +370,7 @@ const MASKIN_GER = {
   matarband: () => [`${BINGE_MAX} st`, `Sophållaren rymmer ${BINGE_MAX} skräp och matar kvarnen själv`],
   rullstall: () => [`${utlagerKap()} → ${TORN_KAP[Math.min(4, (S.rullstall || 0) + 1)]} rullar`, 'Rulltornet vid kvarnen växer ett steg'],
   hardkniv: () => ['Nivå 3', 'Kvarnen klarar kolfiber (filament nivå 3)'],
-  diamantkniv: () => ['Nivå 4–5', 'Kvarnen klarar guld och titan (filament nivå 4–5)'],
+  diamantkniv: () => ['Nivå 4', 'Kvarnen klarar guldkomposit (filament nivå 4)'],
   stortratt: () => ['Tungt', 'Tunnor och röda backar får plats i kvarnen'],
   grip: () => [`${BARA_SKRAP[1]} st`, `Bär ${BARA_SKRAP[1]} skräp och plockar när du går nära`],
   bord: () => ['+1 skrivare', 'Bordsyta för en skrivare till'],
@@ -432,8 +432,8 @@ const filTyp = (sk) => genNiva(sk) ? 'rulle' + genNiva(sk) : 'rulle';   // vilke
 const STORLEK_NAMN = { 1: 'S', 2: 'M', 3: 'L', 4: 'PETG', 5: 'KOLFIBER' };
 const storlekFor = (typ) => { const v = VAROR[typ]; if (!v) return 1; if (v.storlek) return v.storlek; return v.gram <= 1200 ? 1 : v.gram <= 5000 ? 2 : 3; };
  const skrivStorlek = (sk) => Math.min(3, GEN[sk.gen].storlek + (sk.mod === 'm_grav' ? 1 : 0));
-// filamentnivåer: 1 vanlig plast → 2 röd PETG → 3 svartgrå kolfiber → 4 guldkomposit → 5 titan. Varje nivå kommer från ett fynd av samma nivå.
-const NIVA_FARG = { 1: 'blå', 2: 'röd', 3: 'svartgrå', 4: 'guld', 5: 'titan' };
+// filamentnivåer: 1 vanlig plast → 2 röd PETG → 3 svartgrå kolfiber → 4 guldkomposit → 5 Tippium (blandas i labbet, kan inte malas). Varje nivå kommer från ett fynd av samma nivå.
+const NIVA_FARG = { 1: 'blå', 2: 'röd', 3: 'svartgrå', 4: 'guld', 5: 'tippium' };
 const nivaFor = (id) => VAROR[id]?.niva || VAROR[id]?.fil || VAROR[id]?.malTill || 0;
 const nivaText = (n) => n === 2 ? `Printas på PETG-skrivaren med röd PETG – den kommer från PETG-kvarnen (tunnor och Rolfs röda backar)` : `Kräver 1 rulle filament nivå ${n} (${NIVA_FARG[n]}) – du har ${antalInv('rulle' + n)}. Mal ett fynd nivå ${n} från Rolf i kvarnen (${n <= 3 ? 'härdade knivar' : 'diamantknivar'}).`;
 const storlekRuta = (id, maskin) => (maskin ? (MASKINER[id]?.storlek || 1) : storlekFor(id));
@@ -723,7 +723,7 @@ const STEG = [
   { del: M18, text: 'Flytta in i huset', klar: () => !!S.flyttatIn },
   sovSteg(18, M18),
   { del: M19, bild: 'byggsats:diamantkniv', text: 'Bygg diamantkvarnen', klar: () => (S.kvarn.kniv || 0) >= 2 },
-  { del: M19, bild: 'fynd4', text: 'Mal en rulle guld', klar: () => (S.stat.maltNiva?.[4] || 0) >= 1 || antalInv('rulle4') > 0 },   // B54: titan hör till efterspelet
+  { del: M19, bild: 'fynd4', text: 'Mal en rulle guld', klar: () => (S.stat.maltNiva?.[4] || 0) >= 1 || antalInv('rulle4') > 0 },   // B54: Tippium hör till efterspelet
   sovSteg(19, M19),
   { del: M20, bild: 'kamin', text: 'Printa och ställ ut en vedkamin', klar: () => harPlacerat('kamin') },
   { del: M20, text: 'Gör skjulet varmt inför vintern – en kamin', klar: () => varme() >= 9 },
@@ -818,7 +818,7 @@ scen.add(kamera);
 sol.position.set(14, 24, 8);
 Object.assign(sol.shadow.camera, { left: -28, right: 28, top: 28, bottom: -28 }); sol.shadow.camera.updateProjectionMatrix();
 
-const FIL1 = 0x2f86ff;   // filament nivå 1: blå (nivå 2 röd, 3 grön, 4 guld, 5 titan)
+const FIL1 = 0x2f86ff;   // filament nivå 1: blå (nivå 2 röd, 3 grön, 4 guld, 5 Tippium)
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 // CZ: eget material per filamentnivå. Varje sak slumpar sin nyans inom nivåns spann – fröet (variant eller id) sparas, så färgen byts inte vid omladdning
 const NIVA_SPANN = {
@@ -826,7 +826,7 @@ const NIVA_SPANN = {
   2: { h: [0.99, 1.018], s: [0.72, 0.92], l: [0.24, 0.38], rough: 0.3, metal: 0.05 },                      /* röd PETG: tegelröd → klarröd, halvblank */
   3: { h: [0.55, 0.62], s: [0.0, 0.07], l: [0.13, 0.26], rough: 0.32, metal: 0.25, monster: 'vav' },     /* svartgrå kolfiber med vävmönster */
   4: { h: [0.115, 0.14], s: [0.85, 1.0], l: [0.44, 0.54], rough: 0.22, metal: 0.55 },                    /* guldkomposit, blank metall */
-  5: { h: [0.57, 0.63], s: [0.03, 0.1], l: [0.66, 0.8], rough: 0.38, metal: 0.45, monster: 'borstad' },  /* titan, ljus borstad metall */
+  5: { h: [0.57, 0.63], s: [0.03, 0.1], l: [0.66, 0.8], rough: 0.38, metal: 0.45, monster: 'borstad' },  /* Tippium, skimrar (A-044) */
 };
 const froTal = (x) => { let h = 2166136261; for (const c of String(x)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return ((h >>> 0) % 10007) / 10007; };
 let varaFro = null;   /* sätts av placera() så att skapaVara får sakens id som frö */
@@ -4373,6 +4373,7 @@ function migreraDK() {
   if (S.kvarn.stor) S.kvarn.stor = false; byt('byggsats:stortratt', null); S.ritningar = S.ritningar.filter((r) => r !== 'stortratt');
   if (S.kvarn.jet) { S.kvarn.jet = false; S.kvarn.turbo = true; }
   if (S.kvarn.kniv) S.kvarn.kniv = 0;
+  byt('fynd5', 'fynd4');   /* A-044: gamla titanfynd blir guldfynd, tyst */
   if (S.auto) { for (const k of ['band', 'lastarm', 'arm', 'laddare']) if (S.auto[k]) S.auto[k] = false; }
   S.kvarn.binge = (S.kvarn.binge || []).filter((g) => g >= 0);   /* blå kvarnen tar aldrig tunga saker */
   if ((S.karraLast || []).filter((v) => SKRAP_SORTER[skrapSort(v)]?.tung).length > 1) {   /* pirran: bara en sak */
@@ -4532,7 +4533,7 @@ interaktor.registrera(kvarn, {
       if ((S.kvarn.kniv || 0) >= n) { ui.toast('De knivarna sitter redan i kvarnen', 'fel'); return; }
       if (n === 2 && !S.kvarn.kniv) { ui.toast('Sätt i de härdade knivarna först', 'fel'); return; }
       taBortVald(); S.kvarn.kniv = n; ljudH('montera'); sparaSnart();
-      ui.toast(n === 1 ? 'Härdade knivar i kvarnen! Nu klarar den röd PETG och kolfiber.' : 'Diamantkvarnen sitter! Guld och titan – kom an.', 'guld'); return;
+      ui.toast(n === 1 ? 'Härdade knivar i kvarnen! Nu klarar den röd PETG och kolfiber.' : 'Diamantkvarnen sitter! Guldet – kom an.', 'guld'); return;
     }
     if (VAROR[valdTyp()]?.malTill) { malFynd(); return; }
     if (bandTyp()) { taBortVald(); S.kvarn.band = true; matarband.visible = true; handelse('placerat', { sak: 'sophallare' }); ljudH('montera'); ui.toast('🗑️ Sophållaren står bakom kvarnen! Töm allt skräp i den – den matar kvarnen själv.', 'guld'); sparaSnart(); return; }
@@ -5664,7 +5665,7 @@ function rolfFyndPaket() {
     if (unika.length && Math.random() < 0.5) return ['sak:' + unika[Math.floor(Math.random() * unika.length)]];
     return Array(n(2600)).fill('sak:fynd3');
   }
-  return Array(n(4000)).fill(Math.random() < 0.6 ? 'sak:fynd4' : 'sak:fynd5');
+  return Array(n(4000)).fill('sak:fynd4');   /* A-044: inga titanfynd */
 }
 const ROLF_RIK = 'Ja vet att du ä rik nu. Hä ä lite spänn. Å nåt ja hitta på tippen. Dä ä nog värt mer än pengarna. MVH ROLF';
 // present → vad Rolf ger tillbaka, och vad han skriver
@@ -6500,6 +6501,7 @@ function startaPappaBesok(kort = !!S.pappaBesok) {
   const dryg = (S.burkMalda || 0) >= 2;
   pappaBesok.scen = !kort ? PAPPA_SCEN : dryg ? [...PAPPA_DRYG[(S.pappaGang || 0) % PAPPA_DRYG.length], ...PAPPA_DRYG_SLUT] : [...PAPPA_KORT[(S.pappaGang || 0) % PAPPA_KORT.length], ...PAPPA_SLUT];
   S.pappaGang = (S.pappaGang || 0) + (kort ? 1 : 0);
+  if (!kort && !(S.sms || []).some((m) => /Pappa kommer förbi i morgon/.test(m.text))) textLogg('brott', 'FEL ORDNING', 'pappas besök före mammas förvarning');   /* A-043 */
   const forsta = !kort, P = forsta ? PAPPA_GRIND.clone() : new THREE.Vector3(SKJUL.x + 3.2, 0, SKJUL.z + 4.2);
   Object.assign(pappaBesok, { aktiv: true, t: 0, steg: 0, fas: 'kommer', P, mm: 0, start: forsta ? new THREE.Vector3(pappaBil.position.x - 1.2, 0, pappaBil.position.z - 1.1) : new THREE.Vector3(P.x + 1, 0, TOMT + 2), rolfStart: new THREE.Vector3(-1.5, 0, TOMT + 2.2), rolfHar: false });
   pappaGubbe.position.copy(pappaBesok.start); pappaGubbe.visible = true;
@@ -7059,7 +7061,7 @@ function uppdateraArstid() {
 // ---------- Respekt ----------
 const BURK_RESPEKT = 4;
 function rolfFyndSms(n) {   // punkt BD: låter som Rolf, inte som ett spelsystem
-  /* DQ E: fyra olika sms, titan finns inte längre */
+  /* DQ E: fyra olika sms, nivå 5 är Tippium */
   return { 2: 'Folk pratar gott om dej. Ja hitta röda backar av riktigt bra plast på tippen. Ja la dom vid grinden. /R', 3: 'Kajsa hitta en låda kolfiberrester bakom husvagnen. Hon ville int ha dom. Grinden. /R', 4: 'Nån har slängt dunkar som glittrar. Guld, tror ja. Eller glitter. Dom står vid grinden. /R' }[n] || '';
 }
 const ROLF_JOBBLAPP = ['Rolf här. Ja har en grej. Lite känslig. Ja la en lapp i postlådan. Läs den o bränn den sen. /R', 'Ny lapp i lådan. Du vet vad de betyder. /R',   // CT: används i ordning, aldrig två gånger
@@ -9068,7 +9070,7 @@ document.querySelector('.ph-dag-chip').onclick = () => oppnaBokmarken();
 function oppnaRespekt() {
   const nasta = RESPEKT_NIVAER.find(([g]) => S.respekt < g);
   const kropp = sektion('Respekt är hur andra ser på dig. Trivsel är hur du själv mår.')
-    + RESPEKT_NIVAER.map(([g, namn], i) => rad({ bild: `<span class="ui-headik" style="width:44px;height:44px;opacity:${S.respekt >= g ? 1 : 0.35}">${IKON.hjarta}</span>`, titel: namn, text: (S.respekt >= g ? 'Upplåst' : `Kräver ${g} i respekt (${g - S.respekt} kvar)`) + ` · ${['tunnor och röda backar ger sånt filament', 'kajaker, kanoter och Rolfs kolfiberrester ger det', 'guldglittriga dunkar ger det', 'titanspån ger det'][i]} · printa ${VAROR[['n2_neon', 'n3_stol', 'n4_staty', 'n5_drake'][i]].namn.toLowerCase()} · du har ${antalInv('rulle' + (i + 2))} rullar` })).join('')
+    + RESPEKT_NIVAER.map(([g, namn], i) => rad({ bild: `<span class="ui-headik" style="width:44px;height:44px;opacity:${S.respekt >= g ? 1 : 0.35}">${IKON.hjarta}</span>`, titel: namn, text: (S.respekt >= g ? 'Upplåst' : `Kräver ${g} i respekt (${g - S.respekt} kvar)`) + ` · ${['tunnor och röda backar ger sånt filament', 'kajaker, kanoter och Rolfs kolfiberrester ger det', 'guldglittriga dunkar ger det', 'labbet blandar det'][i]} · printa ${VAROR[['n2_neon', 'n3_stol', 'n4_staty', 'n5_drake'][i]].namn.toLowerCase()} · du har ${antalInv('rulle' + (i + 2))} rullar` })).join('')
     + sektion('Senast') + ((S.respektLogg || []).map(([d, v, dag]) => `<div class="ph-resp-rad"><b class="${d > 0 ? 'plus' : 'minus'}">${d > 0 ? '+' : ''}${d}</b> ${v} <small>dag ${dag}</small></div>`).join('') || '<div class="ph-resp-rad">Inget än. Ge Rolf något, säg nej till skumma jobb.</div>');
   oppnaRuta(panel({ ikon: 'hjarta', titel: `Respekt ${S.respekt}`, sub: nasta ? `Nästa: ${nasta[1]} vid ${nasta[0]}` : 'Alla nivåer upplåsta', kropp }));
 }
@@ -10263,7 +10265,7 @@ function uppdatera(dt) {
       if (sags && !harSagt(st.tanke)) { const nastaI = S.steg; if (st.tankeForst) tanke(st.tanke, 'mål klart', 'STORY', () => S.steg <= nastaI);   /* EA: tanken förklarar nästa mål – kastas om det redan är gjort */ else paket([{ tanke: st.tanke }], { om: 1200, vikt: 'REAKTION', varfor: 'mål klart' }); }   /* DT: skräptanken kommer före nästa mål */   /* högst en tanke per mål, en gång */
       malBockText = malRaw; if (malKlartTid <= malVisadTid) malKlartTid = performance.now();   /* EC#5: fristen räknas från första mål som klarats sedan rutan senast byttes */ handelse('malKlart', { id: st.id || 'steg' + (S.steg - 1), del: st.del, nasta: STEG[S.steg]?.id || 'steg' + S.steg });
       if (st.lapp && !S.lappar.includes(st.lapp)) visaLapp(st.lapp);
-      if (nasta0(S.steg)?.sov && STEG[S.steg].sms && !(S.smsSkickat || []).includes(STEG[S.steg].sms[1])) { const sv = STEG[S.steg]; S.smsSkickat = [...(S.smsSkickat || []), sv.sms[1]]; paket([{ sms: sv.sms }], { om: 4000, villkor: () => STEG[S.steg] === sv, varfor: 'EC: kvällens förvarning' }); }
+      if (nasta0(S.steg)?.sov && STEG[S.steg].sms && !(S.smsSkickat || []).includes(STEG[S.steg].sms[1])) { const sv = STEG[S.steg]; S.smsSkickat = [...(S.smsSkickat || []), sv.sms[1]]; paket([{ sms: sv.sms }], { om: 4000, vikt: 'STORY', varfor: 'EC: kvällens förvarning (A-043: stryks aldrig – somnar man kommer den först i morgon)' }); }
       if (st.sms && !st.sov && !(S.smsSkickat || []).includes(st.lapp || st.sms[1])) { S.smsSkickat = [...(S.smsSkickat || []), st.lapp || st.sms[1]]; sms(st.sms[0], st.sms[1]); }
       const nasta = STEG[S.steg];
       if (nasta?.startLapp && !S.lappar.includes(nasta.startLapp)) { visaLapp(nasta.startLapp); }
@@ -11263,7 +11265,7 @@ setInterval(() => {
     S.filGava = [...(S.filGava || []), 3]; S.post.tillMig = [...S.post.tillMig, 'sak:fynd3', 'sak:fynd3', 'sak:fynd3']; visaPostInne();
     paket([{ sms: ['rolf', rolfFyndSms(3)] }], { om: 800 }); sparaSnart();
   }
-  if (/guld eller titan/.test(t) && !(S.filGava || []).includes(4) && !antalInv('fynd4') && !antalInv('fynd5')) {
+  if (/guld eller Tippium|guld\b/.test(t) && !(S.filGava || []).includes(4) && !antalInv('fynd4') && !antalInv('fynd5')) {
     S.filGava = [...(S.filGava || []), 4]; S.post.tillMig = [...S.post.tillMig, 'sak:fynd4', 'sak:fynd4']; visaPostInne();
     paket([{ sms: ['rolf', rolfFyndSms(4)] }], { om: 800 }); sparaSnart();
   }
@@ -13219,7 +13221,7 @@ paHandelse('skyltKlar', () => kedja('skylt'));
 paHandelse('placerat', ({ sak }) => { if (sak === 'leveranslada') ui.toast('Leveranslådan är på – skrivarna printar vidare av sig själva.', 'guld'); });   // U002
 paHandelse('placerat', ({ sak }) => {   // punkt BD: mamma om jacuzzin, 30 s efter att den står ute (en gång)
   if (sak !== 'jacuzzi' || S.mammaJacuzzi) return; S.mammaJacuzzi = true; sparaSnart();
-  paket(MAMMA_SVAR_K2.map((t) => ({ sms: ['mamma', t] })), { om: 30000, vikt: 'STORY', varfor: 'EC#2: mammas jacuzzi-serie' });
+  paket(MAMMA_SVAR_K2.map((t) => ({ sms: ['mamma', t] })), { om: 8000, vikt: 'STORY', varfor: 'EC#2: mammas jacuzzi-serie' });
 });
 paHandelse('lastatAv', () => kedja('lastat'));
 paHandelse('placerat', ({ sak }) => {

@@ -15,7 +15,7 @@ export const LINJER = [
   { nr: 2, namn: 'Röda linjen', filament: 'Röd PETG', farg: '#e5484d', z: 6, kapitel: 2, text: 'Kapitel 2' },
   { nr: 3, namn: 'Svartgrå linjen', filament: 'Svartgrå kolfiber', farg: '#4a4e55', z: 0.5, kapitel: 3, text: 'Kapitel 3' },
   { nr: 4, namn: 'Guldlinjen', filament: 'Guldkomposit', farg: '#e9b949', z: -5, kapitel: 4, text: 'Kapitel 4' },
-  { nr: 5, namn: 'Titanlinjen', filament: 'Titan', farg: '#b8c4d6', z: -10.5, kapitel: 4, text: 'Kapitel 4 / efterspelet' },
+  { nr: 5, namn: 'Labbet', filament: 'Tippium', farg: '#b8c4d6', z: -10.5, kapitel: 4, text: 'Kapitel 4 / efterspelet' },
 ];
 
 // platserna i varje linje (x = mitten, b × d = storlek). DT: kvarn, torn och första skrivaren står inom ca 2–3 m. Skrivarplatserna är stora nog för en L-skrivare.
