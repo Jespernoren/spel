@@ -214,6 +214,11 @@ const VAROR = {
   h_stickning: { namn: 'Halvfärdig stickning', ikon: '', unik: true, beskr: 'Stickorna sitter kvar. Ge den till Rolf – lägg den i hans postlåda.' },
   julbord: { namn: 'Julbord med ljusstakar', ikon: '', jul: true, syns: () => S.dag >= 22 && !S.julFirad && !antalInv('julbord'), beskr: 'Långbord och ljusstakar. Gratis – det är jul.' },
   g_kapsyl: { namn: 'Kapsyl från Göran', ikon: '', kop: true, beskr: 'Blank. Göran tyckte den var fin.' },
+  guldflaga: { namn: 'Guldflaga från Göran', ikon: '', kop: true, pris: 40, beskr: 'Den glimmar. Göran hittade den i tippens botten.' },   /* A-045 */
+  vaskpanna: { namn: 'Vaskpanna', ikon: '', kop: true, beskr: 'Klicka och håll på ådern i tippen. Släpp när det glittrar mest.' },
+  ring: { namn: 'Birgittas vigselring', ikon: '', kop: true, beskr: 'Det står Rolf & Birgitta 1979 på insidan.' },
+  guldranna: { namn: 'Guldrännan (Rolfs takrännor)', ikon: '', kop: true, placerbar: true, radie: 0.6, beskr: 'Vattnet rinner, glittret fastnar i ribborna. Ställ den vid tippen.' },
+  extraktor: { namn: 'Extraktorn (Alis servett)', ikon: '', kop: true, placerbar: true, radie: 0.5, beskr: 'En gammal diskmaskin med jetmotor. Den säger pling vid guld.' },
   g_skruv: { namn: 'Blank skruv från Göran', ikon: '', kop: true, beskr: 'Rostfri. Göran har smak.' },
   fagelskramma: { namn: 'Fågelskrämma', ikon: '', trivsel: 3, placerbar: true, radie: 0.35, syns: () => S.dag >= 6 && (!!S.goranSedd || STEG[S.steg]?.id === 'goran6'), lyx: 'Skrämmer fåglar. Enligt förpackningen.' },
   fagelbad: { namn: 'Fågelbad', ikon: '', trivsel: 8, placerbar: true, radie: 0.35, syns: () => S.dag >= 6 && (!!S.goranSedd || STEG[S.steg]?.id === 'goran6'), lyx: 'Ett litet bad på en fot. Måsar gillar sånt. Tydligen.' },
@@ -2091,6 +2096,19 @@ function skapaVaraGrund(typ) {
   } else if (typ === 'n4_staty') {
     const gu = nivaMat(4, varaFro ?? typ);   // CZ
     g.add(at(box(0.5, 0.2, 0.5, mat(0x777777)), 0, 0.1, 0), at(box(0.3, 0.5, 0.2, gu), 0, 0.45, 0), at(new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 10), gu), 0, 0.82, 0), at(cyl(0.16, 0.16, 0.03, gu), 0, 0.93, 0), at(box(0.05, 0.3, 0.05, gu), 0.2, 0.75, 0).rotateZ(-0.6));
+  } else if (typ === 'vaskpanna') {   /* A-045 */
+    g.add(at(cyl(0.22, 0.12, 0.07, mat(0x3a3a3a, { metalness: 0.6, roughness: 0.4 }), 20), 0, 0.04, 0), at(cyl(0.08, 0.08, 0.005, mat(0xe8c33a, { emissive: 0x6a4a00 }), 12), 0, 0.075, 0));
+  } else if (typ === 'guldflaga' || typ === 'ring') {
+    const gu = mat(0xf2c94c, { metalness: 0.9, roughness: 0.25, emissive: 0x4a3500 });
+    g.add(typ === 'ring' ? at(new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.012, 8, 20), gu), 0, 0.06, 0) : at(box(0.08, 0.01, 0.06, gu), 0, 0.03, 0));
+  } else if (typ === 'guldranna') {
+    const pl = mat(0x8a8f96, { metalness: 0.5, roughness: 0.5 });
+    g.add(at(box(1.6, 0.08, 0.3, pl), 0, 0.5, 0).rotateZ(-0.12), at(box(1.6, 0.18, 0.02, pl), 0, 0.58, 0.15).rotateZ(-0.12), at(box(1.6, 0.18, 0.02, pl), 0, 0.58, -0.15).rotateZ(-0.12));
+    for (let i = 0; i < 6; i++) g.add(at(box(0.02, 0.06, 0.28, mat(0xf2c94c, { emissive: 0x3a2a00 })), -0.6 + i * 0.24, 0.56 - i * 0.03, 0));
+    for (const x of [-0.7, 0.7]) g.add(at(box(0.05, 0.5, 0.05, mat(0x6b4a2b)), x, 0.25 - x * 0.08, 0));
+  } else if (typ === 'extraktor') {
+    g.add(at(box(0.6, 0.85, 0.6, mat(0xe8e8e2)), 0, 0.43, 0), at(box(0.5, 0.12, 0.02, mat(0x333333)), 0, 0.78, 0.31), at(cyl(0.12, 0.16, 0.4, mat(0x2b2b2b, { metalness: 0.5 }), 14), 0, 1.05, 0));
+    g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 6), mat(0xff4040, { emissive: 0xaa0000 })), 0.2, 0.78, 0.32));
   } else if (typ === 'n5_drake') {
     const ti = nivaMat(5, varaFro ?? typ);   // CZ
     g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.3, 10, 8), ti), 0, 0.45, 0)); g.children[g.children.length - 1].scale.set(1.4, 0.8, 0.8);
@@ -5814,6 +5832,7 @@ interaktor.registrera(postlada, {
       else if (l.startsWith('rolf')) S.rolf.aktiv = true;
       visaPostInne(); ljud.plock(); sparaSnart(); return;
     }
+    if (valdTyp() === 'ring') { taBortVald(); flygIn('ring'); S.ringHosRolf = S.dag; sparaSnart(); return; }   /* A-045: ringen tillbaka till Rolf */
     if (valdTyp() === 'h_stickning') { taBortVald(); flygIn('h_stickning'); S.h78stickning = true; S.stickningHosRolf = S.dag; sparaSnart(); return; }   /* A-050: Rolf hämtar den, svaret kommer med nästa brev (kedjeregeln) */
     if (S.post.tillMig.length) { hamtaBeloning(); return; }
     if (vantarPaNummer()) { geRolfNummer(); return; }
@@ -13364,6 +13383,72 @@ setInterval(() => {
   if (S.vantarTanke === 1 && harStorysak('burk_vante')) { S.vantarTanke = 2; paket([{ tanke: 'Mamma hade rätt. Säg inget.' }], { om: 3000, vikt: 'REAKTION', varfor: 'A-046: grytvantarna' }); skratt('grytvantarna'); }
   if (S.kolf?.jet && !S.sockorJet && harStorysak('burk_sockor')) { S.sockorJet = true; paket([{ tanke: 'Raggsockorna runt jetmotorn. Äntligen passar de nåt.' }], { vikt: 'REAKTION', varfor: 'A-046: raggsockorna' }); skratt('raggsockorna'); }
 }, 3000);
+/* ---------- A-045: linje 4 guld – Göran hittar ådern, vaskpannan, Birgittas ring, guldrännan och extraktorn ----------
+   Allt kommer från sitt ursprung och hamnar i handen. Guldet blir fynd nivå 4 (diamantkvarnen gör guldrullar av dem). */
+const GULD_T = {
+  goran: 'Vad har Göran nu?', rolf: 'Dä glimmar där nere. Dä har dä alltid gjort.',
+  vaskAli: 'En vaskpanna. Farfar vaskade i Lappland. Han hittade ingenting. Ta den.',
+  miss: ['En kapsyl.', 'En kapsyl. Igen.', 'En tand. Jag tänker inte fråga.', 'Grus. Väldigt fint grus.', 'Bara vatten. Jag är blöt nu.'],
+  ring: 'Det står Rolf & Birgitta 1979 på insidan.', ringTack: 'Ja trodde ja tappa den för gott. Tack. Takrännorna vid grinden e dina. Dom här låg bara. Gör nåt vettigt. /Rolf',
+  servett: 'Min fru säger att jag ska visa dig. Han har ritat i tjugofem år. På servetter. Ingen har fått se. Det här är den första. Jag byggde den i natt.',
+  porslin: 'Den har TUR, sa mormor alltid!!', staty: '…Dä där e ju ja.', pling: 'Pling!',
+};
+const ader = new THREE.Group(); {   /* sprickan i tippens botten – glimmar */
+  ader.add(at(box(2.2, 0.06, 0.4, mat(0x1a140c)), 0, 0.08, 0));
+  for (let i = 0; i < 22; i++) ader.add(at(box(0.07, 0.04, 0.07, mat(0xf2c94c, { emissive: 0xc89a00, emissiveIntensity: 1.2, metalness: 0.8, roughness: 0.2 })), -1 + Math.random() * 2, 0.13, -0.15 + Math.random() * 0.3));
+  ader.position.set(TIPP.x + 1.5, tippHojd(TIPP.x + 1.5, TIPP.z + 1), TIPP.z + 1);   /* på kullen */ ader.visible = false; scen.add(ader);
+}
+const aderYta = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.4, 0.8), traffMat); aderYta.position.set(0, 0.2, 0); ader.add(aderYta);
+let vaskTid = 0, vaskNere = false;
+interaktor.registrera(aderYta, {
+  text: () => valdTyp() === 'vaskpanna' ? (vaskNere ? `Vaskar … ${vaskTid.toFixed(1)} s – släpp när det glittrar mest` : 'Klicka och håll för att vaska') : 'Guldådern. Med en vaskpanna kunde man vaska här.',
+  aktivera: () => { if (valdTyp() !== 'vaskpanna') { tanke('Jag behöver något att vaska med.', 'A-045', 'REAKTION'); } },
+});
+function vaskSlapp(t) {
+  S.vask = (S.vask || 0) + 1; ljudH('plopp');
+  if (!S.ringFunnen && S.vask >= (S.ringVask || (S.ringVask = 3 + Math.floor(Math.random() * 5)))) {   /* garanterad inom 8 vaskningar */
+    S.ringFunnen = true; laggTill('ring'); paket([{ tanke: GULD_T.ring }], { vikt: 'STORY', varfor: 'A-045: Birgittas ring' }); sparaSnart(); return;
+  }
+  const bra = t >= 1.5 && t <= 2.4, tur = S.porslinDag === S.dag ? 2 : 1;
+  if (bra && Math.random() < Math.min(0.9, (0.35 + Math.min(0.3, (S.vaskBra || 0) * 0.03)) * tur)) {
+    S.vaskBra = (S.vaskBra || 0) + 1; laggTill('fynd4'); ljudH('chaching'); ui.toast(`✨ Guld! (${t.toFixed(1)} s)`, 'guld'); skratt('första guldet');
+  } else {
+    const i = Math.min(GULD_T.miss.length - 1, S.vaskMiss = (S.vaskMiss || 0) + 1) - 1;
+    paket([{ tanke: (t < 1.5 ? 'För tidigt. ' : t > 2.4 ? 'För sent. ' : '') + GULD_T.miss[Math.max(0, i)] }], { vikt: 'REAKTION', varfor: 'A-045: missen eskalerar' }); if (i >= 2) skratt('vaskmiss');
+  }
+  sparaSnart();
+}
+setInterval(() => {   /* håll-och-släpp, 10 gånger i sekunden */
+  if (!ui.igang) return;
+  const nere = anvandNere && interaktor.hovrad === aderYta && valdTyp() === 'vaskpanna';
+  if (nere) { vaskTid += 0.1; vaskNere = true; }
+  else if (vaskNere) { vaskNere = false; vaskSlapp(vaskTid); vaskTid = 0; }
+}, 100);
+setInterval(() => {
+  if (!ui.igang || sover) return;
+  ader.visible = !!S.guldAder;
+  // 1. Göran hittar ådern (dag 16, eller när tippen är städad ner till botten)
+  if (!S.guldAder && S.dag >= 16 && performance.now() - dagStartTid > 45000) {
+    S.guldAder = S.dag; laggTill('guldflaga'); tittaMot(ader.position.x, ader.position.z, 2);
+    paket([{ tanke: GULD_T.goran }, { replik: ['rolf', GULD_T.rolf, `Rolf: ”${GULD_T.rolf}”`] }], { vikt: 'STORY', varfor: 'A-045: Göran och guldflagan' }); skratt('Göran hittar guld'); sparaSnart();
+  }
+  // 2. Ali ger vaskpannan nästa dag
+  if (S.guldAder && S.dag > S.guldAder && !S.vaskpannaGiven) { S.vaskpannaGiven = true; laggTill('vaskpanna'); paket([{ sms: ['ali', GULD_T.vaskAli], gava: 'vaskpanna' }], { vikt: 'STORY', varfor: 'A-045: vaskpannan från Ali' }); }
+  // 3. ringen tillbaka → takrännorna (kedjeregeln: tacket kommer nästa dag)
+  if (S.ringHosRolf && S.dag > S.ringHosRolf && !S.rannaGiven) { S.rannaGiven = true; S.rolfRing = true; S.post.tillMig = [...S.post.tillMig, 'sak:guldranna']; visaPostInne(); paket([{ brev: ['rolf', GULD_T.ringTack, 'Brev från Rolf'] }], { vikt: 'STORY', varfor: 'A-045: ringen tillbaka' }); }
+  // 4. Alis servett: extraktorn två dagar efter rännan
+  if (S.rannaGiven && harPlacerat('guldranna') && !S.extraktorGiven && S.dag >= (S.guldAder || 99) + 3) { S.extraktorGiven = true; laggTill('extraktor'); paket([{ sms: ['ali', GULD_T.servett], gava: 'extraktor' }], { vikt: 'STORY', varfor: 'A-045: Alis servett' }); }
+  // 5. porslinshunden vid rännan ger dubbel chans en dag
+  const r = placerade.find((p) => p.typ === 'guldranna'), h = placerade.find((p) => p.typ === 'burk_porslin');
+  if (r && h && h.mesh.position.distanceTo(r.mesh.position) < 4 && S.porslinDag !== S.dag) { S.porslinDag = S.dag; if (!S.porslinSms) { S.porslinSms = true; paket([{ sms: ['mamma', GULD_T.porslin] }], { om: 4000, varfor: 'A-045: porslinshunden' }); } }
+  // 6. rännan och extraktorn ger guld av sig själva
+  const nu = performance.now();
+  if (r && nu - (S._ranna || 0) > (S.porslinDag === S.dag ? 30000 : 60000)) { S._ranna = nu; laggTill('fynd4'); }
+  const ex = placerade.find((p) => p.typ === 'extraktor');
+  if (ex && nu - (S._extr || 0) > 20000) { S._extr = nu; if (Math.random() < 0.12) { tanke(Math.random() < 0.5 ? 'Den spottade ut en kalsong.' : 'Den spottade ut Görans kapsyl.', 'A-045: extraktorn', 'REAKTION'); skratt('extraktorn spottar'); } else { laggTill('fynd4'); ljudH('chaching'); } }
+  // Guldstatyn av Rolf
+  if (!S.statyRolf && harPlacerat('n4_staty')) { S.statyRolf = true; paket([{ replik: ['rolf', GULD_T.staty, `Rolf: ”${GULD_T.staty}”`] }], { om: 3000, vikt: 'STORY', varfor: 'A-045: Guldstatyn' }); skratt('Rolf ser statyn'); }
+}, 2000);
 /* ---------- A-047: Radio-Kjelle och Gun-Britt (talsyntes tills ElevenLabs-omgången) ----------
    Kjelle sänder en gång per dag från Alis radio (hörs genom dörren) om det spelaren byggde dagen innan, och hälsar alltid på Gunnar (Rolfs kompis).
    Ankare: dag 1 = efter avlastningen, annars 90 s in på dagen (EL 30). Bara ord som är kända (kand). */
@@ -13630,7 +13715,7 @@ function malKontrakt(st = STEG[S.steg]) {
   const text = String(stegText(st) || ''), namner = [...new Set(KAND_ORD.filter(([re]) => re.test(text)).map(([, k]) => k))];
   return { namner, kanGoras: () => (!st.las || upplast(st.las)) && namner.every((n) => kand(n)), klar: st.klar, rad: () => { try { return nastaAtgard(malRaw)?.[1] || ''; } catch (e) { return ''; } } };
 }
-window.__printahem = { ritaStart: () => ritaStart(), vev3d: () => vev, dagMoment: (d) => dagMoment(d), SAKER, malKontrakt, rullLapp, THREE, TS, visaLapp: (id) => visaLapp(id), fotografera: (p) => fotografera(p), POLAROID, aliNejFor: (t) => aliNejFor(t), ROLF_LISTA: () => ROLF, STORY_SAKER, hoppaOver, prataNu, volym, rostLage: () => rostLage(), pratarNu: () => performance.now() < pratarTill, valjOsagd, sakModell, ikonModell, ikonLista, renderaIkon, kand, regelvakt, upplast, lasUpp, UPPLAS_FLASK, finns, startTorn, vevEl, MONTERA, TA_PA, taPaVald, monteraPa, notis, malSynligt: () => malVisasSteg === S.steg, kanalLage: () => ({ pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: !medEl2.hidden, butik: !ui.butiksOverlay.hidden, overlay: !ui.overlay.hidden, aktiv: kanalAktiv?.text?.slice(0, 40), fri: kanalFri - performance.now(), pratar: pratarTill - performance.now(), lugn: lugnTill - performance.now(), n: kanal.length }), paket, oppnaSaljlada, TRATT_MAX, giAliBonus, tangentTips, stromMax, byggBodTest: () => { Object.assign(bodVal, { ok: true, x: BOD.x, z: BOD.z, r: BOD.r }); byggBodHar(); return !!S.bod; }, aliVill, smsKortKlart, smsFram, smsBubbla, ritaDN, markeraAliIdag, dnRaknare, filTillg, dragTorn, tornPlats, tornRullar, slangNar, rullTornAktivera, flyttaSkrivarRullar, anvandSkrivare,
+window.__printahem = { vaskSlapp: (t) => vaskSlapp(t), ader, ritaStart: () => ritaStart(), vev3d: () => vev, dagMoment: (d) => dagMoment(d), SAKER, malKontrakt, rullLapp, THREE, TS, visaLapp: (id) => visaLapp(id), fotografera: (p) => fotografera(p), POLAROID, aliNejFor: (t) => aliNejFor(t), ROLF_LISTA: () => ROLF, STORY_SAKER, hoppaOver, prataNu, volym, rostLage: () => rostLage(), pratarNu: () => performance.now() < pratarTill, valjOsagd, sakModell, ikonModell, ikonLista, renderaIkon, kand, regelvakt, upplast, lasUpp, UPPLAS_FLASK, finns, startTorn, vevEl, MONTERA, TA_PA, taPaVald, monteraPa, notis, malSynligt: () => malVisasSteg === S.steg, kanalLage: () => ({ pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: !medEl2.hidden, butik: !ui.butiksOverlay.hidden, overlay: !ui.overlay.hidden, aktiv: kanalAktiv?.text?.slice(0, 40), fri: kanalFri - performance.now(), pratar: pratarTill - performance.now(), lugn: lugnTill - performance.now(), n: kanal.length }), paket, oppnaSaljlada, TRATT_MAX, giAliBonus, tangentTips, stromMax, byggBodTest: () => { Object.assign(bodVal, { ok: true, x: BOD.x, z: BOD.z, r: BOD.r }); byggBodHar(); return !!S.bod; }, aliVill, smsKortKlart, smsFram, smsBubbla, ritaDN, markeraAliIdag, dnRaknare, filTillg, dragTorn, tornPlats, tornRullar, slangNar, rullTornAktivera, flyttaSkrivarRullar, anvandSkrivare,
   framsteg, skrivarText, framstegKvarn,
   dbgKanal: () => ({ nu: performance.now(), pratarTill, pratarVem, kanalFri, aktiv: kanalAktiv && kanalAktiv.text, n: kanal.length, pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: medEl2.hidden, butik: ui.butiksOverlay.hidden, ov: ui.overlay.hidden }),
   textLogg: () => TEXTLOGG.slice(), pratar: () => !!kanalAktiv || kanal.length > 0 || performance.now() < pratarTill || performance.now() < kanalFri, kanal: () => ({ aktiv: kanalAktiv && { vem: kanalAktiv.vem, text: kanalAktiv.text, vikt: kanalAktiv.vikt }, ko: kanal.map((x) => ({ vem: x.vem, text: x.text, vikt: x.vikt })) }), rostMatning, renderaIkon, ikonLista, handelseLogg, ritningInfo: () => { const c = ritning ? new THREE.Box3().setFromObject(ritning).getCenter(new THREE.Vector3()) : null; return { nyckel: ritningNyckel, linjer: ritning?.children.length || 0, printar: printarFram.size, mitt: c && [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(2)] }; }, prata, elHelFig: () => [...(elHel || [])], avkodat, forladdaRepliker, introLager, trampa: (sek) => { trampTest = sek; }, veva: (sek) => { vevTest = sek; }, siktaVagg: (v) => { vaggTest = v; }, vaggarKlara: () => vaggarKlara(), tapetKlara: () => tapetKlara(), nastaInred, prisNu, helaRullar, extruderFull, gardMal, kanLyfta, karraFull, harGava, valdKarra, BARA_SKRAP, SKRAP_RACKVIDD, utlagerKap, startPlats, sattFonster: () => { const n = fonsterLista().length; S.hem = { ...(S.hem || {}), fonster: [...fonsterLista(), { vagg: Object.keys(VAGGAR).filter((k) => !/dorr|fram/i.test(k))[n % 3] || Object.keys(VAGGAR)[0], u: 0.5 }] }; ritaFonster(); uppdateraSkjul(); sparaSnart(); }, medKo, medEl2, uppdatera, stegText: () => { const st = STEG[S.steg]; return st ? (typeof st.text === 'function' ? st.text() : st.text) : ''; }, valdTyp: () => valdTyp(), ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, h78, goran: goranTest, polaroid: polaroidTest, kollaN, nLappLast, N_BEST, nLada, tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, webbOrdrar, oppnaDator, BESOK, besok, startaBesok, ata, MAT_VARDE, printLinje, migreraDK, kolfKvarn, kolfAktivera, uppdateraKolf, nastaGamer, trimNiva, plockaUppPlacerad, plockaSkrap, karraRing, foremal, variantFor, valjTyp, husvagnKlick, gastScen, gastDelKlar, husvagn: () => husvagnG, rolfBesok, sackRulle, karraKlick, karraMal, pappaGubbe, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer };
