@@ -257,7 +257,7 @@ Object.assign(VAROR, {
   arkad: { namn: 'Arkadmaskin', ikon: '🕹️', recept: 3000, pris: 0, gram: 9000, tid: 80, trivsel: 18, placerbar: true, radie: 0.45, syns: () => S.kapitel >= 3, lyx: 'En riktig arkadmaskin. AI:n gjorde den retro. Med flit.' },
   simrig: { namn: 'Racingsimulator', ikon: '🏎️', recept: 4500, pris: 0, gram: 10000, tid: 90, trivsel: 22, placerbar: true, radie: 0.7, syns: () => S.kapitel >= 3, lyx: 'Racingstol, ratt och pedaler. Snabbare än sopbilen.' },
   biljard: { namn: 'Biljardbord', ikon: '🎱', recept: 5000, pris: 0, gram: 15000, tid: 110, trivsel: 20, placerbar: true, radie: 1.1, syns: () => S.kapitel >= 3, lyx: 'Rolf säger att han är ”proffs”. Han är inte proffs.' },
-  jacuzzi: { namn: 'Jacuzzi', ikon: '🛁', recept: 15000,   /* dag 15: ca 9 000 kr hos Ali (×0,6) */ pris: 0, gram: 9000, tid: 140, trivsel: 30, placerbar: true, radie: 1.1, syns: () => S.kapitel >= 3, lyx: 'Varmt bubbelbad vid soptippen. Lyx är relativt.' },
+  jacuzzi: { namn: 'Jacuzzi', ikon: '🛁', recept: 15000,   /* dag 15: ca 9 000 kr hos Ali (×0,6). AX g30/g31: 9 000 g tog 30 min (skräpet räcker inte) → 6 000 g */ pris: 0, gram: 6000, tid: 120, trivsel: 30, placerbar: true, radie: 1.1, syns: () => S.kapitel >= 3, lyx: 'Varmt bubbelbad vid soptippen. Lyx är relativt.' },
   dator: { namn: 'Gamingdator med RGB', ikon: '💻', recept: 3500, pris: 0, gram: 2500, tid: 60, trivsel: 20, placerbar: true, radie: 0.25, syns: () => S.kapitel >= 3, lyx: 'Chassit printar du – Ali har en låda med begagnade datordelar.' },
 });
 const GAMER = ['gamingstol', 'gamingbord', 'dator', 'hogtalare', 'ledpinne', 'akustik', 'neonskylt', 'figurhylla', 'projektor', 'arkad', 'simrig', 'biljard', 'soffa', 'kyl'];
