@@ -11,7 +11,7 @@ for (let i = 0; i < 25; i++) {
   await p.waitForTimeout(1000);
 }
 const ut = [];
-await p.evaluate(() => { const h = window.__printahem, S = h.S; S.kvarnStar = true; const k = h.kvarn.getWorldPosition(new h.THREE.Vector3()); h.spelare.pos.set(k.x + 0.4, 0, k.z + 2.4); h.spelare.yaw = 0.15; h.spelare.pitch = -0.3; });
+await p.evaluate(() => { const h = window.__printahem, S = h.S; S.kvarnStar = true; h.ritaStart(); const k = h.kvarn.getWorldPosition(new h.THREE.Vector3()); h.spelare.pos.set(k.x + 0.4, 0, k.z + 2.4); h.spelare.yaw = 0.15; h.spelare.pitch = -0.3; });
 await p.waitForTimeout(1500); await p.screenshot({ path: '/home/claude/jespernoren/spel/verktyg/test-eg-vev.png' });
 const v0 = await p.evaluate(() => window.__printahem.vev3d()?.visible ?? null);
 await p.evaluate(() => { const h = window.__printahem; h.laggTill('byggsats:kvarnmotor'); });

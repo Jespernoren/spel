@@ -5,13 +5,13 @@ const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args
 const p = await (await b.newContext({ viewport: { width: 1280, height: 720 } })).newPage(); const fel = [];
 p.on('pageerror', (e) => fel.push('sidfel: ' + e.message));
 await p.goto(url); await p.waitForTimeout(6000);
-for (let i = 0; i < 60 && !(await p.evaluate(() => !!window.__printahem?.ui?.igang)); i++) {
+for (let i = 0; i < 25; i++) {
   const namn = await p.$('.ph-namn input'); if (namn) { await namn.fill('Test'); await p.keyboard.press('Enter'); }
-  else await p.evaluate(() => { for (const k of document.querySelectorAll('button')) { const r = k.getBoundingClientRect(); if (r.width && /Börja$|BÖRJA|Hoppa över|Starta|Fortsätt/i.test(k.textContent)) { k.click(); break; } } });
+  else await p.evaluate(() => { for (const k of document.querySelectorAll('button')) { const r = k.getBoundingClientRect(); const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); if (r.width && top && (top === k || k.contains(top)) && /Börja$|BÖRJA|Hoppa över|Starta|Fortsätt/i.test(k.textContent.trim())) { k.click(); break; } } });
   await p.waitForTimeout(1000);
 }
 const ut = [];
-await p.evaluate(() => { const h = window.__printahem, S = h.S; S.kvarnStar = true; S.kvarn.ut = 600;
+await p.evaluate(() => { const h = window.__printahem, S = h.S; S.kvarnStar = true; S.kvarn.ut = 600; h.ritaStart();
   const k = h.kvarn.getWorldPosition(new h.THREE.Vector3()); h.spelare.pos.set(k.x + 0.2, 0, k.z + 2.6); h.spelare.yaw = 0; h.spelare.pitch = -0.25; });
 await p.waitForTimeout(1500);
 const v = await p.evaluate(() => { const l = window.__printahem.rullLapp; return { syns: l.visible, v: l.userData.v }; });
