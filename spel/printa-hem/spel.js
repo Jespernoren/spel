@@ -7731,7 +7731,7 @@ const MAMMA_BURK_ARG = [
 ];
 function malBurk() {
   const t = valdTyp();
-  if (STORY_SAKER.has(t)) { ljud.fel(); tanke('Den malar jag inte. Den behövs.', 'A-050: storysak', 'REAKTION'); return; }   /* A-050 */
+  if (STORY_SAKER.has(t) || storyKvar(t)) { ljud.fel(); tanke('Den malar jag inte. Den behövs.', 'A-050: storysak', 'REAKTION'); return; }   /* A-050 */
   const vart = iTratten(350, false);
   if (!vart) { varna(extruderFull() ? 'rulle' : 'tratt'); return; }
   taBortVald();
@@ -8037,7 +8037,7 @@ function klockan() {
 const klockText = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 // Ali köper (nästan) allt: prints fullpris, byggsatser och delar för sitt plastvärde, dyra köp för halva priset
 /* AX g40: det som storyn behöver går inte att sälja förrän det har gjort sitt (A-050-regeln för guldet) */
-const storyKvar = (typ) => (typ === 'guldflaga' && !S.flagaBengt) || (typ === 'guldklump' && !S.klumpBengt) || (typ === 'kapskiva' && !S.kapskivaHosRolf) || typ === 'vaskpanna' || typ === 'hacka';
+const storyKvar = (typ) => (typ === 'guldflaga' && !S.flagaBengt) || (typ === 'guldklump' && !S.klumpBengt) || (typ === 'kapskiva' && !S.kapskivaHosRolf) || typ === 'vaskpanna' || typ === 'hacka' || (typ === 'motorsag' && !S.slyRojt);   /* A-075: pappas motorsåg behövs tills slyet är röjt */
 const saljPris = (typ) => {
   if (storyKvar(typ)) return 0;
   if (VAROR[typ]?.pris > 0) return Math.round(VAROR[typ].pris * (1 + trimNiva('pris') * 0.1) * (1 + trivselBonus()));   // trivselbonus: hos Ali, i säljlådan och i leveranslådan
@@ -14871,8 +14871,8 @@ setInterval(() => { try {
   const p = spelare.pos, nara = p.x > SLY.minX - 3 && p.x < SLY.maxX + 3 && p.z > SLY.minZ - 3 && p.z < SLY.maxZ + 3;
   const solMal = /solcellspark/i.test(String(stegText(STEG[S.steg]) || ''));
   if (nara && !S.slyRojt && !harSagt(SLY_T.fro) && !solMal) tanke(SLY_T.fro, 'A-066: frö – slyet', 'REAKTION');
-  if (nara && solMal && !S.slyRojt && !S.motorsagTanke) { S.motorsagTanke = S.dag; sparaSnart(); tanke(SLY_T.vill, 'A-066: solcellsparken behöver platsen', 'STORY'); }
-  if (S.motorsagTanke && S.dag > S.motorsagTanke && !S.motorsagFatt) { S.motorsagFatt = S.dag; sparaSnart(); paket([{ ge: () => { laggTill('motorsag'); } }, { brev: ['pappa', SLY_T.pappa, 'Lapp från pappa'] }], { om: 6000, vikt: 'STORY', varfor: 'A-066: pappas motorsåg i posten' }); }
+  if (nara && solMal && !S.slyRojt && !S.motorsagTanke) { S.motorsagTanke = S.dag; S.motorsagTankeTid = S.speltid || 0; sparaSnart(); tanke(SLY_T.vill, 'A-066: solcellsparken behöver platsen', 'STORY'); }
+  if (S.motorsagTanke && !S.motorsagFatt && (S.dag > S.motorsagTanke || (S.speltid || 0) - (S.motorsagTankeTid ?? S.speltid ?? 0) > 45)) {   /* A-075: pappas motorsåg kommer samma dag (ca 45 s efter tanken) – solcellsparken är dagens mål och man kan inte sova ifrån det */ S.motorsagFatt = S.dag; sparaSnart(); paket([{ ge: () => { laggTill('motorsag'); } }, { brev: ['pappa', SLY_T.pappa, 'Lapp från pappa'] }], { om: 6000, vikt: 'STORY', varfor: 'A-066: pappas motorsåg i posten' }); }
 } catch (e) { console.warn('sly', e); } }, 1000);
 setInterval(() => { try { grop.userData.flodTex.offset.x -= 0.01; } catch {} }, 50);   // floden rinner österut
 // grinden: rostig, igensvetsad, skylten TILLTRÄDE FÖRBJUDET och sly framför

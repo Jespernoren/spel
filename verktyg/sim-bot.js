@@ -388,6 +388,8 @@
     /* A-066: solcellsparkens plats är igenvuxen – gå dit (tanken om motorsågen), vänta på pappas motorsåg, såga bort slyet */
     if (/solcellspark/i.test(String(H.stegText?.() || '')) && !S.slyRojt) {
       const kvar = (H.slyKlumpar || []).filter((k) => !k.borta);
+      if (!H.antalInv('motorsag') && S.motorsagFatt) { const ki = (S.kistan || []).findIndex((x) => x?.typ === 'motorsag');   /* AX g77: fulla fickor – sågen hamnade i kistan, hämta den */
+        if (ki >= 0) { const k = S.hotbar.findIndex((x, j) => j > 0 && x && x.typ !== 'motorsag'); if (k > 0) { S.kistan.push({ ...S.hotbar[k] }); S.hotbar[k] = null; } S.kistan.splice(ki, 1); H.laggTill('motorsag'); handling('hämtar pappas motorsåg ur kistan'); return; } }
       if (H.antalInv('motorsag') && kvar.length) { valj('motorsag'); await klick(kvar[0].g, 'slyet (motorsåg)', 2.6); await vanta(2.5); return; }
       if (!S.motorsagTanke && kvar.length) { await gaTill(kvar[0].g, 3.2, 'slyet bakom tippen'); await vanta(2); return; }
       await tjana(S.mynt + 120, 'väntar på pappas motorsåg'); return;
