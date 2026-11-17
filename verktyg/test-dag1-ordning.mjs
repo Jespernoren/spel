@@ -43,7 +43,7 @@ await p.goto(url); await p.waitForTimeout(3500);
 await p.click('.br-starta').catch(() => {}); await p.waitForTimeout(2000);
 for (let i = 0; i < 30 && !(await p.evaluate(() => !!window.__printahem?.S).catch(() => false)); i++) await p.waitForTimeout(1000);
 p.on('pageerror', (e) => console.log('[sidfel]', e.message));
-await p.evaluate(([u, m, c]) => { window.__vt.start(); window.__simUtforlig = u; window.__simStegMax = m; window.__simCykelForst = c; }, [!!process.env.UTFORLIG, +(process.env.SIM_STEGMAX || 15), !!process.env.CYKEL_FORST]);   /* A-071: CYKEL_FORST=1 ställer cykeln före generatorn */
+await p.evaluate(([u, m, c]) => { window.__vt.start(); window.__simUtforlig = u; window.__simStegMax = m; window.__simCykelForst = c[0]; window.__simStromDirekt = c[1]; }, [!!process.env.UTFORLIG, +(process.env.SIM_STEGMAX || 15), [!!process.env.CYKEL_FORST, !!process.env.STROM_DIREKT]]);   /* A-073: STROM_DIREKT=1 tar generatorn direkt i stället för att vänta på hjälpen */   /* A-071: CYKEL_FORST=1 ställer cykeln före generatorn */
 await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.meta.url), 'utf8') });
 // skärmdump varje gång målet byts (eller en sida visas) – i verklig tid medan boten kör
 let n = 0, forra = '';
@@ -63,17 +63,18 @@ for (const h of mal) {
   const akt = [...L].reverse().find((e) => e.kalla === 'sak' && e.tot < h.tot); const aktSlut = akt && L.find((e) => e.kalla === 'klar' && e.text === akt.text && e.tot >= akt.tot);
   const grans = Math.max(h.tot, aktSlut && aktSlut.tot > h.tot ? aktSlut.tot + 2 : 0) + 4;
   const kv = L.find((e) => ['sak', 'sak-del', 'toast', 'meddelande', 'notis', 'butiksbubbla', 'aliSalt', 'sms', 'varför', 'kvittens', 'duns', 'bubbla', 'ljud'].includes(e.kalla) && e.tot >= h.tot - 2 && e.tot <= grans && !/^\(/.test(e.text) && e.vem !== 'berattare');
+  const kvB = !kv && L.find((e) => e.kalla === 'kvittens' && e.varfor === ((h.text.match(/id=(\S+)/) || [])[1]) && e.tot <= h.tot + 4);   /* A-073: kvittensen sades i butiken (spelet pausar där) */
   const v = m ? m.tot - h.tot - +((String(m.varfor || '').match(/meny ([\d.]+) s/) || [])[1] || 0) : null;   // tid i butiken och på pausade sidor räknas inte
-  rader.push({ t: h.tot, id: (h.text.match(/id=(\S+)/) || [])[1] || h.text, kv: kv ? `${kv.vem}: ${kv.text}` : '', mal: m?.text || '', v, sida: !!sida });
+  rader.push({ t: h.tot, id: (h.text.match(/id=(\S+)/) || [])[1] || h.text, kv: kv ? `${kv.vem}: ${kv.text}` : kvB ? `${kvB.vem}: ${kvB.text}` : '', mal: m?.text || '', v, sida: !!sida });
 }
 const brott = L.filter((e) => e.kalla === 'brott' && ['SEN KVITTENS', 'SPÖKE', 'FEL BYGGEFFEKT', 'NÄSTA UTAN KONTUR', 'GENERISK MARKERING', 'FAST I HANDEN', 'TYST MÅL', 'PIL UTOM BILD', 'MÅL UTAN BILD'].includes(e.vem));
-const skylt = L.find((e) => (e.kalla === 'händelse' && e.vem === 'skyltKlar') || (e.kalla === 'varför' && e.varfor === 'skylt')), sidaSkylt = skylt && L.find((e) => e.kalla === 'meddelande' && e.tot >= skylt.tot && /MITT/.test(e.text));
+const skylt = L.find((e) => (e.kalla === 'händelse' && e.vem === 'skyltKlar') || (e.kalla === 'varför' && e.varfor === 'skylt') || (e.kalla === 'händelse' && e.vem === 'placerat' && /skylt/.test(e.text))) || L.find((e) => e.kalla === 'lapp' && /Spikade ihop en skylt/.test(e.text)), sidaSkylt = skylt && L.find((e) => e.kalla === 'meddelande' && e.tot >= skylt.tot - 2 && /MITT|skylt/i.test(e.text));
 const promptSkylt = L.find((e) => ['sak', 'sak-del'].includes(e.kalla) && /Men först en skylt/.test(e.text));
 const duns = L.filter((e) => e.kalla === 'duns'), print = L.filter((e) => e.kalla === 'brott' && e.vem === 'FEL BYGGEFFEKT');
 console.log('| tid | mål klart | kvittens | nästa mål | s |'); for (const x of rader) console.log(`| ${x.t.toFixed(1)} | ${x.id} | ${x.kv.slice(0, 50)} | ${x.mal.slice(0, 50)} | ${x.v == null ? '–' : x.v.toFixed(1)}${x.sida ? ' (sida)' : ''} |`);
 ut.push([`dag 1 spelad: ${mal.length} mål klara`, mal.length >= 10 && r.dagar.length >= 1]);
 ut.push([`prompten före skylten: "${promptSkylt?.text || '–'}"`, !!promptSkylt && (!skylt || promptSkylt.tot < skylt.tot)]);
-ut.push([`dagbokssidan om skylten ${sidaSkylt ? (sidaSkylt.tot - skylt.tot).toFixed(1) + ' s' : 'saknas'} efter skyltKlar (högst 2 s)`, !!sidaSkylt && sidaSkylt.tot - skylt.tot <= 2]);
+ut.push([`dagbokssidan om skylten ${sidaSkylt ? Math.abs(sidaSkylt.tot - skylt.tot).toFixed(1) + ' s' : 'saknas'} från skyltKlar (högst 2 s)`, !!sidaSkylt && Math.abs(sidaSkylt.tot - skylt.tot) <= 2]);
 { const sena = rader.filter((x) => x.v != null && x.v > 4 && !x.sida); ut.push([`nästa mål inom 4 s efter varje händelse (sidor som pausar undantagna): ${sena.map((x) => `${x.id} ${x.v.toFixed(1)} s`).join(', ') || 'alla'}`, !sena.length]); }
 { const utan = rader.filter((x) => !x.kv); ut.push([`varje mål har en kvittens inom 4 s: ${utan.map((x) => x.id).join(', ') || 'alla'}`, !utan.length]); }
 ut.push([`storebrors skrivare och kvarnen ställs ner med en duns (${duns.length} dunsar)`, duns.length >= 2]);

@@ -403,11 +403,11 @@
         if (H.antalInv('nyckelring') < 3 && fil(sk) >= 100) { await strom(6); await printa({ typ: 'nyckelring' }); return; }
         await ali(() => saljAllt(), 'sälja nyckelringar'); return;
       }
-      case 'rullSlut': { const sk = H.skrivare.find((x) => x.id === 'g1'); if (fil(sk) >= 100) { await strom(4); await printa({ typ: 'nyckelring' }); return; } await ali(() => saljAllt(), 'sälja nyckelringar'); return; }   // DT
-      case 'kop': await ali(async () => { await kopHosAli('gammalkvarn'); }, 'kvarnen'); return;
+      case 'aliKvarn': await ali(async () => {}, 'kvarnen (Alis gåva)'); return;   /* A-073 */
+      case 'strom': if (window.__simStromDirekt) { await klick(H.vagCykel, 'cykeln (generatorn)'); return; } await vanta(4); return;   /* A-073: gåtan – boten väntar på hjälpen (STROM_DIREKT: tar generatorn direkt) */
       case 'kopBatteri': await ali(async () => { await kopHosAli('cykelbatteri'); }, 'bilbatteriet'); if (!S.batteriKopt && !H.antalInv('byggsats:cykelbatteri')) await tjana(60, 'bilbatteriet'); return;
       case 'kvarn': valj('byggsats:gammalkvarn'); await klick(H.startYta, 'kvarnens ruta'); return;
-      case 'flaska': { const sk = H.skrivare.find((x) => x.id === 'g1'); await filament(sk, fil(sk) + 900); return; }
+      case 'flaska': { if (!H.hand.saker.length) await plockaLass({}); await tomIKvarnen(); await mal(); return; }   /* A-073: kvarnen före skrivaren – mal tills tråden kommer */
       case 'powerbank': await ali(async () => { await vanta(4); }, 'Ali (powerbanken)'); return;   /* ED8 */
       case 'kopGrip': await kopMaskin('grip'); return;
       case 'printGrip': if (!H.antalInv('byggsats:grip') && !S.grip) await printa({ maskin: 'grip' }); return;
