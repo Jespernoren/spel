@@ -224,7 +224,11 @@
     const g = val.maskin ? 0 : (H.VAROR[val.typ]?.gram || 0), stor = g >= 2000 && l.some((x) => x.gen >= 2);   /* AX g48: stora saker (kaminen) får inte plats på Skrivare S – ta den största, hellre i kö */
     const fri = l.filter((x) => !x.jobb && !x.klar && (!stor || x.gen >= 2));
     return fri[0] || (stor ? l.find((x) => x.gen >= 2) : null) || l[0] || skrivareAlla()[0]; };
-  async function taUt(sk) { if (!sk.klar) return; const n = H.antalUt(sk); await klick(sk.mesh, 'skrivaren'); handling(`tar ut ${n} st ur skrivaren`); }
+  async function taUt(sk) { if (!sk.klar) return; const n = H.antalUt(sk); await klick(sk.mesh, 'skrivaren'); handling(`tar ut ${n} st ur skrivaren`);
+    if (sk.klar && H.antalUt(sk) === n) {   /* AX g50: fulla fickor – lägg en sak i kistan och ta ut igen (kapskivan fastnade dag 16) */
+      const k = S.hotbar.findIndex((x, j) => j > 0 && x && x.typ !== sk.klar && !/^(grip|magnet|sackkarra|sopsack|ryggkorg|ryggsack2)$/.test(x.typ));
+      if (k > 0) { S.kistan.push({ ...S.hotbar[k] }); handling(`fulla fickor – lägger ${S.hotbar[k].typ} i kistan`); S.hotbar[k] = null; H.ritaHotbar?.(); await klick(sk.mesh, 'skrivaren'); }
+    } }
   async function printa(val, { vantaKlart = true } = {}) {
     const namn = val.maskin ? H.MASKINER[val.maskin].namn : H.VAROR[val.typ].namn;
     const sk = ledig(val); if (!sk) return false;
@@ -332,6 +336,7 @@
     let x, z, pa = null, hy = 0;
     const m = H.MASKINER[typ];
     if (m?.kraverBord) { const b = H.placerade.find((p) => p.typ === 'bord' && !p.har); if (!b) { handling('inget ledigt bord'); return false; } x = b.x; z = b.z; pa = b.id; }
+    else if (typ === 'kamin') { x = H.SKJUL.x + 0.8; z = H.SKJUL.z - 0.6; }   /* AX g50: kaminen ska stå i skjulet (värme 9), inte i raden utanför */
     else { const pl = H.nastaPlats(typ); if (pl) { x = pl.x; z = pl.z; hy = pl.y || 0; } else { const n = H.placerade.length; x = H.SKJUL.x - 2 + (n % 4) * 1.1; z = H.SKJUL.z + H.SKJUL.d / 2 + 1.5 + Math.floor(n / 4) * 1.1; } }
     await ga(x + 1.2, z + 1.2, 'platsen för ' + (m?.namn || H.VAROR[typ]?.namn || typ).toLowerCase()); valj(t); await vanta(1);
     H.taBortInv(t); const p = { id: 'p' + (S.nastaId++), typ, x, z, r: 0, r8: 0, ...(pa ? { pa } : {}), ...(hy ? { hy } : {}) }; H.placera(p);

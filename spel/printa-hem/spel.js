@@ -4492,6 +4492,7 @@ function uppdateraPetg(dt) {
   }
 }
 // ---------- DF: linje 3 – kolfiberkvarnen, rullbandet från tippen, slangfördelaren och jetmotorn ----------
+const KOLF_DAG_K4 = 3;   /* A-042: kajaker per dag med sopbilen i kapitel 4 (+0–1) */
 const KOLF_FART = 140, KOLF_STROM = 6, KOLF_MAX = 6, KOLFBAND_TID = 14;
 const kolfMax = () => KOLF_MAX + VANING_PLUS[trimNiva('torn_kolf')];   /* gram/s, ström/s, rullar på kvarnen, sekunder mellan varje kajak på bandet */
 const KOLF_FORSTA = 'Den åker själv. Jag står bara och tittar. Det här är framtiden.';
@@ -7126,9 +7127,9 @@ function materialMedSopbilen() {
   const L = S.matLas || {}, tipp = (sort) => { const [x, z] = tippPlats(); laggSkrap(x, z, variantFor(sort), Math.random() * 6.3); };
   if (L.rod === 'vantar') { for (let i = 0; i < 6; i++) tipp('tunna'); for (let i = 0; i < 4; i++) tipp('rodback'); L.rod = 'klar'; }
   if (L.kolf === 'vantar') { for (let i = 0; i < 4; i++) tipp('kajak'); L.kolf = 'klar'; }
-  const idag = S.matIdag?.dag === S.dag ? S.matIdag : (S.matIdag = { dag: S.dag, rod: 2 + Math.floor(Math.random() * 2), kolf: 1 + Math.floor(Math.random() * 2) });
+  const idag = S.matIdag?.dag === S.dag ? S.matIdag : (S.matIdag = { dag: S.dag, rod: 2 + Math.floor(Math.random() * 2), kolf: ((S.kapitel || 1) >= 4 ? KOLF_DAG_K4 : 1) + Math.floor(Math.random() * 2) });   /* A-042: i kapitel 4 bär kolfibern ekonomin (g49 svalt på kajaker dag 17–18) */
   if (L.rod === 'klar' && idag.rod > 0 && skrapLista.filter((x) => x.userData.tung && x.userData.sort !== 'kajak').length < 14) { tipp(Math.random() < 0.6 ? 'tunna' : 'rodback'); idag.rod--; if (idag.rod > 0 && Math.random() < 0.5) { tipp('tunna'); idag.rod--; } }
-  if (L.kolf === 'klar' && idag.kolf > 0 && skrapLista.filter((x) => x.userData.sort === 'kajak').length < 8) { tipp('kajak'); idag.kolf--; }
+  for (let n = (S.kapitel || 1) >= 4 ? 2 : 1; n > 0 && L.kolf === 'klar' && idag.kolf > 0 && skrapLista.filter((x) => x.userData.sort === 'kajak').length < 8; n--) { tipp('kajak'); idag.kolf--; }
   sparaSnart();
 }
 const SOPBIL_TUNNOR = 2;   // BI: från kapitel 2 tippar sopbilen också två tunnor per last (röd PETG)
