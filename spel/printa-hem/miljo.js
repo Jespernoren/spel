@@ -12,7 +12,7 @@ const ANTAL_GRAS = 900;        // grästuvor (instansierade, billiga)
 const ANTAL_BLOMMOR = 0;
 const VIND = 0.025;            // hur mycket träden vajar (radianer)
 
-export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
+export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans, hojd }) {   /* hojd: valfri (x, z) => markens höjd (A-064/A-066) */
   let fro = 11;
   const rnd = () => ((fro = (fro * 9301 + 49297) % 233280) / 233280);
   const mellan = (a, b) => a + rnd() * (b - a);
@@ -52,7 +52,9 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans }) {
       if (Math.sin(x * 0.23 + 1) * Math.sin(z * 0.19) > 0.82) c.lerp(jord, 0.55);
       skifta(c, 0, 0, (rnd() - 0.5) * 0.03);
       farg.push(c.r, c.g, c.b);
+      if (hojd) p.setY(i, hojd(x, z));
     }
+    if (hojd) geo.computeVertexNormals();
     geo.setAttribute('color', new THREE.Float32BufferAttribute(farg, 3)); markBas = Float32Array.from(farg);
     const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 }));
     m.receiveShadow = true; scen.add(m); mark = m;

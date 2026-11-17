@@ -20,6 +20,8 @@ export class Spelare {
     this.kanslighet = opt.kanslighet ?? 0.0022;
     this.granser = opt.granser || null;  // { minX, maxX, minZ, maxZ }
     this.hinder = [];                    // THREE.Box3[] som man inte kan gå igenom
+    this.markFn = opt.markFn || null;    // valfri (x, z) => markens höjd (backar, gropar, svackor). Utan den är marken 0
+    this.maxKlattra = opt.maxKlattra ?? 0.6;  // med markFn: högsta kant man kan kliva upp på i ett steg (brantare = vägg)
     this.yaw = opt.yaw ?? 0;
     this.pitch = 0;
     this.vy = 0;
@@ -147,8 +149,9 @@ export class Spelare {
   #flytta(dx, dz) {
     // står man redan fast i något (t.ex. landat i ett hinder) får man alltid gå ut
     const fast = this.#krock();
-    this.pos.x += dx; if (!fast && this.#krock()) this.pos.x -= dx;
-    this.pos.z += dz; if (!fast && this.#krock()) this.pos.z -= dz;
+    const brant = () => this.markFn && this.markFn(this.pos.x, this.pos.z) - this.pos.y > this.maxKlattra;   // för brant uppför = vägg
+    this.pos.x += dx; if (!fast && (this.#krock() || brant())) this.pos.x -= dx;
+    this.pos.z += dz; if (!fast && (this.#krock() || brant())) this.pos.z -= dz;
     const g = this.granser;
     if (g) {
       this.pos.x = Math.max(g.minX + this.radie, Math.min(g.maxX - this.radie, this.pos.x));
@@ -159,7 +162,7 @@ export class Spelare {
   /** Höjden man står på: golvet (0) eller toppen av ett hinder man är ovanför. */
   #markHojd() {
     const p = this.pos, r = this.radie * 0.6;
-    let h = 0;
+    let h = this.markFn ? this.markFn(p.x, p.z) : 0;
     for (const b of this.hinder) {
       if (b.max.y > h && b.max.y <= p.y + this.stegHojd &&
           p.x > b.min.x - r && p.x < b.max.x + r && p.z > b.min.z - r && p.z < b.max.z + r) h = b.max.y;
