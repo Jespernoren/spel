@@ -322,12 +322,12 @@
   }
   async function placera(t) {
     const typ = t.startsWith('byggsats:') ? t.split(':')[1] : t;
-    let x, z, pa = null;
+    let x, z, pa = null, hy = 0;
     const m = H.MASKINER[typ];
     if (m?.kraverBord) { const b = H.placerade.find((p) => p.typ === 'bord' && !p.har); if (!b) { handling('inget ledigt bord'); return false; } x = b.x; z = b.z; pa = b.id; }
-    else { const pl = H.nastaPlats(typ); if (pl) { x = pl.x; z = pl.z; } else { const n = H.placerade.length; x = H.SKJUL.x - 2 + (n % 4) * 1.1; z = H.SKJUL.z + H.SKJUL.d / 2 + 1.5 + Math.floor(n / 4) * 1.1; } }
+    else { const pl = H.nastaPlats(typ); if (pl) { x = pl.x; z = pl.z; hy = pl.y || 0; } else { const n = H.placerade.length; x = H.SKJUL.x - 2 + (n % 4) * 1.1; z = H.SKJUL.z + H.SKJUL.d / 2 + 1.5 + Math.floor(n / 4) * 1.1; } }
     await ga(x + 1.2, z + 1.2, 'platsen för ' + (m?.namn || H.VAROR[typ]?.namn || typ).toLowerCase()); valj(t); await vanta(1);
-    H.taBortInv(t); const p = { id: 'p' + (S.nastaId++), typ, x, z, r: 0, r8: 0, ...(pa ? { pa } : {}) }; H.placera(p);
+    H.taBortInv(t); const p = { id: 'p' + (S.nastaId++), typ, x, z, r: 0, r8: 0, ...(pa ? { pa } : {}), ...(hy ? { hy } : {}) }; H.placera(p);
     handling(`ställer ut ${(m?.namn || H.VAROR[typ]?.namn || typ).toLowerCase()}`); await vanta(0.5); return true;
   }
   async function gePresent(v) {

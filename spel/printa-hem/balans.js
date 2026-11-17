@@ -55,6 +55,7 @@ export const STROM_BAS = 100;           // batteriet vid skrivaren rymmer så h�
 export const BANK_PLUS = 100;           // varje batteribank lagrar så här mycket mer
 export const TRAMP_PER_S = 12;          // ström per sekund när man trampar
 export const SOL_PER_S = 4;             // ström per sekund per solpanel – en panel driver Skrivare S (4/s) helt själv
+export const VINDKRAFT_PER_S = 40;     // EE tillägg 2: vindkraftverket på backen – guldlinjen drar mycket
 export const SOLPARK_PER_S = 14;        // en solcellspark: sex paneler – mer än du hinner trampa
 export const MOTOR_STROM = 1;           // ström per sekund när motorn mal
 
@@ -185,6 +186,7 @@ export const MASKIN_SIFFROR = {
   kvarnmotor: { ritning: 50, delar: 1, gram: 500, tid: 10 },
   solpark: { ritning: 4000, delar: 4, gram: 2400, tid: 24 },
   bank: { ritning: 1330, delar: 2, gram: 600, tid: 12 },
+  vindkraft: { ritning: 12000, delar: 4, gram: 3200, tid: 30 },   /* EE tillägg 2: vindkraftverket på backen i norr, dag 19 */
   korg: { ritning: 60, delar: 1, gram: 300, tid: 10 },     // punkt AX: sopsäcken dag 2, ca 60 kr
   ryggkorg: { ritning: 120, delar: 2, gram: 500, tid: 12 },   // punkt AX: ryggkorgen dag 3
   ryggsack2: { ritning: 670, delar: 2, gram: 500, tid: 12 },
@@ -243,8 +245,8 @@ export const FLASK_KEDJA = {
 
   mala: ['kvarnmotor', 'turbomotor'],
   trampa: ['vindsnurra'],
-  strom: ['cykelbatteri', 'vindsnurra2', 'vindsnurra3', 'sol', 'bank', 'solpark'],   // EE tillägg: vindsnurra 3 (blå nivå 5), sedan sol – Skrivare M och L drar mer än vinden ger
-  skrivare: ['rullstall', 'trim_skrivare', 'skrivare2', 'trim_skrivare2', 'trim_skrivare3', 'skrivare3'],   /* EE: rullställ och skrivartrim dag 2, Skrivare M dag 3, trim 2 dag 4, trim 3 dag 5, L dag 6 */
+  strom: ['cykelbatteri', 'vindsnurra2', 'vindsnurra3', 'sol', 'bank', 'solpark', 'bank2', 'solpark2', 'vindkraft'],   /* EE tillägg 2: ett batteri för alla linjer – ny kapacitet på ny plats: taket (d6) → gården (d8–9) → bank 2 (d12) → ängen (d17) → backen (d19) */   // EE tillägg: vindsnurra 3 (blå nivå 5), sedan sol – Skrivare M och L drar mer än vinden ger
+  skrivare: ['rullstall', 'trim_skrivare', 'skrivare2', 'trim_skrivare2', 'trim_skrivare3', 'skrivare3', 'kolfskrivare'],   /* EE tillägg 2: L efter PETG-skrivaren (d8), kolfiberskrivaren av flaskhalsen (d12) */   /* EE: rullställ och skrivartrim dag 2, Skrivare M dag 3, trim 2 dag 4, trim 3 dag 5, L dag 6 */
   inkomst: ['kruka'],
 };
 // reserv: står ett mål och väntar på sin flaskhals så här länge (s spelad tid) låses det upp ändå, så att ingen fastnar
