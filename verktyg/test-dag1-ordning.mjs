@@ -43,7 +43,7 @@ await p.goto(url); await p.waitForTimeout(3500);
 await p.click('.br-starta').catch(() => {}); await p.waitForTimeout(2000);
 for (let i = 0; i < 30 && !(await p.evaluate(() => !!window.__printahem?.S).catch(() => false)); i++) await p.waitForTimeout(1000);
 p.on('pageerror', (e) => console.log('[sidfel]', e.message));
-await p.evaluate(([u, m]) => { window.__vt.start(); window.__simUtforlig = u; window.__simStegMax = m; }, [!!process.env.UTFORLIG, +(process.env.SIM_STEGMAX || 15)]);
+await p.evaluate(([u, m, c]) => { window.__vt.start(); window.__simUtforlig = u; window.__simStegMax = m; window.__simCykelForst = c; }, [!!process.env.UTFORLIG, +(process.env.SIM_STEGMAX || 15), !!process.env.CYKEL_FORST]);   /* A-071: CYKEL_FORST=1 ställer cykeln före generatorn */
 await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.meta.url), 'utf8') });
 // skärmdump varje gång målet byts (eller en sida visas) – i verklig tid medan boten kör
 let n = 0, forra = '';
@@ -66,7 +66,7 @@ for (const h of mal) {
   const v = m ? m.tot - h.tot - +((String(m.varfor || '').match(/meny ([\d.]+) s/) || [])[1] || 0) : null;   // tid i butiken och på pausade sidor räknas inte
   rader.push({ t: h.tot, id: (h.text.match(/id=(\S+)/) || [])[1] || h.text, kv: kv ? `${kv.vem}: ${kv.text}` : '', mal: m?.text || '', v, sida: !!sida });
 }
-const brott = L.filter((e) => e.kalla === 'brott' && ['SEN KVITTENS', 'SPÖKE', 'FEL BYGGEFFEKT'].includes(e.vem));
+const brott = L.filter((e) => e.kalla === 'brott' && ['SEN KVITTENS', 'SPÖKE', 'FEL BYGGEFFEKT', 'NÄSTA UTAN KONTUR', 'GENERISK MARKERING', 'FAST I HANDEN'].includes(e.vem));
 const skylt = L.find((e) => (e.kalla === 'händelse' && e.vem === 'skyltKlar') || (e.kalla === 'varför' && e.varfor === 'skylt')), sidaSkylt = skylt && L.find((e) => e.kalla === 'meddelande' && e.tot >= skylt.tot && /MITT/.test(e.text));
 const promptSkylt = L.find((e) => ['sak', 'sak-del'].includes(e.kalla) && /Men först en skylt/.test(e.text));
 const duns = L.filter((e) => e.kalla === 'duns'), print = L.filter((e) => e.kalla === 'brott' && e.vem === 'FEL BYGGEFFEKT');
@@ -77,7 +77,9 @@ ut.push([`dagbokssidan om skylten ${sidaSkylt ? (sidaSkylt.tot - skylt.tot).toFi
 { const sena = rader.filter((x) => x.v != null && x.v > 4 && !x.sida); ut.push([`nästa mål inom 4 s efter varje händelse (sidor som pausar undantagna): ${sena.map((x) => `${x.id} ${x.v.toFixed(1)} s`).join(', ') || 'alla'}`, !sena.length]); }
 { const utan = rader.filter((x) => !x.kv); ut.push([`varje mål har en kvittens inom 4 s: ${utan.map((x) => x.id).join(', ') || 'alla'}`, !utan.length]); }
 ut.push([`storebrors skrivare och kvarnen ställs ner med en duns (${duns.length} dunsar)`, duns.length >= 2]);
-ut.push([`0 SEN KVITTENS, 0 SPÖKE, 0 FEL BYGGEFFEKT: ${brott.map((e) => `${e.vem} ${e.text}`).join(' · ') || 'inga'}`, !brott.length]);
+{ const pl = L.filter((e) => e.kalla === 'händelse' && e.vem === 'placerat' && /sak=(cykel|generator)$/.test(e.text)).map((e) => e.text.replace('sak=', '')), omb = L.find((e) => e.kalla === 'händelse' && e.vem === 'ombyggd');
+  ut.push([`A-071: ${pl.join(' → ')} → monterad (${process.env.CYKEL_FORST ? 'cykeln först' : 'generatorn först'})`, pl.length === 2 && pl[0] === (process.env.CYKEL_FORST ? 'cykel' : 'generator') && !!omb && omb.tot >= Math.max(...L.filter((e) => e.kalla === 'händelse' && e.vem === 'placerat' && /sak=(cykel|generator)$/.test(e.text)).map((e) => e.tot))]); }
+ut.push([`0 SEN KVITTENS, 0 SPÖKE, 0 FEL BYGGEFFEKT, 0 NÄSTA UTAN KONTUR, 0 GENERISK MARKERING, 0 FAST I HANDEN: ${brott.map((e) => `${e.vem} ${e.text}`).join(' · ') || 'inga'}`, !brott.length]);
 for (const [t, ok] of ut) console.log(ok ? '✓' : '✗', t);
 console.log(`${n} skärmdumpar (verktyg/a063-steg-NN.png)`); console.log(sidfel.length ? 'sidfel: ' + sidfel.slice(0, 3).join(' · ') : 'inga sidfel');
 await b.close(); process.exit(ut.every((x) => x[1]) && !sidfel.length ? 0 : 1);

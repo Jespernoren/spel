@@ -389,10 +389,14 @@
       case 'saljKruka': if (!H.antalInv('kruka')) { await printa({ typ: 'kruka' }); return; } await ali(() => saljAllt(), 'sälja krukan'); return;   /* EF17 */
       case 'lasta': await klick(H.vagCykel, 'cykeln vid vägen'); return;
       case 'stall': valj('skrivareS'); await klick(H.startYta, 'rutan i linje 1'); return;
-      case 'taGen': await klick(H.vagCykel, 'cykeln (generatorn)'); return;   /* A-068 */
-      case 'lyftCykel': H.byt(0); await klick(H.vagCykel, 'cykeln (lyfter den)'); return;
-      case 'stallCykel': valj('cykelS'); await klick(H.startYta, 'rutan vid skrivaren'); return;
-      case 'bygg': valj('byggsats:generator'); await klick(H.vagCykel, 'cykeln'); await vanta(3); return;
+      case 'bygg': {   /* A-071: generatorn och cykeln i valfri ordning – boten växlar (udda dagar generatorn först) */
+        if (!S.generatorTagen && !S.generatorStar) { await klick(H.vagCykel, 'cykeln (generatorn)'); return; }
+        const genForst = !window.__simCykelForst;
+        const stallGen = async () => { valj('byggsats:generator'); await klick(H.startYta, 'generatorns plats'); };
+        const stallCykel = async () => { if (!S.cykelBuren && !S.cykelStar) { H.byt(0); await klick(H.vagCykel, 'cykeln (lyfter den)'); return; } valj('cykelS'); await klick(H.startYta, 'cykelns plats'); };
+        if (genForst ? !S.generatorStar : S.cykelStar) await stallGen(); else if (!S.cykelStar) await stallCykel(); else if (!S.generatorStar) await stallGen();
+        else await vanta(3); return;
+      }
       case 'trampa': await strom(6); await printa({ typ: 'nyckelring' }); return;
       case 'salj': {
         const sk = H.skrivare.find((x) => x.id === 'g1');
