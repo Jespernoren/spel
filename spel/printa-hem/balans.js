@@ -33,7 +33,8 @@ export const RESPEKT_NIVAER = [[25, 'Filament nivå 2 – röd PETG'], [60, 'Fil
 
 // ---------- Rolf ----------
 // Belöningen i postlådan för gåva 1–4 (kapitel 1). 'mynt:N' = kronor, 'extra' = Rolf lägger fler fynd på tippen.
-export const ROLF_BELONING = [['mynt:60', 'nyckel'], ['mynt:120'],   // EQ 39: nyckeln till tippen är tacket för ölhållaren
+export const ROLF_BELONING = [['mynt:60', 'nyckel'], ['mynt:120', 'karra'],   /* A-050: skottkärran är tacket för flasköppnaren */
+    // EQ 39: nyckeln till tippen är tacket för ölhållaren
   ['mynt:250', 'extra'], ['mynt:400', 'extra']];
 // Skumma jobb: [ja, nej] i kronor för jobb 1–5. Varje nytt varv (efter fem jobb) ×(1 + JOBB_VARV).
 export const SKUMMA_JOBB = [[1200, 150], [1800, 220], [2500, 300], [3500, 400], [5000, 550]];

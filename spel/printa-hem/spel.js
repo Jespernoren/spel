@@ -572,7 +572,7 @@ const KAPITEL = [null,
   { namn: 'Fabriken sköter sig själv', mal: 'Bygg maskiner som jobbar åt dig – sen en gamingbod och en jacuzzi.' },
   { namn: 'Folkbokförd', mal: 'Köp marken, bygg ett riktigt hus och bli skriven på Soptippsvägen 1 före jul.' }];
 const KAP1_NAMN = 'Ett hem att bo i', KAP1_MAL = 'Bygg ett hem där du inte fryser – och som är lite trevligt.';
-const D1 = 'Dag 1 – Kom igång', N1 = 'Dag 2 – Tippen och Rolf', N2 = 'Dag 3 – Kärran och taket', N3 = 'Dag 4 – Sol och en skrivare till', N4 = 'Dag 5 – Tätt och mysigt';
+const D1 = 'Dag 1 – Kom igång', N1 = 'Dag 2 – Tippen och Rolf', N2 = 'Dag 3 – En skrivare till och taket', N3 = 'Dag 4 – Kärran och mer vind', N4 = 'Dag 5 – Tätt och mysigt';
 const KAP1_DELAR = [D1, N1, N2, N3, N4];   // en dag = en nivå – du sover dig vidare
 const KAP_DELAR = [null, KAP1_DELAR, [R6, R7, R8, R9, R10], [F11, F12, F13, F14, F15], [M16, M17, M18, M19, M20, M21, M22]];
 const kapitelFor = (del) => KAP_DELAR.findIndex((d) => d && d.includes(del));
@@ -643,16 +643,16 @@ const STEG = [
   { knuff: 'Det drar från dörrhålet. En dörr kan jag printa.', mom: 'Dörren', del: N1, bild: 'byggsats:dorr', text: 'Bygg en dörr till skjulet', klar: () => S.hem?.dorr },
   sovSteg(2, N1),
   ...((r) => [r[0], { knuff: 'Nyckeln till tippen. Där ligger skräpet i högar.', mom: 'Rolfs brev', del: N2, text: 'Hämta 5 skräp på soptippen', klar: () => S.stat.tipp >= 5 }, r[1], r[2]])(rolfSteg(1, N2)),   /* EQ 39: nyckeln kommer med tacket för ölhållaren – tippen dag 3 */
-  // punkt AX: dag 3 – ryggkorgen och skottkärran, Skrivare M (EO 35: skrivarflaskhalsen tidigare) och taket
+  // punkt AX: dag 3 – ryggkorgen, Skrivare M (EO 35: skrivarflaskhalsen tidigare) och taket
   { id: 'kopBatteri', mom: 'Bilbatteriet', las: 'cykelbatteri', del: N2, bild: 'byggsats:cykelbatteri', text: 'Köp Alis gamla bilbatteri', klar: () => !!S.batteriKopt },   /* DT: senast dag 2 */
   { id: 'ryggkorg', mom: 'Bära och mala mer', las: 'ryggkorg', del: N2, bild: 'byggsats:ryggkorg', text: 'Bygg ryggkorgen – bär 10 skräp', klar: () => !!S.ryggkorg },
-  { knuff: 'Kärran rymmer massor. Fyll den och tippa allt i kvarnen.', mom: 'Bära och mala mer', del: N2, bild: 'karra', text: 'Fyll kärran med skräp och töm den i kvarnen', klar: () => (S.stat.karraTomt || 0) >= 1 || S.kapitelKlart },
-  { id: 'sophallare', mom: 'Bära och mala mer', las: 'matarband', del: N2, bild: 'byggsats:matarband', text: 'Bygg sophållaren', klar: () => !!S.kvarn.band || S.kapitelKlart },   // B3
   { mom: 'Skrivare M', del: N2, bild: 'byggsats:bord', text: 'Bygg ett arbetsbord', klar: () => harPlacerat('bord') },
   { mom: 'Skrivare M', las: 'skrivare2', del: N2, bild: 'byggsats:skrivare2', text: 'Bygg Skrivare M på bordet', klar: () => harPlacerat('skrivare2'), lapp: 'skrivare2' },   // CF: en dag tidigare
   { mom: 'Taket', del: N2, bild: 'byggsats:tak', text: 'Lägg plåttak på skjulet', klar: () => S.hem?.tak },
   sovSteg(3, N2),
   ...rolfSteg(2, N3),
+  { knuff: 'Kärran rymmer massor. Fyll den och tippa allt i kvarnen.', mom: 'Kärran', del: N3, bild: 'karra', text: 'Fyll kärran med skräp och töm den i kvarnen', klar: () => (S.stat.karraTomt || 0) >= 1 || S.kapitelKlart },
+  { id: 'sophallare', mom: 'Kärran', las: 'matarband', del: N3, bild: 'byggsats:matarband', text: 'Bygg sophållaren', klar: () => !!S.kvarn.band || S.kapitelKlart },   // B3
   { id: 'pall', mom: 'Pallen', del: N3, bild: 'pall', text: 'Printa en pall', klar: () => printat('pall') >= 1 },
   { id: 'vind4', mom: 'Mer vind', las: 'vindsnurra2', del: N3, bild: 'byggsats:vindsnurra', text: 'Bygg en vindsnurra till', klar: () => antalSnurror() >= 2 || harPlacerat('sol'), lapp: 'sol' },   /* linje 1: två snurror driver S och nästan M */
   { del: N3, bild: 'byggsats:vaggar', text: () => `Isolera två väggar · ${Math.min(2, S.hem?.vagg || 0)}/2`, klar: () => (S.hem?.vagg || 0) >= 2 || S.hem?.vaggar },
@@ -2815,7 +2815,7 @@ function ritaHand() {
     // storleken i famnen följer sakens riktiga storlek – stora saker skymmer sikten och får bökas runt
     const sak = skapaSak(t); sak.updateMatrixWorld(true);
     const v = new THREE.Box3().setFromObject(sak).getSize(new THREE.Vector3()), dim = Math.max(v.x, v.y, v.z);
-    const st = dim >= 0.8 ? Math.min(1.15, dim * 0.6) : Math.max(0.16, Math.min(0.6, dim * 0.75)), stor = st > 0.4;   /* ED10: stora maskiner bärs i ca 60 % av verklig storlek */
+    const st = dim >= 0.8 ? Math.min(1.5, dim * 0.6) : Math.max(0.16, Math.min(0.6, dim * 0.75)), stor = st > 0.4;   /* ED10: stora maskiner bärs i ca 60 % av verklig storlek */
     const m = passaIn(sak, st); m.rotation.set(stor ? 0.1 : 0.25, stor ? 0.25 : 0.5, 0); foremal.add(m);
     foremal.position.set(stor ? 0.28 : 0.34, stor ? -0.5 : -0.3, stor ? -1.0 : -0.75);   /* ED10: lite lågt och åt sidan så att siktet syns */
   }
@@ -5621,9 +5621,9 @@ const ROLF = [   /* EQ 39: ett brev bär en sak – en tjänst eller ett tack, h
   { vara: 'olhallare',
     brev: 'Såg att du printar grejer. Kan du göra en sån här? Kall öl ä viktigt. /Rolf',
     tack: 'Den funkar! Här. Ta så mycke skräp du vill. /Rolf' },   // EQ 39: nyckeln kommer med tacket, efter ölhållaren
-  { vara: 'flaskoppnare', forskott: ['karra'],
-    brev: 'Kajsa knuffa ner min flasköppnare i tippen. Kan du göra en ny, me magnet? Kärran vid lådan ä din. /Rolf',
-    tack: 'PERFEKT öppnare! Skriv ditt nummer på en lapp i lådan, så slipper ja skriva brev. /Rolf' },   // EQ 39: numret efter öppnaren
+  { vara: 'flaskoppnare',
+    brev: 'Kajsa knuffa ner min flasköppnare i tippen. Kan du göra en ny, me magnet? /Rolf',
+    tack: 'PERFEKT öppnare! Kärran vid lådan ä din. Den gnisslar. Precis som ja. Skriv ditt nummer på en lapp, så slipper ja skriva brev. /Rolf' },   /* A-050: kärran är tacket för öppnaren (kedjeregeln), inget förskott */
   { vara: 'grillspade',
     brev: 'Ska grilla på lördag. Min grillspade smälte. Kan du göra en sån här? /Rolf 🍖',
     tack: 'Grillspaden ä ju KONST. Pengar i lådan. /Rolf' },
@@ -5807,7 +5807,7 @@ interaktor.registrera(postlada, {
       else if (l.startsWith('rolf')) S.rolf.aktiv = true;
       visaPostInne(); ljud.plock(); sparaSnart(); return;
     }
-    if (valdTyp() === 'h_stickning') { taBortVald(); flygIn('h_stickning'); S.h78stickning = true; sparaSnart(); paket([{ sms: LAGER_REPLIK.stickning }], { om: 8000 }); ui.toast('Stickningen ligger i Rolfs postlåda.', 'guld'); return; }
+    if (valdTyp() === 'h_stickning') { taBortVald(); flygIn('h_stickning'); S.h78stickning = true; S.stickningHosRolf = S.dag; sparaSnart(); return; }   /* A-050: Rolf hämtar den, svaret kommer med nästa brev (kedjeregeln) */
     if (S.post.tillMig.length) { hamtaBeloning(); return; }
     if (vantarPaNummer()) { geRolfNummer(); return; }
     const pv = valdTyp(); if (pv && ROLF_TACK[pv] && !S.post.tillRolf) {
@@ -6057,7 +6057,7 @@ flaskS();
 const upplast = (id) => !UPPLAS_FLASK[id] || flaskS().upp.includes(id) || (id === 'kruka' && (!!S.krukaErbjuden || S.ritningar.includes('recept:kruka')));
 // förutsättningar: kedjan går i ordning, och vissa saker kräver att det förra finns
 const FLASK_FORE = {
-  ryggkorg: () => !!S.korg, magnet: () => (S.kapitel || 1) >= 2 && !!S.karra, matarband: () => !!S.kvarn.motor && !!S.karra, turbomotor: () => (S.kapitel || 1) >= 2,
+  ryggkorg: () => !!S.korg, magnet: () => (S.kapitel || 1) >= 2 && !!S.karra, matarband: () => !!S.kvarn.motor && !!S.karra,   /* A-050: sophållaren töms med kärran – båda dag 4 */ turbomotor: () => (S.kapitel || 1) >= 2,
   vindsnurra2: () => antalSnurror() >= 1, sol: () => (S.kapitel || 1) >= 2, bank: () => harPlacerat('sol'), solpark: () => harPlacerat('bank') || harPlacerat('sol'),
   skrivare2: () => harPlacerat('bord'), skrivare3: () => (S.kapitel || 1) >= 2 && harPlacerat('skrivare2'), cykelbatteri: () => !!S.powerbank,
 };
@@ -6531,6 +6531,10 @@ function startaPappaBesok(kort = !!S.pappaBesok) {
   pappaBesok.scen = !kort ? PAPPA_SCEN : dryg ? [...PAPPA_DRYG[(S.pappaGang || 0) % PAPPA_DRYG.length], ...PAPPA_DRYG_SLUT] : [...PAPPA_KORT[(S.pappaGang || 0) % PAPPA_KORT.length], ...PAPPA_SLUT];
   S.pappaGang = (S.pappaGang || 0) + (kort ? 1 : 0);
   if (!kort && !(S.sms || []).some((m) => /Pappa kommer förbi i morgon/.test(m.text))) textLogg('brott', 'FEL ORDNING', 'pappas besök före mammas förvarning');   /* A-043 */
+  if (antalInv('h_stickning') > 0 && S.stickningTillbaka && !S.stickningMamma) {   /* A-046: pappa tar med stickningen till mamma */
+    taBortInv('h_stickning'); S.stickningMamma = true; ritaHotbar(); sparaSnart();
+    paket([{ sms: ['mamma', 'Vem har stickat det här?? Det är FINT. Jag gör klart den.'] }], { om: 60000, vikt: 'STORY', varfor: 'A-046: stickningen hos mamma' });
+  }
   const forsta = !kort, P = forsta ? PAPPA_GRIND.clone() : new THREE.Vector3(SKJUL.x + 3.2, 0, SKJUL.z + 4.2);
   Object.assign(pappaBesok, { aktiv: true, t: 0, steg: 0, fas: 'kommer', P, mm: 0, start: forsta ? new THREE.Vector3(pappaBil.position.x - 1.2, 0, pappaBil.position.z - 1.1) : new THREE.Vector3(P.x + 1, 0, TOMT + 2), rolfStart: new THREE.Vector3(-1.5, 0, TOMT + 2.2), rolfHar: false });
   pappaGubbe.position.copy(pappaBesok.start); pappaGubbe.visible = true;
@@ -7254,6 +7258,7 @@ const MAMMA_BURK_ARG = [
 ];
 function malBurk() {
   const t = valdTyp();
+  if (STORY_SAKER.has(t)) { ljud.fel(); tanke('Den malar jag inte. Den behövs.', 'A-050: storysak', 'REAKTION'); return; }   /* A-050 */
   const vart = iTratten(350, false);
   if (!vart) { varna(extruderFull() ? 'rulle' : 'tratt'); return; }
   taBortVald();
@@ -7885,6 +7890,7 @@ function saljGrupp(t) {
 }
 const ALI_NEJ = {
   burk: 'Mammas sylt? Sån skit köper jag inte. Ät upp den.',
+  story: 'Den där köper jag inte. Den är din mammas.',
   mogel: 'Den där har mögel. Ut ur min butik med den.',
   rolf: 'Det där fick du av Rolf. Sånt säljer man inte. Har du inget hjärta?',
   sallsynt: 'Det där är sällsynt. Behåll det. Jag har inte råd ändå.',
@@ -7893,6 +7899,7 @@ const ALI_NEJ = {
   gava: 'Den där är till Rolf. Lägg den i hans brevlåda vid grinden.',
 };
 function aliNejFor(t) {
+  if (STORY_SAKER.has(t)) return t.startsWith('burk_') ? ALI_NEJ.story : ALI_NEJ.sallsynt;   /* A-050 */
   if (t === aktivGava()) return ALI_NEJ.gava;
   if (t === 'rulle') return ALI_NEJ.rulle;
   if (t === 'trumstockar') return ALI_NEJ.trumstockar;
@@ -9739,6 +9746,7 @@ const SMS_POOL = [
   { id: 'r_lukt', bunden: true, vem: 'rolf', nar: () => placerade.some((p) => p.typ.startsWith('burk_mogel')), text: 'Ja kände lukten från sopbilen. FRÅN SOPBILEN. Vad har du där borta? /R' },
   { id: 'b_burk', vem: 'bror', nar: () => (S.burkar || 0) >= 6, text: 'Mamma har gjort lingonsylt i tre dagar. Hela köket är rött. Hon säger att det är till dig. Lycka till.' },
   { id: 'r_burk', vem: 'rolf', nar: () => (S.burkar || 0) >= 10, text: 'Såg alla burkar vid ditt skjul. Försökte ge Kajsa honung. Hon vill inte heller ha den. /R' },
+  { id: 'p_scania', bunden: true, vem: 'pappa', nar: () => (S.kapitel || 1) >= 2 && !!S.pappaBesok, text: 'Scanian står i garaget. Den går inte. Den ska gå.' },   /* A-050: pappas Scania, delarna till labbet i efterspelet (A-048) */
   { id: 'b_pappa_dryg1', vem: 'bror', nar: () => (S.burkMalda || 0) >= 2, text: 'Mamma pratar bara om sylten. Pappa har slutat säga "aha, vad lugnt då". Han säger bara "mm". Det är värre.' },
   { id: 'b_pappa_dryg2', vem: 'bror', nar: () => (S.burkMalda || 0) >= 5, text: 'Pappa sover i garaget. Han säger att det är för att lyssna på motorn. Bilen är avstängd.', svar: [['Säg att jag är ledsen.', 'Jag sa det. Han sa "aha". Sen gick han ut i garaget igen.'], ['Det är inte mitt fel.', 'Okej. Säg det till mamma då. Lycka till.']] },
   { id: 'm_pappa_dryg', bunden: true, vem: 'mamma', nar: () => (S.burkMalda || 0) >= 3, text: 'Pappa är så trött. Han säger att han inte orkar köra fler burkar. Men du har ju ätit upp allt! Han får skärpa sig.' },
@@ -11394,10 +11402,18 @@ const JULSCEN_REPLIK = {
   tal4: ['pappa', 'Pappas tal', 'Skinkan har legat i frysen sen augusti.'],
   tal5: ['pappa', 'Pappas tal', 'Ja … är stolt över dej. Aha. Vad lugnt då.'],
   grater: ['berattare', 'Mamma', 'Mamma gråter.'],
+  halsduk: ['berattare', 'Halsduken', 'Mamma ger Rolf Birgittas stickning, färdig som halsduk. Rolf säger ingenting. Han lägger den om halsen.'],
+  tarta: ['berattare', 'Prinsesstårtan', 'Mamma har med sig en prinsesstårta i stället för skinkan från augusti.'],
+  tartaRolf: ['rolf', 'Rolf', '…Dä ä fredag nånstans.'],
+  helen: ['berattare', 'Helen', 'Helen dansar till kassetten. Som en tvättmaskin.'],
+  helenRolf: ['rolf', 'Rolf', 'Precis som 1987.'],
+  affisch: ['berattare', 'Rolfs Rockers', 'Affischen från 1987 hänger på väggen. Rolf tittar på den länge.'],
 };
 function julRader() {
   const J = JULSCEN_REPLIK, rosor = !!S.tradgard?.rosor, stockar = antalInv('trumstockar') > 0 || harPlacerat('trumstockar') || (S.lagerHittat || []).includes('trumstockar');
   return [...JUL_REPLIK, rosor ? J.bordRosor : J.bordGran, ...(S.goranMaskot ? [J.goran] : []), stockar ? J.stockar : J.kastruller,
+    ...(harPlacerat('r_affisch') ? [J.affisch] : []), ...(S.helen ? [J.helen, J.helenRolf] : []),
+    ...(S.stickningMamma ? [J.halsduk] : []), J.tarta, J.tartaRolf,   /* A-046: julen knyter ihop trådarna */
     ...['tal1', 'tal2', 'tal3', 'tal4', 'tal5'].map((k) => [...J[k], 'fyll']), J.grater];
 }
 function julScen() {
@@ -12251,7 +12267,7 @@ function helenKommer() {
   sms('rolf', HELEN_ROLF_SMS, undefined, true);
   helenNyDag(); ritaHelen(); sparaSnart();
 }
-const helenVillkor = () => !!S.julFirad && agerMark('tippen') && tippStadat() >= 0.85;
+const helenVillkor = () => (S.kapitel || 1) >= 3 && tippStadat() >= 0.6;   /* A-046: Helen kommer i kapitel 3 när tippen är städad till ca 60 % (inte efter julen) */
 // natten: Bettan flyttar, högen växer, morgondagens samtal förbereds
 function helenNatt() {
   const H = S.helen; if (!H) return;
@@ -13300,6 +13316,40 @@ setInterval(() => {
   if (stegId() === 'kopGrip' && S.mynt >= (MASKINER.grip.ritning || 50)) kedja('harRadGrip');
   if ((S.stat.krukaSald || 0) >= 1 && klockan() >= 18 * 60) kedja('morkt');
 }, 500);
+/* ---------- A-050: storysaker kan inte försvinna och kommer garanterat innan de behövs ----------
+   Grytvantarna (röda kvarnen), raggsockorna (jetmotorn), porslinshunden (dag 17), kassetten (julen), stickningen, nyckeln och servetten.
+   De kan inte säljas, malas eller slängas. Mammas paket och Helen skickar dem senast när de behövs, och igen om de saknas. */
+const STORY_SAKER = new Set(['burk_vante', 'burk_sockor', 'burk_porslin', 'hf_kassett', 'h_stickning', 'byggsats:tippnyckel', 'byggsats:servett']);
+function harStorysak(t) { return antalInv(t) > 0 || placerade.some((p) => p.typ === t) || (S.post?.tillMig || []).includes('sak:' + t); }
+const STORY_BEHOV = [
+  { t: 'burk_vante', nar: () => (S.kapitel || 1) >= 2 && !!S.pappaBesok, rep: 'Jag virkade NYA grytvantar. Du tappar ALLT.' },
+  { t: 'burk_sockor', nar: () => (S.kapitel || 1) >= 3, rep: 'Jag stickade NYA. Du tappar ALLT.' },
+  { t: 'burk_porslin', nar: () => S.dag >= 17, rep: 'Porslinshunden från mormors dödsbo. Den ska stå hos dig. Tappa den inte.' },
+];
+const STICKNING_TILLBAKA = 'Hon hann int. Ja bad Kajsa. Kajsa kan int sticka. Hon försökte. Din mamma kanske? /R';
+setInterval(() => {
+  if (!ui.igang || sover || performance.now() - dagStartTid < 20000) return;
+  for (const b of STORY_BEHOV) {
+    if (!b.nar() || harStorysak(b.t) || (S.storyGiven || {})[b.t] === S.dag) continue;
+    const forsta = !(S.storyGiven || {})[b.t]; S.storyGiven = { ...(S.storyGiven || {}), [b.t]: S.dag };
+    S.post.tillMig = [...S.post.tillMig, 'sak:' + b.t]; visaPostInne();
+    paket([{ sms: ['mamma', forsta ? `Jag har skickat ${VAROR[b.t].namn.toLowerCase()} med Rolf. Den ligger i postlådan.` : b.rep] }], { vikt: 'STORY', varfor: 'A-050: storysaken kommer innan den behövs' });
+  }
+  if (S.stickningHosRolf && S.dag > S.stickningHosRolf && !S.stickningTillbaka) {
+    S.stickningTillbaka = true; S.post.tillMig = [...S.post.tillMig, 'sak:h_stickning']; visaPostInne();
+    paket([{ brev: ['rolf', STICKNING_TILLBAKA, 'Brev från Rolf'] }], { vikt: 'STORY', varfor: 'A-050: stickningen tillbaka, nästa passage' });
+  }
+}, 5000);
+/* ---------- A-046: grytvantarna och raggsockorna – mammas saker passar till slut ----------
+   Röda kvarnen blir varm när den mal första gången. Med grytvantarna (A-050 garanterar dem) går det. Raggsockorna isolerar jetmotorn. */
+setInterval(() => {
+  if (!ui.igang || sover) return;
+  if (!S.vantarTanke && (S.petg?.ko || 0) > 0 && harPlacerat('petgkvarn')) {
+    S.vantarTanke = 1; paket([{ tanke: 'Den bränns.' }], { vikt: 'REAKTION', varfor: 'A-046: röda kvarnen är varm' });
+  }
+  if (S.vantarTanke === 1 && harStorysak('burk_vante')) { S.vantarTanke = 2; paket([{ tanke: 'Mamma hade rätt. Säg inget.' }], { om: 3000, vikt: 'REAKTION', varfor: 'A-046: grytvantarna' }); skratt('grytvantarna'); }
+  if (S.kolf?.jet && !S.sockorJet && harStorysak('burk_sockor')) { S.sockorJet = true; paket([{ tanke: 'Raggsockorna runt jetmotorn. Äntligen passar de nåt.' }], { vikt: 'REAKTION', varfor: 'A-046: raggsockorna' }); skratt('raggsockorna'); }
+}, 3000);
 /* ---------- A-047: Radio-Kjelle och Gun-Britt (talsyntes tills ElevenLabs-omgången) ----------
    Kjelle sänder en gång per dag från Alis radio (hörs genom dörren) om det spelaren byggde dagen innan, och hälsar alltid på Gunnar (Rolfs kompis).
    Ankare: dag 1 = efter avlastningen, annars 90 s in på dagen (EL 30). Bara ord som är kända (kand). */
@@ -13353,7 +13403,7 @@ function humorSangDag() {
 }
 function humorSpagetti(typ) {
   if (!VAROR[typ]?.pris || S.dag < 2 || typ === STEG[S.steg]?.bild || Math.random() > 1 / 30) return false;
-  paket([{ tanke: HUMOR_T.spagetti }], { vikt: 'REAKTION', varfor: 'A-041: misslyckad print' }); skratt('plastspagetti'); return true;
+  if (!harSagt(HUMOR_T.spagetti)) paket([{ tanke: HUMOR_T.spagetti }], { vikt: 'REAKTION', varfor: 'A-041: misslyckad print' }); skratt('plastspagetti'); return true;
 }
 function humorKvarnSpottar() {
   if (S.dag < 2 || Math.random() > 1 / 14 || S.humorSpottDag === S.dag) return; S.humorSpottDag = S.dag;   /* högst en gång per dag */
@@ -13371,7 +13421,7 @@ function humorDack() {   /* A-041: ett däck rullar iväg efter tippningen och l
     if (k > 4) { vagg += 0.12; d.rotation.z = Math.min(Math.PI / 2, vagg); d.position.y = Math.max(0.13, 0.45 - vagg * 0.2); }
     if (k < 5.5) requestAnimationFrame(rull); else setTimeout(() => scen.remove(d), 30000); };
   requestAnimationFrame(rull); skratt('däcket rullar iväg');
-  if (Math.hypot(spelare.pos.x - d.position.x, spelare.pos.z - d.position.z) < 25) paket([{ tanke: HUMOR_T.dack }], { vikt: 'REAKTION', varfor: 'A-041: däck rullar' });
+  if (!harSagt(HUMOR_T.dack) && Math.hypot(spelare.pos.x - d.position.x, spelare.pos.z - d.position.z) < 25) paket([{ tanke: HUMOR_T.dack }], { vikt: 'REAKTION', varfor: 'A-041: däck rullar' });
 }
 function humorRap() { ton(95, 0.22, 0.07, 'sawtooth'); ton(70, 0.3, 0.06, 'sawtooth', 0.12); skratt('kvarnen rapar'); }
 const nyckelSkylt = skylt('NYCKELRINGAR – FRÅGA EJ', 1.5, 0.24, '#fff6d6', '#7a1f1f'); nyckelSkylt.position.set(0, 1.45, 0.42); nyckelSkylt.visible = false; marknad.add(nyckelSkylt);
@@ -13542,6 +13592,7 @@ if (ui) {
     return ut;
   });
   regelvakt.regel('MÅL OKÄNT', () => { if (!ui.igang) return []; const k = malKontrakt(); return k && !k.kanGoras() && k.namner.some((n) => !kand(n)) ? [`målet nämner ${k.namner.filter((n) => !kand(n)).join(', ')} som inte är känt`] : []; });
+  regelvakt.regel('SAKNAD STORYSAK', () => !ui.igang ? [] : STORY_BEHOV.filter((b) => b.nar() && !harStorysak(b.t) && (S.storyGiven || {})[b.t] && S.dag > S.storyGiven[b.t] + 1).map((b) => `${b.t} behövs men finns inte`));   /* A-050 */
   regelvakt.starta();
 }
 /* EL 29 del A: ett register över saker. Butiken, målen och regelvakten frågar härifrån: ursprung, flaskhals, upplåst, modell, känd, finns. */
