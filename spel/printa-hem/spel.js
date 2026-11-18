@@ -10261,7 +10261,7 @@ function visaLapp(id, bas = {}) {   /* EA: bas = paketets fält (ordning, villko
   if (titel.includes('Dagbok') && DAGBOK_STORA.includes(id) && !iKanalVisa && (kanalAktiv || performance.now() < pratarTill)) {   /* A-065: ett talutrymme – pratar någon väntar sidan först i kön (kvittens = förtur) */
     kanalLagg({ ...bas, vikt: 'STORY', vem: 'du', text, rost: false, minMs: 400, kvitto: { t: performance.now(), fri: kvittoFri(), meny: menyTot, steg: S.steg, namn: 'dagbok ' + id }, visa: () => visaLapp(id, bas) }); return;
   }
-  if (titel.includes('Dagbok') && DAGBOK_STORA.includes(id)) { textLogg('lapp', titel, text); medKo.unshift({ typ: 'dagbok', titel: 'Dagbok', text, id, knapp: 'Fortsätt', kvitto: { t: performance.now(), meny: menyTot, steg: S.steg, namn: 'dagbok ' + id } }); if (medEl2.hidden && !dagbokLas) visaNastaMeddelande(); sparaSnart(); return; }   /* A-063: kvittensen på skylten kommer direkt och pausar – den köar inte bakom något */
+  if (titel.includes('Dagbok') && DAGBOK_STORA.includes(id)) { textLogg('lapp', titel, text); medKo.unshift({ typ: 'dagbok', titel: 'Dagbok', text, id, knapp: 'Fortsätt', kvitto: { t: performance.now(), fri: kvittoFri(), meny: menyTot, steg: S.steg, namn: 'dagbok ' + id } });   /* A-042: den som pratar får prata klart, som för de små lapparna */ if (medEl2.hidden && !dagbokLas) visaNastaMeddelande(); sparaSnart(); return; }   /* A-063: kvittensen på skylten kommer direkt och pausar – den köar inte bakom något */
   /* EK 25: de små sidorna är ett story-paket med din röst, och bubblan ligger kvar tills den är uppläst + 2 s */
   if (titel.includes('Dagbok')) inkorg({ bas, vem: 'du', titel: 'Dagbok', text, lapp: true, block: false, tyst: false, fore: () => textLogg('lapp', titel, text), klar: () => handelse('brevLast', { id }) });
   else smsFram(vemAvTitel(titel), text, null, { ...bas, vikt: 'STORY', brev: /^rolf:|Rolf|brev/i.test(id + titel), namn: rens(titel).replace(/^[^\p{L}]+/u, ''), efter: () => handelse('brevLast', { id }) });   /* DN: lappar och gåvor kommer som sms */
@@ -10896,7 +10896,7 @@ function uppdatera(dt) {
     while (S.steg < STEG.length && STEG[S.steg].klar()) {
       const st = STEG[S.steg]; const sags = st.tanke && (stegVisat === S.steg || st.tankeForst); S.steg++;
       /* A-072: knuffen före nästa mål sägs nu av målet självt (en mening, aldrig två) – se malRuta() */
-      if (sags && !harSagt(st.tanke)) { const nastaI = S.steg; if (st.tankeForst) tanke(st.tanke, 'mål klart', 'STORY', () => S.steg <= nastaI, { forst: true, kvitto: { t: performance.now(), fri: kvittoFri(), meny: menyTot, steg: S.steg, namn: 'mål klart' } });   /* EA: tanken förklarar nästa mål – kastas om det redan är gjort */ else paket([{ tanke: st.tanke }], { om: 1200, vikt: 'REAKTION', varfor: 'mål klart', kvitto: true }); }   /* DT: skräptanken kommer före nästa mål */   /* högst en tanke per mål, en gång */
+      if (sags && !harSagt(st.tanke)) { const nastaI = S.steg; if (st.tankeForst) tanke(st.tanke, 'mål klart', 'STORY', () => S.steg <= nastaI, { forst: true, kvitto: { t: performance.now(), fri: kvittoFri(), meny: menyTot, steg: S.steg, namn: 'mål klart' } });   /* EA: tanken förklarar nästa mål – kastas om det redan är gjort */ else paket([{ tanke: st.tanke }], { om: 500, vikt: 'REAKTION', varfor: 'mål klart', kvitto: true }); }   /* DT: skräptanken kommer före nästa mål */   /* högst en tanke per mål, en gång */
       malBockText = malRaw; if (malKlartTid <= malVisadTid) { malKlartTid = performance.now(); menyVidKlart = menyTot; }   /* EC#5: fristen räknas från första mål som klarats sedan rutan senast byttes */ senastMalKlartT = performance.now(); kvittoBock(st); handelse('malKlart', { id: st.id || 'steg' + (S.steg - 1), del: st.del, nasta: STEG[S.steg]?.id || 'steg' + S.steg });
       if (st.lapp && !S.lappar.includes(st.lapp)) visaLapp(st.lapp);
       if (nasta0(S.steg)?.sov && STEG[S.steg].sms && !(S.smsSkickat || []).includes(STEG[S.steg].sms[1])) { const sv = STEG[S.steg]; S.smsSkickat = [...(S.smsSkickat || []), sv.sms[1]]; paket([{ sms: sv.sms }], { om: 4000, vikt: 'STORY', varfor: 'EC: kvällens förvarning (A-043: stryks aldrig – somnar man kommer den först i morgon)' }); }
@@ -15715,13 +15715,13 @@ if (ui) {
   regelvakt.regel('MÅL OMÖJLIGT', () => { if (!ui.igang) return []; const a = nastaAtgard(malRaw); return a && a[0] === 'las' ? [`"${rens(String(malRaw)).slice(0, 60)}" – ${a[1]}`] : []; });
   regelvakt.regel('FÖR MÅNGA TRÅDAR', () => { const a = aktivaTradar(), ut = []; if (a.length > 3) ut.push(`${a.length} sidotrådar öppna: ${a.map((t) => t.id).join(', ')}`);   /* A-048 */
     const f = {}; for (const t of a) { const k = t.figur + ':' + t.kap; if (f[k]) ut.push(`två trådar för ${t.figur} i kapitel ${t.kap}: ${f[k]}, ${t.id}`); f[k] = t.id; } return ut; });
-  regelvakt.regel('FÖR TIDIG FANFAR', () => tidigFanfar.slice(-5));   /* A-062 */
-  regelvakt.regel('SPOILER', () => froSpoiler.slice(-5));   /* A-057 */
-  regelvakt.regel('SEN KVITTENS', () => senKvittens.slice(-5));   /* A-063 */
-  regelvakt.regel('SAKNAD KVITTENS', () => saknadKvittens.slice(-5));   /* A-065 lager 2 */
+  regelvakt.regel('FÖR TIDIG FANFAR', () => tidigFanfar.slice(-5), { enGang: true });   /* A-062 */
+  regelvakt.regel('SPOILER', () => froSpoiler.slice(-5), { enGang: true });   /* A-057 */
+  regelvakt.regel('SEN KVITTENS', () => senKvittens.slice(-5), { enGang: true });   /* A-063 */
+  regelvakt.regel('SAKNAD KVITTENS', () => saknadKvittens.slice(-5), { enGang: true });   /* A-065 lager 2 */
   regelvakt.regel('NÄSTA UTAN KONTUR', () => nastaUtanKontur());   /* A-071 */
-  regelvakt.regel('TYST MÅL', () => tystMal.slice(-5));   /* A-072 */
-  regelvakt.regel('PIL UTOM BILD', () => pilUtom.slice(-5));   /* A-072 */
+  regelvakt.regel('TYST MÅL', () => tystMal.slice(-5), { enGang: true });   /* A-072 */
+  regelvakt.regel('PIL UTOM BILD', () => pilUtom.slice(-5), { enGang: true });   /* A-072 */
   regelvakt.regel('MÅL UTAN BILD', () => { if (!ui.igang || !malText.firstElementChild) return []; const ik = document.querySelector('.dn-uppg .bild') || malText.querySelector('.nasta-ik'); return ik && ik.querySelector('img, svg') && ik.querySelector('.nasta-verb') ? [] : [`”${rens(String(malRaw)).slice(0, 50)}” har ingen bild`]; });   /* A-072 */
   regelvakt.regel('FEL RITSTIL', () => {   /* A-077: allt som är tänkt ritas med byggRitning – inga gula rutor, ringar eller hela spökmodeller */
     const fel = []; if (planLjus.visible) fel.push('gul ruta på marken'); if (kvarnMark.visible) fel.push('ringen vid kvarnen'); if (spokeRuta.visible) fel.push('skivan under spöket');
@@ -15730,11 +15730,11 @@ if (ui) {
   });
   regelvakt.regel('GENERISK MARKERING', () => [kvarnMark, spokeRuta].filter((m) => m.visible).map((m) => (m === kvarnMark ? 'ringen vid kvarnen' : 'skivan under spöket') + ' syns'));   /* A-071 */
   regelvakt.regel('FAST I HANDEN', () => { if (!ui.igang) return []; const t = valdTyp(); return t && fastIHanden(t) ? [`${t} i handen har ingen plats och kan inte monteras`] : []; });   /* A-071 */
-  regelvakt.regel('DUBBEL KVITTENS', () => dubbelKvittens.slice(-5));   /* A-065 lager 2 */
-  regelvakt.regel('KÖ FÖRE KVITTENS', () => koForeKvittens.slice(-5));   /* A-065 lager 2 */
+  regelvakt.regel('DUBBEL KVITTENS', () => dubbelKvittens.slice(-5), { enGang: true });   /* A-065 lager 2 */
+  regelvakt.regel('KÖ FÖRE KVITTENS', () => koForeKvittens.slice(-5), { enGang: true });   /* A-065 lager 2 */
   regelvakt.regel('OREGISTRERAT MÅL', () => { if (!ui.igang || S.steg >= STEG.length) return []; const st = STEG[S.steg]; return st && !STORYKEDJA_ID().has(storyId(S.steg)) ? [`"${rens(String(stegText(st) || '')).slice(0, 50)}" saknar id i STORYKEDJA`] : []; });   /* A-065 lager 2 */
-  regelvakt.regel('SPÖKE', () => spokeFynd.slice(-5));   /* A-063 */
-  regelvakt.regel('FEL BYGGEFFEKT', () => felByggeffekt.slice(-5));   /* A-063 */
+  regelvakt.regel('SPÖKE', () => spokeFynd.slice(-5), { enGang: true });   /* A-063 */
+  regelvakt.regel('FEL BYGGEFFEKT', () => felByggeffekt.slice(-5), { enGang: true });   /* A-063 */
   regelvakt.regel('RADBRYTNING', () => radbrott());   /* A-062: en mening per rad, högst RAD_MAX tecken */
   regelvakt.regel('OKÄNT ORD', () => ui.igang ? synligaTexter().flatMap(([v, t]) => okandaOrd(t).map((k) => `${k} i ${v}: "${t.slice(0, 70)}"`)) : []);
   regelvakt.regel('FEL SIFFRA', () => {

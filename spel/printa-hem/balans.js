@@ -293,15 +293,23 @@ export function inkomstPerMin(dag) {
 // Justering efter AX 83 (dag 16–21 med den nya trappan): boten tjänar ca 4 000 kr/min dag 18 men diamantkvarnen och guldrullen tar ca 8 min först,
 // och dag 20 tog kaminen bara 3,5 min. Faktorn läggs på trappans pris för målet.
 export const AX_JUSTERING = { husgrund: 0.6, kamin: 2.5, huset: 0.7 };   // huset efter AX 87: dag 19 tog 24 min med vindkraftverket och guldskrivaren
+// A-042 (AX 97, 61c667e, nytt spel dag 1 → 24 med trappans priser): dagarnas längd för boten. Dagar under 6 min får sina köp dyrare
+// (mot 8 min, dämpat, högst ×2,5) – boten har sparat ihop för mycket i kapitel 3–4. Dagar på 6–15 min rörs inte.
+// Sparpengarna gör att modellen i ekonomi.mjs inte kan förutsäga de här dagarna – AX mäter dem (TEMPO-flaggan).
+export const DAG_MIN_AX97 = { 11: 4.5, 12: 11.7, 13: 2.3, 14: 2.7, 15: 5.7, 16: 2.0, 17: 7.5, 18: 2.9, 19: 8.2, 20: 1.6, 21: 0.7 };
+export const KORR_MAL_MIN = 8, KORR_MAX = 2.5;   // kortare dagar dras upp mot 8 min, dämpat (roten) och högst ×2,5: AX 98 med full faktor (×4,5) svalt dag 13 i 46 min
+export const KORR_DAGAR = [];   // Avstängd. AX 98: ×4,5 dag 13 → 46 min (kolfibret räcker inte). AX 99: ×2 dag 13–16 → pengarna slut dag 14, dag 15 61 min.
+// AX 100: ×1,9–2,5 dag 18, 20, 21 → fortfarande 2,0 · 1,6 · 1,0 min, eftersom boten har 40 000–90 000 kr över. Priset kan inte göra de dagarna längre – de behöver fler mål (se loggen).
+export function korrAX97(dag) { const m = DAG_MIN_AX97[dag]; if (!m || !KORR_DAGAR.includes(dag) || (m >= 6 && m <= 15)) return 1; return Math.min(KORR_MAX, Math.max(1, Math.sqrt((KORR_MAL_MIN / m - 0.3) / 0.7))); }
 export function trappPris(gammalt, dag) {
   const kap = kapitelFor(Math.min(dag, 22)), langd = Math.min(7, Math.max(0.6, DAG_MAL_MIN / (DAG_MIN_AX[dag] || DAG_MAL_MIN)));
-  return runda(gammalt * inkomstPerMin(dag) / INKOMST_AX[kap] * langd);
+  return runda(gammalt * inkomstPerMin(dag) / INKOMST_AX[kap] * langd * korrAX97(dag));
 }
 // Avrundning som ser ut som priser: 2–3 värdesiffror
 export function runda(n) { const s = n < 1000 ? 10 : n < 10000 ? 50 : n < 100000 ? 500 : n < 1000000 ? 5000 : 50000; return Math.max(s, Math.round(n / s) * s); }
 // Den första maskinen i en ny linje kostar ca 10 min av den FÖRRA linjens inkomst (den betalas med gamla pengar)
 export const FORSTA_I_LINJEN = { kolfkvarn: 11, diamantkniv: 18 };
-const forstaPris = (dag) => runda(10 * inkomstPerMin(dag - 1));
+const forstaPris = (dag) => runda(10 * inkomstPerMin(dag - 1) * korrAX97(dag));
 // Vilken dag varje mål köps på (för trappPris). Ritningar anges som Alis pris (PRIS_SKALA räknas bort nedan).
 export const TRAPP_MAL = {
   maskin: { kolfband: 11, kolfskrivare: 12, kolfslang: 12, lastarm: 13, robotarm: 14, utlada: 14, jetmotor: 14, guldskrivare: 19, gamingbod: 13, vindkraft: 19, solpark2: 17, bank2: 17 },
@@ -338,4 +346,4 @@ export const boterMax = (dag) => Math.max(BOTER_MAX, runda(BOTER_MAX_MIN * inkom
 // "Ali köper den för 300 kr" (en tvåa av ett fynd) följer trappan
 export const FYND_TVAA = (dag) => dag >= 11 ? trappPris(300, Math.min(dag, 22)) : 300;
 // Dag 21 var 0,9 min (folkbokföringen var gratis). Lagfarten på huset blir dagens mål: ca 6 min av guldlinjens inkomst.
-export const LAGFART = runda(6 * inkomstPerMin(21));
+export const LAGFART = runda(6 * inkomstPerMin(21) * korrAX97(21));   /* A-042: AX 97 dag 21 tog 0,7 min */

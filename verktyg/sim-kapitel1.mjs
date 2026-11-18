@@ -184,7 +184,7 @@ for (const h of r.logg.filter((e) => e.kalla === 'händelse' && e.vem === 'malKl
 }
 // EC: UPPREPNING – samma figurtext (sms, småprat, tanke) visas igen inom 5 dagar
 { const sett = new Map();
-  for (const e of r.logg.filter((x) => (x.kalla === 'sak' || x.kalla === 'bubbla') && x.vem && !['berattare', 'bud', ''].includes(x.vem) && !String(x.vem).startsWith('notis:') && !/^\(/.test(x.text))) {
+  for (const e of r.logg.filter((x) => (x.kalla === 'sak' || x.kalla === 'bubbla') && x.vem && !['berattare', 'bud', ''].includes(x.vem) && !String(x.vem).startsWith('notis:') && !/^\(/.test(x.text) && !(String(x.vem).startsWith('värld:') && x.text.trim().split(/\s+/).length <= 3))) {   /* A-042: katten och sopbilens tut är ljud, inte repliker */
     const f = sett.get(e.text);
     if (f != null && e.dag - f < 5 && e.kalla === 'sak') flaggor.push({ dag: e.dag, t: e.t, typ: 'UPPREPNING', text: `${e.vem}: "${e.text.slice(0, 70)}" (förra gången dag ${f})` });
     if (e.kalla === 'sak') sett.set(e.text, e.dag);
