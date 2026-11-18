@@ -7444,12 +7444,15 @@ function kollaMaterialLas() {
   if (kolfUpplast() && !S.matLas.kolf) { S.matLas.kolf = 'vantar'; sms('rolf', KOLF_LASS_SMS); sparaSnart(); }
 }
 setInterval(() => { try { if (ui.igang) kollaMaterialLas(); } catch {} }, 2000);
+const kolfBehovs = () => { const st = STEG[S.steg]; let b = null; try { b = typeof st?.bild === 'function' ? st.bild() : st?.bild; } catch {} return !!b && (b.startsWith('byggsats:') ? printLinje(b.slice(9)) === 3 : VAROR[b]?.niva === 3); };   /* dagens mål måste printas i kolfiber */
+const kolfSlut = () => !skrapLista.some((x) => x.userData.sort === 'kajak') && !(S.kolf?.ko > 0) && !(S.kolf?.rullar > 0) && !antalInv('rulle3');
 function materialMedSopbilen() {
   const L = S.matLas || {}, tipp = (sort) => { const [x, z] = tippPlats(); laggSkrap(x, z, variantFor(sort), Math.random() * 6.3); };
   if (L.rod === 'vantar') { for (let i = 0; i < 6; i++) tipp('tunna'); for (let i = 0; i < 4; i++) tipp('rodback'); L.rod = 'klar'; }
   if (L.kolf === 'vantar') { for (let i = 0; i < 4; i++) tipp('kajak'); L.kolf = 'klar'; }
   const idag = S.matIdag?.dag === S.dag ? S.matIdag : (S.matIdag = { dag: S.dag, rod: 2 + Math.floor(Math.random() * 2), kolf: ((S.kapitel || 1) >= 4 ? KOLF_DAG_K4 : 1) + Math.floor(Math.random() * 2) });   /* A-042: i kapitel 4 bär kolfibern ekonomin (g49 svalt på kajaker dag 17–18) */
   if (L.rod === 'klar' && idag.rod > 0 && skrapLista.filter((x) => x.userData.tung && x.userData.sort !== 'kajak').length < 14) { tipp(Math.random() < 0.6 ? 'tunna' : 'rodback'); idag.rod--; if (idag.rod > 0 && Math.random() < 0.5) { tipp('tunna'); idag.rod--; } }
+  if (L.kolf === 'klar' && harPlacerat('kolfkvarn') && kolfSlut() && kolfBehovs()) tipp('kajak');   /* A-042/AX 92: kolfibret får aldrig ta slut helt – dag 14 stod still när jetmotorn skulle printas i kolfiber och kajakerna var slut */
   for (let n = (S.kapitel || 1) >= 4 ? 2 : 1; n > 0 && L.kolf === 'klar' && idag.kolf > 0 && skrapLista.filter((x) => x.userData.sort === 'kajak').length < 8; n--) { tipp('kajak'); idag.kolf--; }
   sparaSnart();
 }

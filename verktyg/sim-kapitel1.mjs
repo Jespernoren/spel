@@ -58,7 +58,7 @@ await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.m
 let sparadDag = 0; const kollaDag = setInterval(async () => { try { const [d, sp, mem] = await p.evaluate(() => [window.__printahem.S.dag, localStorage.getItem('spar:printahem2:v1'), [Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6), window.__printahem.skrapLista.length, window.__printahem.placerade.length, document.querySelectorAll('*').length]]); if (process.env.SIM_MINNE) console.log('[minne]', d, JSON.stringify(mem)); if (d !== sparadDag && sp) { sparadDag = d; fs.writeFileSync(`${process.env.SIM_SPAR || '/tmp/sim-dag'}${d}.json`, sp); } } catch {} }, 15000);
 let delDagar = 0;   /* AX skriver rapporten efter varje speldag – en körning som hänger ger ändå en rapport fram till den dagen */
 const delRapport = setInterval(async () => { try { const del = await Promise.race([p.evaluate(() => window.__simBot.del?.()), new Promise((_, n) => setTimeout(() => n(new Error('svarar inte')), 20000))]); if (del && del.dagar.length > delDagar) { delDagar = del.dagar.length; rapport(del); console.log(`[rapport] dag 1–${del.dagar[del.dagar.length - 1].dag} skriven till ${ut}`); } } catch (e) { console.log('[rapport] sidan svarar inte:', e.message); } }, 30000);
-const r = await p.evaluate((d) => window.__simBot.kor(d, 30 * d), +tillDag); clearInterval(kollaDag); clearInterval(delRapport);
+const r = await p.evaluate((d) => window.__simBot.kor(d, 30 * d), +tillDag); clearInterval(kollaDag); clearInterval(delRapport); senastLiv = Date.now() + 30 * 60000; console.log('[sim] körningen klar – skriver rapporten');   /* AX 95: rapporten efter sista dagen räknas inte som att boten hänger */
 await b.close();
 
 function rapport(r) {

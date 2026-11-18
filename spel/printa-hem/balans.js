@@ -274,14 +274,17 @@ export const GRAM_PER_MIN = { kolf: 430, guld: 1290, tippium: 1290 };
 // Guldlinjen tjänar först när guldskrivaren finns (A-069, dag 19). Tills dess är kapitel 4 kolfiber + råguld, och priserna räknas på det.
 // Sätt true när guldskrivaren är byggd – då räknas kapitel 4 och efterspelet om på guldets ×6.
 export const GULDLINJEN = false;
+// AX 91 (nytt spel dag 1 → 14): kolfibret ger 7 000 kr/min dag 12 medan kajakerna från tippen räcker, 3 300 dag 13 och 860 dag 14 när de är slut
+// (sopbilen lämnar 2–3 om dagen). Snittet dag 12–14 är ca 2 600 kr/min, och med tiden boten går och väntar ca 2 000. Det är fabrikens takt.
+export const KOLF_INKOMST_AX = 1200;   // AX 94: med 2 000 svalt boten på pengar dag 15 (skräpet och kajakerna slut) – hellre en kort dag än en dag som står still
 export const kapitelFor = (dag) => dag <= 5 ? 1 : dag <= 10 ? 2 : dag <= 15 ? 3 : 4;
 // Förväntad inkomst per minut dag för dag med den nya trappan (verktyg/ekonomi.mjs skriver ut den)
 export function inkomstPerMin(dag) {
   if (dag <= 10) return INKOMST_AX[kapitelFor(dag)];
   if (dag === 11) return 700;                                           // kolfiberlinjen byggs – röd linje betalar
   if (dag === 12) return Math.round(GRAM_PER_MIN.kolf * VARDE_PER_GRAM.kolf * 0.7);   // första kolfibern, halva dagen
-  if (dag <= 17) return GRAM_PER_MIN.kolf * VARDE_PER_GRAM.kolf;       // kolfiber (dag 17 + vaskningen, som ger ungefär lika mycket)
-  if (!GULDLINJEN) return Math.round(0.75 * GRAM_PER_MIN.kolf * VARDE_PER_GRAM.kolf);  // utan guldskrivaren: bara kolfiberfabriken (uppmätt ca 2 550 kr/min dag 18 i AX 82)
+  if (dag <= 17) return KOLF_INKOMST_AX;                                // kolfiber, som boten faktiskt tjänar (kajakerna tar slut)
+  if (!GULDLINJEN) return KOLF_INKOMST_AX;                              // utan guldskrivaren: bara kolfiberfabriken
   if (dag === 18) return Math.round(GRAM_PER_MIN.guld * VARDE_PER_GRAM.guld * 0.4);   // diamantkvarnen först, sedan guld halva dagen
   if (dag <= 22) return GRAM_PER_MIN.guld * VARDE_PER_GRAM.guld;
   return GRAM_PER_MIN.tippium * VARDE_PER_GRAM.tippium * 0.5;          // efterspelet: Tippium (labbet) halva tiden
