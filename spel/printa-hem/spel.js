@@ -11688,6 +11688,7 @@ const INTRO = [
   { lager: [{ id: 'spel', spel: 'start' }, { id: 'krita14', krita: 'skjul' }], rader: ['Tänk om det här kunde bli ett riktigt hem?', 'Utan mammas tjat.'] },
 ];
 /* A-062: rutorna 12–14 – en bild ur spelets egen kamera och krita som ritas på den */
+const GARD_KAM = [[3, 7, TOMT + 15], [-7, 1, 6], 68];   /* A-078: kameran i ruta 12 */
 const spelBildCache = {};
 function spelKamera(vy) {
   const cam = kamera.clone(); cam.rotation.order = 'YXZ';
@@ -11696,7 +11697,7 @@ function spelKamera(vy) {
     const fran = new THREE.Vector3(-1.5 - sk.x, 0, TOMT + 2.5 - sk.z).normalize();
     cam.position.set(sk.x + fran.x * 1.25 + fran.z * 0.35, sk.y + 0.42, sk.z + fran.z * 1.25 - fran.x * 0.35); cam.lookAt(sk.x, sk.y - 0.05, sk.z);
   }
-  else if (vy === 'gard') { cam.position.set(2.5, 5.5, TOMT + 9); cam.lookAt(1.5, 0, 5); cam.fov = 62; }   /* A-062 v3 ruta 11: bred bild från vägen, ingen cykel */
+  else if (vy === 'gard') { const k = GARD_KAM; cam.position.set(...k[0]); cam.lookAt(...k[1]); cam.fov = k[2]; }   /* A-078 ruta 12: tippen syns vid sidan av skjulet */   /* A-062 v3 ruta 11: bred bild från vägen, ingen cykel */
   else if (/^(tak|dorrhal|ratta)$/.test(vy)) {   /* A-062 v3 ruta 13: närbilder på skjulet */
     const zf = SKJUL.z + SKJUL.d / 2;
     if (vy === 'tak') { cam.position.set(SKJUL.x + 0.2, 1.2, SKJUL.z + 0.4); cam.lookAt(SKJUL.x - 0.1, SKJUL.h + 4, SKJUL.z - 0.9); }   // inifrån: hålet i taket mot himlen
@@ -11710,6 +11711,7 @@ function spelKamera(vy) {
 function spelBild(vy) {
   if (spelBildCache[vy]) return spelBildCache[vy];
   try {
+    if (vy === 'gard') try { ritaTippHog(0, true); } catch {}   /* A-078: berget på tippen ska synas i ruta 12 */
     const cam = spelKamera(vy), r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio();
     const dold = (vy === 'gard' ? [vagCykel, malPil] : vy === 'start' ? [malPil] : /^(tak|dorrhal|ratta)$/.test(vy) ? [malPil, sangSpoke, sangSkylt, planMesh] : []).filter((o) => o?.visible);   /* närbilderna: inga spelskyltar */ dold.forEach((o) => { o.visible = false; });
     let ratta = null; if (vy === 'ratta') {   /* A-062 v3: en råtta tittar ut ur dörrhålet */
@@ -11961,7 +11963,7 @@ function visaIntroV2(klar) {
    intro (Enter hoppar över) → startmenyn → dagboken sida 1 (Börja) → spelet. Varje ruta har en fast längd,
    0,5 s tystnad innan texten, 0,3 s mellan raderna, och ingen ruta byts medan någon pratar.
    Mammas repliker är bubblor BREDVID huvudet (pilen mot henne) – huvudets plats kommer ur renderingen (BUB3). */
-const BUB3 = { v3dag2: [60.6, 36.5], v3dag3: [58, 38], v3dag4: [55.4, 39.6], v3dag5: [52.6, 41.1], v3dag6: [50.2, 43.1], v3kort7: [51.2, 43.1] };   // huvudet i % av bilden (verktyg/ai3.mjs PTS)
+const BUB3 = { v4dag2: [60.6, 36.5], v4dag3: [50, 33], v4dag4: [50, 40.9], v4dag5: [50, 43.5], v4dag6b: [50, 24.8], v4kort7: [50, 28.9], };   // huvudet i % av bilden (verktyg/ai3.mjs PTS)
 const IB3 = (namn, extra = {}) => ({ id: extra.id || namn, src: `intro/${namn}.webp`, ...extra });
 const KAL3 = (dag, fore) => ({ id: 'kal', kal: dag, fore, cls: 'vanster' });
 const IDE3 = {   /* ruta 12: idéskissen i vita konturer, i ordningen skräp → kvarn → filament → skrivare → allt man kan printa */
@@ -11980,13 +11982,14 @@ const IDE3 = {   /* ruta 12: idéskissen i vita konturer, i ordningen skräp →
 };
 const INTRO3 = [
   { tid: 3500, ljud: 'spel', lager: [IB3('v3rum1')], tal: [['berattare', 'Ditt rum.'], ['berattare', 'Ungefär som vanligt.']] },
-  { tid: 3000, lager: [IB3('v3dag2', { id: 'dag' }), KAL3('MÅNDAG')], tal: [['mamma', 'Snälla du, kan du inte städa ditt rum?', { b: 'v3dag2' }]] },
-  { tid: 1400, ljud: 'riv', lager: [IB3('v3dag3', { id: 'dag' }), KAL3('TISDAG', 'MÅNDAG')], tal: [['berattare', 'Hon sa det igen.'], ['mamma', 'STÄDA!', { b: 'v3dag3', cls: 'rop1' }]] },
-  { tid: 1400, ljud: 'riv', lager: [IB3('v3dag4', { id: 'dag' }), KAL3('ONSDAG', 'TISDAG')], tal: [['berattare', 'Och igen.'], ['mamma', 'STÄDA!!', { b: 'v3dag4', cls: 'rop2' }]] },
-  { tid: 1400, ljud: 'riv', lager: [IB3('v3dag5', { id: 'dag' }), KAL3('TORSDAG', 'ONSDAG')], tal: [['berattare', 'Och igen.'], ['mamma', 'STÄDA!!!', { b: 'v3dag5', cls: 'rop3' }]] },
-  { tid: 2500, ljud: 'dorr', lager: [IB3('v3dag6', { id: 'dag' }), IB3('v3dorr6', { cls: 'small' }), KAL3('FREDAG', 'TORSDAG')], tal: [['mamma', 'Det ser ut som en SOPTIPP här inne!', { b: 'v3dag6', fore: 500 }]] },
-  { tid: 3000, tyst: 1000, lager: [IB3('v3kort7'), { id: 'vinjett', vinjett: true }], tal: [['mamma', 'Du kan lika gärna BO på en soptipp!', { b: 'v3kort7', cls: 'rop2' }]] },
-  { tid: 4000, ljud: 'gitarr', lager: [IB3('v3kort8a', { r: 0 }), IB3('v3kort8b', { r: 1 })], tal: [['du', 'Okej.'], ['du', 'Då gör jag väl det.']] },
+  { tid: 3000, lager: [IB3('v4dag2', { id: 'dag' }), KAL3('MÅNDAG')], tal: [['mamma', 'Snälla du, kan du inte städa ditt rum?', { b: 'v4dag2' }]] },   /* A-078: introt v4 – mamma snäll */
+  { tid: 1400, ljud: 'riv', lager: [IB3('v4dag3', { id: 'dag' }), KAL3('TISDAG', 'MÅNDAG')], tal: [['berattare', 'Hon sa det igen.'], ['mamma', 'STÄDA!', { b: 'v4dag3', cls: 'rop1' }]] },   // över din axel, händerna i sidan (arg1)
+  { tid: 1400, ljud: 'riv', lager: [IB3('v4dag4', { id: 'dag' }), KAL3('ONSDAG', 'TISDAG')], tal: [['berattare', 'Och igen.'], ['mamma', 'STÄDA!!', { b: 'v4dag4', cls: 'rop2' }]] },   // lågt från golvet, hon pekar på högarna (arg2)
+  { tid: 1400, ljud: 'riv', lager: [IB3('v4dag5', { id: 'dag' }), KAL3('TORSDAG', 'ONSDAG')], tal: [['berattare', 'Och igen.'], ['mamma', 'STÄDA!!!', { b: 'v4dag5', cls: 'rop3' }]] },   // från sidan, armen rakt upp (arg2)
+  { tid: 3200, ljud: 'dorr', lager: [IB3('v4dag6a', { id: 'dag', cls: 'glidin' }), IB3('v4dorr6', { cls: 'small' }), IB3('v4dag6b', { r: 0, cls: 'glidsen' }), KAL3('FREDAG', 'TORSDAG')], tal: [['mamma', 'Det ser ut som en SOPTIPP här inne!', { b: 'v4dag6b', fore: 1700 }]] },   // dörren smäller upp, kameran glider in mot henne (rasande)
+  { tid: 3000, tyst: 1000, lager: [IB3('v4kort7'), { id: 'vinjett', vinjett: true }], tal: [['mamma', 'Du kan lika gärna BO på en soptipp!', { b: 'v4kort7', cls: 'rop1', vanster: true }]] },   // rakt in i ansiktet, fingret mot kameran (rasande+rök)
+  { tid: 4000, ljud: 'gitarr', lager: [IB3('v4kort8')], tal: [['du', 'Okej.'], ['du', 'Då gör jag väl det.']] },   // du reser dig vid datorn, mamma pekar ut genom dörren
+  { tid: 2600, lager: [IB3('v4kort9', { cls: 'folj' })], tal: [] },   // A-078 ruta 9: ut förbi mamma, kameran följer med dig ut (mamma förvånad)
   { tid: 4000, ljud: 'band', lager: [IB3('v3pack9')], tal: [['du', 'Jag packar ryggan med sånt som kan vara bra att ha.'], ['du', 'Och surrar fast brorsans gamla 3D-skrivare på cykeln.']] },
   { tid: 5000, musik: true, lager: [{ id: 'vagloop', loop: 'intro/vag.webp' }, { id: 'cyklist', sprite: 'intro/cyklist-tramp.webp', n: 4 }], tal: [['berattare', 'Förbi skolan.'], ['berattare', 'Förbi affären.'], ['berattare', 'Förbi där husen tar slut.']] },
   { tid: 3500, ljud: 'masar', lager: [{ id: 'spelgard', spel: 'gard' }], tal: [['berattare', 'Vid soptippen står ett gammalt skjul.'], ['berattare', 'Och en gård full av skräp.']] },
@@ -11996,7 +11999,13 @@ const INTRO3 = [
 ];
 const introCss3 = document.createElement('style');
 introCss3.textContent = `
-.ph-il.kal.vanster{right:auto;left:5%}
+.ph-il.kal.vanster{right:auto;left:4%;top:5%;width:11%}
+.ph-il.glidin{transform-origin:50% 37%;animation:phGlidIn 2.4s .9s ease-in-out forwards}
+@keyframes phGlidIn{to{transform:scale(1.5)}}
+.ph-il.glidsen{opacity:0;animation:phGlidSen .7s 1.1s ease-in forwards}
+@keyframes phGlidSen{to{opacity:1}}
+.ph-il.folj{transform-origin:85% 40%;animation:phFolj 2.6s ease-in-out forwards}
+@keyframes phFolj{from{transform:scale(1.08) translateX(3%)}to{transform:scale(1.18) translateX(-4%)}}
 .ph-bub{position:absolute;z-index:6;background:#fff;color:#1d1a24;font:800 clamp(14px,2.1vw,22px)/1.2 "Comic Sans MS","Chalkboard SE",system-ui;padding:.45em .8em;border-radius:16px;box-shadow:0 4px 0 rgba(0,0,0,.25);max-width:36%;animation:phBub .25s ease-out}
 .ph-bub:after{content:"";position:absolute;top:50%;margin-top:-10px;border:10px solid transparent}
 .ph-bub.hoger:after{left:-24px;border-right:16px solid #fff}.ph-bub.vanster:after{right:-24px;border-left:16px solid #fff}
@@ -12061,7 +12070,8 @@ function visaIntro3(klar, o = {}) {
   const bubbla = (p, text, o) => {
     const h = BUB3[o.b] || [50, 30], hoger = h[0] < 58, b = document.createElement('div');
     b.className = `ph-bub hoger ${o.cls || ''}`; void hoger; b.textContent = text;
-    b.style.top = `${Math.max(3, h[1] - 9)}%`; b.style.left = `${h[0] + 8}%`; b.style.maxWidth = `${Math.max(22, 98 - h[0] - 8)}%`;   /* alltid till höger om mamma, aldrig över ditt eller hennes ansikte */
+    b.style.top = `${Math.max(3, h[1] - 9)}%`; b.style.left = `${h[0] + 8}%`; b.style.maxWidth = `${Math.max(22, 98 - h[0] - 8)}%`;
+    if (o.vanster) { b.className = `ph-bub vanster ${o.cls || ''}`; b.style.left = 'auto'; b.style.right = `${100 - h[0] + 13}%`; b.style.top = `${h[1] + 6}%`; b.style.maxWidth = `${Math.max(22, h[0] - 15)}%`; }   /* A-078 ruta 7: ansiktet fyller mitten – bubblan till vänster, under röken */   /* alltid till höger om mamma, aldrig över ditt eller hennes ansikte */
     scenEl.appendChild(b);
     requestAnimationFrame(() => { const s = scenEl.getBoundingClientRect(), r = b.getBoundingClientRect(); logg('bubbla', JSON.stringify({ bub: [(r.left - s.left) / s.width * 100, (r.top - s.top) / s.height * 100, (r.right - s.left) / s.width * 100, (r.bottom - s.top) / s.height * 100].map((v) => +v.toFixed(1)), huvud: h, text })); });
     return b;
@@ -14025,7 +14035,7 @@ function introFigur(vem) {
     const mossa = new THREE.Mesh(new THREE.SphereGeometry(0.19, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.45), mat(0x2f6a5a)); mossa.position.y = 0.035; huvud.add(mossa);
     huvud.add(at(cyl(0.185, 0.19, 0.06, mat(0x285a4c)), 0, 0.06, 0)); huvud.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), mat(0xd8d0c0)), 0, 0.22, 0));
   }
-  if (vem !== 'mamma' && !helen) { const luva = new THREE.Mesh(new THREE.SphereGeometry(0.215, 16, 12, Math.PI - 0.5, Math.PI + 1.0, 0, Math.PI * 0.72), mat(0x2d6cdf, { side: THREE.DoubleSide })); luva.position.set(0, -0.01, -0.03); huvud.add(luva); }
+  if (vem !== 'mamma' && !helen) { const luva = new THREE.Mesh(new THREE.SphereGeometry(0.215, 18, 14, Math.PI - 0.55, Math.PI + 1.1, 0, Math.PI * 0.93), mat(0x2d6cdf, { side: THREE.DoubleSide })); luva.scale.set(1, 1.28, 1.02); luva.position.set(0, -0.035, -0.03); huvud.add(luva); }   /* A-078: huvan förlängd ner i tröjan (Jesper 00:59: "så ska de vara framåt") */
   const fore = huvud.children.length;
   ansikte(huvud, 0, { bryn: vem === 'mamma' ? 0.12 : -0.05, brynFarg: helen ? 0x8a857c : 0x4a2e1a, nasa: 0xd9a07a, munFarg: vem === 'mamma' ? 0xb83a52 : 0x5a2a20 });
   const delar = huvud.children.slice(fore), bryn = delar.filter((o) => o.geometry?.parameters?.width === 0.075), mun = delar[delar.length - 1];
@@ -14132,14 +14142,43 @@ function byggIntroRum() {
   sc.add(sack);
   const skriv = gammal.clone(true); skriv.position.set(0, 0, 0); sc.add(skriv);
   const damm = new THREE.Group(); for (let i = 0; i < 14; i++) { const d = new THREE.Mesh(new THREE.SphereGeometry(0.05 + r() * 0.06, 6, 4), new THREE.MeshStandardMaterial({ color: 0xd9cfb8, transparent: true, opacity: 0.55 })); d.position.set(2.3 + r() * 0.5, r() * 1.8, -0.9 + r() * 1.1); damm.add(d); } sc.add(damm);
-  return { sc, dorr, kal, mamma, du, sack, skriv, damm, stok, lampa };
+  return { sc, dorr, kal, mamma, du, sack, skriv, damm, stok, lampa, stol };
 }
 function introKamera(pos, mal, fov = 50, aspect = 1.6) { const k = new THREE.PerspectiveCamera(fov, aspect, 0.1, 200); k.position.set(...pos); k.lookAt(...mal); return k; }
 // humor: 'neutral', 'arg' (ögonbryn ner), 'rasande' (rött ansikte). pekaMot: en punkt i världen som högra armen pekar mot.
+/* A-078: mimik – snall, arg1, arg2, rasande, rasande+rok, forvanad, likgiltig (facit: mockup-intro, kroken __introDev.mimik). Rött bara på huvudet. */
+const MIMIK = ['snall', 'arg1', 'arg2', 'rasande', 'rasande+rok', 'forvanad', 'likgiltig'];
+function figurMimik(f, m) {
+  const u = f.userData; if (!u.mimikDelar) u.mimikDelar = [];
+  u.mimikDelar.forEach((o) => o.parent?.remove(o)); u.mimikDelar = []; u.mun.visible = true; u.mun.rotation.set(0, 0, 0);
+  if (!u.huvudHud) { u.huvudHud = u.hud.clone(); u.huvud.traverse((o) => { if (o.isMesh && o.material === u.hud) o.material = u.huvudHud; }); }   /* eget material för ansiktet, så att händerna inte blir röda */
+  u.huvudHud.color.copy(u.hud.color);
+  if (!m) return;
+  const add = (o, p = u.huvud) => { p.add(o); u.mimikDelar.push(o); return o; };
+  const bryn = (rot, y = 0.08) => u.bryn.forEach((b) => { const v = b.position.x < 0; b.rotation.z = v ? rot : -rot; b.position.y = y; b.scale.set(1, 1, 1); });
+  const munPos = u.mun.position.clone(), munMat = u.mun.material;
+  u.hud.color.setHex(u.hudFarg); u.huvudHud.color.setHex(u.hudFarg);
+  if (m === 'snall') { bryn(0.15, 0.09); u.mun.visible = false; const t = add(new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.011, 6, 14, Math.PI), munMat)); t.position.copy(munPos).add(new THREE.Vector3(0, 0.02, 0)); t.rotation.z = Math.PI; }
+  if (m === 'arg1') { bryn(-0.35, 0.075); u.mun.scale.set(1.2, 0.12, 0.4); }
+  if (m === 'arg2') { bryn(-0.55, 0.068); u.mun.visible = false; const t = add(new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.012, 6, 14, Math.PI), munMat)); t.position.copy(munPos).add(new THREE.Vector3(0, -0.02, 0)); }
+  if (m === 'rasande' || m === 'rasande+rok') {
+    bryn(-0.7, 0.062); u.huvudHud.color.setHex(0xe0503c); u.mun.scale.set(1.5, 0.9, 0.4);
+    const tand = add(box(0.07, 0.015, 0.01, mat(0xffffff))); tand.position.copy(munPos).add(new THREE.Vector3(0, 0.022, 0.02));
+    if (m === 'rasande+rok') for (const sx of [-1, 1]) for (let i = 0; i < 4; i++) { const r = add(new THREE.Mesh(new THREE.SphereGeometry(0.035 + i * 0.022, 8, 6), new THREE.MeshStandardMaterial({ color: 0xf2f2f2, transparent: true, opacity: 0.85 - i * 0.15 }))); r.position.set(sx * (0.2 + i * 0.06), 0.02 + i * 0.07, -0.02); }
+  }
+  if (m === 'forvanad') {
+    bryn(0.35, 0.135); u.bryn.forEach((b) => { b.scale.set(1.15, 1, 1); }); u.mun.visible = false; const p = munPos.clone().add(new THREE.Vector3(0, -0.012, 0.006));
+    const inne = add(new THREE.Mesh(new THREE.CircleGeometry(0.042, 20), new THREE.MeshBasicMaterial({ color: 0x1a0608 }))); inne.scale.set(0.85, 1.25, 1); inne.position.copy(p).add(new THREE.Vector3(0, 0, 0.006));
+    const tunga = add(new THREE.Mesh(new THREE.CircleGeometry(0.022, 14, 0, Math.PI), mat(0xc84a5a))); tunga.rotation.z = Math.PI; tunga.position.copy(p).add(new THREE.Vector3(0, -0.028, 0.009));
+    const l = add(new THREE.Mesh(new THREE.TorusGeometry(0.043, 0.011, 8, 20), munMat)); l.scale.set(0.85, 1.25, 1); l.position.copy(p).add(new THREE.Vector3(0, 0, 0.004));
+  }
+  if (m === 'likgiltig') { bryn(0, 0.075); u.mun.scale.set(0.9, 0.08, 0.4); }
+}
 function poseFigur(f, { x = 0, z = 0, rot = 0, motKamera = null, pekaMot = null, armarUpp = false, handerISidan = false, humor = 'neutral', synlig = true } = {}) {
   f.visible = synlig; f.position.set(x, 0, z); f.rotation.set(0, motKamera ? Math.atan2(motKamera[0] - x, motKamera[2] - z) : rot, 0);
   const u = f.userData; u.hoger.quaternion.identity(); u.vanster.quaternion.identity(); u.huvud.rotation.set(0, 0, 0); u.finger.visible = false;
-  u.hud.color.setHex(humor === 'rasande' ? 0xec8a78 : u.hudFarg);
+  figurMimik(f, null); u.bryn.forEach((b) => b.scale.set(1, 1, 1));
+  u.hud.color.setHex(u.hudFarg);   /* A-078: rött ansikte sköts av figurMimik, bara på huvudet */
   u.bryn.forEach((b) => { const v = b.position.x < 0; b.rotation.z = humor === 'neutral' ? (v ? 0.12 : -0.12) : (v ? -0.45 : 0.45); b.position.y = humor === 'neutral' ? 0.085 : 0.07; });
   u.mun.scale.set(humor === 'rasande' ? 1.1 : 1.3, humor === 'rasande' ? 0.75 : humor === 'arg' ? 0.15 : 0.25, 0.4);
   if (handerISidan) { u.hoger.rotation.set(0, 0, 0.55); u.vanster.rotation.set(0, 0, -0.55); }
@@ -14150,6 +14189,8 @@ function poseFigur(f, { x = 0, z = 0, rot = 0, motKamera = null, pekaMot = null,
     const lokal = dir.applyQuaternion(f.quaternion.clone().invert());
     u.hoger.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), lokal); u.finger.visible = true;
   }
+  if (MIMIK.includes(humor)) figurMimik(f, humor);
+  else if (u.huvudHud) u.huvudHud.color.copy(u.hud.color);
 }
 // rendera en scen i bredd × höjd och gör bakgrunden lite suddig (skärpedjup ungefär). nara = suddigt även nära kameran.
 function introRendera(sc, kam, W, H, fokus, { nara = false, gra = 0 } = {}) {
@@ -14320,15 +14361,66 @@ function duPaCykel(medSkrivare = true, fas = 0) {
   u.ben[0].rotation.x = -0.55 - 0.35 * Math.sin(v); u.ben[1].rotation.x = -0.55 + 0.35 * Math.sin(v);
   for (const a of [u.hoger, u.vanster]) a.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, -0.45, 1).normalize());
   cy.children.filter((o) => Math.abs(o.rotation.z - 0.5) < 0.01).forEach((o) => { o.visible = false; });   // stödet uppfällt
-  const sack = introRum.sack.clone(true); sack.visible = true; sack.position.set(0, 1.0, -0.33); sack.rotation.y = Math.PI; sack.scale.setScalar(0.95); du.add(sack);
+  const sack = introRum.sack.clone(true); sack.visible = true; sack.position.set(0, 1.0, -0.25); sack.rotation.y = Math.PI; sack.scale.setScalar(0.95); du.add(sack);
+  const rem = mat(0x2a2a2a); for (const x of [-0.13, 0.13]) { du.add(at(box(0.06, 0.42, 0.025, rem), x, 1.32, 0.148)); du.add(at(box(0.07, 0.025, 0.31, rem), x, 1.56, 0)); }
+  for (const x of [-0.24, 0.24]) { const r = at(box(0.025, 0.06, 0.34, rem), x, 1.3, -0.02); r.rotation.x = -0.75; du.add(r); }   /* A-078 ruta 11: ryggan sitter fast med axelremmar */
   return g;
 }
 const DU_CYKEL_KAM = () => introKamera([0, 0.95, 3.4], [0, 0.95, 0], 38, 1);   // från sidan: cykeln åker åt höger i bilden
+/* A-078: introt v4 – kameror och poser per ruta (facit: mockup-intro, vyer.json; mimik som humor). Du är likgiltig genom hela introt. */
+const VYER4 = {
+  v4dag3: {"kam":[[0.55,1.45,-0.35],[2.35,1.45,-0.45]],"fov":55,"stok":0.4,"du":{"x":1.0,"z":-0.95,"rot":3.491592653589793,"sitt":true,"lookAt":[2.3,1.5,-0.4],"humor":"likgiltig"},"mamma":{"x":2.35,"z":-0.45,"motKamera":[1.0,0,-0.95],"humor":"arg1","handerISidan":true,"lookAt":[1.0,1.15,-0.95]},"fokus":1.9},   // 3-tisdag
+  v4dag4: {"kam":[[1.55,0.35,0.55],[2.25,1.5,-0.4]],"fov":60,"stok":0.6,"du":{"x":1.0,"z":-0.95,"rot":3.491592653589793,"sitt":true,"lookAt":[2.3,1.5,-0.4],"humor":"likgiltig"},"mamma":{"x":2.25,"z":-0.4,"motKamera":[1.0,0,0.5],"humor":"arg2","pekaMot":[1.2,0.0,0.7],"lookAt":[1.0,1.15,-0.95]},"fokus":1.6},   // 4-onsdag
+  v4dag5: {"kam":[[0.95,1.35,0.25],[2.15,1.65,-0.45]],"fov":64,"stok":0.85,"du":{"x":1.0,"z":-0.95,"rot":3.491592653589793,"sitt":true,"lookAt":[2.3,1.5,-0.4],"humor":"likgiltig"},"mamma":{"x":2.15,"z":-0.45,"motKamera":[1.0,0,-0.95],"humor":"arg2","armarUpp":true,"lookAt":[1.0,1.15,-0.95]},"fokus":1.4},   // 5-torsdag
+  v4dag6a: {"kam":[[0.0,1.55,1.3],[2.2,1.4,-0.4]],"fov":56,"stok":1,"du":{"x":1.0,"z":-0.95,"rot":3.491592653589793,"sitt":true,"lookAt":[2.3,1.5,-0.4],"humor":"likgiltig"},"mamma":{"x":2.2,"z":-0.4,"motKamera":[1.0,0,-0.95],"humor":"rasande","pekaMot":[1.0,1.15,-0.95],"lookAt":[1.0,1.15,-0.95]},"fokus":2.6},   // 6a-fredag
+  v4dag6b: {"kam":[[1.25,1.55,0.35],[2.2,1.45,-0.4]],"fov":56,"stok":1,"du":{"x":1.0,"z":-0.95,"rot":3.491592653589793,"sitt":true,"lookAt":[2.3,1.5,-0.4],"humor":"likgiltig"},"mamma":{"x":2.2,"z":-0.4,"motKamera":[1.0,0,-0.95],"humor":"rasande","pekaMot":[1.0,1.15,-0.95],"lookAt":[1.0,1.15,-0.95]},"fokus":1.3},   // 6b-fredag-nara
+  v4kort7: {"kam":[[1.2,1.5,-0.3],[2.25,1.55,-0.4]],"fov":52,"stok":1,"lampa":9,"mamma":{"x":2.25,"z":-0.4,"motKamera":[1.55,0,-0.32],"humor":"rasande+rok","pekaMot":[1.2,1.45,-0.15],"lookAt":[1.2,1.5,-0.3]},"fokus":1.0,"nara":true},   // 7-argast
+  v4kort8: {"kam":[[-0.9,1.25,-0.55],[1.6,1.05,-0.6]],"fov":58,"stok":1,"du":{"x":1.0,"z":-0.95,"motKamera":[2.05,0,0.45],"lookAt":[2.05,1.55,0.45],"humor":"likgiltig"},"mamma":{"x":2.05,"z":0.45,"motKamera":[0.4,0,-0.9],"humor":"rasande","pekaVanster":[3.9,1.4,-0.45],"lookAt":[1.0,1.45,-0.95]},"fokus":2.6,"stol":[1.75,-1.5,-0.6]},   // 8-reser-sig
+  v4kort9: {"kam":[[4.5,1.55,-0.95],[2.5,1.4,-0.35]],"fov":58,"stok":1,"du":{"x":3.5,"z":-1.3,"motKamera":[5.5,0,-1.5],"steg":true,"humor":"likgiltig"},"mamma":{"x":2.45,"z":0.0,"motKamera":[3.55,0,-1.45],"chock":true,"lookAt":[3.55,1.5,-1.45],"humor":"forvanad"},"fokus":1.9},   // 9-ut-forbi
+};
+/* A-078: rendera en vy ur VYER4 i intro-rummet (samma steg som planeringschattens krok) */
+function introVy4(o, W, H, matt) {
+  const R = introRum;
+  R.dorr.rotation.y = o.dorr ?? -1.6; R.damm.visible = false; R.sack.visible = false; R.skriv.visible = false; R.lampa.intensity = o.lampa ?? 12;
+  R.stok.forEach((x, i) => { x.visible = i < R.stok.length * (o.stok ?? 0.6); }); R.kal.visible = false;
+  const st = R.stol; if (st) { st.userData.hem ||= [st.position.x, st.position.z, st.rotation.y]; const [x, z, r] = o.stol || st.userData.hem; st.position.x = x; st.position.z = z; st.rotation.y = r; }
+  poseFigur(R.du, { synlig: false }); poseFigur(R.mamma, { synlig: false });
+  R.du.position.y = 0; R.du.userData.ben.forEach((b) => { b.rotation.x = 0; });
+  if (o.du) {
+    poseFigur(R.du, o.du); const u = R.du.userData;
+    if (o.du.sitt) { R.du.position.y = -0.33; u.ben.forEach((b) => { b.rotation.x = -Math.PI / 2; }); for (const a of [u.hoger, u.vanster]) a.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, -0.3, 1).normalize()); }
+    if (o.du.lookAt) u.huvud.lookAt(...o.du.lookAt);
+    if (o.du.steg) { u.ben[0].rotation.x = 0.45; u.ben[1].rotation.x = -0.45; }
+  }
+  if (o.mamma) {
+    const f = R.mamma, u = f.userData; poseFigur(f, o.mamma); if (o.mamma.lookAt) u.huvud.lookAt(...o.mamma.lookAt);
+    if (o.mamma.pekaVanster) { f.updateMatrixWorld(true); const axel = u.vanster.getWorldPosition(new THREE.Vector3()), dir = new THREE.Vector3(...o.mamma.pekaVanster).sub(axel).normalize().applyQuaternion(f.quaternion.clone().invert()); u.vanster.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir); }
+  }
+  const kam = introKamera(o.kam[0], o.kam[1], o.fov || 55, W / H);
+  const c = matt ? matta(R.sc, kam, W, H, matt) : introRendera(R.sc, kam, W, H, o.fokus || 2.2, { nara: !!o.nara });
+  const pts = {}; if (o.mamma) { R.mamma.updateMatrixWorld(true); const p = R.mamma.userData.huvud.getWorldPosition(new THREE.Vector3()).project(kam); pts.huvud = [+((p.x + 1) / 2 * 100).toFixed(1), +((1 - p.y) / 2 * 100).toFixed(1)]; }
+  if (o.du) { R.du.updateMatrixWorld(true); const p = R.du.userData.huvud.getWorldPosition(new THREE.Vector3()).project(kam); pts.du = [+((p.x + 1) / 2 * 100).toFixed(1), +((1 - p.y) / 2 * 100).toFixed(1)]; }
+  return { c, pts };
+}
+/* A-078 test: närbilder av mimiken (samma vinkel som facit p0–p6) */
+function mimikBilder() {
+  if (!introRum) introRum = byggIntroRum();
+  const ut = {}, kam = [[1.3, 1.62, -0.36], [2.2, 1.68, -0.4]];
+  [['p0-snall', 'snall'], ['p1-arg1', 'arg1'], ['p2-arg2', 'arg2'], ['p3-rasande', 'rasande'], ['p4-rasande+rok', 'rasande+rok'], ['p5-forvanad', 'forvanad'], ['p6-du-likgiltig', 'likgiltig', true]].forEach(([n, m, du]) => {
+    ut[n] = introVy4({ kam, fov: du ? 40 : 34, stok: 1, fokus: 0.9, [du ? 'du' : 'mamma']: { x: 2.2, z: -0.4, motKamera: [1.3, 0, -0.36], lookAt: [1.3, 1.62, -0.36], humor: m } }, 1000, 625).c.toDataURL('image/jpeg', 0.9);
+  });
+  {   /* spelets figurer med samma modell: Helen, brorsan (huvan), mamma, du */
+    const sc = introLjusScen(0xa8d4f0), fig = [['helen', 'snall'], ['bror', 'snall'], ['mamma', 'forvanad'], ['du', 'likgiltig']].map(([v, m], i) => { const f = introFigur(v); poseFigur(f, { x: -1.5 + i, z: 0, motKamera: [0, 0, 4], humor: m }); sc.add(f); return f; });
+    sc.add(at(box(8, 0.05, 4, mat(0x6fae4a)), 0, -0.025, 0));
+    ut['figurer'] = introRendera(sc, introKamera([0.6, 1.6, 3.6], [0, 1.3, 0], 50, 1.6), 1000, 625, 3.6).toDataURL('image/jpeg', 0.9); void fig;
+  }
+  return ut;
+}
 function introLager(namn, W = 1000, H = 625) {
   if (!introRum) introRum = byggIntroRum();
   const R = introRum, sc = R.sc;
   const stok = (fran, till) => R.stok.forEach((o, i) => { o.visible = i >= R.stok.length * fran && i < R.stok.length * till; });
-  const aterstall = () => { R.dorr.rotation.y = -1.25; R.damm.visible = false; R.sack.visible = false; R.skriv.visible = false; R.lampa.intensity = 14; poseFigur(R.du, { synlig: false }); poseFigur(R.mamma, { synlig: false }); stok(0, 1); };
+  const aterstall = () => { if (R.stol.userData.hem) { const [x, z, r] = R.stol.userData.hem; R.stol.position.x = x; R.stol.position.z = z; R.stol.rotation.y = r; } R.dorr.rotation.y = -1.25; R.damm.visible = false; R.sack.visible = false; R.skriv.visible = false; R.lampa.intensity = 14; poseFigur(R.du, { synlig: false }); poseFigur(R.mamma, { synlig: false }); stok(0, 1); };
   aterstall();
   const kamDorr = [1.45, 1.55, 0.45], mammaDorr = [2.5, -0.4], kd = () => introKamera(kamDorr, [mammaDorr[0], 1.3, mammaDorr[1]], 58, W / H);
   R.kal.visible = !/^(rum|stok|mamma|dorr|v3dag|v3dorr)/.test(namn) || namn === 'rum1';   // kalendern är ett eget lager (SVG) i kort 2–6
@@ -14370,10 +14462,17 @@ function introLager(namn, W = 1000, H = 625) {
     return ut(introRendera(sc, k, W, H, 2.1, { nara: true }));
   }
   /* A-062 v3: nya bilder – du vid datorn, mamma som kommer närmare och lägre för varje dag, ruta 7, 8 och 9 */
-  const sitt = (f, x, z, rot) => { poseFigur(f, { x, z, rot }); f.position.y = -0.33; const u = f.userData; u.ben.forEach((b) => { b.rotation.x = -Math.PI / 2; }); for (const a of [u.hoger, u.vanster]) a.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, -0.35, 1).normalize()); };
+  const sitt = (f, x, z, rot) => { poseFigur(f, { x, z, rot, humor: f === R.du ? 'likgiltig' : 'neutral' }); f.position.y = -0.33; const u = f.userData; u.ben.forEach((b) => { b.rotation.x = -Math.PI / 2; }); for (const a of [u.hoger, u.vanster]) a.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, -0.35, 1).normalize()); };
   const huvudPts = (kam, f) => { f.updateMatrixWorld(true); const v = f.userData.huvud.getWorldPosition(new THREE.Vector3()).project(kam); return { huvud: [+((v.x + 1) / 2 * 100).toFixed(1), +((1 - v.y) / 2 * 100).toFixed(1)] }; };
   const DU_STOL = [1.0, -0.95], DU_HUVUD = [1.0, 1.25, -0.95];   /* Jesper 15:56: mamma pratar med dig vid datorn – hon tittar på dig, inte in i rummet */
   const DAGKAM = (k) => { const t = k / 4, lerp = (a, b) => a + (b - a) * t; return introKamera([lerp(-0.9, 0.2), lerp(1.6, 0.55), lerp(1.5, 0.7)], [lerp(1.85, 2.05), lerp(1.25, 1.45), lerp(-0.75, -0.55)], lerp(56, 70), W / H); };
+  if (VYER4[namn]) { const { c, pts } = introVy4(VYER4[namn], W, H); return ut(c, pts); }
+  if (namn === 'v4dorr6') { const o = { ...VYER4.v4dag6a, dorr: 0 }; const { c } = introVy4(o, W, H, [R.dorr]); return ut(c); }   // stängd dörr som smäller upp i ruta 6
+  if (namn === 'v4dag2') {   // ruta 2 som förut, men mamma snäll
+    const kam = DAGKAM(0); stok(0, 0.25); sitt(R.du, DU_STOL[0], DU_STOL[1], Math.PI + 0.35); R.dorr.rotation.y = -1.6;
+    poseFigur(R.mamma, { x: mammaDorr[0], z: mammaDorr[1], motKamera: [DU_STOL[0], 0, DU_STOL[1]], humor: 'snall' }); R.mamma.userData.huvud.lookAt(...DU_HUVUD);
+    return ut(introRendera(sc, kam, W, H, 2.3), huvudPts(kam, R.mamma));
+  }
   if (namn === 'v3rum1') { stok(0, 1); R.dorr.rotation.y = 0; sitt(R.du, 1.0, -0.95, Math.PI + 0.35); return ut(introRendera(sc, introKamera([1.55, 1.6, 1.55], [0.9, 0.9, -1.2], 60, W / H), W, H, 2.6)); }
   if (/^v3dag[2-6]$/.test(namn)) {
     const k = +namn[5] - 2, kam = DAGKAM(k); stok(0, [0.25, 0.4, 0.6, 0.85, 1][k]);
@@ -15700,7 +15799,7 @@ function malKontrakt(st = STEG[S.steg]) {
 window.__printahem = { renderer, saljTillAli: (t, n) => saljTillAli(t, n), saljPris: (t) => saljPris(t), aliReplNu: () => aliRepl, krT, kollaPrestationer: () => kollaPrestationer(), B, gruvTillGrotta: () => { gruvFard = { t: GRUV_SLUT_T, ner: true }; gruvLage = 'fard'; gruvFramme(); return gruvLage; }, gruvFart: (t, n) => gruvFart(t, n), gruvKameraVid: (t, ner = true) => { const g = gruvFard; gruvFard = { t, ner }; gruvPlacera(gruvVagn, t, ner ? 1 : -1); gruvKamera(); gruvFard = g; }, gruvAk: (ner) => gruvAk(ner), gruvLage: () => gruvLage, gruvFard: () => gruvFard, gruvScen, GRUV_BANA, GRUV_LANGD, GRUV_GC, GRUV_SLUT_T, gruvVagn, bergYta, bengtHus, bengtTradgard, slyKlumpar, sagaSly: (kl) => sagaSly(kl), solparkStor: () => solparkStor(), uppdateraRitning: (dt) => uppdateraRitning(dt), SVACKA, GRUVA, SVACKA_VAG, svackaHojd, svackaSparr, BOMMAR, grop, VASK, stegText: () => stegText(STEG[S.steg]), oppnaMarknad: () => oppnaMarknad(), ritningNu: () => ritning, fastIHanden, konturMal, genStar, GEN_PLATS, CYKEL_RUTA, sangSpoke, kvarnMark, tippHojd, markY, sattTippSteg: (n, snap = true) => { S.tippSteg = n; ritaTippHog(0.05, snap); return tippStegNu; }, tippStegNu: () => tippStegNu, tippU, tippKant, TIPP_HV, husvagnG: () => husvagnG, husvagnHinder, TIPP_INB, tippMalSteg: () => tippMalSteg(), tippSparr, STORYKEDJA, STORYKEDJA_VERSION, KEDJA_TEXT, besokTick: (dt) => uppdateraBesok(dt), froSett: (id, s) => froSett(id, s), froSpoiler, STORYLAGER, FRO_T, kameraAkSteg: (t, frys = false) => { if (!kameraAk) return false; kameraAk.start = performance.now() - t * 1000; kameraAk.frys = frys ? t : null; uppdateraKameraAk(); renderer.render(scen, kamera); return true; }, startaUtsikt: () => startaUtsikt(), tippSvep: () => tippSvep(), visaForeEfter: () => visaForeEfter(), kulle, kameraAk: () => kameraAk, kollaUtsikt: () => kollaUtsikt(), bilFas: () => bil.fas, sopbil, kollaBengt: (dt) => kollaBengt(dt), bengtFig: bengt, privatSkyltar, bengtGrav, stromBehov, solEffekt, FLASK_FORE, spelBild, spelBildCache, startBild: () => { const r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio(); kamera.aspect = 1.6; kamera.updateProjectionMatrix(); r.setPixelRatio(1); r.setSize(1280, 800, false); r.render(scen, kamera); const C = document.createElement('canvas'); C.width = 1280; C.height = 800; C.getContext('2d').drawImage(r.domElement, 0, 0); r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); kamera.aspect = gs.x / gs.y; kamera.updateProjectionMatrix(); return C.toDataURL('image/jpeg', 0.86); }, tidigFanfar, bengtLada, GROP, GRIND, grop, grusGrind, rolfKaparGrinden: () => rolfKaparGrinden(), ritaGrustag: () => ritaGrustag(), kollaBengtAvslojande: () => kollaBengtAvslojande(), BENGT_HUS, BENGT_LADA, BENGT_GRAV, bengtLadaHandlare, ritaNyckelSkylt: () => ritaNyckelSkylt(), kjelleText: (x) => kjelleText(x), HUMOR_T, boterFor: (m) => boterFor(m), boterSyns: (b) => boterSyns(b), CHEFEN, labb, LABB, BAGAR, TRADAR, aktivaTradar, kollaBagar: (t) => kollaBagar(t), kollaLabb: () => kollaLabb(), efterspelTest: () => efterspelTest(), vaskSlapp: (t) => vaskSlapp(t), ader, ritaStart: () => ritaStart(), vev3d: () => vev, dagMoment: (d) => dagMoment(d), SAKER, malKontrakt, rullLapp, THREE, TS, visaLapp: (id) => visaLapp(id), fotografera: (p) => fotografera(p), POLAROID, aliNejFor: (t) => aliNejFor(t), ROLF_LISTA: () => ROLF, STORY_SAKER, hoppaOver, prataNu, volym, rostLage: () => rostLage(), pratarNu: () => performance.now() < pratarTill, valjOsagd, sakModell, ikonModell, ikonLista, renderaIkon, kand, regelvakt, upplast, lasUpp, UPPLAS_FLASK, finns, startTorn, vevEl, MONTERA, TA_PA, taPaVald, monteraPa, notis, malSynligt: () => malVisasSteg === S.steg, kanalLage: () => ({ pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: !medEl2.hidden, butik: !ui.butiksOverlay.hidden, overlay: !ui.overlay.hidden, aktiv: kanalAktiv?.text?.slice(0, 40), fri: kanalFri - performance.now(), pratar: pratarTill - performance.now(), lugn: lugnTill - performance.now(), n: kanal.length }), paket, oppnaSaljlada, TRATT_MAX, giAliBonus, tangentTips, stromMax, byggBodTest: () => { Object.assign(bodVal, { ok: true, x: BOD.x, z: BOD.z, r: BOD.r }); byggBodHar(); return !!S.bod; }, aliVill, smsKortKlart, smsFram, smsBubbla, ritaDN, markeraAliIdag, dnRaknare, filTillg, dragTorn, tornPlats, tornRullar, slangNar, rullTornAktivera, flyttaSkrivarRullar, anvandSkrivare,
   framsteg, skrivarText, framstegKvarn,
   dbgKanal: () => ({ nu: performance.now(), pratarTill, pratarVem, kanalFri, aktiv: kanalAktiv && kanalAktiv.text, n: kanal.length, pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: medEl2.hidden, butik: ui.butiksOverlay.hidden, ov: ui.overlay.hidden }),
-  textLogg: () => TEXTLOGG.slice(), pratar: () => !!kanalAktiv || kanal.length > 0 || performance.now() < pratarTill || performance.now() < kanalFri, kanal: () => ({ aktiv: kanalAktiv && { vem: kanalAktiv.vem, text: kanalAktiv.text, vikt: kanalAktiv.vikt }, ko: kanal.map((x) => ({ vem: x.vem, text: x.text, vikt: x.vikt })) }), rostMatning, renderaIkon, ikonLista, handelseLogg, ritningInfo: () => { const c = ritning ? new THREE.Box3().setFromObject(ritning).getCenter(new THREE.Vector3()) : null; return { nyckel: ritningNyckel, linjer: ritning?.children.length || 0, printar: printarFram.size, mitt: c && [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(2)] }; }, prata, elHelFig: () => [...(elHel || [])], avkodat, forladdaRepliker, introLager, trampa: (sek) => { trampTest = sek; }, veva: (sek) => { vevTest = sek; }, siktaVagg: (v) => { vaggTest = v; }, vaggarKlara: () => vaggarKlara(), tapetKlara: () => tapetKlara(), nastaInred, prisNu, helaRullar, extruderFull, gardMal, kanLyfta, karraFull, harGava, valdKarra, BARA_SKRAP, SKRAP_RACKVIDD, utlagerKap, startPlats, sattFonster: () => { const n = fonsterLista().length; S.hem = { ...(S.hem || {}), fonster: [...fonsterLista(), { vagg: Object.keys(VAGGAR).filter((k) => !/dorr|fram/i.test(k))[n % 3] || Object.keys(VAGGAR)[0], u: 0.5 }] }; ritaFonster(); uppdateraSkjul(); sparaSnart(); }, medKo, medEl2, uppdatera, stegText: () => { const st = STEG[S.steg]; return st ? (typeof st.text === 'function' ? st.text() : st.text) : ''; }, valdTyp: () => valdTyp(), ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, husvagnFri: () => husvagnFri(), oppnaSkapet: () => oppnaSkapet(), goran: goranTest, polaroid: polaroidTest,  tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, webbOrdrar, oppnaDator, BESOK, besok, startaBesok, ata, MAT_VARDE, printLinje, migreraDK, kolfKvarn, kolfAktivera, uppdateraKolf, nastaGamer, trimNiva, plockaUppPlacerad, plockaSkrap, karraRing, foremal, variantFor, valjTyp, husvagnKlick, gastScen, gastDelKlar, husvagn: () => husvagnG, rolfBesok, sackRulle, karraKlick, karraMal, pappaGubbe, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer, kollaUtsikt, lasUpp, upplast, GEN, flaskS, flyttaFelPlacerade, pilBildTyp: () => pilBildTyp, aliBesok, dagMalLista, visaDagNotis, regelvaktKor: () => regelvakt.kor(), spokeGrupp: () => spoke.grupp, bodSpoke, fonsterSpoke };   /* A-076 */   /* A-069 */
+  textLogg: () => TEXTLOGG.slice(), pratar: () => !!kanalAktiv || kanal.length > 0 || performance.now() < pratarTill || performance.now() < kanalFri, kanal: () => ({ aktiv: kanalAktiv && { vem: kanalAktiv.vem, text: kanalAktiv.text, vikt: kanalAktiv.vikt }, ko: kanal.map((x) => ({ vem: x.vem, text: x.text, vikt: x.vikt })) }), rostMatning, renderaIkon, ikonLista, handelseLogg, ritningInfo: () => { const c = ritning ? new THREE.Box3().setFromObject(ritning).getCenter(new THREE.Vector3()) : null; return { nyckel: ritningNyckel, linjer: ritning?.children.length || 0, printar: printarFram.size, mitt: c && [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(2)] }; }, prata, elHelFig: () => [...(elHel || [])], avkodat, forladdaRepliker, introLager, trampa: (sek) => { trampTest = sek; }, veva: (sek) => { vevTest = sek; }, siktaVagg: (v) => { vaggTest = v; }, vaggarKlara: () => vaggarKlara(), tapetKlara: () => tapetKlara(), nastaInred, prisNu, helaRullar, extruderFull, gardMal, kanLyfta, karraFull, harGava, valdKarra, BARA_SKRAP, SKRAP_RACKVIDD, utlagerKap, startPlats, sattFonster: () => { const n = fonsterLista().length; S.hem = { ...(S.hem || {}), fonster: [...fonsterLista(), { vagg: Object.keys(VAGGAR).filter((k) => !/dorr|fram/i.test(k))[n % 3] || Object.keys(VAGGAR)[0], u: 0.5 }] }; ritaFonster(); uppdateraSkjul(); sparaSnart(); }, medKo, medEl2, uppdatera, stegText: () => { const st = STEG[S.steg]; return st ? (typeof st.text === 'function' ? st.text() : st.text) : ''; }, valdTyp: () => valdTyp(), ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, husvagnFri: () => husvagnFri(), oppnaSkapet: () => oppnaSkapet(), goran: goranTest, polaroid: polaroidTest,  tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, webbOrdrar, oppnaDator, BESOK, besok, startaBesok, ata, MAT_VARDE, printLinje, migreraDK, kolfKvarn, kolfAktivera, uppdateraKolf, nastaGamer, trimNiva, plockaUppPlacerad, plockaSkrap, karraRing, foremal, variantFor, valjTyp, husvagnKlick, gastScen, gastDelKlar, husvagn: () => husvagnG, rolfBesok, sackRulle, karraKlick, karraMal, pappaGubbe, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer, kollaUtsikt, lasUpp, upplast, GEN, flaskS, flyttaFelPlacerade, pilBildTyp: () => pilBildTyp, aliBesok, dagMalLista, visaDagNotis, regelvaktKor: () => regelvakt.kor(), spokeGrupp: () => spoke.grupp, bodSpoke, fonsterSpoke, mimikBilder, VYER4 };   /* A-078 */   /* A-076 */   /* A-069 */
 
 startaLoop(uppdatera, { scen, kamera, renderer });
 
