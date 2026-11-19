@@ -193,8 +193,8 @@ const VAROR = {
   tillstand: { namn: 'Parkeringstillstånd för husvagn', ikon: '', gava: true },
   sang: { storlek: 1, namn: 'Säng', ikon: '🛏️', hem: true },          // 2 rullar. Kräver instruktionen hos Ali. Säljs inte.
   nyckelring: { namn: 'Nyckelring', ikon: '🔑' },      // 10 % rulle = en halv flaska
-  cykelS: { namn: 'Cykeln', ikon: '🚲', beskr: 'Ställ den på den lysande rutan vid skrivaren.' },   /* A-068 */
-  skrivareS: { namn: 'Storebrors Skrivare S', ikon: '🖨️', beskr: 'Långsam och låter konstigt – men den funkar. Ställ den på den lysande rutan i linje 1.' },   // punkt AS
+  cykelS: { namn: 'Cykeln', ikon: '🚲', beskr: 'Den ska stå bredvid skrivaren, mot tippen.' },   /* A-068 · A-076 13:55 */
+  skrivareS: { namn: 'Storebrors Skrivare S', ikon: '🖨️', beskr: 'Långsam och låter konstigt – men den funkar. Den ska stå där borta, mot tippen.' },   // punkt AS
   kruka: { namn: 'Blomkruka', ikon: '🪴', trivsel: 5, placerbar: true, radie: 0.3, syns: () => !!S.krukaErbjuden || S.ritningar.includes('recept:kruka') || upplast('kruka') },   /* ED: receptet köps hos Ali, inga gratisrecept */   // punkt AX: receptet dag 2, gratis från Ali   // punkt AG: receptet får man av Ali vid första försäljningen
   pall: { namn: 'Pall', ikon: '🪑', trivsel: 10, placerbar: true, radie: 0.35, syns: () => S.dag >= 3 },   // punkt AX: dag 3, 80 kr
   rulle: { namn: 'Filamentrulle', ikon: '🧵', rulle: true },   // bärs från extrudern till skrivaren
@@ -602,7 +602,7 @@ const printat = (typ) => (S.printTot || {})[typ] || 0;
 // punkt AS: dag 1 börjar från blankt. Stegen har id, så att pilen och uppläsningen inte hänger på ordningen.
 const STEG_TAL = {
   lasta: 'Klicka på cykeln och lasta av storebrors skrivare.',
-  stall: 'Ställ skrivaren på den lysande platsen i linje ett.',
+  stall: 'Skrivaren ska stå där borta, mot tippen.',
   bygg: 'Ställ cykeln och generatorn vid skrivaren.',
   rullSlut: 'Printa en nyckelring till.',   /* A-076 */
   valjModell: 'Klicka på skrivaren och välj vad du vill printa.',   /* A-076 tillägg 13:20 */
@@ -636,7 +636,7 @@ const stegTal = (id) => STEG_TAL_SPARA[id] && S.mynt < STEG_TAL_SPARA[id][1] ? S
 const STEG = [
   /* A-076 (Jesper 00:11–00:32): skylten → skrivaren, cykeln och generatorn → första printen med brorsans rulle → rullen tar slut → Ali kommer över med kvarnen → egen tråd → sälj → sova */
   { id: 'lasta', mom: 'Ställ upp skrivaren', del: D1, bild: 'skrivareS', text: 'Lasta av skrivaren från cykeln', klar: () => !!S.skrivareLastad },
-  { knuff: 'Den lysande rutan. Där ska skrivaren stå.', id: 'stall', mom: 'Ställ upp skrivaren', del: D1, bild: 'skrivareS', text: 'Ställ skrivaren på rutan', klar: () => !!S.skrivareStar },
+  { id: 'stall', mom: 'Ställ upp skrivaren', del: D1, bild: 'skrivareS', text: 'Ställ skrivaren på rutan', klar: () => !!S.skrivareStar },
   { id: 'strom', mom: 'Få ström', del: D1, bild: 'skrivareS', text: 'Skrivaren behöver ström', klar: () => !!(S.stromHjalp || S.generatorTagen || S.generatorStar || S.cykelBuren || S.cykelStar || S.cykelOmbyggd) },   /* A-073: gåtan – inget svar i texten */
   /* A-071: cykeln och generatorn ställs vid skrivaren i valfri ordning – båda syns som konturer, och generatorn monteras när båda står */
   { id: 'bygg', mom: 'Få ström', del: D1, bild: 'byggsats:generator', text: () => S.cykelStar && S.generatorStar ? 'Generatorn monteras på cykeln' : `Ställ cykeln och generatorn vid skrivaren · ${(S.cykelStar ? 1 : 0) + (S.generatorStar ? 1 : 0)}/2`, klar: () => !!S.cykelOmbyggd },
@@ -809,6 +809,47 @@ const KNUFF_T = [
   [(x) => /Världens bästa fristad/.test(String(x.text)), 'Det fattas lite till. Mer trivsel, så är det klart.'],
 ];
 for (const st of STEG) if (!st.knuff && !st.las && !st.sov) { const k = KNUFF_T.find(([m]) => { try { return m(st); } catch { return false; } }); if (k) st.knuff = k[1]; }
+/* A-076 tillägg 13:55: uppgiften är din idé – tanken i jag-form med skälet, och var med landmärken som syns (skjulet, tippen, vägen, affären, brädhögen, cykeln).
+   Inga spelord ("lysande rutan", "markeringen", "konturen", "målet", "uppdraget", "klicka här"). Dag 1–5; dag 6–22 efter Jespers ok. */
+const JAG_TAL = {
+  lasta: 'Brorsans skrivare står kvar på cykeln vid vägen. Den ska av.',
+  stall: 'Skrivaren ställer jag där borta, mot tippen. Min första verkstad.',
+  strom: 'Skrivaren behöver ström. Hur fixar jag det här ute?',
+  bygg: 'Om jag trampar ström med cykeln kan skrivaren gå. Cykeln där, generatorn bredvid.',
+  valjModell: 'Nu ska skrivaren få jobba. Jag väljer något litet först.',
+  trampa: 'Cykeln är kraftverket. Nu får benen jobba.',
+  rullSlut: 'En nyckelring till, så länge brorsans rulle räcker.',
+  aliKvarn: 'Grannen från affären kommer över vägen. Vad vill han?',
+  kvarn: 'Kvarnen ställer jag bredvid skrivaren, närmast tippen. Där finns skräpet.',
+  flaska: 'Skräp i kvarnen, sen vevar jag. Då blir det tråd.',
+  egenPrint: 'Min egen tråd. Nu printar jag en nyckelring av den.',
+  salj: 'Affären på andra sidan vägen kanske köper sånt här.',
+  powerbank: 'Ali har något åt mig. Jag går över vägen till affären.',
+  kopGrip: 'Med en skräpgrip slipper jag böja mig. Ali har en ritning.',
+  printGrip: 'Ritningen är min. Nu printar jag gripen.',
+  krukaD1: 'Ali vill ha krukor. Jag printar en blomkruka.',
+  saljKruka: 'Ali gillar krukor. Han sa det själv.',
+  kopSang: 'Jag kan inte sova på betongen en natt till. Ali har en säng. Typ.',
+  printSang: 'Sängen tar lång tid. Den är värd det.',
+  sov1: 'Sängen ska in i skjulet. Sen sover jag.',
+  kopMotor: 'Vevandet tar på armarna. Ali har en motor till kvarnen.',
+  monteraMotor: 'Motorn ska sitta där veven sitter. Jag printar den först.',
+  kopSack: 'Gården är full av skräp. Jag börjar vid skjulet.',
+  vindsnurra: 'En vindsnurra på skjulets tak. Då blir det ström när det blåser.',
+  kopBatteri: 'Ali har ett gammalt bilbatteri. Då sparar jag strömmen.',
+  ryggkorg: 'Jag springer för mycket. Med en ryggkorg bär jag tio saker.',
+  'n2-bygg-arbetsbord': 'Ett arbetsbord bredvid skrivaren. Skrivare M ska stå på det.',
+  'n2-bygg-skrivare-m': 'Skrivare M på bordet. Två skrivare, dubbelt så mycket.',
+  'n3-tom-full-karra': 'Kärran rymmer massor. Jag fyller den och tippar allt i kvarnen.',
+  sophallare: 'En sophållare bakom kvarnen. Då matar den sig själv.',
+  vind4: 'En vindsnurra till på skjulets tak. Skrivarna vill ha mer ström.',
+  'n4-isolera-de-sista': 'Två väggar kvar i skjulet. Sen är det tätt.',
+  mysigt: 'Skjulet ska bli mysigt på riktigt. Det är mitt hem nu.',
+  vind5: 'En tredje vindsnurra på taket. Skrivare M drar mycket.',
+};
+for (const st of STEG) if (JAG_TAL[st.id]) st.knuff = JAG_TAL[st.id];
+let spelordFran = -1;
+const SPELORD = /lysande (rutan|platsen)|markeringen|konturen|\bmålet\b|uppdraget|klicka här/i;
 const SI = Object.fromEntries(STEG.map((x, i) => [x.id, i]).filter(([id]) => id));   // steg-id → index (dag 1)
 const stegId = () => STEG[S.steg]?.id || null;
 // gården räknas som städad när skräpet är borta – tunga saker räknas först när du har kärran, och högen vid kvarnen (när den är full) är ditt lager
@@ -4312,7 +4353,7 @@ interaktor.registrera(vagCykel, {
       { const o = vagCykel.userData.skrivare, c = o.clone(true), fran = o.getWorldPosition(new THREE.Vector3()), t0 = performance.now(); c.position.copy(fran); c.scale.setScalar(0.82); scen.add(c);   /* DT: kort lyft-animation upp i famnen */
         const steg = () => { const k = Math.min(1, (performance.now() - t0) / 450), mal = new THREE.Vector3(0.25, -0.35, -0.8).applyMatrix4(kamera.matrixWorld); c.position.lerpVectors(fran, mal, k).y += Math.sin(k * Math.PI) * 0.5; c.scale.setScalar(0.82 * (1 - k * 0.6)); if (k < 1) requestAnimationFrame(steg); else scen.remove(c); }; steg(); }
       S.skrivareLastad = true; handelse('lastatAv', { sak: 'skrivare' }); const i = laggTill('skrivareS'); if (typeof i === 'number') byt(i);
-      ljudH('utrustning'); regi.info('🖨️ Du har skrivaren. Ställ den på den lysande rutan i linje 1.', 'bra'); ritaStart(); sparaSnart(); return;
+      ljudH('utrustning'); regi.info('🖨️ Brorsans skrivare. Den ska stå där borta, mot tippen.', 'bra'); ritaStart(); sparaSnart(); return;
     }
     if (!S.generatorTagen && !S.generatorStar && !S.cykelOmbyggd) {   /* EF15: generatorn tas i handen först, sedan monteras den med skruvdragaren */
       if (!harRumFor('byggsats:generator')) { regi.info('Verktygsraden är full', 'fel'); return; }
@@ -6204,7 +6245,7 @@ function stallNer() {
   if (!spoke.ok) {
     ljud.fel();
     if (spoke.planFel && spoke.planFel !== 'full') { platsFel(typ); return true; }   // BU: tanke första gången, sedan bara pilen
-    if (spoke.planFel) { regi.info(spoke.planFel === 'full' ? 'Fabriken har ingen ledig plats för den – den får vänta i kistan' : `Ställ den på den lysande rutan: ${spoke.planFel.text.replace(/^Här ska /, '').replace(/ stå$/, '')}`, 'fel'); return true; }
+    if (spoke.planFel) { regi.info(spoke.planFel === 'full' ? 'Fabriken har ingen ledig plats för den – den får vänta i kistan' : `Den ska stå där jag ser den framför mig: ${spoke.planFel.text.replace(/^Här ska /, '').replace(/ stå$/, '')}`, 'fel'); return true; }
     regi.info(MASKINER[typ]?.kraverBord ? 'Skrivaren måste stå på ett ledigt arbetsbord' : 'Det får inte plats där', 'fel');
     return true;
   }
@@ -6688,7 +6729,7 @@ function kopDirekt(id) {
   if (id === 'gammalkvarn') {
     if (!harRumFor('byggsats:gammalkvarn')) { aliRepl = 'Var ska du bära den? Fickorna är fulla.'; return false; }
     S.kvarnKopt = true; const i = laggTill('byggsats:gammalkvarn'); if (typeof i === 'number') byt(i); aliReplGava = 'byggsats:gammalkvarn';
-    aliRepl = ALI_GAMMALKVARN; regi.info('⚙️ Kvarnen är din – ställ den på den lysande rutan i linje 1', 'guld');
+    aliRepl = ALI_GAMMALKVARN; regi.info('⚙️ Kvarnen är min – den ska stå bredvid skrivaren, mot tippen', 'guld');
   } else if (id === 'hylla' || id === 'spis' || id === 'gs_tak' || id === 'gs_isolering' || id === 'gs_dorr' || id === 'korv') {   /* ED13: köpet hamnar i handen – effekten börjar när saken sitter på plats */
     const t = id === 'korv' ? 'korv' : 'byggsats:' + id;
     if (!harRumFor(t)) { aliRepl = 'Var ska du bära den? Fickorna är fulla.'; return false; }
@@ -6703,7 +6744,7 @@ function kopDirekt(id) {
   } else if (id === 'petgkvarn') {   // CM
     if (!harRumFor('byggsats:petgkvarn')) { aliRepl = 'Var ska du bära den? Fickorna är fulla.'; return false; }
     S.rodKvarnKopt = true; const i = laggTill('byggsats:petgkvarn'); if (typeof i === 'number') byt(i); aliReplGava = 'byggsats:petgkvarn';
-    aliRepl = ALI_RODKVARN; regi.info('Röda kvarnen är din – ställ den på den lysande rutan i röda linjen', 'guld');
+    aliRepl = ALI_RODKVARN; regi.info('Röda kvarnen är min – den ska stå i röda linjen', 'guld');
   } else if (id === 'cykelbatteri') {   /* ED13: batteriet i handen – kopplas in vid cykeln */
     if (!harRumFor('byggsats:cykelbatteri')) { aliRepl = 'Var ska du bära den? Fickorna är fulla.'; return false; }
     const i = laggTill('byggsats:cykelbatteri'); if (typeof i === 'number') byt(i); aliReplGava = 'byggsats:cykelbatteri';
@@ -9734,7 +9775,7 @@ function underTiden() {
 function nuTips(t) {
   if (/^Lasta av/.test(t)) return 'Cykeln står vid vägen – klicka på den';
   if (/^Bygg om cykeln/.test(t)) return 'Klicka på cykeln vid vägen igen';
-  if (/^Ställ (skrivaren|kvarnen)/.test(t)) return 'Gå till den lysande rutan i linje 1 och klicka';
+  if (/^Ställ (skrivaren|kvarnen)/.test(t)) return 'Gå dit borta mot tippen, där den ska stå';
   if (/^Trampa/.test(t)) return S.strom < 2 ? 'Klicka och håll på cykelns pedaler – sen printa på skrivaren' : 'Klicka på skrivaren och välj nyckelringen';
   if (/adresskylt/.test(t)) { const d = Math.round(Math.hypot(VAG_SKYLT.x - spelare.pos.x, VAG_SKYLT.z - spelare.pos.z)); return d > 4 ? `Brädhögen ligger vid vägen · ${d} m – följ den gula pilen` : 'Klicka på brädhögen'; }
   if (/^Efterspelet/.test(t)) return /allt är klart/.test(t) ? 'Tippen på tid finns under Dagbok → Spelet' : 'Mark köper du på tavlan vid vägen · prototyper hos Ali';
@@ -16134,6 +16175,7 @@ if (ui) {
       for (const o of interaktor.mal) { if (!synlig(o) || o === startYta || utanAutoTraff.has(o)) continue; const y = o.autoTraffYta; if (!y) continue; y.getWorldPosition(c2); if (c.distanceTo(c2) > 0.2) continue; const g = y.geometry.parameters; s2.set(g.width, g.height, g.depth).divideScalar(TRAFF_FAKTOR); if (Math.abs(s1.x - s2.x) < 0.3 * s2.x + 0.1 && Math.abs(s1.z - s2.z) < 0.3 * s2.z + 0.1) { ut.push(`vit ritning runt ${o.name || o.userData.typ || 'en sak som står'}`); break; } } }
     return ut.slice(0, 2); });   /* A-076 rättelse 16:15 */
   regelvakt.regel('HJÄLP I KÖ', () => hjalpIKo.sedan && ui.igang && !pausad && performance.now() - hjalpIKo.sedan > 1000 ? [`"${hjalpIKo.text}" väntar på en annan hjälp (${hjalpIKo.akt}) i ${((performance.now() - hjalpIKo.sedan) / 1000).toFixed(1)} s`] : [], { enGang: true });   /* A-076 tillägg 16:30 */
+  regelvakt.regel('SPELORD I REPLIK', () => { const ut = []; for (const e of TEXTLOGG) { if (e.t <= spelordFran) continue; if (['röst', 'sak', 'sak-del', 'tanke', 'notis', 'info', 'toast', 'dagbokkort'].includes(e.kalla) && SPELORD.test(String(e.text || ''))) ut.push(`${e.vem || e.kalla}: "${String(e.text).slice(0, 60)}"`); } spelordFran = TEXTLOGG[TEXTLOGG.length - 1]?.t ?? spelordFran; return ut.slice(0, 3); });   /* A-076 tillägg 13:55 */
   regelvakt.regel('RÖST SAKNAS', () => [...saknadRost].map((v) => `${v} pratar utan egen röst i rost.js`), { enGang: true });   /* A-078 tillägg 11:45 */
   regelvakt.regel('MENY UTAN VÄG', () => { if (!oppenAtgard) return []; if (!menyOppen()) { oppenAtgard = null; return []; } const svar = kanNu(oppenAtgard.atgard, oppenAtgard); return svar.ja ? [] : [`${oppenAtgard.atgard}-menyn är öppen fast ${svar.skal.toLowerCase()}`]; });   /* A-076 tillägg 11:35 */
   regelvakt.regel('MÅL UTAN LEDTRÅD', () => { if (!ui.igang) return []; const st = STEG[S.steg]; return st && !st.sov && !ledtradFor(st) ? [`"${rens(stegText(st) || '').slice(0, 60)}" har ingen ledtråd`] : []; }, { enGang: true });   /* A-083 */

@@ -11,7 +11,7 @@ await p.addInitScript(() => { localStorage.clear(); localStorage.setItem('spar:p
 await p.goto(url); await p.waitForTimeout(5000);
 await p.click('.br-starta'); await p.waitForTimeout(800);
 await p.evaluate(() => { const f = document.querySelector('.ph-namn-falt'); if (f) { f.value = 'Test'; f.closest('.ph-namn')?.querySelector('.fp-knapp')?.click(); } });
-for (let i = 0; i < 120 && !(await p.evaluate(() => (!!window.__printahem?.ui?.igang || !!document.querySelector('.ph-dagbokkort')) && !document.querySelector('.ph-intro'))); i++) await p.waitForTimeout(500);
+for (let i = 0; i < 120 && !(await p.evaluate(() => (!!window.__printahem?.ui?.igang || !!document.querySelector('.ph-dagbokkort')) && !document.querySelector('.ph-intro'))); i++) { await p.waitForTimeout(500); if (i % 12 === 11) await p.evaluate(() => { const k = document.querySelector('.br-starta'); if (k && k.offsetParent) k.click(); const f = document.querySelector('.ph-namn-falt'); if (f) { f.value = 'Test'; f.closest('.ph-namn')?.querySelector('.fp-knapp')?.click(); } }); }   // Starta igen om första klicket kom för tidigt
 if (await p.evaluate(() => !!document.querySelector('.ph-dagbokkort'))) { await p.keyboard.press('Enter'); await p.waitForTimeout(1500); }   /* A-076 14:22: morgonsidan stängs med FORTSÄTT */
 const H = (f, a) => p.evaluate(f, a);
 // 1. kontrollerna i ordning – varje steg: vänta på rutan, skärmdump, gör det, rutan försvinner
@@ -29,6 +29,7 @@ const GOR = {
   h: () => { window.__printahem.kStat.h++; },
 };
 const FORBERED = {
+  ga: () => { const P = window.__printahem; P.spelare.yaw += Math.PI; P.spelare.pitch = 0; P.kStat.yaw0 = P.spelare.yaw; },   /* A-076 16:30: siktar man på hammaren tar klick-hjälpen över – titta bort först */
   stall: () => { const P = window.__printahem, sp = P.spelare; P.S.skyltUppe = true; P.S.hotbar[1] = { typ: 'skrivareS', n: 1 }; P.byt(1); P.ritaStart(); const c = P.startYta.position; sp.pos.x = c.x; sp.pos.z = c.z + 2.6; sp.yaw = 0; sp.pitch = -0.55; },   /* A-076 14:00: klick-hjälpen bara med saken vald och siktet på platsen */
   byta: () => { const P = window.__printahem; P.S.hammareGiven = true; P.S.hotbar[1] = { typ: 'hammare', n: 1 }; P.byt(0); },
   klick: () => { const P = window.__printahem, sp = P.spelare; P.S.hammareGiven = false; P.byt(0); const c = P.hammarPaBrador.getWorldPosition(sp.pos.clone()); sp.pos.x = c.x + 2; sp.pos.z = c.z; sp.yaw = Math.PI / 2; sp.pitch = -Math.atan2(1.6 - c.y, 2); },

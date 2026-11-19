@@ -6,3 +6,4 @@ if git diff --cached --name-only | grep -q 'printa-hem/balans.js'; then node ver
 # A-080: inga vägar runt Regissören (toast, röst, kamera direkt)
 node verktyg/lint-regissor.mjs || { echo "lint-regissor stoppade committen (se ovan)"; exit 1; }
 node verktyg/lint-roster.mjs || { echo "lint-roster stoppade committen (se ovan)"; exit 1; }
+node verktyg/lint-spelord.mjs || { echo "lint-spelord stoppade committen (se ovan)"; exit 1; }
