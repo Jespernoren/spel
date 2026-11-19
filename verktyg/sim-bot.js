@@ -458,7 +458,7 @@
         if (genForst ? !S.generatorStar : S.cykelStar) await stallGen(); else if (!S.cykelStar) await stallCykel(); else if (!S.generatorStar) await stallGen();
         else await vanta(3); return;
       }
-      case 'trampa': await strom(6); await printa({ typ: 'nyckelring' }); return;
+      case 'valjModell': case 'trampa': { const sk = H.skrivare[0]; if (sk?.klar) { await taUt(sk); return; } if (sk?.jobb) { await vantaPaPrint(sk); await taUt(sk); return; } await printa({ typ: 'nyckelring' }); return; }   /* A-076 13:20: välj modell först, sedan trampa */
       case 'salj': {
         const sk = H.skrivare.find((x) => x.id === 'g1');
         if (H.antalInv('nyckelring') < 3 && fil(sk) >= 100) { await strom(6); await printa({ typ: 'nyckelring' }); return; }

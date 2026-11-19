@@ -605,7 +605,8 @@ const STEG_TAL = {
   stall: 'Ställ skrivaren på den lysande platsen i linje ett.',
   bygg: 'Ställ cykeln och generatorn vid skrivaren.',
   rullSlut: 'Printa en nyckelring till.',   /* A-076 */
-  trampa: 'Trampa och printa en nyckelring.',
+  valjModell: 'Klicka på skrivaren och välj vad du vill printa.',   /* A-076 tillägg 13:20 */
+  trampa: 'Trampa!',
   salj: 'Sälj nyckelringarna hos Ali.',
   aliKvarn: 'Grannen från affären kommer över vägen.',   /* A-076 */
   egenPrint: 'Printa en nyckelring av din egen tråd.',   /* A-076 */
@@ -639,7 +640,9 @@ const STEG = [
   { id: 'strom', mom: 'Få ström', del: D1, bild: 'skrivareS', text: 'Skrivaren behöver ström', klar: () => !!(S.stromHjalp || S.generatorTagen || S.generatorStar || S.cykelBuren || S.cykelStar || S.cykelOmbyggd) },   /* A-073: gåtan – inget svar i texten */
   /* A-071: cykeln och generatorn ställs vid skrivaren i valfri ordning – båda syns som konturer, och generatorn monteras när båda står */
   { id: 'bygg', mom: 'Få ström', del: D1, bild: 'byggsats:generator', text: () => S.cykelStar && S.generatorStar ? 'Generatorn monteras på cykeln' : `Ställ cykeln och generatorn vid skrivaren · ${(S.cykelStar ? 1 : 0) + (S.generatorStar ? 1 : 0)}/2`, klar: () => !!S.cykelOmbyggd },
-  { id: 'trampa', mom: 'Första printen', del: D1, bild: 'nyckelring', text: 'Trampa och printa en nyckelring', klar: () => printat('nyckelring') >= 1 || S.stat.printat >= 1 },
+  /* A-076 tillägg 13:20: välj modell först, trampa sedan */
+  { id: 'valjModell', mom: 'Första printen', del: D1, bild: 'skrivareS', forslag: 'nyckelring', text: 'Klicka på skrivaren och välj vad du vill printa', klar: () => skrivare.some((x) => x.jobb || x.klar) || printat('nyckelring') >= 1 || S.stat.printat >= 1 },
+  { id: 'trampa', mom: 'Första printen', del: D1, bild: 'cykelS', text: 'Trampa!', klar: () => printat('nyckelring') >= 1 || S.stat.printat >= 1 },
   { id: 'rullSlut', mom: 'Första printen', del: D1, bild: 'nyckelring', text: 'Printa en nyckelring till', klar: () => !!S.rullSlut || !!S.kvarnKopt },   /* A-076: brorsans rulle tar slut mitt i printen */
   { id: 'aliKvarn', mom: 'Gör egen tråd', del: D1, bild: 'byggsats:gammalkvarn', text: 'Ali kommer över vägen', klar: () => !!S.kvarnKopt },   /* A-076: Ali kommer själv med pappas köttkvarn */
   { knuff: 'Kvarnen gör rullar. Den ska stå där rullarna ska.', id: 'kvarn', mom: 'Gör egen tråd', del: D1, bild: 'byggsats:gammalkvarn', text: 'Ställ kvarnen vid tornet', klar: () => !!S.kvarnStar },
@@ -5199,7 +5202,8 @@ function malPunkt() {
       return null;
     }
     case 'rullSlut': case 'egenPrint': return S.strom < 2 && !skrivare.some((x) => x.jobb) ? cykel.getWorldPosition(v).setY(1.0) : skr();   /* A-076 */
-    case 'trampa': return S.strom < 2 && !skrivare.some((x) => x.jobb) ? cykel.getWorldPosition(v).setY(1.0) : skr();
+    case 'valjModell': return skr();
+    case 'trampa': return cykel.getWorldPosition(v).setY(1.0);   /* A-076 tillägg 13:20: modellen är vald – pilen pekar på cykeln */
     case 'kvarn': return plats('L1-kvarn');
     case 'flaska': return hand.saker.length || S.kvarn.tratt ? trattTopp().clone() : (gripbart()?.getWorldPosition(v).setY(0.3) || null);
     case 'printGrip': case 'kruka': case 'printSang': case 'pall': return skr();
@@ -5387,7 +5391,7 @@ function flaskaMald() {
   if (nu > forut) { rullKlarTid = performance.now() + 900; if (!spelaLjud('rulle-klar')) ljud.klar(); }
   sparaSnart();
 }
-interaktor.registrera(cykel, { text: () => kTrampaNu() ? `🚲 Cykeln · ⚡ ${Math.floor(S.strom)}/${stromMax()}` : S.strom >= stromMax() - 0.5 ? (kand('batteribank') ? '🔋 Batteriet är fullt – en batteribank lagrar mer' : '🔋 Batteriet är fullt') : `✋ Klicka och håll – trampa · ⚡ ${Math.floor(S.strom)}/${stromMax()}`, aktivera: () => {} });
+interaktor.registrera(cykel, { text: () => !kanNu('trampa').ja ? `🚲 Cykeln · ⚡ ${Math.floor(S.strom)}/${stromMax()}` : kTrampaNu() ? `🚲 Cykeln · ⚡ ${Math.floor(S.strom)}/${stromMax()}` : S.strom >= stromMax() - 0.5 ? (kand('batteribank') ? '🔋 Batteriet är fullt – en batteribank lagrar mer' : '🔋 Batteriet är fullt') : `✋ Klicka och håll – trampa · ⚡ ${Math.floor(S.strom)}/${stromMax()}`, aktivera: () => {} });
 interaktor.registrera(marknad, {
   text: () => aliOppen() ? 'Gå fram till Alis disk – köp och sälj' : '🔒 Alis marknad har stängt (öppnar 08:00) – gå hem och sov',
   aktivera: () => { if (aliOppen()) { aliSagt = ''; oppnaMarknad(); } else { const t = valjOsagd(ALI_STANGT, 'ali'); ljud.fel(); if (t) prata('ali', t); regi.info(`🧔🏽 Ali (bakom luckan): ”${t}”`, 'fel'); } },
@@ -8062,12 +8066,16 @@ function kanNu(atgard, o = {}) {
   if (atgard === 'taSkrivare') return S.skyltUppe ? { ja: true } : { ja: false, skal: 'Först skylten.', bild: 'hammare', vag: () => { const v = bradhog.getWorldPosition(new THREE.Vector3()); tittaMot(v.x, v.z, 1.2, { tvang: true, nyckel: 'kanNu-skylt' + S.steg }); pilPulsTill = performance.now() + 2500; } };   /* A-076 tillägg 12:25 */
   if (atgard === 'printa') {
     const sk = o.sk; if (!sk || sk.jobb || sk.klar) return { ja: true };
-    if (S.cykelOmbyggd && S.strom < 1) return { ja: false, skal: kTrampaNu() ? 'Batteriet är tomt.' : 'Batteriet är tomt. Trampa!', bild: 'cykelS', vag: () => { const v = cykel.getWorldPosition(new THREE.Vector3()); tittaMot(v.x, v.z, 1.2, { tvang: true, nyckel: 'kanNu-tramp' + S.steg }); pilPulsTill = performance.now() + 2500; } };   /* A-076 tillägg 11:35: kedjan – det första som fattas */
+    if (false && S.cykelOmbyggd && S.strom < 1) return { ja: false, skal: kTrampaNu() ? 'Batteriet är tomt.' : 'Batteriet är tomt. Trampa!',   /* A-076 tillägg 13:20: menyn öppnas utan ström – modellen väljs först, sedan trampa (se kanNu('trampa')) */ bild: 'cykelS', vag: () => { const v = cykel.getWorldPosition(new THREE.Vector3()); tittaMot(v.x, v.z, 1.2, { tvang: true, nyckel: 'kanNu-tramp' + S.steg }); pilPulsTill = performance.now() + 2500; } };   /* A-076 tillägg 11:35: kedjan – det första som fattas */
     if (!S.cykelOmbyggd && !(S.strom > 0)) return { ja: false, skal: 'Den har ingen ström.', bild: 'cykelS', vag: () => { if (!S.stromHjalp) { S.stromHjalp = true; sparaSnart(); } const v = vagCykel.getWorldPosition(new THREE.Vector3()); tittaMot(v.x, v.z, 1.2, { tvang: true, nyckel: 'kanNu-strom' + S.steg }); pilPulsTill = performance.now() + 2500; } };
     if (filTillg(sk) < 1) {
       const kv = S.kvarnStar ? kvarn.getWorldPosition(new THREE.Vector3()) : null;
       return { ja: false, skal: S.kvarnStar ? 'Tornet är tomt. Jag måste mala mer skräp.' : 'Rullen är slut.', bild: S.kvarnStar ? 'byggsats:gammalkvarn' : 'rulle', vag: () => { if (kv) { tittaMot(kv.x, kv.z, 1.2, { tvang: true, nyckel: 'kanNu-fil' + S.steg }); } pilPulsTill = performance.now() + 2500; } };
     }
+    return { ja: true };
+  }
+  if (atgard === 'trampa') {   /* A-076 tillägg 13:20: kedjan – ingen modell vald kommer före tomt batteri */
+    if (!skrivare.some((x) => x.jobb)) return { ja: false, skal: 'Klicka på skrivaren och välj vad du vill printa.', bild: 'skrivareS', vag: () => { pilPulsTill = performance.now() + 2500; } };
     return { ja: true };
   }
   if (atgard === 'salja') {
@@ -8118,7 +8126,7 @@ function oppnaPrintMeny(sk) {
   const FLIKAR = [['maskin', 'kugghjul', 'Ritningar'], ['hem', 'hus', 'Hemmet'], ['salj', 'salj', 'Att sälja'], ['gava', 'gava', 'Gåvor – Rolfs önskan']].filter(([f]) => saker.some((x) => x.flik === f));
   // allt på en sida: maskiner, hemmet, att sälja och gåvor under varandra – ingen flik döljer något
   // punkt AL: dagens målsak står först och är förvald (en gång per mål – sedan väljer du själv)
-  const malT = (() => { const st = STEG[S.steg]; const t = st && !st.sov && (typeof st.bild === 'function' ? st.bild() : st.bild); return t ? (t.startsWith('byggsats:') ? t.slice(9) : t) : null; })();
+  const malT = (() => { const st = STEG[S.steg]; const t = st && !st.sov && (st.forslag || (typeof st.bild === 'function' ? st.bild() : st.bild));   /* A-076 13:20: nyckelringen markerad som förslag */ return t ? (t.startsWith('byggsats:') ? t.slice(9) : t) : null; })();
   const malSak = malT ? saker.find((x) => x.id === malT) : null;
   if (malSak && printMalVisad !== malT + ':' + S.steg) { printMalVisad = malT + ':' + S.steg; printVald = malT; }
   if (malSak) FLIKAR.sort((a, b) => (b[0] === malSak.flik) - (a[0] === malSak.flik));
@@ -9700,7 +9708,7 @@ setInterval(() => {
   bud(() => { const sk = skrivare[0]; if (sk) { const v = sk.mesh.getWorldPosition(new THREE.Vector3()); tittaMot(v.x, v.z, 1.6); } setTimeout(() => prata('du', VARN.allaFullt), 600); });
 }, 2000);
 // hjälplapp i en meny första gången den öppnas
-const COACH = { ali: 'Välj det du vill köpa och tryck Köp. Sälj längst ned.', print: 'Välj vad du vill printa och klicka på det.', inv: 'Dra saker dit du vill ha dem.', kista: 'Shift-klick flyttar en hel hög mellan kistan och ryggsäcken.' };
+const COACH = { ali: 'Välj det du vill köpa och tryck Köp. Sälj längst ned.', print: 'Välj vilken modell du vill skriva ut.', inv: 'Dra saker dit du vill ha dem.', kista: 'Shift-klick flyttar en hel hög mellan kistan och ryggsäcken.' };
 function coachLapp(el, id) {
   S.forsta = S.forsta || [];
   if (S.forsta.includes('meny:' + id)) return;
@@ -15019,7 +15027,7 @@ function varforFor(id) {   // CG: [id, text] för den varför-replik som ska sä
 const KEDJA_VARFOR_NU = { rolf3: () => VAGG_KVAR_TEXT[Math.max(0, 4 - vaggarKlara().length)] };   /* A-065: varför-rader som räknas fram när kedjan körs (data, inte specialfall) */
 /* A-076 tillägg 12:25 (A-065 lager 1): kvittenser läses mot världens tillstånd. Har något senare i kedjan redan hänt, räknas steget
    som klart utan att kvittensen spelas i efterhand. Den vakten är skyddsnätet om en spärr (som kanNu('taSkrivare')) missas. */
-const KEDJA_STEG = { skylt: -1, lastat: 0, skrivareStar: 1, cykel: 3, printStart: 4, printKlar: 4 };
+const KEDJA_STEG = { skylt: -1, lastat: 0, skrivareStar: 1, cykel: 3, printStart: 4, printKlar: 5 };
 function kedjaIndex(id) { if (id in KEDJA_STEG) return KEDJA_STEG[id]; const i = STEG.findIndex((x) => x.id === id); return i; }
 function efterslapande(id) {
   const i = kedjaIndex(id); if (i == null || i < -1) return false;
@@ -16020,7 +16028,7 @@ const KONTROLL_HJALP = [
   /* A-076 tillägg 11:45: ordningen ta upp → ställ ner → byt sak med hjulet → vrid med R (bara om saken inte får plats, eller vid tredje saken) */
   { id: 'stall', k: 'Klick', t: 'Klicka där den ska stå', nar: () => STALL_SAKER.includes(valdTyp()) || !!spoke.grupp?.visible, klar: () => (kStat.stallt || 0) > 0 },
   { id: 'vrid', k: 'R', t: 'Vrid innan du ställer ner', nar: () => kHjalpKlar('stall') && !!spoke.grupp?.visible && (!spoke.ok || (kStat.stallt || 0) >= 2), klar: () => kStat.r > 0 },
-  { id: 'trampa', k: 'Klicka och håll', t: 'Trampa cykeln (eller håll Mellanslag)', nar: () => !!S.cykelOmbyggd || interaktor.hovrad === cykel, klar: () => (S.stat.trampat || 0) > 1 },
+  { id: 'trampa', k: 'Klicka och håll', t: 'Trampa cykeln (eller håll Mellanslag)', nar: () => !!S.cykelOmbyggd && skrivare.some((x) => x.jobb),   /* A-076 tillägg 13:20: först när en modell är vald */ klar: () => (S.stat.trampat || 0) > 1 },
   { id: 'veva', k: 'Klicka och håll', t: 'Veva kvarnen', nar: () => !!S.kvarnKopt && !S.kvarn?.motor, klar: () => (S.stat.malt || 0) > 0 || !!S.kvarn?.motor },
   { id: 'e', k: 'E', t: 'Ryggsäcken och kistan', nar: () => S.hotbar.slice(1).filter(Boolean).length >= 3, klar: () => kStat.e > 0 },
   { id: 'tab', k: 'Tab', t: 'Dina sms och dagboken', nar: () => (S.sms?.length || 0) > 0, klar: () => kStat.tab > 0 },
