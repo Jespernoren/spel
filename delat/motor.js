@@ -40,12 +40,12 @@ export function skapaSpel({ bakgrund = 0x87ceeb, dimma = [40, 140] } = {}) {
 
 // ---------- 2. Spelloop ----------
 // uppdatera(dt) körs varje bildruta. dt = sekunder sedan förra rutan.
-export function startaLoop(uppdatera, { scen, kamera, renderer }) {
+export function startaLoop(uppdatera, { scen, kamera, renderer, ritaInte = null }) {   // ritaInte(): valfri – true när scenen ändå är dold (t.ex. ett intro i helskärm)
   const klocka = new THREE.Clock();
   function ruta() {
     const dt = Math.min(klocka.getDelta(), 0.05);
     uppdatera(dt);
-    renderer.render(scen, kamera);
+    if (!ritaInte?.()) renderer.render(scen, kamera);
     requestAnimationFrame(ruta);
   }
   ruta.motorLoop = true;   // simuleringar (verktyg/sim-*.mjs) känner igen ritloopen på den här flaggan, även när koden är minifierad
