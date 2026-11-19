@@ -11,7 +11,8 @@ await p.addInitScript(() => { localStorage.clear(); localStorage.setItem('spar:p
 await p.goto(url); await p.waitForTimeout(5000);
 await p.click('.br-starta'); await p.waitForTimeout(800);
 await p.evaluate(() => { const f = document.querySelector('.ph-namn-falt'); if (f) { f.value = 'Test'; f.closest('.ph-namn')?.querySelector('.fp-knapp')?.click(); } });
-for (let i = 0; i < 120 && !(await p.evaluate(() => !!window.__printahem.ui?.igang && !document.querySelector('.ph-intro'))); i++) await p.waitForTimeout(500);
+for (let i = 0; i < 120 && !(await p.evaluate(() => (!!window.__printahem?.ui?.igang || !!document.querySelector('.ph-dagbokkort')) && !document.querySelector('.ph-intro'))); i++) await p.waitForTimeout(500);
+if (await p.evaluate(() => !!document.querySelector('.ph-dagbokkort'))) { await p.keyboard.press('Enter'); await p.waitForTimeout(1500); }   /* A-076 14:22: morgonsidan stängs med FORTSÄTT */
 const H = (f, a) => p.evaluate(f, a);
 // 1. kontrollerna i ordning – varje steg: vänta på rutan, skärmdump, gör det, rutan försvinner
 const GOR = {

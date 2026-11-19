@@ -16133,6 +16133,7 @@ if (ui) {
     for (const r of scen.children) { if (r.name !== 'ritning' && r.name !== 'siktKontur') continue; if (!synlig(r)) continue; b.setFromObject(r); if (b.isEmpty()) continue; b.getCenter(c); b.getSize(s1);
       for (const o of interaktor.mal) { if (!synlig(o) || o === startYta || utanAutoTraff.has(o)) continue; const y = o.autoTraffYta; if (!y) continue; y.getWorldPosition(c2); if (c.distanceTo(c2) > 0.2) continue; const g = y.geometry.parameters; s2.set(g.width, g.height, g.depth).divideScalar(TRAFF_FAKTOR); if (Math.abs(s1.x - s2.x) < 0.3 * s2.x + 0.1 && Math.abs(s1.z - s2.z) < 0.3 * s2.z + 0.1) { ut.push(`vit ritning runt ${o.name || o.userData.typ || 'en sak som står'}`); break; } } }
     return ut.slice(0, 2); });   /* A-076 rättelse 16:15 */
+  regelvakt.regel('HJÄLP I KÖ', () => hjalpIKo.sedan && ui.igang && !pausad && performance.now() - hjalpIKo.sedan > 1000 ? [`"${hjalpIKo.text}" väntar på en annan hjälp (${hjalpIKo.akt}) i ${((performance.now() - hjalpIKo.sedan) / 1000).toFixed(1)} s`] : [], { enGang: true });   /* A-076 tillägg 16:30 */
   regelvakt.regel('RÖST SAKNAS', () => [...saknadRost].map((v) => `${v} pratar utan egen röst i rost.js`), { enGang: true });   /* A-078 tillägg 11:45 */
   regelvakt.regel('MENY UTAN VÄG', () => { if (!oppenAtgard) return []; if (!menyOppen()) { oppenAtgard = null; return []; } const svar = kanNu(oppenAtgard.atgard, oppenAtgard); return svar.ja ? [] : [`${oppenAtgard.atgard}-menyn är öppen fast ${svar.skal.toLowerCase()}`]; });   /* A-076 tillägg 11:35 */
   regelvakt.regel('MÅL UTAN LEDTRÅD', () => { if (!ui.igang) return []; const st = STEG[S.steg]; return st && !st.sov && !ledtradFor(st) ? [`"${rens(stegText(st) || '').slice(0, 60)}" har ingen ledtråd`] : []; }, { enGang: true });   /* A-083 */
@@ -16259,8 +16260,8 @@ function kedjeSak() {
 }
 function kedjaNu() { const k = kedjeSak(); return k ? { ...k, ...kanNu(k.atgard, { sak: k.sak }) } : null; }
 const KONTROLL_HJALP = [
-  { id: 'ga', k: 'W A S D', t: 'Gå', nar: () => S.dag <= 1 && S.steg <= 1, klar: () => kStat.start && Math.hypot(spelare.pos.x - kStat.start.x, spelare.pos.z - kStat.start.z) > 2.5 },
-  { id: 'titta', k: 'Mus', t: 'Titta runt', nar: () => S.dag <= 1 && S.steg <= 1, klar: () => kStat.yaw0 != null && Math.abs(spelare.yaw - kStat.yaw0) + Math.abs(spelare.pitch) > 0.7 },
+  { id: 'ga', k: 'W A S D', t: 'Gå', nar: () => S.dag <= 1 && S.steg <= 1, klar: () => (kStat.start && Math.hypot(spelare.pos.x - kStat.start.x, spelare.pos.z - kStat.start.z) > 2.5) || kStat.klick > 0 || !!S.hammareGiven },   /* A-076 tillägg 16:30: klar när man tagit upp något */
+  { id: 'titta', k: 'Mus', t: 'Titta runt', nar: () => S.dag <= 1 && S.steg <= 1, klar: () => (kStat.yaw0 != null && Math.abs(spelare.yaw - kStat.yaw0) + Math.abs(spelare.pitch) > 0.7) || kStat.klick > 0 || !!S.hammareGiven },
   { id: 'rullaTill', k: 'Hjulet eller 1–9', upprepa: true, get t() { const k = kedjaNu(); return k?.skal || 'Byt sak i handen'; }, nar: () => S.dag <= 5 && kedjaNu()?.fattas === 'vald', klar: () => kedjaNu()?.fattas !== 'vald' },   /* A-076 tillägg 14:00: saken finns i raden men är inte vald */
   { id: 'klick', k: 'Klick', kedja: true, t: 'Klicka för att ta upp det du tittar på', nar: () => S.dag <= 1 && !S.skyltUppe && !S.hammareGiven && !!interaktor.hovrad, klar: () => kStat.klick > 0 || !!S.hammareGiven || S.skyltUppe },   /* A-076 tillägg 13:45: ta upp hammaren först */
   { id: 'byta', k: 'Hjulet eller 1–9', get t() { const h = S.hotbar.findIndex((x) => x?.typ === 'hammare'); return h > 0 && h !== S.vald && !S.skyltUppe ? 'Rulla hjulet för att ta hammaren' : 'Byt sak i handen'; }, nar: () => (S.dag <= 1 && !S.skyltUppe && antalInv('hammare') > 0 && valdTyp() !== 'hammare') || (kHjalpKlar('klick') && S.hotbar.slice(1).filter(Boolean).length >= 2), klar: () => kStat.byt > 0 || (valdTyp() === 'hammare' && !S.skyltUppe) },   /* A-076 tillägg 12:25: hjulet först – hammaren ligger i raden från start */
@@ -16274,7 +16275,7 @@ const KONTROLL_HJALP = [
   { id: 'tab', k: 'Tab', t: 'Dina sms och dagboken', nar: () => (S.sms?.length || 0) > 0, klar: () => kStat.tab > 0 },
   { id: 'h', k: 'H', t: 'Tryck H om du inte vet vad du ska göra', nar: () => hjalpBehov, klar: () => kStat.h > 0, maxMs: 10000 },   /* ett råd, inte en kontroll som behövs – går bort efter 10 s */
 ];
-let hjalpBehov = false, kHjalpAktiv = null, kHjalpEl = null, klickFelSedan = 0;
+let hjalpBehov = false, kHjalpAktiv = null, kHjalpEl = null, klickFelSedan = 0; const hjalpIKo = { sedan: 0, text: '' };
 function kHjalpKlar(id) { return (S.kontrollKlar || []).includes(id); }
 function kHjalpMarkera(id) { S.kontrollKlar = [...new Set([...(S.kontrollKlar || []), id])]; sparaSnart(); }
 { // gamla sparfiler: det man redan har gjort behöver inte läras igen
@@ -16282,10 +16283,16 @@ function kHjalpMarkera(id) { S.kontrollKlar = [...new Set([...(S.kontrollKlar ||
   setTimeout(() => { try { if (!S.kontrollKlar) { S.kontrollKlar = (S.tangentTips || []).map((x) => gamla[x]).filter(Boolean); if (S.dag > 1 || S.steg > 2) S.kontrollKlar.push('ga', 'titta', 'klick', 'stall', 'byta'); } } catch {} }, 0);
 }
 function kHjalpTick() {
-  if (!ui.igang || pausad || scenPagar() || introPagar) { if (kHjalpEl) kHjalpEl.hidden = true; return; }
+  if (!ui.igang || pausad || scenPagar() || introPagar) { if (kHjalpEl) kHjalpEl.hidden = true; hjalpIKo.sedan = 0; return; }
   if (kHjalpEl) kHjalpEl.hidden = false;
   if (kStat.start == null && ui.igang) { kStat.start = spelare.pos.clone(); kStat.yaw0 = spelare.yaw; }
   kHjalpPekRuta();
+  /* A-076 tillägg 16:30: kedjans hjälp (rulla, klicka) tar över direkt – Gå och Titta håller inte platsen */
+  { const forst = (k) => (k.kedja || k.upprepa) && !(kHjalpKlar(k.id) && !k.upprepa) && (() => { try { return k.nar() && !k.klar(); } catch { return false; } })();
+    const vantar = KONTROLL_HJALP.find(forst);
+    const aktOk = (() => { try { return kHjalpAktiv?.nar(); } catch { return false; } })();
+    if (vantar && kHjalpAktiv && kHjalpAktiv !== vantar && ((!kHjalpAktiv.kedja && !kHjalpAktiv.upprepa) || !aktOk)) { kHjalpEl?.remove(); kHjalpEl = null; kHjalpAktiv = null; }
+    if (vantar && kHjalpAktiv !== vantar) { hjalpIKo.sedan ||= performance.now(); hjalpIKo.text = vantar.t; hjalpIKo.akt = kHjalpAktiv?.id || 'ingen'; } else hjalpIKo.sedan = 0; }
   if (kHjalpAktiv && (kHjalpAktiv.kedja || kHjalpAktiv.upprepa)) {   /* A-076 tillägg 14:00: en uppmaning i kedjan står bara så länge den stämmer */
     let nu = false; try { nu = kHjalpAktiv.nar(); } catch {}
     let klar = false; try { klar = kHjalpAktiv.klar(); } catch {}
@@ -16296,7 +16303,7 @@ function kHjalpTick() {
     if (kHjalpAktiv.klar() || (kHjalpAktiv.maxMs && performance.now() - kHjalpAktiv.visad > kHjalpAktiv.maxMs)) { kHjalpMarkera(kHjalpAktiv.id); regiLogg('hjälp', 'klar', '', `${kHjalpAktiv.k}: ${kHjalpAktiv.t}`, 0); kHjalpEl?.classList.remove('in'); const el = kHjalpEl; setTimeout(() => el?.remove(), 350); kHjalpEl = null; kHjalpAktiv = null; }
     return;
   }
-  for (const k of KONTROLL_HJALP) {   // aldrig två nya kontroller samtidigt
+  for (const k of [...KONTROLL_HJALP.filter((x) => x.kedja || x.upprepa), ...KONTROLL_HJALP.filter((x) => !x.kedja && !x.upprepa)]) {   // aldrig två nya kontroller samtidigt – kedjans hjälp först
     if (kHjalpKlar(k.id) && !k.upprepa) continue;
     let nu = false; try { nu = k.nar(); } catch {}
     if (!nu) continue;

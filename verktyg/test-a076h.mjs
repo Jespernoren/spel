@@ -16,6 +16,11 @@ await p.click('.br-starta'); await p.waitForTimeout(2500); await p.keyboard.pres
 for (let i = 0; i < 40 && !(await p.evaluate(() => !!document.querySelector('.ph-dagbokkort'))); i++) await p.waitForTimeout(250); await p.keyboard.press('Enter'); await p.waitForTimeout(1500);   /* A-076 14:22: morgonsidan stängs med FORTSÄTT */
 const kontroll = () => H(() => { const e = document.querySelector('.ph-kontroll.in span'); return e ? e.textContent : ''; });
 const vanta = async (f, ms = 4000) => { for (let t = 0; t < ms; t += 200) { const v = await f(); if (v) return v; await p.waitForTimeout(200); } return await f(); };
+// 16:30: tar man hammaren utan att ha gått eller tittat runt kommer hjälpen om hjulet direkt (Gå/Titta håller inte platsen)
+await H(() => { window.__printahem.hammarPaBrador.userData.interaktion.aktivera(); });
+const k00 = await vanta(async () => /Rulla hjulet för att ta hammaren/.test(await kontroll()) && kontroll(), 1500);
+await p.screenshot({ path: dir + 'h-0-utan-att-ga.png' });
+ut.push([`tog hammaren utan att gå: "${k00 || await kontroll()}" inom 1,5 s`, !!k00]);
 await H(() => { const P = window.__printahem, S = P.S; S.kontrollKlar = ['ga', 'titta', 'klick', 'byta']; P.spelare.pos.x += 3; P.spelare.yaw += 1; });
 await p.waitForTimeout(1500);
 await H(() => { const P = window.__printahem; P.hammarPaBrador.userData.interaktion.aktivera(); });
@@ -57,7 +62,7 @@ ut.push([`3. ${r3.fel || ''} skrivaren vald, siktet på platsen (${r3.ja}): "${k
 await H(() => window.__printahem.byt(0));
 const k4 = (await vanta(async () => /Rulla hjulet/.test(await kontroll()) && kontroll())) || await kontroll();
 ut.push([`tillbaka till handen: klick-uppmaningen borta, "${k4}"`, !/Klick/.test(k4) && /Rulla hjulet/.test(k4)]);
-const brott = await H(() => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && e.vem === 'KLICK SOM INTE GÅR').map((e) => e.text));
-ut.push([`KLICK SOM INTE GÅR: ${brott.length} ${brott.slice(0, 2).join(' · ')}`, !brott.length]);
+const brott = await H(() => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && ['KLICK SOM INTE GÅR', 'HJÄLP I KÖ'].includes(e.vem)).map((e) => e.text));
+ut.push([`KLICK SOM INTE GÅR / HJÄLP I KÖ: ${brott.length} ${brott.slice(0, 2).join(' · ')}`, !brott.length]);
 for (const [t, ok] of ut) console.log(ok ? '✓' : '✗', t);
 console.log(fel.length ? 'sidfel: ' + fel.slice(0, 3).join(' · ') : 'inga sidfel'); await b.close(); process.exit(ut.every((x) => x[1]) && !fel.length ? 0 : 1);
