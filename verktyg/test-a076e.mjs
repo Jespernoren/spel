@@ -38,9 +38,9 @@ ut.push([`skrivaren före skylten: inte tagen (${!s3.lastad}), "${s3.sagt.find((
 await p.mouse.wheel(0, 120); await p.waitForTimeout(600);
 const s4 = await H(() => window.__printahem.valdTyp());
 await H(() => window.__printahem.bradhog.userData.interaktion.aktivera());
-await p.waitForTimeout(1300); const dub = await H(() => { const P = window.__printahem, hv = (o) => { for (let x = o; x; x = x.parent) if (!x.visible) return false; return true; }; return { anim: hv(P.hammare), hand: hv(P.hand.grupp) }; });
+await p.waitForTimeout(1300); const dub = await H(() => { const P = window.__printahem, hv = (o) => { for (let x = o; x; x = x.parent) if (!x.visible) return false; return true; }; let n = 0; P.kamera.traverse((o) => { if (o.userData?.iHanden === 'hammare' && hv(o)) n++; }); return { anim: n === 1, hand: hv(P.hand.grupp) }; });   /* inkorg 10b: hammaren i handen är den som slår */
 await p.screenshot({ path: dir + 'e-mitt-i-slaget.png' });
-ut.push([`mitt i slaget: en hammare (slaget ${dub.anim}, handen dold ${!dub.hand})`, dub.anim && !dub.hand]);
+ut.push([`mitt i slaget: exakt en hammare (${dub.anim}, handen dold ${!dub.hand})`, dub.anim && !dub.hand]);
 for (let i = 0; i < 30 && !(await H(() => !!window.__printahem.S.skyltUppe)); i++) await p.waitForTimeout(500);
 await p.waitForTimeout(1500);
 const s5 = await H(() => !!window.__printahem.S.skyltUppe);
