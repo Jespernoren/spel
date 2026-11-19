@@ -12,7 +12,7 @@ await p.goto(url); await p.waitForTimeout(5000); await p.waitForFunction(() => w
 const H = (f, a) => p.evaluate(f, a);
 const finns = (sel) => H((s) => !!document.querySelector(s), sel);
 // dagbokskortet
-await p.waitForTimeout(800); const dk = await finns('.ph-dagbokkort .ph-lasupp'); await p.screenshot({ path: dir + 'hogtalare-dagbokskortet.png' });
+await p.waitForTimeout(800); const dk = (await finns('.ph-dagbokkort .ph-las-klick')) && !(await finns('.ph-dagbokkort .ph-lasupp')); await p.screenshot({ path: dir + 'hogtalare-dagbokskortet.png' });
 await p.keyboard.press('Enter'); await p.waitForTimeout(2500);
 // målrutan: tryck → pulserar, tryck igen → stoppar
 const mr = await finns('.dn-uppg .ph-lasupp'); await p.screenshot({ path: dir + 'hogtalare-malrutan.png' });
@@ -21,7 +21,7 @@ const p1 = await H(() => ({ puls: document.querySelector('.dn-uppg .ph-lasupp').
 await H(() => document.querySelector('.dn-uppg .ph-lasupp').click()); await p.waitForTimeout(300);
 const p2 = await H(() => document.querySelector('.dn-uppg .ph-lasupp').classList.contains('pulsar'));
 ut.push([`målrutan har 🔊 (${mr}); tryck läser upp "${p1.last.slice(0, 50)}" och pulserar (${p1.puls}); andra trycket stoppar (${!p2})`, mr && p1.puls && !!p1.last && !p2]);
-ut.push([`dagbokskortet har 🔊 (${dk})`, dk]);
+ut.push([`dagbokskortet läser upp igen vid klick på texten, ingen extra 🔊 (${dk}) – inkorg 10d`, dk]);
 // en notis (tanke)
 await H(() => window.__printahem.visaNej?.({ skal: 'Jag behöver hammaren för att spika upp skylten.', bild: 'hammare' })); await p.waitForTimeout(1500);
 const nt = await finns('.ph-notis .ph-lasupp'); await p.screenshot({ path: dir + 'hogtalare-notis.png' });

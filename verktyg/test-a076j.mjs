@@ -12,7 +12,7 @@ p.on('pageerror', (e) => fel.push(e.message));
 await p.addInitScript(() => { if (!sessionStorage.getItem('f')) { sessionStorage.setItem('f', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ spelarNamn: 'Test' })); } });
 await p.goto(url); await p.waitForTimeout(5000);
 const H = (f, a) => p.evaluate(f, a);
-const kort = () => H(() => { const k = document.querySelector('.ph-med:not([hidden]) .ph-dagbokkort'); return k ? { text: k.querySelector('.ph-pap-text')?.textContent, rub: k.querySelector('.ph-dk-rub')?.textContent || '', rost: !!k.querySelector('.ph-rostknapp'), fortsatt: /FORTSÄTT/.test(k.querySelector('.ph-fortsatt')?.textContent || ''), lasIgen: !!k.querySelector('.ph-lasigen') } : null; });
+const kort = () => H(() => { const k = document.querySelector('.ph-med:not([hidden]) .ph-dagbokkort'); return k ? { text: k.querySelector('.ph-pap-text')?.textContent, rub: k.querySelector('.ph-dk-rub')?.textContent || '', rost: !!k.querySelector('.ph-rostknapp'), fortsatt: /FORTSÄTT/.test(k.querySelector('.ph-fortsatt')?.textContent || ''), lasIgen: !!k.querySelector('.ph-las-klick') && !k.querySelector('.ph-lasigen, .ph-lasupp')   /* inkorg 10d: klick på texten läser igen, ingen extra 🔊 */ } : null; });
 const matning = () => H(() => window.__printahem.dagbokMatning());
 const brott = (namn) => H((n) => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && e.vem === n).map((e) => e.text), namn);
 await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(2500); await p.keyboard.press('Enter');
@@ -21,7 +21,7 @@ let k1 = null; for (let i = 0; i < 120 && !k1; i++) { await p.waitForTimeout(250
 const m1 = await matning();
 const d1 = m1.borjat.length && m1.visad.length ? m1.visad[0].t - m1.borjat[0] : 99999;
 await p.screenshot({ path: dir + 'j-morgon-dag1.png' });
-ut.push([`intro → spel: morgonsidan "${k1?.rub}" · "${k1?.text}" · ${Math.round(d1)} ms efter att dagen började (≤ 300) · Röst på/av ${k1?.rost}, FORTSÄTT ${k1?.fortsatt}, 🔊 ${k1?.lasIgen}`, !!k1 && d1 <= 300 && k1.rost && k1.fortsatt && k1.lasIgen]);
+ut.push([`intro → spel: morgonsidan "${k1?.rub}" · "${k1?.text}" · ${Math.round(d1)} ms efter att dagen började (≤ 300) · Röst på/av ${k1?.rost}, FORTSÄTT ${k1?.fortsatt}, läs igen med klick ${k1?.lasIgen}`, !!k1 && d1 <= 300 && k1.rost && k1.fortsatt && k1.lasIgen]);
 // 2. spelet står still bakom
 const fore = await H(() => { const P = window.__printahem; return { tid: P.S.dagTid || 0, n: P.textLogg().filter((e) => ['notis', 'sms', 'toast', 'info', 'MÅL'].includes(e.kalla)).length, igang: P.ui.igang }; });
 await p.waitForTimeout(4000);
