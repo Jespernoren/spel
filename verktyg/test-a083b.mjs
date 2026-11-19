@@ -27,7 +27,7 @@ await H(() => window.__printahem.visaNej?.({ skal: 'Jag behöver hammaren för a
 const nt = await finns('.ph-notis .ph-lasupp'); await p.screenshot({ path: dir + 'hogtalare-notis.png' });
 ut.push([`notisen/tanken har 🔊 (${nt})`, nt]);
 // kontrollhjälpen
-const kh = await finns('.ph-kontroll .ph-lasupp'); ut.push([`kontrollhjälpen har 🔊 (${kh})`, kh]);
+const kh = await finns('.ph-kontroll .ph-lasupp'), khSyns = await finns('.ph-kontroll'); ut.push([`kontrollhjälpen syns (${khSyns}) utan 🔊 (${!kh}) – inkorg 10c`, khSyns && !kh]);
 // sms i telefonen
 await H(() => { const P = window.__printahem; P.S.sms = [...(P.S.sms || []), { fran: 'bror', text: 'Mamma ringde mig fyra gånger förresten. Snyggt jobbat.', dag: 1 }]; P.oppnaInkorg?.(); }); await p.waitForTimeout(800);
 const sm = await finns('.dn-tel .ph-lasupp'); await p.screenshot({ path: dir + 'hogtalare-sms.png' });
