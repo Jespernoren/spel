@@ -12291,7 +12291,7 @@ introCss.textContent = `
 .ph-intro{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#2a2440,#0b0a14);font-family:system-ui,sans-serif;color:#fff;cursor:pointer;user-select:none}
 .ph-intro-kort{width:min(720px,90vw);text-align:center}
 .ph-is:not(.kor) .ph-il,.ph-is:not(.kor) .ph-il *{animation-play-state:paused!important}
-.ph-is{position:relative;width:min(680px,86vw);aspect-ratio:16/10;margin:0 auto 20px;border-radius:14px;overflow:hidden;background:#000;border:3px solid #b9472f;box-shadow:0 18px 40px rgba(0,0,0,.55)}
+.ph-ram{position:relative;width:min(680px,86vw);aspect-ratio:16/10;margin:0 auto 20px;border-radius:14px;overflow:hidden;background:#000;border:3px solid #b9472f;box-shadow:0 18px 40px rgba(0,0,0,.55)}.ph-is{position:absolute;inset:0;overflow:hidden;background:#000}
 .ph-is.svart{opacity:0}.ph-is.tona{transition:opacity 1s}
 .ph-il{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s}
 .ph-il.syns{opacity:1}
@@ -12347,9 +12347,9 @@ introCss.textContent = `
 .ph-intro-nere{position:fixed;bottom:22px;left:0;right:0;display:flex;justify-content:center;gap:18px;font:600 14px system-ui;opacity:.65}
 .ph-intro-prickar span{display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;opacity:.3;margin:0 3px}.ph-intro-prickar span.pa{opacity:1}
 .ph-intro-hoppa{position:fixed;top:18px;right:20px;background:rgba(255,255,255,.12);border:0;color:#fff;font:700 14px system-ui;padding:8px 14px;border-radius:999px;cursor:pointer}
-.ph-intro-kort.skak .ph-is{animation:phSkak2 .4s .55s}@keyframes phSkak2{20%{transform:translateX(-14px) rotate(-1.5deg)}40%{transform:translateX(12px) rotate(1.5deg)}60%{transform:translateX(-8px)}80%{transform:translateX(5px)}}
+.ph-intro-kort.skak .ph-is{animation:phSkak2 .4s .55s}@keyframes phSkak2{0%,100%{transform:scale(1.06)}20%{transform:scale(1.06) translateX(-2%) rotate(-1.2deg)}40%{transform:scale(1.06) translateX(1.8%) rotate(1.2deg)}60%{transform:scale(1.06) translateX(-1.2%)}80%{transform:scale(1.06) translateX(.8%)}}   /* inkorg 12: bara bilden inuti skakar, lite överskalad så att inga kanter syns – ramen står still */
 .ph-intro-titel{margin-top:18px}
-.ph-intro-kort.sista .ph-is{width:min(560px,70vw);margin-bottom:12px}.ph-intro-kort.sista .ph-intro-text{font-size:18px}
+/* inkorg 12: ramen har samma storlek och plats i alla rutor – också den sista */.ph-intro-kort.sista .ph-intro-text{font-size:18px}
 `;
 document.head.appendChild(introCss);
 // introts scen: lagren ligger kvar mellan korten om de är samma (bakgrund, stök) – annars tonas de över
@@ -12422,7 +12422,7 @@ function visaIntroV2(klar) {
     avbryt();
     const p = INTRO[i];
     if (!scenEl) {
-      el.innerHTML = `<button class="ph-intro-hoppa">Hoppa över</button><div class="ph-intro-kort"><div class="ph-is svart"></div><div class="ph-intro-ord"></div></div>
+      el.innerHTML = `<button class="ph-intro-hoppa">Hoppa över</button><div class="ph-intro-kort"><div class="ph-ram"><div class="ph-is svart"></div></div><div class="ph-intro-ord"></div></div>
         <div class="ph-intro-nere"><span class="ph-intro-prickar"></span><span>Klicka eller mellanslag för att fortsätta</span></div>`;
       scenEl = el.querySelector('.ph-is'); textEl = el.querySelector('.ph-intro-ord');
       el.querySelector('.ph-intro-hoppa').onclick = (e) => { e.stopPropagation(); slut(); };
@@ -12559,8 +12559,8 @@ introCss3.textContent = `
 .ph-natt{position:absolute;inset:0}
 .ph-vinjett{background:radial-gradient(circle at 50% 38%,transparent 30%,rgba(122,0,0,.55) 80%)}
 .ph-intro3{--bw:min(90vw, calc((100vh - 150px) * 1.6))}.ph-intro3 .ph-intro-kort{width:var(--bw)}
-.ph-intro3 .ph-is{width:var(--bw);margin:0 auto 12px}   /* A-078 tillägg 13:42: bilden skalas med skärmen (16:10, högst ca 90 % av bredden) */
-.ph-intro3 .ph-intro-ord{position:relative;z-index:20;width:var(--bw);box-sizing:border-box;min-height:0;max-height:3.2em;overflow:hidden;margin:0 auto;padding:.3em .9em;background:rgba(0,0,0,.66);border-radius:10px;color:#fff;font:700 clamp(18px, calc(var(--bw) * .026), 34px)/1.35 system-ui;text-align:center;text-shadow:0 2px 3px rgba(0,0,0,.6)}   /* direkt under bilden, samma bredd, texten följer bilden */
+.ph-intro3 .ph-ram{width:var(--bw);margin:0 auto 12px}   /* A-078 tillägg 13:42: bilden skalas med skärmen (16:10, högst ca 90 % av bredden) */
+.ph-intro3 .ph-intro-ord{position:relative;z-index:20;width:var(--bw);box-sizing:border-box;height:calc(2.7em + .6em);min-height:0;max-height:none;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 auto;padding:.3em .9em;background:rgba(0,0,0,.66);border-radius:10px;color:#fff;font:700 clamp(18px, calc(var(--bw) * .026), 34px)/1.35 system-ui;text-align:center;text-shadow:0 2px 3px rgba(0,0,0,.6)}   /* direkt under bilden, samma bredd, texten följer bilden */
 .ph-intro3 .ph-intro-ord.tom{visibility:hidden}
 .ph-intro3 .ph-intro-ord .ph-ut-rad{opacity:1}
 .ph-intro3 .ph-intro-rad .ph-vem{font:800 11px system-ui;letter-spacing:.1em;opacity:.6;margin-right:6px;text-transform:uppercase}
@@ -12682,7 +12682,7 @@ function visaIntro3(klar, o = {}) {
   const borja = () => {
     el.onclick = () => { if (i < INTRO3.length - 1) korFran(i + 1); };
     addEventListener('keydown', tangent, true); try { ljudCtx(); } catch {}
-    el.innerHTML = `<button class="ph-intro-hoppa">Hoppa över ⏎</button><div class="ph-intro-kort"><div class="ph-is"></div><div class="ph-intro-ord"></div></div>`;
+    el.innerHTML = `<button class="ph-intro-hoppa">Hoppa över ⏎</button><div class="ph-intro-kort"><div class="ph-ram"><div class="ph-is"></div></div><div class="ph-intro-ord"></div></div>`;   /* inkorg 12: ramen (.ph-ram) står still som en tv – bara bilden (.ph-is) inuti rör sig */
     scenEl = el.querySelector('.ph-is'); textEl = el.querySelector('.ph-intro-ord'); scenEl.classList.add('kor');   // animationerna (krita, kalenderbladet) får gå
     el.querySelector('.ph-intro-hoppa').onclick = (e) => { e.stopPropagation(); slut(); };
     Promise.race([rostKlar, new Promise((ok) => setTimeout(ok, 2000))]).then(() => korFran(0));
@@ -16431,6 +16431,18 @@ if (ui) {
     for (const k of [...slangFelSedan.keys()]) if (!sett.has(k)) slangFelSedan.delete(k);
     return ut.slice(0, 2);
   }, { enGang: true });
+  /* inkorg 12: under introt står bildrutan och texten under den still – position och storlek */
+  let ramForra = null;
+  regelvakt.regel('RAMEN RÖR SIG', () => {
+    const ram = document.querySelector('.ph-intro3 .ph-ram, .ph-intro .ph-ram'), ord = document.querySelector('.ph-intro3 .ph-intro-ord, .ph-intro .ph-intro-ord');
+    if (!ram) { ramForra = null; return []; }
+    const r = ram.getBoundingClientRect(), o = ord?.getBoundingClientRect(), nu = { x: r.left, y: r.top, b: r.width, h: r.height, tx: o?.left ?? 0, ty: o?.top ?? 0, vw: innerWidth, vh: innerHeight };
+    const ut = [], f = ramForra; ramForra = nu;
+    if (!f || f.vw !== nu.vw || f.vh !== nu.vh) return [];   /* fönstret har ändrats – nytt utgångsläge */
+    if (Math.abs(f.x - nu.x) > 1 || Math.abs(f.y - nu.y) > 1 || Math.abs(f.b - nu.b) > 1 || Math.abs(f.h - nu.h) > 1) ut.push(`bildrutan flyttade sig ${Math.round(nu.x - f.x)},${Math.round(nu.y - f.y)} px / ändrade storlek ${Math.round(nu.b - f.b)}×${Math.round(nu.h - f.h)} px`);
+    if (Math.abs(f.tx - nu.tx) > 1 || Math.abs(f.ty - nu.ty) > 1) ut.push(`texten under bilden flyttade sig ${Math.round(nu.tx - f.tx)},${Math.round(nu.ty - f.ty)} px`);
+    return ut;
+  });
   regelvakt.regel('DUBBLETT I HANDEN', () => { const hv = (o) => { for (let x = o; x; x = x.parent) if (!x.visible) return false; return true; }; const ut = []; { const syn = []; kamera.traverse((o) => { if (o.userData?.iHanden && hv(o)) syn.push(o.userData.iHanden); }); const n = syn.filter((x) => x === 'hammare').length; if (n > 1) ut.push(`${n} hammare i bild`); } if (hv(gripVerktyg) && hv(hand.grupp) && /grip/.test(valdTyp() || '')) ut.push('två gripar'); return ut; }, { enGang: true });   /* A-076 tillägg 13:45 */
   regelvakt.regel('SAK UTAN TRÄFFYTA', () => { const ut = []; for (const o of interaktor.mal) { let syn = true; for (let x = o; x; x = x.parent) if (!x.visible) { syn = false; break; } if (!syn || utanAutoTraff.has(o) || (o.isMesh && o.material === traffMat)) continue; let har = !!o.autoTraffYta; if (!har) o.traverse((m) => { if (m !== o && m.material === traffMat) har = true; }); if (!har) { const b = lokalLada(o); if (!b.isEmpty() && Math.max(...b.getSize(new THREE.Vector3()).toArray()) <= TRAFF_STORST && (() => { const nu = performance.now(), f = utanYtaSedan.get(o) ?? nu; utanYtaSedan.set(o, f); return nu - f > 1500; })()) { let t = o.userData.interaktion?.text; try { if (typeof t === 'function') t = t(o); } catch { t = ''; } ut.push(`${o.name || o.userData.typ || t || 'sak'} går att klicka på men har ingen träffyta`); } } } return ut.slice(0, 4); });   /* A-076 tillägg 14:20 */
   regelvakt.regel('KLICK SOM INTE GÅR', () => { if (!kHjalpAktiv || !kHjalpEl || !/^Klick/.test(kHjalpAktiv.k)) return []; let ok = true; try { ok = kHjalpAktiv.nar(); } catch {} if (kHjalpAktiv.id === 'klick' && !interaktor.hovrad) ok = false; if (ok) { klickFelSedan = 0; return []; } const nu = performance.now(); if (!klickFelSedan) klickFelSedan = nu; return nu - klickFelSedan > 600 ? [`"${kHjalpAktiv.t}" syns men ett klick gör inte det just nu`] : []; });   /* A-076 tillägg 14:00 */
