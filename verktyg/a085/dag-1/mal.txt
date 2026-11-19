@@ -1,0 +1,20 @@
+01	0:00	lasta	Lasta av skrivaren från cykeln
+02	0:47	stall	Ställ skrivaren på rutan
+03	1:11	strom	Skrivaren behöver ström
+04	1:36	bygg	Ställ cykeln och generatorn vid skrivaren · 0/2
+05	2:29	valjModell	Klicka på skrivaren och välj vad du vill printa
+06	2:54	trampa	Trampa!
+07	2:59	rullSlut	Printa en nyckelring till
+08	3:25	aliKvarn	Ali kommer över vägen
+09	3:56	kvarn	Ställ kvarnen vid tornet
+10	4:10	flaska	Plocka skräp och veva kvarnen
+11	4:40	egenPrint	Printa en nyckelring av din egen tråd
+12	5:03	salj	Sälj nyckelringarna hos Ali
+13	5:45	powerbank	Gå till Alis butik
+14	6:32	kopGrip	Plocka skräp och mal det
+15	10:50	printGrip	Printa din skräpgrip
+16	11:29	krukaD1	Printa och sälj nyckelringar
+17	12:11	saljKruka	Sälj blomkrukan hos Ali
+18	12:45	kopSang	Köp sängens 3D-modell hos Ali (60 kr)
+19	13:02	printSang	Printa sängen
+20	14:39	sov1	Ställ sängen i skjulet och sov
