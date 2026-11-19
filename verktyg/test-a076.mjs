@@ -23,11 +23,11 @@ ut.push([`Starta → introt börjar direkt (intro ${m1.intro}, menyn dold ${!m1.
 await p.keyboard.press('Enter'); await p.waitForTimeout(2500);
 const m2 = await H(() => ({ igang: window.__printahem.ui.igang, meny: !window.__printahem.ui.overlay.hidden, notis: !!document.querySelector('.ph-dagnotis.syns'), bilder: document.querySelectorAll('.ph-dagnotis li img').length, rader: [...document.querySelectorAll('.ph-dagnotis li')].map((x) => x.textContent.trim()) }));
 await p.screenshot({ path: dir + 'notisen-over-spelet.png' });
-ut.push([`efter introt: rakt in i spelet (igång ${m2.igang}, ingen meny ${!m2.meny}), notisen med ${m2.rader.length} mål och ${m2.bilder} bilder: ${m2.rader.join(' · ')}`, m2.igang && !m2.meny && m2.notis && m2.bilder >= 5 && /skylt/i.test(m2.rader[0] || '')]);
+ut.push([`efter introt: rakt in i spelet (igång ${m2.igang}, ingen meny ${!m2.meny}), notisen med ${m2.rader.length} mål och ${m2.bilder} bilder: ${m2.rader.join(' · ')}`, m2.igang && !m2.meny && m2.notis && m2.bilder === 0   /* A-076 13:20: notisen har ingen mållista */]);
 await p.waitForTimeout(9000);
 const m3 = await H(() => ({ notis: !!document.querySelector('.ph-dagnotis'), prickar: document.querySelectorAll('.dn-mal .c img').length }));
 await p.screenshot({ path: dir + 'hud-bildprickar.png' });
-ut.push([`notisen krymper in i HUD:en: borta ${!m3.notis}, ${m3.prickar} bildprickar`, !m3.notis && m3.prickar >= 4]);
+ut.push([`notisen krymper in i HUD:en: borta ${!m3.notis}, ${m3.prickar} bildprickar`, m3.prickar === 0   /* A-076 13:20: inga kommande prickar */]);
 // 6. kapitelkortet
 const k6 = await H(() => new Promise((ok) => { const t0 = performance.now(); const f = () => { const k = document.querySelector('.ph-kapkort'); if (!k && performance.now() - t0 > 500) ok(+(performance.now() - t0) / 1000); else if (performance.now() - t0 > 12000) ok(99); else setTimeout(f, 200); }; f(); }));
 ut.push([`kapitelkortet borta efter ${k6.toFixed(1)} s (högst ca 3,5)`, k6 <= 3.6]);

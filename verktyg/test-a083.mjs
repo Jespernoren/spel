@@ -29,17 +29,17 @@ const GOR = {
 };
 const FORBERED = {
   stall: () => { const P = window.__printahem; P.S.hotbar[1] = { typ: 'skrivareS', n: 1 }; P.byt(1); },
-  byta: () => { const P = window.__printahem; P.S.hotbar[1] = { typ: 'hammare', n: 1 }; P.byt(0); },
-  klick: () => { const P = window.__printahem; P.byt(P.S.hotbar.findIndex((x) => x?.typ === 'hammare')); },
+  byta: () => { const P = window.__printahem; P.S.hammareGiven = true; P.S.hotbar[1] = { typ: 'hammare', n: 1 }; P.byt(0); },
+  klick: () => { const P = window.__printahem; P.S.hammareGiven = false; P.byt(0); },
   vrid: () => { const P = window.__printahem; P.spoke.grupp = { visible: true }; P.spoke.ok = false; },
-  trampa: () => { window.__printahem.S.cykelOmbyggd = true; },
+  trampa: () => { const P = window.__printahem; P.S.cykelOmbyggd = true; const g = P.skrivare.find((x) => x.id === 'g1'); if (g && !g.jobb) { g.fil = Math.max(g.fil || 0, 100); P.startaDirekt(g, { typ: 'nyckelring' }); } },   /* A-076 13:20: trampa först när en modell är vald */
   veva: () => { const P = window.__printahem; P.S.kvarnKopt = true; if (P.S.kvarn) P.S.kvarn.motor = false; },
   e: () => { const P = window.__printahem; P.S.hotbar[2] = { typ: 'nyckelring', n: 1 }; P.S.hotbar[3] = { typ: 'kruka', n: 1 }; P.S.hotbar[4] = { typ: 'hammare', n: 1 }; },
   tab: () => { const P = window.__printahem; P.S.sms = [...(P.S.sms || []), { fran: 'bror', text: 'Test' }]; },
   h: () => { window.__printahem.sattHjalpBehov(); },
 };
 const sett = [];
-for (const id of ['byta', 'ga', 'titta', 'klick', 'stall', 'vrid', 'trampa', 'veva', 'e', 'tab', 'h']) {
+for (const id of ['ga', 'titta', 'klick', 'byta', 'stall', 'vrid', 'trampa', 'veva', 'e', 'tab', 'h']) {
   if (id === 'h') await H(() => { const P = window.__printahem; P.kStat.h = 0; P.S.kontrollKlar = (P.S.kontrollKlar || []).filter((x) => x !== 'h'); });
   await H(`(${FORBERED[id] || (() => {})})()`);
   let aktiv = null; for (let i = 0; i < 50 && aktiv !== id; i++) { await p.waitForTimeout(300); aktiv = await H(() => window.__printahem.kHjalpAktiv()); }

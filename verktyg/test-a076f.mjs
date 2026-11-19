@@ -21,7 +21,7 @@ await p.waitForTimeout(1500); await p.screenshot({ path: dir + 'f-forsta-uppgift
 const t1 = await H(() => ({ topp: document.querySelector('.dn-topp').textContent, prickar: document.querySelectorAll('.dn-mal .c').length }));
 ut.push([`du säger "Först ska jag spika upp skylten." (${l}) och rutan glider in (${in_}) · dagrutan: ${t1.prickar} bockar, ingen räknare (${!/Dagens mål|av \d+ · sedan/.test(t1.topp)})`, l > 0 && in_ && t1.prickar === 0 && !/Dagens mål|av \d+ · sedan/.test(t1.topp)]);
 // skylten klar → grön, glider åt vänster, nästa glider in
-await H(() => { const P = window.__printahem; P.byt(P.S.hotbar.findIndex((x) => x?.typ === 'hammare')); P.bradhog.userData.interaktion.aktivera(); });
+await H(() => { const P = window.__printahem; P.hammarPaBrador.userData.interaktion.aktivera(); P.byt(P.S.hotbar.findIndex((x) => x?.typ === 'hammare')); P.bradhog.userData.interaktion.aktivera(); });
 let k = null; for (let i = 0; i < 120 && !k; i++) { await p.waitForTimeout(150); k = await H(() => { for (const x of [...document.querySelectorAll('.ph-med button, .fp-knapp')]) if (x.offsetParent && /Fortsätt|Stäng|OK|Läst|Klar|Vidare/i.test(x.textContent)) x.click(); return !!document.querySelector('.dn-klar-kopia'); }); }
 await p.screenshot({ path: dir + 'f-klar-gron.png' });
 await p.waitForTimeout(800); await p.screenshot({ path: dir + 'f-glider-at-vanster.png' });

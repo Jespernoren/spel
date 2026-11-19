@@ -421,6 +421,7 @@
     if (H.TA_PA) for (const t of Object.keys(H.TA_PA)) if (H.antalInv(t)) { valj(t); H.taPaVald(); handling('tar på ' + t.replace('byggsats:', '')); await vanta(0.5); }
     if (H.MONTERA) for (const t of Object.keys(H.MONTERA)) { if (!H.antalInv(t)) continue; const m = H.MONTERA[t], mal = m.mal()[0]; if (!mal || m.hinder?.()) continue; valj(t); await klick(mal, m.namn.toLowerCase()); return; }
     if (H.antalInv('korv')) { valj('korv'); H.ata('korv'); }
+    if (!S.skyltUppe && S.dag === 1 && !S.hammareGiven && H.hammarPaBrador) { await klick(H.hammarPaBrador, 'hammaren på brädorna'); await vanta(1); return; }   /* A-076 13:45: ta hammaren först */
     if (!S.skyltUppe && S.dag === 1) { valj('hammare'); await klick(H.bradhog, 'brädhögen');   /* A-076 tillägg 12:25: hammaren först */ await vanta(4); return; }
     const id = H.stegId(), st = H.STEG[S.steg], txt = (typeof st?.text !== 'function' && window.__stegKanon?.[id]) || H.stegText() || '';   /* A-069 §5: målet hittas på sitt id – en ändrad måltext gör inget (texter som beror på läget läses som de står) */
     if (!st && S.julFirad) {   /* A-042: efterspelet – köp marken som är kvar när pengarna räcker, tjäna under tiden, sov när dagen är slut */
