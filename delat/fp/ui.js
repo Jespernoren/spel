@@ -95,10 +95,10 @@ export class FpUI {
     if (etikett) this.el('.fp-etikett').textContent = etikett;
   }
   mynt(n) { this.el('.fp-mynt').textContent = n; }
-  toast(text, typ = '') {
+  toast(text, typ = '', ms = 1400) {   // ms: hur länge rutan syns (standard 1,4 s som förut)
     const t = this.el('.fp-toast');
     t.textContent = text; t.className = 'fp-toast syns ' + typ;
-    clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('syns'), 1400);
+    clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('syns'), ms);
   }
 
   visaStart(titel = this.o.titel, text = this.o.text, knapp = 'Starta') {

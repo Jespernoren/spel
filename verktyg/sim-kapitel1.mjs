@@ -53,6 +53,20 @@ for (let i = 0; i < 30 && !(await p.evaluate(() => !!window.__printahem?.S).catc
 p.on('pageerror', (e) => console.log('[sidfel]', e.message));
 await p.evaluate(([u, m]) => { window.__vt.start(); window.__simUtforlig = u; window.__simStegMax = m; }, [!!process.env.UTFORLIG, +(process.env.SIM_STEGMAX || 15)]);
 await p.evaluate((k) => { window.__stegKanon = k; }, JSON.parse(fs.readFileSync(new URL('./steg-kanon.json', import.meta.url), 'utf8')));   // A-069 §5: boten matchar på steg-id
+if (process.env.NYBORJARE) await p.evaluate(() => { window.__nyborjare = true; });
+/* A-085: inspelning – bildrutor (video) och en skärmdump per målbyte, per dag i INSPELNING/dag-N/ */
+const INSP = process.env.INSPELNING; let bildNr = 0; const malNr = {};
+if (INSP) {
+  fs.mkdirSync(INSP, { recursive: true });
+  await p.exposeFunction('__taBild', async (m) => {
+    const d = `${INSP}/dag-${m.dag}`; fs.mkdirSync(`${d}/bildrutor`, { recursive: true });
+    const buf = await p.screenshot({ type: 'jpeg', quality: 62 });
+    fs.writeFileSync(`${d}/bildrutor/${String(++bildNr).padStart(6, '0')}.jpg`, buf);
+    fs.appendFileSync(`${d}/bildrutor.txt`, `${bildNr}\t${m.t}\n`);
+    if (m.mal) { const n = (malNr[m.dag] = (malNr[m.dag] || 0) + 1); fs.writeFileSync(`${d}/mal-${String(n).padStart(2, '0')}-${m.t.toFixed(0).padStart(4, '0')}s.jpg`, buf); fs.appendFileSync(`${d}/mal.txt`, `${String(n).padStart(2, '0')}\t${Math.floor(m.t / 60)}:${String(Math.floor(m.t % 60)).padStart(2, '0')}\t${m.steg}\t${m.mal}\n`); }
+  });
+  await p.evaluate((n) => { window.__bildIntervall = n; }, +(process.env.BILD_INTERVALL || 2));
+}   /* A-081: nybörjarboten */
 await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.meta.url), 'utf8') });
 // SIM_FRAN=fil: börja från en sparfil · varje ny dag sparas till /tmp/sim-dag<N>.json så att en lång körning kan tas om från en dag
 let sparadDag = 0; const kollaDag = setInterval(async () => { try { const [d, sp, mem] = await p.evaluate(() => [window.__printahem.S.dag, localStorage.getItem('spar:printahem2:v1'), [Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6), window.__printahem.skrapLista.length, window.__printahem.placerade.length, document.querySelectorAll('*').length]]); if (process.env.SIM_MINNE) console.log('[minne]', d, JSON.stringify(mem)); if (d !== sparadDag && sp) { sparadDag = d; fs.writeFileSync(`${process.env.SIM_SPAR || '/tmp/sim-dag'}${d}.json`, sp); } } catch {} }, 15000);
@@ -232,10 +246,56 @@ for (const dag of [...new Set(r.logg.map((e) => e.dag))]) {
   for (const e of r.logg.filter((x) => x.dag === dag)) md += `| ${fmt(e.t)} | ${e.kalla} | ${e.vem} | ${e.text.replace(/\|/g, '/').slice(0, 300)} |\n`;
   md += `\n<details><summary>Botens handlingar dag ${dag}</summary>\n\n` + r.handlingar.filter((h) => h.dag === dag).map((h) => `- ${fmt(h.t)} ${h.text} (${h.mynt} kr)`).join('\n') + '\n\n</details>\n';
 }
+// mål för mål: när varje mål syntes och hur länge det tog (friktionskurvan jämför nybörjaren med AX)
+const malTider = []; { const M = r.logg.filter((e) => e.kalla === 'MÅL'); M.forEach((e, i) => { const n = M[i + 1]; if (n && n.dag === e.dag) malTider.push({ dag: e.dag, mal: e.text, sek: n.t - e.t }); }); }
+fs.writeFileSync(ut.replace(/\.md$/, '') + '.mal.json', JSON.stringify(malTider));
+if (process.env.NYBORJARE) md = nyborjarRapport(r, malTider) + md;
 fs.writeFileSync(ut, md);
   return flaggor;
 }
+/* A-081: Nybörjarbotens rapport – flaggorna från botens ögon + Regissörens logg (TRÄNGSEL, HANN INTE LÄSA, DOLT) + friktionskurvan */
+function nyborjarAnalys(r) {
+  const F = [...(r.nyFlaggor || [])], R = r.regi || [];
+  const SYNS = ['info', 'notis', 'tanke-text', 'sms', 'dagbok', 'bubbla', 'kort', 'dagbok-notis'];
+  const v = R.filter((e) => SYNS.includes(e.kanal)).sort((a, b) => a.start - b.start);
+  const dagT0 = {}; for (const e of R) if (dagT0[e.dag] == null || e.start < dagT0[e.dag]) dagT0[e.dag] = e.start;
+  const t = (e) => (e.start - (dagT0[e.dag] ?? e.start)) / 1000;
+  for (let i = 1; i < v.length; i++) { const a = v[i - 1], b = v[i]; if (b.start - a.start < 2000 && a.text !== b.text && a.dag === b.dag) F.push({ dag: b.dag, t: t(b), typ: 'TRÄNGSEL', text: `${a.kanal} ”${a.text.slice(0, 40)}” och ${b.kanal} ”${b.text.slice(0, 40)}” inom ${((b.start - a.start) / 1000).toFixed(1)} s` }); }
+  for (const e of v) { const beh = 1200 + 60 * e.text.length; if (e.slut - e.start < beh - 50) F.push({ dag: e.dag, t: t(e), typ: 'HANN INTE LÄSA', text: `${e.kanal} ”${e.text.slice(0, 50)}” stod ${((e.slut - e.start) / 1000).toFixed(1)} s, behöver ${(beh / 1000).toFixed(1)} s` }); }
+  for (const e of R.filter((x) => x.dolt)) F.push({ dag: e.dag, t: t(e), typ: 'DOLT', text: `${e.vem || 'bubbla'}: ”${e.text.slice(0, 50)}” sades utom bild` });
+  for (const e of r.logg.filter((x) => x.kalla === 'brott' && x.vem === 'OKÄNT ORD')) F.push({ dag: e.dag, t: e.t, typ: 'OKÄNT ORD', text: e.text });
+  return F.sort((a, b) => a.dag - b.dag || a.t - b.t);
+}
+function nyborjarRapport(r, malTider) {
+  const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  const F = nyborjarAnalys(r), typer = ['FÖRVIRRAD', 'FAST', 'TRÄNGSEL', 'HANN INTE LÄSA', 'DOLT', 'NY SAK UTAN FÖRKLARING', 'OKÄNT ORD'];
+  let ref = []; try { if (process.env.AX_REF) ref = JSON.parse(fs.readFileSync(process.env.AX_REF, 'utf8')); } catch {}
+  let md = `# Nybörjarboten – körning ${nr}\n\n*A-081: samma händer som AX, men boten vet bara det som syns (målrutan, pilen, det som sägs). Går 3 m/s, läser 60 ms per tecken, följer pilen, tittar runt när målet är otydligt och går fel ibland.*\n\n`;
+  md += `| Dag | Minuter | ${typer.join(' | ')} |\n|---|---|${typer.map(() => '---').join('|')}|\n`;
+  for (const d of r.dagar) md += `| ${d.dag} | ${(d.sek / 60).toFixed(1)} | ${typer.map((ty) => F.filter((f) => f.dag === d.dag && f.typ === ty).length).join(' | ')} |\n`;
+  md += `\n## Flaggor (${F.length})\n\n` + (F.map((f) => `- **${f.typ}** dag ${f.dag} ${fmt(f.t)}: ${f.text}`).join('\n') || 'inga') + '\n';
+  md += `\n## Friktionskurvan (sekunder per mål: nybörjaren mot AX)\n\n| Dag | Mål | Nybörjaren | AX | × |\n|---|---|---|---|---|\n`;
+  for (const m of malTider) { const a = ref.find((x) => x.dag === m.dag && x.mal === m.mal); md += `| ${m.dag} | ${m.mal.replace(/\|/g, '/').slice(0, 60)} | ${Math.round(m.sek)} | ${a ? Math.round(a.sek) : '–'} | ${a && a.sek > 0 ? (m.sek / a.sek).toFixed(1) : '–'} |\n`; }
+  fs.writeFileSync(ut.replace(/\.md$/, '') + '.ny.json', JSON.stringify(F));
+  console.log('nybörjaren: ' + typer.map((ty) => `${ty} ${F.filter((f) => f.typ === ty).length}`).join(' · '));
+  return md + '\n---\n\n';
+}
 const flaggor = rapport(r);
+if (INSP) {   /* A-085: Regissörens tidslinje per dag + video av bildrutorna */
+  const { execFileSync } = await import('child_process');
+  const fmt2 = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  const dagar = [...new Set((r.regi || []).map((e) => e.dag))];
+  for (const dag of dagar) {
+    const d = `${INSP}/dag-${dag}`; fs.mkdirSync(d, { recursive: true });
+    const L = r.regi.filter((e) => e.dag === dag), t0 = Math.min(...L.map((e) => e.start));
+    fs.writeFileSync(`${d}/tidslinje.json`, JSON.stringify(L.map((e) => ({ ...e, start: +((e.start - t0) / 1000).toFixed(1), slut: +((e.slut - t0) / 1000).toFixed(1) }))));
+    let md = `# Dag ${dag} – Regissörens tidslinje\n\n*Allt som visades och sades, i ordning. Tid från dagens början (speltid). Bildrutor: video.mp4, skärmdumpar per målbyte: mal-NN-*.jpg.*\n\n| Start | Längd | Kanal | Prio | Vem | Text |\n|---|---|---|---|---|---|\n`;
+    for (const e of L) md += `| ${fmt2((e.start - t0) / 1000)} | ${((e.slut - e.start) / 1000).toFixed(1)} s | ${e.kanal} | ${e.prio} | ${e.vem || ''} | ${String(e.text).replace(/\|/g, '/').slice(0, 140)} |\n`;
+    fs.writeFileSync(`${d}/tidslinje.md`, md);
+    try { if (fs.existsSync(`${d}/bildrutor`)) execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', process.env.VIDEO_FPS || '8', '-pattern_type', 'glob', '-i', `${d}/bildrutor/*.jpg`, '-vf', 'scale=1280:-2', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '28', '-pix_fmt', 'yuv420p', `${d}/video.mp4`]); } catch (e) { console.log('ffmpeg:', e.message.slice(0, 200)); }
+  }
+  console.log(`[sim] inspelningen: ${INSP} (${dagar.length} dagar)`);
+}
 console.log(`klart: ${r.dagar.length} dagar, ${r.logg.length} textrader, ${flaggor.length} flaggor, sidfel ${sidfel.length} → ${ut}`);
 for (const d of r.dagar) console.log(`  dag ${d.dag}: ${(d.sek / 60).toFixed(1)} min, väntan ${d.sek ? Math.round((d.vantan || 0) / d.sek * 100) : 0} %, ${d.mynt} kr, trivsel ${d.trivsel}, bär ${d.bar}`);
 console.log('sista handlingar:', r.handlingar.slice(-6).map((h) => h.text).join(' | '));

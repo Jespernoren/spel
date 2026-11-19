@@ -5,8 +5,12 @@
 // Allt som visas eller läses upp loggas med tid och källa (window.__textLogg i spel.js).
 (() => {
   const H = window.__printahem, S = H.S;
-  const GA_FART = 5.2;          // m/s, samma som spelaren (FART_UTAN)
-  const LASFART = 15;           // tecken per sekund när ett meddelande läses
+  /* A-081 Nybörjarboten (window.__nyborjare): samma händer som AX, men den vet bara det som syns – målrutan, pilen och det som sägs.
+     Den går långsammare, läser 60 ms per tecken, följer pilen (inte koden), tittar runt när målet är otydligt, går fel ibland och
+     använder bara kontroller som spelet har förklarat. Flaggorna samlas i window.__nyFlaggor. */
+  const NY = !!window.__nyborjare;
+  const GA_FART = NY ? 3.0 : 5.2;          // m/s, samma som spelaren (FART_UTAN) – nybörjaren går försiktigt
+  const LASFART = NY ? 1000 / 60 : 15;   // tecken per sekund när ett meddelande läses (nybörjaren: 60 ms per tecken)
   const MENY_TID = 1.5;         // sekunder att hitta i en meny
   const V = window.__vt;
   const logg = [], handlingar = [], dagar = [];
@@ -40,13 +44,48 @@
   const start0 = H.ui.visaStart.bind(H.ui); H.ui.visaStart = (titel, text, knapp) => { window.__textLogg('morgonkort', titel, String(titel) + ' · ' + String(text || '')); return start0(titel, text, knapp); };
   const handling = (text) => { handlingar.push({ t: tid - dagStart, tot: tid, dag: S.dag, text, mynt: S.mynt }); if (window.__simUtforlig) console.log(`[sim]   ${fmt(tid - dagStart)} ${text}`); };
 
+  // ---------- A-081: nybörjarens ögon ----------
+  const nyFlaggor = []; window.__nyFlaggor = nyFlaggor;
+  const nyFlagga = (typ, text) => { nyFlaggor.push({ dag: S.dag, t: tid - dagStart, tot: tid, typ, text: String(text).slice(0, 160), steg: H.stegId?.() || '' }); if (window.__simUtforlig) console.log(`[sim]   ⚑ ${typ}: ${text}`); };
+  let nySlump = 12345; const slump = () => (nySlump = (nySlump * 16807) % 2147483647) / 2147483647;   // samma "misstag" varje körning
+  const pilPos = () => (H.malPil?.visible ? H.malPil.getWorldPosition(new H.spelare.pos.constructor()) : null);
+  const nyFramsteg = { k: '', t: 0 };
+  const nyMalSteg = { steg: -1, t: 0, forsta: 0, forvirrad: false, fast: false, avvek: false };
+  // kontroller: första gången en kontroll används måste spelet ha förklarat den (en text som nämner den har visats)
+  const KONTROLL = { trampa: /trampa|Trampa|pedal/, veva: /[Vv]eva/, byta: /mushjul|1–9|verktygsraden|Byt sak/, ryggsack: /ryggsäck|Ryggsäck|\bE\b/, vrida: /\bR\b|vrid/i, montera: /[Mm]ontera|skruv/, kasta: /\bQ\b|[Ss]läpp/ };
+  const kontrollAnvand = new Set();
+  function nyKontroll(namn) {
+    if (!NY || kontrollAnvand.has(namn)) return; kontrollAnvand.add(namn);
+    const re = KONTROLL[namn]; if (re && !logg.some((e) => re.test(e.text))) nyFlagga('NY SAK UTAN FÖRKLARING', `${namn}: ingen text eller bild har förklarat det innan första gången`);
+  }
+  if (NY) for (const [f, k] of [['trampa', 'trampa'], ['veva', 'veva'], ['byt', 'byta']]) { const o = H[f]; if (typeof o === 'function') H[f] = (...a) => { nyKontroll(k); return o.apply(H, a); }; }
+  async function nyLasMal() {   // läs målrutan (60 ms per tecken) och vänd dig mot pilen innan du gör något
+    if (!NY) return;
+    if (nyMalSteg.steg !== S.steg) { Object.assign(nyMalSteg, { steg: S.steg, t: tid, forsta: 0, forvirrad: false, fast: false, avvek: false, forstaGa: true }); }
+    else return;
+    const t = (document.querySelector('.nasta-rubrik')?.textContent || '') + ' ' + (document.querySelector('.nasta-t')?.textContent || '');
+    await lasTid(H.lasTid(t.trim()) / 1000);
+    const pp = pilPos();
+    if (!pp) { handling('nybörjaren ser ingen pil – tittar runt'); for (let i = 0; i < 8; i++) { H.spelare.yaw += Math.PI / 4; await vanta(0.5); } }
+    else { titta(pp); await vanta(0.6); }
+  }
+
   // ---------- tid ----------
   const synligt = (el) => el && !el.hidden && el.offsetParent !== null || (el && !el.hidden && getComputedStyle(el).display !== 'none' && el.isConnected);
   function tick(dt = 0.1) {
     V.fram(dt * 1000);
     if (!H.pausad()) H.uppdatera(dt);
     tid += dt;
-    if (S.steg !== senasteSteg) { senasteSteg = S.steg; const m = H.stegText(); if (m !== senasteMal) { senasteMal = m; window.__textLogg('MÅL', '', m || '(inga mål)'); } }
+    if (S.steg !== senasteSteg) { senasteSteg = S.steg; const m = H.stegText(); if (m !== senasteMal) { senasteMal = m; window.__textLogg('MÅL', '', m || '(inga mål)'); if (window.__taBild) bildVantar = { mal: m || '(inga mål)' }; } }
+    if (window.__taBild && tid >= nastaBild) { nastaBild = tid + (window.__bildIntervall || 2); bildVantar = bildVantar || {}; }
+  }
+  /* A-085: inspelning – en bildruta varannan sekund speltid och en skärmdump varje gång målet byts (sim-kapitel1 med INSPELNING=mapp) */
+  let nastaBild = 0, bildVantar = null;
+  async function taBildOmVantar() {
+    if (!bildVantar || !window.__taBild) return;
+    const b = bildVantar; bildVantar = null;
+    try { H.rendera?.(); } catch {}
+    await window.__taBild({ dag: S.dag, t: Math.round((tid - dagStart) * 10) / 10, mal: b.mal || null, steg: H.stegId?.() || '' });
   }
   async function vanta(sek) {
     const slut = tid + sek;
@@ -54,6 +93,7 @@
       tick(0.1);
       if (Math.round(tid * 10) % 5 === 0) await stangPopups();
       if (Math.round(tid * 10) % 20 === 0) await new Promise((r) => V.verklig(r, 0));
+      if (bildVantar) await taBildOmVantar();
     }
   }
   // popups: läs (tid efter längd) och klicka vidare
@@ -93,9 +133,20 @@
 
   // ---------- rörelse och klick ----------
   const pos = (o) => o.getWorldPosition ? o.getWorldPosition(new H.spelare.pos.constructor()) : o;
+  let nyGar = false;
   async function ga(x, z, namn) {
     const p = H.spelare.pos, d = Math.hypot(x - p.x, z - p.z);
     if (d < 0.6) return;
+    if (NY && !nyGar && nyMalSteg.forstaGa) {   /* A-081: nybörjaren följer pilen (första gången den går efter ett nytt mål) – pekar den någon annanstans går den dit först, tittar sig om och går sedan rätt */
+      nyGar = true; nyMalSteg.forstaGa = false;
+      try {
+        const pp = pilPos();
+        if (pp && Math.hypot(pp.x - x, pp.z - z) > 6 && Math.hypot(pp.x - p.x, pp.z - p.z) > 2) {
+          if (!nyMalSteg.avvek) { nyMalSteg.avvek = true; nyFlagga('FÖRVIRRAD', `pilen pekar ${Math.hypot(pp.x - x, pp.z - z).toFixed(0)} m från där målet görs (${namn || 'okänt'})`); }
+          await ga(pp.x, pp.z, 'dit pilen pekar'); for (let i = 0; i < 4; i++) { H.spelare.yaw += Math.PI / 2; await vanta(0.6); }
+        } else if (slump() < 0.08) { const v = slump() * Math.PI * 2; await ga(p.x + Math.cos(v) * 4, p.z + Math.sin(v) * 4, 'fel håll en bit'); await vanta(1); }
+      } finally { nyGar = false; }
+    }
     const steg = Math.ceil(d / 2);
     for (let i = 1; i <= steg; i++) { p.set(p.x + (x - p.x) / (steg - i + 1), 0, p.z + (z - p.z) / (steg - i + 1)); await vanta(Math.min(d, 2) / GA_FART); }
     if (namn) handling(`gå till ${namn} (${d.toFixed(0)} m)`);
@@ -119,7 +170,7 @@
     if (i < 0 && H.antalInv(typ)) {   /* AX g37: fulla fickor – lägg en annan sak i kistan så att det man behöver får plats i handen */
       const k = S.hotbar.findIndex((x, j) => j > 0 && x && x.typ !== typ); if (k > 0) { S.kistan.push({ ...S.hotbar[k] }); S.hotbar[k] = null; const n = H.antalInv(typ); H.taBortInv(typ, n); H.laggTill(typ, n); i = S.hotbar.findIndex((x) => x?.typ === typ); }
     }
-    if (i < 0) return false; H.byt(i); return true;
+    if (i < 0) return false; if (i !== S.vald) nyKontroll('byta'); H.byt(i); return true;
   }
 
   // ---------- Ali ----------
@@ -354,6 +405,7 @@
     if ((S.utsikt === 'bjuden' || S.statyBank === 'bjuden') && H.bilFas?.() === 'resaVantar') { await klick(H.sopbil, 'sopbilen (Rolfs bänk)', 2.5); let w = 0; while (H.kameraAk?.() && w++ < 200) await vanta(0.5); await stangPopups(); handling('tillbaka från Rolfs bänk'); return; }
     /* EA: som en riktig spelare – boten gör nästa mål först när det syns i målrutan (högst 60 s) */
     for (let w = 0; w < 120 && H.malSynligt && !H.malSynligt(); w++) await vanta(0.5);
+    await nyLasMal();   /* A-081 */
     if (S.post.tillMig?.length || S.post.lapp) { await klick(H.postlada, 'Rolfs postlåda'); await stangPopups(); }
     if (H.vantarPaNummer?.()) { await klick(H.postlada, 'Rolfs postlåda (telefonnumret)'); }
     for (const sk of skrivareAlla()) if (sk.klar && !sk.jobb) await taUt(sk);
@@ -541,10 +593,17 @@
       while (S.dag < tillDag && tid < stopp) {   // B55: boten kör vidare in i kapitel 2
         { let w = 0; while (H.pratar?.() && w++ < 120) await vanta(0.1); }   // en spelare lyssnar klart innan hen gör nästa sak
         const fore = S.steg + ':' + S.dag; console.log(`[sim] dag ${S.dag} ${fmt(tid - dagStart)} ${S.mynt} kr · ${H.stegId?.() || ''} · ${(H.stegText() || '').slice(0, 50)} · kö ${H.kanalLage?.().n ?? "?"}`); await gorSteg();
+        if (NY && nyMalSteg.steg === S.steg && !H.pausad()) {   /* A-081: framsteg = målet byts. Mer än 30 s → FÖRVIRRAD, mer än 2 min utan en handling → FAST */
+          const nyckel = [S.steg, S.stat.plockat, S.stat.printat, S.stat.salt, Math.floor((S.stat.trampat || 0) / 5), S.stat.malt, S.mynt, S.kvarn?.ut | 0].join(':');
+          if (nyckel !== nyFramsteg.k) { nyFramsteg.k = nyckel; nyFramsteg.t = tid; }
+          const g = tid - nyFramsteg.t;   // tid utan framsteg mot målet (målet byts, något plockas, mals, printas, säljs, trampas eller pengarna ändras)
+          if (g > 30 && !nyMalSteg.forvirrad) { nyMalSteg.forvirrad = true; nyFlagga('FÖRVIRRAD', `${Math.round(g)} s utan framsteg på "${(H.stegText() || '').slice(0, 60)}"`); }
+          if (g > 120 && !nyMalSteg.fast) { nyMalSteg.fast = true; nyFlagga('FAST', `2 min utan framsteg på "${(H.stegText() || '').slice(0, 60)}"`); }
+        }
         if (fore === sista) { await vanta(1); if (++samma > 60 || tid - stegT > (+(window.__simStegMax || 15)) * 60) { handling('fastnade: ' + H.stegText()); break; } } else { sista = fore; samma = 0; stegT = tid; }
       }
       if (!dagar.some((d) => d.dag === S.dag)) dagar.push({ dag: S.dag, sek: tid - dagStart, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat, ofardig: true });
-      return { logg, handlingar, dagar, kop, tid };
+      return { logg, handlingar, dagar, kop, tid, nyFlaggor, regi: NY || window.__taBild ? (window.__regiLogg || []).slice() : [] };
     },
     logg, handlingar, dagar, kop, get tid() { return tid; },
   };
