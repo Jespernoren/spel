@@ -38,7 +38,7 @@ const stang = () => H(() => { for (let i = 0; i < 6; i++) { const k = [...docume
 await stang(); await p.waitForTimeout(1500);
 const h2 = await H(() => ({ hammare: window.__printahem.antalInv('hammare'), toast: window.__printahem.textLogg().some((e) => /Hammaren ligger i verktygsraden/.test(e.text)), bubbla: window.__printahem.pilBildTyp(), steg: window.__printahem.stegId() }));
 ut.push([`bildbubblan vid skylten: ${b1} (hammaren), efter skylten: ${h2.bubbla} vid steget ${h2.steg}`, /^hammare/.test(b1) && /^skrivareS/.test(h2.bubbla)]);
-ut.push([`hammaren i verktygsraden (${h2.hammare}) med hjälptexten om att byta sak (${h2.toast})`, h2.hammare === 1 && h2.toast]);
+ut.push([`hammaren i verktygsraden (${h2.hammare}) – den ligger där från start (A-076 tillägg 12:25)`, h2.hammare === 1]);
 // 4. rullen tar slut → Ali kommer
 await H(() => { const P = window.__printahem, S = P.S; S.skrivareLastad = S.skrivareStar = S.cykelStar = S.generatorStar = S.cykelOmbyggd = true; S.stat.printat = 1; S.steg = P.STEG.findIndex((x) => x.id === 'rullSlut'); });
 await stang(); await p.waitForTimeout(1500);
