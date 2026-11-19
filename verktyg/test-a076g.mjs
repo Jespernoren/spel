@@ -57,12 +57,12 @@ const h = await H(async () => {
   const vrid = (dYaw) => { if (sp.vrid) sp.vrid(dYaw); else if (sp.yaw !== undefined) sp.yaw = dYaw; };
   sp.yaw = yaw + 10 * Math.PI / 180; if (sp.pitch !== undefined) sp.pitch = -Math.atan2(1.6 - c.y, 2);
   await new Promise((r) => setTimeout(r, 900));
-  const kont = P.scen ? !!P.scen.getObjectByName('siktKontur') : null;
+  const kont = P.scen ? !P.scen.getObjectByName('siktKontur') : null;   /* A-076 rättelse 16:15: ingen vit ritning runt saker som står */
   return { hov: I.hovrad === hm, text: I.hovrad?.userData.interaktion?.text, kont };
 });
 await p.waitForTimeout(300); await p.screenshot({ path: dir + 'g-hammaren-10-grader.png' });
-ut.push([`hammaren från 2 m, 10° bredvid: siktet tar hammaren (${h.hov}, "${h.text}") · vit kontur (${h.kont})`, h.hov && h.kont !== false]);
-const brott = await H(() => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && e.vem === 'SAK UTAN TRÄFFYTA').map((e) => e.text));
-ut.push([`SAK UTAN TRÄFFYTA: ${brott.length} ${brott.slice(0, 3).join(' · ')}`, !brott.length]);
+ut.push([`hammaren från 2 m, 10° bredvid: siktet tar hammaren (${h.hov}, "${h.text}") · ingen vit ritning runt hammaren (${h.kont})`, h.hov && h.kont !== false]);
+const brott = await H(() => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && ['SAK UTAN TRÄFFYTA', 'RITNING PÅ BYGGD SAK'].includes(e.vem)).map((e) => e.vem + ' ' + e.text));
+ut.push([`SAK UTAN TRÄFFYTA / RITNING PÅ BYGGD SAK: ${brott.length} ${brott.slice(0, 3).join(' · ')}`, !brott.length]);
 for (const [t, ok] of ut) console.log(ok ? '✓' : '✗', t);
 console.log(fel.length ? 'sidfel: ' + fel.slice(0, 3).join(' · ') : 'inga sidfel'); await b.close(); process.exit(ut.every((x) => x[1]) && !fel.length ? 0 : 1);

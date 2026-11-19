@@ -67,7 +67,7 @@ for (const h of mal) {
   const v = m ? m.tot - h.tot - +((String(m.varfor || '').match(/meny ([\d.]+) s/) || [])[1] || 0) : null;   // tid i butiken och på pausade sidor räknas inte
   rader.push({ t: h.tot, id: (h.text.match(/id=(\S+)/) || [])[1] || h.text, kv: kv ? `${kv.vem}: ${kv.text}` : kvB ? `${kvB.vem}: ${kvB.text}` : '', mal: m?.text || '', v, sida: !!sida });
 }
-const brott = L.filter((e) => e.kalla === 'brott' && ['SEN KVITTENS', 'SPÖKE', 'FEL BYGGEFFEKT', 'NÄSTA UTAN KONTUR', 'GENERISK MARKERING', 'FAST I HANDEN', 'TYST MÅL', 'PIL UTOM BILD', 'MÅL UTAN BILD', 'FRAMTIDA MÅL SYNS', 'KLICK SOM INTE GÅR', 'SAK UTAN TRÄFFYTA'].includes(e.vem));
+const brott = L.filter((e) => e.kalla === 'brott' && ['SEN KVITTENS', 'SPÖKE', 'FEL BYGGEFFEKT', 'NÄSTA UTAN KONTUR', 'GENERISK MARKERING', 'FAST I HANDEN', 'TYST MÅL', 'PIL UTOM BILD', 'MÅL UTAN BILD', 'FRAMTIDA MÅL SYNS', 'KLICK SOM INTE GÅR', 'SAK UTAN TRÄFFYTA', 'RITNING PÅ BYGGD SAK', 'SEN MORGONSIDA', 'ANNAN DAGBOKSLAYOUT'].includes(e.vem));
 const skylt = L.find((e) => (e.kalla === 'händelse' && e.vem === 'skyltKlar') || (e.kalla === 'varför' && e.varfor === 'skylt') || (e.kalla === 'händelse' && e.vem === 'placerat' && /skylt/.test(e.text))) || L.find((e) => e.kalla === 'lapp' && /Spikade ihop en skylt/.test(e.text)), sidaSkylt = skylt && L.find((e) => e.kalla === 'meddelande' && e.tot >= skylt.tot - 2 && /MITT|skylt/i.test(e.text));
 const promptSkylt = L.find((e) => ['sak', 'sak-del'].includes(e.kalla) && /Men först en skylt|Först ska jag spika upp skylten/.test(e.text));
 const duns = L.filter((e) => e.kalla === 'duns'), print = L.filter((e) => e.kalla === 'brott' && e.vem === 'FEL BYGGEFFEKT');
