@@ -12279,7 +12279,7 @@ const INTRO3 = [
   { tid: 3000, tyst: 0, lager: [IB3('v4kort7'), { id: 'vinjett', vinjett: true }], tal: [['mamma', 'Du kan lika gärna BO på en soptipp!', { b: 'v4kort7', cls: 'rop1', vanster: true }]] },   // rakt in i ansiktet, fingret mot kameran (rasande+rök)
   { tid: 2200, rorelse: true, ljud: 'gitarr', lager: [IB3('v4kort8a'), IB3('v4kort8', { cls: 'sen1kort' })], tal: [['du', 'Okej.'], ['du', 'Då gör jag väl det.']] },   // du reser dig vid datorn, mamma pekar ut genom dörren
   { tid: 2300, rorelse: true, lager: [IB3('v4kort9a', { cls: 'folj' }), IB3('v4kort9b', { cls: 'folj sen1' }), IB3('v4kort9', { cls: 'folj sen2' })], tal: [] },   /* A-078 tillägg 11:50: du går förbi henne i bild – framför henne, förbi, och hon vänder sig */   // A-078 ruta 9: ut förbi mamma, kameran följer med dig ut (mamma förvånad)
-  { tid: 4000, ljud: 'band', lager: [IB3('v3pack9')], tal: [['du', 'Ryggan på.'], ['du', 'Brorsans gamla 3D-skrivare på pakethållaren.']] },
+  { tid: 2600, rorelse: true, ljud: 'band', lager: [IB3('v5pack10a'), IB3('v5pack10b', { cls: 'sen1kort' }), IB3('v5pack10c', { cls: 'sen2kort' })], tal: [['du', 'Ryggan på.'], ['du', 'Brorsans gamla 3D-skrivare på pakethållaren.']] },   /* A-078 facit ruta 10: garaget, från sidan, tre steg */
   { tid: 3000, rorelse: true, musik: true, lager: [{ id: 'vagloop', loop: 'intro/vag.webp' }, { id: 'cyklist', sprite: 'intro/cyklist-tramp.webp', n: 4 }], tal: [['berattare', 'Förbi skolan, förbi affären, förbi där husen tar slut.']] },
   { tid: 3500, ljud: 'masar', lager: [{ id: 'spelgard', spel: 'gard' }], tal: [['berattare', 'Ett gammalt skjul vid soptippen.'], ['berattare', 'Och en gård full av skräp.']] },
   { tid: 3000, rorelse: true, lager: [{ id: 'tavla', tavla: true }], tal: [['berattare', 'Skräp är plast.', { rita: [['skrap', 0]] }], ['berattare', 'En kvarn gör det till filament.', { rita: [['pil1', 0], ['kvarn', 200], ['fraga', 700], ['pil2', 1200], ['filament', 1300]] }], ['berattare', 'Och med filament kan man printa… allt.', { rita: [['pil3', 0], ['skrivare', 200]] }], ['du', 'Jag behöver bara komma på hur.']] },
@@ -12297,7 +12297,7 @@ introCss3.textContent = `
 .ph-il.poff{animation:phPoffFladder 1.5s steps(1) forwards,phPoff .35s 1.5s ease-in forwards}
 @keyframes phPoffFladder{0%{opacity:.95}15%{opacity:.55}25%{opacity:1}55%{opacity:.6}65%{opacity:1}}
 @keyframes phPoff{to{opacity:0;transform:scale(1.25);filter:blur(6px)}}
-.ph-il.sen1kort{opacity:0;animation:phGlidSen .5s .5s ease-in forwards!important}   /* du reser dig medan du säger repliken */
+.ph-il.sen1kort{opacity:0;animation:phGlidSen .5s .5s ease-in forwards!important}.ph-il.sen2kort{opacity:0;animation:phGlidSen .5s 1.6s ease-in forwards!important}   /* du reser dig medan du säger repliken */
 .ph-il.folj{transform-origin:85% 40%;animation:phFolj 2.6s ease-in-out forwards}
 @keyframes phFolj{from{transform:scale(1.08) translateX(3%)}to{transform:scale(1.18) translateX(-4%)}}
 .ph-bub{position:absolute;z-index:6;display:flex;align-items:center;justify-content:center;text-align:center;width:max-content;background:#fff;color:#1d1a24;font:800 clamp(14px,2.1vw,22px)/1.2 "Comic Sans MS","Chalkboard SE",system-ui;padding:.45em .8em;border-radius:16px;box-shadow:0 4px 0 rgba(0,0,0,.25);max-width:36%;animation:phBub .25s ease-out}
@@ -14836,6 +14836,7 @@ function introLager(namn, W = 1000, H = 625) {
     poseFigur(R.mamma, { x: 2.0, z: 0.55, motKamera: [2.15, 0, -0.55], humor: 'arg', handerISidan: true });
     return ut(introRendera(sc, introKamera([-0.6, 1.5, 1.2], [2.2, 1.2, -0.2], 55, W / H), W, H, 3.0));
   }
+  if (/^v5pack10[abc]$/.test(namn)) return ut(packScen10(namn.slice(-1), W, H));   /* A-078 facit ruta 10: packningen utanför garaget, från sidan, i tre steg */
   if (namn === 'v3pack9') {   // ryggan packas och skrivaren surras fast på pakethållaren med spännband
     const sc2 = introLjusScen(0xa8d4f0); byggVilla(sc2);
     const c = vagCykel.clone(true); c.children.forEach((o) => { o.visible = true; }); c.position.set(0.6, 0, 2.3); c.rotation.set(0, -Math.PI / 2 + 0.25, 0); sc2.add(c);
@@ -14868,6 +14869,50 @@ function introLager(namn, W = 1000, H = 625) {
     return ut(c);
   }
   return introLagerVarld(namn, W, H);
+}
+/* A-078 facit ruta 10 (Jesper 13:09): utanför garaget på uppfarten, porten uppfälld och mörkt där inne, kameran snett från sidan, huset till höger.
+   a: du lyfter skrivaren mot pakethållaren · b: skrivaren står, första bandet sitter, du drar det andra · c: båda banden sitter, handen på styret, blicken mot vägen */
+const PACK10 = { cykel: [-7.05, 0, 0.45], kam: [[-3.6, 1.5, 3.8], [-6.5, 0.95, -0.3]], fov: 50 };
+function byggGarage(sc) {
+  const g = new THREE.Group(), vagg = mat(0xe9dcc0), mork = mat(0x16181d), plat = mat(0xa7b0ba, { metalness: 0.3, roughness: 0.6 }), W = 3.6, D = 5, H = 2.6;
+  g.add(at(box(0.16, H, D, vagg), -W / 2, H / 2, 0), at(box(0.16, H, D, vagg), W / 2, H / 2, 0), at(box(W, H, 0.16, vagg), 0, H / 2, -D / 2));
+  g.add(at(box(W + 0.3, 0.18, D + 0.3, mat(0x5a5f66)), 0, H + 0.09, 0));
+  g.add(at(box(W - 0.18, H - 0.06, D - 0.3, mork), 0, H / 2 - 0.02, -0.1));   // mörkt där inne
+  g.add(at(box(W, 0.36, 0.17, vagg), 0, H - 0.18, D / 2));                   // överstycket
+  g.add(at(box(W - 0.32, 0.05, 2.0, plat), 0, H - 0.42, D / 2 - 1.1));       // porten uppfälld i taket
+  for (let i = 1; i < 6; i++) g.add(at(box(W - 0.34, 0.012, 0.02, mat(0x8a929c)), 0, H - 0.39, D / 2 - 0.15 - i * 0.33));
+  g.position.set(-7.05, 0, -4.5); sc.add(g);
+  const upp = new THREE.Mesh(new THREE.PlaneGeometry(3.3, 6.1), mat(0x7d8188)); upp.rotation.x = -Math.PI / 2; upp.position.set(-7.05, 0.012, 0.95); sc.add(upp);   // uppfarten
+  for (const o of [...sc.children]) { const hack = o.material?.color?.getHex?.() === 0x3f7a3a && o.position.x < -4.5; const trad = Math.abs(o.position.x + 7) < 0.01 && Math.abs(o.position.z + 3) < 0.01; if (hack || trad) sc.remove(o); }   // häcken öppnas för uppfarten, trädet flyttas
+  return g;
+}
+function packScen10(steg, W, H) {
+  if (!introRum) introRum = byggIntroRum();
+  const sc2 = introLjusScen(0xa8d4f0); byggVilla(sc2); byggGarage(sc2);
+  const c = vagCykel.clone(true); c.children.forEach((o) => { o.visible = true; }); c.position.set(...PACK10.cykel); c.rotation.set(0, Math.PI / 2, 0); sc2.add(c);
+  const pak = c.children.find((o) => o.type === 'Group' && o.position.y > 0.7 && Math.abs(o.position.z + 0.5) < 0.05);
+  const band = (z) => c.children.filter((o) => o.isMesh && o.material?.color?.getHex?.() === 0xf28c28 && Math.abs(o.position.z - z) < 0.01);
+  c.children.filter((o) => Math.abs(o.rotation.z - 0.5) < 0.01).forEach((o) => { o.visible = true; });   // stödet nere
+  const du = introFigur('du'); sc2.add(du);
+  const sack = introRum.sack.clone(true); sack.visible = true; sack.position.set(0, 1.0, -0.25); sack.rotation.y = Math.PI; sack.scale.setScalar(0.95); du.add(sack);
+  const rem = mat(0x2a2a2a); for (const x of [-0.13, 0.13]) { du.add(at(box(0.06, 0.42, 0.025, rem), x, 1.32, 0.148)); du.add(at(box(0.07, 0.025, 0.31, rem), x, 1.56, 0)); }
+  const u = du.userData, arm = (a, v) => a.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), new THREE.Vector3(...v).normalize());
+  const [cx, , cz] = PACK10.cykel;
+  if (steg === 'a') {   // du lyfter skrivaren mot pakethållaren
+    pak.visible = false; band(-0.62).concat(band(-0.38)).forEach((o) => { o.visible = false; });
+    poseFigur(du, { x: cx - 1.3, z: cz - 0.1, rot: Math.PI / 2 - 0.25, humor: 'likgiltig' });
+    arm(u.hoger, [0, 0.05, 1]); arm(u.vanster, [0, 0.05, 1]);
+    const s = skapaSkrivare(1); s.scale.setScalar(0.82); s.position.set(cx - 0.72, 0.98, cz + 0.12); s.rotation.y = Math.PI / 2; s.rotation.x = -0.12; sc2.add(s);
+  } else if (steg === 'b') {   // skrivaren står, första bandet sitter, du drar det andra
+    band(-0.38).forEach((o) => { o.visible = false; });
+    poseFigur(du, { x: cx - 0.42, z: cz - 0.62, rot: 0.1, humor: 'likgiltig' });   // på andra sidan cykeln, mot kameran
+    arm(u.hoger, [0.15, -0.2, 1]); arm(u.vanster, [-0.15, -0.45, 1]);
+    const b = at(box(0.035, 0.02, 0.5, mat(0xf28c28)), cx - 0.38, 0.97, cz - 0.2); b.rotation.x = -0.35; sc2.add(b);   // andra bandet i handen, över skrivaren
+  } else {   // båda banden sitter, handen på styret, blicken mot vägen
+    poseFigur(du, { x: cx + 0.5, z: cz - 0.5, rot: 0.45, humor: 'likgiltig' });   // vid styret, blicken mot vägen
+    arm(u.hoger, [0.1, -0.75, 0.6]); arm(u.vanster, [-0.1, -1, 0.05]);
+  }
+  return introRendera(sc2, introKamera(PACK10.kam[0], PACK10.kam[1], PACK10.fov, W / H), W, H, 4.2);
 }
 // en villa med trädgård (kort 9)
 function byggVilla(sc) {
