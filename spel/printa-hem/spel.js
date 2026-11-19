@@ -3604,9 +3604,15 @@ function visaPaBadd(sk, typ, prog) {
 }
 function tomBadd(sk) { if (sk.visning) sk.mesh.userData.bad.remove(sk.visning); sk.visning = null; }
 
-const kopplad = (sk) => !!genNiva(sk) || linjeSkrivare(1).includes(sk) || sk.id === 'g1';
+/* inkorg 10f (Jesper 18:45): kopplad = slangen når. Avståndet från linjens torn till skrivarens faktiska plats, inte vilken linje den står i. */
+const SLANG_MARGINAL = 0.8;   // slangen räcker till linjens yttersta skrivarplats plus lite till
+const tornPunkt = () => rulle.getWorldPosition(new THREE.Vector3());
+function slangMax() { const t = tornPunkt(), y = startPlats('L1-skrivare4') || startPlats('L1-skrivare1'); return Math.hypot(y.x - t.x, y.z - t.z) + SLANG_MARGINAL; }
+function slangAvst(sk) { const t = tornPunkt(), w = sk.mesh.getWorldPosition(new THREE.Vector3()); return Math.hypot(w.x - t.x, w.z - t.z); }
+const slangRacker = (sk) => slangAvst(sk) <= slangMax();
+const kopplad = (sk) => !!genNiva(sk) || slangRacker(sk);
 // CE: 'behöver filament' bara när tornet faktiskt är tomt – och med orsaken
-const tomOrsak = (sk) => sk.gen === PETG_GEN ? 'röda tornet är tomt – mal tunnor' : sk.gen === KOLF_GEN ? (slangNar(sk) ? 'kolfibertornet är tomt – mal kajaker' : 'behöver slangfördelaren för att nå tornet') : !kopplad(sk) ? 'står utanför linjen – slangen når inte' : helaRullar() < 1 ? 'rulltornet är tomt – mal mer skräp' : 'plasten är på väg genom slangen';
+const tomOrsak = (sk) => sk.gen === PETG_GEN ? 'röda tornet är tomt – mal tunnor' : sk.gen === KOLF_GEN ? (slangNar(sk) ? 'kolfibertornet är tomt – mal kajaker' : 'behöver slangfördelaren för att nå tornet') : !kopplad(sk) ? 'slangen når inte tornet, ställ skrivaren närmare' : helaRullar() < 1 ? 'rulltornet är tomt – mal mer skräp' : 'plasten är på väg genom slangen';
 function skrivarText(sk) {
   const namn = (sk.gen === PETG_GEN ? 'PETG-skrivaren' : sk.gen === KOLF_GEN ? 'Kolfiberskrivaren' : 'Skrivare ' + GEN[sk.gen].namn) + ` (${filTillg(sk) >= 1 ? rullar(filTillg(sk)) : tomOrsak(sk)})`;
   // DB: pekar man på skrivaren visas bara det man kan göra – framsteget står i etiketten över skrivaren
@@ -4249,6 +4255,25 @@ let matarSlang = null;
   const slang = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([a.clone().setY(0.25), a.clone().lerp(b, 0.25).setY(0.04), a.clone().lerp(b, 0.75).setY(0.04), b]), 40, 0.018, 6), mat(FIL1, { emissive: FIL1, emissiveIntensity: 0.25 }));
   scen.add(slang); matarSlang = slang;
 }
+/* inkorg 10f: slangarna ritas om när tornet eller skrivaren flyttas (och vid omladdning) – från tornet till skrivarens faktiska plats */
+const slangar = new Map();   // skrivarens id → mesh (g1:s slang är matarSlang)
+function slangKurva(a, b) { return new THREE.CatmullRomCurve3([a.clone().setY(0.25), a.clone().lerp(b, 0.25).setY(0.04), a.clone().lerp(b, 0.75).setY(0.04), b]); }
+function uppdateraSlangar() {
+  const t = tornPunkt();
+  for (const sk of skrivare) {
+    if (tornFor(sk) !== 'bla') continue;
+    let m = sk.id === 'g1' ? matarSlang : slangar.get(sk.id);
+    const ska = !!S.kvarnStar && (sk.id !== 'g1' || !!S.skrivareStar) && !!sk.mesh.parent && sk.mesh.visible !== false && slangNar(sk);
+    if (!m) { if (!ska) continue; m = new THREE.Mesh(new THREE.TubeGeometry(slangKurva(t, t.clone().add(new THREE.Vector3(0.1, 0, 0))), 40, 0.018, 6), matarSlang.material); m.visible = false; scen.add(m); slangar.set(sk.id, m); }
+    if (ska) {
+      const b = sk.mesh.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0.35, 0.25, 0)), nyckel = [t.x, t.z, b.x, b.y, b.z].map((v) => v.toFixed(2)).join('|');
+      if (m.userData.nyckel !== nyckel) { m.geometry.dispose(); m.geometry = new THREE.TubeGeometry(slangKurva(t, b), 40, 0.018, 6); m.userData.nyckel = nyckel; m.userData.a = t.clone(); m.userData.b = b.clone(); }
+      if (!m.visible) m.userData.t0 = performance.now();
+      const n = m.geometry.index.count, k = Math.min(1, (performance.now() - (m.userData.t0 || 0)) / 700); m.geometry.setDrawRange(0, Math.max(6, Math.floor(n * k / 6) * 6));
+    }
+    m.visible = ska; m.userData.sk = sk.id;
+  }
+}
 // ---------- Punkt AS: start från blankt – cykeln med storebrors skrivare står på vägen ----------
 // Ingen kvarn och inga maskiner på gården från start. Ordningen dag 1: lasta av skrivaren → ställ den på sin ruta → bygg om cykeln
 // → trampa och printa 3 nyckelringar (300 g) → sälj → köp kvarnen och cykelbatteriet → ställ kvarnen → en flaska ger första rullen.
@@ -4332,7 +4357,7 @@ function ritaStart() {
   cykel.visible = !!S.cykelOmbyggd; cykelStall.visible = !!S.cykelOmbyggd || !!S.cykelStar;   /* A-068 */
   if (S.cykelStar && !S.cykelOmbyggd && !cykelAnim) { cykelSlutPose(vagCykel); cykelStall.scale.set(1, 1, 1); } if (startKabel) { startKabel.visible = !!S.cykelOmbyggd; if (S.cykelOmbyggd && !startKabel.userData.dragen && !cykelAnim) { startKabel.userData.dragen = true; try { dragStartKabel(); } catch (e) {} } }
   batteri.visible = !!S.batteriKopt;
-  if (matarSlang) { const g1 = skrivare.find((x) => x.id === 'g1'); const ny = !!S.skrivareStar && !!g1 && slangNar(g1); if (ny && !matarSlang.visible) matarSlang.userData.t0 = performance.now(); matarSlang.visible = ny; }   /* A-076 tillägg: ingen slang förrän kvarnen och tornet är kopplade */
+  try { uppdateraSlangar(); } catch {}   /* A-076 tillägg: ingen slang förrän kvarnen och tornet är kopplade · inkorg 10f: slangen följer skrivaren */
   startTorn.visible = false; kvarnMark.visible = false;   /* A-071: ingen generisk ring – kvarnen syns som kontur (ritning) */   /* ED3: storebrors rulle följer med skrivaren – tornet är tomt tills skrivaren står */
   if (!cykelAnim) vagCykel.visible = !S.cykelOmbyggd && !S.cykelBuren;
   vagCykel.userData.skrivare.visible = !S.skrivareLastad; vagCykel.children.filter((o) => o.material?.color?.getHex() === 0xf28c28 && o.geometry?.type === 'BoxGeometry').forEach((o) => { o.visible = !S.skrivareLastad; });
@@ -6084,6 +6109,7 @@ function dagensMalHtml(del) {
 // saker som hänger på väggen: snäpps mot närmaste vägg i skjulet och vänds in mot rummet
 const VAGGSAK = new Set(['r_affisch', 'burk_tavla', 'burk_tavla2', 'burk_tavla3']);
 const spoke = { grupp: null, typ: null, rot: 0, ok: false, x: 0, z: 0, bord: null };
+let spokeSlangRit = null, spokeSlangNyckel = '', slangTankeTid = -1e9;   /* inkorg 10f */
 /* A-077: en enda ritstil – det man håller visas som ritning: vita darriga linjer när det får plats, röda när det inte får det. Modellen finns kvar osynlig för mått och siktet. */
 function gorTillRitning(g) {   // modellen står i origo: ritningen läggs som barn och följer med när gruppen flyttas och vrids
   g.position.set(0, 0, 0); g.rotation.set(0, 0, 0); g.updateMatrixWorld(true);
@@ -6091,7 +6117,8 @@ function gorTillRitning(g) {   // modellen står i origo: ritningen läggs som b
   g.traverse((o) => { if (o.isMesh) { o.material = spokOsynlig; o.castShadow = false; o.receiveShadow = false; } });
   g.add(ok, fel); g.userData.ritOk = ok; g.userData.ritFel = fel; return g;
 }
-function ritFarg(g, ok) { if (g?.userData.ritOk) { g.userData.ritOk.visible = !!ok; g.userData.ritFel.visible = !ok; } }
+function ritFarg(g, ok) { if (g && g === spoke.grupp) ok = spokeSlang(spoke.typ, g) && ok;   /* inkorg 10f: utanför slangens räckvidd blir spöket rött – men går att ställa */
+  if (g?.userData.ritOk) { g.userData.ritOk.visible = !!ok; g.userData.ritFel.visible = !ok; } }
 const ruta = new THREE.Mesh(new THREE.RingGeometry(0.0, 1, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25, depthWrite: false }));
 ruta.rotation.x = -Math.PI / 2; ruta.visible = false; scen.add(ruta);
 const spokeRuta = ruta;   // A-071: regelvakten ser skivan under spöket
@@ -6129,7 +6156,7 @@ function uppdateraSpoke() {
   ruta.visible = false; spoke.planFel = null;
   planLys(typ ? nastaPlats(typ) : startHall());   // punkt AS: skrivaren och kvarnen lyser på sin ruta
   if (!!startHall() !== startYta.visible) ritaStart();
-  if (!typ) return;
+  if (!typ) { if (spokeSlangRit) spokeSlangRit.visible = false; return; }
   markRay.setFromCamera(new THREE.Vector2(0, 0), kamera);
   const g = spoke.grupp;
   // punkt AM: fabriksmaskiner snäpper fast på sin ruta – ingen fri placering i fabriken
@@ -6230,6 +6257,21 @@ function uppdateraSpoke() {
     ruta.material.color.set(spoke.ok ? 0x5cff8a : 0xff5c5c);
   }
   ritFarg(g, spoke.ok);
+}
+/* inkorg 10f: håller man en skrivare i blå linjen visar en vit ritning slangen från tornet till platsen – om den räcker */
+function spokeSlang(typ, g) {
+  const gen = SKRIVARTYP[typ], bla = gen === 2 || gen === 3;
+  if (!bla || !S.kvarnStar || !g?.visible) { if (spokeSlangRit) spokeSlangRit.visible = false; return true; }
+  const t = tornPunkt(), d = Math.hypot(spoke.x - t.x, spoke.z - t.z), rack = d <= slangMax();
+  if (rack) {
+    const b = new THREE.Vector3(spoke.x + 0.35, 0.25, spoke.z), nyckel = [t.x, t.z, b.x, b.z].map((v) => (Math.round(v * 4) / 4).toFixed(2)).join('|');
+    if (nyckel !== spokeSlangNyckel) { spokeSlangNyckel = nyckel; if (spokeSlangRit) { scen.remove(spokeSlangRit); spokeSlangRit.traverse((o) => o.geometry?.dispose?.()); } const tub = new THREE.Mesh(new THREE.TubeGeometry(slangKurva(t, b), 24, 0.02, 5)); tub.updateMatrixWorld(true); spokeSlangRit = byggRitning([tub]); spokeSlangRit.userData.slangRitning = true; scen.add(spokeSlangRit); }
+    spokeSlangRit.visible = true;
+  } else {
+    if (spokeSlangRit) spokeSlangRit.visible = false;
+    if (performance.now() - slangTankeTid > 20000) { slangTankeTid = performance.now(); tanke('Slangen räcker inte ända hit.', 'inkorg 10f', 'REAKTION'); }
+  }
+  return rack;
 }
 // överlappar två fotavtryck? (placerad sak p mot ny sak i x,z med halvbredder ex,ez)
 const fotCache = {};
@@ -8228,6 +8270,7 @@ function kanNu(atgard, o = {}) {
     const sk = o.sk; if (!sk || sk.jobb || sk.klar) return { ja: true };
     if (false && S.cykelOmbyggd && S.strom < 1) return { ja: false, skal: kTrampaNu() ? 'Batteriet är tomt.' : 'Batteriet är tomt. Trampa!',   /* A-076 tillägg 13:20: menyn öppnas utan ström – modellen väljs först, sedan trampa (se kanNu('trampa')) */ bild: 'cykelS', vag: () => { const v = cykel.getWorldPosition(new THREE.Vector3()); tittaMot(v.x, v.z, 1.2, { tvang: true, nyckel: 'kanNu-tramp' + S.steg }); pilPulsTill = performance.now() + 2500; } };   /* A-076 tillägg 11:35: kedjan – det första som fattas */
     if (!S.cykelOmbyggd && !(S.strom > 0)) return { ja: false, skal: 'Den har ingen ström.', bild: 'cykelS', vag: () => { if (!S.stromHjalp) { S.stromHjalp = true; sparaSnart(); } const v = vagCykel.getWorldPosition(new THREE.Vector3()); tittaMot(v.x, v.z, 1.2, { tvang: true, nyckel: 'kanNu-strom' + S.steg }); pilPulsTill = performance.now() + 2500; } };
+    if (filTillg(sk) < 1 && S.kvarnStar && tornFor(sk) === 'bla' && !slangNar(sk)) { const kv = kvarn.getWorldPosition(new THREE.Vector3()); return { ja: false, skal: 'Slangen når inte tornet, ställ skrivaren närmare.', bild: 'skrivareS', vag: () => tittaMot(kv.x, kv.z, 1.2, { tvang: true, nyckel: 'kanNu-slang' + S.steg }) }; }   /* inkorg 10f: slangen först i kedjan – då hjälper det inte att mala */
     if (filTillg(sk) < 1) {
       const kv = S.kvarnStar ? kvarn.getWorldPosition(new THREE.Vector3()) : null;
       return { ja: false, skal: S.kvarnStar ? 'Tornet är tomt. Jag måste mala mer skräp.' : 'Rullen är slut.', bild: S.kvarnStar ? 'byggsats:gammalkvarn' : 'rulle', vag: () => { if (kv) { tittaMot(kv.x, kv.z, 1.2, { tvang: true, nyckel: 'kanNu-fil' + S.steg }); } pilPulsTill = performance.now() + 2500; } };
@@ -11283,12 +11326,7 @@ function uppdatera(dt) {
     skrivarUtseende(sk.mesh, sk.fil / (sk.id === 'g1' && !S.kvarnKopt ? BROR_RULLE_GRAM : RULLE), slangAnsluten(sk));   /* A-076 tillägg: rulle → tom spole → slang */
     if (sk.jobb && !sk.vantar && sk.spole) sk.spole.rotation.x += dt * 2;
   }
-  if (matarSlang) {   /* A-076 tillägg: matarslangen växer fram från tornet när den kopplas */
-    const g1 = skrivare.find((x) => x.id === 'g1'), ny = !!S.skrivareStar && !!g1 && slangNar(g1);
-    if (ny && !matarSlang.visible) matarSlang.userData.t0 = performance.now();
-    matarSlang.visible = ny;
-    if (ny) { const n = matarSlang.geometry.index.count, t = Math.min(1, (performance.now() - (matarSlang.userData.t0 || 0)) / 700); matarSlang.geometry.setDrawRange(0, Math.max(6, Math.floor(n * t / 6) * 6)); }
-  }
+  uppdateraSlangar();   /* inkorg 10f: en slang per skrivare i blå linjen, dragen till skrivarens faktiska plats */
   if (ljudBuf.skrivare) loopLjud('skrivare', skrivLoopVol);
   // solpaneler
   S.strom = Math.min(stromMax(), S.strom + solEffekt() * dt);
@@ -16356,15 +16394,17 @@ if (ui) {
   let dodKnappTackt = null;
   /* inkorg 10c: en knapp som ser klickbar ut måste gå att klicka – inte pointer-events:none och inte täckt av något annat */
   regelvakt.regel('DÖD KNAPP', () => {
-    if (!ui.igang || pausad || !ui.overlay.hidden || !ui.butiksOverlay.hidden || !medEl2.hidden || [...document.querySelectorAll('.fp-overlay')].some((o) => !o.hidden && o.offsetParent)) return [];
-    const ut = [], nu = performance.now(), tackt = (dodKnappTackt ||= new Map());   /* täckt i mer än 3 s räknas – en notis som glider förbi gör inte knappen död */
+    const tackt = (dodKnappTackt ||= new Map());
+    if (!ui.igang || pausad || !ui.overlay.hidden || !ui.butiksOverlay.hidden || !medEl2.hidden || [...document.querySelectorAll('.fp-overlay')].some((o) => !o.hidden && o.offsetParent)) { tackt.clear(); return []; }
+    const ut = [], nu = performance.now(), sett = new Set();   /* täckt i mer än 3 s räknas – en notis som glider förbi gör inte knappen död */
     for (const el of document.querySelectorAll('.ph-lasupp, [data-hjalp], .ph-kontroll button, .dn-uppg button, .ph-notis button, .ph-dagbokkort button')) {
       const r = el.getBoundingClientRect(); if (!r.width || !r.height || !el.offsetParent) continue;
       const vad = (el.getAttribute('title') || el.textContent || el.className || '').trim().slice(0, 30), var_ = el.closest('.ph-kontroll, .dn-uppg, .ph-notis, .ph-dagbokkort, .ph-hotbar')?.className.split(' ')[0] || 'sidan';
       if (getComputedStyle(el).pointerEvents === 'none') { ut.push(`${vad} i ${var_}: går inte att klicka (pointer-events: none)`); continue; }
       const mitt = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-      if (mitt && !el.contains(mitt) && !mitt.contains(el)) { if (!tackt.has(el)) tackt.set(el, nu); else if (nu - tackt.get(el) > 3000) ut.push(`${vad} i ${var_}: täckt av ${mitt.className || mitt.tagName}`); } else tackt.delete(el);
+      if (mitt && !el.contains(mitt) && !mitt.contains(el)) { sett.add(el); if (!tackt.has(el)) tackt.set(el, nu); else if (nu - tackt.get(el) > 3000) ut.push(`${vad} i ${var_}: täckt av ${mitt.className || mitt.tagName}`); }
     }
+    for (const el of [...tackt.keys()]) if (!sett.has(el)) tackt.delete(el);   /* bara det som är täckt just nu räknas – inga gamla tider */
     return ut;
   }, { enGang: true });
   /* inkorg 10e: högst en statusetikett per sak – skyltar, skrivarmätare och pilens bildbubbla får inte ligga på varandra */
@@ -16375,6 +16415,20 @@ if (ui) {
     if (malPil.visible && pilBildSprite.visible) { const v = pilBildSprite.getWorldPosition(new THREE.Vector3()).project(kamera); if (v.z < 1) { const x = (v.x * 0.5 + 0.5) * innerWidth, y = (-v.y * 0.5 + 0.5) * innerHeight; R.push(['bildbubblan', { left: x - 30, right: x + 30, top: y - 30, bottom: y + 30 }]); } }
     const ut = [];
     for (let i = 0; i < R.length; i++) for (let j = i + 1; j < R.length; j++) { const a = R[i][1], b = R[j][1]; if (a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom) ut.push(`${R[i][0]} ovanpå ${R[j][0]}`); }
+    return ut.slice(0, 2);
+  }, { enGang: true });
+  /* inkorg 10f: en slang sitter i båda ändar, och en skrivare räknas bara som kopplad om slangen når */
+  const slangFelSedan = new Map();
+  regelvakt.regel('SLANG I LUFTEN', () => {
+    const ut = [], t = tornPunkt(), nu = performance.now(), fel = (k, txt) => { if (!slangFelSedan.has(k)) slangFelSedan.set(k, nu); else if (nu - slangFelSedan.get(k) > 2000) ut.push(txt); }, sett = new Set();   /* fel i mer än 2 s – inte mitt i en duns när spelet står still */
+    for (const sk of skrivare) {
+      if (tornFor(sk) !== 'bla' || !S.kvarnStar) continue;
+      if (slangNar(sk) && slangAvst(sk) > slangMax() + 0.01) (sett.add('k' + sk.id), fel('k' + sk.id, `${sk.id} räknas som kopplad men står ${slangAvst(sk).toFixed(1)} m från tornet (slangen räcker ${slangMax().toFixed(1)} m)`));
+      const m = sk.id === 'g1' ? matarSlang : slangar.get(sk.id); if (!m?.visible || !m.userData.a) continue;
+      const b = sk.mesh.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0.35, 0.25, 0));
+      if (Math.hypot(m.userData.a.x - t.x, m.userData.a.z - t.z) > 0.3 || m.userData.b.distanceTo(b) > 0.3) (sett.add('s' + sk.id), fel('s' + sk.id, `${sk.id}: slangen sitter ${Math.hypot(m.userData.a.x - t.x, m.userData.a.z - t.z).toFixed(1)} m från tornet och ${m.userData.b.distanceTo(b).toFixed(1)} m från skrivaren`));
+    }
+    for (const k of [...slangFelSedan.keys()]) if (!sett.has(k)) slangFelSedan.delete(k);
     return ut.slice(0, 2);
   }, { enGang: true });
   regelvakt.regel('DUBBLETT I HANDEN', () => { const hv = (o) => { for (let x = o; x; x = x.parent) if (!x.visible) return false; return true; }; const ut = []; { const syn = []; kamera.traverse((o) => { if (o.userData?.iHanden && hv(o)) syn.push(o.userData.iHanden); }); const n = syn.filter((x) => x === 'hammare').length; if (n > 1) ut.push(`${n} hammare i bild`); } if (hv(gripVerktyg) && hv(hand.grupp) && /grip/.test(valdTyp() || '')) ut.push('två gripar'); return ut; }, { enGang: true });   /* A-076 tillägg 13:45 */
@@ -16582,6 +16636,7 @@ function kHjalpPekRuta() {   /* pilen pekar på rutan i verktygsraden när hjule
 }
 { const st = document.createElement('style'); st.textContent = '.ph-hotbar .ph-pekas{outline:3px solid #ffd84a;outline-offset:1px;position:relative}.ph-hotbar .ph-pekas::after{content:"▼";position:absolute;left:50%;top:-30px;transform:translateX(-50%);color:#ffd84a;font:900 22px system-ui;text-shadow:0 1px 3px #000;animation:phPek .7s ease-in-out infinite alternate}@keyframes phPek{from{top:-34px}to{top:-24px}}'; document.head.appendChild(st); }
 setInterval(kHjalpTick, 200);
+window.__slang = () => ({ tornPunkt, slangMax, slangAvst, slangNar, kopplad, matarSlang, slangar, gammal, uppdateraSlangar, skrivarText });   /* testkrok: inkorg 10f */
 window.__kHjalp = () => ({ akt: kHjalpAktiv?.id || null, el: !!kHjalpEl?.isConnected, ko: hjalpIKo.sedan ? hjalpIKo.text : '', lista: KONTROLL_HJALP.filter((k) => { try { return (k.kedja || k.upprepa) && k.nar() && !k.klar(); } catch { return false; } }).map((k) => k.id + (kHjalpKlar(k.id) ? '(klar)' : '')) });   /* testkrok: kontrollhjälpens läge */
 addEventListener('keydown', (e) => { if (e.code === 'KeyR') kStat.r++; if (e.code === 'KeyE') kStat.e++; if (e.code === 'Tab') kStat.tab++; if (e.code === 'KeyH') kStat.h++; if (/^Digit[1-9]$/.test(e.code)) kStat.byt++; }, true);
 addEventListener('wheel', () => { kStat.byt++; }, { capture: true, passive: true });
