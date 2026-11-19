@@ -16302,7 +16302,7 @@ function niva5Koll() {   /* EO 35 tillägg: första gången en maskin i en linje
   for (const [k, v] of Object.entries(n)) if (v >= 5 && !(S.niva5 || []).includes(k)) { S.niva5 = [...(S.niva5 || []), k]; paket([{ sms: ['ali', ALI_NIVA5] }], { vikt: 'SMÅPRAT', varfor: `EO 35: ${k} nivå 5` }); }
 }
 function ritaYtor() {
-  try { linjeYta(kvarn, 'bla', kvarnNiva()); kvarn.scale.setScalar(0.92 + 0.04 * (kvarnNiva() - 1));   /* A-059: kvarnen växer per nivå och per linje */
+  try { linjeYta(kvarn, 'bla', kvarnNiva()); { const k = 0.92 + 0.04 * (kvarnNiva() - 1); kvarn.scale.set(-k, k, k); }   /* A-086: storleken per nivå får inte ta bort speglingen (KVARN läsbar, extrudern till höger) */   /* A-059: kvarnen växer per nivå och per linje */
     for (const p of placerade) { if (p.typ === 'petgkvarn' && p.mesh) p.mesh.scale.setScalar(1.25); if (p.typ === 'kolfkvarn' && p.mesh) p.mesh.scale.setScalar(1.5); }
     for (const sk of skrivare) linjeYta(sk.mesh, skrivarLinje(sk), skrivarNiva(sk));
     for (const p of placerade) { if (p.typ === 'petgkvarn') linjeYta(p.mesh, 'rod', Math.min(5, 1 + (S.petg.container ? 1 : 0) + (S.petg.turbo ? 1 : 0) + trimNiva('kvarn_rod'))); if (p.typ === 'kolfkvarn') linjeYta(p.mesh, 'kolf', Math.min(5, 1 + (S.kolf.band ? 1 : 0) + (S.kolf.jet ? 1 : 0) + trimNiva('kvarn_kolf'))); } niva5Koll(); } catch (e) { console.warn('yta', e); }
@@ -16866,6 +16866,56 @@ window.__printahem = { scen, sov, visaNej, skyltKoll, aliSkylt, gruvSkylt: () =>
   dbgKanal: () => ({ nu: performance.now(), pratarTill, pratarVem, kanalFri, aktiv: kanalAktiv && kanalAktiv.text, n: kanal.length, pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: medEl2.hidden, butik: ui.butiksOverlay.hidden, ov: ui.overlay.hidden }),
   textLogg: () => TEXTLOGG.slice(), pratar: () => !!kanalAktiv || kanal.length > 0 || performance.now() < pratarTill || performance.now() < kanalFri, kanal: () => ({ aktiv: kanalAktiv && { vem: kanalAktiv.vem, text: kanalAktiv.text, vikt: kanalAktiv.vikt }, ko: kanal.map((x) => ({ vem: x.vem, text: x.text, vikt: x.vikt })) }), rostMatning, renderaIkon, ikonLista, handelseLogg, ritningInfo: () => { const c = ritning ? new THREE.Box3().setFromObject(ritning).getCenter(new THREE.Vector3()) : null; return { nyckel: ritningNyckel, linjer: ritning?.children.length || 0, printar: printarFram.size, mitt: c && [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(2)] }; }, prata, elHelFig: () => [...(elHel || [])], avkodat, forladdaRepliker, introLager, trampa: (sek) => { trampTest = sek; }, veva: (sek) => { vevTest = sek; }, siktaVagg: (v) => { vaggTest = v; }, vaggarKlara: () => vaggarKlara(), tapetKlara: () => tapetKlara(), nastaInred, prisNu, helaRullar, extruderFull, gardMal, kanLyfta, karraFull, harGava, valdKarra, BARA_SKRAP, SKRAP_RACKVIDD, utlagerKap, startPlats, sattFonster: () => { const n = fonsterLista().length; S.hem = { ...(S.hem || {}), fonster: [...fonsterLista(), { vagg: Object.keys(VAGGAR).filter((k) => !/dorr|fram/i.test(k))[n % 3] || Object.keys(VAGGAR)[0], u: 0.5 }] }; ritaFonster(); uppdateraSkjul(); sparaSnart(); }, medKo, medEl2, uppdatera, stegText: () => { const st = STEG[S.steg]; return st ? (typeof st.text === 'function' ? st.text() : st.text) : ''; }, valdTyp: () => valdTyp(), ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, husvagnFri: () => husvagnFri(), oppnaSkapet: () => oppnaSkapet(), goran: goranTest, polaroid: polaroidTest,  tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, webbOrdrar, oppnaDator, BESOK, besok, startaBesok, ata, MAT_VARDE, printLinje, migreraDK, kolfKvarn, kolfAktivera, uppdateraKolf, nastaGamer, trimNiva, plockaUppPlacerad, plockaSkrap, karraRing, foremal, variantFor, valjTyp, husvagnKlick, gastScen, gastDelKlar, husvagn: () => husvagnG, rolfBesok, sackRulle, karraKlick, karraMal, pappaGubbe, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer, kollaUtsikt, lasUpp, upplast, GEN, flaskS, flyttaFelPlacerade, pilBildTyp: () => pilBildTyp, aliBesok, dagMalLista, visaDagNotis, regelvaktKor: () => regelvakt.kor(), spokeGrupp: () => spoke.grupp, bodSpoke, fonsterSpoke, mimikBilder, VYER4 };   /* A-078 */   /* A-076 */   /* A-069 */
 
+/* ---------- A-086: trailerläget – ?trailer=<scen> ----------
+   Döljer all HUD och UI och styr en filmkamera som spelaren inte själv kan använda. verktyg/trailer.mjs stegar spelet bild för bild
+   (virtuell tid, 30 bilder/s) och sparar verktyg/trailer/scen-<namn>.mp4. I vanligt spel händer ingenting här.
+   En scen: forbered() ställer upp läget, kam(t) ger kamerans plats och mål, gor(t, dt) gör handlingen. */
+const TRAILER_SCEN = (() => { try { return new URLSearchParams(location.search).get('trailer'); } catch { return null; } })();
+const TRAILER = (() => {
+  const V = (x, y, z) => new THREE.Vector3(x, y, z), varld = (o, x = 0, y = 0, z = 0) => o.localToWorld(V(x, y, z));
+  const mjuk = (t) => t * t * (3 - 2 * t), lerp = (a, b, t) => a.clone().lerp(b, t);
+  const bana = (fran, till, mal1, mal2, tid) => (t) => { const k = mjuk(Math.min(1, t / tid)); return { pos: lerp(fran, till, k), mal: lerp(mal1, mal2 || mal1, k) }; };
+  let fp = false, nastaPlock = 0;
+  const SCENER = {
+    plocka: { tid: 5, fov: 62, forbered: () => {   /* gården framför skjulet: fem saker i en båge, du går fram och gripen tar dem en i taget */
+        fp = true; S.grip = true; S.vald = 0; for (const o of hand.saker.splice(0)) o.visible = false; const x0 = SKJUL.x - 5, z0 = SKJUL.z + 6;   /* skräpläget och tomma händer, annars tar gripen inget */
+        for (let i = 0; i < 5; i++) { laggSkrap(x0 - 1.6 + i * 0.8, z0 - 2.2 - Math.abs(i - 2) * 0.35, slumpVariant(), i * 1.3); skrapLista[skrapLista.length - 1].userData.trailer = true; }
+        spelare.pos.set(x0, spelare.pos.y, z0 + 0.4); spelare.yaw = 0; spelare.pitch = -0.5; nastaPlock = 0.9; },
+      gor: (t) => { gripVerktyg.visible = true; const kvar = skrapLista.filter((x) => x.visible && x.userData.trailer).sort((a, b) => a.position.distanceTo(spelare.pos) - b.position.distanceTo(spelare.pos)), nara = kvar[0];
+        if (nara) { const d = V(nara.position.x - spelare.pos.x, 0, nara.position.z - spelare.pos.z); const yaw = Math.atan2(-d.x, -d.z); spelare.yaw += (yaw - spelare.yaw) * 0.1; spelare.pitch += (-0.62 - spelare.pitch) * 0.1; if (d.length() > 1.3) spelare.pos.addScaledVector(d.normalize(), 0.9 / 30); }
+        else spelare.pitch += (-0.12 - spelare.pitch) * 0.05;   /* allt plockat: blicken upp mot gården */
+        if (t >= nastaPlock && nara && nara.position.distanceTo(spelare.pos) < 1.9) { nastaPlock = t + 0.8; gripKlick(); plockaSkrap(nara, true); } } },
+    kvarn: { tid: 5, fov: 50, forbered: () => { S.kvarnStar = true; S.kvarn.motor = true; S.kvarn.tratt = TRATT_MAX; S.strom = stromMax(); },
+      kam: (t) => { const c = varld(kvarn, 0, 0.8, 0), a = -0.9 - t * 0.14; return { pos: V(c.x + Math.sin(a) * 2.3, 1.55 - t * 0.06, c.z + Math.cos(a) * 2.3), mal: c }; }, gor: () => { S.strom = stromMax(); S.kvarn.tratt = Math.max(S.kvarn.tratt, TRATT_MAX * 0.6); } },
+    skrivare: { tid: 5, fov: 40, forbered: () => { const sk = skrivare[0]; if (!sk) return; S.strom = stromMax(); sk.fil = Math.max(sk.fil || 0, 100); sk.klar = null; startaDirekt(sk, { typ: 'nyckelring' }); sk.prog = 0.55; },
+      kam: (t) => { const sk = skrivare[0], c = varld(sk.mesh, 0, 0.35, 0); return bana(V(c.x + 0.95, c.y + 0.45, c.z + 0.75), V(c.x + 0.6, c.y + 0.25, c.z + 0.45), c, c, 5)(t); }, gor: () => { S.strom = stromMax(); } },
+    trampa: { tid: 5, fov: 45, forbered: () => { S.strom = 5; },
+      kam: (t) => { const c = varld(cykel, 0, 0.55, 0); return bana(V(c.x + 2.4, 1.1, c.z + 1.4), V(c.x + 1.6, 0.95, c.z + 0.9), c, c, 5)(t); }, gor: () => { trampTest = 1; } },
+    ali: { tid: 5, fov: 45, forbered: () => {},
+      kam: (t) => { const c = varld(ali, 0, 1.45, 0), fram = varld(ali, 0, 1.5, 1).sub(c).normalize(); return bana(c.clone().addScaledVector(fram, 4.2).add(V(0.6, 0.1, 0)), c.clone().addScaledVector(fram, 2.4).add(V(0.25, 0, 0)), c, c, 5)(t); } },
+  };
+  const sc = TRAILER_SCEN && SCENER[TRAILER_SCEN];
+  return {
+    scen: TRAILER_SCEN, finns: !!sc, tid: sc?.tid || 5, scener: Object.keys(SCENER),
+    forbered() {
+      if (!sc) return false;
+      document.body.classList.add('trailer'); renderer.domElement.classList.add('ph-scen');
+      const st = document.createElement('style'); st.textContent = 'body.trailer>:not(.ph-scen){display:none!important}body.trailer{cursor:none}'; document.head.appendChild(st);
+      try { tystna(); } catch {} kanal.length = 0;
+      sc.forbered?.(); return true;
+    },
+    bild(t, dt = 1 / 30) {   // efter uppdatera(dt): handlingen, kameran och en ren bild
+      sc.gor?.(t, dt);
+      for (const c of kamera.children) if (!(fp && c === gripVerktyg)) c.visible = false;
+      malPil.visible = false; kvarnMark.visible = false; karraRing.visible = false; kajsa.visible = false;   /* katten sätter sig gärna mitt i bild (på skrivaren) */
+      scen.traverse((o) => { if (o.material && (o.material === ritMat || o.material === ritGlod || o.userData.ritning)) o.visible = false; });   /* idé-ritningar (nästa steg) hör till spelet, inte filmen */
+      if (sc.kam) { const k = sc.kam(t); kamera.position.copy(k.pos); kamera.lookAt(k.mal); }
+      if (kamera.fov !== sc.fov) { kamera.fov = sc.fov; kamera.updateProjectionMatrix(); }
+      renderer.render(scen, kamera);
+    },
+  };
+})();
+window.__trailer = TRAILER;
 startaLoop(uppdatera, { scen, kamera, renderer, ritaInte: () => introPagar && !!document.querySelector('.ph-intro3 .ph-is') && !(introRitarVarld && introRitarVarld !== 'klar') });   /* rutor med bilder ur spelvärlden: världen ritas bara tills bilden finns */   /* A-078 tillägg 12:25: introt täcker skärmen – spelvärlden ritas inte bakom (snabbare intro) */
 
 // formspråket "Printat & skrotigt" läggs sist så att det vinner över äldre stilar
