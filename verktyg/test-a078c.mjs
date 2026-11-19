@@ -1,4 +1,4 @@
-// A-078 tillägg 12:25: introt – varje replik läses (även andra gången), ingen klipps, total tid ≤ 75 s, ingen "DU:", tavlan en rad.
+// A-078 tillägg 12:25 + inkorg 12b: introt – varje replik läses (även andra gången), ingen klipps, total tid ca 55–60 s, armen upp på soptipp, ingen "DU:", tavlan en rad.
 // Kör: node verktyg/test-a078c.mjs [url] → verktyg/a078/introtabell.md
 import fs from 'node:fs';
 import { chromium } from '/home/claude/verktyg/node_modules/playwright-core/index.mjs';
@@ -22,7 +22,9 @@ const kor = async (gang) => {
   let forra = R[0]?.t0 || 0;
   for (const r of R) { md += `| ${r.ruta} | ${r.vem} | ${r.text} | ${r.kalla}${r.reserv ? ' (reserv)' : ''} | ${((r.start ?? r.t0) - R[0].t0) / 1000} s | ${r.slut && r.start ? ((r.slut - r.start) / 1000).toFixed(1) + ' s' : '–'} | ${((r.t0 - forra) / 1000).toFixed(1)} s |\n`; forra = r.slut || r.t0; }
   md += '\n';
-  ut.push([`${gang}:a gången: ${tid.toFixed(1)} s (≤ ${gang === 1 ? 56 : 50}), ${R.length} repliker, ${tysta.length} tysta, ${klippta.length} på reservtimern, "DU:" syntes ${du} gånger, tavlan ritade ${tavla} delar`, tid <= (gang === 1 ? 56 : 50) && R.length >= 20 &&   /* A-078 tillägg 15:35: ≤ 50 s; första gången renderar headless 6 världsbilder i programvara (ca 6 s) */ !tysta.length && !klippta.length && !du && tavla <= 9]);
+  const pek = await p.evaluate(() => (window.__introLogg || []).some((x) => x.h === 'visa' && x.x === 'pek'));
+  const [min, max] = gang === 1 ? [54, 67] : [54, 61];   /* inkorg 12b: ca 55–60 s; första gången renderar headless 6 världsbilder i programvara (ca 6 s) */
+  ut.push([`${gang}:a gången: ${tid.toFixed(1)} s (${min}–${max}), ${R.length} repliker, ${tysta.length} tysta, ${klippta.length} på reservtimern, "DU:" syntes ${du} gånger, tavlan ritade ${tavla} delar, armen upp på soptipp: ${pek ? 'ja' : 'NEJ'}`, tid >= min && tid <= max && R.length >= 20 && pek && !tysta.length && !klippta.length && !du && tavla <= 9]);
 };
 await kor(1);
 await p.waitForTimeout(3000);
