@@ -10,6 +10,7 @@ import { chromium } from '/home/claude/verktyg/node_modules/playwright-core/inde
 const [url = 'http://127.0.0.1:8765/printa-hem.html', ut = 'sim-kapitel1.md', nr = '1', tillDag = '6'] = process.argv.slice(2);
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
 const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
+p.on("framenavigated", (f) => { if (f === p.mainFrame()) console.log("[sim] NAVIGERING", f.url()); }); p.on("console", (m) => { if (/warn|error/.test(m.type())) console.log("[sida]", m.type(), m.text().slice(0, 300)); });   /* en sida som laddas om mitt i körningen syns i loggen */
 const sidfel = []; p.on('pageerror', (e) => sidfel.push(e.message));
 let senastLiv = Date.now();
 p.on('console', (m) => { const t = m.text(); if (t.startsWith('[sim]')) { senastLiv = Date.now(); console.log(t); } });

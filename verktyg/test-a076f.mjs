@@ -18,10 +18,10 @@ await p.screenshot({ path: dir + 'f-notis-utan-lista.png' });
 ut.push([`notisen dag 1 utan lista (${!n1.lista}): "${n1.notis.slice(0, 90)}" · uppgiftsrutan väntar (${n1.uppgDold})`, !n1.lista && /Ingen som tjatar/.test(n1.notis) && n1.uppgDold]);
 await p.keyboard.press('Enter');   /* FORTSÄTT */
 let in_ = false; for (let i = 0; i < 60 && !in_; i++) { await p.waitForTimeout(500); in_ = await H(() => !document.body.classList.contains('dn-forsta')); }
-const l = await H(() => window.__printahem.textLogg().filter((e) => e.vem === 'du' && /Först ska jag spika upp skylten/.test(e.text)).length);
+const l = await H(() => window.__printahem.textLogg().filter((e) => e.vem === 'du' && /Först borde jag spika upp en skylt/.test(e.text)).length);
 await p.waitForTimeout(1500); await p.screenshot({ path: dir + 'f-forsta-uppgiften.png' });
 const t1 = await H(() => ({ topp: document.querySelector('.dn-topp').textContent, prickar: document.querySelectorAll('.dn-mal .c').length }));
-ut.push([`du säger "Först ska jag spika upp skylten." (${l}) och rutan glider in (${in_}) · dagrutan: ${t1.prickar} bockar, ingen räknare (${!/Dagens mål|av \d+ · sedan/.test(t1.topp)})`, l > 0 && in_ && t1.prickar === 0 && !/Dagens mål|av \d+ · sedan/.test(t1.topp)]);
+ut.push([`du säger "Först borde jag spika upp en skylt." (${l}) och rutan glider in (${in_}) · dagrutan: ${t1.prickar} bockar, ingen räknare (${!/Dagens mål|av \d+ · sedan/.test(t1.topp)})`, l > 0 && in_ && t1.prickar === 0 && !/Dagens mål|av \d+ · sedan/.test(t1.topp)]);
 // skylten klar → grön, glider åt vänster, nästa glider in
 await H(() => { const P = window.__printahem; P.hammarPaBrador.userData.interaktion.aktivera(); P.byt(P.S.hotbar.findIndex((x) => x?.typ === 'hammare')); P.bradhog.userData.interaktion.aktivera(); });
 let k = null; for (let i = 0; i < 120 && !k; i++) { await p.waitForTimeout(150); k = await H(() => { for (const x of [...document.querySelectorAll('.ph-med button, .fp-knapp')]) if (x.offsetParent && /Fortsätt|Stäng|OK|Läst|Klar|Vidare/i.test(x.textContent)) x.click(); return !!document.querySelector('.dn-klar-kopia'); }); }

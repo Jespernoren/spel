@@ -30,6 +30,17 @@ await sikta(); await p.waitForTimeout(800);
 const e2 = await etiketter();
 await p.screenshot({ path: dir + 'p-med-strom.png' });
 ut.push([`med ström: ingen skylt om ström (${!e2.skyltar.some((t) => /ström/i.test(t))}), ingen "x s kvar"-etikett medan den printar (${e2.matare.length === 0})`, !e2.skyltar.some((t) => /ström/i.test(t)) && e2.matare.length === 0]);
+// AX dag 2: kvarnen utan ström + cykeln – "trampa" bara på cykelns skylt, och skyltarna hamnar aldrig på varandra, från 24 riktningar
+await H(() => { const P = window.__printahem, S = P.S; S.steg = Math.max(0, P.STEG.findIndex((x) => x.id === 'salj')); S.stat.trampat = 50; S.kvarnStar = true; S.kvarn.motor = true; S.kvarn.tratt = 5; S.strom = 0; const c = P.cykelObj(), k0 = P.kvarnMark.position; c.position.set(k0.x + 5, c.position.y, k0.z + 1.5); const g1 = P.skrivare.find((x) => x.id === 'g1'); if (g1) g1.jobb = null; });
+let varst = { krock: 0, trampa: 0, n: 0 };
+for (let i = 0; i < 24; i++) {
+  await H((i) => { const P = window.__printahem, S = P.S; S.strom = 0; const k = P.kvarnMark.getWorldPosition(P.spelare.pos.clone()); k.x += 2.5; const a = i / 24 * Math.PI * 2; P.spelare.pos.set(k.x + Math.sin(a) * 8, P.spelare.pos.y, k.z + Math.cos(a) * 8); P.spelare.yaw = a; P.spelare.pitch = -0.15; }, i);
+  await p.waitForTimeout(350);
+  const r = await H(() => { const el = [...document.querySelectorAll('.hud-stopp')].filter((e) => e.style.display !== 'none' && e.getBoundingClientRect().width); const R = el.map((e) => e.getBoundingClientRect()); let krock = 0; for (let a = 0; a < R.length; a++) for (let c = a + 1; c < R.length; c++) if (R[a].left < R[c].right && R[c].left < R[a].right && R[a].top < R[c].bottom && R[c].top < R[a].bottom) krock++; return { kh: window.__printahem.kHjalpAktiv(), st: window.__printahem.S.strom, mo: JSON.stringify(window.__printahem.S.kvarn), krock, trampa: el.filter((e) => /trampa/i.test(e.textContent)).length, n: el.length, t: el.map((e) => e.textContent.trim()).join(' | ') }; });
+  varst = { krock: Math.max(varst.krock, r.krock), trampa: Math.max(varst.trampa, r.trampa), n: Math.max(varst.n, r.n), t: r.n >= 2 ? r.t : (varst.t || r.t + " · kHjalp=" + r.kh + " strom=" + r.st + " motor=" + r.mo) };
+}
+await p.screenshot({ path: dir + 'p-kvarn-utan-strom.png' });
+ut.push([`kvarnen utan ström, 24 riktningar: högst ${varst.n} skyltar, ${varst.krock} överlapp, "trampa" på högst ${varst.trampa} skylt (${varst.t || ''})`, varst.krock === 0 && varst.trampa <= 1 && varst.n >= 2]);
 const brott = await H(() => window.__brott.filter((x) => x.startsWith('ETIKETT PÅ ETIKETT')));
 ut.push([`0 ETIKETT PÅ ETIKETT (${brott.join(' · ') || 'inga'})`, !brott.length]);
 ut.push([`0 sidfel (${fel.join(' · ') || 'inga'})`, !fel.length]);

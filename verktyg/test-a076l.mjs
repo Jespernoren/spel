@@ -59,6 +59,21 @@ const s5 = await H(() => ({ platser: Object.keys(localStorage).filter((k) => /:p
 await p.screenshot({ path: dir + 'l5-starta-ny-omgang.png' });
 await p.waitForTimeout(6000); const s6 = await H(() => Object.keys(localStorage).filter((k) => /:plats\d$/.test(k)).length);
 ut.push([`STARTA med sparning: introt ${s5.intro}, dag ${s5.dag} steg ${s5.steg} · sparplatser ${fore} → ${s6} (den gamla omgången + den nya, var sin plats, ingen skrivs över)`, s6 === fore + 2 && s5.intro]);
+// AX dag 5: kapitelkortet mitt i spelet – egen knapp som fortsätter, aldrig STARTA (= ny omgång)
+await p.reload(); await p.waitForTimeout(5000);
+for (let i = 0; i < 30; i++) {   /* den nya omgången börjar med introt – hoppa över det och gå in i spelet */
+  const l = await H(() => ({ intro: !!document.querySelector('.ph-intro3, .ph-intro'), igang: window.__printahem.ui.igang, kort: !!document.querySelector('.ph-med:not([hidden]) .ph-dagbokkort') }));
+  if (l.intro) await p.keyboard.press('Enter'); else if (l.kort) await p.keyboard.press('Enter'); else if (!l.igang) await H(() => window.__startaSpel()); else if (i > 4) break;
+  await p.waitForTimeout(700);
+}
+for (let i = 0; i < 8; i++) { if (await H(() => !!document.querySelector('.ph-med:not([hidden]) .ph-dagbokkort'))) await p.keyboard.press('Enter'); await p.waitForTimeout(300); }
+await H(() => { window.__printahem.S.dag = 5; window.__kortLaddad = true; window.__printahem.ui.visaStart('📕 Kapitel 2: Ett riktigt hem', 'Mamma är inte imponerad. Än.', 'Kör!'); });
+await p.waitForTimeout(600);
+const k1 = await H(() => ({ knapp: document.querySelector('.br-starta')?.textContent.trim(), rubrik: document.querySelector('.br3 h1')?.textContent.trim(), starta: [...document.querySelectorAll('.fp-overlay button')].some((x) => /^STARTA$/.test(x.textContent.trim())) }));
+await p.screenshot({ path: dir + 'l6-kapitelkort.png' });
+await H(() => document.querySelector('.br-starta').click()); await p.waitForTimeout(1500);
+const k2 = await H(() => ({ kvar: window.__kortLaddad === true, igang: window.__printahem.ui.igang, dag: window.__printahem.S.dag, gomd: window.__printahem.ui.overlay.hidden }));
+ut.push([`kapitelkortet: rubrik "${k1.rubrik}", knappen "${k1.knapp}", ingen STARTA (${!k1.starta}) · klick fortsätter samma omgång (ingen omladdning ${k2.kvar}, dag ${k2.dag}, i spelet ${k2.igang})`, k1.knapp === 'Kör!' && !k1.starta && /Kapitel 2/.test(k1.rubrik || '') && k2.kvar && k2.dag === 5 && k2.igang && k2.gomd]);
 const brott = await H(() => (window.__brott || []).filter((x) => /^(ANNAN MENYBREDD|SIDFEL VID START) /.test(x)));
 ut.push([`0 ANNAN MENYBREDD, 0 SIDFEL VID START (${brott.join(' · ') || 'inga'})`, !brott.length]);
 ut.push([`0 sidfel (${fel.join(' · ') || 'inga'})`, !fel.length]);
