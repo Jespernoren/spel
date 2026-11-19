@@ -248,8 +248,9 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans, hojd, markFarg })
       staket.add(bom);
     }
     // Bengt-Åkes arga skyltar längs hela staketet – han är en riktigt ilsken markägare
-    for (const [sx, sz, sr, langd, axel] of [[g.x1, g.z1, 0, g.x2 - g.x1, 'x'], [g.x1, g.z2, Math.PI, g.x2 - g.x1, 'x'], [g.x1, g.z1, Math.PI / 2, g.z2 - g.z1, 'z'], [g.x2, g.z1, -Math.PI / 2, g.z2 - g.z1, 'z']]) {
-      for (let d = 6; d < langd - 3; d += 9 + (Math.floor(d) % 4)) {
+    /* A-075 tillägg 14:25: Bengt-Åkes arga skyltar bara mot hans hus – östra staketet, en här (resten står i spel.js: PRIVAT MARK ×2 och HMPF) */
+    for (const [sx, sz, sr, langd, axel] of [[g.x2, g.z1, -Math.PI / 2, g.z2 - g.z1, 'z']]) {
+      for (let d = 6; d < Math.min(langd - 3, 7); d += 9 + (Math.floor(d) % 4)) {
         const x = axel === 'x' ? sx + d : sx, z = axel === 'z' ? sz + d : sz;
         if (axel === 'z' && Math.abs(z - vagZ) < vagB + 1) continue;
         const sk = argSkylt(Math.floor(d * 7 + sx * 3 + sz) >>> 0);
