@@ -73,7 +73,7 @@ export class Interaktor {
     }
     if (this.hovrad) {
       this.ram.setFromObject(this.hovrad);
-      this.ram.visible = true;
+      this.ram.visible = !this.utanRam && !this.hovrad.userData.interaktion?.utanRam;   // utanRam: platsen visas på annat sätt (t.ex. en kontur), eller spelet har ingen ram alls
     } else {
       this.ram.visible = false;
     }

@@ -18,7 +18,8 @@ const GOR = {
   ga: () => { const P = window.__printahem; P.spelare.pos.x += 3; },
   titta: () => { const P = window.__printahem; P.spelare.yaw += 1; },
   klick: () => { window.__printahem.kStat.klick++; },
-  byta: () => { const P = window.__printahem; if (!P.S.hotbar[1]) P.S.hotbar[1] = { typ: 'hammare', n: 1 }; P.kStat.byt++; },
+  stall: () => { const P = window.__printahem; P.kStat.stallt = (P.kStat.stallt || 0) + 1; P.S.hotbar[1] = null; P.byt(0); },
+  byta: () => { const P = window.__printahem; P.kStat.byt++; },
   vrid: () => { window.__printahem.kStat.r++; },
   trampa: () => { window.__printahem.S.stat.trampat = (window.__printahem.S.stat.trampat || 0) + 2; },
   veva: () => { window.__printahem.S.stat.malt = (window.__printahem.S.stat.malt || 0) + 1; },
@@ -27,8 +28,9 @@ const GOR = {
   h: () => { window.__printahem.kStat.h++; },
 };
 const FORBERED = {
-  byta: () => { const P = window.__printahem; P.S.hotbar[1] = { typ: 'hammare', n: 1 }; },
-  vrid: () => { const P = window.__printahem; if (P.spoke) P.spoke.visible = true; },
+  stall: () => { const P = window.__printahem; P.S.hotbar[1] = { typ: 'skrivareS', n: 1 }; P.byt(1); },
+  byta: () => { const P = window.__printahem; P.S.hotbar[1] = { typ: 'hammare', n: 1 }; P.S.hotbar[2] = { typ: 'byggsats:generator', n: 1 }; },
+  vrid: () => { const P = window.__printahem; P.spoke.grupp = { visible: true }; P.spoke.ok = false; },
   trampa: () => { window.__printahem.S.cykelOmbyggd = true; },
   veva: () => { const P = window.__printahem; P.S.kvarnKopt = true; if (P.S.kvarn) P.S.kvarn.motor = false; },
   e: () => { const P = window.__printahem; P.S.hotbar[2] = { typ: 'nyckelring', n: 1 }; P.S.hotbar[3] = { typ: 'kruka', n: 1 }; },
@@ -36,7 +38,7 @@ const FORBERED = {
   h: () => { window.__printahem.sattHjalpBehov(); },
 };
 const sett = [];
-for (const id of ['ga', 'titta', 'klick', 'byta', 'vrid', 'trampa', 'veva', 'e', 'tab', 'h']) {
+for (const id of ['ga', 'titta', 'klick', 'stall', 'byta', 'vrid', 'trampa', 'veva', 'e', 'tab', 'h']) {
   if (id === 'h') await H(() => { const P = window.__printahem; P.kStat.h = 0; P.S.kontrollKlar = (P.S.kontrollKlar || []).filter((x) => x !== 'h'); });
   await H(`(${FORBERED[id] || (() => {})})()`);
   let aktiv = null; for (let i = 0; i < 50 && aktiv !== id; i++) { await p.waitForTimeout(300); aktiv = await H(() => window.__printahem.kHjalpAktiv()); }
@@ -45,7 +47,8 @@ for (const id of ['ga', 'titta', 'klick', 'byta', 'vrid', 'trampa', 'veva', 'e',
   await H(`(${GOR[id]})()`); await p.waitForTimeout(1200);
   const kvar = await H(() => window.__printahem.kHjalpAktiv());
   sett.push({ id, visades: aktiv === id, enIGangen: n <= 1, borta: kvar !== id });
-  if (id === 'vrid') await H(() => { if (window.__printahem.spoke) window.__printahem.spoke.visible = false; });
+  if (id === 'vrid') await H(() => { window.__printahem.spoke.grupp = null; });
+  if (id === 'byta') sett[sett.length - 1].text = await H(() => window.__printahem.KONTROLL_HJALP.find((k) => k.id === 'byta').t);
 }
 ut.push([`kontrollerna visas när de behövs och försvinner när man gjort det: ${sett.map((x) => `${x.id} ${x.visades && x.borta ? '✓' : '✗'}`).join(' · ')}`, sett.every((x) => x.visades && x.borta)]);
 ut.push([`aldrig två kontroller samtidigt`, sett.every((x) => x.enIGangen)]);

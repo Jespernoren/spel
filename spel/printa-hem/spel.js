@@ -1165,6 +1165,7 @@ if (Array.isArray(S.pos) && S.pos.every(Number.isFinite)) {
   spelare.pos.set(S.pos[0], 0, S.pos[1]); spelare.yaw = S.pos[2]; spelare.pitch = S.pos[3];
 }
 const interaktor = new Interaktor(kamera, scen, { rackvidd: 3.2, baraSynliga: true });   // punkt AS: det som inte står på gården än går inte att använda
+interaktor.utanRam = true;   /* A-076 tillägg 11:45: en kontur ritar saken, aldrig en vit låda runt det man tittar på – pekrutan säger vad det är */
 /* ED13: håller man en sak som ska monteras tar monteringen över texten och klicket på målet (MONTERA längre ned) */
 { const reg0 = interaktor.registrera.bind(interaktor);
   interaktor.registrera = (obj, info) => reg0(obj, { ...info,
@@ -1205,6 +1206,17 @@ const kraftfalt = new THREE.Group();
 
 // klick-animation: stöt fram, käftarna slår ihop i spetsen, fjädrar tillbaka
 let gripAnim = 0;
+/* A-076 tillägg 11:45: hammaren kan svingas för skojs skull – ett slag, ljud och lite damm. Ingen effekt i spelet. */
+let hammarSving = -1e9;
+function svingaHammare() {
+  if (performance.now() - hammarSving < 350) return; hammarSving = performance.now();
+  setTimeout(() => { spelaLjud('hammare1', 0.8, 0.9 + Math.random() * 0.2) || ljud.placera(); textLogg('ljud', 'hammare', 'slag för skojs skull', 'A-076'); }, 150);
+  const r = new THREE.Raycaster(); r.setFromCamera({ x: 0, y: 0 }, kamera); const p = new THREE.Vector3();
+  if (!r.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.02), p) || p.distanceTo(spelare.pos) > 3.5) return;
+  const dm = new THREE.MeshBasicMaterial({ color: 0xb8a98c, transparent: true, opacity: 0.7, depthWrite: false }), g = new THREE.Group(); g.position.copy(p); scen.add(g);
+  const bitar = []; for (let i = 0; i < 7; i++) { const m = new THREE.Mesh(new THREE.SphereGeometry(0.03 + Math.random() * 0.03, 5, 4), dm); m.userData.v = new THREE.Vector3((Math.random() - 0.5) * 0.8, 0.5 + Math.random() * 0.6, (Math.random() - 0.5) * 0.8); g.add(m); bitar.push(m); }
+  const t0 = performance.now() + 150; const steg = () => { const t = (performance.now() - t0) / 1000; if (t < 0) { g.visible = false; return requestAnimationFrame(steg); } g.visible = true; for (const m of bitar) { m.position.copy(m.userData.v).multiplyScalar(t); m.position.y -= 1.2 * t * t; } dm.opacity = Math.max(0, 0.7 * (1 - t / 0.7)); if (t < 0.7) requestAnimationFrame(steg); else { scen.remove(g); bitar.forEach((m) => m.geometry.dispose()); dm.dispose(); } }; requestAnimationFrame(steg);
+}
 function gripKlick() {
   if (!gripVerktyg.visible) return;
   gripAnim = 1;
@@ -1841,6 +1853,17 @@ fast(ladGrupp, LAGER.x + (0.5), LAGER.z + (-1.5), 0.6);   /* DT: skrivaren ca 2,
 
 // kort kabel: cykelns generator → batteriet → skrivaren (en enhet)
 let startKabel = null;
+/* A-076 tillägg 11:45: kabeln går hela vägen från generatorn till skrivaren – räknas fram från där de faktiskt står */
+function dragStartKabel() {
+  if (!startKabel || typeof cykel === 'undefined' || typeof gammal === 'undefined') return;
+  cykel.updateMatrixWorld(true); gammal.updateMatrixWorld(true);
+  let gen = null; cykel.traverse((o) => { if (!gen && o.isMesh && o.material?.color?.getHex?.() === 0xf1c40f) gen = o; });
+  const a = gen ? gen.getWorldPosition(new THREE.Vector3()) : cykel.getWorldPosition(new THREE.Vector3()).setY(0.6);
+  const sb = new THREE.Box3().setFromObject(gammal), sc = sb.getCenter(new THREE.Vector3());
+  const b = new THREE.Vector3(sc.x + (a.x - sc.x) * 0.0, 0.25, sc.z).lerp(new THREE.Vector3(a.x, 0.25, a.z), Math.min(0.45, 0.3 / Math.max(0.3, Math.hypot(a.x - sc.x, a.z - sc.z))));
+  const kurva = new THREE.CatmullRomCurve3([a.clone(), a.clone().setY(0.04).lerp(b, 0.15), a.clone().lerp(b, 0.6).setY(0.03), b.clone().setY(0.08), b]);
+  startKabel.geometry.dispose(); startKabel.geometry = new THREE.TubeGeometry(kurva, 40, 0.025, 6);
+}
 {
   const kurva = new THREE.CatmullRomCurve3([
     new THREE.Vector3(-12.25, 0.1, 14.0), new THREE.Vector3(-11.9, 0.03, 13.3), new THREE.Vector3(-11.75, 0.1, 13.05),
@@ -2069,7 +2092,7 @@ function tintaBla(g, fro, niva = 1) {
 function skapaVara(typ) { const g = skapaVaraGrund(typ); return blaSaljvara(typ) ? tintaBla(g, varaFro ?? typ) : g; }
 function skapaVaraGrund(typ) {
   if (typ === 'skrivareS') { const sk = skapaSkrivare(1); sk.scale.setScalar(0.7); return sk; }   // punkt AS
-  if (typ === 'cykelS') { const c = vagCykel.clone(true); c.visible = true; c.position.set(0, 0, 0); c.rotation.set(0, 0, 0); c.children.forEach((o) => { o.visible = true; }); const sk = c.userData.skrivare; if (sk) sk.visible = false; try { c.userData.generator.visible = false; } catch {} c.scale.setScalar(0.6); return c; }   /* A-068: cykeln i famnen, 60 % */
+  if (typ === 'cykelS') { const c = vagCykel.clone(true); c.visible = true; c.position.set(0, 0, 0); c.rotation.set(0, 0, 0); c.children.forEach((o, i) => { const k = vagCykel.children[i]; o.visible = !(k === vagCykel.userData.skrivare || k === vagCykel.userData.generator || (k?.material?.color?.getHex?.() === 0xf28c28 && k.geometry?.type === 'BoxGeometry')); }); c.scale.setScalar(0.6); return c; }   /* A-076 tillägg 11:45: man bär en sak i taget – cykeln utan generatorn (userData pekade på originalen, så klonens generator syntes) */   /* A-068: cykeln i famnen, 60 % */
   const g = new THREE.Group();
   if (typ === 'spagetti') { const m = mat(0x2d6cdf, { roughness: 0.6 }); for (let i = 0; i < 14; i++) { const t = new THREE.Mesh(new THREE.TorusGeometry(0.03 + Math.random() * 0.05, 0.006, 5, 12, Math.PI * (1 + Math.random())), m); t.position.set((Math.random() - 0.5) * 0.12, 0.03 + Math.random() * 0.1, (Math.random() - 0.5) * 0.12); t.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3); g.add(t); } return g; }   /* A-041: en misslyckad print */
   if (typ === 'nyckelkopia') {
@@ -4170,7 +4193,7 @@ function ritaStart() {
   kvarn.visible = !!S.kvarnStar;
   gammal.visible = !!S.skrivareStar; ladGrupp.visible = false;   /* EF16: ingen låda som bara finns där */
   cykel.visible = !!S.cykelOmbyggd; cykelStall.visible = !!S.cykelOmbyggd || !!S.cykelStar;   /* A-068 */
-  if (S.cykelStar && !S.cykelOmbyggd && !cykelAnim) { vagCykel.position.set(CYKEL_RUTA.x, 0.18, CYKEL_RUTA.z); vagCykel.rotation.set(0, 0.7 + Math.PI / 2, 0); cykelStall.scale.set(1, 1, 1); } if (startKabel) startKabel.visible = !!S.cykelOmbyggd;
+  if (S.cykelStar && !S.cykelOmbyggd && !cykelAnim) { vagCykel.position.set(CYKEL_RUTA.x, 0.18, CYKEL_RUTA.z); vagCykel.rotation.set(0, 0.7 + Math.PI / 2, 0); cykelStall.scale.set(1, 1, 1); } if (startKabel) { startKabel.visible = !!S.cykelOmbyggd; if (S.cykelOmbyggd && !startKabel.userData.dragen && !cykelAnim) { startKabel.userData.dragen = true; try { dragStartKabel(); } catch (e) {} } }
   batteri.visible = !!S.batteriKopt;
   if (matarSlang) { const g1 = skrivare.find((x) => x.id === 'g1'); const ny = !!S.skrivareStar && !!g1 && slangNar(g1); if (ny && !matarSlang.visible) matarSlang.userData.t0 = performance.now(); matarSlang.visible = ny; }   /* A-076 tillägg: ingen slang förrän kvarnen och tornet är kopplade */
   startTorn.visible = false; kvarnMark.visible = false;   /* A-071: ingen generisk ring – kvarnen syns som kontur (ritning) */   /* ED3: storebrors rulle följer med skrivaren – tornet är tomt tills skrivaren står */
@@ -4180,6 +4203,7 @@ function ritaStart() {
   uppdateraHinder();
 }
 interaktor.registrera(startYta, {
+  utanRam: true,   /* A-076 tillägg 11:45: konturen visar platsen – ingen vit låda runt den */
   text: () => valdTyp() === 'skrivareS' ? '🖨️ Ställ skrivaren här' : valdTyp() === 'cykelS' ? '🚲 Ställ cykeln här' : valdTyp() === 'byggsats:generator' ? '⚡ Ställ generatorn här' : '⚙️ Ställ kvarnen här',
   kanAktivera: () => !!startHall(),
   aktivera: () => {
@@ -4327,7 +4351,7 @@ const regi = {
   },
   logg: regiLogg,
 };
-function regiToastNu(t, typ, ms) { regiLogg('info', typ === 'fel' || typ === 'bra' || typ === 'guld' ? 'kvittens' : 'info', '', t, ms); textLogg('toast', typ, t); ui.toast(t, typ, ms); }
+function regiToastNu(t, typ, ms) { regiLogg('info', typ === 'fel' || typ === 'bra' || typ === 'guld' ? 'kvittens' : 'info', '', t, ms); textLogg('toast', typ, t); (ui.toastDirekt || ui.toast)(t, typ, ms); }   /* A-080: förbi den gamla omslaget (punkt 15) som köade igen och tappade tiden */
 /* ========== REGI:SLUT ========== */
 // ---------- Punkt BD: en gemensam kö för texter (sms och notiser från figurer) ----------
 // STORY > MÅL > REAKTION > SMÅPRAT. Max en text per TEXT_MELLAN ms från olika källor. "Stryks om" kontrolleras precis innan visning.
@@ -4541,13 +4565,18 @@ const CYKEL_HAR_T = 'Den ska stå vid skrivaren.';   /* A-071: "Cykeln först" �
 function byggOmCykeln() {
   if (cykelAnim || S.cykelOmbyggd) return;
   if (!S.cykelStar || !S.generatorStar) return;   /* A-071: båda ska stå på plats */
-  genStar.visible = false;
-  const t0 = performance.now() - 1400; spelaLjud('montera');   /* A-068: cykeln står redan på rutan – skruvdragaren, sedan dras sladden */
+  try { dragStartKabel(); } catch (e) {}
+  /* A-076 tillägg 11:45: generatorn glider synligt upp på cykeln (ingen teleport), sedan skruvas den fast och kabeln dras till skrivaren */
+  const genFran = genStar.position.clone(); let genTill = genFran.clone();
+  { let gen = null; cykel.updateMatrixWorld(true); cykel.traverse((o) => { if (!gen && o.isMesh && o.material?.color?.getHex?.() === 0xf1c40f) gen = o; }); if (gen) genTill = gen.getWorldPosition(new THREE.Vector3()); }
+  const t0 = performance.now() - 700; spelaLjud('montera');   /* A-068: cykeln står redan på rutan – skruvdragaren, sedan dras sladden */
   cykelAnim = { t0 };
   const kabelGeo = startKabel?.geometry, n = kabelGeo?.index ? kabelGeo.index.count : 0;
   const steg = () => {
     const t = (performance.now() - t0) / 1000;
-    if (t < 2.0) {   // nu är det en generator: sladden dras till skrivaren
+    if (t < 1.4) { const k = Math.min(1, (t - 0.7) / 0.7), e2 = k * k * (3 - 2 * k); genStar.position.lerpVectors(genFran, genTill, e2); genStar.position.y += Math.sin(Math.PI * k) * 0.35; }
+    else if (t < 2.0) {   // nu är det en generator: sladden dras till skrivaren
+      if (genStar.visible) { genStar.visible = false; genStar.position.copy(genFran); }
       if (vagCykel.visible) { vagCykel.visible = false; cykel.visible = true; ljudH('placera'); if (startKabel) startKabel.visible = true; }
       const k = (t - 1.4) / 0.6; if (kabelGeo && n) kabelGeo.setDrawRange(0, Math.ceil(n * k / 3) * 3);
     } else {
@@ -5353,7 +5382,7 @@ function flaskaMald() {
   if (nu > forut) { rullKlarTid = performance.now() + 900; if (!spelaLjud('rulle-klar')) ljud.klar(); }
   sparaSnart();
 }
-interaktor.registrera(cykel, { text: () => S.strom >= stromMax() - 0.5 ? (kand('batteribank') ? '🔋 Batteriet är fullt – en batteribank lagrar mer' : '🔋 Batteriet är fullt') : `✋ Klicka och håll – trampa · ⚡ ${Math.floor(S.strom)}/${stromMax()}`, aktivera: () => {} });
+interaktor.registrera(cykel, { text: () => kTrampaNu() ? `🚲 Cykeln · ⚡ ${Math.floor(S.strom)}/${stromMax()}` : S.strom >= stromMax() - 0.5 ? (kand('batteribank') ? '🔋 Batteriet är fullt – en batteribank lagrar mer' : '🔋 Batteriet är fullt') : `✋ Klicka och håll – trampa · ⚡ ${Math.floor(S.strom)}/${stromMax()}`, aktivera: () => {} });
 interaktor.registrera(marknad, {
   text: () => aliOppen() ? 'Gå fram till Alis disk – köp och sälj' : '🔒 Alis marknad har stängt (öppnar 08:00) – gå hem och sov',
   aktivera: () => { if (aliOppen()) { aliSagt = ''; oppnaMarknad(); } else { const t = valjOsagd(ALI_STANGT, 'ali'); ljud.fel(); if (t) prata('ali', t); regi.info(`🧔🏽 Ali (bakom luckan): ”${t}”`, 'fel'); } },
@@ -5657,7 +5686,7 @@ interaktor.registrera(bodYta, {
 const utanforBod = () => !iBodYta(spelare.pos, BOD.x, BOD.z, BOD.r);
 interaktor.registrera(bodGrupp, {
   kanAktivera: () => S.bod && !flyttarBod && !valdTyp() && utanforBod(),
-  text: () => S.bod && !flyttarBod && utanforBod() ? (valdTyp() ? 'Gamingboden · ta tom hand (H) för att flytta den' : 'Flytta gamingboden · klicka (R vrider)') : '',
+  text: () => S.bod && !flyttarBod && utanforBod() ? (valdTyp() ? 'Gamingboden · ta tom hand (0) för att flytta den' : 'Flytta gamingboden · klicka (R vrider)') : '',
   aktivera: () => startaBodFlytt(),
 });
 // sängplatsen inne i skjulet: en genomskinlig säng + markering på golvet visar var den ska stå
@@ -5922,7 +5951,7 @@ vridTips.onclick = (e) => { e.stopPropagation(); spoke.rot = (spoke.rot + (bodSp
 document.body.appendChild(vridTips);
 function ritaVridTips() {
   const placerar = !!(spoke.grupp?.visible || bodSpoke.visible);
-  const visa = placerar && (S.vridit || 0) < VRID_LARA;
+  const visa = false && placerar && (S.vridit || 0) < VRID_LARA;   /* A-076 tillägg 11:45: R lärs av kontrollhjälpen, i rätt ordning */
   if (vridTips.hidden === !visa) return;
   vridTips.hidden = !visa;
   if (visa && !(S.forsta || []).includes('vrid')) { S.forsta = [...(S.forsta || []), 'vrid']; sparaSnart(); bud(() => prata('du', VARN.vrid)); }
@@ -8026,6 +8055,7 @@ let oppenAtgard = null;   /* vilken åtgärd menyn som är öppen just nu erbjud
 function kanNu(atgard, o = {}) {
   if (atgard === 'printa') {
     const sk = o.sk; if (!sk || sk.jobb || sk.klar) return { ja: true };
+    if (S.cykelOmbyggd && S.strom < 1) return { ja: false, skal: kTrampaNu() ? 'Batteriet är tomt.' : 'Batteriet är tomt. Trampa!', bild: 'cykelS', vag: () => { const v = cykel.getWorldPosition(new THREE.Vector3()); tittaMot(v.x, v.z, 1.2, { tvang: true, nyckel: 'kanNu-tramp' + S.steg }); pilPulsTill = performance.now() + 2500; } };   /* A-076 tillägg 11:35: kedjan – det första som fattas */
     if (!S.cykelOmbyggd && !(S.strom > 0)) return { ja: false, skal: 'Den har ingen ström.', bild: 'cykelS', vag: () => { if (!S.stromHjalp) { S.stromHjalp = true; sparaSnart(); } const v = vagCykel.getWorldPosition(new THREE.Vector3()); tittaMot(v.x, v.z, 1.2, { tvang: true, nyckel: 'kanNu-strom' + S.steg }); pilPulsTill = performance.now() + 2500; } };
     if (filTillg(sk) < 1) {
       const kv = S.kvarnStar ? kvarn.getWorldPosition(new THREE.Vector3()) : null;
@@ -9074,7 +9104,7 @@ function oppnaDagbok() {
     kropp = brev.length ? brev.join('') : '<p class="ui-tom">Inga brev än.</p>';
   } else {
     kropp = sektion('Spelet') + (S.kapitel2Klart ? `<div class="ui-grid" style="gap:10px;margin-bottom:10px">${knapp({ text: `Tippen på tid${tidRekord() ? ' · rekord ' + tidText(tidRekord()) : ''}`, typ: 'plus', attr: 'data-tidtipp', ikon: 'klocka' })}</div><p class="ui-tom">Gården fylls med ${TIDTIPP_N} skräp. Plocka upp allt så fort du kan – klockan går tills det sista är borta.</p>` : '') + `<div class="ui-grid" style="gap:10px">${knapp({ text: 'Se introt igen', typ: 'neutral', attr: 'data-intro', ikon: 'film' })}${knapp({ text: `Namn: ${S.spelarNamn || 'Anonym'} · byt`, typ: 'neutral', attr: 'data-bytnamn', ikon: 'stjarna' })}${knapp({ text: 'Sparplatser', typ: 'neutral', attr: 'data-sparplatser', ikon: 'spara' })}${knapp({ text: 'Ljud: musik, effekter, röster', typ: 'neutral', attr: 'data-ljudval', ikon: 'rost' })}${knapp({ text: `Musik: ${S.musik === false ? 'av' : 'på'}`, typ: 'neutral', attr: 'data-musik', ikon: 'rost' })}${knapp({ text: `Röster: ${{ rost: 'riktiga röster', prat: 'pratljud', tal: 'datorns talsyntes', av: 'av' }[rostLage()]}`, typ: 'neutral', attr: 'data-roster', ikon: 'rost' })}</div>`
-      + sektion('Styrning') + `<p class="ui-tom">WASD gå · mus titta · klick/E använd · klicka och håll = veva, gripa och mer · hjulet/1–8 byt sak · H tomhänt · Shift+Q släpp allt · R vrid · I dina saker · M meddelanden · B dagbok · V röster</p>`;
+      + sektion('Styrning') + `<p class="ui-tom">WASD gå · mus titta · klick/E använd · klicka och håll = veva, gripa och mer · hjulet/1–8 byt sak · 0 tomhänt · H vad gör jag nu? · Shift+Q släpp allt · R vrid · I dina saker · M meddelanden · B dagbok · V röster</p>`;
   }
   oppnaRuta(panel({ ikon: 'bok', titel: 'Dagbok', sub: `Dag ${S.dag}`, resurser: resurserHtml(), flikar: [['sms', 'telefon', 'Telefon' + (S.olasta ? ` (${S.olasta})` : '')], ['dagbok', 'bok', 'Min dagbok'], ['mal', 'mal', 'Mål'], ['plan', 'kvarn', 'Fabriksplanen'], ['brev', 'brev', 'Brev'], ['spel', 'kugghjul', 'Spelet']], aktivFlik: dagbokFlik, kropp }), (el) => {
     el.querySelector('[data-flik="sms"]')?.addEventListener('click', (e) => { e.stopImmediatePropagation(); ljud.plock(); oppnaInkorg(); }, true);
@@ -9092,12 +9122,12 @@ function oppnaDagbok() {
 
 // ---------- UI ----------
 const ui = new FpUI({
-  touch: false,
+  touch: false, promptTangent: '',   /* A-076 tillägg 11:45: E är ryggsäcken – kontrollhjälpen lär ut klicket */
   titel: logo({ bredd: 440 }),
   text: '<p>Allt du äger är ett gammalt skjul och storebrors 3D-skrivare.</p><p>Tomten är full av skräp. Men skräp är plast, och plast är filament.</p><p class="br-slogan">Printa dig ett hem.</p>',
-  hjalp: 'WASD gå · Mus titta · Klick/E använd · Klicka och håll = veva/gripa · B dagbok & sparplatser<br>Hjulet / 1–8 byt sak · H tomhänt · Shift+Q släpp allt · V röster · I dina saker · B dagbok · M meddelanden · K sparplatser · G flytta gamingboden · R vrid · Q släpp skräp · Shift spring',
+  hjalp: 'WASD gå · Mus titta · Klick använd · Klicka och håll = veva/gripa · B dagbok & sparplatser<br>Hjulet / 1–8 byt sak · H tomhänt · Shift+Q släpp allt · V röster · I dina saker · B dagbok · M meddelanden · K sparplatser · G flytta gamingboden · R vrid · Q släpp skräp · Shift spring',
   spelare,
-  pausaInte: () => sover || julPagar || S.resa === 'pagar' || !!document.querySelector('.ph-kap, .ph-kapkort, .ph-jul, .ph-resa') || !medEl2.hidden || medKo.length > 0 || dagbokLas || performance.now() - medStangdTid < 1500,   // B1/B49: inte heller kring lappar och dagboken. B1: ingen pausmeny i scener där muslåset släpps med flit
+  pausaInte: () => sover || julPagar || S.resa === 'pagar' || !!document.querySelector('.ph-kap, .ph-kapkort, .ph-jul, .ph-resa') || !medEl2.hidden || dagbokLas || performance.now() - medStangdTid < 1500,   // B1/B49: inte heller kring lappar och dagboken. B1: ingen pausmeny i scener där muslåset släpps med flit
   onAnvand: (nere) => {
     anvandNere = nere;
     if (gripVerktyg.visible && !nere && gripHaller) gripSlapp();
@@ -9110,6 +9140,7 @@ const ui = new FpUI({
     if (VAROR[valdTyp()]?.tapet != null) { tapetsera(valdTyp()); return; }
     if (valdKarra() && (!interaktor.hovrad || interaktor.hovrad.userData.typ === 'skrap') && (karraKand || skrapLista.some((x) => Math.hypot(x.position.x - spelare.pos.x, x.position.z - spelare.pos.z) < 4))) { karraKlick(); return; }   // CJ
     if (interaktor.hovrad && !(spoke.grupp?.visible && spoke.bord && paBord(valdTyp()))) { interaktor.aktivera(); return; }
+    if (valdTyp() === 'hammare') { svingaHammare(); return; }   /* A-076 tillägg 11:45: hammaren slår för skojs skull */
     if (valdTyp() === 'cykelS') { ljudH('fel'); if (!enGang(CYKEL_HAR_T, 'A-068: cykeln någon annanstans')) regi.info(CYKEL_HAR_T, 'fel'); return; }   /* A-068 */
     if (TA_PA[valdTyp()]) { taPaVald(); return; }   /* ED13: det man bär på sig tar man på med ett klick */
     if (MONTERA[valdTyp()]) { ljud.fel(); regi.info(MONTERA_TIPS[valdTyp()] || `${MONTERA[valdTyp()].namn} – sikta på rätt ställe`, 'fel'); return; }   /* ED9: inget tyst nej */
@@ -9386,7 +9417,7 @@ topp.insertAdjacentHTML('beforeend', `<div class="fp-chip ph-resp-chip" title="R
 document.querySelector('.fp-mynt').insertAdjacentText('afterend', ' kr');
 { const mc = document.querySelector('.fp-mynt').parentElement; for (const n of [...mc.childNodes]) if (n.nodeType === 3 && /\S/.test(n.textContent) && !/kr/.test(n.textContent)) n.remove(); mc.insertAdjacentHTML('afterbegin', ik('mynt')); }
 document.body.insertAdjacentHTML('beforeend', '<div class="ph-hotbar" hidden></div><div class="ph-hb-namn"></div>');
-document.querySelector('.ph-hotbar').onclick = (e) => { if (e.target.closest('[data-inv]')) { oppnaInv(); return; } const k = e.target.closest('[data-i]'); if (k) byt(Number(k.dataset.i)); };
+document.querySelector('.ph-hotbar').onclick = (e) => { if (e.target.closest('[data-inv]')) { oppnaInv(); return; } const k = e.target.closest('[data-i]'); if (k) { byt(Number(k.dataset.i)); try { kStat.byt++; } catch {} } };
 let hjulTid = 0;
 addEventListener('wheel', (e) => {
   if (!ui.igang || !ui.butiksOverlay.hidden || pausad || Math.abs(e.deltaY) < 4) return;
@@ -9915,7 +9946,7 @@ function filGrund(sk) {
   }
   return { varfor: 'Kvarnen har inget skräp', fix: S.kvarn.band || (S.kvarn.binge || []).length ? 'Töm skräp i sophållaren' : 'Plocka skräp och lägg det i tratten', kort: 'Mata kvarnen', ikon: 'kvarn' };
 }
-const stromGrund = () => ({ varfor: stromBehov() > TRAMP_PER_S + solEffekt() + vindEffekt() ? `Maskinerna drar mer ström än du får in` : 'Batteriet är tomt', fix: stromFix(), kort: S.powerbank || S.batteriKopt ? 'Mer ström' : 'Trampa cykeln', ikon: 'blixt' });
+const stromGrund = () => ({ varfor: stromBehov() > TRAMP_PER_S + solEffekt() + vindEffekt() ? `Maskinerna drar mer ström än du får in` : 'Batteriet är tomt', fix: stromFix(), kort: 'Ingen ström', ikon: 'blixt' });   /* A-076 tillägg 11:45: skylten på skrivaren säger skälet – uppmaningen står på ett ställe (cykeln) */
 // EB: tornet vid kvarnen är fullt – följ kedjan framåt (torn → slang → skrivare → platta) och visa första länken som stoppar.
 // "Bygg ut" visas bara när hela kedjan går och kapaciteten är flaskhalsen (EE).
 function kvarnFullGrund() {
@@ -9926,6 +9957,7 @@ function kvarnFullGrund() {
   if (lin.every((x) => !x.jobb)) return { obj: lin[0].mesh, y: 1.0, typ: 'stopp', varfor: 'Kvarnen väntar på skrivaren – den printar inget', fix: 'Starta en print på skrivaren', kort: 'Starta en print', ikon: 'varning' };
   return { typ: 'vantar', varfor: 'Skrivarna hinner inte med kvarnen', fix: 'Bygg ut: fler skrivare eller ett större torn', kort: 'Kvarnen väntar på skrivarna', ikon: 'rulle' };
 }
+const kTrampaNu = () => { try { return kHjalpAktiv?.id === 'trampa'; } catch { return false; } };   /* A-076 tillägg 11:45: kontrollhjälpen säger "trampa" – då ingen skylt till */
 function maskinStopp() {
   const L = [];
   for (const sk of skrivare) {
@@ -9940,7 +9972,7 @@ function maskinStopp() {
   else if (S.kvarnStar && S.kvarn.tratt > 0 && extruderFull()) L.push({ obj: kvarn, y: 1.6, rub: 'Kvarnen står still', ...kvarnFullGrund() });   /* EB: följ kedjan framåt – skylten hamnar där du ska göra något */
   else if (!S.kvarn.motor && S.kvarn.tratt >= TRATT_MAX) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Tratten är full', varfor: 'Ingen plats för mer skräp', fix: 'Veva kvarnen – klicka och håll på veven', kort: 'Veva kvarnen', ikon: 'kvarn' });
   if (L.some((x) => x.varfor === 'Kvarnen har inget skräp') && !L.some((x) => x.obj === kvarn)) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Kvarnen', varfor: 'Skrivarna väntar på plast', fix: 'Plocka skräp och lägg det i tratten', kort: 'Mata kvarnen', ikon: 'kvarn' });   // EB: grundorsaken syns där den ska lösas
-  if (L.some((x) => /ström/.test(x.varfor) || /Batteriet/.test(x.varfor))) L.push({ obj: cykel, y: 1.5, typ: 'hit', rub: 'Trampa här!', varfor: `Batteri ${Math.floor(S.strom)}/${stromMax()}`, fix: 'Klicka och håll på cykeln', kort: 'Trampa här!', ikon: 'blixt' });
+  if (!kTrampaNu() && L.some((x) => /ström/.test(x.varfor) || /Batteriet/.test(x.varfor))) L.push({ obj: cykel, y: 1.5, typ: 'hit', rub: 'Trampa här!', varfor: `Batteri ${Math.floor(S.strom)}/${stromMax()}`, fix: 'Klicka och håll på cykeln', kort: 'Trampa här!', ikon: 'blixt' });
   return L;
 }
 // ---------- Mätning och spelarfeedback ----------
@@ -10815,6 +10847,14 @@ function visaNastaMeddelande() {
 }
 // muslåset kan beviljas en stund efter klicket på Starta – kommer det när ett meddelande visas släpper vi det så att man kan klicka Läst
 document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement && !medEl2.hidden) ui.slappMus(); });
+/* A-076 tillägg 11:45: Esc öppnar och stänger alltid menyn – också under tal, ritningar, kamerarörelser och kontrollhjälp, och när musen inte är låst.
+   Lappar, butiken, felrutan och scenerna har sin egen Esc (stäng/hoppa över). */
+addEventListener('keydown', (e) => {
+  if (e.code !== 'Escape' || e.repeat) return;
+  if (!ui.butiksOverlay.hidden || !medEl2.hidden || sover || document.querySelector('.ph-fel, .ph-intro, .ph-intro3, .ph-kap, .ph-jul, .ph-resa')) return;
+  if (ui.pausad && !ui.overlay.hidden) { if (performance.now() - (ui.pausTid || 0) > 250) { e.preventDefault(); ui.starta(); } return; }
+  if (ui.igang && ui.overlay.hidden) { e.preventDefault(); ui.pausa(); }
+});
 let medStangdTid = -1e9;
 function stangMeddelande() {
   const k = medEl2.querySelector('button.fp-knapp'); if (!k || k.disabled || k.hidden) return;
@@ -10897,6 +10937,7 @@ function uppdatera(dt) {
   spikaTick(dt);
   hand.uppdatera(dt, spelare.rorelse);
   hand.grupp.position.x -= 0.68;   // skräpet i vänster hand – gripen i höger
+  { const k = (performance.now() - hammarSving) / 320; if (k >= 0 && k < 1) { hand.grupp.position.y -= 0.14 * Math.sin(Math.PI * k); hand.grupp.position.z -= 0.08 * Math.sin(Math.PI * k); } }   /* A-076 tillägg 11:45: hammarslaget */
 
   // skrivarna jobbar även när menyn är öppen
   skrivLoopVol = 0;
@@ -14857,7 +14898,7 @@ const KEDJA_TEXT = {
   skylt: [null, 'Skrivaren står kvar på cykeln. Den ska av.'],   /* A-063: kvittensen är dagbokssidan. A-076: skrivaren är nästa sak */
   lastat: ['Tung. Den har storebror aldrig burit så långt.'],
   skrivareStar: [null, null],   // DT: de tre första stegen ska gå på ca 30 s
-  cykel: [null, 'Okej. Trampa. Och välj nåt litet att printa.'],
+  cykel: [null, 'Okej. Välj nåt litet att printa.'],   /* A-076 tillägg 11:45: "trampa" sägs av kontrollhjälpen */
   printStart: ['Den piper. Den GÖR något.'],
   printKlar: ['Klar! Ta ut den innan den ändrar sig.'],
   aliKvarn: [null, null],   // DT: Ali säger sin kvarnreplik när man köper den
@@ -15720,7 +15761,7 @@ function linjeYta(obj, linje, niva) {
   });
   // rost och lappar på nivå 1–2, LED-list på nivå 5
   let rost = obj.userData.ytaRost; if (!rost) { rost = new THREE.Group(); const rm = mat(0x7a3e1c, { roughness: 1 }); for (const [x, y2, z] of [[0.18, 0.35, 0.31], [-0.2, 0.5, 0.31], [0.05, 0.2, -0.31]]) rost.add(at(box(0.09, 0.07, 0.01, rm), x, y2, z)); rost.traverse((x) => { x.userData.ytaFri = true; }); obj.add(rost); obj.userData.ytaRost = rost; }
-  rost.visible = niva <= 2;
+  rost.visible = false;   /* A-076 tillägg 11:45: rostlapparna satt på fasta platser och svävade runt skrivarens öppna ram – borta */
   let led = obj.userData.ytaLed; if (!led) { led = at(box(0.4, 0.02, 0.012, new THREE.MeshBasicMaterial({ color: LINJE_FARG[linje] || LINJE_FARG.bla })), 0, 0.08, 0.32); led.userData.ytaFri = true; obj.add(led); obj.userData.ytaLed = led; }
   led.visible = niva >= 5; led.material.color.setHex(linje === 'kolf' ? 0x9fd8ff : LINJE_FARG[linje] || LINJE_FARG.bla);
 }
@@ -15824,9 +15865,19 @@ function synligaTexter() {
   } catch (e) {}
   return ut;
 }
+const UPPMANINGAR = [['trampa', /\btrampa/i], ['veva', /\bveva/i], ['mata kvarnen', /mata kvarnen/i]];
+const SAKNAD_SAK = [[/\btrampa/i, 'cykeln', () => !!S.cykelOmbyggd || !!S.cykelStar], [/batteri/i, 'batteriet', () => !!S.cykelOmbyggd], [/\bveva/i, 'kvarnen', () => !!S.kvarnKopt]];
 const DAG_DELAR = (() => { const m = new Map(); for (const st of STEG) if (st.del && !m.has(st.del)) m.set(st.del, dagMoment(st.del).length); return m; })();   /* EI 21: moment per dag */
 let fsHud = 0;
 if (ui) {
+  regelvakt.regel('DUBBEL UPPMANING', () => {   /* A-076 tillägg 11:45: samma uppmaning får bara synas på ett ställe åt gången */
+    if (!ui.igang) return []; const T = synligaTexter(); const kh = document.querySelector('.ph-kontroll'); if (kh && kh.getClientRects().length) T.push(['kontrollhjälpen', kh.textContent]);
+    try { for (const x of maskinStopp()) T.push(['skylten ' + (x.rub || ''), `${x.rub || ''} ${x.kort || ''}`]); } catch (e) {}
+    const ut = []; for (const [namn, re] of UPPMANINGAR) { const st = [...new Set(T.filter(([v, t]) => re.test(t) && v !== 'målrutan' && v !== 'NU-rutan').map(([v]) => v))];   /* målet är målet – uppmaningarna räknas runt det */ if (st.length > 1) ut.push(`"${namn}" på ${st.length} ställen: ${st.join(', ')}`); } return ut; }, { enGang: true });
+  regelvakt.regel('TIPS OM SAKNAD SAK', () => {   /* A-076 tillägg 11:35: tips och HUD nämner aldrig en sak som inte finns än */
+    if (!ui.igang) return []; const T = synligaTexter(); const ut = [];
+    for (const [re, sak, har] of SAKNAD_SAK) if (!har()) for (const [v, t] of T) if (re.test(t) && v !== 'målrutan' && v !== 'NU-rutan') ut.push(`${v}: "${t.slice(0, 50)}" nämner ${sak}`);
+    return ut.slice(0, 3); }, { enGang: true });
   regelvakt.regel('MENY UTAN VÄG', () => { if (!oppenAtgard) return []; if (!menyOppen()) { oppenAtgard = null; return []; } const svar = kanNu(oppenAtgard.atgard, oppenAtgard); return svar.ja ? [] : [`${oppenAtgard.atgard}-menyn är öppen fast ${svar.skal.toLowerCase()}`]; });   /* A-076 tillägg 11:35 */
   regelvakt.regel('MÅL UTAN LEDTRÅD', () => { if (!ui.igang) return []; const st = STEG[S.steg]; return st && !st.sov && !ledtradFor(st) ? [`"${rens(stegText(st) || '').slice(0, 60)}" har ingen ledtråd`] : []; }, { enGang: true });   /* A-083 */
   regelvakt.regel('MÅL OMÖJLIGT', () => { if (!ui.igang) return []; const a = nastaAtgard(malRaw); return a && a[0] === 'las' ? [`"${rens(String(malRaw)).slice(0, 60)}" – ${a[1]}`] : []; });
@@ -15915,13 +15966,17 @@ function malKontrakt(st = STEG[S.steg]) {
 }
 /* ========== A-083 Nybörjarresan: kontrollerna när de behövs, H = "Vad ska jag göra nu?", ledtrådar som trappas upp, inga återvändsgränder ========== */
 // 1. Kontrollerna: en i taget, när den behövs, och den står kvar tills man har gjort det. Alla står i "Kontroller" i Esc-menyn.
-const kStat = { klick: 0, r: 0, e: 0, tab: 0, h: 0, byt: 0, start: null, yaw0: null };
+const kStat = { klick: 0, r: 0, e: 0, tab: 0, h: 0, byt: 0, stallt: 0, start: null, yaw0: null };
+const STALL_SAKER = ['skrivareS', 'cykelS', 'byggsats:generator', 'byggsats:gammalkvarn'];
+paHandelse('placerat', () => { kStat.stallt++; });
 const KONTROLL_HJALP = [
   { id: 'ga', k: 'W A S D', t: 'Gå', nar: () => S.dag <= 1 && S.steg <= 1, klar: () => kStat.start && Math.hypot(spelare.pos.x - kStat.start.x, spelare.pos.z - kStat.start.z) > 2.5 },
   { id: 'titta', k: 'Mus', t: 'Titta runt', nar: () => S.dag <= 1 && S.steg <= 1, klar: () => kStat.yaw0 != null && Math.abs(spelare.yaw - kStat.yaw0) + Math.abs(spelare.pitch) > 0.7 },
   { id: 'klick', k: 'Klick', t: 'Ta upp och använd det du tittar på', nar: () => S.dag <= 1 && !S.skyltUppe, klar: () => kStat.klick > 0 || S.skyltUppe },
-  { id: 'byta', k: 'Hjulet eller 1–9', t: 'Byt sak i handen', nar: () => S.hotbar.slice(1).filter(Boolean).length >= 1, klar: () => kStat.byt > 0 },
-  { id: 'vrid', k: 'R', t: 'Vrid innan du ställer ner', nar: () => !!spoke?.visible, klar: () => kStat.r > 0 },
+  /* A-076 tillägg 11:45: ordningen ta upp → ställ ner → byt sak med hjulet → vrid med R (bara om saken inte får plats, eller vid tredje saken) */
+  { id: 'stall', k: 'Klick', t: 'Klicka där den ska stå', nar: () => STALL_SAKER.includes(valdTyp()) || !!spoke.grupp?.visible, klar: () => (kStat.stallt || 0) > 0 },
+  { id: 'byta', k: 'Hjulet eller 1–9', get t() { const g = S.hotbar.findIndex((x) => x?.typ === 'byggsats:generator'); return g > 0 && g !== S.vald ? 'Rulla hjulet för att ta generatorn' : 'Byt sak i handen'; }, nar: () => kHjalpKlar('stall') && S.hotbar.slice(1).filter(Boolean).length >= 2, klar: () => kStat.byt > 0 },
+  { id: 'vrid', k: 'R', t: 'Vrid innan du ställer ner', nar: () => kHjalpKlar('byta') && !!spoke.grupp?.visible && (!spoke.ok || (kStat.stallt || 0) >= 2), klar: () => kStat.r > 0 },
   { id: 'trampa', k: 'Klicka och håll', t: 'Trampa cykeln (eller håll Mellanslag)', nar: () => !!S.cykelOmbyggd || interaktor.hovrad === cykel, klar: () => (S.stat.trampat || 0) > 1 },
   { id: 'veva', k: 'Klicka och håll', t: 'Veva kvarnen', nar: () => !!S.kvarnKopt && !S.kvarn?.motor, klar: () => (S.stat.malt || 0) > 0 || !!S.kvarn?.motor },
   { id: 'e', k: 'E', t: 'Ryggsäcken och kistan', nar: () => S.hotbar.slice(1).filter(Boolean).length >= 3, klar: () => kStat.e > 0 },
@@ -15933,7 +15988,7 @@ function kHjalpKlar(id) { return (S.kontrollKlar || []).includes(id); }
 function kHjalpMarkera(id) { S.kontrollKlar = [...new Set([...(S.kontrollKlar || []), id])]; sparaSnart(); }
 { // gamla sparfiler: det man redan har gjort behöver inte läras igen
   const gamla = { klick: 'klick', trampa: 'trampa', e: 'e', tab: 'tab' };
-  setTimeout(() => { try { if (!S.kontrollKlar) { S.kontrollKlar = (S.tangentTips || []).map((x) => gamla[x]).filter(Boolean); if (S.dag > 1 || S.steg > 2) S.kontrollKlar.push('ga', 'titta', 'klick'); } } catch {} }, 0);
+  setTimeout(() => { try { if (!S.kontrollKlar) { S.kontrollKlar = (S.tangentTips || []).map((x) => gamla[x]).filter(Boolean); if (S.dag > 1 || S.steg > 2) S.kontrollKlar.push('ga', 'titta', 'klick', 'stall'); } } catch {} }, 0);
 }
 function kHjalpTick() {
   if (!ui.igang || pausad || scenPagar() || introPagar) { if (kHjalpEl) kHjalpEl.hidden = true; return; }
@@ -15958,7 +16013,7 @@ setInterval(kHjalpTick, 400);
 addEventListener('keydown', (e) => { if (e.code === 'KeyR') kStat.r++; if (e.code === 'KeyE') kStat.e++; if (e.code === 'Tab') kStat.tab++; if (e.code === 'KeyH') kStat.h++; if (/^Digit[1-9]$/.test(e.code)) kStat.byt++; }, true);
 addEventListener('wheel', () => { kStat.byt++; }, { capture: true, passive: true });
 addEventListener('mousedown', () => { if (ui.igang && !pausad) kStat.klick++; }, true);
-{ let v = null; setInterval(() => { if (v != null && S.vald !== v) kStat.byt++; v = S.vald; }, 300); }
+/* A-076 tillägg 11:45: bytet räknas när spelaren byter (hjulet, 1–9, klick i raden) – inte när spelet tömmer handen efter att något ställts ner */
 { const st = document.createElement('style'); st.textContent = '.ph-kontroll{position:fixed;left:50%;bottom:118px;z-index:60;transform:translate(-50%,12px);opacity:0;transition:opacity .25s,transform .25s;display:flex;align-items:center;gap:12px;pointer-events:none;background:rgba(20,22,30,.82);padding:8px 16px 8px 8px;border-radius:14px;font:800 17px system-ui;color:#fff}.ph-kontroll.in{opacity:1;transform:translate(-50%,0)}.ph-kontroll kbd{padding:7px 14px;border-radius:10px;background:#f4f1ea;color:#1b1d22;font:900 19px system-ui;box-shadow:0 4px 0 #b9b2a3}.nasta-hjalp{position:absolute;right:10px;top:10px;width:26px;height:26px;border-radius:50%;border:2px solid #ffd27a;background:transparent;color:#ffd27a;font:900 15px system-ui;cursor:pointer;pointer-events:auto}'; document.head.appendChild(st); }
 
 // 2. H (eller ? i målrutan): målet sägs högt, kameran vänder sig mot det och pilen blinkar
@@ -16119,7 +16174,7 @@ async function oppnaFelrapporter(foralder) {
   pop.querySelector('[data-rensa]').onclick = async () => { await felRensa(); pop.remove(); oppnaFelrapporter(foralder); };
 }
 { const st = document.createElement('style'); st.textContent = '.ph-fel{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;background:rgba(10,12,18,.45)}.ph-fel-ruta{background:#fffaf0;color:#2a2116;border-radius:14px;padding:18px 20px;width:min(440px,90vw);box-shadow:0 10px 40px rgba(0,0,0,.4);font:15px system-ui}.ph-fel-ruta p{margin:6px 0 10px;font-size:13px;opacity:.8}.ph-fel-text{width:100%;box-sizing:border-box;font:15px system-ui;padding:8px 10px;border-radius:8px;border:2px solid #d9c9a8}.ph-fel-knappar{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}.ph-fel-status{display:block;margin-top:6px;opacity:.7}.ph-fel .fp-knapp.sek{color:#2a2116;border:2px solid #2a2116;background:#fff}'; document.head.appendChild(st); }
-window.__printahem = { matarSlangNu: () => matarSlang, kanNu, oppnaPrintMeny, oppnaSaljlada, renderer, rendera: () => { try { ritaVarldsBubblor(); } catch {} renderer.render(scen, kamera); }, sattHjalpBehov: () => { hjalpBehov = true; }, hjalpNu, ledtradFor, KONTROLL_HJALP, kStat, kHjalpAktiv: () => kHjalpAktiv?.id || null, malPunkt: () => malPunkt(), startRuta: () => startRuta(ui.o.titel, ui.o.text, 'Fortsätt'), felKnapp, felAlla, felRensa, felExport: async () => { const z = await felExport(); const b = new Uint8Array(await z.arrayBuffer()); let t = ''; for (let i = 0; i < b.length; i += 8192) t += String.fromCharCode(...b.subarray(i, i + 8192)); return btoa(t); }, regiLogg: () => REGI_LOGG.slice(), lasTid, regi, tittaMot, regiTestStegText: (k) => stegText(STEG[k]) || '', regiStegFakta: (i) => { const st = STEG[i]; const b = typeof st?.bild === 'function' ? (() => { try { return st.bild(); } catch { return null; } })() : st?.bild; return { sov: !!st?.sov, id: st?.id || '', text: stegText(st) || '', bild: b && ikonBild(b) ? b : null, delar: [] }; }, regiTestSteg: (i) => { S.steg = i; S.skyltUppe = true; malVisasSteg = i; malBockText = ''; const st = STEG[i]; const b = typeof st?.bild === 'function' ? (() => { try { return st.bild(); } catch { return null; } })() : st?.bild; return { sov: !!st?.sov, id: st?.id || '', text: stegText(st) || '', bild: b && ikonBild(b) ? b : null, delar: (() => { try { return (malDelar() || []).map(([t]) => t); } catch { return []; } })() }; },   /* A-080 */ saljTillAli: (t, n) => saljTillAli(t, n), saljPris: (t) => saljPris(t), aliReplNu: () => aliRepl, krT, kollaPrestationer: () => kollaPrestationer(), B, gruvTillGrotta: () => { gruvFard = { t: GRUV_SLUT_T, ner: true }; gruvLage = 'fard'; gruvFramme(); return gruvLage; }, gruvFart: (t, n) => gruvFart(t, n), gruvKameraVid: (t, ner = true) => { const g = gruvFard; gruvFard = { t, ner }; gruvPlacera(gruvVagn, t, ner ? 1 : -1); gruvKamera(); gruvFard = g; }, gruvAk: (ner) => gruvAk(ner), gruvLage: () => gruvLage, gruvFard: () => gruvFard, gruvScen, GRUV_BANA, GRUV_LANGD, GRUV_GC, GRUV_SLUT_T, gruvVagn, bergYta, bengtHus, bengtTradgard, slyKlumpar, sagaSly: (kl) => sagaSly(kl), solparkStor: () => solparkStor(), uppdateraRitning: (dt) => uppdateraRitning(dt), SVACKA, GRUVA, SVACKA_VAG, svackaHojd, svackaSparr, BOMMAR, grop, VASK, stegText: () => stegText(STEG[S.steg]), oppnaMarknad: () => oppnaMarknad(), ritningNu: () => ritning, fastIHanden, konturMal, genStar, GEN_PLATS, CYKEL_RUTA, sangSpoke, kvarnMark, tippHojd, markY, sattTippSteg: (n, snap = true) => { S.tippSteg = n; ritaTippHog(0.05, snap); return tippStegNu; }, tippStegNu: () => tippStegNu, tippU, tippKant, TIPP_HV, husvagnG: () => husvagnG, husvagnHinder, TIPP_INB, tippMalSteg: () => tippMalSteg(), tippSparr, STORYKEDJA, STORYKEDJA_VERSION, KEDJA_TEXT, besokTick: (dt) => uppdateraBesok(dt), froSett: (id, s) => froSett(id, s), froSpoiler, STORYLAGER, FRO_T, kameraAkSteg: (t, frys = false) => { if (!kameraAk) return false; kameraAk.start = performance.now() - t * 1000; kameraAk.frys = frys ? t : null; uppdateraKameraAk(); renderer.render(scen, kamera); return true; }, startaUtsikt: () => startaUtsikt(), tippSvep: () => tippSvep(), visaForeEfter: () => visaForeEfter(), kulle, kameraAk: () => kameraAk, kollaUtsikt: () => kollaUtsikt(), bilFas: () => bil.fas, sopbil, kollaBengt: (dt) => kollaBengt(dt), bengtFig: bengt, privatSkyltar, bengtGrav, stromBehov, solEffekt, FLASK_FORE, spelBild, spelBildCache, startBild: () => { const r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio(); kamera.aspect = 1.6; kamera.updateProjectionMatrix(); r.setPixelRatio(1); r.setSize(1280, 800, false); r.render(scen, kamera); const C = document.createElement('canvas'); C.width = 1280; C.height = 800; C.getContext('2d').drawImage(r.domElement, 0, 0); r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); kamera.aspect = gs.x / gs.y; kamera.updateProjectionMatrix(); return C.toDataURL('image/jpeg', 0.86); }, tidigFanfar, bengtLada, GROP, GRIND, grop, grusGrind, rolfKaparGrinden: () => rolfKaparGrinden(), ritaGrustag: () => ritaGrustag(), kollaBengtAvslojande: () => kollaBengtAvslojande(), BENGT_HUS, BENGT_LADA, BENGT_GRAV, bengtLadaHandlare, ritaNyckelSkylt: () => ritaNyckelSkylt(), kjelleText: (x) => kjelleText(x), HUMOR_T, boterFor: (m) => boterFor(m), boterSyns: (b) => boterSyns(b), CHEFEN, labb, LABB, BAGAR, TRADAR, aktivaTradar, kollaBagar: (t) => kollaBagar(t), kollaLabb: () => kollaLabb(), efterspelTest: () => efterspelTest(), vaskSlapp: (t) => vaskSlapp(t), ader, ritaStart: () => ritaStart(), vev3d: () => vev, dagMoment: (d) => dagMoment(d), SAKER, malKontrakt, rullLapp, THREE, TS, visaLapp: (id) => visaLapp(id), fotografera: (p) => fotografera(p), POLAROID, aliNejFor: (t) => aliNejFor(t), ROLF_LISTA: () => ROLF, STORY_SAKER, hoppaOver, prataNu, volym, rostLage: () => rostLage(), pratarNu: () => performance.now() < pratarTill, valjOsagd, sakModell, ikonModell, ikonLista, renderaIkon, kand, regelvakt, upplast, lasUpp, UPPLAS_FLASK, finns, startTorn, vevEl, MONTERA, TA_PA, taPaVald, monteraPa, notis, malSynligt: () => malVisasSteg === S.steg, kanalLage: () => ({ pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: !medEl2.hidden, butik: !ui.butiksOverlay.hidden, overlay: !ui.overlay.hidden, aktiv: kanalAktiv?.text?.slice(0, 40), fri: kanalFri - performance.now(), pratar: pratarTill - performance.now(), lugn: lugnTill - performance.now(), n: kanal.length }), paket, oppnaSaljlada, TRATT_MAX, giAliBonus, tangentTips, stromMax, byggBodTest: () => { Object.assign(bodVal, { ok: true, x: BOD.x, z: BOD.z, r: BOD.r }); byggBodHar(); return !!S.bod; }, aliVill, smsKortKlart, smsFram, smsBubbla, ritaDN, markeraAliIdag, dnRaknare, filTillg, dragTorn, tornPlats, tornRullar, slangNar, rullTornAktivera, flyttaSkrivarRullar, anvandSkrivare,
+window.__printahem = { matarSlangNu: () => matarSlang, get startKabel() { return startKabel; }, kanNu, oppnaPrintMeny, oppnaSaljlada, renderer, rendera: () => { try { ritaVarldsBubblor(); } catch {} renderer.render(scen, kamera); }, sattHjalpBehov: () => { hjalpBehov = true; }, hjalpNu, ledtradFor, KONTROLL_HJALP, kStat, kHjalpAktiv: () => kHjalpAktiv?.id || null, malPunkt: () => malPunkt(), startRuta: () => startRuta(ui.o.titel, ui.o.text, 'Fortsätt'), felKnapp, felAlla, felRensa, felExport: async () => { const z = await felExport(); const b = new Uint8Array(await z.arrayBuffer()); let t = ''; for (let i = 0; i < b.length; i += 8192) t += String.fromCharCode(...b.subarray(i, i + 8192)); return btoa(t); }, regiLogg: () => REGI_LOGG.slice(), lasTid, regi, tittaMot, regiTestStegText: (k) => stegText(STEG[k]) || '', regiStegFakta: (i) => { const st = STEG[i]; const b = typeof st?.bild === 'function' ? (() => { try { return st.bild(); } catch { return null; } })() : st?.bild; return { sov: !!st?.sov, id: st?.id || '', text: stegText(st) || '', bild: b && ikonBild(b) ? b : null, delar: [] }; }, regiTestSteg: (i) => { S.steg = i; S.skyltUppe = true; malVisasSteg = i; malBockText = ''; const st = STEG[i]; const b = typeof st?.bild === 'function' ? (() => { try { return st.bild(); } catch { return null; } })() : st?.bild; return { sov: !!st?.sov, id: st?.id || '', text: stegText(st) || '', bild: b && ikonBild(b) ? b : null, delar: (() => { try { return (malDelar() || []).map(([t]) => t); } catch { return []; } })() }; },   /* A-080 */ saljTillAli: (t, n) => saljTillAli(t, n), saljPris: (t) => saljPris(t), aliReplNu: () => aliRepl, krT, kollaPrestationer: () => kollaPrestationer(), B, gruvTillGrotta: () => { gruvFard = { t: GRUV_SLUT_T, ner: true }; gruvLage = 'fard'; gruvFramme(); return gruvLage; }, gruvFart: (t, n) => gruvFart(t, n), gruvKameraVid: (t, ner = true) => { const g = gruvFard; gruvFard = { t, ner }; gruvPlacera(gruvVagn, t, ner ? 1 : -1); gruvKamera(); gruvFard = g; }, gruvAk: (ner) => gruvAk(ner), gruvLage: () => gruvLage, gruvFard: () => gruvFard, gruvScen, GRUV_BANA, GRUV_LANGD, GRUV_GC, GRUV_SLUT_T, gruvVagn, bergYta, bengtHus, bengtTradgard, slyKlumpar, sagaSly: (kl) => sagaSly(kl), solparkStor: () => solparkStor(), uppdateraRitning: (dt) => uppdateraRitning(dt), SVACKA, GRUVA, SVACKA_VAG, svackaHojd, svackaSparr, BOMMAR, grop, VASK, stegText: () => stegText(STEG[S.steg]), oppnaMarknad: () => oppnaMarknad(), ritningNu: () => ritning, fastIHanden, konturMal, genStar, GEN_PLATS, CYKEL_RUTA, sangSpoke, kvarnMark, tippHojd, markY, sattTippSteg: (n, snap = true) => { S.tippSteg = n; ritaTippHog(0.05, snap); return tippStegNu; }, tippStegNu: () => tippStegNu, tippU, tippKant, TIPP_HV, husvagnG: () => husvagnG, husvagnHinder, TIPP_INB, tippMalSteg: () => tippMalSteg(), tippSparr, STORYKEDJA, STORYKEDJA_VERSION, KEDJA_TEXT, besokTick: (dt) => uppdateraBesok(dt), froSett: (id, s) => froSett(id, s), froSpoiler, STORYLAGER, FRO_T, kameraAkSteg: (t, frys = false) => { if (!kameraAk) return false; kameraAk.start = performance.now() - t * 1000; kameraAk.frys = frys ? t : null; uppdateraKameraAk(); renderer.render(scen, kamera); return true; }, startaUtsikt: () => startaUtsikt(), tippSvep: () => tippSvep(), visaForeEfter: () => visaForeEfter(), kulle, kameraAk: () => kameraAk, kollaUtsikt: () => kollaUtsikt(), bilFas: () => bil.fas, sopbil, kollaBengt: (dt) => kollaBengt(dt), bengtFig: bengt, privatSkyltar, bengtGrav, stromBehov, solEffekt, FLASK_FORE, spelBild, spelBildCache, startBild: () => { const r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio(); kamera.aspect = 1.6; kamera.updateProjectionMatrix(); r.setPixelRatio(1); r.setSize(1280, 800, false); r.render(scen, kamera); const C = document.createElement('canvas'); C.width = 1280; C.height = 800; C.getContext('2d').drawImage(r.domElement, 0, 0); r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); kamera.aspect = gs.x / gs.y; kamera.updateProjectionMatrix(); return C.toDataURL('image/jpeg', 0.86); }, tidigFanfar, bengtLada, GROP, GRIND, grop, grusGrind, rolfKaparGrinden: () => rolfKaparGrinden(), ritaGrustag: () => ritaGrustag(), kollaBengtAvslojande: () => kollaBengtAvslojande(), BENGT_HUS, BENGT_LADA, BENGT_GRAV, bengtLadaHandlare, ritaNyckelSkylt: () => ritaNyckelSkylt(), kjelleText: (x) => kjelleText(x), HUMOR_T, boterFor: (m) => boterFor(m), boterSyns: (b) => boterSyns(b), CHEFEN, labb, LABB, BAGAR, TRADAR, aktivaTradar, kollaBagar: (t) => kollaBagar(t), kollaLabb: () => kollaLabb(), efterspelTest: () => efterspelTest(), vaskSlapp: (t) => vaskSlapp(t), ader, ritaStart: () => ritaStart(), vev3d: () => vev, dagMoment: (d) => dagMoment(d), SAKER, malKontrakt, rullLapp, THREE, TS, visaLapp: (id) => visaLapp(id), fotografera: (p) => fotografera(p), POLAROID, aliNejFor: (t) => aliNejFor(t), ROLF_LISTA: () => ROLF, STORY_SAKER, hoppaOver, prataNu, volym, rostLage: () => rostLage(), pratarNu: () => performance.now() < pratarTill, valjOsagd, sakModell, ikonModell, ikonLista, renderaIkon, kand, regelvakt, upplast, lasUpp, UPPLAS_FLASK, finns, startTorn, vevEl, MONTERA, TA_PA, taPaVald, monteraPa, notis, malSynligt: () => malVisasSteg === S.steg, kanalLage: () => ({ pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: !medEl2.hidden, butik: !ui.butiksOverlay.hidden, overlay: !ui.overlay.hidden, aktiv: kanalAktiv?.text?.slice(0, 40), fri: kanalFri - performance.now(), pratar: pratarTill - performance.now(), lugn: lugnTill - performance.now(), n: kanal.length }), paket, oppnaSaljlada, TRATT_MAX, giAliBonus, tangentTips, stromMax, byggBodTest: () => { Object.assign(bodVal, { ok: true, x: BOD.x, z: BOD.z, r: BOD.r }); byggBodHar(); return !!S.bod; }, aliVill, smsKortKlart, smsFram, smsBubbla, ritaDN, markeraAliIdag, dnRaknare, filTillg, dragTorn, tornPlats, tornRullar, slangNar, rullTornAktivera, flyttaSkrivarRullar, anvandSkrivare,
   framsteg, skrivarText, framstegKvarn,
   dbgKanal: () => ({ nu: performance.now(), pratarTill, pratarVem, kanalFri, aktiv: kanalAktiv && kanalAktiv.text, n: kanal.length, pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: medEl2.hidden, butik: ui.butiksOverlay.hidden, ov: ui.overlay.hidden }),
   textLogg: () => TEXTLOGG.slice(), pratar: () => !!kanalAktiv || kanal.length > 0 || performance.now() < pratarTill || performance.now() < kanalFri, kanal: () => ({ aktiv: kanalAktiv && { vem: kanalAktiv.vem, text: kanalAktiv.text, vikt: kanalAktiv.vikt }, ko: kanal.map((x) => ({ vem: x.vem, text: x.text, vikt: x.vikt })) }), rostMatning, renderaIkon, ikonLista, handelseLogg, ritningInfo: () => { const c = ritning ? new THREE.Box3().setFromObject(ritning).getCenter(new THREE.Vector3()) : null; return { nyckel: ritningNyckel, linjer: ritning?.children.length || 0, printar: printarFram.size, mitt: c && [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(2)] }; }, prata, elHelFig: () => [...(elHel || [])], avkodat, forladdaRepliker, introLager, trampa: (sek) => { trampTest = sek; }, veva: (sek) => { vevTest = sek; }, siktaVagg: (v) => { vaggTest = v; }, vaggarKlara: () => vaggarKlara(), tapetKlara: () => tapetKlara(), nastaInred, prisNu, helaRullar, extruderFull, gardMal, kanLyfta, karraFull, harGava, valdKarra, BARA_SKRAP, SKRAP_RACKVIDD, utlagerKap, startPlats, sattFonster: () => { const n = fonsterLista().length; S.hem = { ...(S.hem || {}), fonster: [...fonsterLista(), { vagg: Object.keys(VAGGAR).filter((k) => !/dorr|fram/i.test(k))[n % 3] || Object.keys(VAGGAR)[0], u: 0.5 }] }; ritaFonster(); uppdateraSkjul(); sparaSnart(); }, medKo, medEl2, uppdatera, stegText: () => { const st = STEG[S.steg]; return st ? (typeof st.text === 'function' ? st.text() : st.text) : ''; }, valdTyp: () => valdTyp(), ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, hammare, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, husvagnFri: () => husvagnFri(), oppnaSkapet: () => oppnaSkapet(), goran: goranTest, polaroid: polaroidTest,  tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, webbOrdrar, oppnaDator, BESOK, besok, startaBesok, ata, MAT_VARDE, printLinje, migreraDK, kolfKvarn, kolfAktivera, uppdateraKolf, nastaGamer, trimNiva, plockaUppPlacerad, plockaSkrap, karraRing, foremal, variantFor, valjTyp, husvagnKlick, gastScen, gastDelKlar, husvagn: () => husvagnG, rolfBesok, sackRulle, karraKlick, karraMal, pappaGubbe, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer, kollaUtsikt, lasUpp, upplast, GEN, flaskS, flyttaFelPlacerade, pilBildTyp: () => pilBildTyp, aliBesok, dagMalLista, visaDagNotis, regelvaktKor: () => regelvakt.kor(), spokeGrupp: () => spoke.grupp, bodSpoke, fonsterSpoke, mimikBilder, VYER4 };   /* A-078 */   /* A-076 */   /* A-069 */
@@ -16370,7 +16425,7 @@ function ritaDN() {
   // mätarrutan
   dnSatt(dnMat.querySelector('[data-dn="kr"] .v'), 'textContent', `${Math.round(myntVisning ?? S.mynt).toLocaleString('sv-SE')} kr`);
   const bar = (namn, andel, farg) => { const i = dnMat.querySelector(`[data-dn="${namn}"] i`), w = Math.round(Math.max(0.02, Math.min(1, andel)) * 100) + '%'; dnSatt(i.style, 'width', w); dnSatt(i.style, 'background', farg); };
-  { const a = S.strom / stromMax(), el = dnMat.querySelector('[data-dn="el"]'), lagring = finns('lagring'); dnSatt(el.style, 'display', finns('el') ? '' : 'none'); dnSatt(el.querySelector('.v'), 'textContent', lagring ? Math.round(a * 100) + ' %' : 'Trampa!'); el.querySelector('.bar').style.visibility = lagring ? '' : 'hidden'; bar('el', a, a < 0.15 ? '#ff5c5c' : '#ffd43b');   /* DT: före powerbanken står det Trampa! */
+  { const a = S.strom / stromMax(), el = dnMat.querySelector('[data-dn="el"]'), lagring = finns('lagring'); dnSatt(el.style, 'display', finns('el') ? '' : 'none'); dnSatt(el.querySelector('.v'), 'textContent', lagring ? Math.round(a * 100) + ' %' : '⚡ ' + Math.floor(S.strom));   /* A-076 tillägg 11:45: HUD:en visar strömmen, uppmaningen står på ett ställe */ el.querySelector('.bar').style.visibility = lagring ? '' : 'hidden'; bar('el', a, a < 0.15 ? '#ff5c5c' : '#ffd43b');   /* DT: före powerbanken står det Trampa! */
     const egen = solEffekt() + vindEffekt(), nSk = Math.floor(egen / Math.max(0.01, GEN[1].strom)), perKruka = GEN[1].strom * VAROR.kruka.tid, nK = Math.floor(S.strom / perKruka);
     dnSatt(el, 'title', `El ${Math.round(a * 100)} % · ${nSk >= 1 ? `solen och vinden räcker till ${nSk} skrivare${S.kvarn.motor ? ' och kvarnen' : ''}` : nK >= 1 ? `batteriet räcker till ${nK} kruk${nK === 1 ? 'a' : 'or'}` : 'trampa cykeln'}`); }
   { const v = Math.round(S.valma ?? 100); dnSatt(dnMat.querySelector('[data-dn="valma"] .v'), 'textContent', v + ' %'); bar('valma', v / 100, v < 30 ? '#ff7a5c' : '#58d68d'); }
