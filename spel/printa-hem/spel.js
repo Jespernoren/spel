@@ -5420,8 +5420,10 @@ function pilSiktgaranti(p) {
   }
   if (topp.y >= 0.92 && malPil.scale.x > 0.3) malPil.scale.multiplyScalar(0.8);
 }
+let stoppSkyltPos = [];
 function uppdateraMalPil() {
   const p = malPunkt();
+  if (p && stoppSkyltPos.some((v) => Math.hypot(v.x - p.x, v.z - p.z) < 1.2)) { malPil.visible = false; return; }   /* inkorg 10e: en etikett per sak – det som hindrar (skylten) går före pilen och bildbubblan */
   if (!p || !ui.igang || (malPilSteg !== S.steg && (S.skyltUppe || S.steg > 1))) { malPil.visible = false; }   /* A-072: pilen flyttas när nästa steg sägs */
   else {   /* A-076 tillägg 14:35: pilen följer avståndet – stor och högt långt bort, liten strax ovanför saken nära. Mjukt däremellan. */
     const stor = !S.skyltUppe && S.steg <= 1, d = Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z);
@@ -10287,7 +10289,10 @@ function maskinStopp() {
   else if (S.kvarnStar && S.kvarn.tratt > 0 && extruderFull()) L.push({ obj: kvarn, y: 1.6, rub: 'Kvarnen står still', ...kvarnFullGrund() });   /* EB: följ kedjan framåt – skylten hamnar där du ska göra något */
   else if (!S.kvarn.motor && S.kvarn.tratt >= TRATT_MAX) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Tratten är full', varfor: 'Ingen plats för mer skräp', fix: 'Veva kvarnen – klicka och håll på veven', kort: 'Veva kvarnen', ikon: 'kvarn' });
   if (L.some((x) => x.varfor === 'Kvarnen har inget skräp') && !L.some((x) => x.obj === kvarn)) L.push({ obj: kvarn, y: 1.6, typ: 'stopp', rub: 'Kvarnen', varfor: 'Skrivarna väntar på plast', fix: 'Plocka skräp och lägg det i tratten', kort: 'Mata kvarnen', ikon: 'kvarn' });   // EB: grundorsaken syns där den ska lösas
-  if (!kTrampaNu() && L.some((x) => /ström/.test(x.varfor) || /Batteriet/.test(x.varfor))) L.push({ obj: cykel, y: 1.5, typ: 'hit', rub: 'Trampa här!', varfor: `Batteri ${Math.floor(S.strom)}/${stromMax()}`, fix: 'Klicka och håll på cykeln', kort: 'Trampa här!', ikon: 'blixt' });
+  { const strom = L.filter((x) => /ström/.test(x.varfor) || /Batteriet/.test(x.varfor)), cp = cykel.getWorldPosition(new THREE.Vector3());
+    const nara = strom.find((x) => x.obj.getWorldPosition(new THREE.Vector3()).distanceTo(cp) < 3.5);
+    if (nara) { if (!/Trampa/.test(nara.varfor)) nara.varfor = `${nara.varfor} · Trampa cykeln`; }   /* inkorg 10e: cykeln står precis bredvid – skylten säger vägen själv, ingen andra skylt ovanpå */
+    else if (!kTrampaNu() && strom.length) L.push({ obj: cykel, y: 1.5, typ: 'hit', rub: 'Trampa här!', varfor: `Batteri ${Math.floor(S.strom)}/${stromMax()}`, fix: 'Klicka och håll på cykeln', kort: 'Trampa här!', ikon: 'blixt' }); }
   return L;
 }
 // ---------- Mätning och spelarfeedback ----------
@@ -10515,7 +10520,7 @@ function ritaSkrivBarer() {
     let d = skrivBarLager.children[i];
     if (!d) { d = document.createElement('div'); d.className = 'hud-skrivbar'; d.innerHTML = '<div class="rad1"><div class="bar"><i></i></div><span></span></div><b></b>'; skrivBarLager.appendChild(d); }
     const j = sk.jobb;
-    if (!ui.igang || (!j && !sk.klar) || stopp.has(sk.mesh) || !sk.mesh.parent) { d.style.display = 'none'; return; }   // BT: står kvar på 100 % (grön) tills man tagit ut
+    if (!ui.igang || j || !sk.klar || stopp.has(sk.mesh) || !sk.mesh.parent) { d.style.display = 'none'; return; }   /* inkorg 10e: ingen etikett som upprepar det man ser (printar, x s kvar) – bara "klar – ta ut" */   // BT: står kvar på 100 % (grön) tills man tagit ut
     sk.mesh.getWorldPosition(skrivBarV); skrivBarV.y += 0.6 * (sk.mesh.userData.sk || 1) + 0.2;
     const avst = skrivBarV.distanceTo(kamera.getWorldPosition(skrivBarK));
     skrivBarV.project(kamera);
@@ -10538,6 +10543,7 @@ function ritaStopp() {
   // skyltarna trappas ner när du lärt dig: dag 1 allt, dag 2 kortare, dag 3–4 bara röda stopp, sedan inga
   const dagN = S.dag || 1;
   let L = ui.igang ? maskinStopp() : [];   // röda stopp syns alltid tills problemet är löst
+  stoppSkyltPos = L.filter((x) => x.typ === 'stopp' || x.typ === 'vantar').map((x) => x.obj.getWorldPosition(new THREE.Vector3()));   /* inkorg 10e: skylten vinner – pilen och bildbubblan viker undan där den står */
   if (dagN >= 3) L = L.filter((x) => x.typ === 'stopp').map((x) => ({ ...x, rub: '', fix: '' }));
   else if (dagN === 2) L = L.map((x) => ({ ...x, rub: '' }));
   while (stoppPool.length < L.length) { const d = document.createElement('div'); d.className = 'hud-stopp'; d.innerHTML = '<b></b><span></span><em></em>'; stoppEl.appendChild(d); stoppPool.push(d); }
@@ -16360,6 +16366,16 @@ if (ui) {
       if (mitt && !el.contains(mitt) && !mitt.contains(el)) { if (!tackt.has(el)) tackt.set(el, nu); else if (nu - tackt.get(el) > 3000) ut.push(`${vad} i ${var_}: täckt av ${mitt.className || mitt.tagName}`); } else tackt.delete(el);
     }
     return ut;
+  }, { enGang: true });
+  /* inkorg 10e: högst en statusetikett per sak – skyltar, skrivarmätare och pilens bildbubbla får inte ligga på varandra */
+  regelvakt.regel('ETIKETT PÅ ETIKETT', () => {
+    if (!ui.igang || pausad) return [];
+    const R = [];
+    for (const el of document.querySelectorAll('.hud-stopp, .hud-skrivbar')) { if (el.style.display === 'none' || !el.offsetParent && getComputedStyle(el).position !== 'absolute') continue; const r = el.getBoundingClientRect(); if (r.width && r.height) R.push([el.className.split(' ').slice(0, 2).join(' ') + ': ' + el.textContent.trim().slice(0, 24), r]); }
+    if (malPil.visible && pilBildSprite.visible) { const v = pilBildSprite.getWorldPosition(new THREE.Vector3()).project(kamera); if (v.z < 1) { const x = (v.x * 0.5 + 0.5) * innerWidth, y = (-v.y * 0.5 + 0.5) * innerHeight; R.push(['bildbubblan', { left: x - 30, right: x + 30, top: y - 30, bottom: y + 30 }]); } }
+    const ut = [];
+    for (let i = 0; i < R.length; i++) for (let j = i + 1; j < R.length; j++) { const a = R[i][1], b = R[j][1]; if (a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom) ut.push(`${R[i][0]} ovanpå ${R[j][0]}`); }
+    return ut.slice(0, 2);
   }, { enGang: true });
   regelvakt.regel('DUBBLETT I HANDEN', () => { const hv = (o) => { for (let x = o; x; x = x.parent) if (!x.visible) return false; return true; }; const ut = []; { const syn = []; kamera.traverse((o) => { if (o.userData?.iHanden && hv(o)) syn.push(o.userData.iHanden); }); const n = syn.filter((x) => x === 'hammare').length; if (n > 1) ut.push(`${n} hammare i bild`); } if (hv(gripVerktyg) && hv(hand.grupp) && /grip/.test(valdTyp() || '')) ut.push('två gripar'); return ut; }, { enGang: true });   /* A-076 tillägg 13:45 */
   regelvakt.regel('SAK UTAN TRÄFFYTA', () => { const ut = []; for (const o of interaktor.mal) { let syn = true; for (let x = o; x; x = x.parent) if (!x.visible) { syn = false; break; } if (!syn || utanAutoTraff.has(o) || (o.isMesh && o.material === traffMat)) continue; let har = !!o.autoTraffYta; if (!har) o.traverse((m) => { if (m !== o && m.material === traffMat) har = true; }); if (!har) { const b = lokalLada(o); if (!b.isEmpty() && Math.max(...b.getSize(new THREE.Vector3()).toArray()) <= TRAFF_STORST && (() => { const nu = performance.now(), f = utanYtaSedan.get(o) ?? nu; utanYtaSedan.set(o, f); return nu - f > 1500; })()) { let t = o.userData.interaktion?.text; try { if (typeof t === 'function') t = t(o); } catch { t = ''; } ut.push(`${o.name || o.userData.typ || t || 'sak'} går att klicka på men har ingen träffyta`); } } } return ut.slice(0, 4); });   /* A-076 tillägg 14:20 */
