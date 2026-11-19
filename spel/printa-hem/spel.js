@@ -914,6 +914,9 @@ function volym(k) { const v = S.vol?.[k]; return v == null ? 1 : Math.max(0, Mat
 const rostVol = (vem) => volym(vem === 'berattare' ? 'berattare' : 'rost');
 /* A-078 tillägg 15:40: talhastighet för all uppläsning – standard 1,3. ?talfart=1.0 i adressen för att prova. */
 const TAL_FARTER = [['lugn', 'Lugn', 1.0], ['normal', 'Normal', 1.15], ['snabb', 'Snabb', 1.3]], TAL_FART_STANDARD = 1.3, TAL_FART_NYCKEL = 'printa-hem:talfart', TAL_FART_INTRO = 1.15, INTRO_LUFT = 300;
+/* inkorg 12c: ord i uttalslistan (delat/rost.js) som når talsyntesen orättade – t.ex. om rost.js inte laddats */
+const uttalSaknas = new Set();
+function uttalKoll(t) { try { if (!window.__uttal) { if (/\bfilament/i.test(t)) uttalSaknas.add(t); return; } if (window.__uttal.saknas(t)) uttalSaknas.add(t); } catch {} }
 function talFart() {
   try { const q = +new URLSearchParams(location.search).get('talfart'); if (q > 0) return Math.min(2, q); } catch {}
   try { if (introPagar) return TAL_FART_INTRO; } catch {}   /* inkorg 12b: introt läses lugnare än spelet */
@@ -11116,7 +11119,7 @@ function prataNu(vem, text, vikt, o = {}) {
     const u = new SpeechSynthesisUtterance(ren), r = rostFor(vem);
     u.lang = 'sv-SE'; u.pitch = r.pitch; u.rate = Math.min(2, r.rate * talFart()); u.volume = 0.9 * rostVol(vem);
     if (r.voice) u.voice = r.voice;
-    speechSynthesis.speak(u); return u;
+    uttalKoll(u.text); speechSynthesis.speak(u); return u;
   } catch { return null; } }
 }
 const tystna = () => { pratStopp++; pratarTill = 0; pratVikt = ''; try { speechSynthesis.cancel(); } catch {} try { rostLjud?.pause(); } catch {} rostLjud = null; const s = rostKalla; rostKalla = null; if (s) s.__tystad = true; try { s?.stop(); } catch {} };
@@ -16465,6 +16468,7 @@ if (ui) {
   regelvakt.regel('SPELORD I REPLIK', () => { const ut = []; for (const e of TEXTLOGG) { if (e.t <= spelordFran) continue; if (['röst', 'sak', 'sak-del', 'tanke', 'notis', 'info', 'toast', 'dagbokkort'].includes(e.kalla) && SPELORD.test(String(e.text || ''))) ut.push(`${e.vem || e.kalla}: "${String(e.text).slice(0, 60)}"`); } spelordFran = TEXTLOGG[TEXTLOGG.length - 1]?.t ?? spelordFran; return ut.slice(0, 3); });   /* A-076 tillägg 13:55 */
   regelvakt.regel('DOLD SKYLT', () => { const nu = performance.now(); if (nu - (dolSkyltT || 0) < 15000 || !ui.igang) return []; dolSkyltT = nu; return skyltKoll().filter((x) => !x.ok).map((x) => `${x.namn} från ${x.d} m: ${x.fel}`).slice(0, 3); }, { enGang: true });   /* A-075 tillägg 14:25 */
   regelvakt.regel('TEXT UTAN HÖGTALARE', () => { if (!ui.igang && medEl2.hidden) return []; const ut = []; for (const el of document.querySelectorAll('.ph-notis .kropp, .ph-dagbokkort, .dn-tel .b, .ph-papper'))   /* inkorg 10c: kontrollhjälpen läses inte upp */ { const st = getComputedStyle(el); if (st.display === 'none' || st.visibility === 'hidden' || el.closest('[hidden]')) continue; const t = (el.innerText || '').trim(); if (t.length < 42) continue; if (!el.querySelector('.ph-lasupp, .ph-lasigen, [data-lasupp], .ph-las-klick') && !el.matches('[data-lasupp]')) ut.push(`"${t.slice(0, 50)}" har ingen 🔊`); } return ut.slice(0, 3); }, { enGang: true });   /* A-083 tillägg 11:30 */
+  regelvakt.regel('UTTAL SAKNAS', () => { const ut = [...uttalSaknas].map((t) => `"${t.slice(0, 60)}" läses upp utan uttalslistan (delat/rost.js)`); uttalSaknas.clear(); return ut; }, { enGang: true });   /* inkorg 12c */
   regelvakt.regel('RÖST SAKNAS', () => [...saknadRost].map((v) => `${v} pratar utan egen röst i rost.js`), { enGang: true });   /* A-078 tillägg 11:45 */
   regelvakt.regel('MENY UTAN VÄG', () => { if (!oppenAtgard) return []; if (!menyOppen()) { oppenAtgard = null; return []; } const svar = kanNu(oppenAtgard.atgard, oppenAtgard); return svar.ja ? [] : [`${oppenAtgard.atgard}-menyn är öppen fast ${svar.skal.toLowerCase()}`]; });   /* A-076 tillägg 11:35 */
   regelvakt.regel('MÅL UTAN LEDTRÅD', () => { if (!ui.igang) return []; const st = STEG[S.steg]; return st && !st.sov && !ledtradFor(st) ? [`"${rens(stegText(st) || '').slice(0, 60)}" har ingen ledtråd`] : []; }, { enGang: true });   /* A-083 */

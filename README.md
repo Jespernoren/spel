@@ -125,7 +125,7 @@ Mobilspelhallen för barnens Android-telefoner: **jespernoren.github.io/spel/mob
 Ta bort `mobil: false` i `spel-lista.js` när ett spel blivit mobilvänligt.
 
 ### Uppläsning: `delat/rost.js`
-Läggs först i `<head>` i alla spel. Gör om ensamma stora bokstäver till små innan rösten läser, så att den säger "ö" och inte "versal Ö".
+Läggs först i `<head>` i alla spel. Gör om ensamma stora bokstäver till små innan rösten läser, så att den säger "ö" och inte "versal Ö". Har också en **uttalslista** (`UTTAL` överst i filen): ord som rösten säger fel byts bara i det som läses upp, aldrig på skärmen, till exempel "filament" → "fillament". Lägg till fler ord där. `window.__uttal.ratta(text)` ger samma rättning för annat, och ElevenLabs-skriptet använder den för texten som skickas.
 
 ### Familjespel och profiler: `delat/familj.js`
 `FAMILJ`, `inloggad()` (vem som är inloggad i appen), `sparaRekord(mapp, id, poang)` (sparar `rekord:<mapp>:<id>` och `rekord:<mapp>`), `familjensTopp(mapp)`. Appen läser personliga rekord först, så topplistan blir rätt även när flera spelar på samma telefon. Mattekampen är första spelet byggt så.

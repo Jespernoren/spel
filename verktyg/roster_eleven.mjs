@@ -8,6 +8,10 @@
 // Utdata: spel/printa-hem/roster-el/<id>.mp3 och roster-el/index.json { 'figur-hash': '<id>.mp3' }
 import fs from 'fs';
 import path from 'path';
+import vm from 'vm';
+/* inkorg 12c: samma uttalslista som talsyntesen (delat/rost.js) – texten som SKICKAS skrivs t.ex. "fillament", den som visas är oförändrad */
+const uttalFonster = {}; vm.runInNewContext(fs.readFileSync('delat/rost.js', 'utf8'), { window: uttalFonster });
+const uttal = (t) => (uttalFonster.__uttal ? uttalFonster.__uttal.ratta(t) : t);
 
 const ROST_ID = {
   mamma: 'KXa8ZwUkoRUXzlvWVH45', pappa: 'XCJuXKNe1b2guCye5YRd', rolf: 'YwdqQE1lPKpzJWBC2ZoK',
@@ -37,7 +41,7 @@ const UT = 'spel/printa-hem/roster-el';
 fs.mkdirSync(UT, { recursive: true });
 const indexFil = path.join(UT, 'index.json');
 const index = fs.existsSync(indexFil) ? JSON.parse(fs.readFileSync(indexFil, 'utf8')) : {};
-let lista = JSON.parse(fs.readFileSync(fil, 'utf8')).map((r) => ({ ...r, rost: r.rost || r.figur, text: r.skickas || r.el, nycklar: nyckelFor(r) }));
+let lista = JSON.parse(fs.readFileSync(fil, 'utf8')).map((r) => ({ ...r, rost: r.rost || r.figur, text: uttal(r.skickas || r.el), nycklar: nyckelFor(r) }));
 // handtaggade repliker går före automatiskt taggade med samma nyckel
 const hand = new Set(lista.filter((r) => r.hand).flatMap((r) => r.nycklar));
 lista = lista.filter((r) => r.hand || !r.nycklar.some((k) => hand.has(k)));
