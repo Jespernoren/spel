@@ -31,8 +31,7 @@ ut.push([`spelet står still bakom: speltid ${fore.tid.toFixed?.(1)} → ${efter
 const l0 = await H(() => window.__printahem.textLogg().length);
 await p.keyboard.press('Enter');
 let sagt = false; for (let i = 0; i < 40 && !sagt; i++) { await p.waitForTimeout(250); sagt = await H((l0) => window.__printahem.textLogg().slice(l0).some((e) => e.vem === 'du' && /Först ska jag spika upp skylten/.test(e.text)), l0); }
-await p.waitForTimeout(1500);
-const uppg = await H(() => !document.body.classList.contains('dn-forsta') && !!document.querySelector('.dn-uppg'));
+let uppg = false; for (let i = 0; i < 30 && !uppg; i++) { await p.waitForTimeout(200); uppg = await H(() => !document.body.classList.contains('dn-forsta') && !!document.querySelector('.dn-uppg')); }   /* rutan glider in när repliken börjar höras – på en långsam dator kan det dröja, och spelets egen reserv är 6 s */
 await p.screenshot({ path: dir + 'j-efter-fortsatt.png' });
 ut.push([`FORTSÄTT (Enter) stänger · du säger "Först ska jag spika upp skylten." (${sagt}) · uppgiftsrutan inne (${uppg})`, sagt && uppg]);
 // 4. skylt-kvittensen i samma kort, stängs med Esc

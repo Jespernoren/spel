@@ -12,12 +12,13 @@ await p.addInitScript(() => { if (!sessionStorage.getItem('a076c')) { sessionSto
 await p.goto(url); await p.waitForTimeout(5000);
 const H = (f, a) => p.evaluate(f, a);
 await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(12000);
-for (let i = 0; i < 60 && (await p.evaluate(() => !!document.querySelector('.ph-dagnotis') || window.__printahem.pratar())); i++) await p.waitForTimeout(500);   // som en spelare: dagboksnotisen och första tanken är klara
+for (let i = 0; i < 60 && (await p.evaluate(() => !!document.querySelector('.ph-dagnotis, .ph-med:not([hidden]) .ph-dagbokkort') || window.__printahem.pratar())); i++) { if (await p.evaluate(() => !!document.querySelector('.ph-med:not([hidden]) .ph-dagbokkort'))) await p.keyboard.press('Enter'); await p.waitForTimeout(500); }   /* A-076 14:22: dagbokskortet stängs med FORTSÄTT */   // som en spelare: dagboksnotisen och första tanken är klara
 await H(() => { const P = window.__printahem; P.S.skrivareLastad = P.S.skrivareStar = true; P.S.stromHjalp = false; P.S.strom = 0; P.S.steg = P.STEG.findIndex((x) => x.id === 'strom'); P.ritaStart(); });
 await p.waitForTimeout(1500);
 const meny = () => H(() => !window.__printahem.ui.butiksOverlay.hidden || !window.__printahem.ui.overlay.hidden);
 const g1 = () => 'window.__printahem.skrivare.find((x) => x.id === "g1")';
-// 1. utan ström
+// 1. utan ström (klicket kommer när målets tanke har sagts klart – Regissören låter inte två saker prata samtidigt)
+for (let i = 0; i < 40 && (await H(() => window.__printahem.pratar())); i++) await p.waitForTimeout(250);
 const t0 = await H(() => window.__printahem.textLogg().length);
 await H(() => window.__printahem.oppnaPrintMeny(window.__printahem.skrivare.find((x) => x.id === 'g1')));
 for (let i = 0; i < 100 && !(await H(() => [...document.querySelectorAll('.ph-notis')].some((n) => /ingen ström/.test(n.textContent) && n.querySelector('.ph-notis-bild img')))); i++) await p.waitForTimeout(250);
