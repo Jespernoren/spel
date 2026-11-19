@@ -11,7 +11,7 @@ p.on('pageerror', (e) => fel.push(e.message));
 await p.addInitScript(() => { if (!sessionStorage.getItem('f')) { sessionStorage.setItem('f', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ spelarNamn: 'Test' })); } });
 await p.goto(url); await p.waitForTimeout(5000);
 const H = (f, a) => p.evaluate(f, a);
-await p.click('.br-starta'); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(2500);
+await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(2500);
 for (let i = 0; i < 40 && !(await H(() => !!document.querySelector('.ph-dagbokkort'))); i++) await p.waitForTimeout(250);   /* A-076 14:22: morgonsidan är dagbokskortet */
 const n1 = await H(() => ({ notis: document.querySelector('.ph-dagbokkort')?.textContent || '', lista: !!document.querySelector('.ph-dagbokkort .ph-dagmal'), uppgDold: document.body.classList.contains('dn-forsta') }));
 await p.screenshot({ path: dir + 'f-notis-utan-lista.png' });

@@ -11,7 +11,7 @@ p.on('pageerror', (e) => fel.push(e.message));
 await p.addInitScript(() => { if (!sessionStorage.getItem('a076c')) { sessionStorage.setItem('a076c', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ spelarNamn: 'Test' })); } });
 await p.goto(url); await p.waitForTimeout(5000);
 const H = (f, a) => p.evaluate(f, a);
-await p.click('.br-starta'); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(12000);
+await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(12000);
 for (let i = 0; i < 60 && (await p.evaluate(() => !!document.querySelector('.ph-dagnotis') || window.__printahem.pratar())); i++) await p.waitForTimeout(500);   // som en spelare: dagboksnotisen och första tanken är klara
 await H(() => { const P = window.__printahem; P.S.skrivareLastad = P.S.skrivareStar = true; P.S.stromHjalp = false; P.S.strom = 0; P.S.steg = P.STEG.findIndex((x) => x.id === 'strom'); P.ritaStart(); });
 await p.waitForTimeout(1500);

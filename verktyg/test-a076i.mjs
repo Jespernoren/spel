@@ -12,7 +12,7 @@ p.on('pageerror', (e) => fel.push(e.message));
 await p.addInitScript(() => { if (!sessionStorage.getItem('f')) { sessionStorage.setItem('f', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ spelarNamn: 'Test' })); } });
 await p.goto(url); await p.waitForTimeout(5000);
 const H = (f, a) => p.evaluate(f, a);
-await p.click('.br-starta'); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(4000);
+await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(4000);
 for (let i = 0; i < 40 && !(await p.evaluate(() => !!document.querySelector('.ph-dagbokkort'))); i++) await p.waitForTimeout(250); await p.keyboard.press('Enter'); await p.waitForTimeout(1500);   /* A-076 14:22: morgonsidan stängs med FORTSÄTT */
 // 1. ställ skrivaren, cykeln, generatorn, kvarnen och en vanlig sak (ett bord)
 const direkt = await H(async () => {
@@ -36,7 +36,7 @@ const genMont = diff(direkt.fore.generator, efter5.r.generator), cykMont = diff(
 ut.push([`monteringen flyttar inget: generatorn ${genMont.toFixed(3)} m, cykeln ${cykMont.toFixed(3)} m`, genMont < 0.02 && cykMont < 0.02]);
 // omladdning
 await p.waitForTimeout(1500); await p.reload(); await p.waitForTimeout(6000); await p.screenshot({ path: dir + 'i-omladdad-meny.png' }); console.log('fel:', fel.join(' | '), 'knappar:', await H(() => [...document.querySelectorAll('button')].filter((x) => x.offsetParent).map((x) => x.className + ':' + x.textContent.trim().slice(0, 20)).join(' | ')));
-await p.click('.br-starta', { timeout: 8000 }).catch(() => {}); for (let i = 0; i < 40 && !(await H(() => !!window.__printahem?.S?.stallPos).catch(() => false)); i++) await p.waitForTimeout(500); await p.keyboard.press('Enter').catch(() => {}); await p.waitForTimeout(3000);
+await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())).catch(() => {}); for (let i = 0; i < 40 && !(await H(() => !!window.__printahem?.S?.stallPos).catch(() => false)); i++) await p.waitForTimeout(500); await p.keyboard.press('Enter').catch(() => {}); await p.waitForTimeout(3000);
 const omladd = await H(() => { const P = window.__printahem, r = {}; for (const k of Object.keys(P.S.stallPos || {})) r[k] = P.stallNu(k); return r; });
 const dl = nycklar.map((k) => [k, diff(direkt.pos[k], omladd[k])]);
 ut.push([`efter omladdning: ${dl.map(([k, d]) => `${k} ${d.toFixed(3)}`).join(', ')}`, dl.every(([, d]) => d < 0.02)]);

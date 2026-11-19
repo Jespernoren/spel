@@ -9,7 +9,7 @@ const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args
 const p = await b.newPage({ viewport: { width: 1280, height: 800 } }); const fel = []; p.on('pageerror', (e) => fel.push(e.message + ' @ ' + (e.stack || '').split('\n').slice(1, 3).join(' ')));
 await p.addInitScript(() => { localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ introSett: true })); });
 await p.goto(url); await p.waitForTimeout(5000);
-await p.click('.br-starta'); await p.waitForTimeout(800);
+await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(800);
 await p.evaluate(() => { const f = document.querySelector('.ph-namn-falt'); if (f) { f.value = 'Test'; f.closest('.ph-namn')?.querySelector('.fp-knapp')?.click(); } });
 for (let i = 0; i < 120 && !(await p.evaluate(() => (!!window.__printahem?.ui?.igang || !!document.querySelector('.ph-dagbokkort')) && !document.querySelector('.ph-intro'))); i++) { await p.waitForTimeout(500); if (i % 12 === 11) await p.evaluate(() => { const k = document.querySelector('.br-starta'); if (k && k.offsetParent) k.click(); const f = document.querySelector('.ph-namn-falt'); if (f) { f.value = 'Test'; f.closest('.ph-namn')?.querySelector('.fp-knapp')?.click(); } }); }   // Starta igen om första klicket kom för tidigt
 if (await p.evaluate(() => !!document.querySelector('.ph-dagbokkort'))) { await p.keyboard.press('Enter'); await p.waitForTimeout(1500); }   /* A-076 14:22: morgonsidan stängs med FORTSÄTT */

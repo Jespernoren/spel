@@ -13,7 +13,7 @@ for (const d of DAGAR) {
   p.on('pageerror', (e) => fel.push(e.message));
   await p.addInitScript((s) => { localStorage.clear(); localStorage.setItem('spar:printahem2:v1', s); window.__a065 = []; window.__textLogg = (kalla, vem, text, varfor) => window.__a065.push({ kalla, vem, text, varfor }); }, spar);
   await p.goto(url); await p.waitForTimeout(3500);
-  await p.click('.br-starta').catch(() => {});
+  await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())).catch(() => {});
   for (let i = 0; i < 30 && !(await p.evaluate(() => !!window.__printahem?.ui?.igang).catch(() => false)); i++) {
     await p.evaluate(() => { for (const k of document.querySelectorAll('button')) { const r = k.getBoundingClientRect(); if (r.width && /Börja|BÖRJA|Fortsätt|Starta/i.test(k.textContent)) { k.click(); return; } } }).catch(() => {});
     await p.waitForTimeout(1000);

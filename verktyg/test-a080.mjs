@@ -9,10 +9,21 @@ const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args
 const p = await b.newPage({ viewport: { width: 1280, height: 800 } }); const fel = []; p.on('pageerror', (e) => fel.push(e.message));
 await p.addInitScript(() => { localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ introSett: true })); });
 await p.goto(url); await p.waitForTimeout(5000);
-await p.click('.br-starta'); await p.waitForTimeout(800);
+await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(800);
 await p.evaluate(() => { const f = document.querySelector('.ph-namn-falt'); if (f) { f.value = 'Test'; f.closest('.ph-namn')?.querySelector('.fp-knapp')?.click(); } });
 for (let i = 0; i < 120 && !(await p.evaluate(() => !!window.__printahem.ui?.igang && !document.querySelector('.ph-intro'))); i++) await p.waitForTimeout(500);
 await p.waitForTimeout(1500);
+await p.waitForTimeout(6000);
+// 4. inget medan kameran rör sig (på ett vanligt spelläge, före stegtestet)
+for (let i = 0; i < 40; i++) { const l = await p.evaluate(() => window.__printahem.kanalLage()); if (!l.med && !l.overlay && !l.butik && !l.pausad && l.igang) break; await p.keyboard.press('Enter'); await p.waitForTimeout(500); }
+const k = await p.evaluate(async () => {
+  const P = window.__printahem; P.tittaMot?.(0, 0, 1.4, { tvang: true });
+  P.regi.info('Kameran nickar – den här ska vänta.', 'bra');
+  for (let i = 0; i < 40 && !P.regiLogg().some((x) => /Kameran nickar/.test(x.text)); i++) await new Promise((r) => setTimeout(r, 500));
+  const L = P.regiLogg(), kam = L.filter((x) => x.kanal === 'kamera' && x.text === '30, 30').pop(), inf = L.filter((x) => /Kameran nickar/.test(x.text)).pop();
+  return { kam, inf };
+});
+ut.push([`inget visas medan kameran rör sig: nick ${k.kam ? `${k.kam.start}–${k.kam.slut}` : 'saknas'}, info ${k.inf ? k.inf.start : 'kom aldrig'}`, !!k.kam && !!k.inf && k.inf.start >= k.kam.slut - 50]);
 // 2. bildbubblan per steg
 const n = await p.evaluate(() => window.__printahem.STEG.length);
 let ok = 0, tot = 0; const miss = [];
@@ -40,15 +51,6 @@ const r = await p.evaluate(async () => {
   return { ms: e ? e.slut - e.start : 0, behov: P.lasTid(t) };
 });
 ut.push([`läsbar tid: info-rutan står ${r.ms} ms (behöver ${r.behov})`, r.ms >= r.behov]);
-for (let i = 0; i < 40; i++) { const l = await p.evaluate(() => window.__printahem.kanalLage()); if (!l.med && !l.overlay && !l.butik && !l.pausad && l.igang) break; await p.keyboard.press('Enter'); await p.waitForTimeout(500); }
-const k = await p.evaluate(async () => {
-  const P = window.__printahem; P.tittaMot?.(0, 0, 1.4, { tvang: true });
-  P.regi.info('Kameran nickar – den här ska vänta.', 'bra');
-  await new Promise((r) => setTimeout(r, 4000));
-  const L = P.regiLogg(), kam = L.filter((x) => x.kanal === 'kamera').pop(), inf = L.filter((x) => /Kameran nickar/.test(x.text)).pop();
-  return { kam, inf };
-});
-ut.push([`inget visas medan kameran rör sig: nick ${k.kam ? `${k.kam.start}–${k.kam.slut}` : 'saknas'}, info ${k.inf ? k.inf.start : 'kom aldrig'}`, !!k.kam && !!k.inf && k.inf.start >= k.kam.slut - 50]);
 // 5. loggen
 const L = await p.evaluate(() => window.__printahem.regiLogg());
 const kanaler = [...new Set(L.map((e) => e.kanal))];

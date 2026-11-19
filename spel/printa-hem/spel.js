@@ -9316,6 +9316,7 @@ const ui = new FpUI({
     // B29: "Dag 1. Inget mer tjat…" kommer i dagboken på kvällen dag 1 (efter sängen) – starten börjar direkt med skylten
     { const st = STEG[S.steg]; if (st?.startLapp && !S.lappar.includes(st.startLapp)) visaLapp(st.startLapp); } },
 });
+ui.overlay.innerHTML = '';   /* A-076 tillägg 18:00: FpUI:s gamla startruta visas aldrig – menyerna v3 ritas av startRuta */
 // punkt 15: en toast inom 0,6 s efter ett klick/en tangent är direkt återkoppling (regel 4) och visas direkt.
 // Felmeddelanden också. Allt annat (sådant som händer av sig självt) är en sak i kanalen.
 {
@@ -9337,7 +9338,7 @@ function hurVarDagen(dag, klar) {
   if (window.__simBot || window.__vt || !(dag >= 1)) { klar(); return; }
   const el = document.createElement('div'); el.className = 'ph-hurvar';
   el.innerHTML = `<div class="ruta"><b>Hur var dag ${dag}?</b>${ansikten('data-hv')}<input data-rad maxlength="140" placeholder="Vill du skriva något? (valfritt)"><div class="knappar"><button data-hoppa>Hoppa över</button><button data-klar>Klar</button></div></div>`;
-  document.body.appendChild(el); ui.slappMus();
+  document.body.appendChild(el); ui.slappMus(); menyBreddKoll(el.querySelector('.ruta'), 'Hur var dagen');
   let val = null, klart = false;
   const ga = (spara) => { if (klart) return; klart = true; removeEventListener('keydown', tang, true); if (spara && val != null) kanslaSpara(`Hur var dag ${dag}?`, val, el.querySelector('[data-rad]').value.trim()); else textLogg('känsla', `Hur var dag ${dag}?`, 'hoppade över', 'A-076 15:30'); el.remove(); klar(); };
   el.querySelectorAll('[data-hv]').forEach((k) => { k.onclick = () => { val = +k.dataset.hv; el.querySelectorAll('[data-hv]').forEach((x) => x.classList.toggle('pa', x === k)); }; });
@@ -9352,27 +9353,41 @@ function hurVarDagen(dag, klar) {
    Varje del är en egen sida med ← Tillbaka (Esc = ett steg tillbaka). Medan menyn är öppen syns inget annat och talet pausas. */
 let menySida = 'hem', menyPaus = false, menyFlik = 'ljud';
 const FEM_ANSIKTEN = [[0, 'Tråkigt'], [1, 'Sådär'], [2, 'Okej'], [3, 'Kul'], [4, 'Superkul']];
+function finnsSparning() { if (harSparning()) return true; try { for (let n = 1; n <= 5; n++) if (localStorage.getItem(`spar:${SPAR_ID}:plats${n}`)) return true; } catch {} return false; }   /* A-076 18:05: Ladda är grå utan sparningar */
 function harSparning() { return !!(S.spelarNamn && (S.introSett || S.steg > 0 || S.dag > 1)); }   // funktion: startrutan ritas innan resten av filen har körts
 function menyRad(attr, ikon, rub, sub, klass = '') { return `<button class="br3-rad ${klass}" ${attr}><span class="ik">${ik(ikon)}</span><span class="tx"><b>${rub}</b><small>${sub}</small></span><span class="pil">›</span></button>`; }
 function menyHem(titel, text) {
   const t = rens(titel), logga = t.includes('<svg') ? t : '', dagTid = `Dag ${S.dag} · ${klockText(klockan())}`;
   const topp = menyPaus ? `<div class="br3-paus"><b>PAUSAD</b><span>${dagTid}</span></div>` : `${logga || `<h1>${t}</h1>`}${harSparning() ? '' : `<div class="br-ingress">${rens(text)}</div>`}`;
-  const stor = !harSparning() && !menyPaus
-    ? `<button class="fp-knapp br-starta br3-stor">STARTA</button>`
+  const stor = !menyPaus
+    ? `<div class="br3-par"><button class="fp-knapp br-starta br3-stor">STARTA</button><button class="br3-sido br3-ladda" data-sida="spara" ${finnsSparning() ? '' : 'disabled'}>${ik('spara')}<span>${finnsSparning() ? 'Ladda' : 'Inga sparningar än'}</span></button></div>`   /* A-076 18:05: STARTA = alltid ny omgång från dag 1, Ladda bredvid */
     : `<div class="br3-par"><button class="fp-knapp br-starta br3-stor"><span>FORTSÄTT</span><small>${menyPaus ? 'eller tryck Esc' : `${dagTid} · ${krT(S.mynt || 0)} kr`}</small></button><button class="br3-sido" data-sida="spara">${ik('spara')}<span>Spara och ladda</span></button></div>`;
   return `${topp}${stor}<div class="br3-rader">${menyRad('data-sida="installningar"', 'hand', 'Inställningar', 'Kontroller, ljud och röst')}${menyRad('data-sida="hjalp"', 'brev', 'Hjälp oss', 'Tyck till, rapportera fel, berätta hur det kändes')}</div><a class="fp-tillbaka" href="../../index.html">← Alla spel</a>`;
 }
+async function nyOmgang(titel, text) {
+  const info = []; for (let n = 1; n <= PLATSER; n++) info.push(await lasPlats(n));
+  const ledig = info.findIndex((d) => !d) + 1;
+  if (!ledig) { menySida = 'spara'; menyFullt = true; menyRita(titel, text); return; }   /* alla platser fulla: inget skrivs över utan att man väljer det själv */
+  await sparaPlats(ledig, S.spelarNamn || undefined);
+  try { sessionStorage.setItem('printa-hem:nyOmgang', '1'); } catch {}
+  spar.nollstall(); try { await MOLN?.ref?.delete(); } catch {}
+  location.reload();
+}
+let menyFullt = false;
 async function menySpara(el) {
   const info = []; for (let n = 1; n <= PLATSER; n++) info.push(await lasPlats(n));
+  const senast = !menyPaus && harSparning() ? `<div class="br3-plats nu br3-senast"><span class="ik">${ik('spara')}</span><span class="tx"><b>Senast spelad</b><small>Dag ${S.dag} · ${klockText(klockan())} · ${krT(S.mynt || 0)} kr</small></span><button class="br3-mini" data-fortsatt>Fortsätt</button></div>` : '';
+  const fullt = menyFullt ? `<p class="br3-fullt">Alla ${PLATSER} platser är fulla. Spara det du har på en plats du inte behöver, så startar en ny omgång.</p>` : '';
   const besk = (d) => d ? `Dag ${d.dag || 1} · ${krT(d.mynt || 0)} kr · ${new Date(d.sparadTid || 0).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : 'Tom plats';
-  el.querySelector('.br3-kropp').innerHTML = `<div class="br3-platser">${info.map((d, i) => `<div class="br3-plats ${platsVald === i + 1 ? 'nu' : ''}"><span class="ik">${ik(d ? 'spara' : 'ny')}</span><span class="tx"><b>${d ? rens(platsTitel(d, i + 1)) : `Plats ${i + 1}`}${platsVald === i + 1 ? ' · <em>du spelar nu</em>' : ''}</b><small>${besk(d)}</small></span><button class="br3-mini" data-spara="${i + 1}">Spara</button>${d ? `<button class="br3-mini" data-ladda="${i + 1}">Ladda</button>` : ''}</div>`).join('')}</div>
+  el.querySelector('.br3-kropp').innerHTML = `${fullt}<div class="br3-platser">${senast}${info.map((d, i) => `<div class="br3-plats ${platsVald === i + 1 ? 'nu' : ''}"><span class="ik">${ik(d ? 'spara' : 'ny')}</span><span class="tx"><b>${d ? rens(platsTitel(d, i + 1)) : `Plats ${i + 1}`}${platsVald === i + 1 ? ' · <em>du spelar nu</em>' : ''}</b><small>${besk(d)}</small></span><button class="br3-mini" data-spara="${i + 1}">Spara</button>${d ? `<button class="br3-mini" data-ladda="${i + 1}">Ladda</button>` : ''}</div>`).join('')}</div>
     <div class="br3-farlig"><button data-borjaom>${ik('omstart')}<span><b>Börja om från dag 1</b><small>Allt du har byggt försvinner</small></span></button></div>`;
-  el.querySelectorAll('[data-spara]').forEach((k) => { k.onclick = async () => { const n = +k.dataset.spara; if (info[n - 1] && !confirm(`Skriva över plats ${n}?`)) return; k.disabled = true; await sparaPlats(n); platsVald = n; regi.info(`Sparat på plats ${n}`, 'bra'); menySpara(el); }; });
+  el.querySelectorAll('[data-spara]').forEach((k) => { k.onclick = async () => { const n = +k.dataset.spara; if (info[n - 1] && !confirm(`Skriva över plats ${n}?`)) return; k.disabled = true; await sparaPlats(n); platsVald = n; regi.info(`Sparat på plats ${n}`, 'bra'); if (menyFullt) { menyFullt = false; try { sessionStorage.setItem('printa-hem:nyOmgang', '1'); } catch {} spar.nollstall(); try { await MOLN?.ref?.delete(); } catch {} location.reload(); return; } menySpara(el); }; });
+  el.querySelector('[data-fortsatt]')?.addEventListener('click', () => { ui.starta(false); visaDagNotis(); });
   el.querySelectorAll('[data-ladda]').forEach((k) => { k.onclick = async () => { if (!confirm('Ladda den sparningen? Det du har nu ersätts (spara det först om du vill ha kvar det).')) return; k.disabled = true; await laddaPlats(+k.dataset.ladda); }; });
   el.querySelector('[data-borjaom]').onclick = () => {
     const pop = document.createElement('div'); pop.className = 'br-bekrafta';
     pop.innerHTML = `<div class="br-bekrafta-ruta"><div class="br-bekrafta-ik">${ik('omstart')}</div><b>Börja om från dag 1?</b><p>Allt du har byggt försvinner. Vill du spara först?</p><div class="br-val" style="max-width:420px"><button class="br-valknapp" data-nej>Avbryt</button><button class="br-valknapp" data-sparaforst>${ik('spara')}<span>Spara först</span></button><button class="br-valknapp farlig" data-ja>${ik('omstart')}<span>Börja om</span></button></div></div>`;
-    el.appendChild(pop); pop.querySelector('[data-nej]').onclick = () => pop.remove(); pop.onclick = (e) => { if (e.target === pop) pop.remove(); };
+    el.appendChild(pop); menyBreddKoll(pop.querySelector('.br-bekrafta-ruta'), 'Börja om'); pop.querySelector('[data-nej]').onclick = () => pop.remove(); pop.onclick = (e) => { if (e.target === pop) pop.remove(); };
     pop.querySelector('[data-sparaforst]').onclick = () => { pop.remove(); };   // stannar på sidan Spara och ladda – välj en plats
     pop.querySelector('[data-ja]').onclick = () => ui.o.onNollstall?.();
   };
@@ -9416,10 +9431,13 @@ function menyRita(titel, text) {
     ruta.innerHTML = menyHem(titel, text);
     ruta.querySelector('.br-starta').onclick = () => {
       if (menyPaus) { ui.starta(); return; }
-      if (!harSparning()) { platsVald = 1; setTimeout(() => { sparaPlats(1).catch(() => {}); }, 4000); }   // STARTA skapar sparning 1
+      if (harSparning()) { nyOmgang(titel, text); return; }   /* A-076 18:05: ny omgång på en ny sparplats, den gamla raderas aldrig */
+      if (!harSparning()) setTimeout(async () => { try { let n = 1; for (; n <= PLATSER; n++) if (!(await lasPlats(n))) break; if (n > PLATSER) return; platsVald = n; await sparaPlats(n); } catch {} }, 4000);   // STARTA skapar en sparning på första lediga platsen – en gammal skrivs aldrig över
       const vidare = () => { const in_ = (efterIntro) => { ui.starta(!!efterIntro); visaDagNotis(); }; if (!S.introSett && S.steg === 0 && !S.skyltUppe) { ui.overlay.hidden = true; visaIntro(() => in_(true), { direkt: true }); } else in_(); };
+      if (!S.spelarNamn && sparatNamn()) S.spelarNamn = sparatNamn();
       if (!S.spelarNamn) fragaNamn(vidare); else vidare();
     };
+    try { if (sessionStorage.getItem('printa-hem:nyOmgang')) { sessionStorage.removeItem('printa-hem:nyOmgang'); setTimeout(() => ruta.querySelector('.br-starta')?.click(), 300); } } catch {}   /* efter omladdningen: rakt in i introt */
     ruta.querySelectorAll('[data-sida]').forEach((k) => { k.onclick = () => { menySida = k.dataset.sida; ljud.plock?.(); menyRita(titel, text); }; });
   } else {
     const rub = { spara: 'Spara och ladda', installningar: 'Inställningar', hjalp: 'Hjälp oss' }[menySida];
@@ -9427,13 +9445,20 @@ function menyRita(titel, text) {
     ruta.querySelector('[data-tillbaka]').onclick = () => { menySida = 'hem'; menyRita(titel, text); };
     if (menySida === 'spara') menySpara(ruta); else if (menySida === 'installningar') menyInstallningar(ruta); else menyHjalp(ruta);
   }
-  ruta.dataset.sida = menySida; menyRita.senast = [titel, text];
+  ruta.dataset.sida = menySida; menyRita.senast = [titel, text]; menyBreddKoll(ruta);
 }
+/* A-076 18:00: alla menyrutor har samma bredd (--meny-bredd). ANNAN MENYBREDD larmar annars. */
+function menyBreddKoll(el, namn = menySida) {
+  requestAnimationFrame(() => { if (!el?.isConnected) return; const b = el.getBoundingClientRect().width, mal = Math.min(620, innerWidth * 0.92); if (b > 0 && Math.abs(b - mal) > 2) regelvakt.brott('ANNAN MENYBREDD', `${namn}: ${Math.round(b)} px, ska vara ${Math.round(mal)} px`); });
+}
+/* Testkrok: "fortsätt det sparade spelet" – samma väg som Ladda → Fortsätt. STARTA betyder sedan 18:05 alltid ny omgång, så AX, nybörjarboten och testerna med en färdig sparfil går in här. */
+window.__startaSpel = () => { if (menyPaus) { ui.starta(); return; } if (harSparning()) { ui.starta(false); visaDagNotis(); return; } document.querySelector('.br-starta')?.click(); };
 function startRuta(titel = ui.o.titel, text = ui.o.text, knappText = 'Starta') {
   ui.igang = false; spelare.aktiv = false;
   menyPaus = knappText === 'Fortsätt'; menySida = 'hem';
   menyRita(titel, text);
   ui.overlay.hidden = false; menyOppnaLage(true);
+  if (!(renderer?.info?.render?.frame > 0)) { ui.overlay.classList.add('br3-forbild'); const vanta = () => (renderer?.info?.render?.frame > 1 ? ui.overlay.classList.remove('br3-forbild') : requestAnimationFrame(vanta)); requestAnimationFrame(vanta); }   /* A-076 18:00: utsikten bakom, aldrig blank färg – en bild tills scenen har ritats */
 }
 /* medan menyn är öppen syns inget annat, talet pausas och kön väntar – allt kommer tillbaka efter Fortsätt */
 let menyTystat = false;
@@ -9450,7 +9475,7 @@ addEventListener('keydown', (e) => {   // Esc i en undersida = ett steg tillbaka
 }, true);
 { const st = document.createElement('style'); st.textContent = `
 body.meny-oppen [class^="hud-"],body.meny-oppen [class*=" hud-"],body.meny-oppen .dn-matare,body.meny-oppen .dn-topp,body.meny-oppen .dn-uppg,body.meny-oppen .ph-hotbar,body.meny-oppen .ph-mal,body.meny-oppen .ph-hb-namn,body.meny-oppen .ph-med,body.meny-oppen .ph-notis,body.meny-oppen .ph-kontroll,body.meny-oppen .fp-toast,body.meny-oppen .ph-bubbla,body.meny-oppen .ph-varld-bubbla,body.meny-oppen .hud-ios,body.meny-oppen .ph-hurvar{visibility:hidden!important}
-.br3{max-width:520px;text-align:left;padding:30px 34px}.br3 h1,.br3 svg{display:block;margin:0 auto 6px}.br3 .br-ingress{text-align:center;margin:6px 0 18px;opacity:.85;line-height:1.5}
+:root{--meny-bredd:min(620px,92vw)}.br3,.ph-hurvar .ruta,.br3 .br-bekrafta-ruta{width:var(--meny-bredd)!important;max-width:none!important;box-sizing:border-box}.br3{text-align:left;padding:30px 34px}.br3-par .br3-stor{width:100%;max-width:none;margin:0}.br3-ladda[disabled]{opacity:.45;cursor:default;filter:grayscale(1)}.br3-ladda span{font:700 13px system-ui;text-align:center;max-width:110px}.br3-fullt{background:rgba(255,216,74,.12);border-radius:10px;padding:10px 12px;margin:0 0 10px}.fp-overlay.br3-forbild{background:linear-gradient(rgba(8,12,30,.55),rgba(8,12,30,.55)),url(intro/skjul.webp) center/cover}.br3 h1,.br3 svg{display:block;margin:0 auto 6px}.br3 .br-ingress{text-align:center;margin:6px 0 18px;opacity:.85;line-height:1.5}
 .br3-paus{text-align:center;margin-bottom:18px}.br3-paus b{display:block;font:900 30px system-ui;letter-spacing:.12em}.br3-paus span{opacity:.75;font:600 15px system-ui}
 .br3 .br3-stor{width:100%;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:22px;padding:16px}.br3 .br3-stor small{font:600 13px system-ui;opacity:.85;letter-spacing:0}
 .br3-par{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:stretch}.br3-sido{border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;border-radius:16px;padding:10px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font:700 13px system-ui;cursor:pointer}.br3-sido svg{width:24px;height:24px}
@@ -11136,8 +11161,8 @@ document.addEventListener('pointerlockchange', () => { if (document.pointerLockE
    Lappar, butiken, felrutan och scenerna har sin egen Esc (stäng/hoppa över). */
 addEventListener('keydown', (e) => {
   if (e.code !== 'Escape' || e.repeat) return;
+  if (ui.pausad && !ui.overlay.hidden && menySida === 'hem' && !document.querySelector('.ph-fel, .br-bekrafta, .br-ljudpop')) { if (performance.now() - (ui.pausTid || 0) > 250) { e.preventDefault(); ui.starta(); } return; }   /* Esc stänger alltid en öppen Esc-meny – också när ett dagbokskort väntar bakom den */
   if (!ui.butiksOverlay.hidden || !medEl2.hidden || sover || document.querySelector('.ph-fel, .ph-intro, .ph-intro3, .ph-kap, .ph-jul, .ph-resa')) return;
-  if (ui.pausad && !ui.overlay.hidden) { if (performance.now() - (ui.pausTid || 0) > 250) { e.preventDefault(); ui.starta(); } return; }
   if (ui.igang && ui.overlay.hidden) { e.preventDefault(); ui.pausa(); }
 });
 let medStangdTid = -1e9;
@@ -11159,7 +11184,7 @@ addEventListener('keydown', (e) => {
     else if (['Tab', 'Escape'].includes(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); medEl2._spara(); }
     return;
   }
-  if (e.code === 'Escape' && !e.repeat) { e.preventDefault(); e.stopImmediatePropagation(); if (ui.overlay.hidden) { startRuta('⏸️ Pausad', '', 'Fortsätt'); ui.pausad = true; ui.pausTid = performance.now(); } return; }   /* A-076 tillägg 15:30: Esc mitt i ett kort visar bara menyn – kortet kommer tillbaka efter Fortsätt */
+  if (e.code === 'Escape' && !e.repeat) { e.preventDefault(); e.stopImmediatePropagation(); if (ui.overlay.hidden) { startRuta('⏸️ Pausad', '', 'Fortsätt'); ui.pausad = true; ui.pausTid = performance.now(); } else if (ui.pausad && menySida === 'hem' && !document.querySelector('.br-bekrafta, .br-ljudpop') && performance.now() - (ui.pausTid || 0) > 250) ui.starta(); return; }   /* Esc igen stänger menyn och kortet kommer tillbaka · A-076 tillägg 15:30: Esc mitt i ett kort visar bara menyn – kortet kommer tillbaka efter Fortsätt */
   if (['KeyE', 'Enter', 'Space'].includes(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); stangMeddelande(); }
 }, true);
 

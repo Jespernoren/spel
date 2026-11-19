@@ -15,7 +15,7 @@ const H = (f, a) => p.evaluate(f, a);
 const kort = () => H(() => { const k = document.querySelector('.ph-med:not([hidden]) .ph-dagbokkort'); return k ? { text: k.querySelector('.ph-pap-text')?.textContent, rub: k.querySelector('.ph-dk-rub')?.textContent || '', rost: !!k.querySelector('.ph-rostknapp'), fortsatt: /FORTSÄTT/.test(k.querySelector('.ph-fortsatt')?.textContent || ''), lasIgen: !!k.querySelector('.ph-lasigen') } : null; });
 const matning = () => H(() => window.__printahem.dagbokMatning());
 const brott = (namn) => H((n) => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && e.vem === n).map((e) => e.text), namn);
-await p.click('.br-starta'); await p.waitForTimeout(2500); await p.keyboard.press('Enter');
+await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(2500); await p.keyboard.press('Enter');
 // 1. intro → spel: morgonsidan direkt
 let k1 = null; for (let i = 0; i < 120 && !k1; i++) { await p.waitForTimeout(250); k1 = await kort(); }
 const m1 = await matning();

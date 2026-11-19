@@ -40,7 +40,7 @@ await p.addInitScript((fran) => {
   if (!sessionStorage.getItem('sim')) { sessionStorage.setItem('sim', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', fran || JSON.stringify({ introSett: true, spelarNamn: 'Simulering', dag1Sida: true })); }
 }, null);
 await p.goto(url); await p.waitForTimeout(3500);
-await p.click('.br-starta').catch(() => {}); await p.waitForTimeout(2000);
+await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())).catch(() => {}); await p.waitForTimeout(2000);
 for (let i = 0; i < 30 && !(await p.evaluate(() => !!window.__printahem?.S).catch(() => false)); i++) await p.waitForTimeout(1000);
 p.on('pageerror', (e) => console.log('[sidfel]', e.message));
 await p.evaluate(([u, m, c]) => { window.__vt.start(); window.__simUtforlig = u; window.__simStegMax = m; window.__simCykelForst = c[0]; window.__simStromDirekt = c[1]; }, [!!process.env.UTFORLIG, +(process.env.SIM_STEGMAX || 15), [!!process.env.CYKEL_FORST, !!process.env.STROM_DIREKT]]);   /* A-073: STROM_DIREKT=1 tar generatorn direkt i stället för att vänta på hjälpen */   /* A-071: CYKEL_FORST=1 ställer cykeln före generatorn */

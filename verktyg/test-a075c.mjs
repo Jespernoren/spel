@@ -8,7 +8,7 @@ const ut = [];
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const p = await (await b.newContext({ viewport: { width: 1280, height: 800 } })).newPage(); const fel = []; p.on('pageerror', (e) => fel.push(e.message));
 await p.addInitScript(() => { if (!sessionStorage.getItem('f')) { sessionStorage.setItem('f', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ spelarNamn: 'Test', introSett: true })); localStorage.setItem('printa-hem:vridKamera', 'av'); } });   // kameran nickar inte mot pilen under bilderna
-await p.goto(url); await p.waitForTimeout(5000); await p.click('.br-starta'); await p.waitForTimeout(3000); await p.keyboard.press('Enter'); await p.waitForTimeout(1500);
+await p.goto(url); await p.waitForTimeout(5000); await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(3000); await p.keyboard.press('Enter'); await p.waitForTimeout(1500);
 const H = (f, a) => p.evaluate(f, a);
 const vy = async (namn, x, z, yaw, pitch = 0) => { await H(([x, z, yaw, pitch]) => { const sp = window.__printahem.spelare; sp.pos.x = x; sp.pos.z = z; sp.yaw = yaw; sp.pitch = pitch; }, [x, z, yaw, pitch]); await p.waitForTimeout(900); await p.screenshot({ path: dir + 'skylt-' + namn + '.png' }); };
 const start = await H(() => { const sp = window.__printahem.spelare; return [sp.pos.x, sp.pos.z, sp.yaw]; });

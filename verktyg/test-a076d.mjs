@@ -11,7 +11,7 @@ p.on('pageerror', (e) => fel.push(e.message));
 await p.addInitScript(() => { if (!sessionStorage.getItem('a076d')) { sessionStorage.setItem('a076d', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ spelarNamn: 'Test' })); } });
 await p.goto(url); await p.waitForTimeout(5000);
 const H = (f, a) => p.evaluate(f, a);
-await p.click('.br-starta'); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(12000);
+await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(12000);
 for (let i = 0; i < 60 && (await H(() => !!document.querySelector('.ph-dagnotis') || window.__printahem.pratar())); i++) await p.waitForTimeout(500);
 const titta = (x, z, d = 2.4, pitch = -0.4) => H(([x, z, d, pitch]) => { const sp = window.__printahem.spelare; sp.pos.set(x + d, sp.pos.y, z + d); sp.yaw = Math.atan2(-(x - sp.pos.x), -(z - sp.pos.z)); sp.pitch = pitch; }, [x, z, d, pitch]);
 const C = await H(() => ({ ...window.__printahem.CYKEL_RUTA }));

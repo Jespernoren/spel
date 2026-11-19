@@ -7,7 +7,7 @@ const ctx = await b.newContext({ viewport: { width: 1280, height: 800 } });
 await ctx.addInitScript(() => { if (!sessionStorage.getItem('t')) { sessionStorage.setItem('t', 1); localStorage.clear(); } });
 const p = await ctx.newPage(); const fel = []; p.on('pageerror', (e) => fel.push('sidfel: ' + e.message));
 await p.goto(url); await p.waitForTimeout(6000);
-await p.click('.br-starta'); await p.waitForTimeout(800);
+await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(800);
 await p.evaluate(() => { const f = document.querySelector('.ph-namn-falt'); if (f) { f.value = 'Test'; f.closest('.ph-namn')?.querySelector('.fp-knapp')?.click(); } });
 let sista = 0; const ut = [];
 for (let n = 0; n < 900; n++) {

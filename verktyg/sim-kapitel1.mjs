@@ -48,7 +48,7 @@ await p.addInitScript((fran) => {
   if (!sessionStorage.getItem('sim')) { sessionStorage.setItem('sim', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', fran || JSON.stringify({ introSett: true, spelarNamn: 'Simulering', dag1Sida: true })); }
 }, process.env.SIM_FRAN ? fs.readFileSync(process.env.SIM_FRAN, 'utf8') : null);
 await p.goto(url); await p.waitForTimeout(3500);
-await p.click('.br-starta').catch(() => {}); await p.waitForTimeout(2000);
+await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())).catch(() => {}); await p.waitForTimeout(2000);
 for (let i = 0; i < 30 && !(await p.evaluate(() => !!window.__printahem?.S).catch(() => false)); i++) await p.waitForTimeout(1000);
 p.on('pageerror', (e) => console.log('[sidfel]', e.message));
 await p.evaluate(([u, m]) => { window.__vt.start(); window.__simUtforlig = u; window.__simStegMax = m; }, [!!process.env.UTFORLIG, +(process.env.SIM_STEGMAX || 15)]);

@@ -11,7 +11,7 @@ p.on('pageerror', (e) => fel.push(e.message));
 await p.addInitScript(() => { if (!sessionStorage.getItem('a076b')) { sessionStorage.setItem('a076b', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ spelarNamn: 'Test' })); } });
 await p.goto(url); await p.waitForTimeout(5000);
 const H = (f, a) => p.evaluate(f, a);
-await p.click('.br-starta'); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(12000);
+await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(12000);
 const stang = () => H(() => { for (let i = 0; i < 6; i++) { const k = [...document.querySelectorAll('.ph-med button, .fp-knapp')].find((x) => x.offsetParent && /Fortsätt|Stäng|OK|Läst|Klar|Vidare/i.test(x.textContent)); if (!k) break; k.click(); } if (!window.__printahem.ui.igang) window.__printahem.ui.starta(true); document.querySelectorAll('.ph-dagnotis').forEach((x) => x.remove()); });
 const las = () => H(() => { const P = window.__printahem, g1 = P.skrivare.find((x) => x.id === 'g1'), u = g1?.mesh?.userData;
   const ms = P.matarSlangNu();

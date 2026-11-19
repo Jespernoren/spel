@@ -12,7 +12,7 @@ await p.goto(url); await p.waitForTimeout(5000);
 const ut = []; let md = '# Introtabellen (A-078 tillägg 12:25)\n\n';
 const kor = async (gang) => {
   await p.evaluate(() => { window.__introRepliker = []; window.__introLogg = []; });
-  if (gang === 1) await p.click('.br-starta'); else await p.evaluate(() => window.__printahem.visaIntroDirekt());
+  if (gang === 1) await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); else await p.evaluate(() => window.__printahem.visaIntroDirekt());
   const t0 = Date.now(); let du = 0, tavla = 0;
   for (let i = 0; i < 400; i++) { await p.waitForTimeout(400); const s = await p.evaluate(() => ({ kvar: !!document.querySelector('.ph-intro3'), du: !!document.querySelector('.ph-intro3 .ph-vem'), tavla: document.querySelectorAll('.ph-tavla g.rita').length })); if (s.du) du++; tavla = Math.max(tavla, s.tavla); if (!s.kvar && i > 3) break; }
   const tid = await p.evaluate(() => { const L = window.__introLogg || [], f = L.find((x) => x.h === 'visas'), sl = L.find((x) => x.h === 'slut'); return f && sl ? (sl.t - f.t) / 1000 : 999; });   // från första bilden till spelet

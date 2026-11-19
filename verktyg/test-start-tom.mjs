@@ -9,6 +9,7 @@ const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args
 const ctx = await b.newContext({ viewport: { width: 1280, height: 720 } });   /* ny profil: localStorage och IndexedDB är tomma */
 const p = await ctx.newPage(); const fel = [];
 p.on('pageerror', (e) => fel.push(e.message));
+await p.addInitScript(() => { window.__brott = []; window.__textLogg = (k, v, t) => { if (k === 'brott') window.__brott.push(v + ' ' + t); }; });
 await p.goto(url); await p.waitForTimeout(5000);
 const H = (f, a) => p.evaluate(f, a);
 const s0 = await H(() => ({ tom: localStorage.length, sidfel: window.__sidfel || [], knapp: !!document.querySelector('.br-starta') }));
@@ -27,7 +28,7 @@ for (let i = 0; i < 8 && !kort; i++) { await p.keyboard.press('Enter'); await p.
 await p.screenshot({ path: dir + '3-dagbokskortet.png' });
 ut.push([`introt → dagbokskortet (${kort})`, kort]);
 await p.keyboard.press('Enter'); await p.waitForTimeout(3000);
-const s3 = await H(() => ({ spel: window.__printahem?.ui?.overlay?.hidden === true, kort: !!document.querySelector('.ph-med:not([hidden]) .ph-dagbokkort'), duk: !!document.querySelector('canvas'), brott: (window.__textLogg || []).filter((e) => e.typ === 'brott' && e.vem === 'SIDFEL VID START').length }));
+const s3 = await H(() => ({ spel: window.__printahem?.ui?.overlay?.hidden === true, kort: !!document.querySelector('.ph-med:not([hidden]) .ph-dagbokkort'), duk: !!document.querySelector('canvas'), brott: (window.__brott || []).filter((x) => x.startsWith('SIDFEL VID START')).length }));
 await p.screenshot({ path: dir + '4-spelvyn.png' });
 ut.push([`dagbokskortet → spelvyn (meny dold ${s3.spel}, kortet stängt ${!s3.kort}, canvas ${s3.duk})`, s3.spel && !s3.kort && s3.duk]);
 ut.push([`0 SIDFEL VID START och 0 sidfel under hela vägen (${fel.join(' · ') || 'inga'})`, !fel.length && !s3.brott]);

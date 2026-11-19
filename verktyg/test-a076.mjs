@@ -17,7 +17,7 @@ const H = (f, a) => p.evaluate(f, a);
 const m0 = await H(() => ({ meny: !!document.querySelector('.br-starta') && !window.__printahem.ui.overlay.hidden, intro: !!document.querySelector('.ph-intro') }));
 await p.screenshot({ path: dir + 'meny.png' });
 ut.push([`menyn först (meny ${m0.meny}, intro ${m0.intro})`, m0.meny && !m0.intro]);
-await p.click('.br-starta'); await p.waitForTimeout(2500);
+await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(2500);
 const m1 = await H(() => ({ intro: !!document.querySelector('.ph-intro3'), meny: !window.__printahem.ui.overlay.hidden }));
 ut.push([`Starta → introt börjar direkt (intro ${m1.intro}, menyn dold ${!m1.meny})`, m1.intro && !m1.meny]);
 await p.keyboard.press('Enter'); await p.waitForTimeout(2500);

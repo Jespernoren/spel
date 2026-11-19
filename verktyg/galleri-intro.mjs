@@ -14,7 +14,7 @@ const p = await (await b.newContext({ viewport: { width: VB, height: VH } })).ne
 p.on('pageerror', (e) => fel.push(e.message));
 await p.addInitScript(() => { if (!sessionStorage.getItem('g')) { sessionStorage.setItem('g', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ spelarNamn: 'Test' })); } });
 await p.goto(url); await p.waitForTimeout(5000);
-await p.click('.br-starta');
+await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel()));
 const rader = []; let n = 0; const t0 = Date.now();
 for (let i = 0; i < 70; i++) {
   await p.waitForTimeout(i ? STEG : 1500);

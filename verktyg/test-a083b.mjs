@@ -8,7 +8,7 @@ const ut = [];
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
 const p = await (await b.newContext({ viewport: { width: 1280, height: 800 } })).newPage(); const fel = []; p.on('pageerror', (e) => fel.push(e.message));
 await p.addInitScript(() => { if (!sessionStorage.getItem('f')) { sessionStorage.setItem('f', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ spelarNamn: 'Test', introSett: true, lasUppForst: true })); } });
-await p.goto(url); await p.waitForTimeout(5000); await p.click('.br-starta'); await p.waitForTimeout(2500);
+await p.goto(url); await p.waitForTimeout(5000); await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(2500);
 const H = (f, a) => p.evaluate(f, a);
 const finns = (sel) => H((s) => !!document.querySelector(s), sel);
 // dagbokskortet

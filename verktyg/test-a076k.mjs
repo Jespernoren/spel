@@ -15,7 +15,7 @@ const syns = () => H(() => { const v = (sel) => [...document.querySelectorAll(se
 // 1. start första gången
 const s1 = await H(() => ({ starta: /STARTA/.test(document.querySelector('.br-starta')?.textContent || ''), rader: [...document.querySelectorAll('.br3-rad b')].map((x) => x.textContent), spara: !!document.querySelector('[data-sida="spara"]') }));
 await p.screenshot({ path: dir + '1-start-forsta-gangen.png' });
-ut.push([`start första gången: STARTA (${s1.starta}), rader ${s1.rader.join(' + ')}, ingen Spara och ladda (${!s1.spara})`, s1.starta && s1.rader.join() === 'Inställningar,Hjälp oss' && !s1.spara]);
+ut.push([`start första gången: STARTA (${s1.starta}), rader ${s1.rader.join(' + ')} (Ladda bredvid STARTA sedan 18:05, test-a076l)`, s1.starta && s1.rader.join() === 'Inställningar,Hjälp oss']);
 // sidorna från startmenyn
 for (const [sida, namn] of [['installningar', '4-installningar-ljud'], ['hjalp', '6-hjalp-oss']]) {
   await H((s) => document.querySelector(`[data-sida="${s}"]`).click(), sida); await p.waitForTimeout(400); await p.screenshot({ path: dir + namn + '.png' });
@@ -66,7 +66,7 @@ let kort = false; for (let i = 0; i < 20 && !kort; i++) { await p.waitForTimeout
 const sparat = await H(() => window.__printahem.textLogg().filter((e) => e.kalla === 'känsla').map((e) => e.text));
 ut.push([`"${hvText}" med fem ansikten, svaret sparas (${sparat.slice(-1)[0] || '–'}), sedan morgonsidan (${kort})`, /Hur var dag \d+\?/.test(hvText) && sparat.length > 0 && kort]);
 await p.keyboard.press('Enter'); await p.waitForTimeout(3000); await p.reload(); await p.waitForTimeout(6000);
-const ms = await H(() => document.querySelector('.br-starta')?.innerText || ''); await p.screenshot({ path: dir + '1b-start-med-sparning.png' });
-ut.push([`start med sparning: "${ms.replace(/\s+/g, ' ')}" och Spara och ladda bredvid`, /FORTSÄTT/i.test(ms) && /Dag \d/i.test(ms)]);
+const ms = await H(() => document.querySelector('.br3-par')?.innerText || ''); await p.screenshot({ path: dir + '1b-start-med-sparning.png' });
+ut.push([`start med sparning: "${ms.replace(/\s+/g, ' ')}" (18:05: STARTA + Ladda)`, /STARTA/i.test(ms) && /Ladda/i.test(ms)]);
 for (const [t, ok] of ut) console.log(ok ? '✓' : '✗', t);
 console.log(fel.length ? 'sidfel: ' + fel.slice(0, 3).join(' · ') : 'inga sidfel'); await b.close(); process.exit(ut.every((x) => x[1]) && !fel.length ? 0 : 1);
