@@ -4421,6 +4421,7 @@ function nejLogg() { const nu = performance.now(); if (nu - senNej < 80) return;
 /* EL 29: regelvakten skapas tidigt så att alla delar kan rapportera brott; reglerna läggs till längst ned */
 const TESTLAGE = /[?&]test\b/.test(location.search);
 const regelvakt = skapaRegelvakt({ logg: (flagga, text) => textLogg('brott', flagga, text), test: TESTLAGE });
+setTimeout(() => { for (const f of (window.__sidfel || [])) regelvakt.brott('SIDFEL VID START', f); }, 0);   /* A-076 18:05: allt som kastades innan modulen var klar */
 /* A-066: FPS-mätare i ?test – så att Jesper kan mäta på sin dator (snitt, lägsta 1 %, ritanrop och trianglar) */
 if (TESTLAGE && typeof document !== 'undefined') {
   const el = document.createElement('div'); el.className = 'ph-fps';
@@ -9330,7 +9331,7 @@ const ui = new FpUI({
 // inventoryt städar efter sig när en meny stängs (musens hög tillbaka, säljlådan säljs)
 { const _stang = ui.stangButik.bind(ui); ui.stangButik = () => { if (!ui.butiksOverlay.hidden) spelaLjud('meny-stang'); invAvsluta(); _stang(); }; }
 
-{ const _p = ui.prompt.bind(ui); ui.prompt = (t) => _p(rens(t)); ui.visaStart = startRuta; if (!ui.igang && !ui.overlay.hidden) startRuta(); }
+{ const _p = ui.prompt.bind(ui); ui.prompt = (t) => _p(rens(t)); ui.visaStart = startRuta; setTimeout(() => { if (!ui.igang && !ui.overlay.hidden) startRuta(); }, 0); }   /* A-076 18:05: menyn ritas först när hela modulen har körts – annars TDZ på menyPaus med tom localStorage */
 /* A-076 tillägg 15:30: "Hur var dag N?" efter sömnen – fem ansikten och en valfri rad. Hoppa över med Esc, stoppar aldrig. AX och nybörjarboten hoppar över. */
 function hurVarDagen(dag, klar) {
   if (window.__simBot || window.__vt || !(dag >= 1)) { klar(); return; }

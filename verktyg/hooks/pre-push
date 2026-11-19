@@ -1,0 +1,8 @@
+#!/bin/sh
+# A-076 18:05: röktest före varje push – tom localStorage → 0 sidfel → STARTA → intro → dagbokskort → spelvyn
+URL="${ROKTEST_URL:-http://127.0.0.1:8765/printa-hem.html}"
+if curl -s -o /dev/null "$URL"; then
+  node verktyg/test-start-tom.mjs "$URL" || { echo "röktestet stoppade pushen (SIDFEL VID START eller start som inte går)"; exit 1; }
+else
+  echo "röktest: ingen server på $URL – kör node verktyg/test-start-tom.mjs <url> själv före push"
+fi
