@@ -40,7 +40,7 @@ await p.screenshot({ path: 'verktyg/a062v3-spel.png' });
 ut.push([`sista rutan utan krita = spelets första bild (skillnad ${diff.toFixed(2)} %)`, diff < 2]);
 await p.waitForTimeout(9000);
 const t = await p.evaluate(() => window.__printahem.textLogg().filter((e) => ['sak', 'sak-del'].includes(e.kalla) && e.vem === 'du').map((e) => e.text));
-{ const i = t.findIndex((x) => /guldgruva/.test(x)), j = t.findIndex((x) => /Men först en skylt/.test(x)); ut.push([`tankarna: ${t.slice(0, 3).join(' → ')}`, /fri från tjat/i.test(t[0] || '') && i > 0 && j > i]); }
+{ const j = t.findIndex((x) => /Först ska jag spika upp skylten|Men först en skylt/.test(x)); ut.push([`tankarna: ${t.slice(0, 3).join(' → ')}`, /fri från tjat/i.test(t[0] || '') && j > 0]); }   // A-076 13:20: notisen slutar med första uppgiften
 const fanfar = await p.evaluate(() => [...window.__printahem.tidigFanfar]);
 ut.push([`ingen fanfar vid start: ${fanfar.join('; ') || '–'}`, !fanfar.length]);
 for (const [x, ok] of ut) console.log(ok ? '✓' : '✗', x);

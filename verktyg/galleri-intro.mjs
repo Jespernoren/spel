@@ -9,7 +9,8 @@ const UT = process.argv[3] || new URL('./a078/galleri/', import.meta.url).pathna
 fs.rmSync(UT, { recursive: true, force: true }); fs.mkdirSync(UT, { recursive: true });
 const STEG = +(process.env.STEG_MS || 3500);
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
-const p = await (await b.newContext({ viewport: { width: 1280, height: 720 } })).newPage(); const fel = [];
+const [VB, VH] = (process.env.VY || '1280x800').split('x').map(Number);
+const p = await (await b.newContext({ viewport: { width: VB, height: VH } })).newPage(); const fel = [];
 p.on('pageerror', (e) => fel.push(e.message));
 await p.addInitScript(() => { if (!sessionStorage.getItem('g')) { sessionStorage.setItem('g', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ spelarNamn: 'Test' })); } });
 await p.goto(url); await p.waitForTimeout(5000);
