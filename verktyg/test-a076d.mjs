@@ -53,7 +53,7 @@ const tramp = await H(() => { const P = window.__printahem; const T = [...docume
 await titta(C.x, C.z, 2.4, -0.35); await p.waitForTimeout(1500); await p.screenshot({ path: dir + 'd-en-trampa.png' });
 ut.push([`"trampa" syns på ${tramp.T.length} ställe (${tramp.T.join(' / ')}) · DUBBEL UPPMANING: ${tramp.br.length}`, tramp.T.length <= 1 && !tramp.br.length]);
 // 6. hammaren
-await H(() => { const P = window.__printahem; const i = P.laggTill('hammare'); P.byt(i); P.spelare.pitch = -0.6; });
+await H(() => { const P = window.__printahem; const i = P.laggTill('hammare'); P.byt(i); P.spelare.pitch = 0.9;   /* A-076 14:20: siktet hjälper till – slå i luften där inget finns */ });
 await p.waitForTimeout(500); const l0 = await H(() => window.__printahem.textLogg().length);
 await H(() => window.__printahem.ui.o.onAnvand(true)); await H(() => window.__printahem.ui.o.onAnvand(false)); await p.waitForTimeout(600);
 const ham = await H((l0) => window.__printahem.textLogg().slice(l0).some((e) => /slag för skojs skull/.test(e.text)), l0);

@@ -6,7 +6,7 @@ const url = process.argv[2] || 'http://127.0.0.1:8765/printa-hem.html';
 const UT = new URL('./a083/', import.meta.url).pathname; fs.mkdirSync(UT, { recursive: true });
 const ut = [];
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
-const p = await b.newPage({ viewport: { width: 1280, height: 800 } }); const fel = []; p.on('pageerror', (e) => fel.push(e.message));
+const p = await b.newPage({ viewport: { width: 1280, height: 800 } }); const fel = []; p.on('pageerror', (e) => fel.push(e.message + ' @ ' + (e.stack || '').split('\n').slice(1, 3).join(' ')));
 await p.addInitScript(() => { localStorage.clear(); localStorage.setItem('spar:printahem2:v1', JSON.stringify({ introSett: true })); });
 await p.goto(url); await p.waitForTimeout(5000);
 await p.click('.br-starta'); await p.waitForTimeout(800);
@@ -28,9 +28,9 @@ const GOR = {
   h: () => { window.__printahem.kStat.h++; },
 };
 const FORBERED = {
-  stall: () => { const P = window.__printahem; P.S.hotbar[1] = { typ: 'skrivareS', n: 1 }; P.byt(1); },
+  stall: () => { const P = window.__printahem, sp = P.spelare; P.S.skyltUppe = true; P.S.hotbar[1] = { typ: 'skrivareS', n: 1 }; P.byt(1); P.ritaStart(); const c = P.startYta.position; sp.pos.x = c.x; sp.pos.z = c.z + 2.6; sp.yaw = 0; sp.pitch = -0.55; },   /* A-076 14:00: klick-hjälpen bara med saken vald och siktet på platsen */
   byta: () => { const P = window.__printahem; P.S.hammareGiven = true; P.S.hotbar[1] = { typ: 'hammare', n: 1 }; P.byt(0); },
-  klick: () => { const P = window.__printahem; P.S.hammareGiven = false; P.byt(0); },
+  klick: () => { const P = window.__printahem, sp = P.spelare; P.S.hammareGiven = false; P.byt(0); const c = P.hammarPaBrador.getWorldPosition(sp.pos.clone()); sp.pos.x = c.x + 2; sp.pos.z = c.z; sp.yaw = Math.PI / 2; sp.pitch = -Math.atan2(1.6 - c.y, 2); },
   vrid: () => { const P = window.__printahem; P.spoke.grupp = { visible: true }; P.spoke.ok = false; },
   trampa: () => { const P = window.__printahem; P.S.cykelOmbyggd = true; const g = P.skrivare.find((x) => x.id === 'g1'); if (g && !g.jobb) { g.fil = Math.max(g.fil || 0, 100); P.startaDirekt(g, { typ: 'nyckelring' }); } },   /* A-076 13:20: trampa först när en modell är vald */
   veva: () => { const P = window.__printahem; P.S.kvarnKopt = true; if (P.S.kvarn) P.S.kvarn.motor = false; },
@@ -42,11 +42,11 @@ const sett = [];
 for (const id of ['ga', 'titta', 'klick', 'byta', 'stall', 'vrid', 'trampa', 'veva', 'e', 'tab', 'h']) {
   if (id === 'h') await H(() => { const P = window.__printahem; P.kStat.h = 0; P.S.kontrollKlar = (P.S.kontrollKlar || []).filter((x) => x !== 'h'); });
   await H(`(${FORBERED[id] || (() => {})})()`);
-  let aktiv = null; for (let i = 0; i < 50 && aktiv !== id; i++) { await p.waitForTimeout(300); aktiv = await H(() => window.__printahem.kHjalpAktiv()); }
+  let aktiv = null; for (let i = 0; i < 50 && aktiv !== id; i++) { await p.waitForTimeout(300); aktiv = await H(() => window.__printahem.kHjalpAktiv()); if (id === 'byta' && aktiv === 'rullaTill') aktiv = 'byta'; }   /* A-076 14:00: "Rulla hjulet för att ta hammaren" är byt-hjälpen */
   const n = await H(() => document.querySelectorAll('.ph-kontroll').length);
   await p.waitForTimeout(400); await p.screenshot({ path: `${UT}kontroll-${id}.png` });
   await H(`(${GOR[id]})()`); await p.waitForTimeout(1200);
-  const kvar = await H(() => window.__printahem.kHjalpAktiv());
+  const kvar = await H((id) => { const a = window.__printahem.kHjalpAktiv(); return id === 'byta' && a === 'rullaTill' ? 'byta' : a; }, id);
   sett.push({ id, visades: aktiv === id, enIGangen: n <= 1, borta: kvar !== id });
   if (id === 'vrid') await H(() => { window.__printahem.spoke.grupp = null; });
   if (id === 'byta') sett[sett.length - 1].text = await H(() => window.__printahem.KONTROLL_HJALP.find((k) => k.id === 'byta').t);

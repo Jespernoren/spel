@@ -59,6 +59,9 @@ export class Interaktor {
     this.hovrad = null;
     const lista = this.blockerare.length ? this.mal.concat(this.blockerare) : this.mal;
     const traffar = this.stralFranMitten().intersectObjects(lista, true);
+    // Mjuka träffytor (userData.autoTraff): den första träffen gäller, men en mindre sak vars yta strålen når
+    // innan den träffar något på riktigt är mer precis och vinner (hammaren på brädhögen, inte hela högen).
+    let storlek = Infinity;
     for (const h of traffar) {
       if (h.distance > this.rackvidd) break;
       if (this.blockerare.length && this.#arBlockerare(h.object)) break;
@@ -68,8 +71,16 @@ export class Interaktor {
       if (this.baraSynliga && !this.#synlig(o)) continue;
       const info = o.userData.interaktion;
       if (info.kanAktivera && !info.kanAktivera(o)) continue;
-      this.hovrad = o;
-      break;
+      const mjuk = !!h.object.userData.autoTraff || h.object.material?.colorWrite === false;   // osynliga träffytor (auto eller för hand) är mjuka
+      if (!this.hovrad) { this.hovrad = o; storlek = this.#storlek(o); if (!mjuk) break; continue; }
+      if (o !== this.hovrad) { const st = this.#storlek(o); if (st < storlek) { this.hovrad = o; storlek = st; } }
+      if (!mjuk) break;
+    }
+    // sikteHjalp (grader): missar strålen, eller träffar den något mycket större, gäller den sak vars träffyta ligger närmast mitten av siktet
+    if (this.sikteHjalp > 0) {
+      const k = this.#narmastIKonen();
+      if (k && !this.hovrad) this.hovrad = k;
+      else if (k && k !== this.hovrad && this.#storlek(k) * 4 < storlek) this.hovrad = k;   // en liten sak i siktet går före en mycket större bakom/runt den
     }
     if (this.hovrad) {
       this.ram.setFromObject(this.hovrad);
@@ -78,6 +89,27 @@ export class Interaktor {
       this.ram.visible = false;
     }
     return this.hovrad;
+  }
+
+  #narmastIKonen() {
+    const r = this.ray.ray, max = this.sikteHjalp * Math.PI / 180, c = new THREE.Vector3(), d = new THREE.Vector3();
+    let bast = null, bv = max;
+    for (const o of this.mal) {
+      const y = o.autoTraffYta; if (!y || !o.userData.interaktion) continue;
+      if (this.baraSynliga && !this.#synlig(o)) continue;
+      y.getWorldPosition(c); d.subVectors(c, r.origin); const avst = d.length();
+      if (avst > this.rackvidd || avst < 0.2) continue;
+      const v = d.angleTo(r.direction); if (v >= bv) continue;
+      const info = o.userData.interaktion; if (info.kanAktivera && !info.kanAktivera(o)) continue;
+      if (this.blockerare.length) { const b = new THREE.Raycaster(r.origin, d.clone().normalize(), 0, avst).intersectObjects(this.blockerare, true)[0]; if (b) continue; }
+      bast = o; bv = v;
+    }
+    return bast;
+  }
+
+  #storlek(o) {
+    const g = o.autoTraffYta?.geometry?.parameters;
+    return g ? g.width * g.height * g.depth : Infinity;
   }
 
   #synlig(o) {
