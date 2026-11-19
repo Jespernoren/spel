@@ -54,13 +54,28 @@ p.on('pageerror', (e) => console.log('[sidfel]', e.message));
 await p.evaluate(([u, m]) => { window.__vt.start(); window.__simUtforlig = u; window.__simStegMax = m; }, [!!process.env.UTFORLIG, +(process.env.SIM_STEGMAX || 15)]);
 await p.evaluate((k) => { window.__stegKanon = k; }, JSON.parse(fs.readFileSync(new URL('./steg-kanon.json', import.meta.url), 'utf8')));   // A-069 §5: boten matchar på steg-id
 if (process.env.NYBORJARE) await p.evaluate(() => { window.__nyborjare = true; });
+import { execFileSync as execFileSyncF } from 'child_process';
+function skrivInspDag(dag, regi) {   /* A-085: Regissörens tidslinje + video för en dag */
+  const fmt2 = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  if (dag > +(process.env.INSPELNING_TILL || 99)) return;
+    const d = `${INSP}/dag-${dag}`; fs.mkdirSync(d, { recursive: true });
+    const L = regi.filter((e) => e.dag === dag), t0 = Math.min(...L.map((e) => e.start));
+    fs.writeFileSync(`${d}/tidslinje.json`, JSON.stringify(L.map((e) => ({ ...e, start: +((e.start - t0) / 1000).toFixed(1), slut: +((e.slut - t0) / 1000).toFixed(1) }))));
+    let md = `# Dag ${dag} – Regissörens tidslinje\n\n*Allt som visades och sades, i ordning. Tid från dagens början (speltid). Bildrutor: video.mp4, skärmdumpar per målbyte: mal-NN-*.jpg.*\n\n| Start | Längd | Kanal | Prio | Vem | Text |\n|---|---|---|---|---|---|\n`;
+    for (const e of L) md += `| ${fmt2((e.start - t0) / 1000)} | ${((e.slut - e.start) / 1000).toFixed(1)} s | ${e.kanal} | ${e.prio} | ${e.vem || ''} | ${String(e.text).replace(/\|/g, '/').slice(0, 140)} |\n`;
+    fs.writeFileSync(`${d}/tidslinje.md`, md);
+    try { if (fs.existsSync(`${d}/bildrutor`)) execFileSyncF('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', process.env.VIDEO_FPS || '8', '-pattern_type', 'glob', '-i', `${d}/bildrutor/*.jpg`, '-vf', 'scale=1280:-2', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '28', '-pix_fmt', 'yuv420p', `${d}/video.mp4`]); } catch (e) { console.log('ffmpeg:', e.message.slice(0, 200)); }
+}
 /* A-085: inspelning – bildrutor (video) och en skärmdump per målbyte, per dag i INSPELNING/dag-N/ */
 const INSP = process.env.INSPELNING; let bildNr = 0; const malNr = {};
 if (INSP) {
   fs.mkdirSync(INSP, { recursive: true });
+  let inspDag = 0;
   await p.exposeFunction('__taBild', async (m) => {
+    if (m.dag !== inspDag) { if (inspDag) try { skrivInspDag(inspDag, await p.evaluate(() => window.__regiLogg || [])); } catch (e) { console.log('[sim] tidslinjen dag ' + inspDag + ': ' + e.message.split('\n')[0]); } inspDag = m.dag; }   /* varje dag skrivs när den är slut – en krasch senare tar inte med sig den */
+    if (m.dag > +(process.env.INSPELNING_TILL || 99)) return;
     const d = `${INSP}/dag-${m.dag}`; fs.mkdirSync(`${d}/bildrutor`, { recursive: true });
-    const buf = await p.screenshot({ type: 'jpeg', quality: 62 });
+    let buf; try { buf = await p.screenshot({ type: 'jpeg', quality: 62, timeout: 20000 }); } catch (e) { console.log('[sim] bildruta hoppades över: ' + e.message.split('\n')[0]); return; }
     fs.writeFileSync(`${d}/bildrutor/${String(++bildNr).padStart(6, '0')}.jpg`, buf);
     fs.appendFileSync(`${d}/bildrutor.txt`, `${bildNr}\t${m.t}\n`);
     if (m.mal) { const n = (malNr[m.dag] = (malNr[m.dag] || 0) + 1); fs.writeFileSync(`${d}/mal-${String(n).padStart(2, '0')}-${m.t.toFixed(0).padStart(4, '0')}s.jpg`, buf); fs.appendFileSync(`${d}/mal.txt`, `${String(n).padStart(2, '0')}\t${Math.floor(m.t / 60)}:${String(Math.floor(m.t % 60)).padStart(2, '0')}\t${m.steg}\t${m.mal}\n`); }
@@ -281,19 +296,9 @@ function nyborjarRapport(r, malTider) {
   return md + '\n---\n\n';
 }
 const flaggor = rapport(r);
-if (INSP) {   /* A-085: Regissörens tidslinje per dag + video av bildrutorna */
-  const { execFileSync } = await import('child_process');
-  const fmt2 = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+if (INSP) {   /* A-085: dagar som inte redan skrivits (sista dagen) */
   const dagar = [...new Set((r.regi || []).map((e) => e.dag))];
-  for (const dag of dagar) {
-    const d = `${INSP}/dag-${dag}`; fs.mkdirSync(d, { recursive: true });
-    const L = r.regi.filter((e) => e.dag === dag), t0 = Math.min(...L.map((e) => e.start));
-    fs.writeFileSync(`${d}/tidslinje.json`, JSON.stringify(L.map((e) => ({ ...e, start: +((e.start - t0) / 1000).toFixed(1), slut: +((e.slut - t0) / 1000).toFixed(1) }))));
-    let md = `# Dag ${dag} – Regissörens tidslinje\n\n*Allt som visades och sades, i ordning. Tid från dagens början (speltid). Bildrutor: video.mp4, skärmdumpar per målbyte: mal-NN-*.jpg.*\n\n| Start | Längd | Kanal | Prio | Vem | Text |\n|---|---|---|---|---|---|\n`;
-    for (const e of L) md += `| ${fmt2((e.start - t0) / 1000)} | ${((e.slut - e.start) / 1000).toFixed(1)} s | ${e.kanal} | ${e.prio} | ${e.vem || ''} | ${String(e.text).replace(/\|/g, '/').slice(0, 140)} |\n`;
-    fs.writeFileSync(`${d}/tidslinje.md`, md);
-    try { if (fs.existsSync(`${d}/bildrutor`)) execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', process.env.VIDEO_FPS || '8', '-pattern_type', 'glob', '-i', `${d}/bildrutor/*.jpg`, '-vf', 'scale=1280:-2', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '28', '-pix_fmt', 'yuv420p', `${d}/video.mp4`]); } catch (e) { console.log('ffmpeg:', e.message.slice(0, 200)); }
-  }
+  for (const dag of dagar) if (!fs.existsSync(`${INSP}/dag-${dag}/tidslinje.md`)) skrivInspDag(dag, r.regi);
   console.log(`[sim] inspelningen: ${INSP} (${dagar.length} dagar)`);
 }
 console.log(`klart: ${r.dagar.length} dagar, ${r.logg.length} textrader, ${flaggor.length} flaggor, sidfel ${sidfel.length} → ${ut}`);
