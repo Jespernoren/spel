@@ -13,6 +13,7 @@ await p.addInitScript(() => { if (!sessionStorage.getItem('f')) { sessionStorage
 await p.goto(url); await p.waitForTimeout(5000);
 const H = (f, a) => p.evaluate(f, a);
 await p.click('.br-starta'); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(4000);
+for (let i = 0; i < 40 && !(await p.evaluate(() => !!document.querySelector('.ph-dagbokkort'))); i++) await p.waitForTimeout(250); await p.keyboard.press('Enter'); await p.waitForTimeout(1500);   /* A-076 14:22: morgonsidan stängs med FORTSÄTT */
 // 1. ställ skrivaren, cykeln, generatorn, kvarnen och en vanlig sak (ett bord)
 const direkt = await H(async () => {
   const P = window.__printahem, S = P.S, w = (ms) => new Promise((r) => setTimeout(r, ms)), aktivera = () => P.startYta.userData.interaktion.aktivera();

@@ -34,12 +34,12 @@ const meny = await p.evaluate(() => !document.querySelector('.ph-intro') && !doc
 ut.push(['efter introt: inget kvar av introt, inget citatkort', meny]); await p.screenshot({ path: 'verktyg/a062v3-meny.png' });
 await p.evaluate(() => { const f = document.querySelector('.ph-namn-falt'); if (f) { f.value = 'Test'; f.closest('.ph-namn')?.querySelector('.fp-knapp')?.click(); } }); await p.waitForTimeout(3500);
 const dag1 = await p.evaluate(() => document.querySelector('.ph-dag1')?.innerText || '');
-{ const igang = await p.evaluate(() => !!window.__printahem.ui.igang); ut.push([`spelet igång direkt efter introt (A-076: dagboksnotisen i stället för sida 1)`, igang]); } await p.screenshot({ path: 'verktyg/a062v3-dagbok.png' });
-await p.evaluate(() => document.querySelector('.ph-dag1 button')?.click()); await p.waitForTimeout(2500);
+{ let kort = false; for (let i = 0; i < 12 && !kort; i++) { kort = await p.evaluate(() => !!document.querySelector('.ph-med:not([hidden]) .ph-dagbokkort')); if (!kort) await p.waitForTimeout(250); } ut.push([`dagbokskortet direkt efter introt, spelet står still bakom (A-076 14:22/15:40)`, kort]); } await p.screenshot({ path: 'verktyg/a062v3-dagbok.png' });
+await p.evaluate(() => document.querySelector('.ph-dagbokkort .ph-fortsatt')?.click()); await p.waitForTimeout(2500);
 await p.screenshot({ path: 'verktyg/a062v3-spel.png' });
 ut.push([`sista rutan utan krita = spelets första bild (skillnad ${diff.toFixed(2)} %)`, diff < 2]);
 await p.waitForTimeout(9000);
-const t = await p.evaluate(() => window.__printahem.textLogg().filter((e) => ['sak', 'sak-del'].includes(e.kalla) && e.vem === 'du').map((e) => e.text));
+const t = await p.evaluate(() => window.__printahem.textLogg().filter((e) => ['sak', 'sak-del', 'dagbokkort'].includes(e.kalla) && e.vem === 'du').map((e) => e.text));
 { const j = t.findIndex((x) => /Först ska jag spika upp skylten|Men först en skylt/.test(x)); ut.push([`tankarna: ${t.slice(0, 3).join(' → ')}`, /fri från tjat/i.test(t[0] || '') && j > 0]); }   // A-076 13:20: notisen slutar med första uppgiften
 const fanfar = await p.evaluate(() => [...window.__printahem.tidigFanfar]);
 ut.push([`ingen fanfar vid start: ${fanfar.join('; ') || '–'}`, !fanfar.length]);

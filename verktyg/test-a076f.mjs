@@ -12,9 +12,11 @@ await p.addInitScript(() => { if (!sessionStorage.getItem('f')) { sessionStorage
 await p.goto(url); await p.waitForTimeout(5000);
 const H = (f, a) => p.evaluate(f, a);
 await p.click('.br-starta'); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(2500);
-const n1 = await H(() => ({ notis: document.querySelector('.ph-dagnotis')?.textContent || '', lista: !!document.querySelector('.ph-dagnotis .ph-dagmal'), uppgDold: document.body.classList.contains('dn-forsta') }));
+for (let i = 0; i < 40 && !(await H(() => !!document.querySelector('.ph-dagbokkort'))); i++) await p.waitForTimeout(250);   /* A-076 14:22: morgonsidan är dagbokskortet */
+const n1 = await H(() => ({ notis: document.querySelector('.ph-dagbokkort')?.textContent || '', lista: !!document.querySelector('.ph-dagbokkort .ph-dagmal'), uppgDold: document.body.classList.contains('dn-forsta') }));
 await p.screenshot({ path: dir + 'f-notis-utan-lista.png' });
-ut.push([`notisen dag 1 utan lista (${!n1.lista}): "${n1.notis.slice(0, 90)}" · uppgiftsrutan väntar (${n1.uppgDold})`, !n1.lista && /konstigt bra/.test(n1.notis) && n1.uppgDold]);
+ut.push([`notisen dag 1 utan lista (${!n1.lista}): "${n1.notis.slice(0, 90)}" · uppgiftsrutan väntar (${n1.uppgDold})`, !n1.lista && /Ingen som tjatar/.test(n1.notis) && n1.uppgDold]);
+await p.keyboard.press('Enter');   /* FORTSÄTT */
 let in_ = false; for (let i = 0; i < 60 && !in_; i++) { await p.waitForTimeout(500); in_ = await H(() => !document.body.classList.contains('dn-forsta')); }
 const l = await H(() => window.__printahem.textLogg().filter((e) => e.vem === 'du' && /Först ska jag spika upp skylten/.test(e.text)).length);
 await p.waitForTimeout(1500); await p.screenshot({ path: dir + 'f-forsta-uppgiften.png' });

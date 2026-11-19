@@ -12,6 +12,7 @@ await p.addInitScript(() => { if (!sessionStorage.getItem('e')) { sessionStorage
 await p.goto(url); await p.waitForTimeout(5000);
 const H = (f, a) => p.evaluate(f, a);
 await p.click('.br-starta'); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(6000);
+for (let i = 0; i < 40 && !(await H(() => !!document.querySelector('.ph-dagbokkort'))); i++) await p.waitForTimeout(250); await p.keyboard.press('Enter'); await p.waitForTimeout(1500);   /* A-076 14:22: morgonsidan stängs med FORTSÄTT */
 // 1. A-076 tillägg 13:45: hammaren ligger på brädorna, första hjälpen är att ta upp
 let k1 = null; for (let i = 0; i < 60; i++) { await p.waitForTimeout(500); await H((i) => { const P = window.__printahem; if (P.kStat.start) { if (i < 6) { P.spelare.pos.x = P.kStat.start.x + 3; P.spelare.yaw = (P.kStat.yaw0 || 0) + 1; } else { const c = P.hammarPaBrador.getWorldPosition(P.spelare.pos.clone()), sp = P.spelare; sp.pos.x = c.x + 2; sp.pos.z = c.z; sp.yaw = Math.PI / 2; sp.pitch = -Math.atan2(1.6 - c.y, 2); } }   /* A-076 14:00: klick-hjälpen bara när siktet är på hammaren */ }, i); k1 = await H(() => document.querySelector('.ph-kontroll')?.textContent || null); if (/ta upp/i.test(k1 || '')) break; }   // gå och titta är redan gjorda
 const s1 = await H(() => { const P = window.__printahem; return { iRaden: P.antalInv('hammare'), paBrador: P.hammarPaBrador.visible, hand: P.valdTyp() || 'tom' }; });

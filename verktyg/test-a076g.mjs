@@ -12,6 +12,7 @@ await p.addInitScript(() => { if (!sessionStorage.getItem('f')) { sessionStorage
 await p.goto(url); await p.waitForTimeout(5000);
 const H = (f, a) => p.evaluate(f, a);
 await p.click('.br-starta'); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(6000);
+for (let i = 0; i < 40 && !(await p.evaluate(() => !!document.querySelector('.ph-dagbokkort'))); i++) await p.waitForTimeout(250); await p.keyboard.press('Enter'); await p.waitForTimeout(1500);   /* A-076 14:22: morgonsidan stängs med FORTSÄTT */
 // varje registrerad sak: sikta från 2 m med 10° fel åt vänster och höger (från fyra håll – minst ett håll ska gå åt båda felen)
 const r = await H(() => {
   const P = window.__printahem, I = P.interaktor, K = P.kamera, THREE = P.THREE || K.position.constructor && null;

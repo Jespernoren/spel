@@ -13,6 +13,7 @@ await p.addInitScript(() => { if (!sessionStorage.getItem('f')) { sessionStorage
 await p.goto(url); await p.waitForTimeout(5000);
 const H = (f, a) => p.evaluate(f, a);
 await p.click('.br-starta'); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(5000);
+for (let i = 0; i < 40 && !(await p.evaluate(() => !!document.querySelector('.ph-dagbokkort'))); i++) await p.waitForTimeout(250); await p.keyboard.press('Enter'); await p.waitForTimeout(1500);   /* A-076 14:22: morgonsidan stängs med FORTSÄTT */
 const kontroll = () => H(() => { const e = document.querySelector('.ph-kontroll.in span'); return e ? e.textContent : ''; });
 const vanta = async (f, ms = 4000) => { for (let t = 0; t < ms; t += 200) { const v = await f(); if (v) return v; await p.waitForTimeout(200); } return await f(); };
 await H(() => { const P = window.__printahem, S = P.S; S.kontrollKlar = ['ga', 'titta', 'klick', 'byta']; P.spelare.pos.x += 3; P.spelare.yaw += 1; });

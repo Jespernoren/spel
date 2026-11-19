@@ -21,11 +21,11 @@ await p.click('.br-starta'); await p.waitForTimeout(2500);
 const m1 = await H(() => ({ intro: !!document.querySelector('.ph-intro3'), meny: !window.__printahem.ui.overlay.hidden }));
 ut.push([`Starta → introt börjar direkt (intro ${m1.intro}, menyn dold ${!m1.meny})`, m1.intro && !m1.meny]);
 await p.keyboard.press('Enter'); await p.waitForTimeout(2500);
-const m2 = await H(() => ({ igang: window.__printahem.ui.igang, meny: !window.__printahem.ui.overlay.hidden, notis: !!document.querySelector('.ph-dagnotis.syns'), bilder: document.querySelectorAll('.ph-dagnotis li img').length, rader: [...document.querySelectorAll('.ph-dagnotis li')].map((x) => x.textContent.trim()) }));
+const m2 = await H(() => ({ igang: !window.__printahem.ui.overlay.hidden ? false : true, meny: !window.__printahem.ui.overlay.hidden, notis: !!document.querySelector('.ph-med:not([hidden]) .ph-dagbokkort'), bilder: document.querySelectorAll('.ph-dagbokkort li img').length, rader: [...document.querySelectorAll('.ph-dagbokkort li')].map((x) => x.textContent.trim()) }));   /* A-076 14:22: morgonsidan är dagbokskortet, spelet står still bakom */
 await p.screenshot({ path: dir + 'notisen-over-spelet.png' });
 ut.push([`efter introt: rakt in i spelet (igång ${m2.igang}, ingen meny ${!m2.meny}), notisen med ${m2.rader.length} mål och ${m2.bilder} bilder: ${m2.rader.join(' · ')}`, m2.igang && !m2.meny && m2.notis && m2.bilder === 0   /* A-076 13:20: notisen har ingen mållista */]);
-await p.waitForTimeout(9000);
-const m3 = await H(() => ({ notis: !!document.querySelector('.ph-dagnotis'), prickar: document.querySelectorAll('.dn-mal .c img').length }));
+await p.keyboard.press('Enter'); await p.waitForTimeout(9000);
+const m3 = await H(() => ({ notis: !!document.querySelector('.ph-med:not([hidden]) .ph-dagbokkort'), prickar: document.querySelectorAll('.dn-mal .c img').length }));
 await p.screenshot({ path: dir + 'hud-bildprickar.png' });
 ut.push([`notisen krymper in i HUD:en: borta ${!m3.notis}, ${m3.prickar} bildprickar`, m3.prickar === 0   /* A-076 13:20: inga kommande prickar */]);
 // 6. kapitelkortet
