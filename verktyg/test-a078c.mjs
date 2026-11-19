@@ -22,7 +22,7 @@ const kor = async (gang) => {
   let forra = R[0]?.t0 || 0;
   for (const r of R) { md += `| ${r.ruta} | ${r.vem} | ${r.text} | ${r.kalla}${r.reserv ? ' (reserv)' : ''} | ${((r.start ?? r.t0) - R[0].t0) / 1000} s | ${r.slut && r.start ? ((r.slut - r.start) / 1000).toFixed(1) + ' s' : '–'} | ${((r.t0 - forra) / 1000).toFixed(1)} s |\n`; forra = r.slut || r.t0; }
   md += '\n';
-  ut.push([`${gang}:a gången: ${tid.toFixed(1)} s (≤ 75), ${R.length} repliker, ${tysta.length} tysta, ${klippta.length} på reservtimern, "DU:" syntes ${du} gånger, tavlan ritade ${tavla} delar`, tid <= 75 && R.length >= 25 && !tysta.length && !klippta.length && !du && tavla <= 9]);
+  ut.push([`${gang}:a gången: ${tid.toFixed(1)} s (≤ ${gang === 1 ? 56 : 50}), ${R.length} repliker, ${tysta.length} tysta, ${klippta.length} på reservtimern, "DU:" syntes ${du} gånger, tavlan ritade ${tavla} delar`, tid <= (gang === 1 ? 56 : 50) && R.length >= 20 &&   /* A-078 tillägg 15:35: ≤ 50 s; första gången renderar headless 6 världsbilder i programvara (ca 6 s) */ !tysta.length && !klippta.length && !du && tavla <= 9]);
 };
 await kor(1);
 await p.waitForTimeout(3000);

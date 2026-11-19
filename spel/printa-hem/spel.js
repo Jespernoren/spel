@@ -12272,19 +12272,19 @@ const UTROP_MAX = 12, UNDERTEXT_MAX = 84;   /* A-078 tillägg 11:45: utrop i bub
 const INTRO3 = [
   { tid: 3500, ljud: 'spel', lager: [IB3('v3rum1')], tal: [['berattare', 'Ditt rum.'], ['berattare', 'Ungefär som vanligt.']] },
   { tid: 3000, lager: [IB3('v4dag2', { id: 'dag' }), KAL3('MÅNDAG')], tal: [['mamma', 'Snälla du, kan du inte städa ditt rum?', { b: 'v4dag2' }]] },   /* A-078: introt v4 – mamma snäll */
-  { tid: 1400, ljud: 'riv', lager: [IB3('v4dag3', { id: 'dag' }), KAL3('TISDAG', 'MÅNDAG')], tal: [['berattare', 'Hon sa det igen.'], ['mamma', 'STÄDA!', { b: 'v4dag3', cls: 'rop1' }]] },   // över din axel, händerna i sidan (arg1)
-  { tid: 1400, ljud: 'riv', lager: [IB3('v4dag4', { id: 'dag' }), KAL3('ONSDAG', 'TISDAG')], tal: [['berattare', 'Och igen.'], ['mamma', 'STÄDA!!', { b: 'v4dag4', cls: 'rop2' }]] },   // lågt från golvet, hon pekar på högarna (arg2)
-  { tid: 1400, ljud: 'riv', lager: [IB3('v4dag5', { id: 'dag' }), KAL3('TORSDAG', 'ONSDAG')], tal: [['berattare', 'Och igen.'], ['mamma', 'STÄDA!!!', { b: 'v4dag5', cls: 'rop3' }]] },   // från sidan, armen rakt upp (arg2)
-  { tid: 2600, rorelse: true, ljud: 'dorr', lager: [IB3('v4dag6a', { id: 'dag', cls: 'glidin' }), IB3('v4dag6b', { r: 0, cls: 'glidsen' }), KAL3('FREDAG', 'TORSDAG')], tal: [['mamma', 'Det ser ut som en SOPTIPP här inne!', { b: 'v4dag6b', fore: 1700 }]] },   // dörren smäller upp, kameran glider in mot henne (rasande)
-  { tid: 3000, tyst: 1000, lager: [IB3('v4kort7'), { id: 'vinjett', vinjett: true }], tal: [['mamma', 'Du kan lika gärna BO på en soptipp!', { b: 'v4kort7', cls: 'rop1', vanster: true }]] },   // rakt in i ansiktet, fingret mot kameran (rasande+rök)
+  { tid: 1400, ljud: 'riv', lager: [IB3('v4dag3', { id: 'dag' }), KAL3('TISDAG', 'MÅNDAG')], tal: [['mamma', 'STÄDA!', { b: 'v4dag3', cls: 'rop1' }]] }   /* A-078 tillägg 15:35: montage – kalenderbladet rivs, STÄDA! växer */,   // över din axel, händerna i sidan (arg1)
+  { tid: 1400, ljud: 'riv', lager: [IB3('v4dag4', { id: 'dag' }), KAL3('ONSDAG', 'TISDAG')], tal: [['mamma', 'STÄDA!!', { b: 'v4dag4', cls: 'rop2' }]] },   // lågt från golvet, hon pekar på högarna (arg2)
+  { tid: 1400, ljud: 'riv', lager: [IB3('v4dag5', { id: 'dag' }), KAL3('TORSDAG', 'ONSDAG')], tal: [['mamma', 'STÄDA!!!', { b: 'v4dag5', cls: 'rop3' }]] },   // från sidan, armen rakt upp (arg2)
+  { tid: 2600, rorelse: true, ljud: 'dorr', lager: [IB3('v4dag6a', { id: 'dag', cls: 'glidin' }), IB3('v4dag6b', { r: 0, cls: 'glidsen' }), KAL3('FREDAG', 'TORSDAG')], tal: [['mamma', 'Det ser ut som en SOPTIPP här inne!', { b: 'v4dag6b', fore: 600 }]] },   // dörren smäller upp, kameran glider in mot henne (rasande)
+  { tid: 3000, tyst: 0, lager: [IB3('v4kort7'), { id: 'vinjett', vinjett: true }], tal: [['mamma', 'Du kan lika gärna BO på en soptipp!', { b: 'v4kort7', cls: 'rop1', vanster: true }]] },   // rakt in i ansiktet, fingret mot kameran (rasande+rök)
   { tid: 2200, rorelse: true, ljud: 'gitarr', lager: [IB3('v4kort8a'), IB3('v4kort8', { cls: 'sen1kort' })], tal: [['du', 'Okej.'], ['du', 'Då gör jag väl det.']] },   // du reser dig vid datorn, mamma pekar ut genom dörren
   { tid: 2300, rorelse: true, lager: [IB3('v4kort9a', { cls: 'folj' }), IB3('v4kort9b', { cls: 'folj sen1' }), IB3('v4kort9', { cls: 'folj sen2' })], tal: [] },   /* A-078 tillägg 11:50: du går förbi henne i bild – framför henne, förbi, och hon vänder sig */   // A-078 ruta 9: ut förbi mamma, kameran följer med dig ut (mamma förvånad)
-  { tid: 4000, ljud: 'band', lager: [IB3('v3pack9')], tal: [['du', 'Jag packar ryggan med sånt som kan vara bra att ha.'], ['du', 'Och surrar fast brorsans gamla 3D-skrivare på cykeln.']] },
-  { tid: 3000, rorelse: true, musik: true, lager: [{ id: 'vagloop', loop: 'intro/vag.webp' }, { id: 'cyklist', sprite: 'intro/cyklist-tramp.webp', n: 4 }], tal: [['berattare', 'Förbi skolan.'], ['berattare', 'Förbi affären.'], ['berattare', 'Förbi där husen tar slut.']] },
-  { tid: 3500, ljud: 'masar', lager: [{ id: 'spelgard', spel: 'gard' }], tal: [['berattare', 'Vid soptippen står ett gammalt skjul.'], ['berattare', 'Och en gård full av skräp.']] },
+  { tid: 4000, ljud: 'band', lager: [IB3('v3pack9')], tal: [['du', 'Ryggan på.'], ['du', 'Brorsans gamla 3D-skrivare på pakethållaren.']] },
+  { tid: 3000, rorelse: true, musik: true, lager: [{ id: 'vagloop', loop: 'intro/vag.webp' }, { id: 'cyklist', sprite: 'intro/cyklist-tramp.webp', n: 4 }], tal: [['berattare', 'Förbi skolan, förbi affären, förbi där husen tar slut.']] },
+  { tid: 3500, ljud: 'masar', lager: [{ id: 'spelgard', spel: 'gard' }], tal: [['berattare', 'Ett gammalt skjul vid soptippen.'], ['berattare', 'Och en gård full av skräp.']] },
   { tid: 3000, rorelse: true, lager: [{ id: 'tavla', tavla: true }], tal: [['berattare', 'Skräp är plast.', { rita: [['skrap', 0]] }], ['berattare', 'En kvarn gör det till filament.', { rita: [['pil1', 0], ['kvarn', 200], ['fraga', 700], ['pil2', 1200], ['filament', 1300]] }], ['berattare', 'Och med filament kan man printa… allt.', { rita: [['pil3', 0], ['skrivare', 200]] }], ['du', 'Jag behöver bara komma på hur.']] },
   { tid: 6000, lager: [{ id: 'n1', spel: 'dorrhal' }, { id: 'natt', natt: true, r: 1 }, { id: 'n2', spel: 'dorrhalRatta', r: 2 }, { id: 'm2', spel: 'mammaRitning', r: 2, cls: 'poff' }, { id: 'n3', spel: 'start', r: 3, cls: 'zoomut' }, { id: 'k3', krita: 'skjul3', r: 3 }],
-    tal: [['berattare', 'Inget tak.'], ['berattare', 'Ingen dörr.'], ['berattare', 'Ingen mamma som tjatar.', { pip: true }], ['berattare', 'Tänk om det här kunde bli ett riktigt hem?', { fore: 1900 }]], slut: true, rorelse: true },
+    tal: [['berattare', 'Inget tak.'], ['berattare', 'Ingen dörr.'], ['berattare', 'Ingen mamma som tjatar.', { pip: true }], ['berattare', 'Tänk om det här kunde bli ett riktigt hem?', { fore: 600 }]], slut: true, rorelse: true },
 ];
 const introCss3 = document.createElement('style');
 introCss3.textContent = `
@@ -12328,7 +12328,7 @@ introCss3.textContent = `
 .ph-dag1-sida{width:min(560px,86vw);background:#f6eedb;color:#2a2018;border-radius:6px;padding:36px 44px;font:400 clamp(20px,2.6vw,28px)/1.6 "Bradley Hand","Segoe Print","Comic Sans MS",cursive;box-shadow:0 10px 0 rgba(0,0,0,.35);background-image:repeating-linear-gradient(#f6eedb 0 43px,#d9cfb8 44px)}
 .ph-dag1-sida div{opacity:0;transition:opacity .5s}.ph-dag1-sida div.syns{opacity:1}
 .ph-dag1-sida .fp-knapp{margin-top:20px;font-family:system-ui}
-.ph-tona-in{position:fixed;inset:0;z-index:9400;background:#000;opacity:1;transition:opacity 1.2s;pointer-events:none}
+.ph-tona-in{position:fixed;inset:0;z-index:9400;background:#000;opacity:1;transition:opacity .3s;pointer-events:none}
 `;
 document.head.appendChild(introCss3);
 function introLjud3(typ) {
@@ -12418,13 +12418,13 @@ function visaIntro3(klar, o = {}) {
         textEl.classList.toggle('tom', !textEl.textContent.trim());
       }
       logg('rad', j);
-      await sag(vem, text, k); await vanta(300, k);
+      await sag(vem, text, k); await vanta(p.tal[j + 1]?.[0] === vem ? 100 : 150, k);   /* A-078 tillägg 15:35: 150 ms luft, 100 ms mellan repliker som hör ihop */
     }
-    await vanta(p.rorelse ? Math.max(300, p.tid - (performance.now() - t0)) : 300, k);   /* rutans tid gäller bara när en rörelse behöver den – annars byts bilden 0,3 s efter rösten */
+    await vanta(p.rorelse ? Math.max(150, p.tid - (performance.now() - t0)) : 0, k);   /* rutans tid gäller bara när en rörelse behöver den – annars byts bilden 0,3 s efter rösten */
   };
   const korFran = async (fran) => {
     avbryt(); const k = kor;
-    try { for (i = fran; i < INTRO3.length; i++) await spelaRuta(INTRO3[i], k); await vanta(300, k); slut(); } catch (e) { if (e !== 'avbrutet') { console.warn('intro', e); slut(); } }
+    try { for (i = fran; i < INTRO3.length; i++) await spelaRuta(INTRO3[i], k); slut(); } catch (e) { if (e !== 'avbrutet') { console.warn('intro', e); slut(); } }
   };
   const tangent = (e) => {
     if (['Enter', 'Escape'].includes(e.code) || e.key === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); slut(); }   // Enter hoppar över introt
@@ -12432,7 +12432,7 @@ function visaIntro3(klar, o = {}) {
   };
   function slut() {
     if (slutat) return; slutat = true; avbryt(); introPagar = false; introMusik.stopp(S.introSett ? 2 : 6);
-    removeEventListener('keydown', tangent, true); el.classList.add('ut'); el.style.transition = 'opacity .8s'; el.style.opacity = 0; setTimeout(() => el.remove(), 800);
+    removeEventListener('keydown', tangent, true); el.classList.add('ut'); el.style.transition = 'opacity .3s'; el.style.opacity = 0; setTimeout(() => el.remove(), 320);   /* A-078 tillägg 15:35: 0,3 s rakt över i spelet, dagbokskortet tonar in samtidigt */
     S.introSett = true; sparaSnart(); logg('slut'); klar?.();
   }
   // ett klick först: webbläsaren spelar bara ljud efter ett klick
