@@ -871,6 +871,24 @@ function satEffekter(pa) { S.effekter = pa; for (const b of effektBussar) b.gain
 /* A-052: fyra volymreglage (röster, berättaren, musik, ljudeffekter), sparade i sparfilen. 0–1. */
 function volym(k) { const v = S.vol?.[k]; return v == null ? 1 : Math.max(0, Math.min(1, v)); }
 const rostVol = (vem) => volym(vem === 'berattare' ? 'berattare' : 'rost');
+/* A-078 tillägg 15:40: talhastighet för all uppläsning – standard 1,3. ?talfart=1.0 i adressen för att prova. */
+const TAL_FARTER = [['lugn', 'Lugn', 1.0], ['normal', 'Normal', 1.15], ['snabb', 'Snabb', 1.3]], TAL_FART_STANDARD = 1.3, TAL_FART_NYCKEL = 'printa-hem:talfart';
+function talFart() {
+  try { const q = +new URLSearchParams(location.search).get('talfart'); if (q > 0) return Math.min(2, q); } catch {}
+  try { const v = +localStorage.getItem(TAL_FART_NYCKEL); if (v > 0) return Math.min(2, v); } catch {}
+  return TAL_FART_STANDARD;
+}
+function satTalFart(v) { try { localStorage.setItem(TAL_FART_NYCKEL, String(v)); } catch {} }
+/* ElevenLabs utan att tonhöjden ändras: paketen är sträckta till B.EL_PACK_FART – annan fart spelas med HTMLAudioElement och preservesPitch */
+function spelaElMedFart(k, vem, text, o, fart) {
+  return k.hamta().then((buf) => {
+    const url = URL.createObjectURL(new Blob([buf.slice(k.fran, k.fran + k.langd)], { type: 'audio/mpeg' }));
+    const a = new Audio(url); a.preservesPitch = true; a.mozPreservesPitch = true; a.webkitPreservesPitch = true; a.playbackRate = fart; a.volume = 0.95 * rostVol(vem);
+    let slutat = false; const slut = () => { if (slutat) return; slutat = true; URL.revokeObjectURL(url); if (rostLjud === a) rostLjud = null; if (pratarVem === vem) pratarTill = 0; o.slut?.(); };
+    a.onended = slut; a.onerror = slut; a.onloadedmetadata = () => { if (isFinite(a.duration)) { pratarTill = performance.now() + a.duration / fart * 1000; setTimeout(slut, a.duration / fart * 1000 + 400); } };
+    rostLjud = a; o.start?.(); a.play().catch(slut);
+  });
+}
 S.kvarn = { tratt: 0, trattGram: 0, prog: 0, ut: 0, motor: false, ...S.kvarn };
 S.post = { tillRolf: null, tillMig: [], lapp: null, ...S.post };
 S.rolf = { i: 0, aktiv: false, nasta: null, extra: 0, ...S.rolf };
@@ -10813,20 +10831,21 @@ function prataNu(vem, text, vikt, o = {}) {
   if (!S.hoppaHint && rostLage() === 'rost' && !hortForut && ui.igang) { S.hoppaHint = true; setTimeout(() => regi.info('⏎ Enter – hoppa över', ''), 600); }
   if (rostLage() === 'rost') tystna();
   pratVikt = vikt;
-  pratarVem = vem; pratarTill = performance.now() + Math.min(9000, 600 + String(text).length * 62);
+  pratarVem = vem; pratarTill = performance.now() + Math.min(9000, 600 + String(text).length * 62 / talFart());
   // utan ljud eller utan klipp: start direkt, slut efter textens längd (ca 60 ms per tecken, minst 1,5 s)
-  const utanLjud = () => { o.start?.(); const ms = Math.max(1500, rens(text).length * 60); pratarTill = performance.now() + ms; if (o.slut) { const nr = pratStopp; setTimeout(() => { if (nr === pratStopp || !o.avbrytbar) o.slut(); }, ms); } };
+  const utanLjud = () => { o.start?.(); const ms = Math.max(1200, rens(text).length * 60 / talFart()); pratarTill = performance.now() + ms; if (o.slut) { const nr = pratStopp; setTimeout(() => { if (nr === pratStopp || !o.avbrytbar) o.slut(); }, ms); } };
   if (hortForut || rostLage() === 'av' || !text || !/[\p{L}]/u.test(rens(text))) { utanLjud(); return; }
   if (rostLage() === 'rost') {
     const t0 = prata.t0 || performance.now(); prata.t0 = 0;
     const k = klippKalla(vem, text);
     if (!k) { medTalsyntes(); return; }   /* Jesper 00:29: ingen inspelad replik → datorns talsyntes som platshållare */
     if (k.fil) {   // reserv: paketet saknas
-      rostLjud = new Audio(k.fil); rostLjud.volume = 0.95 * rostVol(vem); rostLjud.onended = () => { if (pratarVem === vem) pratarTill = 0; };
-      { const lj = rostLjud; lj.onloadedmetadata = () => { if (pratarVem === vem && isFinite(lj.duration)) pratarTill = performance.now() + lj.duration * 1000; }; }
+      rostLjud = new Audio(k.fil); rostLjud.preservesPitch = true; rostLjud.playbackRate = Math.min(2, talFart() * (ROST_FART[ROST_FIGURER.includes(vem) ? vem : 'berattare'] || 1)); rostLjud.volume = 0.95 * rostVol(vem); rostLjud.onended = () => { if (pratarVem === vem) pratarTill = 0; };
+      { const lj = rostLjud; lj.onloadedmetadata = () => { if (pratarVem === vem && isFinite(lj.duration)) pratarTill = performance.now() + lj.duration / lj.playbackRate * 1000; }; }
       rostLjud.play().catch(() => {});
       return;
     }
+    { const f = talFart() / (B.EL_PACK_FART || 1); if (Math.abs(f - 1) > 0.01 && k.hamta) { spelaElMedFart(k, vem, text, o, f).catch(() => utanLjud()); return; } }   /* A-078 tillägg 15:40: aldrig playbackRate på AudioBuffer (tonhöjden) */
     if (avkodat.has(k.id)) { spelaAvkodat(avkodat.get(k.id), vem, t0, text, o); return; }
     const nr = pratStopp;
     avkoda(k).then((ab) => { if (ab && nr === pratStopp) spelaAvkodat(ab, vem, t0, text, o); else if (!ab) utanLjud(); });
@@ -10836,7 +10855,7 @@ function prataNu(vem, text, vikt, o = {}) {
   medTalsyntes();
   /* A-078 tillägg 12:25: talsyntesens slut kommer från utterance.onend (den svenska rösten pratar långsammare än 60 ms per tecken) – en tidsgräns finns som reserv */
   function medTalsyntes() {
-    o.start?.(); const las = Math.max(1500, rens(text).length * 60), t0 = performance.now(), nr = pratStopp; let klar = false;
+    o.start?.(); const las = Math.max(1200, rens(text).length * 60 / talFart()), t0 = performance.now(), nr = pratStopp; let klar = false;
     const slut = (ms = 0) => { if (klar) return; klar = true; setTimeout(() => { if (pratarVem === vem) pratarTill = 0; if (o.slut && (nr === pratStopp || !o.avbrytbar)) o.slut(); }, ms); };
     pratarTill = performance.now() + las * 1.8;
     const u = talsyntes(); if (!u) { pratarTill = performance.now() + las; slut(las); return; }
@@ -10848,7 +10867,7 @@ function prataNu(vem, text, vikt, o = {}) {
     if (!ren) return;
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(ren), r = rostFor(vem);
-    u.lang = 'sv-SE'; u.pitch = r.pitch; u.rate = r.rate; u.volume = 0.9 * rostVol(vem);
+    u.lang = 'sv-SE'; u.pitch = r.pitch; u.rate = Math.min(2, r.rate * talFart()); u.volume = 0.9 * rostVol(vem);
     if (r.voice) u.voice = r.voice;
     speechSynthesis.speak(u); return u;
   } catch { return null; } }
@@ -10970,6 +10989,7 @@ function oppnaLjud(foralder) {
       ${rad('musik', 'film', 'Bakgrundsmusik', 'Lugn musik i bakgrunden', S.musik !== false)}
       ${rad('effekter', 'blixt', 'Effektljud', 'Kvarn, skrivare, sopbil, pling', S.effekter !== false)}
       ${rad('roster', 'rost', 'Röster', 'Figurerna pratar och dagboken läses upp', rostLage() !== 'av')}
+      <div class="br-talfart" style="margin-top:12px"><b style="display:block;font-size:14px;margin-bottom:6px">Talhastighet</b><div style="display:flex;gap:6px">${TAL_FARTER.map(([id, n, v]) => `<button class="br-ljudrad ${Math.abs(talFart() - v) < 0.01 ? 'pa' : ''}" data-talfart="${v}" style="margin:0;justify-content:center"><span><b>${n}</b><small>${String(v).replace('.', ',')}</small></span></button>`).join('')}</div></div>
       <div class="br-volymer">${[['rost', 'Röster'], ['berattare', 'Berättaren'], ['musik', 'Musik'], ['effekt', 'Ljudeffekter']].map(([k, n]) => `<label style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="width:96px">${n}</span><input type="range" min="0" max="100" value="${Math.round(volym(k) * 100)}" data-vol="${k}" style="flex:1"></label>`).join('')}</div>
       <div class="br-knappar"><button class="fp-knapp" data-nej>Klar</button></div></div>`;
     pop.querySelectorAll('[data-vol]').forEach((r) => { r.oninput = () => { S.vol = { ...(S.vol || {}), [r.dataset.vol]: r.value / 100 }; satVolymer(); sparaSnart(); }; });
@@ -10980,6 +11000,7 @@ function oppnaLjud(foralder) {
       if (id === 'roster') { const pa = rostLage() !== 'av'; S.rost = !pa; if (!pa && (!S.rostLage || S.rostLage === 'av')) S.rostLage = 'rost'; tystna(); }
       sparaSnart(); rita();
     }; });
+    pop.querySelectorAll('[data-talfart]').forEach((k) => { k.onclick = () => { satTalFart(+k.dataset.talfart); tystna(); rita(); }; });
     pop.querySelector('[data-nej]').onclick = () => pop.remove();
   };
   rita(); pop.onclick = (e) => { if (e.target === pop) pop.remove(); };

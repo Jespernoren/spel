@@ -45,6 +45,9 @@ def main():
     balans = os.path.join(os.path.dirname(os.path.abspath(MAPP)), 'balans.js')
     m = re.search(r'ROST_FART\s*=\s*\{([^}]*)\}', open(balans).read()) if os.path.exists(balans) else None
     fart = {k: float(v) for k, v in re.findall(r'(\w+)\s*:\s*([\d.]+)', m.group(1))} if m else {}
+    # A-078 tillägg 15:40: alla klipp sträcks dessutom till talhastigheten EL_PACK_FART (1,3) – samma tonhöjd. Annan fart i spelet: HTMLAudioElement med preservesPitch.
+    mp = re.search(r'EL_PACK_FART\s*=\s*([\d.]+)', open(balans).read()) if os.path.exists(balans) else None
+    pack_fart = float(mp.group(1)) if mp else 1.0
     TYST = 'silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.04:stop_periods=-1:stop_duration=0.3:stop_threshold=-45dB:stop_silence=0.18'
     cache = os.path.join('/tmp', 'roster-el-bearb'); os.makedirs(cache, exist_ok=True)
     def bearbeta(f):
@@ -52,8 +55,11 @@ def main():
         fig = (f[6:] if f.startswith('intro-') else f).split('-')
         fig = fig[1] if fig[0] == 'NY' else fig[0]
         bakad = float(str(trimmat.get(f'fart:{f}', '1:')).split(':')[0] or 1)
-        tempo = round(fart.get(fig, 1.0) / bakad, 4)
-        af = TYST + (f',atempo={tempo}' if abs(tempo - 1) > 0.001 else '')
+        tempo = round(fart.get(fig, 1.0) * pack_fart / bakad, 4)
+        steg = []; t = tempo
+        while t > 2.0: steg.append(2.0); t /= 2.0   # atempo tar högst 2,0 per steg
+        steg.append(round(t, 4))
+        af = TYST + ''.join(f',atempo={x}' for x in steg if abs(x - 1) > 0.001)
         ut = os.path.join(cache, hashlib.sha1((sha(p) + af).encode()).hexdigest()[:16] + '.mp3')
         if not os.path.exists(ut):
             subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', p, '-af', af, '-ac', '1', '-ar', '44100', '-b:a', '128k', ut + '.tmp.mp3'], check=True)
