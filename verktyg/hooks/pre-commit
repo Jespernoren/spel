@@ -5,3 +5,4 @@ node verktyg/lint-sekvens.mjs || { echo "lint-sekvens stoppade committen (se ova
 if git diff --cached --name-only | grep -q 'printa-hem/balans.js'; then node verktyg/ekonomi.mjs > /dev/null || { node verktyg/ekonomi.mjs | tail -5; echo "ekonomi.mjs stoppade committen"; exit 1; }; fi
 # A-080: inga vägar runt Regissören (toast, röst, kamera direkt)
 node verktyg/lint-regissor.mjs || { echo "lint-regissor stoppade committen (se ovan)"; exit 1; }
+node verktyg/lint-roster.mjs || { echo "lint-roster stoppade committen (se ovan)"; exit 1; }

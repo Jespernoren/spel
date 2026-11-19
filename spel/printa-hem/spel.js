@@ -11,7 +11,8 @@ import { kalender as kalenderSvg } from './intro-bilder.js';
 import { byggMiljo } from './miljo.js';
 import { IKON, ik, portratt, rens, knapp, ruta as uiRuta, grid, sektion, detalj, resurs, panel, rad, fakta, UI_CSS } from './ui-kit.js';
 import { skapaRegelvakt } from './regelvakt.js';   // EL 29
-import * as B from './balans.js';   // alla siffror som styr progressionen
+import * as B from './balans.js';
+import { ROSTER, rostFor, saknadRost } from './rost.js';   // A-078: en röst per figur   // alla siffror som styr progressionen
 import * as PLAN from './gardplan.js';   // punkt AM: gårdens plan (förslag)
 const { STROM_INGEN, STROM_POWERBANK, FORSTA_PRINT_S, ROST_FART, PRIS_SKALA, MATTNAD, MATTNAD_GOLV, ALI_VILL_BONUS, GROSSIST, SALJ_TILLBAKA, FILAMENT_KOP, SLAPP_PER_DAG, KAP1_BELONING, TRIVSEL_MAL, RESPEKT_NIVAER, JOBB_VARV, JOBB_ANDEL, FYND_ANDEL, SMS_MELLAN, STROM_BAS, BANK_PLUS, TRAMP_PER_S, SOL_PER_S, SOLPARK_PER_S, MOTOR_STROM, BARA_SKRAP, HOTBAR, KISTA_PLATSER, STACK, RYGG_BAS, RYGG_STOR, PLATTA, LASTARM_TID, LASTARM_MAX, BAND_BAS, TRIVSEL_PER_PROCENT, TRIVSEL_MAX_BONUS } = B;
 import { logo, BRAND_CSS, malaSkylt, NAMN, FARG, KOP_SLAG } from './brand.js';
@@ -10528,31 +10529,7 @@ function familjSms() {
 
 // ---------- Röster: brev, sms och repliker läses upp på svenska ----------
 // Varje figur har sin egen röst (tonhöjd och tempo). Bästa svenska rösten på datorn väljs automatiskt.
-const ROSTER = {
-  rolf: { pitch: 0.55, rate: 0.82, kon: 'm' },     // mörk och släpig
-  kjelle: { pitch: 1.0, rate: 1.15, kon: 'm' },    // A-047: radioröst, glad och snabb
-  gunnar: { pitch: 0.5, rate: 0.7, kon: 'm' },     // A-047: säger ett ord om året
-  gunbritt: { pitch: 1.2, rate: 0.9, kon: 'k' },   // A-047: byggnadsnämnden, långsam och beklagande
-  ali: { pitch: 0.8, rate: 0.9, kon: 'm' },        // trött
-  mamma: { pitch: 1.3, rate: 1.08, kon: 'k' },     // ljus och snabb
-  bror: { pitch: 1.05, rate: 1.15, kon: 'm' },
-  chefen: { pitch: 0.6, rate: 1.2, kon: 'm' },     // A-053: Rudolf, kort och arg
-  bengt: { pitch: 0.65, rate: 0.95, kon: 'm' },    // A-058: Bengt-Åke, grov och långsam
-  pappa: { pitch: 0.7, rate: 0.95, kon: 'm' },     // platt och kort
-  du: { pitch: 1.15, rate: 1.0, kon: 'm' },
-  berattare: { pitch: 1.0, rate: 0.95, kon: 'k' },
-};
-let roster = [];
-const laddaRoster = () => { try { roster = speechSynthesis.getVoices().filter((v) => /^sv/i.test(v.lang)); } catch { roster = []; } };
-try { laddaRoster(); speechSynthesis.onvoiceschanged = laddaRoster; } catch {}
-// naturliga/premium-röster låter mycket bättre – välj dem först om datorn har dem
-const rostKvalitet = (v) => (/natural|neural|premium|enhanced|förbättrad|online/i.test(v.name) ? 10 : 0) + (v.localService ? 0 : 1);
-function valjRost(kon) {
-  if (!roster.length) return null;
-  roster.sort((a, b) => rostKvalitet(b) - rostKvalitet(a));
-  const man = /oskar|bengt|alvar|male|man\b|herr/i, kvinna = /alva|klara|hedvig|female|kvinna|google svenska/i;
-  return roster.find((v) => (kon === 'm' ? man : kvinna).test(v.name)) || roster[0];
-}
+/* A-078 tillägg 11:45: rösterna ligger i rost.js – en tabell ROSTER[vem], en röst per figur överallt */
 // pratljud: varje figur har ett eget "babbel" (som i Animal Crossing) i stället för en AI-röst
 const PRATLJUD = {
   rolf: { f: 95, typ: 'sawtooth', tempo: 0.15, spann: 0.25, glid: -0.35, vol: 0.09 },      // grumligt, släpigt mummel
@@ -10595,7 +10572,7 @@ function pratljud(vem, text) {
 if (!S.rostMig) { S.rostMig = true; if (!S.rostLage || S.rostLage === 'prat') S.rostLage = 'rost'; }
 const rostLage = () => S.rost === false ? 'av' : (S.rostLage || 'rost');
 // riktiga röster: förgenererade med en neural svensk talmodell (verktyg/roster.py), en klang per figur
-const ROST_FIGURER = ['rolf', 'ali', 'pappa', 'bror', 'chefen', 'du', 'mamma', 'berattare', 'helen', 'bengt'];
+const ROST_FIGURER = Object.keys(ROSTER);   /* A-078: samma figurer som rösttabellen i rost.js */
 let rostIndex = null, rostLjud = null;
 const rostPack = {};
 const rostKlar = fetch('roster/index.json').then((x) => x.json()).then((a) => { rostIndex = a; hamtaPack('du');
@@ -10614,7 +10591,9 @@ let elIndex = null, elHel = null, introPagar = false, introElSvar = null;
 // punkt AW: har alla mammas och dina repliker i introt ElevenLabs-klipp? Då används de i introt (resten av spelet följer AH).
 const introElOk = () => { if (introElSvar == null && elIndex) introElSvar = INTRO_TAL().filter(([v]) => v === 'mamma' || v === 'du' || v === 'berattare').every(([v, t]) => !!elIndex[`${v}-${rostNyckel(t)}`]); return !!introElSvar; };
 const EL_SAKNAS_MAX = 4;   // EA: ett fåtal nya repliker utan ElevenLabs-klipp (kreditgränsen) får läsas med den gamla rösten – resten av figuren behåller sin EL-röst
-const elHelRakna = () => { if (!elIndex || !rostIndex || elHel) return; elHel = new Set(ROST_FIGURER.filter((f) => { const k = Object.keys(rostIndex).filter((x) => x.startsWith(f + '-')); return k.length > 0 && k.filter((x) => !elIndex[x]).length <= Math.min(EL_SAKNAS_MAX, Math.floor(k.length * 0.03)); })); };
+/* A-078 tillägg 11:45: en röst per figur, hela vägen. En figur spelar ElevenLabs bara om VARJE replik den har i manuset har ett klipp – annars
+   läses alla dess repliker med talsyntesen och figurens röst i rost.js. Så låter berättaren likadant i varje ruta, i spelet och i dagboken. */
+const elHelRakna = () => { if (!elIndex || elHel) return; const per = {}; for (const [v, t] of rostManus()) { if (!/[\p{L}]/u.test(rens(t))) continue; const f = ROST_FIGURER.includes(v) ? v : 'berattare'; const r = per[f] || (per[f] = { n: 0, el: 0 }); r.n++; if (elIndex[`${f}-${rostNyckel(t)}`]) r.el++; } elHel = new Set(Object.entries(per).filter(([, r]) => r.n > 0 && r.el === r.n).map(([f]) => f)); };
 const elKlar = fetch('roster-el/index.json').then((x) => (x.ok ? x.json() : null)).then((a) => { elIndex = a; return rostKlar.then(elHelRakna); }).catch(() => {});
 // punkt AZ: ElevenLabs-klippen ligger packade per figur (roster-el/pack/, samma format som roster/) och spelas från ett redan avkodat ljud
 let elPackIndex = null;
@@ -10627,9 +10606,7 @@ function klippKalla(vem, text) {
   const ek = elKlipp(vem, text);
   if (ek && elPackIndex?.[ek]) { const [pk, fran, langd] = elPackIndex[ek]; return { id: `el:${pk}:${fran}`, hamta: () => hamtaElPack(pk), fran, langd }; }
   if (ek) return { id: 'elfil:' + ek, fil: 'roster-el/' + elIndex[ek] };
-  const kl = rostKlipp(vem, text);
-  if (kl) { const [pk, fran, langd] = kl; return { id: `ko:${pk}:${fran}`, hamta: () => hamtaPack(pk), fran, langd }; }
-  return null;
+  return null;   /* A-078 tillägg 11:45: ElevenLabs eller talsyntes med figurens röst – de gamla klippen (Kokoro) blandas inte in, de lät olika mot talsyntesen */
 }
 function avkoda(k) {
   if (avkodat.has(k.id)) return Promise.resolve(avkodat.get(k.id));
@@ -10672,7 +10649,7 @@ function spelaAvkodat(ab, vem, t0, text, o = {}) {
 function elKlipp(vem, text) {
   if (!elIndex || !elHel) return null;
   const f = ROST_FIGURER.includes(vem) ? vem : 'berattare';
-  if (!elHel.has(f) && !(introPagar && (f === 'mamma' || f === 'du' || f === 'berattare') && introElOk())) return null;   // punkt AW/BJ: introt är en egen scen – mamma, du och berättaren i ElevenLabs, eller alla gamla
+  if (!elHel.has(f)) return null;   /* A-078 tillägg 11:45: samma röst i introt som i spelet – inget undantag för introt */
   const k = `${f}-${rostNyckel(text)}`;
   return elIndex[k] ? k : null;
 }
@@ -10761,9 +10738,9 @@ function prataNu(vem, text, vikt, o = {}) {
     const ren = String(text).replace(/<[^>]+>/g, ' ').replace(/\p{Extended_Pictographic}|\uFE0F|\u200D/gu, '').replace(/\s\/(\w+)/g, '. $1').replace(/\s+/g, ' ').trim();
     if (!ren) return;
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(ren), r = ROSTER[vem] || ROSTER.berattare;
+    const u = new SpeechSynthesisUtterance(ren), r = rostFor(vem);
     u.lang = 'sv-SE'; u.pitch = r.pitch; u.rate = r.rate; u.volume = 0.9 * rostVol(vem);
-    const v = valjRost(r.kon); if (v) u.voice = v;
+    if (r.voice) u.voice = r.voice;
     speechSynthesis.speak(u);
   } catch {} }
 }
@@ -11836,10 +11813,10 @@ function spelKamera(vy) {
     cam.position.set(sk.x + fran.x * 1.25 + fran.z * 0.35, sk.y + 0.42, sk.z + fran.z * 1.25 - fran.x * 0.35); cam.lookAt(sk.x, sk.y - 0.05, sk.z);
   }
   else if (vy === 'gard') { const k = GARD_KAM; cam.position.set(...k[0]); cam.lookAt(...k[1]); cam.fov = k[2]; }   /* A-078 ruta 12: tippen syns vid sidan av skjulet */   /* A-062 v3 ruta 11: bred bild från vägen, ingen cykel */
-  else if (/^(tak|dorrhal|ratta)$/.test(vy)) {   /* A-062 v3 ruta 13: närbilder på skjulet */
+  else if (/^(tak|dorrhal|ratta|dorrhalRatta)$/.test(vy)) {   /* A-062 v3 ruta 13: närbilder på skjulet */
     const zf = SKJUL.z + SKJUL.d / 2;
     if (vy === 'tak') { cam.position.set(SKJUL.x + 0.2, 1.2, SKJUL.z + 0.4); cam.lookAt(SKJUL.x - 0.1, SKJUL.h + 4, SKJUL.z - 0.9); }   // inifrån: hålet i taket mot himlen
-    else if (vy === 'dorrhal') { cam.position.set(SKJUL.x + 0.15, 1.15, zf + 2.1); cam.lookAt(SKJUL.x, 1.0, zf); }
+    else if (vy === 'dorrhal' || vy === 'dorrhalRatta') { cam.position.set(SKJUL.x + 0.15, 1.15, zf + 2.1); cam.lookAt(SKJUL.x, 1.0, zf); }
     else { cam.position.set(SKJUL.x - 0.05, 0.38, zf + 1.25); cam.lookAt(SKJUL.x - 0.35, 0.14, zf - 0.05); }
     cam.fov = 55;
   }
@@ -11848,11 +11825,12 @@ function spelKamera(vy) {
 }
 function spelBild(vy) {
   if (spelBildCache[vy]) return spelBildCache[vy];
+  if (vy === 'mammaRitning') return (spelBildCache[vy] = mammaRitningBild());
   try {
     if (vy === 'gard') try { ritaTippHog(0, true); } catch {}   /* A-078: berget på tippen ska synas i ruta 12 */
     const cam = spelKamera(vy), r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio();
-    const dold = (vy === 'gard' ? [vagCykel, malPil] : vy === 'start' ? [malPil] : /^(tak|dorrhal|ratta)$/.test(vy) ? [malPil, sangSpoke, sangSkylt, planMesh] : []).filter((o) => o?.visible);   /* närbilderna: inga spelskyltar */ dold.forEach((o) => { o.visible = false; });
-    let ratta = null; if (vy === 'ratta') {   /* A-062 v3: en råtta tittar ut ur dörrhålet */
+    const dold = (vy === 'gard' ? [vagCykel, malPil] : vy === 'start' ? [malPil] : /^(tak|dorrhal|ratta|dorrhalRatta)$/.test(vy) ? [malPil, sangSpoke, sangSkylt, planMesh] : []).filter((o) => o?.visible);   /* närbilderna: inga spelskyltar */ dold.forEach((o) => { o.visible = false; });
+    let ratta = null; if (vy === 'ratta' || vy === 'dorrhalRatta') {   /* A-062 v3: en råtta tittar ut ur dörrhålet */
       const gra = mat(0x6d6259); ratta = new THREE.Group(); const kr = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), gra); kr.scale.set(1, 0.7, 1.5); kr.position.y = 0.05; ratta.add(kr);
       ratta.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), gra), 0, 0.07, 0.1)); for (const x of [-0.03, 0.03]) { ratta.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 6), mat(0x8a7d72)), x, 0.115, 0.09)); ratta.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.008, 6, 4), mat(0x111111)), x * 0.6, 0.085, 0.14)); }
       ratta.position.set(SKJUL.x - 0.35, 0, SKJUL.z + SKJUL.d / 2 - 0.05); ratta.lookAt(cam.position.x, 0, cam.position.z); scen.add(ratta);
@@ -11862,6 +11840,19 @@ function spelBild(vy) {
     r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); spelBildCache[vy] = C.toDataURL('image/jpeg', 0.86);
   } catch (e) { console.warn('spelBild', e); spelBildCache[vy] = 'intro/gard.webp'; }
   return spelBildCache[vy];
+}
+/* A-078 tillägg 11:50 (ruta 14): mamma som vit ritning i dörrhålet – samma vinkel som dörrhålet med musen, genomskinlig bakgrund */
+function mammaRitningBild() {
+  try {
+    const cam = spelKamera('dorrhal'), zf = SKJUL.z + SKJUL.d / 2, f = introFigur('mamma');
+    poseFigur(f, { x: SKJUL.x + 0.12, z: zf - 0.15, motKamera: [cam.position.x, 0, cam.position.z], pekaMot: [cam.position.x, 1.0, cam.position.z], humor: 'arg1' }); f.updateMatrixWorld(true);
+    const rit = byggRitning([f]), sc = new THREE.Scene(); sc.add(rit);
+    const r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio(), cc = r.getClearColor(new THREE.Color()), ca = r.getClearAlpha();
+    r.setPixelRatio(1); r.setSize(1280, 800, false); r.setClearColor(0x000000, 0); r.render(sc, cam);
+    const C = document.createElement('canvas'); C.width = 1280; C.height = 800; C.getContext('2d').drawImage(r.domElement, 0, 0, 1280, 800);
+    r.setClearColor(cc, ca); r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); rit.traverse((o) => o.geometry?.dispose?.());
+    return C.toDataURL('image/png');
+  } catch (e) { console.warn('mammaRitning', e); return ''; }
 }
 function kritaSvg(vy) {
   const cam = spelKamera(/^skjul/.test(vy) ? 'start' : 'skrivare'), v = new THREE.Vector3();
@@ -12118,21 +12109,22 @@ const IDE3 = {   /* ruta 12: idéskissen i vita konturer, i ordningen skräp →
   jacuzzi: '<ellipse cx="610" cy="490" rx="70" ry="28"/><path d="M560 470 Q575 450 590 470 M620 470 Q635 450 650 470"/>',
   hus: '<rect x="760" y="440" width="140" height="90"/><path d="M745 445 L830 390 L915 445"/><rect x="815" y="480" width="30" height="50"/>',
 };
+const UTROP_MAX = 12, UNDERTEXT_MAX = 84;   /* A-078 tillägg 11:45: utrop i bubblan · högst 2 rader undertext (ca 42 tecken per rad) */
 const INTRO3 = [
   { tid: 3500, ljud: 'spel', lager: [IB3('v3rum1')], tal: [['berattare', 'Ditt rum.'], ['berattare', 'Ungefär som vanligt.']] },
   { tid: 3000, lager: [IB3('v4dag2', { id: 'dag' }), KAL3('MÅNDAG')], tal: [['mamma', 'Snälla du, kan du inte städa ditt rum?', { b: 'v4dag2' }]] },   /* A-078: introt v4 – mamma snäll */
   { tid: 1400, ljud: 'riv', lager: [IB3('v4dag3', { id: 'dag' }), KAL3('TISDAG', 'MÅNDAG')], tal: [['berattare', 'Hon sa det igen.'], ['mamma', 'STÄDA!', { b: 'v4dag3', cls: 'rop1' }]] },   // över din axel, händerna i sidan (arg1)
   { tid: 1400, ljud: 'riv', lager: [IB3('v4dag4', { id: 'dag' }), KAL3('ONSDAG', 'TISDAG')], tal: [['berattare', 'Och igen.'], ['mamma', 'STÄDA!!', { b: 'v4dag4', cls: 'rop2' }]] },   // lågt från golvet, hon pekar på högarna (arg2)
   { tid: 1400, ljud: 'riv', lager: [IB3('v4dag5', { id: 'dag' }), KAL3('TORSDAG', 'ONSDAG')], tal: [['berattare', 'Och igen.'], ['mamma', 'STÄDA!!!', { b: 'v4dag5', cls: 'rop3' }]] },   // från sidan, armen rakt upp (arg2)
-  { tid: 3200, ljud: 'dorr', lager: [IB3('v4dag6a', { id: 'dag', cls: 'glidin' }), IB3('v4dorr6', { cls: 'small' }), IB3('v4dag6b', { r: 0, cls: 'glidsen' }), KAL3('FREDAG', 'TORSDAG')], tal: [['mamma', 'Det ser ut som en SOPTIPP här inne!', { b: 'v4dag6b', fore: 1700 }]] },   // dörren smäller upp, kameran glider in mot henne (rasande)
+  { tid: 3200, ljud: 'dorr', lager: [IB3('v4dag6a', { id: 'dag', cls: 'glidin' }), IB3('v4dag6b', { r: 0, cls: 'glidsen' }), KAL3('FREDAG', 'TORSDAG')], tal: [['mamma', 'Det ser ut som en SOPTIPP här inne!', { b: 'v4dag6b', fore: 1700 }]] },   // dörren smäller upp, kameran glider in mot henne (rasande)
   { tid: 3000, tyst: 1000, lager: [IB3('v4kort7'), { id: 'vinjett', vinjett: true }], tal: [['mamma', 'Du kan lika gärna BO på en soptipp!', { b: 'v4kort7', cls: 'rop1', vanster: true }]] },   // rakt in i ansiktet, fingret mot kameran (rasande+rök)
   { tid: 4000, ljud: 'gitarr', lager: [IB3('v4kort8')], tal: [['du', 'Okej.'], ['du', 'Då gör jag väl det.']] },   // du reser dig vid datorn, mamma pekar ut genom dörren
-  { tid: 2600, lager: [IB3('v4kort9', { cls: 'folj' })], tal: [] },   // A-078 ruta 9: ut förbi mamma, kameran följer med dig ut (mamma förvånad)
+  { tid: 3200, lager: [IB3('v4kort9a', { cls: 'folj' }), IB3('v4kort9b', { cls: 'folj sen1' }), IB3('v4kort9', { cls: 'folj sen2' })], tal: [] },   /* A-078 tillägg 11:50: du går förbi henne i bild – framför henne, förbi, och hon vänder sig */   // A-078 ruta 9: ut förbi mamma, kameran följer med dig ut (mamma förvånad)
   { tid: 4000, ljud: 'band', lager: [IB3('v3pack9')], tal: [['du', 'Jag packar ryggan med sånt som kan vara bra att ha.'], ['du', 'Och surrar fast brorsans gamla 3D-skrivare på cykeln.']] },
   { tid: 5000, musik: true, lager: [{ id: 'vagloop', loop: 'intro/vag.webp' }, { id: 'cyklist', sprite: 'intro/cyklist-tramp.webp', n: 4 }], tal: [['berattare', 'Förbi skolan.'], ['berattare', 'Förbi affären.'], ['berattare', 'Förbi där husen tar slut.']] },
   { tid: 3500, ljud: 'masar', lager: [{ id: 'spelgard', spel: 'gard' }], tal: [['berattare', 'Vid soptippen står ett gammalt skjul.'], ['berattare', 'Och en gård full av skräp.']] },
   { tid: 7000, lager: [{ id: 'tavla', tavla: true }], tal: [['berattare', 'Skräp är plast.', { rita: [['skrap', 0]] }], ['berattare', 'En kvarn gör det till filament.', { rita: [['pil1', 0], ['kvarn', 200], ['fraga', 700], ['pil2', 1200], ['filament', 1300]] }], ['berattare', 'Och med filament kan man printa… allt.', { rita: [['pil3', 0], ['skrivare', 200], ['sang', 1300], ['tak', 1750], ['jacuzzi', 2200], ['hus', 2650]] }], ['du', 'Jag behöver bara komma på hur.']] },
-  { tid: 6000, lager: [{ id: 'n0', spel: 'tak', r: 0 }, { id: 'n1', spel: 'dorrhal', r: 1 }, { id: 'natt', natt: true, r: 1 }, { id: 'n2', spel: 'ratta', r: 2 }, { id: 'n3', spel: 'start', r: 3, cls: 'zoomut' }, { id: 'k3', krita: 'skjul3', r: 3 }],
+  { tid: 6000, lager: [{ id: 'n0', spel: 'tak', r: 0 }, { id: 'n1', spel: 'dorrhal', r: 1 }, { id: 'natt', natt: true, r: 1 }, { id: 'n2', spel: 'dorrhalRatta', r: 2 }, { id: 'm2', spel: 'mammaRitning', r: 2, cls: 'poff' }, { id: 'n3', spel: 'start', r: 3, cls: 'zoomut' }, { id: 'k3', krita: 'skjul3', r: 3 }],
     tal: [['berattare', 'Inget tak.'], ['berattare', 'Ingen dörr.'], ['berattare', 'Ingen mamma som tjatar.', { pip: true }], ['berattare', 'Tänk om det här kunde bli ett riktigt hem?', { fore: 3200 }]], slut: true },
 ];
 const introCss3 = document.createElement('style');
@@ -12142,6 +12134,10 @@ introCss3.textContent = `
 @keyframes phGlidIn{to{transform:scale(1.5)}}
 .ph-il.glidsen{opacity:0;animation:phGlidSen .7s 1.1s ease-in forwards}
 @keyframes phGlidSen{to{opacity:1}}
+.ph-il.sen1{opacity:0;animation:phFolj 2.6s ease-in-out forwards,phGlidSen .45s 1.0s ease-in forwards!important}.ph-il.sen2{opacity:0;animation:phFolj 2.6s ease-in-out forwards,phGlidSen .45s 2.0s ease-in forwards!important}
+.ph-il.poff{animation:phPoffFladder 1.5s steps(1) forwards,phPoff .35s 1.5s ease-in forwards}
+@keyframes phPoffFladder{0%{opacity:.95}15%{opacity:.55}25%{opacity:1}55%{opacity:.6}65%{opacity:1}}
+@keyframes phPoff{to{opacity:0;transform:scale(1.25);filter:blur(6px)}}
 .ph-il.folj{transform-origin:85% 40%;animation:phFolj 2.6s ease-in-out forwards}
 @keyframes phFolj{from{transform:scale(1.08) translateX(3%)}to{transform:scale(1.18) translateX(-4%)}}
 .ph-bub{position:absolute;z-index:6;background:#fff;color:#1d1a24;font:800 clamp(14px,2.1vw,22px)/1.2 "Comic Sans MS","Chalkboard SE",system-ui;padding:.45em .8em;border-radius:16px;box-shadow:0 4px 0 rgba(0,0,0,.25);max-width:36%;animation:phBub .25s ease-out}
@@ -12161,7 +12157,9 @@ introCss3.textContent = `
 @keyframes phLjus{to{opacity:.8}}
 .ph-natt{position:absolute;inset:0}
 .ph-vinjett{background:radial-gradient(circle at 50% 38%,transparent 30%,rgba(122,0,0,.55) 80%)}
-.ph-intro3 .ph-intro-ord{min-height:5.2em}
+.ph-intro3 .ph-intro-ord{position:fixed;left:50%;bottom:5vh;transform:translateX(-50%);z-index:20;width:min(880px,86vw);min-height:0;max-height:3.1em;overflow:hidden;margin:0;padding:.35em .9em;background:rgba(0,0,0,.66);border-radius:10px;color:#fff;font:700 clamp(20px,2.5vw,30px)/1.35 system-ui;text-align:center;text-shadow:0 2px 3px rgba(0,0,0,.6)}
+.ph-intro3 .ph-intro-ord.tom{visibility:hidden}
+.ph-intro3 .ph-intro-ord .ph-ut-rad{opacity:1}
 .ph-intro3 .ph-intro-rad .ph-vem{font:800 11px system-ui;letter-spacing:.1em;opacity:.6;margin-right:6px;text-transform:uppercase}
 .ph-dag1{position:fixed;inset:0;z-index:9500;display:grid;place-items:center;background:#2b1d16;opacity:0;transition:opacity .6s}
 .ph-dag1.syns{opacity:1}
@@ -12182,6 +12180,7 @@ function introLjud3(typ) {
     else if (typ === 'masar') { ton(1500, 0.25, 0.04, 'sine'); ton(1250, 0.3, 0.04, 'sine', 0.35); ton(1600, 0.2, 0.03, 'sine', 1.1); }
     else if (typ === 'krita') { ton(2400, 0.14, 0.02, 'sawtooth'); }
     else if (typ === 'pling') { ton(880, 0.25, 0.09, 'sine'); }
+    else if (typ === 'poff') { ton(520, 0.06, 0.08, 'square'); ton(180, 0.18, 0.1, 'sawtooth', 0.04); }
     else if (typ === 'pip') { ton(1700, 0.1, 0.06, 'square'); ton(1950, 0.09, 0.05, 'square', 0.14); }
     else if (typ === 'penna') { for (let i = 0; i < 7; i++) ton(2600 + (i % 3) * 300, 0.08, 0.015, 'sawtooth', i * 0.12); }
   } catch {}
@@ -12224,11 +12223,14 @@ function visaIntro3(klar, o = {}) {
   const spelaRuta = async (p, k) => {
     scenEl.querySelectorAll('.ph-bub').forEach((b) => b.remove());
     const nya = new Set(p.lager.filter((l) => l.r == null).map((l) => l.id + '|' + (l.src || l.kal || l.spel || l.loop || '')));
-    for (const [id, e] of pa) { if (!nya.has(e.dataset.nyckel)) { tona(e); pa.delete(id); } }
-    for (const l of p.lager.filter((x) => x.r == null)) { const n = l.id + '|' + (l.src || l.kal || l.spel || l.loop || ''); if ([...pa.values()].some((e) => e.dataset.nyckel === n)) continue; const e = visaLager(l); e.dataset.nyckel = n; }
+    const gamla = [...pa].filter(([, e]) => !nya.has(e.dataset.nyckel)); gamla.forEach(([id]) => pa.delete(id));
+    const nyEl = []; for (const l of p.lager.filter((x) => x.r == null)) { const n = l.id + '|' + (l.src || l.kal || l.spel || l.loop || ''); if ([...pa.values()].some((e) => e.dataset.nyckel === n)) continue; const e = visaLager(l); e.dataset.nyckel = n; nyEl.push(e); }
+    /* A-078 tillägg 11:50: inga svarta bilder – den gamla bilden ligger kvar tills den nya är avkodad, sedan tonar den bort */
+    { const bilder = nyEl.flatMap((e) => (e.tagName === 'IMG' ? [e] : [...e.querySelectorAll('img')])); await Promise.race([Promise.all(bilder.map((b) => b.decode?.().catch(() => {}))), new Promise((ok) => setTimeout(ok, 1500))]); }
+    gamla.forEach(([, e]) => setTimeout(() => tona(e), 350));
     el.querySelector('.ph-intro-kort').classList.toggle('skak', p.ljud === 'dorr');
     logg('visas', p.lager.map((l) => l.id + '|' + (l.src || l.spel || l.kal || '')).join(' '));
-    textEl.innerHTML = '';
+    textEl.innerHTML = ''; textEl.classList.add('tom');
     if (p.ljud) introLjud3(p.ljud); if (p.musik) introMusik.start();
     const t0 = performance.now();
     await vanta(500, k);
@@ -12239,9 +12241,16 @@ function visaIntro3(klar, o = {}) {
       if (rl.length) { if (sistaR) sistaR.forEach(tona); sistaR = rl.map((l) => { const e = visaLager(l); if (/zoomut/.test(l.cls || '')) zoomut(e); return e; }); logg('ritning', j); }
       if (o.fore) await vanta(o.fore, k);
       if (o.rita) for (const [del, ms] of o.rita) { const t = setTimeout(() => { scenEl.querySelector(`[data-del="${del}"]`)?.classList.add('rita'); introLjud3(/sang|tak|jacuzzi|hus/.test(del) ? 'pling' : 'krita'); }, ms); timers.add(t); }
-      if (o.pip) setTimeout(() => introLjud3('pip'), 300);
-      if (vem === 'mamma' && o.b) bubbla(p, text, o);
-      else { const d = document.createElement('div'); d.className = 'ph-intro-text ph-intro-rad'; d.innerHTML = (vem === 'du' ? '<span class="ph-vem">Du</span>' : '') + rens(text); textEl.appendChild(d); requestAnimationFrame(() => d.classList.add('syns')); }
+      if (o.pip) { setTimeout(() => introLjud3('pip'), 300); setTimeout(() => introLjud3('poff'), 1500 + 300); }   /* A-078 tillägg 11:50: mamma-ritningen försvinner med ett poff, musen sitter kvar */
+      /* A-078 tillägg 11:35/11:45: korta utrop (STÄDA!) bara i bubblan, allt annat bara i undertextrutan. Inga namn.
+         Rutan står still längst ner, texten visas direkt och byts ut. Repliker som hör ihop (samma röst, direkt efter varandra) står tillsammans, högst 2 rader. */
+      if (o.b && rens(text).length <= UTROP_MAX) bubbla(p, text, o);
+      else {
+        const fore = j > 0 ? p.tal[j - 1] : null, ihop = fore && fore[0] === vem && !(fore[2]?.b && rens(fore[1]).length <= UTROP_MAX) && !o.fore && (textEl.textContent.length + rens(text).length + 1) <= UNDERTEXT_MAX;
+        if (!ihop) textEl.innerHTML = '';
+        const d = document.createElement('span'); d.className = 'ph-ut-rad'; d.textContent = (ihop ? ' ' : '') + rens(text); textEl.appendChild(d);
+        textEl.classList.toggle('tom', !textEl.textContent.trim());
+      }
       logg('rad', j);
       await sag(vem, text, k); await vanta(300, k);
     }
@@ -14529,9 +14538,11 @@ const VYER4 = {
   v4dag4: {"kam":[[1.55,0.35,0.55],[2.25,1.5,-0.4]],"fov":60,"stok":0.6,"du":{"x":1.0,"z":-0.95,"rot":3.491592653589793,"sitt":true,"lookAt":[2.3,1.5,-0.4],"humor":"likgiltig"},"mamma":{"x":2.25,"z":-0.4,"motKamera":[1.0,0,0.5],"humor":"arg2","pekaMot":[1.2,0.0,0.7],"lookAt":[1.0,1.15,-0.95]},"fokus":1.6},   // 4-onsdag
   v4dag5: {"kam":[[0.95,1.35,0.25],[2.15,1.65,-0.45]],"fov":64,"stok":0.85,"du":{"x":1.0,"z":-0.95,"rot":3.491592653589793,"sitt":true,"lookAt":[2.3,1.5,-0.4],"humor":"likgiltig"},"mamma":{"x":2.15,"z":-0.45,"motKamera":[1.0,0,-0.95],"humor":"arg2","armarUpp":true,"lookAt":[1.0,1.15,-0.95]},"fokus":1.4},   // 5-torsdag
   v4dag6a: {"kam":[[0.0,1.55,1.3],[2.2,1.4,-0.4]],"fov":56,"stok":1,"du":{"x":1.0,"z":-0.95,"rot":3.491592653589793,"sitt":true,"lookAt":[2.3,1.5,-0.4],"humor":"likgiltig"},"mamma":{"x":2.2,"z":-0.4,"motKamera":[1.0,0,-0.95],"humor":"rasande","pekaMot":[1.0,1.15,-0.95],"lookAt":[1.0,1.15,-0.95]},"fokus":2.6},   // 6a-fredag
-  v4dag6b: {"kam":[[1.25,1.55,0.35],[2.2,1.45,-0.4]],"fov":56,"stok":1,"du":{"x":1.0,"z":-0.95,"rot":3.491592653589793,"sitt":true,"lookAt":[2.3,1.5,-0.4],"humor":"likgiltig"},"mamma":{"x":2.2,"z":-0.4,"motKamera":[1.0,0,-0.95],"humor":"rasande","pekaMot":[1.0,1.15,-0.95],"lookAt":[1.0,1.15,-0.95]},"fokus":1.3},   // 6b-fredag-nara
-  v4kort7: {"kam":[[1.2,1.5,-0.3],[2.25,1.55,-0.4]],"fov":52,"stok":1,"lampa":9,"mamma":{"x":2.25,"z":-0.4,"motKamera":[1.55,0,-0.32],"humor":"rasande+rok","pekaMot":[1.2,1.45,-0.15],"lookAt":[1.2,1.5,-0.3]},"fokus":1.0,"nara":true},   // 7-argast
+  v4dag6b: {"kam":[[1.15,1.15,-0.9],[2.2,1.48,-0.4]],"fov":56,"stok":1,"mamma":{"x":2.2,"z":-0.4,"motKamera":[1.0,0,-0.95],"humor":"rasande","pekaMot":[1.05,0.85,-0.9],"lookAt":[1.0,1.15,-0.95]},"fokus":1.3},   // 6b-fredag-nara · A-078 tillägg 11:50: din vy från datorn, hon pekar på dig
+  v4kort7: {"kam":[[1.2,1.15,-0.88],[2.25,1.5,-0.4]],"fov":50,"stok":1,"lampa":9,"mamma":{"x":2.25,"z":-0.4,"motKamera":[1.0,0,-0.95],"humor":"rasande+rok","pekaMot":[1.05,0.8,-0.9],"lookAt":[1.0,1.15,-0.95]},"fokus":1.1,"nara":true},   // 7-argast · A-078 tillägg 11:50: din vy från datorn, fingret mot dig
   v4kort8: {"kam":[[-0.9,1.25,-0.55],[1.6,1.05,-0.6]],"fov":58,"stok":1,"du":{"x":1.0,"z":-0.95,"motKamera":[2.05,0,0.45],"lookAt":[2.05,1.55,0.45],"humor":"likgiltig"},"mamma":{"x":2.05,"z":0.45,"motKamera":[0.4,0,-0.9],"humor":"rasande","pekaVanster":[3.9,1.4,-0.45],"lookAt":[1.0,1.45,-0.95]},"fokus":2.6,"stol":[1.75,-1.5,-0.6]},   // 8-reser-sig
+  v4kort9a: {"kam":[[4.5,1.55,-0.95],[2.5,1.4,-0.35]],"fov":58,"stok":1,"du":{"x":1.95,"z":-0.55,"motKamera":[3.5,0,-1.2],"steg":true,"humor":"likgiltig"},"mamma":{"x":2.45,"z":0.0,"motKamera":[1.95,0,-0.55],"humor":"rasande","lookAt":[1.95,1.5,-0.55]},"fokus":2.2},   // A-078 tillägg 11:50: du på väg ut, mamma framför dig
+  v4kort9b: {"kam":[[4.5,1.55,-0.95],[2.5,1.4,-0.35]],"fov":58,"stok":1,"du":{"x":2.8,"z":-0.8,"motKamera":[4.5,0,-1.3],"steg":true,"humor":"likgiltig"},"mamma":{"x":2.45,"z":0.0,"motKamera":[2.8,0,-0.8],"humor":"forvanad","lookAt":[2.8,1.5,-0.8]},"fokus":2.0},   // förbi henne
   v4kort9: {"kam":[[4.5,1.55,-0.95],[2.5,1.4,-0.35]],"fov":58,"stok":1,"du":{"x":3.5,"z":-1.3,"motKamera":[5.5,0,-1.5],"steg":true,"humor":"likgiltig"},"mamma":{"x":2.45,"z":0.0,"motKamera":[3.55,0,-1.45],"chock":true,"lookAt":[3.55,1.5,-1.45],"humor":"forvanad"},"fokus":1.9},   // 9-ut-forbi
 };
 /* A-078: rendera en vy ur VYER4 i intro-rummet (samma steg som planeringschattens krok) */
@@ -15878,6 +15889,7 @@ if (ui) {
     if (!ui.igang) return []; const T = synligaTexter(); const ut = [];
     for (const [re, sak, har] of SAKNAD_SAK) if (!har()) for (const [v, t] of T) if (re.test(t) && v !== 'målrutan' && v !== 'NU-rutan') ut.push(`${v}: "${t.slice(0, 50)}" nämner ${sak}`);
     return ut.slice(0, 3); }, { enGang: true });
+  regelvakt.regel('RÖST SAKNAS', () => [...saknadRost].map((v) => `${v} pratar utan egen röst i rost.js`), { enGang: true });   /* A-078 tillägg 11:45 */
   regelvakt.regel('MENY UTAN VÄG', () => { if (!oppenAtgard) return []; if (!menyOppen()) { oppenAtgard = null; return []; } const svar = kanNu(oppenAtgard.atgard, oppenAtgard); return svar.ja ? [] : [`${oppenAtgard.atgard}-menyn är öppen fast ${svar.skal.toLowerCase()}`]; });   /* A-076 tillägg 11:35 */
   regelvakt.regel('MÅL UTAN LEDTRÅD', () => { if (!ui.igang) return []; const st = STEG[S.steg]; return st && !st.sov && !ledtradFor(st) ? [`"${rens(stegText(st) || '').slice(0, 60)}" har ingen ledtråd`] : []; }, { enGang: true });   /* A-083 */
   regelvakt.regel('MÅL OMÖJLIGT', () => { if (!ui.igang) return []; const a = nastaAtgard(malRaw); return a && a[0] === 'las' ? [`"${rens(String(malRaw)).slice(0, 60)}" – ${a[1]}`] : []; });
