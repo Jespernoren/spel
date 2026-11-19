@@ -16076,7 +16076,12 @@ async function oppnaFelrapporter(foralder) {
   foralder.appendChild(pop);
   pop.querySelector('[data-nej]').onclick = () => pop.remove(); pop.onclick = (e) => { if (e.target === pop) pop.remove(); };
   pop.querySelector('[data-ny]').onclick = () => { pop.remove(); felKnapp(); };
-  pop.querySelector('[data-exp]').onclick = async () => { const z = await felExport(); const a = document.createElement('a'); a.href = URL.createObjectURL(z); a.download = `soptippsvagen-felrapporter-${new Date().toISOString().slice(0, 10)}.zip`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); };
+  pop.querySelector('[data-exp]').onclick = async () => {   /* i artifact-visaren går filen via downloads-förmågan (en vanlig nedladdningslänk gör inget där) */
+    const z = await felExport(), namn = `soptippsvagen-felrapporter-${new Date().toISOString().slice(0, 10)}.zip`;
+    const dl = window.claude?.use ? await window.claude.use('downloads').catch(() => null) : null;
+    if (dl) { try { await dl.save({ filename: namn, data: z }); } catch (e) { if (e?.code !== 'declined') regi.info('Kunde inte spara filen här', 'fel'); } return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(z); a.download = namn; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  };
   pop.querySelector('[data-rensa]').onclick = async () => { await felRensa(); pop.remove(); oppnaFelrapporter(foralder); };
 }
 { const st = document.createElement('style'); st.textContent = '.ph-fel{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;background:rgba(10,12,18,.45)}.ph-fel-ruta{background:#fffaf0;color:#2a2116;border-radius:14px;padding:18px 20px;width:min(440px,90vw);box-shadow:0 10px 40px rgba(0,0,0,.4);font:15px system-ui}.ph-fel-ruta p{margin:6px 0 10px;font-size:13px;opacity:.8}.ph-fel-text{width:100%;box-sizing:border-box;font:15px system-ui;padding:8px 10px;border-radius:8px;border:2px solid #d9c9a8}.ph-fel-knappar{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}.ph-fel-status{display:block;margin-top:6px;opacity:.7}.ph-fel .fp-knapp.sek{color:#2a2116;border:2px solid #2a2116;background:#fff}'; document.head.appendChild(st); }
