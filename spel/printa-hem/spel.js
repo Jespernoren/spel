@@ -5280,7 +5280,7 @@ function uppdateraMalPil() {
   else { const stor = !S.skyltUppe && S.steg <= 1; malPil.scale.setScalar(stor ? Math.max(1.3, Math.min(2, Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z) / 9)) : Math.min(2, Math.max(1, Math.hypot(p.x - spelare.pos.x, p.z - spelare.pos.z) / 9))); malPil.visible = true; malPil.position.copy(p).add(new THREE.Vector3(stor ? 0.65 : 0, 0, 0)); malPil.position.y = pilTopp(p) + 0.3 + Math.abs(Math.sin(performance.now() / 300)) * 0.15;   /* ED5: spetsen 0,3 m ovanför det man ser, gungar max 0,15 m */ malPil.rotation.y += 0.04; }
   if (malPil.visible && performance.now() < pilPulsTill) malPil.scale.multiplyScalar(1 + 0.35 * Math.abs(Math.sin(performance.now() / 160)));   /* A-083: pilen blinkar (H och ledtrådarna) */
   // din egen röst när dagboken är läst: dags att spika skylten
-  if (!S.skyltUppe && S.steg <= 1 && !sagtBygg && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas) { sagtBygg = true; bud(() => { if (!S.skyltUppe) { setTimeout(() => { kanalLagg({ vikt: 'STORY', vem: 'du', text: DU_GULD, delar: [{ text: DU_GULD }, { text: DU_BYGG, visa: () => tittaMot(VAG_SKYLT.x, VAG_SKYLT.z, 1.8) }], villkor: () => !S.skyltUppe, lugnOk: true, forst: true,   /* A-063: prompten före handlingen – stryks om skylten redan sitter */
+  if (!S.skyltUppe && S.steg <= 1 && !sagtBygg && !S.dag1Forsta && ui.igang && medEl2.hidden && !medKo.length && !dagbokLas) { sagtBygg = true; bud(() => { if (!S.skyltUppe) { setTimeout(() => { kanalLagg({ vikt: 'STORY', vem: 'du', text: DU_GULD, delar: [{ text: DU_GULD }, { text: DU_BYGG, visa: () => tittaMot(VAG_SKYLT.x, VAG_SKYLT.z, 1.8) }], villkor: () => !S.skyltUppe, lugnOk: true, forst: true,   /* A-063: prompten före handlingen – stryks om skylten redan sitter */
       efter: () => { if (!S.kap1Visad) { S.kap1Visad = true; visaKapitelKort(1, KAP1_NAMN, KAP1_MAL); sparaSnart(); } } });   /* A-062 v3: tankarna → målet → kapitelkortet tyst */ }, 1000); setTimeout(() => { if (!S.kap1Visad && ui.igang) { S.kap1Visad = true; visaKapitelKort(1, KAP1_NAMN, KAP1_MAL); sparaSnart(); } }, 30000); } }); }
   // instruktionen läses först när dagboken är läst och (i ett nytt spel) skylten är uppe
   // punkt 15: ett nytt mål är en sak i kanalen. Målrutan visar det klara målet med ✓ tills det nya målets tur kommer –
@@ -5812,7 +5812,7 @@ function sov() {
     const ig = S.igar, rapport = ig ? `<span class="br-rapport">${S.saljLadaIgar ? `📦 Ali hämtade säljlådan i natt: ${S.saljLadaIgar.n} st · +${krT(S.saljLadaIgar.summa)} kr<br>` : ''}${S.webbIgar ? `🖥️ Webbshopen: ${S.webbIgar.n} paket levererade · +${krT(S.webbIgar.du)} kr<br>` : ''}Igår: ${ig.printat} printat · ${ig.salt} sålt</span>` : '';
     const tankeHtml = tanke ? `<span class="br-tanke">💭 ${rens(tanke.text)}</span>` : '';
     const hoger = `${aliVillHtml()}${rapport}${tankeHtml}${[2, 4].includes(S.dag) && !(S.betygDag || []).includes(natt) ? snabbBetygHtml(natt) : ''}`;
-    ui.visaStart(`☀️ Dag ${S.dag}`, `<div class="br-morgon${hoger ? '' : ' en'}"><div class="br-morgon-v"><b>${del.replace(/^Dag \d+ – /, '')}</b>${nasta && DAG_STORY[S.dag - 1] ? `<p class="br-story">${DAG_STORY[S.dag - 1]}</p>` : nasta ? '' : S.julFirad ? efterspelHtml() : ''}${nasta?.del ? `<div class="br-dagmal-rub">Dagens mål</div>${dagMalHtml(dagMalLista(nasta.del))}` : ''}</div>${hoger ? `<div class="br-morgon-h">${hoger}</div>` : ''}</div>`, 'Börja dagen');
+    ui.visaStart(`☀️ Dag ${S.dag}`, `<div class="br-morgon${hoger ? '' : ' en'}"><div class="br-morgon-v"><b>${del.replace(/^Dag \d+ – /, '')}</b>${nasta && DAG_STORY[S.dag - 1] ? `<p class="br-story">${DAG_STORY[S.dag - 1]}</p>` : nasta ? '' : S.julFirad ? efterspelHtml() : ''}</div>${hoger ? `<div class="br-morgon-h">${hoger}</div>` : ''}</div>`, 'Börja dagen');
     kopplaSnabbBetyg(natt);
     const vanta = setInterval(() => { if (!ui.igang) return; clearInterval(vanta); handelse('morgonkortStangt', { dag: S.dag }); const f = morgonKo; morgonKo = null; if (f) setTimeout(f, 2500); }, 300);
   }, 5500);
@@ -12320,22 +12320,29 @@ function dagMalLista(del) {
 }
 const dagMalHtml = (lista) => `<ul class="ph-dagmal">${lista.map((x) => `<li class="${x.klar ? 'klar' : ''}">${x.bild ? ikonHtml(x.bild, 34) : '<span class="tom"></span>'}<span>${rens(x.text)}</span></li>`).join('')}</ul>`;
 const DAG1_NOTIS = 'Dag 1 – äntligen fri från tjat.';
+/* A-076 tillägg 13:20 (facit 13:26): bara nästa uppgift syns. Dagboksnotisen läser känslan och slutar med att du säger första uppgiften –
+   uppgiftsrutan glider in medan det sägs, och notisen tonas bort. Ingen lista över dagens mål någonstans. */
+const DAG1_KANSLA = ['Ingen som säger åt mig att städa.', 'Bara jag, ett skjul utan tak och en gård full av skräp.', 'Det känns konstigt bra.'];
+const DAG1_FORST = 'Först ska jag spika upp skylten.';
 function visaDagNotis() {
-  if (S.dag !== 1 || S.dag1Sida) return; S.dag1Sida = true; sparaSnart();
+  if (S.dag !== 1 || S.dag1Sida) return; S.dag1Sida = true; S.dag1Forsta = true; sparaSnart();
   regiLogg('dagbok-notis', 'story', 'du', `Dag ${S.dag}`, 3000);   /* A-080 */
-  const del = STEG[0].del, el = document.createElement('div'); el.className = 'ph-dagnotis';
-  el.innerHTML = `<div class="rub">📔 ${rens(DAG1_NOTIS)}</div><div class="und">Dagens mål</div>${dagMalHtml(dagMalLista(del))}`;
+  document.body.classList.add('dn-forsta');
+  const el = document.createElement('div'); el.className = 'ph-dagnotis';
+  el.innerHTML = `<div class="rub">📔 ${rens(DAG1_NOTIS)}</div>${DAG1_KANSLA.map((t) => `<div class="rad">${rens(t)}</div>`).join('')}`;
   document.body.appendChild(el); requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('syns')));
-  textLogg('lapp', '📔 Dagbok', DAG1_NOTIS + ' Dagens mål: ' + dagMalLista(del).map((x) => x.text).join(' · '), 'A-076');
+  textLogg('lapp', '📔 Dagbok', [DAG1_NOTIS, ...DAG1_KANSLA].join(' '), 'A-076');
   try { introLjud3('penna'); } catch {}
-  setTimeout(() => prata('du', DAG1_NOTIS, 'STORY'), 700);
-  const krymp = () => { if (el.dataset.ut) return; el.dataset.ut = 1; const h = document.querySelector('.dn-mal')?.getBoundingClientRect(), r = el.getBoundingClientRect();
-    if (h && h.width) { el.style.transformOrigin = 'top left'; el.style.transform = `translate(${h.left - r.left}px, ${h.top - r.top}px) scale(${Math.max(0.05, h.width / r.width)})`; }
-    el.style.opacity = '0'; setTimeout(() => el.remove(), 900); handelse('dagNotisKlar'); };
-  el.onclick = krymp; setTimeout(krymp, 7500);
+  let slutat = false;
+  const krymp = () => { if (el.dataset.ut) return; el.dataset.ut = 1; el.style.transition = 'opacity .6s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 700); handelse('dagNotisKlar'); };
+  const forst = () => { if (slutat) return; slutat = true; prata('du', DAG1_FORST, 'STORY', { forst: true, start: () => { document.body.classList.remove('dn-forsta'); krymp(); } }); };
+  setTimeout(() => prata('du', [DAG1_NOTIS, ...DAG1_KANSLA].join(' '), 'STORY', { slut: forst }), 700);
+  setTimeout(() => { forst(); setTimeout(() => { document.body.classList.remove('dn-forsta'); krymp(); }, 6000); }, 16000);   // reserv
+  el.onclick = () => { forst(); };
 }
 { const st = document.createElement('style'); st.textContent = `.ph-dagnotis{position:fixed;left:50%;top:16%;transform:translateX(-50%);z-index:60;width:min(460px,86vw);background:#f6eedb;color:#2a2018;border-radius:8px;padding:18px 22px 14px;box-shadow:0 12px 40px rgba(0,0,0,.45);font:400 20px/1.4 "Bradley Hand","Segoe Print","Comic Sans MS",cursive;opacity:0;transition:opacity .5s,transform .8s cubic-bezier(.5,0,.3,1);cursor:pointer}
-.ph-dagnotis.syns{opacity:1}.ph-dagnotis .rub{font-weight:700;font-size:23px}.ph-dagnotis .und{font:800 12px system-ui;letter-spacing:.12em;text-transform:uppercase;color:#8a6a3f;margin:8px 0 4px}
+.ph-dagnotis.syns{opacity:1}.ph-dagnotis .rad{margin-top:4px}
+body.dn-forsta .dn-uppg{opacity:0;transform:translateY(-18px)}.dn-uppg{transition:opacity .5s,transform .5s}.ph-dagnotis .rub{font-weight:700;font-size:23px}.ph-dagnotis .und{font:800 12px system-ui;letter-spacing:.12em;text-transform:uppercase;color:#8a6a3f;margin:8px 0 4px}
 .ph-dagmal{list-style:none;margin:0;padding:0;display:grid;gap:4px}.ph-dagmal li{display:flex;align-items:center;gap:10px}.ph-dagmal li img,.ph-dagmal .tom{width:34px;height:34px;flex:none;border-radius:50%;background:rgba(0,0,0,.06)}.ph-dagmal li.klar{opacity:.5;text-decoration:line-through}
 .br-morgon .ph-dagmal{font:600 15px system-ui;margin-top:10px}.br-morgon .ph-dagmal li img,.br-morgon .ph-dagmal .tom{width:28px;height:28px}
 .dn-mal .c img{width:80%;height:80%;border-radius:50%}.dn-mal .c.klar{position:relative}.dn-mal .c .bock{position:absolute;right:-3px;bottom:-3px;font:900 11px system-ui;color:#3ddc84;text-shadow:0 0 3px #000}`; document.head.appendChild(st); }
@@ -15928,6 +15935,11 @@ if (ui) {
     if (!ui.igang) return []; const T = synligaTexter(); const ut = [];
     for (const [re, sak, har] of SAKNAD_SAK) if (!har()) for (const [v, t] of T) if (re.test(t) && v !== 'målrutan' && v !== 'NU-rutan') ut.push(`${v}: "${t.slice(0, 50)}" nämner ${sak}`);
     return ut.slice(0, 3); }, { enGang: true });
+  regelvakt.regel('FRAMTIDA MÅL SYNS', () => {   /* A-076 tillägg 13:20: ingen text eller ikon avslöjar senare uppgifter samma dag */
+    if (!ui.igang) return []; const st = STEG[S.steg]; if (!st) return [];
+    const syns = [dnTopp.textContent, ...[...document.querySelectorAll('.ph-dagnotis, .ph-notis')].map((e) => e.textContent)].join(' | ');
+    const ut = []; for (let j = S.steg + 1; j < STEG.length && STEG[j].del === st.del; j++) { let t = ''; try { t = rens(stegText(STEG[j]) || ''); } catch {} if (t.length > 12 && syns.includes(t) && !rens(String(malRaw || '')).includes(t)) ut.push(`"${t.slice(0, 50)}" syns före sin tur`); }
+    if (/\bav \d+ · sedan sova|Dagens mål \d/.test(syns)) ut.push('dagens mål räknas upp'); return ut.slice(0, 3); }, { enGang: true });
   regelvakt.regel('RÖST SAKNAS', () => [...saknadRost].map((v) => `${v} pratar utan egen röst i rost.js`), { enGang: true });   /* A-078 tillägg 11:45 */
   regelvakt.regel('MENY UTAN VÄG', () => { if (!oppenAtgard) return []; if (!menyOppen()) { oppenAtgard = null; return []; } const svar = kanNu(oppenAtgard.atgard, oppenAtgard); return svar.ja ? [] : [`${oppenAtgard.atgard}-menyn är öppen fast ${svar.skal.toLowerCase()}`]; });   /* A-076 tillägg 11:35 */
   regelvakt.regel('MÅL UTAN LEDTRÅD', () => { if (!ui.igang) return []; const st = STEG[S.steg]; return st && !st.sov && !ledtradFor(st) ? [`"${rens(stegText(st) || '').slice(0, 60)}" har ingen ledtråd`] : []; }, { enGang: true });   /* A-083 */
@@ -16390,6 +16402,9 @@ body.dn .hud-status,body.dn .hud-flikar,body.dn .ph-varningar,body.dn .ph-meddel
 .dn-uppg .bild{flex:none;width:58px;height:58px;border-radius:12px;background:rgba(255,255,255,.07);display:grid;place-items:center}.dn-uppg .bild img,.dn-uppg .bild svg,.dn-uppg .bild > *{width:44px;height:44px}
 .dn-uppg .txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
 .dn-uppg .nu{font:900 11px system-ui;letter-spacing:.14em;color:#f5c542}
+.dn-klar-kopia{background:rgba(22,110,58,.92)!important;border-color:#3ddc84!important;pointer-events:none}.dn-klar-kopia .nu{color:#d6ffe6!important}.dn-klar-kopia .dn-stor-bock{position:absolute;right:-6px;bottom:-6px;width:26px;height:26px;border-radius:50%;background:#3ddc84;color:#0e3a20;display:grid;place-items:center;font:900 16px system-ui}
+.dn-uppg.dn-glidin{animation:dnGlidIn .55s .62s both ease-out}@keyframes dnGlidIn{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:none}}
+.dn-mal{min-height:26px;gap:4px}.dn-mal .c.klar{width:26px;height:26px;margin:0;border-radius:50%;background:rgba(61,220,132,.18);box-shadow:0 0 0 2px #3ddc84;position:relative}
 .dn-uppg .rub{font:900 19px/1.2 var(--rubrik,system-ui);white-space:normal;overflow-wrap:anywhere}
 .dn-uppg .tips{font:600 12.5px system-ui;color:#aeb6c4}
 .dn-uppg .rakn{display:flex;align-items:baseline;gap:6px;font:700 13px system-ui;color:#cfd5df}.dn-uppg .rakn b{font:900 22px/1 system-ui;color:#58d68d}.dn-uppg .rakn em{font-style:normal;color:#f5c542;margin-left:auto;padding-left:14px;white-space:nowrap}
@@ -16441,27 +16456,39 @@ function dnRaknare(text) {
   if (/^(Köp|Tjäna)\b/.test(text)) { const x = nastaKop?.(); if (x && x.pris && S.mynt < x.pris) return { rub: text, har: S.mynt.toLocaleString('sv-SE'), txt: `av ${x.pris.toLocaleString('sv-SE')} kr`, kvar: `${(x.pris - S.mynt).toLocaleString('sv-SE')} kr kvar` }; }
   return { rub: text };
 }
+function dnKlarAnim(u, forra, forraBild, gammalHtml) {   /* A-076 tillägg 13:20: KLART! → glider åt vänster och krymper till en bock → nästa glider in */
+  try {
+        const r0 = u.getBoundingClientRect(), kl = u.cloneNode(true); if (gammalHtml) kl.innerHTML = gammalHtml; kl.classList.add('dn-klar-kopia'); Object.assign(kl.style, { position: 'fixed', left: r0.left + 'px', top: r0.top + 'px', width: r0.width + 'px', height: r0.height + 'px', margin: 0, zIndex: 24 });
+        kl.querySelector('.nu') && (kl.querySelector('.nu').textContent = 'KLART!'); kl.querySelector('.bild')?.insertAdjacentHTML('beforeend', '<b class="dn-stor-bock">✓</b>'); kl.querySelector('.tips') && (kl.querySelector('.tips').textContent = ''); kl.querySelector('.nasta-hjalp')?.remove();
+        document.body.appendChild(kl); try { ljud.klar?.(); } catch {}
+        const mal = dnTopp.querySelector('.dn-mal').getBoundingClientRect();
+        setTimeout(() => { kl.style.transition = 'transform .5s ease-in, opacity .5s ease-in'; kl.style.transformOrigin = 'left center'; kl.style.transform = `translate(${(mal.right || r0.left) - r0.left}px, ${(mal.top || r0.top) - r0.top}px) scale(.08)`; kl.style.opacity = '0.2'; }, 650);
+        setTimeout(() => { kl.remove(); S.dagBockar.lista.push({ text: forra, bild: forraBild }); dnC.mal = null; sparaSnart(); }, 1200);
+        u.classList.remove('dn-glidin'); void u.offsetWidth; u.classList.add('dn-glidin');
+  } catch (e) {}
+}
 function ritaDN() {
   // dagrutan
   const k = klockan(), d = dnTopp.querySelector('.dn-dag');
   dnSatt(d.querySelector('.dagt'), 'textContent', `Dag ${S.dag}`);
   dnSatt(d.querySelector('.ar'), 'textContent', document.body.classList.contains('ph-tidig') ? '' : rens(ARSTID_NAMN[arstid()] || ''));
   const kl = d.querySelector('.klk'); dnSatt(kl, 'textContent', k == null ? '--:--' : klockText(Math.min(k, 21 * 60))); kl.classList.toggle('natt', k != null && (k >= 20 * 60 || k < 7 * 60));
-  const poster = hudPoster || [], n = poster.length, klara = poster.filter((p) => p.klar).length, allt = n > 0 && klara === n, sova = sovDags();
-  const nyckel = poster.map((p) => (p.klar ? 1 : p.nu ? 2 : 0)).join('') + (sova || allt ? 'm' : '');
+  /* A-076 tillägg 13:20: bara nästa uppgift syns – dagrutan visar de avklarade uppgifterna som små gröna bockar med uppgiftens bild, inget om det som kommer */
+  const sova = sovDags(); if (!S.dagBockar || S.dagBockar.dag !== S.dag) S.dagBockar = { dag: S.dag, lista: [] };
+  const nyckel = S.dagBockar.lista.length + (sova ? 'm' : '');
   if (dnC.mal !== nyckel) {
-    { const k1 = (dnC.mal || '').split('1').length, k2 = nyckel.split('1').length; if (dnC.mal && k2 > k1) { try { ljud.klar?.(); } catch {} } }   /* A-076: ett kort pling när ett mål bockas av */
     dnC.mal = nyckel;
-    const MAXC = 7, nuI = Math.max(0, poster.findIndex((p) => p.nu)), fran = n <= MAXC ? 0 : Math.max(0, Math.min(n - MAXC, nuI - 3)), vis = poster.slice(fran, fran + MAXC);   // många mål (dag 1): ett fönster runt det aktuella
-    d.querySelector('.dn-mal').innerHTML = (fran > 0 ? '<span class="mer">…</span>' : '') + vis.map((p, j) => { const i = fran + j; return `${j || fran ? `<span class="s${p.klar ? ' gul' : ''}"></span>` : ''}<span class="c${p.klar ? ' klar' : p.nu ? ' nu' : ''}" title="${rens(p.text).replace(/"/g, '')}">${p.bild && ikonBild(p.bild) ? `${ikonHtml(p.bild, 24)}${p.klar ? '<i class="bock">✓</i>' : ''}` : p.klar ? DN_SOL(i + 1) : i + 1}</span>`; }).join('') + (fran + MAXC < n ? '<span class="s"></span><span class="mer">…</span>' : '') + `${n ? `<span class="s${allt ? ' gul' : ''}"></span>` : ''}<span class="mane${sova || allt ? ' pa' : ''}" title="Sova">${DN_MANE}</span>`;
-    { const w = d.querySelector('.dn-mal').getBoundingClientRect().width || 240; d.querySelector('.dn-mal').style.setProperty('--c', Math.max(12, Math.min(24, Math.floor((w - 50) / Math.max(1, Math.min(n, 7)) - 4))) + 'px'); }
-    d.querySelector('.maltxt').textContent = !n ? (sova ? 'Klart – sov när du vill' : '') : allt || sova ? 'Klart – sov när du vill' : `Dagens mål ${klara} av ${n} · sedan sova`;
+    d.querySelector('.dn-mal').innerHTML = S.dagBockar.lista.slice(-9).map((b) => `<span class="c klar" title="${rens(b.text).replace(/"/g, '')}">${b.bild && ikonBild(b.bild) ? ikonHtml(b.bild, 22) : ''}<b class="bock">✓</b></span>`).join('');
+    d.querySelector('.maltxt').textContent = sova ? 'Klart – sov när du vill' : '';
   }
   // uppgiftsrutan
   const u = dnTopp.querySelector('.dn-uppg'), text = rens(String(malRaw || '')).replace(/^✓\s*/, ''), r = dnRaknare(text);
+  if (dnC.vantar && ui.igang && medEl2.hidden && !document.body.classList.contains('dn-forsta')) { const v = dnC.vantar; dnC.vantar = null; dnKlarAnim(u, v.forra, v.forraBild, v.gammalHtml); }
+  if (dnC.uppg === text) dnC.gammalHtml = u.innerHTML;
   if (dnC.uppg !== text) {
-    dnC.uppg = text;
-    const [ikon, t] = nastaAtgard(malRaw); const bild = stegBild(malRaw);
+    const forra = dnC.rub, forraSteg = dnC.steg, forraBild = dnC.bild; dnC.uppg = text; dnC.steg = S.steg; dnC.rub = r.rub;
+    if (forra && forra !== r.rub && forraSteg != null && S.steg >= forraSteg && !/^Klart/.test(forra)) dnC.vantar = { forra, forraBild, gammalHtml: dnC.gammalHtml };   /* en ny uppgift (inte bara en räknare) – visas när spelet syns */
+    const [ikon, t] = nastaAtgard(malRaw); const bild = stegBild(malRaw); dnC.bild = bild;
     /* A-072: bilden av saken + symbolen för vad man gör. Två delar = en bild per del, bockas av. Klick läser upp målet. */
     const verb = malVerb(malRaw), delar = malDelar(), bEl = u.querySelector('.bild');
     bEl.innerHTML = (delar ? `<span style="display:flex;gap:4px;width:auto;height:auto">${delar.map(([t, klar]) => `<span style="position:relative;width:34px;height:34px;opacity:${klar ? 0.5 : 1}">${ikonHtml(t, 34)}${klar ? '<b style="position:absolute;right:-3px;bottom:-5px;color:#4ade80;font-size:15px">✓</b>' : ''}</span>`).join('')}</span>` : bild ? ikonHtml(bild, 46) : ik(ikon || 'mal')) + verbHtml(verb);
@@ -16469,7 +16496,7 @@ function ritaDN() {
     try { sattPilBild(delar ? delar.find(([, k]) => !k)?.[0] : bild, verb); } catch {}
     u.querySelector('.tips').textContent = rens(t !== malRaw ? t : nuTips(t));
   }
-  { const mi = momentInfo(); dnSatt(u.querySelector('.nu'), 'textContent', mi ? `NU · ${mi.namn.toUpperCase()} ${mi.steg}/${mi.av}` : 'NU'); dnSatt(u.querySelector('.rub'), 'textContent', r.rub); }   /* EI 21 · A-062: momentet på egen rad, målet ensamt i rubriken */
+  { dnSatt(u.querySelector('.nu'), 'textContent', 'NU');   /* A-076 tillägg 13:20: inga "1/2" som avslöjar fler uppgifter */ dnSatt(u.querySelector('.rub'), 'textContent', r.rub); }   /* EI 21 · A-062: momentet på egen rad, målet ensamt i rubriken */
   const rk = u.querySelector('.rakn'); rk.hidden = r.har == null;
   if (r.har != null) { dnSatt(rk.querySelector('b'), 'textContent', String(r.har)); dnSatt(rk.querySelector('span'), 'textContent', r.txt); dnSatt(rk.querySelector('em'), 'textContent', r.kvar); }
   document.documentElement.style.setProperty('--dn-topp-h', Math.round(dnTopp.getBoundingClientRect().height) + 'px');
