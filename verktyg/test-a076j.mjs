@@ -39,15 +39,15 @@ ut.push([`FORTSÄTT (Enter) stänger · du säger "Först ska jag spika upp skyl
 await H(() => { const P = window.__printahem; P.hammarPaBrador.userData.interaktion.aktivera(); P.byt(P.S.hotbar.findIndex((x) => x?.typ === 'hammare')); P.bradhog.userData.interaktion.aktivera(); });
 let k2 = null; for (let i = 0; i < 80 && !k2; i++) { await p.waitForTimeout(250); k2 = await kort(); }
 await p.waitForTimeout(600); await p.screenshot({ path: dir + 'j-skylt-kvittens.png' });
-await p.keyboard.press('Escape'); await p.waitForTimeout(500);
+await p.keyboard.press('Space'); await p.waitForTimeout(500);   /* A-076 15:30: Esc på kortet öppnar menyn – mellanslag stänger */
 const stangd = !(await kort());
-ut.push([`skylt-kvittensen i dagbokskortet: "${(k2?.text || '').slice(0, 50)}…" · Esc stänger (${stangd})`, !!k2 && k2.rost && k2.fortsatt && stangd]);
+ut.push([`skylt-kvittensen i dagbokskortet: "${(k2?.text || '').slice(0, 50)}…" · mellanslag stänger (${stangd})`, !!k2 && k2.rost && k2.fortsatt && stangd]);
 // 5. läs igen ur dagboken
 await H(() => window.__printahem.oppnaDagbok()); await p.waitForTimeout(500);
 await H(() => { document.querySelector('[data-flik="dagbok"]')?.click(); }); await p.waitForTimeout(500);
 await H(() => { document.querySelector('[data-las]')?.click(); }); await p.waitForTimeout(800);
 const k3 = await kort(); await p.screenshot({ path: dir + 'j-las-igen.png' });
-await p.keyboard.press('Escape'); await p.waitForTimeout(400);
+await p.keyboard.press('Enter'); await p.waitForTimeout(400);
 const panelKvar = await H(() => !!document.querySelector('.ui-panel, .ph-ruta, [data-flik]'));
 ut.push([`läs igen ur dagboken: samma kort (${!!k3}) · tillbaka till dagboken (${panelKvar})`, !!k3 && k3.fortsatt]);
 await H(() => { document.querySelectorAll('[data-stang], .ui-stang').forEach((x) => x.click()); }); await p.keyboard.press('Escape'); await p.waitForTimeout(400);
@@ -55,7 +55,7 @@ await H(() => { document.querySelectorAll('[data-stang], .ui-stang').forEach((x)
 await H(() => { window.__printahem.S.rost = false; window.__printahem.sparaNu?.(); });
 // 7. sömn → morgon
 await H(() => { const P = window.__printahem, S = P.S; document.querySelectorAll('.ph-med:not([hidden]) .fp-knapp').forEach((x) => x.click()); S.sang = true; S.steg = P.STEG.findIndex((x) => x.sov); P.sov(); });
-let k4 = null; for (let i = 0; i < 100 && !k4; i++) { await p.waitForTimeout(250); k4 = await kort(); if (k4 && !/Dag 2/.test(k4.rub)) k4 = null; }
+let k4 = null; for (let i = 0; i < 100 && !k4; i++) { await p.waitForTimeout(250); if (await H(() => !!document.querySelector('.ph-hurvar'))) await p.keyboard.press('Escape');   /* A-076 15:30: "Hur var dagen?" hoppas över */ k4 = await kort(); if (k4 && !/Dag 2/.test(k4.rub)) k4 = null; }
 const m4 = await matning(); const bt = m4.borjat[m4.borjat.length - 1], vv = m4.visad.filter((x) => x.morgon).pop();
 const d4 = bt != null && vv ? vv.t - bt : 99999;
 await p.waitForTimeout(400); await p.screenshot({ path: dir + 'j-morgon-dag2.png' });
