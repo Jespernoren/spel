@@ -10,13 +10,13 @@ await p.addInitScript(() => localStorage.setItem('spar:printahem2:v1', JSON.stri
 await p.goto(url); await p.waitForTimeout(4000); await p.evaluate(() => window.__printahem.visaIntroDirekt());
 const synliga = () => p.evaluate(() => [...document.querySelectorAll('img.ph-il')].filter((e) => /v5pack10/.test(e.src) && +getComputedStyle(e).opacity > 0.5).map((e) => e.src.match(/v5pack10\w/)[0]));
 const ut = [];
-await p.waitForFunction(() => /Jag packar ryggan/.test(document.querySelector('.ph-intro-ord')?.textContent || ''), null, { timeout: 300000, polling: 30 });
+await p.waitForFunction(() => /Ryggan på/.test(document.querySelector('.ph-intro-ord')?.textContent || ''), null, { timeout: 300000, polling: 30 });
 await p.waitForTimeout(900); const f1 = await synliga(); await p.screenshot({ path: `${dir}ruta10-klipp1.png` });
-ut.push(['"Jag packar ryggan …" → bara v5pack10g', f1.join(',') === 'v5pack10g', f1.join(',')]);
-await p.waitForFunction(() => /Och surrar fast/.test(document.querySelector('.ph-intro-ord')?.textContent || ''), null, { timeout: 30000, polling: 30 });
+ut.push(['"Ryggan på …" → bara v5pack10g', f1.join(',') === 'v5pack10g', f1.join(',')]);
+await p.waitForFunction(() => /hemma igen till jul/.test(document.querySelector('.ph-intro-ord')?.textContent || ''), null, { timeout: 30000, polling: 30 });
 const t0 = Date.now(), steg = [];
 for (const [ms, n] of [[300, 'a'], [1300, 'b'], [2600, 'c']]) { while (Date.now() - t0 < ms) await p.waitForTimeout(20); const s = await synliga(); steg.push(s.filter((x) => x !== 'v5pack10g').pop() || '-'); await p.screenshot({ path: `${dir}ruta10-klipp2${n}.png` }); }
-ut.push(['"Och surrar fast …" → v5pack10a, b, c i tur och ordning', steg.join(',') === 'v5pack10a,v5pack10b,v5pack10c', steg.join(',')]);
+ut.push(['"Du är hemma igen till jul …" (inkorg 24) → v5pack10a, b, c i tur och ordning', steg.join(',') === 'v5pack10a,v5pack10b,v5pack10c', steg.join(',')]);
 ut.push(['0 sidfel', fel.length === 0, fel.slice(0, 2).join(' | ')]);
 for (const [t, ok, x] of ut) console.log(`${ok ? '✓' : '✗'} ${t} ${x || ''}`);
 await b.close();
