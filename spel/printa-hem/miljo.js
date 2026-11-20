@@ -278,6 +278,7 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans, hojd, markFarg })
   function satArstid(a) {
     for (const [m, bas, r] of lovLista) {
       if (a === 'sommar') { m.visible = true; m.material.color.copy(bas); }
+      else if (a === 'december') { m.visible = r > 0.7; m.material.color.copy(bas).lerp(HOST[Math.floor(r * 4) % 4], 0.6); }   /* inkorg 24c: december i södra Sverige – mest kala träd, några bruna löv kvar, grönt gräs, ingen snö */
       else if (a === 'host') { m.visible = r > 0.15; m.material.color.copy(bas).lerp(HOST[Math.floor(r * 4) % 4], 0.85); }
       else { m.visible = r > 0.9; m.material.color.copy(HOST[1]).lerp(new THREE.Color(0x6a4a2a), 0.6); }
     }
@@ -302,5 +303,5 @@ export function byggMiljo({ scen, TOMT, TIPP, ALI, fri, grans, hojd, markFarg })
     for (let i = 0; i < p.count; i++) { let y = p.getY(i) - dt * (0.8 + (i % 7) * 0.12); if (y < 0) y += 18; p.setY(i, y); p.setX(i, p.getX(i) + Math.sin(y + i) * dt * 0.15); }
     p.needsUpdate = true;
   }
-  return { uppdatera, trad, mark, staket, byggStaket, rojUt, satArstid, uppdateraSno };
+  return { uppdatera, trad, mark, staket, byggStaket, rojUt, satArstid, uppdateraSno, snoSyns: () => !!snoFall?.visible };
 }

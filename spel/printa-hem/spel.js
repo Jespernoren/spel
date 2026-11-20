@@ -204,7 +204,8 @@ const VAROR = {
   stampel: { namn: 'Kopia av chefens stämpel', ikon: '', gava: true },
   tillstand: { namn: 'Parkeringstillstånd för husvagn', ikon: '', gava: true },
   sang: { storlek: 1, namn: 'Säng', ikon: '🛏️', hem: true },          // 2 rullar. Kräver instruktionen hos Ali. Säljs inte.
-  nyckelring: { namn: 'Nyckelring', ikon: '🔑' },      // 10 % rulle = en halv flaska
+  nyckelring: { namn: 'Nyckelring', ikon: '🔑' },
+  adventskalender: { namn: 'Adventskalender', ikon: '📅', syns: () => !S.kalender && S.dag < JULAFTON_DAG, beskr: 'Hänger på skjulets vägg. En lucka varje morgon.' },   /* inkorg 24b p.2 */      // 10 % rulle = en halv flaska
   cykelS: { namn: 'Cykeln', ikon: '🚲', beskr: 'Den ska stå bredvid skrivaren, mot skräpberget.' },   /* A-068 · A-076 13:55 */
   skrivareS: { namn: 'Storebrors skrivare', ikon: '🖨️', beskr: 'Långsam och låter konstigt – men den funkar. Den ska stå där borta, mot skräpberget.' },   // punkt AS
   kruka: { namn: 'Blomkruka', ikon: '🪴', trivsel: 5, placerbar: true, radie: 0.3, syns: () => !!S.krukaErbjuden || S.ritningar.includes('recept:kruka') || upplast('kruka') },   /* ED: receptet köps hos Ali, inga gratisrecept */   // punkt AX: receptet dag 2, gratis från Ali   // punkt AG: receptet får man av Ali vid första försäljningen
@@ -525,9 +526,9 @@ const LAPPAR = {
   tr_brev: ['✉️ Brev från Rolf', 'ÖJ. Ja va int mä mej själv på konditoriet. Förlåt att ja prata så mycke. Bakom husvagnen fanns Birgittas trädgård. Nu ä dä bara nässlor. Ja har int rört den på sju år. Ja kan int. Men om nån annan började … Ja vet int. Du ä ju bra på skräp. MVH ROLF'],
   tr_rosor: ['✉️ Brev från Rolf', 'Hon hade gillat dä. Ja planterade rosorna i natt. Kajsa höll ficklampan. Hon ä int bra på att hålla ficklampa. MVH ROLF'],
   skylt: ['📔 Dagbok', 'Spikade ihop en skylt av lösa bräder från tippen.\n\nSoptippsvägen 1.\n\nDet är inte mycket för världen.\nMen det är MITT.'],
-  start: ['📔 Dagbok', 'Dag 1. Inget mer tjat.\n\nEn skrivare, ett skjul och en säng.\nDet räcker för i natt.\n\nGården är full av skräp. I morgon.'],   /* inkorg 24 p.3: kvällen slutar med morgondagens problem */
+  start: ['📔 Dagbok', 'Dag 1. Nitton år. Inget mer tjat.\n\nEn skrivare, ett skjul och en säng.\nDet räcker för i natt.\n\nGården är full av skräp. I morgon.'],   /* inkorg 24 p.3: kvällen slutar med morgondagens problem */
   sang: ['📔 Dagbok', 'Första natten i en riktig säng.\nJag printade den själv.'],
-  mammajul: ['✉️ Brev från Mamma', 'Du sa att du skulle fira jul ensam. Jag är glad att du ljög.\n\nGrattis till nya huset. Oj vad städat och fint det är. Imponerad. Pappa också, han säger det bara inte. Kram, Mamma'],   /* inkorg 24 p.6: brevet svarar på vadet */
+  mammajul: ['🎁 Brev från Mamma', 'Du sa att du skulle fira jul ensam. Jag är glad att du ljög. Kram, Mamma'],   /* inkorg 24c p.3: brevet i julklappen svarar på vadet */
   polett: ['📔 Dagbok', 'Dag 14. Mammas paket kom tillbaka: "Okänd mottagare". Jag bor ju här. Det här är mitt hem nu. Men på pappret finns jag inte här. Jag måste bli folkbokförd – och då måste jag äga tomten jag bor på och ha ett riktigt hus.'],
   sopbil: ['📔 Dagbok', 'Sopbilen tippade en ny last.\n\nAllt det skräpet –\noch grinden är låst.'],
   malt: ['📔 Dagbok', 'Kvarnen funkar.\n\nSoptippen är en gruva.'],
@@ -541,7 +542,7 @@ const LAPPAR = {
   gard: ['📔 Dagbok', 'Gården är STÄDAD.\nAv mig. Frivilligt.\n\nMamma skulle aldrig tro det.'],
 };
 /* inkorg 24 p.3: kvällskroken – varje kväll slutar med morgondagens problem i en rad. Dag 1 står i LAPPAR.start, dag 2–21 får en kort kvällssida när sov-uppgiften kommer. */
-const KVALL_KROK = ['Gården är full av skräp. I morgon.', 'Taket läcker. I morgon.', 'Benen orkar inte trampa mer. I morgon.', 'En skrivare räcker inte. I morgon.', 'Det tunga skräpet går inte att mala. I morgon.', 'Blå plast säljer billigt. I morgon.', 'Ryggen värker av allt bärande. I morgon.', 'Strömmen räcker inte till alla skrivare. I morgon.', 'Det drar kallt genom väggarna. I morgon.', 'Jag hinner inte bära allt skräp själv. I morgon.', 'Maskinerna står och väntar på mig. I morgon.', 'Allt säljs bara när jag är vaken. I morgon.', 'Kvarnen är för långsam. I morgon.', 'Skjulet är fortfarande ett skjul. I morgon.', 'Marken är inte min. I morgon.', 'Rolf lämnade något i sina rester. I morgon.', 'Huset behöver en grund. I morgon.', 'Jag vill bo i ett riktigt hus. I morgon.', 'Det blir kallare för varje natt. I morgon.', 'Jag finns inte på riktigt här än. I morgon.', 'I morgon är det julafton.'];
+const KVALL_KROK = ['Gården är full av skräp. I morgon.', 'Taket läcker. I morgon.', 'Benen orkar inte trampa mer. I morgon.', 'En skrivare räcker inte. I morgon.', 'Det tunga skräpet går inte att mala. I morgon.', 'Blå plast säljer billigt. I morgon.', 'Ryggen värker av allt bärande. I morgon.', 'Strömmen räcker inte till alla skrivare. I morgon.', 'Det drar kallt genom väggarna. I morgon.', 'Jag hinner inte bära allt skräp själv. I morgon.', 'Maskinerna står och väntar på mig. I morgon.', 'Allt säljs bara när jag är vaken. I morgon.', 'Kvarnen är för långsam. I morgon.', 'Skjulet är fortfarande ett skjul. I morgon.', 'Marken är inte min. I morgon.', 'Det ska blåsa hårt i natt.', 'Huset behöver en grund. I morgon.', 'Jag vill bo i ett riktigt hus. I morgon.', 'Det blir kallare för varje natt. I morgon.', 'Jag finns inte på riktigt här än. I morgon.', 'I morgon är det julafton.'];
 for (let d = 2; d < JULAFTON_DAG; d++) LAPPAR['kvall' + d] = ['📔 Dagbok', `Dag ${d} är slut.\n\n${KVALL_KROK[d - 1]}`];
 
 // brev från Rolf heter 'rolf:0', 'rolftack:0' osv
@@ -596,9 +597,9 @@ function sopbilText() {
 let stegVisat = -1;   /* steget som visades förra bildrutan – ett mål som redan var klart hoppas över tyst */
 const sovSteg = (dag, del) => ({ id: 'sov' + dag, del, sov: true, text: 'Klart för idag – sov när du vill', klar: () => S.dag > dag });   // CI
 // kapitel 2–4: en dag = en nivå, precis som kapitel 1
-const R6 = 'Dag 6 – Röd PETG', R7 = 'Dag 7 – PETG-skrivaren', R8 = 'Dag 8 – Magnetpistolen', R9 = 'Dag 9 – Solcellsparken', R10 = 'Dag 10 – Skrivare L och hösten';
+const R6 = 'Dag 6 – Röd PETG', R7 = 'Dag 7 – PETG-skrivaren', R8 = 'Dag 8 – Magnetpistolen', R9 = 'Dag 9 – Solcellsparken', R10 = 'Dag 10 – Skrivare L och kylan';
 const F11 = 'Dag 11 – Kolfiberlinjen', F12 = 'Dag 12 – Kolfiberskrivaren', F13 = 'Dag 13 – Gamingboden', F14 = 'Dag 14 – Jetmotorn', F15 = 'Dag 15 – Fristaden';
-const M16 = 'Dag 16 – Egen mark', M17 = 'Dag 17 – Ängen', M18 = 'Dag 18 – Diamantkvarnen och grunden', M19 = 'Dag 19 – Ett riktigt hus', M20 = 'Dag 20 – Vintern', M21 = 'Dag 21 – Folkbokförd', M22 = 'Dag 22 – Jul på Soptippsvägen 1';
+const M16 = 'Dag 16 – Egen mark', M17 = 'Dag 17 – Ängen', M18 = 'Dag 18 – Diamantkvarnen och grunden', M19 = 'Dag 19 – Ett riktigt hus', M20 = 'Dag 20 – Kylan', M21 = 'Dag 21 – Folkbokförd', M22 = 'Dag 22 – Jul på Soptippsvägen 1';
 const K2 = R6;   // första dagen i kapitel 2 (äldre kod letar efter den)
 const KAPITEL = [null,
   { namn: 'Ett hem att bo i', mal: 'Ett varmt hem. Lite mysigt också.' },
@@ -731,7 +732,7 @@ const STEG = [
   { id: 'petgtorn9', del: R9, bild: 'byggsats:petgtorn', text: 'Bygg Rulltorn XL vid röda kvarnen', klar: () => !!S.petg.torn },   /* linje 2: rullarna – andra våningen kom redan i kapitel 1 */
   sovSteg(9, R9),
   { id: 'tapeter', del: R10, bild: 'byggsats:tapeter', text: () => `Tapetsera skjulet · ${tapetKlara().length}/4`, klar: () => !!S.hem?.tapeter },
-  { id: 'r10-gor-skjulet-varmt', del: R10, text: 'Gör skjulet varmt inför hösten', klar: () => varme() >= 4 },   // CV: värmen syns i välmåendet
+  { id: 'r10-gor-skjulet-varmt', del: R10, text: 'Gör skjulet varmt inför kylan', klar: () => varme() >= 4 },   // CV: värmen syns i välmåendet
   { id: 'spis10', del: R10, bild: () => S.spis ? 'burk_raggmunk' : 'byggsats:spis', text: 'Bygg spisen och laga en varm måltid', klar: () => (S.stat.lagat || 0) >= 1 || (!!S.spis && (S.spisDag || 0) < 10), tanke: 'Varm mat. I skjulet. Mamma skulle inte tro det.' },   // dag 10: mätt och varm
   sovSteg(10, R10),
   // ---------- Kapitel 3 – Fabriken sköter sig själv (dag 11–15) ----------
@@ -758,7 +759,7 @@ const STEG = [
   { id: 'f15-varldens-basta-fristad', del: F15, bild: () => nastaInred(), text: () => `Världens bästa fristad · trivsel ${trivsel()}/300`, klar: () => trivsel() >= 300 },
   sovSteg(15, F15),
   // ---------- Kapitel 4 – Folkbokförd (dag 16–22) ----------
-  { id: 'm16-kop-tomten-bor', del: M16, text: 'Köp tomten du bor på', klar: () => agerMark('egen') },
+  { knuff: 'Kommunen säljer tomten vid tippen. Ingen annan ville ha den.', id: 'm16-kop-tomten-bor', del: M16, text: 'Köp tomten du bor på', klar: () => agerMark('egen') },   /* inkorg 24c p.5: vem som säljer tomten */
   { id: 'm16-lagg-flagan-bengt', del: M16, bild: 'guldflaga', text: 'Lägg flagan i Bengt-Åkes brevlåda', klar: () => !!S.flagaBengt || !!S.grindKapad },   /* A-056 */
   { id: 'm16-ge-rolf-kapskiva', del: M16, bild: 'kapskiva', text: 'Ge Rolf en kapskiva i kolfiber', klar: () => !!S.kapskivaHosRolf || !!S.grindKapad },
   sovSteg(16, M16),
@@ -780,9 +781,10 @@ const STEG = [
   sovSteg(20, M20),
   { id: 'm21-bli-folkbokford', del: M21, text: 'Bli folkbokförd – tavlan vid vägen', klar: () => !!S.folkbokford },
   sovSteg(21, M21),
-  { id: 'm22-printa-julbordet', del: M22, bild: 'julbord', text: 'Printa julbordet', klar: () => antalInv('julbord') > 0 || !!S.julBordKlart || !!S.julFirad },
-  { id: 'm22-tand-skylten', del: M22, text: 'Tänd skylten vid vägen', klar: () => !!S.skyltTand || !!S.julFirad },
-  { id: 'm22-oppna-dorren-gasterna', del: M22, text: 'Öppna dörren – gästerna kommer', klar: () => !!S.julFirad },
+  /* inkorg 24b p.5: julafton har en enda uppgift – skylten med ditt namn på dörren före kl 15, när mammas bil kommer. Bilen kommer när skylten sitter uppe. (id:n är kvar för gamla sparfiler) */
+  { id: 'm22-printa-julbordet', del: M22, bild: 'julbord', text: 'Julafton', klar: () => true },
+  { id: 'm22-tand-skylten', del: M22, text: 'Skylten med mitt namn på dörren', klar: () => !!S.dorrSkylt || !!S.julFirad },
+  { id: 'm22-oppna-dorren-gasterna', del: M22, text: 'Ta emot mamma', klar: () => !!S.julFirad },
 ];
 /* ED6: hur-tanken före målet – en kort tanke om VAD man gör och VARFÖR, i ens egen röst (spelchatten skrev dem, listas i loggen för granskning) */
 const KNUFF_T = [
@@ -808,7 +810,7 @@ const KNUFF_T = [
   [(x) => x.id === 'paket9', 'Det har kommit beställningar. Paketen ska iväg från datorn.'],
   [(x) => x.id === 'petgtorn9', 'Den röda kvarnen står och väntar på plats för rullarna. Ett större torn.'],
   [(x) => x.id === 'tapeter', 'Skjulet ska kännas som ett rum. Tapeter.'],
-  [(x) => /varmt inför hösten/.test(String(x.text)), 'Hösten kommer. Tak, dörr och väggar, så klarar jag kylan.'],
+  [(x) => /varmt inför kylan/.test(String(x.text)), 'Nätterna blir kallare. Tak, dörr och väggar, så klarar jag det.'],
   [(x) => x.id === 'kolfkvarn', 'Kajakerna på tippen är kolfiber. Det behövs en kvarn som tål det.'],
   [(x) => x.id === 'kolfband', 'Kajakerna är för stora att bära. Ett band från tippen.'],
   [(x) => x.id === 'kajak3', 'Bandet går. Nu ska kajakerna upp på det.'],
@@ -875,7 +877,7 @@ const PAMINN_T = {
   krukaD1: 'En blomkruka åt Ali.', saljKruka: 'Krukan till Ali.', kopSang: 'Sängen. Jag behöver pengar till den.', printSang: 'Sängen ska printas.', sov1: 'Sängen in i skjulet. Sen sover jag.',
 };
 const PAMINN_UTAN_FRAMSTEG_MS = 30000, PAMINN_EFTER_SAGT_MS = 60000;   // ca 30 s utan framsteg, och minst 60 s efter att uppgiften sades (SAMMA SAK TVÅ GÅNGER)
-let brorOrdFran = -1, spelordFran = -1; const ochSenSett = new Set();
+let brorOrdFran = -1, spelordFran = -1; const ochSenSett = new Set(); let arstidFran = -1, snoFran = -1;
 const SPELORD = /lysande (rutan|platsen)|markeringen|konturen|\bmålet\b|uppdraget|klicka här/i;
 const SPELORD_DAG1 = /\brutan\b|\blinje 1\b|\bSkrivare S\b|\btornet\b/i;   /* inkorg 23 p.3: ord som inget betyder för en ny spelare dag 1 */
 const SI = Object.fromEntries(STEG.map((x, i) => [x.id, i]).filter(([id]) => id));   // steg-id → index (dag 1)
@@ -2389,6 +2391,8 @@ function skapaVaraGrund(typ) {
     const r = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.018, 8, 20), mat(printFarg.nyckelring));
     r.position.y = 0.07; r.castShadow = true; g.add(r);
     g.add(at(box(0.05, 0.08, 0.015, mat(printFarg.nyckelring)), 0, -0.01, 0));
+  } else if (typ === 'adventskalender') {   /* inkorg 24b p.2 */
+    g.add(at(box(0.34, 0.44, 0.03, mat(0xb3262e)), 0, 0.22, 0)); g.add(at(box(0.3, 0.06, 0.035, mat(0xf2e6c8)), 0, 0.38, 0));
   } else if (typ === 'kruka') {
     g.add(at(cyl(0.16, 0.11, 0.26, mat(printFarg.kruka)), 0, 0.13, 0));
     const vaxt = new THREE.Mesh(new THREE.SphereGeometry(0.17, 10, 8), mat(0x3f9b4b));
@@ -6167,9 +6171,9 @@ let morgonKo = null;
 function julRad(dag) { const kvar = JULAFTON_DAG - dag; return kvar > 0 ? `Dag ${dag}. ${kvar} ${kvar === 1 ? 'dag' : 'dagar'} till jul.` : kvar === 0 ? 'Julafton.' : ''; }
 // BN: en mening per dag om dagens storymål (dag 1–22)
 const DAG_STORY = ['Få igång skrivaren och sova i en egen säng.', 'Städa upp – och kanske träffa grannarna.', 'Bära mer och få tak över huvudet.', 'Sluta trampa och stänga ute kylan.', 'Fler skrivare och ett riktigt mysigt skjul.',
-  'Tunga saker kan bli ny plast.', 'Printa i rött och sälja dyrare.', 'Bära det tunga utan att slita ut sig.', 'Mer ström till fler skrivare.', 'Bli klar innan hösten kommer.',
+  'Tunga saker kan bli ny plast.', 'Printa i rött och sälja dyrare.', 'Bära det tunga utan att slita ut sig.', 'Mer ström till fler skrivare.', 'Bli klar innan kylan kommer.',
   'Låta skräpet komma till dig.', 'Låta maskinerna göra jobbet.', 'Sälja medan du sover.', 'Mer fart i kvarnen.', 'Bygga det du kom hit för.',
-  'Äga marken du bor på.', 'Något värdefullt i Rolfs rester.', 'Guld och en grund.', 'Ett riktigt hus.', 'Klara vintern.', 'Bli en riktig invånare.', 'Jul på Soptippsvägen.'];
+  'Äga marken du bor på.', 'Något värdefullt i Rolfs rester.', 'Guld och en grund.', 'Ett riktigt hus.', 'Klara kylan.', 'Bli en riktig invånare.', 'Jul på Soptippsvägen.'];
 // BN: morgontanken – din egen utvärdering av gårdagen. Max en per dag, inte samma två dagar i rad, aldrig något redan köpt eller låst.
 const MORGON_TANKAR = [
   /* EN 32: kvällstanken om rullstället är borta – flaskhalsen låser upp rullstället och tanken kommer när det händer (KLAGO.rullstall) */
@@ -7224,6 +7228,23 @@ function ritaMonterat() {
   hyllaMesh.visible = !!S.hylla; spisMesh.visible = !!S.spis;
 }
 ritaMonterat(); setInterval(() => { try { pbMesh.userData.lampa.visible = S.strom > 0.5; } catch (e) {} }, 1000);
+/* inkorg 24b p.2: adventskalendern på skjulets vägg – dag 1 = 3 december, en lucka varje morgon med ett klick. Luckorna som är kvar syns. */
+const kalCanvas = document.createElement('canvas'); kalCanvas.width = 256; kalCanvas.height = 320;
+const kalTex = new THREE.CanvasTexture(kalCanvas); kalTex.colorSpace = THREE.SRGBColorSpace;
+const kalMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.52), new THREE.MeshLambertMaterial({ map: kalTex }));
+kalMesh.position.set(0.55, 1.45, -SKJUL.d / 2 + 0.07); kalMesh.visible = false; talt.add(kalMesh); traffYta(kalMesh, 0.5, 0.6, 0.15, 0, 0);
+function ritaKalender() {
+  kalMesh.visible = !!S.kalender; if (!S.kalender) return;
+  const g = kalCanvas.getContext('2d'); g.fillStyle = '#b3262e'; g.fillRect(0, 0, 256, 320); g.fillStyle = '#f2e6c8'; g.font = 'bold 26px sans-serif'; g.textAlign = 'center'; g.fillText('DECEMBER', 128, 32);
+  for (let n = 1; n <= 24; n++) { const i = n - 1, x = 14 + (i % 4) * 58, y = 48 + Math.floor(i / 4) * 44, oppen = n <= S.kalender.lucka;
+    g.fillStyle = oppen ? '#5a1418' : '#f2e6c8'; g.fillRect(x, y, 52, 38); g.fillStyle = oppen ? '#e8c35a' : '#b3262e'; g.font = 'bold 20px sans-serif'; g.fillText(oppen ? '★' : String(n), x + 26, y + 26); }
+  kalTex.needsUpdate = true;
+}
+const kalIdag = () => Math.min(24, S.dag + 2);
+interaktor.registrera(kalMesh, { text: () => S.kalender && S.kalender.lucka < kalIdag() ? `📅 Öppna lucka ${kalIdag()}` : '', kanAktivera: () => !!S.kalender && S.kalender.lucka < kalIdag(),
+  aktivera: () => { S.kalender.lucka = kalIdag(); sparaSnart(); ritaKalender(); ljud.plock(); const kvar = JULAFTON_DAG - S.dag; regi.info(kvar > 0 ? `📅 Lucka ${S.kalender.lucka}. ${kvar} ${kvar === 1 ? 'dag' : 'dagar'} till jul.` : '📅 Lucka 24. Julafton.', 'bra'); textLogg('kalender', 'du', String(S.kalender.lucka)); } });
+paHandelse('tagitUrPrint', ({ sak }) => { if (sak !== 'adventskalender' || S.kalender) return; taBortInv('adventskalender', 1); S.kalender = { lucka: 2 }; sparaSnart(); ritaKalender(); ljudH('placera'); paket([{ tanke: 'Adventskalendern på väggen. En lucka varje morgon.' }], { vikt: 'REAKTION', varfor: 'inkorg 24b p.2: kalendern hängs upp' }); });
+try { ritaKalender(); } catch (e) {}
 /* ED8: Alis powerbank – nästa gång man kommer till butiken efter kvarnens första rulle, med gåvokortet i bubblan */
 paHandelse('oppnatButik', () => {
   if (S.powerbankGiven || S.powerbank || S.dag > 1 || !(S.steg >= SI.powerbank) || pbVantar()) return;
@@ -8071,7 +8092,9 @@ let aliTimer = 0;
 // ---------- Trivsel ----------
 // ---------- Årstider och kyla ----------
 const arstid = (d = S.dag) => d < 10 ? 'sommar' : d < 20 ? 'host' : 'vinter';
-const ARSTID_NAMN = { sommar: 'Sommar ☀️', host: 'Höst 🍂', vinter: 'Vinter ❄️' };
+const ARSTID_NAMN = { sommar: '', host: '', vinter: '' };   /* inkorg 24c: inga årstider som namn – arstid() styr bara kylan (VARME_KRAV) */
+/* inkorg 24c p.1: dag 1 = 3 december, dag 22 = julafton */
+const datumText = (d = S.dag) => d + 2 <= 31 ? `${d + 2} december` : '';
 // hur varmt är det i skjulet? tak 2, dörr 1, väggar 1 st per vägg, golv 1, kamin 3
 function varme() {
   const h = S.hem || {}, kamin = placerade.some((p) => p.typ === 'kamin' && Math.hypot(p.x - SKJUL.x, p.z - SKJUL.z) < 7);
@@ -8081,7 +8104,7 @@ const VARME_KRAV = { sommar: 0, host: 4, vinter: 9 };
 function kollaKyla() {     // körs när man somnar
   if (!S.kapitelKlart) return;   // värme och årstider räknas först i kapitel 2
   const a = arstid(), krav = VARME_KRAV[a], v = varme();
-  if (v >= krav) { if (a !== 'sommar' && !S.varmVisad?.[a]) { S.varmVisad = { ...(S.varmVisad || {}), [a]: true }; morgonToast(`🔥 Varmt och skönt i skjulet trots ${a === 'host' ? 'hösten' : 'vintern'}.`, 'bra'); } return; }
+  if (v >= krav) { if (a !== 'sommar' && !S.varmVisad?.[a]) { S.varmVisad = { ...(S.varmVisad || {}), [a]: true }; morgonToast('🔥 Varmt och skönt i skjulet trots kylan.', 'bra'); } return; }
   S.frusDag = S.dag + 1; S.frusit = (S.frusit || 0) + 1;
   const vad = [!S.hem?.tak && 'tak', !S.hem?.dorr && 'dörr', (S.hem?.vagg || 0) < 4 && 'fler väggar', !S.hem?.golv && 'golv', a === 'vinter' && !placerade.some((p) => p.typ === 'kamin') && 'en vedkamin (ritning hos Ali)'].filter(Boolean);
   S.valma = Math.min(S.valma ?? 100, 30); morgonToast(`🥶 Du frös i natt. Skjulet behöver: ${vad.join(', ')}.`, 'fel');   // CV: välmåendet tar smällen, inte trivseln
@@ -8096,8 +8119,8 @@ function varnaKyla(k) {
 let visadArstid = null;
 function uppdateraArstid() {
   const a = arstid(); if (a === visadArstid) return;
-  const forsta = visadArstid === null; visadArstid = a; miljo.satArstid(a);
-  if (!forsta && a !== 'sommar') regi.info(a === 'host' ? '🍂 Hösten är här. Nätterna blir kalla – se till att skjulet håller värmen.' : '❄️ Vintern är här! Utan vedkamin och hela väggar fryser du.', 'guld');
+  const forsta = visadArstid === null; visadArstid = a; miljo.satArstid('december');   /* inkorg 24c: en dag är en dag – hela spelet är december, bara kylan skärps */
+  if (!forsta && a !== 'sommar') regi.info(a === 'host' ? 'Nätterna blir kallare nu – se till att skjulet håller värmen.' : 'Nu blir det riktigt kallt. Utan vedkamin och hela väggar fryser du.', 'guld');
 }
 
 // ---------- Respekt ----------
@@ -10287,7 +10310,7 @@ setInterval(() => { if (!document.body.classList.contains('dn')) document.docume
 function ritaHud() {
   // klockan
   const k = klockan(), tidEl = hudEl.querySelector('.tid');
-  const dagT = `DAG ${S.dag}`, tidT = k == null ? '--:--' : klockText(Math.min(k, 21 * 60)), arT = ARSTID_NAMN[arstid()] || '';
+  const dagT = `DAG ${S.dag}`, tidT = k == null ? '--:--' : klockText(Math.min(k, 21 * 60)), arT = datumText();   /* inkorg 24c: datumet i stället för årstiden */
   if (hudCache.dag !== dagT) { hudCache.dag = dagT; hudEl.querySelector('.dag').textContent = dagT; }
   if (hudCache.tid !== tidT) { hudCache.tid = tidT; tidEl.textContent = tidT; tidEl.classList.toggle('natt', k != null && k >= 21 * 60); }
   if (hudCache.ar !== arT) { hudCache.ar = arT; hudEl.querySelector('.arstid').textContent = rens(arT); }
@@ -10976,6 +10999,11 @@ setInterval(() => { try { if (S.bod) markeraDag('bod'); if (S.pappaBesok) marker
 const SMS_POOL = [
   // mamma: panik i alla former
   // pappa: kan inte riktigt mobilen. Skriver sällan, och nästan bara för att mamma säger åt honom
+  /* inkorg 24b p.3: mamma trappar upp vadet, en gång per kapitel, i de vanliga sms-tillfällena */
+  { id: 'm_vad1', bunden: true, vem: 'mamma', nar: () => S.dag >= 2 && S.dag <= 5, text: 'Har du frusit än?' },
+  { id: 'm_vad2', bunden: true, vem: 'mamma', nar: () => S.dag >= 6 && S.dag <= 10, text: 'Jag har bäddat i ditt rum. Ifall.' },
+  { id: 'm_vad3', bunden: true, vem: 'mamma', nar: () => S.dag >= 11 && S.dag <= 15, text: 'Jag har köpt julskinka för två.' },
+  { id: 'm_vad4', bunden: true, vem: 'mamma', nar: () => S.dag >= 18 && S.dag <= 19, text: 'Jag hämtar dig på julafton kl 15. Var redo.' },
   { id: 'm_sovit', bunden: true, vem: 'mamma', nar: () => S.dag === 3,   /* bunden: svarar på det arga sms:et dag 2 */ text: 'Har du sovit nåt? Du har väl tandborste? Och äter du? Svara inte, jag vet att du är arg. ❤️ /Mamma' },   // EA #18
   { id: 'm_stadar', bunden: true, vem: 'mamma', nar: () => S.rolf.i >= 1 && inom('rolf1', 2), text: 'Rolf på sopbilen ringde. Han säger att du städar? Vem är du och vad har du gjort med mitt barn? ❤️' },
   { id: 'm_varardu', bunden: true, vem: 'mamma', nar: () => S.dag === 3, text: 'Var är du?' },
@@ -10988,7 +11016,7 @@ const SMS_POOL = [
   { id: 'm_tva', bunden: true, vem: 'mamma', nar: () => skrivare.length === 2 && inom('skrivare2', 3), text: 'Din bror säger att du har två skrivare nu. Är du med i en sekt? Du kan berätta för mig om du är med i en sekt.' },
   { id: 'm_pengar', vem: 'mamma', nar: () => S.mynt >= 3000, text: 'Din bror säger att du har pengar. Du har aldrig haft pengar. Har du sålt en njure?', svar: [['Jag säljer saker jag printar.', 'Printar. Vad är printar. Är det lagligt? Säg att det är lagligt.'], ['Ja, en njure.', 'Det är inte roligt. … Pappa skrattade. Första gången sen 1998.']] },
   { id: 'm_sover', vem: 'mamma', nar: () => S.dag >= 5, text: 'Sover du ordentligt? Du ser trött ut. Jag vet att jag inte kan se dig. Men jag vet.' },
-  { id: 'm_jul', vem: 'mamma', nar: () => S.dag >= 7, text: 'Kommer du hem på jul? Pappa har redan köpt skinkan. I augusti. Den ligger i frysen och tittar på mig.', svar: [['Klart jag kommer.', 'Jag gråter. Pappa har gått ut i garaget. Det betyder att han också gråter.'], ['Kanske.', 'Kanske. Jag har skrivit upp det. Det står "kanske" i kalendern nu. Med röd penna.']] },
+  { id: 'm_jul', vem: 'mamma', nar: () => S.dag >= 7, text: 'Kommer du hem på jul? Pappa har redan köpt skinkan. I augusti. Den ligger i frysen och tittar på mig.', svar: [['Nej. Jag firar här.', 'Det säger du nu.'], ['Vi får se.', 'Det står "kanske" i kalendern nu. Med röd penna.']] },   /* inkorg 24c p.2: inget svar får lova att komma hem – det bryter vadet */
   { id: 'm_mormor', bunden: true, vem: 'mamma', nar: () => S.dag >= 6 && S.rolf.i >= 1, text: 'Mormor frågar om du har träffat någon på soptippen. Jag sa att du har en sopgubbe och en katt. Hon blev jätteglad.' },
   { id: 'm_bod', bunden: true, vem: 'mamma', nar: () => !!S.bod && inom('bod', 2), text: 'Bygger du ett hus till? Du har inte ens dammsugit ditt rum här hemma på fyra år.' },
   { id: 'm_facebook', vem: 'mamma', nar: () => S.dag >= 9, text: 'Jag har lagt upp en bild på ditt skjul på Facebook. 47 gilla. Faster Inger skrev "Va fint, är det en bastu?"' },
@@ -11083,6 +11111,7 @@ function familjSms() {
   // dagens meddelanden: de fasta för dag 1–2, sedan 2–3 nya ur poolen som passar läget (aldrig samma två gånger)
   const sett = new Set(S.smsSett || []);
   let lista = FAMILJ[d] && d > 2 ? [...FAMILJ[d]] : [];   // punkt BD: dag 1 och 2 styrs av händelser (nedan)
+  { const vad = SMS_POOL.find((m) => /^m_vad/.test(m.id) && !sett.has(m.id) && (() => { try { return m.nar(); } catch { return false; } })()); if (vad) { lista.push([vad.vem, vad.text, vad.id]); sett.add(vad.id); S.smsSett = [...sett]; } }   /* inkorg 24b p.3: vadets sms kommer alltid i sitt fönster */
   if (!FAMILJ[d]) {
     const kandidat = SMS_POOL.filter((m) => !sett.has(m.id) && m.vem !== 'rolf' && (() => { try { return m.nar(); } catch { return false; } })());
     kandidat.sort(() => Math.random() - 0.5);
@@ -11669,7 +11698,7 @@ function uppdatera(dt) {
     const oppen = aliOppen();
     ali.visible = oppen; aliStangt.visible = !oppen;
     if (oppen) ali.userData.huvud.rotation.y = Math.sin(performance.now() / 2300) * 0.35;
-    const k = klockan(); varnaKyla(k); const kt = `Dag ${S.dag} · ${ARSTID_NAMN[arstid()]}` + (k == null ? '' : (k >= 21 * 60 ? ' · 21:00 · Ali har stängt' : ` · ${klockText(k)}`));
+    const k = klockan(); varnaKyla(k); const kt = `Dag ${S.dag} · ${datumText()}` + (k == null ? '' : (k >= 21 * 60 ? ' · 21:00 · Ali har stängt' : ` · ${klockText(k)}`));
     const ke = document.querySelector('.ph-klocka'), kt2 = rens(kt); if (ke && ke.textContent !== kt2) { ke.textContent = kt2; ke.parentElement.style.display = kt2 ? '' : 'none'; }
   }
   // motorn mal av sig själv (även när menyn är öppen)
@@ -12272,7 +12301,7 @@ const rolfHus = new THREE.Group();
   rolfHus.traverse((o) => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
 }
 // Folkbokföringen: dag 14 trillar poletten ner. Målet blir att bli skriven här.
-const kanFolkbokfora = () => agerMark('egen') && agerMark('huset') && !S.folkbokford && S.mynt >= B.LAGFART;   /* A-067: lagfarten på huset betalas samtidigt */   // tomten du bor på + ett riktigt hus räcker – resten av marken är efterspel
+const kanFolkbokfora = () => agerMark('egen') && agerMark('huset') && !S.folkbokford && S.mynt >= B.LAGFART && (!S.gunBritt || !!S.gunBrittKlar);   /* inkorg 24c p.6: bygglovets stämpel först */   /* A-067: lagfarten på huset betalas samtidigt */   // tomten du bor på + ett riktigt hus räcker – resten av marken är efterspel
 function kollaPolett() {
   if (S.folkbokMal || S.dag < 14 || !S.kapitelKlart) return;
   S.folkbokMal = true; markTavla.visible = true; S.mark.tips = true; sparaSnart();
@@ -13109,8 +13138,8 @@ function kapitelBorjar(k) {
   if (k === 3) {   // kapitel 2 klart: Rolfs jukebox + pengar
     S.post.tillMig = [...S.post.tillMig, ...(antalInv('r_jukebox') || harPlacerat('r_jukebox') ? [] : ['sak:r_jukebox']), 'mynt:3000']; visaPostInne();
     delmal('kapitel'); konfetti(140); fanfar();
-    regi.info('🏆 KAPITEL 2 KLART! Röda fabriken går – och skjulet klarar hösten.', 'guld');
-    paket([{ sms: ['rolf', 'Hösten e här o du fryser int. Respekt. Ja la jukeboxen från dödsbot i lådan. O lite pengar. Den spelar bara dansband. /R'] }], { om: 3000 });
+    regi.info('🏆 KAPITEL 2 KLART! Röda fabriken går – och skjulet klarar kylan.', 'guld');
+    paket([{ sms: ['rolf', 'Dä blir kallt nu o du fryser int. Respekt. Ja la jukeboxen från dödsbot i lådan. O lite pengar. Den spelar bara dansband. /R'] }], { om: 3000 });
   }
   if (k === 4) {   // kapitel 3 klart: flipperspelet + pengar, och marken öppnas
     S.post.tillMig = [...S.post.tillMig, ...(antalInv('ra_flipper') || harPlacerat('ra_flipper') ? [] : ['sak:ra_flipper']), 'mynt:6000']; visaPostInne();
@@ -13180,20 +13209,23 @@ interaktor.registrera(adressSkylt, { text: () => S.dag >= 22 && skyltVersion() =
 const julKrans = new THREE.Group();
 { const k = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.08, 8, 18), mat(0x2e6b3a)); julKrans.add(k); for (let i = 0; i < 6; i++) julKrans.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 5), mat(0xc8213a)), Math.cos(i) * 0.28, Math.sin(i) * 0.28, 0.06));
   julKrans.visible = false; scen.add(julKrans); traffYta(julKrans, 0.9, 0.9, 0.3, 0, 0); }
+/* inkorg 24b p.5: skylten med ditt namn på dörren */
+let dorrSkyltMesh = null;
+function ritaDorrSkylt() { if (!S.dorrSkylt) return; if (!dorrSkyltMesh) { dorrSkyltMesh = skylt(String(S.spelarNamn || 'Soptippsvägen 1').slice(0, 18), 0.7, 0.2); scen.add(dorrSkyltMesh); } dorrSkyltMesh.position.copy(julKrans.position).add(new THREE.Vector3(0, -0.5, 0)); dorrSkyltMesh.rotation.y = julKrans.rotation.y; if (S.flyttatIn) dorrSkyltMesh.position.x -= 0.02; else dorrSkyltMesh.position.z += 0.02; }
 function placeraKrans() {
   if (S.flyttatIn) { const v = storHus.localToWorld(new THREE.Vector3(-4.1, 1.7, 0)); julKrans.position.copy(v); julKrans.rotation.y = -Math.PI / 2; }
   else { julKrans.position.set(SKJUL.x, 1.75, SKJUL.z + SKJUL.d / 2 + 0.1); julKrans.rotation.y = 0; }
 }
-interaktor.registrera(julKrans, { text: () => julKrans.visible ? (S.skyltTand && antalInv('julbord') ? '🎄 Öppna dörren – gästerna kommer' : 'Printa julbordet och tänd skylten först') : '', kanAktivera: () => julKrans.visible && !!S.skyltTand && antalInv('julbord') > 0, aktivera: () => julScen() });
-setInterval(() => { const v = S.dag >= 22 && !S.julFirad && !julPagar; if (v && !julKrans.visible) placeraKrans(); julKrans.visible = v; julGaster(); }, 1500);
+interaktor.registrera(julKrans, { text: () => julKrans.visible ? (!S.dorrSkylt ? '🪧 Sätt upp skylten med ditt namn' : '') : '', kanAktivera: () => julKrans.visible && !S.dorrSkylt, aktivera: () => { S.dorrSkylt = true; S.skyltTand = true; sparaSnart(); ritaDorrSkylt(); ljudH('montera'); regi.info(`Skylten sitter på dörren. ${S.spelarNamn || 'Mitt namn'}, Soptippsvägen 1.`, 'guld'); } });   /* inkorg 24b p.5 */
+setInterval(() => { const v = S.dag >= 22 && !S.julFirad && !julPagar; if (v && !julKrans.visible) { placeraKrans(); ritaDorrSkylt(); } julKrans.visible = v; julGaster(); }, 1500);
 // CN regel 5: mamma sms:ar först, sedan samlas familjen vid grinden och väntar tills du klickar
 let julFam = null;
 function julGaster() {
-  const redo = S.dag >= 22 && !S.julFirad && !julPagar && !!S.skyltTand && antalInv('julbord') > 0;
-  if (redo && !S.julSms) { S.julSms = true; sparaSnart(); sms('mamma', 'Vi kommer kl 3. Pappa tar med granen. Den är för stor.'); return; }
+  if (S.dag >= 22 && !S.julFirad && !S.julSms && ui.igang) { S.julSms = true; sparaSnart(); sms('mamma', 'Jag kommer kl 15 och hämtar dig. Pappa kör. Var redo.'); }   /* inkorg 24b p.5 */
+  const redo = S.dag >= 22 && !S.julFirad && !julPagar && !!S.dorrSkylt;   /* bilen kommer när skylten sitter uppe */
   if (!julFam) { julFam = [introFigur('mamma'), pappaGubbe.clone(), introFigur('bror')]; julFam.forEach((g, i) => { g.visible = false; g.position.set(PAPPA_GRIND.x - 1.2 + i * 1.1, 0, PAPPA_GRIND.z + 0.4); g.rotation.y = Math.PI; scen.add(g);
-    interaktor.registrera(g, { text: () => g.visible ? '🎄 Släpp in gästerna' : '', kanAktivera: () => g.visible, aktivera: () => { julFam.forEach((x) => { x.visible = false; }); julScen(); } }); }); }
-  const syns = redo && S.julSms && !menyOppen();
+    interaktor.registrera(g, { text: () => g.visible ? '🎄 Ta emot mamma' : '', kanAktivera: () => g.visible, aktivera: () => { julFam.forEach((x) => { x.visible = false; }); julScen(); } }); }); }
+  const syns = redo && !menyOppen();
   julFam.forEach((g) => { if (g.visible !== syns) { g.visible = syns; if (syns) vand(g, spelare.pos); } });
 }
 const JUL_REPLIK = [
@@ -13203,7 +13235,9 @@ const JUL_REPLIK = [
   ['berattare', 'Bengt-Åke', 'Bengt-Åke ställer en gran från egen skog i hörnet. Han går inte.'],
   ['berattare', 'Bengt-Åke', 'HMPF. God jul.'],
   ['bror', 'Storebror', 'Den är inte från mig. Den låg utanför. Typ.'],
+  ['mamma', 'Mamma', 'Jag skulle hämta dig.'],
   ['mamma', 'Mamma', 'Det är så STÄDAT!'],
+  ['mamma', 'Mamma', 'Vi stannar. Pappa, hämta granen.'],   /* inkorg 24c p.3: mamma ser huset och stannar */
   ['pappa', 'Pappa', 'Jaha.'],
   ['pappa', 'Pappa', 'Taket håller i alla fall.'],
   ['pappa', 'Pappa', 'Ja ja. Det här kunde varit värre.'],
@@ -13261,7 +13295,8 @@ function julScen() {
     S.julFirad = true; julPagar = false; sparaSnart(); kollaSkylt();   // sista polaroiden tas av polaroidväggen
     if (S.gast?.hemma) paket([{ replik: ['rolf', rolfDialekt(GAST_JUL, false), `Rolf: ”${GAST_JUL}”`] }], { om: 4000 });   // CS
     // kvällen: gästerna går, flaggan är uppe – mammas brev ligger i postlådan
-    regi.info('Gästerna har gått. Flaggan på postlådan är uppe.', 'guld'); if (!S.lappar.includes('mammajul')) { S.post.lapp = 'mammajul'; visaPostInne(); sparaSnart(); }   // U012: när julscenen är slut
+    /* inkorg 24c p.3: mamma är på ett ställe – brevet ligger i julklappen hon räcker över */
+    if (!S.lappar.includes('mammajul')) paket([{ replik: ['mamma', 'Den här är till dig. Öppna den nu.', 'Mamma: ”Den här är till dig. Öppna den nu.”'] }, { lapp: 'mammajul' }, { ge: () => julEfterBrev() }], { om: 2500, vikt: 'STORY', varfor: 'mammas brev i julklappen' });
   }
   nasta();
 }
@@ -15671,7 +15706,7 @@ const KEDJA_TEXT = {
   d9: [null, null],   /* EG18: klagotanken kommer från flaskhalsen (KLAGO) */
   solpark: [null, null],   /* EG18: klagotanken kommer från flaskhalsen (KLAGO) */
   lastarm: [null, 'Tornet är fullt, men bara en skrivare får plast åt gången. Slangen måste delas.'],   // CA
-  d10: [null, 'Det blir höst. Och jag vill ha något stort.'],
+  d10: [null, 'Det blir kallare. Och jag vill ha något stort.'],
   d11: [null, null],   /* EG18: klagotanken kommer från flaskhalsen (KLAGO) */
   d12: [null, 'Bandet går. Men någon måste lasta det. Och ladda skrivarna.'],
   d13: [null, 'Säljlådan är full innan Ali hinner hämta. Och jag bär fortfarande dit allt.'],
@@ -15776,7 +15811,23 @@ paHandelse('tagitUrPrint', ({ sak }) => {
 });
 paHandelse('lagtIPostlada', ({ rolf, jobb }) => { if (!jobb && rolf <= 3) kedja('rolf' + rolf); });
 paHandelse('samtalSlut', ({ id }) => { if (id === 'pappa4') kedja('samtal4'); });
-paHandelse('morgonkortStangt', ({ dag }) => { if (dag !== 2 && KEDJA_TEXT['d' + dag]) kedja('d' + dag); });   /* EA: ingen timer – kön ger lugn start. Dag 2: kedjan börjar när bilbatteriet är köpt */
+paHandelse('morgonkortStangt', ({ dag }) => { if (dag !== 2 && KEDJA_TEXT['d' + dag]) kedja('d' + dag); });
+/* inkorg 24b p.4: lågpunkten – stormen natten mellan dag 16 och 17 river skjulets plåttak. Den enklare varianten: taket ligger på marken bredvid skjulet.
+   Skjulets tak behöver inte printas om (S.hem.tak står kvar, värmen räknas som förut) – stormen blir orsaken till grunden och huset dag 18–19. */
+let takPaMarken = null;
+function ritaStorm() {
+  if (!S.storm || !HEM_DELAR.tak) return;
+  HEM_DELAR.tak.visible = false;
+  if (!takPaMarken) { takPaMarken = HEM_DELAR.tak.clone(true); takPaMarken.visible = true; takPaMarken.traverse((o) => { o.visible = true; }); takPaMarken.rotation.set(0.12, 0.5, 0.08); talt.add(takPaMarken); const bb = new THREE.Box3().setFromObject(takPaMarken), mitt = bb.getCenter(new THREE.Vector3()), lok = talt.worldToLocal(mitt.clone()); takPaMarken.position.x += SKJUL.b / 2 + 2.2 - lok.x; takPaMarken.position.z += 1.2 - lok.z; takPaMarken.position.y -= bb.min.y - 0.04; }   /* plåten ligger på marken bredvid skjulet */
+}
+paHandelse('morgonkortStangt', ({ dag }) => {
+  if (dag < 17 || S.storm || !S.hem?.tak || S.flyttatIn) return;
+  S.storm = dag; sparaSnart(); ritaStorm(); ljudH('rasar');
+  const ORD = ['Inga', 'En', 'Två', 'Tre', 'Fyra', 'Fem', 'Sex', 'Sju'], kvar = Math.max(0, JULAFTON_DAG - dag);   /* morgonkortet räknar samma: dag 17 → 5 dagar */
+  paket([{ tanke: `${ORD[kvar] || kvar} ${kvar === 1 ? 'dag' : 'dagar'} kvar. Och jag är tillbaka där jag började.` }, { sms: ['rolf', 'Såg att plåten låg på marken. Ja å Ali kommer o hjälper dej me ett riktigt hus. /R'] }], { om: 4000, vikt: 'STORY', varfor: 'inkorg 24b p.4: stormen' });
+});
+try { ritaStorm(); } catch (e) {}
+paHandelse('morgonkortStangt', ({ dag }) => { if (dag === 2 && !S.gronJul) { S.gronJul = true; paket([{ tanke: 'Grön jul igen. Typiskt.' }], { om: 30000, vikt: 'SMÅPRAT', varfor: 'inkorg 24b p.1: grön jul' }); } });   /* EA: ingen timer – kön ger lugn start. Dag 2: kedjan börjar när bilbatteriet är köpt */
 paHandelse('malKlart', ({ id, nasta }) => {
   if (id === 'printSang' && !S.lappar.includes('start')) paket([{ lapp: 'start' }], { om: 1500 });   // B29: dagboken på kvällen dag 1
   if (id === 'kopMotor') kedja('motorKopt'); else if (id === 'saljKruka') kedja('morkt');   // EF17: mörkret och sängen efter krukan
@@ -16431,7 +16482,7 @@ function kjelleSand(text, varfor) {
     if (S.julFirad && !S.kjelleJul) { S.kjelleJul = true; kjelleSand(KJELLE_JUL, 'A-047: julfesten'); setTimeout(() => { replik('gunnar', GUNNAR_JUL, '📻 Gunnar: ' + GUNNAR_JUL, 'STORY'); textLogg('radio', 'gunnar', GUNNAR_JUL); skratt('Gunnar svarar'); }, 6000); }
     // Gun-Britt: bygglovet i kapitel 4, "tyvärr" i varje mening, stämpeln med stjärnor två dagar senare
     if ((S.kapitel || 1) >= 4 && !S.gunBritt) { S.gunBritt = S.dag; paket([{ brev: ['gunbritt', GUNBRITT_1, 'Brev från byggnadsnämnden'] }], { vikt: 'STORY', varfor: 'A-047: bygglovet' }); }
-    if (S.gunBritt && S.dag >= S.gunBritt + 2 && !S.gunBrittKlar) { S.gunBrittKlar = true; paket([{ brev: ['gunbritt', GUNBRITT_2, 'Brev från byggnadsnämnden'] }], { vikt: 'STORY', varfor: 'A-047: stämpeln' }); skratt('Gun-Britts stjärnor'); }
+    if (S.gunBritt && (S.dag >= S.gunBritt + 2 || STEG[S.steg]?.id === 'm21-bli-folkbokford') && !S.gunBrittKlar) {   /* inkorg 24c p.6: stämpeln kommer alltid före folkbokföringen */ S.gunBrittKlar = true; paket([{ brev: ['gunbritt', GUNBRITT_2, 'Brev från byggnadsnämnden'] }], { vikt: 'STORY', varfor: 'A-047: stämpeln' }); skratt('Gun-Britts stjärnor'); }
   }, 2000);
 }
 const GUNBRITT_1 = 'Hej. Gun-Britt här, byggnadsnämnden. Tyvärr har ni en skylt utan bygglov. Tyvärr har ni också ett hus utan bygglov. Tyvärr måste ni fylla i blankett 14B. Tyvärr finns den bara på papper. Tyvärr är jag ledsen. /Gun-Britt';
@@ -16778,6 +16829,8 @@ if (ui) {
   regelvakt.regel('FAST I HANDEN', () => { if (!ui.igang) return []; const t = valdTyp(); return t && fastIHanden(t) ? [`${t} i handen har ingen plats och kan inte monteras`] : []; });   /* A-071 */
   regelvakt.regel('DUBBEL KVITTENS', () => dubbelKvittens.slice(-5), { enGang: true });   /* A-065 lager 2 */
   regelvakt.regel('KÖ FÖRE KVITTENS', () => koForeKvittens.slice(-5), { enGang: true });   /* A-065 lager 2 */
+  regelvakt.regel('ÅRSTID', () => { const ut = []; for (const e of TEXTLOGG) { if (e.t <= arstidFran) continue; const x = String(e.text || ''); if (/\b(sommar|höst)/i.test(x) && !/sommaren \d{4}/i.test(x) && e.kalla !== 'brott') ut.push(`${e.vem || e.kalla}: "${x.slice(0, 60)}"`); } arstidFran = TEXTLOGG[TEXTLOGG.length - 1]?.t ?? arstidFran; return ut.slice(0, 3); });   /* inkorg 24c p.1: en dag är en dag, december */
+  regelvakt.regel('SNÖ', () => { const ut = []; for (const e of TEXTLOGG) { if (e.t <= snoFran) continue; const x = String(e.text || ''); if (/\bsnö(a|ar|n|fall|gubbe)?\b|\bfrost/i.test(x) && e.kalla !== 'brott') ut.push(`${e.vem || e.kalla}: "${x.slice(0, 60)}"`); } snoFran = TEXTLOGG[TEXTLOGG.length - 1]?.t ?? snoFran; if (miljo.snoSyns?.()) ut.push('snöfall syns i världen'); return ut.slice(0, 3); });   /* inkorg 24b p.1: grön jul i södra Sverige */
   regelvakt.regel('OCH SEN', () => { if (!ui.igang || S.dag > 5 || S.steg >= STEG.length || ochSenSett.has(S.steg)) return []; ochSenSett.add(S.steg); const k = STORYKEDJA()[S.steg]; return k && !k.forDu ? [`"${rens(String(stegText(STEG[S.steg]) || '')).slice(0, 50)}" (${k.id}) har ingen men/därför i STORYKEDJA`] : []; });   /* inkorg 24 p.4 */
   regelvakt.regel('OREGISTRERAT MÅL', () => { if (!ui.igang || S.steg >= STEG.length) return []; const st = STEG[S.steg]; return st && !STORYKEDJA_ID().has(storyId(S.steg)) ? [`"${rens(String(stegText(st) || '')).slice(0, 50)}" saknar id i STORYKEDJA`] : []; });   /* A-065 lager 2 */
   regelvakt.regel('SPÖKE', () => spokeFynd.slice(-5), { enGang: true });   /* A-063 */
@@ -17393,7 +17446,7 @@ function ritaDN() {
   // dagrutan
   const k = klockan(), d = dnTopp.querySelector('.dn-dag');
   dnSatt(d.querySelector('.dagt'), 'textContent', `Dag ${S.dag}`);
-  dnSatt(d.querySelector('.ar'), 'textContent', document.body.classList.contains('ph-tidig') ? '' : rens(ARSTID_NAMN[arstid()] || ''));
+  dnSatt(d.querySelector('.ar'), 'textContent', document.body.classList.contains('ph-tidig') ? '' : rens(datumText()));
   const kl = d.querySelector('.klk'); dnSatt(kl, 'textContent', k == null ? '--:--' : klockText(Math.min(k, 21 * 60))); kl.classList.toggle('natt', k != null && (k >= 20 * 60 || k < 7 * 60));
   /* A-076 tillägg 13:20: bara nästa uppgift syns – dagrutan visar de avklarade uppgifterna som små gröna bockar med uppgiftens bild, inget om det som kommer */
   const sova = sovDags(); if (!S.dagBockar || S.dagBockar.dag !== S.dag) S.dagBockar = { dag: S.dag, lista: [] };

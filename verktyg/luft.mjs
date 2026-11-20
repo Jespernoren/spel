@@ -49,7 +49,7 @@ await p.evaluate(() => { window.__vt.start(); window.__simStegMax = 40; });
 await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.meta.url), 'utf8') });
 const r = await p.evaluate((d) => window.__simBot.kor(d + 1, 40), dag);
 const logg = (await p.evaluate(() => window.__regiLogg || [])).filter((e) => e.dag === dag);
-const brott = await p.evaluate(() => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && ['TRÄNGSEL 2', 'MAMMA SKRIKER', 'SEN KVITTENS', 'OCH SEN', 'SNÖ', 'SAMMA MENING TVÅ GÅNGER', 'SAMMA SAK TVÅ GÅNGER', 'SPELORD I REPLIK', 'FRAMTIDA MÅL SYNS', 'BRORSAN'].includes(e.vem)).map((e) => e.vem + ': ' + e.text));
+const brott = await p.evaluate(() => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && ['TRÄNGSEL 2', 'MAMMA SKRIKER', 'SEN KVITTENS', 'OCH SEN', 'SNÖ', 'ÅRSTID', 'SAMMA MENING TVÅ GÅNGER', 'SAMMA SAK TVÅ GÅNGER', 'SPELORD I REPLIK', 'FRAMTIDA MÅL SYNS', 'BRORSAN'].includes(e.vem)).map((e) => e.vem + ': ' + e.text));
 await b.close();
 fs.mkdirSync(new URL('./a076/', import.meta.url), { recursive: true });
 fs.writeFileSync(new URL(`./a076/luft-${namn}-dag${dag}.json`, import.meta.url), JSON.stringify({ namn, dag, sidfel, brott, logg }, null, 0));

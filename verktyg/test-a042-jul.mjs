@@ -19,7 +19,9 @@ for (const med of [false, true]) {
     if (!med) { P.taBortInv('trumstockar'); } return P.julRader().map((r) => r[2]); }, med);
   await p.evaluate(() => { const P = window.__printahem; P.laggTill('julbord'); P.julScen(); });
   for (let i = 0; i < 80 && (await p.evaluate(() => !!document.querySelector('.ph-jul'))); i++) { await p.evaluate(() => document.querySelector('.ph-jul')?.click()); await p.waitForTimeout(250); }
-  const r = await p.evaluate(() => ({ firad: !!window.__printahem.S.julFirad, brev: window.__printahem.S.post?.lapp }));
+  /* inkorg 24c p.3: brevet ligger i mammas julklapp (dagbokskortet), inte i postlådan */
+  for (let i = 0; i < 30 && !(await p.evaluate(() => (window.__printahem.S.lappar || []).includes('mammajul'))); i++) { await p.keyboard.press('Enter').catch(() => {}); await p.waitForTimeout(500); }
+  const r = await p.evaluate(() => ({ firad: !!window.__printahem.S.julFirad, brev: (window.__printahem.S.lappar || []).includes('mammajul') ? 'mammajul' : window.__printahem.S.post?.lapp }));
   const bord = rader.find((t) => /^Skinkan/.test(t)), band = rader.find((t) => /^Rolf på trummor/.test(t)), goran = rader.some((t) => /Göran/.test(t));
   const ratt = med ? /rosor/.test(bord) && /1987/.test(band) && goran : /Granris/.test(bord) && /kastruller/.test(band) && !goran;
   ut.push([`julen ${med ? 'med' : 'utan'} reserverna: ${rader.length} kort, "${bord}" · ${/kastruller/.test(band) ? 'kastrullerna' : 'trumstockarna'} · Göran ${goran ? 'med' : 'saknas'} · firad ${r.firad}, mammas brev ${r.brev}${fel.length ? ' · sidfel: ' + fel[0] : ''}`, ratt && r.firad && r.brev === 'mammajul' && !fel.length]);
