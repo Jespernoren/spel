@@ -59,6 +59,17 @@ const ROST_PAUS = 2000;     // ms paus mellan två olika saker som berättas (r�
 const KEDJA_MAL_PAUS = 300;  // ms från att kvittensen pratat klart till att nya målet läses (A-065: max 2 s)
 const DIALOG_PAUS = 1000;  /* A-080 regel 1: minst ca 1 s luft */    // ms mellan repliker inom samma samtal (pappas besök, telefonen, sopbilsresan, julen, Helen)
 const KANAL_GAMMAL = 10000; // EA: reaktioner och toasts har bäst före 10 s – annars kastas de
+/* inkorg 22 (Jesper 08:07: "Precis när det blir lite lugnt så skriker mamma"): andrum mellan meddelandena.
+   Svar på det du just gjorde (kvittens, nästa uppgift, skälet efter ett klick) kommer som förut. Allt annat (sms, småprat,
+   story som inte väcks av dig, tips och notiser) väntar tills det har varit lugnt en stund. */
+const ANDRUM_MS = 8000;              // efter att det senaste meddelandet slutade synas eller höras
+const ANDRUM_EFTER_KLART_MS = 12000; // efter att en uppgift blev klar
+const SMS_MELLAN_MS = 45000;         // mellan två sms
+const MAMMA_SMS_MELLAN_MS = 120000;  // mamma skickar högst ett sms per 2 min
+const SMS_LUGN_MS = 3000;            // ett sms kommer inte direkt efter ett klick eller medan någon pratar
+const SVAR_FONSTER_MS = 1500;        // det som köas så här snart efter ett klick är ett svar på klicket
+const HANDLING_MAX_VANT_MS = 60000;  // längsta väntan på att en pågående handling (trampa, mala, spika, bära) blir klar
+let handlingNu = false, meddelandeSlut = -1e9, senastSmsT = -1e9, senastMammaSmsT = -1e9, butikStangdT = -1e9;
 const BONUS_MELLAN = (dag) => dag <= 1 ? Infinity : dag <= 3 ? 240000 : 180000;   // EA: bonusbudget (mamma, brorsan, Alis småprat delar)
 const BONUS_STORY_MARG = 20000, BONUS_MAX_ALDER = 360000;
 const TOMT = 21;                 // tomten går från -TOMT till +TOMT (meter)
@@ -3132,6 +3143,16 @@ function fickSkylt(text, alltFullt) {
 let senastKalla = { namn: '', t: -1e9 }, senastKlick = -1e9;
 addEventListener('pointerdown', () => { senastKlick = performance.now(); }, true); addEventListener('keydown', () => { senastKlick = performance.now(); }, true);
 function kalla(namn) { senastKalla = { namn, t: performance.now() }; }
+function senastHandlingT() { return Math.max(senastKlick, senastKalla.t); }
+/* inkorg 22: kommer bubblan från det du just klickade på? (Göran svarar, Rolf tackar) – då är den ett svar */
+function franKlicket(obj) {
+  if (performance.now() - senastHandlingT() >= SVAR_FONSTER_MS || !obj) return false;
+  const h = interaktor.hovrad; if (!h) return false;
+  for (let x = obj; x; x = x.parent) if (x === h) return true;
+  for (let x = h; x; x = x.parent) if (x === obj) return true;
+  return false;
+}
+addEventListener('wheel', () => { senastKlick = performance.now(); }, true);   /* inkorg 22: hjulet byter sak – det är också en handling */   /* inkorg 22: ett riktigt klick eller en aktivering (också botens) */
 const KRAVER_KALLA = { 'byggsats:gammalkvarn': 'kop' };   /* inkorg 18: kvarnen kommer bara genom köpet hos Ali */
 /* inkorg 20: hammaren och generatorn har introt som källa ("Jag packar ryggan …", ruta 10). De läggs i raden när spelet laddas, inte via laggTill, så de räknas inte här. */
 function kallaKoll(typ) {
@@ -4524,6 +4545,8 @@ const LAS_BAS = 1200, LAS_PER_TECKEN = 60;
 const lasTid = (t) => LAS_BAS + LAS_PER_TECKEN * String(t ?? '').replace(/<[^>]+>/g, '').length;   // läsbar tid i ms
 function regiLogg(kanal, prio, vem, text, ms = 0) {
   const nu = performance.now(), e = { start: Math.round(nu), slut: Math.round(nu + ms), kanal, prio: prio || '', vem: vem || '', text: String(text ?? '').replace(/<[^>]+>/g, '').slice(0, 160), dag: typeof S !== 'undefined' ? S.dag : 0, steg: typeof S !== 'undefined' ? S.steg : 0 };
+  try { if (regiDirekt() || (vem === 'ali' && performance.now() - butikStangdT < 8000)) e.svar = true; else if (kanalVisas) e.svar = !!kanalVisas.svar; } catch {}   /* inkorg 22: i en meny eller scen som du öppnat (och Alis sista ord när du går) är allt ett svar – annars ärvs flaggan från meddelandet som visas */
+  if (!['målruta', 'klar', 'kamera', 'hjälp', 'pil', 'nick', 'svep'].includes(kanal) && !/^\(/.test(e.text)) meddelandeSlut = Math.max(meddelandeSlut, e.slut);   /* inkorg 22: andrummet räknas från att det senaste meddelandet slutar – också det som visas direkt */
   REGI_LOGG.push(e); if (REGI_LOGG.length > 60000) REGI_LOGG.splice(0, 10000);
   try { window.__regi?.(e); } catch {}
   return e;
@@ -4542,7 +4565,7 @@ const regi = {
   },
   logg: regiLogg,
 };
-function regiToastNu(t, typ, ms) { try { senastSynlig = Math.max(senastSynlig, performance.now()); } catch {}   /* A-081: en direkt ruta räknas också – nästa sak i kön väntar minst 2 s (TRÄNGSEL) */
+function regiToastNu(t, typ, ms) { try { senastSynlig = Math.max(senastSynlig, performance.now()); meddelandeSlut = Math.max(meddelandeSlut, performance.now() + (ms || 0)); } catch {}   /* A-081: en direkt ruta räknas också – nästa sak i kön väntar minst 2 s (TRÄNGSEL) */
   regiLogg('info', typ === 'fel' || typ === 'bra' || typ === 'guld' ? 'kvittens' : 'info', '', t, ms); textLogg('toast', typ, t); (ui.toastDirekt || ui.toast)(t, typ, ms); }   /* A-080: förbi den gamla omslaget (punkt 15) som köade igen och tappade tiden */
 /* ========== REGI:SLUT ========== */
 // ---------- Punkt BD: en gemensam kö för texter (sms och notiser från figurer) ----------
@@ -4556,6 +4579,15 @@ const EA_GRUPP_MS = 2500;   // texter som köas inom 2,5 s från varandra hör t
 let bonusSenast = -1e9;
 const arTalare = (it) => !!it.vem && !['du', 'berattare', 'bud'].includes(it.vem) && !it.vem.startsWith('notis:');
 const arBonus = (it) => it.vikt === 'SMÅPRAT' || !!it.bonus;
+/* inkorg 22: hör det ihop med det du just gjorde? Kvittenser, nya mål och kedjan alltid. Sms, småprat och bonus aldrig.
+   Annars: köades det strax efter ett klick (eller i en meny/scen du själv öppnat) är det ett svar. */
+function arSvar(it) {
+  if (it.kedja || it.kvitto || it.infoKvitto || it.vikt === 'MÅL' || it.lugnOk) return true;   // lugnOk: prompten före första uppgiften (skylten)
+  if (it.sms || arBonus(it)) return false;
+  try { if (regiDirekt() && !ui.butiksOverlay.hidden) return true; } catch {}
+  if (/^(värld|notis):/.test(String(it.vem || '')) || it.vem === 'bud') return false;   // det som händer i världen, maskinernas notiser och tips – inte svar om de inte sägs så
+  try { return performance.now() - senastHandlingT() < SVAR_FONSTER_MS; } catch { return false; }
+}
 let senastStoryReakt = -1e9, malVisadTid = 0;
 function bonusOk(nu) {   // EA/EC#2: dag 1 ingen bonus, sedan en per 4 min (dag 2–3) eller 3 min. Andrum: inget story- eller reaktionspaket på 20 s och målet har stått i rutan i 20 s
   const d = S.dag || 1; if (d <= 1) return false;
@@ -4569,7 +4601,7 @@ function bonusOk(nu) {   // EA/EC#2: dag 1 ingen bonus, sedan en per 4 min (dag 
 const kanal = []; let kanalAktiv = null, kanalFri = 0, senastStory = -1e9;
 // BV: lugn start på dagen
 const LUGN_START = 5300, SMS_TIDIGAST = 30500;
-let iKanalVisa = 0, senastSynlig = -1e9; const SYNLIG_MELLAN = 4200, KVITTO_MELLAN = 2000;   /* kvittensen har förtur men får minst 2 s efter det som syntes före */   /* A-065 tillägg: ett talutrymme */
+let iKanalVisa = 0, senastSynlig = -1e9, kanalVisas = null;   /* inkorg 22: meddelandet som visas just nu – det som loggas under tiden ärver dess svar-flagga */ const SYNLIG_MELLAN = 4200, KVITTO_MELLAN = 2000;   /* kvittensen har förtur men får minst 2 s efter det som syntes före */   /* A-065 tillägg: ett talutrymme */
 const senastNyckel = new Map();   // notisnyckel → när den senast visades (samma sort inom 30 s slås ihop)   /* A-065: sant medan kön visar något – då får det synas direkt */
 let menyTot = 0, menyVidKlart = 0;   /* A-063: tid i menyer och pausade sidor räknas inte mot målrutans 4 s */
 let lugnTill = 0, dagStartTid = -1e9; const kanalSenare = [];
@@ -4582,6 +4614,7 @@ function kanalLagg(it) {
   if (it.sms && performance.now() - dagStartTid < SMS_TIDIGAST) it.tidigast = Math.max(it.tidigast || 0, dagStartTid + SMS_TIDIGAST);   // BV: inget sms de första 30 s
   if (it.text && !/^\(/.test(it.text) && [kanalAktiv, ...kanal, ...kanalSenare].some((x) => x && x.vem === it.vem && x.text === it.text)) { textLogg('struken', it.vem || '', it.text, 'EC#4: står redan i kön'); return; }   // EC#4: samma text köas aldrig två gånger
   const nu0 = performance.now(); it.t = it.t0 ?? nu0; it.vikt = it.vikt || 'REAKTION';
+  if (it.svar == null) it.svar = arSvar(it);   /* inkorg 22 */
   { const fg = [...kanal, ...kanalSenare].find((x) => Math.abs(x.t - it.t) < EA_GRUPP_MS); it.grupp = it.grupp ?? (fg ? fg.grupp : it.t); }   // EA: samma händelse = samma grupp (gruppens starttid)
   // kön får inte växa: max en sak per figur i kön (STORY stryks aldrig – den väntar)
   if (it.vikt !== 'STORY' && it.vem) { const i = kanal.findIndex((x) => x.vem === it.vem && x.vikt !== 'STORY' && x.vikt !== 'MÅL' && !x.kvitto && !(it.paket && x.paket === it.paket) && !(it.sms && x.sms));   /* A-063: en kvittens trängs inte undan av en nyare tanke */   /* EA: delar i samma paket och olika sms tar inte ut varandra */ if (i >= 0) { textLogg('struken', kanal[i].vem, kanal[i].text || '', 'en nyare från samma'); kanal.splice(i, 1); } }
@@ -4599,10 +4632,11 @@ const kanalLedig = () => !kanalAktiv && performance.now() >= kanalFri;
 function startaDel(a, nu) {
   const d = a.delar[a.delNr];
   if (d.typ === 'varför' || a.delNr === a.delar.length - 1) a.malSlapp = true;   // nya målet får synas när varför-repliken börjar
-  iKanalVisa++; try { d.visa?.(); } catch (e) { console.warn(e); } finally { iKanalVisa--; }
+  kanalVisas = a; iKanalVisa++; try { d.visa?.(); } catch (e) { console.warn(e); } finally { iKanalVisa--; }
   senastSynlig = nu;   /* A-065: en kedjedel syns också – talutrymmet räknas från den */
   if (a.delNr > 0) textLogg('sak-del', a.vem || '', d.text, a.vikt);
-  prataNu(a.vem, d.text, a.vikt); a.slut = Math.max(nu + 1500, pratarTill, nu + 600 + String(d.text || '').length * 62);   /* A-063: en del i ett inslag får tala klart innan nästa del */
+  try { const e = regiLogg(regiKanal(a), regiPrio(a), a.vem, d.text, 0); e.svar = !!a.svar || !!e.svar; } catch {}   /* inkorg 22 */
+  prataNu(a.vem, d.text, a.vikt); kanalVisas = null; a.slut = Math.max(nu + 1500, pratarTill, nu + 600 + String(d.text || '').length * 62);   /* A-063: en del i ett inslag får tala klart innan nästa del */
 }
 let korSenast = 0; const paketStart = new Map();   // EA: när ett paket började visas
 function korKanal() {
@@ -4620,7 +4654,7 @@ function korKanal() {
       a.nastaDel = 0; a.delNr++; startaDel(a, nu); return;
     }
     if (a._regi) a._regi.slut = Math.round(nu);   /* A-080 */
-    kanalAktiv = null; kanalFri = nu + (a.utanPaus ? 0 : (a.kedja || a.kvitto) ? KEDJA_MAL_PAUS : ROST_PAUS);   /* A-065: efter en kvittens kommer nya målet direkt (annat väntar ändå på talutrymmets 4 s) */ if (a.paket) paketStart.set(a.paket, nu); textLogg('klar', a.vem || '', a.text || '(nytt mål i rutan)', a.vikt); try { a.efter?.(); } catch (e) { console.warn(e); } kanalRaknare();
+    kanalAktiv = null; if (a.text && !/^\(/.test(a.text)) meddelandeSlut = Math.max(meddelandeSlut, nu); kanalFri = nu + (a.utanPaus ? 0 : (a.kedja || a.kvitto) ? KEDJA_MAL_PAUS : ROST_PAUS);   /* inkorg 22: andrummet räknas från att det senaste slutade */   /* A-065: efter en kvittens kommer nya målet direkt (annat väntar ändå på talutrymmets 4 s) */ if (a.paket) paketStart.set(a.paket, nu); textLogg('klar', a.vem || '', a.text || '(nytt mål i rutan)', a.vikt); try { a.efter?.(); } catch (e) { console.warn(e); } kanalRaknare();
   }
   if (!kanal.length || nu < pratarTill + DIALOG_PAUS || (nu < kanalFri && !kanal.some((x) => arKvitto(x) && !(x.tidigast > nu)))) return;   /* A-065: en kvittens väntar bara tills rösten pratat klart, inte på pausen mellan två saker */   // B25: kanalen avbryter aldrig någon som pratar direkt (Ali i butiken, samtal)
   // B25: i Alis butik får Alis egna STORY-repliker (t.ex. varför-raden efter bonusen) komma, när ingen pratar
@@ -4648,8 +4682,15 @@ function korKanal() {
     if (it.sms && nu - dagStartTid < SMS_TIDIGAST) it.tidigast = Math.max(it.tidigast || 0, dagStartTid + SMS_TIDIGAST);   // BV: kontrolleras vid leverans
     if (it.gammalMs && nu - it.t - (it.menyMs || 0) > it.gammalMs) { textLogg('struken', it.vem || '', it.text || '', 'A-065: för gammal – tappat sitt sammanhang'); continue; }
     { const mel = arKvitto(it) ? KVITTO_MELLAN : SYNLIG_MELLAN; if (it.vikt !== 'MÅL' && nu - senastSynlig < mel) it.tidigast = Math.max(it.tidigast || 0, senastSynlig + mel); }   /* A-065: minst 4 s mellan två saker som syns */
+    if (!it.svar && it.vikt !== 'MÅL' && !endastAli) {   /* inkorg 22: andrum för det som inte hör ihop med det du just gjorde */
+      const lugn = Math.max(meddelandeSlut + ANDRUM_MS, senastMalKlartT + ANDRUM_EFTER_KLART_MS, it.sms ? senastSmsT + SMS_MELLAN_MS : 0, it.sms && it.vem === 'mamma' ? senastMammaSmsT + MAMMA_SMS_MELLAN_MS : 0);
+      if (lugn > nu) it.tidigast = Math.max(it.tidigast || 0, lugn);
+      else if ((handlingNu || (it.sms && (nu - senastHandlingT() < SMS_LUGN_MS || nu < pratarTill))) && nu - (it.vantarSedan ??= nu) < HANDLING_MAX_VANT_MS) it.tidigast = Math.max(it.tidigast || 0, nu + 500);
+    }
     if (it.tidigast && nu < it.tidigast) { senare.push(it); continue; }   // BV: väntar på sin tid – nästa sak i kön får gå före
     if (it.paket && !paketStart.has(it.paket)) paketStart.set(it.paket, nu);
+    if (!it.svar && it.vikt !== 'MÅL' && !endastAli && (nu - meddelandeSlut < ANDRUM_MS - 50 || nu - senastMalKlartT < ANDRUM_EFTER_KLART_MS - 50)) regelvakt.brott('TRÄNGSEL 2', `"${String(it.text || it.vem || '').slice(0, 50)}" ${((nu - meddelandeSlut) / 1000).toFixed(1)} s efter förra meddelandet, ${((nu - senastMalKlartT) / 1000).toFixed(1)} s efter en klar uppgift`);   /* inkorg 22 */
+    if (it.sms) { senastSmsT = nu; if (it.vem === 'mamma') senastMammaSmsT = nu; }
     kanalAktiv = it; it.slut = nu + (it.minMs ?? 2500); if (it.vikt === 'STORY') senastStory = nu;   // BO
     if ((it.vikt === 'STORY' || it.vikt === 'REAKTION') && it.text && !/^\(/.test(it.text) && !String(it.vem || '').startsWith('notis:') && it.vem !== 'bud') senastStoryReakt = nu;   // EC#2
     textLogg('sak', it.vem || '', it.text || '(nytt mål i rutan)', it.vikt + (it.menyMs ? ` · meny ${(it.menyMs / 1000).toFixed(1)} s` : '') + (it.paket ? ` · paket ${it.paket}` : ''));
@@ -4659,13 +4700,13 @@ function korKanal() {
     if (!arKvitto(it) && it.vikt !== 'MÅL' && kanal.some((x) => arKvitto(x) && x.t <= it.t)) laggFynd(koForeKvittens, `”${String(it.text || it.vem || '').slice(0, 40)}” före kvittensen ”${String(kanal.find((x) => arKvitto(x))?.text || '').slice(0, 40)}”`);   /* A-065 lager 2 */
     if (arKvitto(it)) textLogg('kvitto-visas', it.vem || '', it.text || '', 'A-065');
     if (it.kedjaId && efterslapande(it.kedjaId)) regelvakt.brott('EFTERSLÄPANDE KVITTENS', `"${String(it.text || '').slice(0, 50)}" (${it.kedjaId}) efter att nästa steg redan är gjort`);   /* A-076 tillägg 12:25 */
-    iKanalVisa++; try { it.visa?.(); } catch (e) { console.warn(e); } finally { iKanalVisa--; }
-    if (!it.info && !/^(notis|värld):/.test(String(it.vem || ''))) it._regi = regiLogg(regiKanal(it), regiPrio(it), it.vem, it.text || '(nytt mål i rutan)', (it.slut || nu) - nu);   /* A-080 */
+    kanalVisas = it; iKanalVisa++; try { it.visa?.(); } catch (e) { console.warn(e); } finally { iKanalVisa--; }
+    if (!it.info && !/^(notis|värld):/.test(String(it.vem || ''))) { it._regi = regiLogg(regiKanal(it), regiPrio(it), it.vem, it.text || '(nytt mål i rutan)', (it.slut || nu) - nu); it._regi.svar = !!it.svar || !!it._regi.svar; }   /* A-080 · inkorg 22: svar eller inte */
     if (it.vikt !== 'MÅL') senastSynlig = nu;
     if (it.antal > 1) textLogg('sammanslagen', it.vem || '', `${it.text} ×${it.antal}`, 'A-065: samma sort');
     if (String(it.vem || '').startsWith('notis:')) senastNyckel.set(notisNyckel(it.text), nu);
     if (it.rost !== false && it.text) { prataNu(it.vem, it.text, it.vikt, { start: it.start }); it.slut = Math.max(it.slut, pratarTill); }
-    kanalRaknare(); return;
+    kanalVisas = null; kanalRaknare(); return;
   }
   kanalRaknare();
 }
@@ -5499,7 +5540,7 @@ function uppdateraMalPil() {
     const tal = knuff || stegTal(id) || malMening(ny);
     const vid = String(stegText(STEG[st]) || '').slice(0, 12);
     const malIt = { vikt: 'MÅL', vem: knuff ? 'du' : 'berattare', text: tal, rost: !!tal && S.lasUppg !== false,   /* A-076 15:30: Läs upp uppgifter och tips */ minMs: tal ? 1500 : 0, tidigast: performance.now() + 150,
-      visa: () => { if (!knuff && String(stegText(STEG[st]) || '').slice(0, 12) !== vid) malIt.text = malMening(STEG[st]); malRuta(); malPilNu(); if (knuff) notisVisa('💭 ' + knuff, 'tanke', { tid: 4500 }); },   /* EA #16: berättaren läser målet som står i rutan */
+      visa: () => { if (!knuff && String(stegText(STEG[st]) || '').slice(0, 12) !== vid) malIt.text = malMening(STEG[st]); malRuta(); malPilNu(); if (knuff) notisVisa('💭 ' + knuff, 'tanke', { tid: 4500, svar: true }); },   /* inkorg 22: målets tanke hör till nästa uppgift */   /* EA #16: berättaren läser målet som står i rutan */
       stryksOm: () => S.steg !== st };
     kanalLagg(malIt);
   }
@@ -6694,7 +6735,7 @@ function efterBeloning(lista) {
   if (lista.includes('jobb')) andraRespekt(-3, 'Gjorde ett skumt jobb åt Rolf');
   const ovrigt = lista.includes('jobb') || lista.includes('heder') || lista.some((b) => b.startsWith('tack:') || b.startsWith('ritning:') || b.startsWith('nmynt:'));
   if (lista.includes('jobb')) sms('rolf', ROLF_JOBB[S.rolf.jobbTack % ROLF_JOBB.length].tackJa);
-  if (lista.includes('heder')) paket([{ sms: ['mamma', 'Det ringde en Rolf. Han sa att du är den ärligaste människan han känner. VEM ÄR ROLF?? Men… bra. Jag är stolt. Säg inte att jag sa det.'] }], { om: 6000 });
+  if (lista.includes('heder')) paket([{ sms: ['mamma', 'Det ringde en Rolf. Han sa att du är den ärligaste människan han känner. Vem är Rolf? Men… bra. Jag är stolt. Säg inte att jag sa det.'] }], { om: 6000 });
   if (ovrigt) { visaPostInne(); sparaSnart(); return; }
   andraRespekt(4, 'Fixade det Rolf bad om');
   if (S.rolfTackIBrev === nr) { /* B2: tacket stod redan i morgonens brev */ }
@@ -6751,7 +6792,22 @@ const taktVikt = (x) => x[3] || smsVikt(x[0], x[2]);
 const smsTaktVillkor = new Map();   // BZ: villkoret följer med sms:et i takten (kontrolleras vid leverans)
 const smsVikt = (fran, id) => (id && SMS_POOL.some((m) => m.id === id) && !SMS_POOL.find((m) => m.id === id)?.svar) || (fran === 'ali' && !id) ? 'SMÅPRAT' : 'STORY';
 const smsTrad = {};
+/* inkorg 22: mamma skriker bara i introt. I spelet skriver hon vanligt – inga ord i versaler och högst ett utropstecken */
+const MAMMA_VERSAL_OK = new Set(['OK', 'AI', 'TV', '3D']);
+function mammaTonKoll(text) {
+  const t = String(text || ''), versal = (t.match(/(?<![\wåäöÅÄÖ])[A-ZÅÄÖ]{2,}(?![\wåäöÅÄÖ])/g) || []).filter((w) => !MAMMA_VERSAL_OK.has(w));
+  if (versal.length || /[!?]{2,}/.test(t) || (t.match(/!/g) || []).length > 1) regelvakt.brott('MAMMA SKRIKER', `"${t.slice(0, 60)}"${versal.length ? ' · versaler: ' + versal.join(' ') : ''}`);
+}
+/* gamla sparfiler kan ha mammas sms i kö med den gamla texten – samma regler gäller dem: versalerna blir vanliga ord, ?!?! blir ?, högst ett ! */
+function mammaLugn(text) {
+  let t = String(text || '').replace(/[!?]{2,}/g, (m) => m.includes('?') ? '?' : '!');
+  const namn = { ROLF: 'Rolf', ALI: 'Ali', GUNNAR: 'Gunnar' };
+  t = t.replace(/(?<![\wåäöÅÄÖ])[A-ZÅÄÖ]{2,}(?![\wåäöÅÄÖ])/g, (w, i, hel) => { if (MAMMA_VERSAL_OK.has(w)) return w; if (namn[w]) return namn[w]; const fore = hel.slice(0, i).trimEnd(); const l = w.toLowerCase(); return !fore || /[.!?"“…]$/.test(fore) ? l[0].toUpperCase() + l.slice(1) : l; });
+  const n = (t.match(/!/g) || []).length; if (n > 1) { let k = 0; t = t.replace(/!/g, () => (++k === n ? '!' : '.')); }
+  return t;
+}
 function smsFram(fran, text, id, o = {}) {
+  if (fran === 'mamma') { text = mammaLugn(text); try { mammaTonKoll(text); } catch {} }
   // punkt 15: sms:et är en sak i kanalen – bubblan och rösten kommer tillsammans när det är dess tur
   const m = { fran, text, ny: true };
   let kort = null;
@@ -7369,7 +7425,7 @@ function startaPappaBesok(kort = !!S.pappaBesok) {
   if (!kort && !(S.sms || []).some((m) => /Pappa kommer förbi i morgon/.test(m.text))) textLogg('brott', 'FEL ORDNING', 'pappas besök före mammas förvarning');   /* A-043 */
   if (antalInv('h_stickning') > 0 && S.stickningTillbaka && !S.stickningMamma) {   /* A-046: pappa tar med stickningen till mamma */
     taBortInv('h_stickning'); S.stickningMamma = true; ritaHotbar(); sparaSnart();
-    paket([{ sms: ['mamma', 'Vem har stickat det här?? Det är FINT. Jag gör klart den.'] }], { om: 60000, vikt: 'STORY', varfor: 'A-046: stickningen hos mamma' });
+    paket([{ sms: ['mamma', 'Vem har stickat det här? Det är fint. Jag gör klart den.'] }], { om: 60000, vikt: 'STORY', varfor: 'A-046: stickningen hos mamma' });
   }
   const forsta = !kort, P = forsta ? PAPPA_GRIND.clone() : new THREE.Vector3(SKJUL.x + 3.2, 0, SKJUL.z + 4.2);
   Object.assign(pappaBesok, { aktiv: true, t: 0, steg: 0, fas: 'kommer', P, mm: 0, start: forsta ? new THREE.Vector3(pappaBil.position.x - 1.2, 0, pappaBil.position.z - 1.1) : new THREE.Vector3(P.x + 1, 0, TOMT + 2), rolfStart: new THREE.Vector3(-1.5, 0, TOMT + 2.2), rolfHar: false });
@@ -7929,7 +7985,7 @@ function kollaKyla() {     // körs när man somnar
   S.frusDag = S.dag + 1; S.frusit = (S.frusit || 0) + 1;
   const vad = [!S.hem?.tak && 'tak', !S.hem?.dorr && 'dörr', (S.hem?.vagg || 0) < 4 && 'fler väggar', !S.hem?.golv && 'golv', a === 'vinter' && !placerade.some((p) => p.typ === 'kamin') && 'en vedkamin (ritning hos Ali)'].filter(Boolean);
   S.valma = Math.min(S.valma ?? 100, 30); morgonToast(`🥶 Du frös i natt. Skjulet behöver: ${vad.join(', ')}.`, 'fel');   // CV: välmåendet tar smällen, inte trivseln
-  const r = [['mamma', 'Pappa säger att det var minusgrader i natt. Har du LÅNGKALSONGER?? Jag stickar ett par. Två par.'], ['bror', 'Mamma har googlat "hypotermi". Hon har skickat länken till mig fyra gånger. Skaffa en kamin, för min skull.'], ['mamma', 'Jag har lagt raggsockor i en kasse. Och en filt. Och sylt. Pappa kör i morgon.']][S.frusit % 3];
+  const r = [['mamma', 'Pappa säger att det var minusgrader i natt. Har du långkalsonger? Jag stickar ett par. Två par.'], ['bror', 'Mamma har googlat "hypotermi". Hon har skickat länken till mig fyra gånger. Skaffa en kamin, för min skull.'], ['mamma', 'Jag har lagt raggsockor i en kasse. Och en filt. Och sylt. Pappa kör i morgon.']][S.frusit % 3];
   paket([{ sms: [r[0], r[1]] }], { om: 15000 });
 }
 let kallVarnadDag = 0;
@@ -8105,10 +8161,10 @@ function malFynd() {
 // Mal mammas saker till filament. Det funkar. Men mamma får veta.
 // mamma tar inte hintsen: hon tror att man har ätit upp allt och skickar MER
 const MAMMA_BURK_ARG = [
-  'Pappa säger att lingonsylten är slut redan?! Vad bra att du äter ordentligt!! Jag kokar mer ikväll ❤️',
-  'Har du ätit upp HONUNGEN också?? Jag ringde Gunnar. Han har tre kilo till. Pappa kör dit på lördag.',
+  'Pappa säger att lingonsylten är slut redan? Vad bra att du äter ordentligt! Jag kokar mer ikväll ❤️',
+  'Har du ätit upp honungen också? Jag ringde Gunnar. Han har tre kilo till. Pappa kör dit på lördag.',
   'Du gillar verkligen mina grytvantar! Jag har börjat virka i dubbel takt. Lila och orange den här gången.',
-  'Jag har köpt 40 kilo socker. Kassörskan frågade om jag driver ett bageri. Jag sa: Nej. Jag har ett barn som ÄTER.',
+  'Jag har köpt 40 kilo socker. Kassörskan frågade om jag driver ett bageri. Jag sa: Nej. Jag har ett barn som äter.',
   'Pappa säger att jag ska sluta. Men du har ju ätit upp allt! Det betyder att du tycker om det. Så enkelt är det.',
   'Jag har gjort en lista: 30 burkar lingon, 20 honung, 15 saft, 12 par grytvantar. Pappa får köra två vändor.',
 ];
@@ -8864,7 +8920,7 @@ function aliSag(t, vikt) {
 function korAliButik() {
   aliButikTimer = 0;
   const f = aliButikKo[0]; if (!f) return;
-  const tillKanal = (x) => kanalLagg({ vikt: x.vikt, vem: 'ali', text: x.tal || x.t, t0: x.t0 });   /* EA: i ordning med det som hände i butiken */
+  const tillKanal = (x) => kanalLagg({ vikt: x.vikt, vem: 'ali', text: x.tal || x.t, t0: x.t0, svar: true });   /* inkorg 22: Ali svarar på att du var i butiken */   /* EA: i ordning med det som hände i butiken */
   if (ui.butiksOverlay.hidden && performance.now() - f.t0 > 400) {   // butiken stängd: kanalen tar STORY-replikerna, reaktionerna släpps
     aliTalDold = null; for (const x of aliButikKo.splice(0)) if (x.vikt === 'STORY') tillKanal(x); return;
   }
@@ -8877,7 +8933,7 @@ function korAliButik() {
   // B44: bubblan och rösten startar samtidigt – texten fylls i när rösten börjar
   const pe = document.querySelector('.ali-tal p'); if (pe && pe.textContent !== f.t) pe.textContent = f.t;
   aliTalDold = aliButikKo.length ? aliButikKo[aliButikKo.length - 1].t : null;
-  aliPratVikt = f.vikt; prata('ali', f.tal || f.t, f.vikt, { direkt: true });
+  aliPratVikt = f.vikt; { const k0 = kanalVisas; kanalVisas = { svar: true }; try { prata('ali', f.tal || f.t, f.vikt, { direkt: true }); } finally { kanalVisas = k0; } }   /* inkorg 22: Ali svarar i sin butik */
   if (aliButikKo.length) aliButikTimer = setTimeout(korAliButik, 150);
 }
 function oppnaMarknad() {
@@ -9401,6 +9457,7 @@ const ui = new FpUI({
     // B29: "Dag 1. Inget mer tjat…" kommer i dagboken på kvällen dag 1 (efter sängen) – starten börjar direkt med skylten
     { const st = STEG[S.steg]; if (st?.startLapp && !S.lappar.includes(st.startLapp)) visaLapp(st.startLapp); } },
 });
+{ const stang0 = ui.stangButik.bind(ui); ui.stangButik = (...a) => { butikStangdT = performance.now(); return stang0(...a); }; }   /* inkorg 22: Alis sista ord när du går är ett svar */
 ui.overlay.innerHTML = '';   /* A-076 tillägg 18:00: FpUI:s gamla startruta visas aldrig – menyerna v3 ritas av startRuta */
 // punkt 15: en toast inom 0,6 s efter ett klick/en tangent är direkt återkoppling (regel 4) och visas direkt.
 // Felmeddelanden också. Allt annat (sådant som händer av sig självt) är en sak i kanalen.
@@ -10234,7 +10291,7 @@ function notisVisa(text, typ = '', o = {}) {
   requestAnimationFrame(() => k.classList.add('in'));
   const ut = [...el.children].filter((x) => !x.classList.contains('ut'));
   ut.slice(el === medEl ? 3 : NOTIS_MAX).forEach(taBort);
-  regiLogg(typ === 'sms' ? 'sms' : typ === 'lapp' ? 'dagbok' : typ === 'tanke' ? 'tanke-text' : 'notis', o.vikt || '', '', text, Math.max(lasTid(text), el === notisEl ? NOTIS_TID : o.tid || 7000));   /* A-080 */
+  { const e = regiLogg(typ === 'sms' ? 'sms' : typ === 'lapp' ? 'dagbok' : typ === 'tanke' ? 'tanke-text' : 'notis', o.vikt || '', '', text, Math.max(lasTid(text), el === notisEl ? NOTIS_TID : o.tid || 7000)); if (o.svar != null) e.svar = !!o.svar; }   /* A-080 · inkorg 22 */
   k._t = setTimeout(() => { taBort(k); if (el === notisEl) setTimeout(() => { const n = notisKo.shift(); if (n) notisVisa(n[0], n[1], { ...n[2], direkt: true }); }, 450);   /* notisen har redan gått genom Regissören – tillbaka in i kön ströks den som upprepning */ }, Math.max(lasTid(text), el === notisEl ? (o.tid || NOTIS_TID) : o.tid || 7000));   /* A-080 regel 3: läsbar tid */
   return k;
 }
@@ -10796,7 +10853,7 @@ function visaLapp(id, bas = {}) {   /* EA: bas = paketets fält (ordning, villko
 
 // ---------- Familjen sms:ar: mamma är arg och orolig, pappa skriver bara för att mamma tjatar, storebror bryr sig (men säger det inte) ----------
 const FAMILJ = {
-  1: [['mamma', 'HUR KUNDE DU BARA GÅ?!?! Är du ok?? SVARA NÄR JAG RINGER!!']],   // EA #18: det arga, morgonen dag 2. Resten ligger i poolen dag 3–5
+  1: [['mamma', 'Hur kunde du bara gå? Är du ok? Svara när jag ringer!']],   // EA #18: det arga, morgonen dag 2. Resten ligger i poolen dag 3–5
   2: [['bror', 'Mamma ringde mig fyra gånger förresten. Snyggt jobbat 😂']],   // punkt BD: T0989 borttagen
 };
 // ---------- Levande sms: varje meddelande kommer bara en gång, en del beror på hur långt du kommit,
@@ -10812,24 +10869,24 @@ setInterval(() => { try { if (S.bod) markeraDag('bod'); if (S.pappaBesok) marker
 const SMS_POOL = [
   // mamma: panik i alla former
   // pappa: kan inte riktigt mobilen. Skriver sällan, och nästan bara för att mamma säger åt honom
-  { id: 'm_sovit', bunden: true, vem: 'mamma', nar: () => S.dag === 3,   /* bunden: svarar på det arga sms:et dag 2 */ text: 'Har du sovit nåt? Du har väl tandborste?? Och äter du?? Svara inte, jag vet att du är arg. ❤️ /Mamma' },   // EA #18
-  { id: 'm_stadar', bunden: true, vem: 'mamma', nar: () => S.rolf.i >= 1 && inom('rolf1', 2), text: 'Rolf på sopbilen ringde. Han säger att du STÄDAR?! Vem är du och vad har du gjort med mitt barn? ❤️' },
-  { id: 'm_varardu', bunden: true, vem: 'mamma', nar: () => S.dag === 3, text: 'Var är du??' },
+  { id: 'm_sovit', bunden: true, vem: 'mamma', nar: () => S.dag === 3,   /* bunden: svarar på det arga sms:et dag 2 */ text: 'Har du sovit nåt? Du har väl tandborste? Och äter du? Svara inte, jag vet att du är arg. ❤️ /Mamma' },   // EA #18
+  { id: 'm_stadar', bunden: true, vem: 'mamma', nar: () => S.rolf.i >= 1 && inom('rolf1', 2), text: 'Rolf på sopbilen ringde. Han säger att du städar? Vem är du och vad har du gjort med mitt barn? ❤️' },
+  { id: 'm_varardu', bunden: true, vem: 'mamma', nar: () => S.dag === 3, text: 'Var är du?' },
   { id: 'm_pappahalsar', bunden: true, vem: 'mamma', nar: () => S.dag >= 3 && S.dag <= 4 && !S.pappaBesok,   /* före pappas besök (dag 6) och före kvällens förvarning */ text: 'Pappa hälsar. Han sa inte det, men jag såg på honom att han ville.' },
-  { id: 'm_mack', vem: 'mamma', nar: () => S.dag >= 3, text: 'Jag har städat ditt rum. Det tog TRE DAGAR. Jag hittade en macka från i somras. EN MACKA.' },
-  { id: 'm_strumpor', vem: 'mamma', nar: () => S.dag >= 9 && S.dag <= 10, text: 'Har du VARMA STRUMPOR?? Det ska bli kallt!!', svar: [['Ja mamma.', 'Bra. Vilka då? De bruna? De bruna har hål. Jag VET att de har hål.'], ['Nej.', 'Jag skickar ett paket. Med strumpor. Och en mössa. Och sju mackor.']] },
-  { id: 'm_masar', vem: 'mamma', nar: () => S.dag >= 4, text: 'Jag läste om en man som bodde på en soptipp. Han blev attackerad av måsar. Finns det MÅSAR där??', svar: [['Bara en katt.', 'En KATT?! Är den vaccinerad? Rör den inte. Eller jo. Ge den en macka.'], ['Massor av måsar.', 'JAG KOMMER OCH HÄMTAR DIG. … Pappa vill inte köra. Pappa säger att måsar är ok.']] },
-  { id: 'm_ali', bunden: true, vem: 'mamma', nar: () => S.stat.salt >= 3 && S.dag <= 5, text: 'Vem är den där Ali? Är han snäll? Betalar han dig ORDENTLIGT?', svar: [['Han är snäll. Typ.', 'Typ?? Jag ringer honom. Vad heter butiken? Jag hittar den.'], ['Han är sur.', 'Sur men ärlig? Det är bra. Pappa är sur men ärlig. Fast mest tyst.']] },
-  { id: 'm_rolf', bunden: true, vem: 'mamma', nar: () => S.rolf.i >= 1 && inom('rolf1', 3), text: 'Det har ringt en karl som heter Rolf och frågat om du gillar korv. Vem ÄR det?? Varför har han mitt nummer??' },
-  { id: 'm_tva', bunden: true, vem: 'mamma', nar: () => skrivare.length === 2 && inom('skrivare2', 3), text: 'Din bror säger att du har TVÅ skrivare nu. Är du med i en sekt? Du kan berätta för mig om du är med i en sekt.' },
-  { id: 'm_pengar', vem: 'mamma', nar: () => S.mynt >= 3000, text: 'Din bror säger att du har PENGAR. Du har aldrig haft pengar. Har du sålt en njure??', svar: [['Jag säljer saker jag printar.', 'Printar. Vad är printar. Är det lagligt? Säg att det är lagligt.'], ['Ja, en njure.', 'DET ÄR INTE ROLIGT. … Pappa skrattade. Första gången sen 1998.']] },
-  { id: 'm_sover', vem: 'mamma', nar: () => S.dag >= 5, text: 'Sover du ordentligt? Du ser trött ut. Jag vet att jag inte kan se dig. Men jag VET.' },
-  { id: 'm_jul', vem: 'mamma', nar: () => S.dag >= 7, text: 'Kommer du hem på jul? Pappa har redan köpt skinkan. I augusti. Den ligger i frysen och tittar på mig.', svar: [['Klart jag kommer.', 'Jag gråter. Pappa har gått ut i garaget. Det betyder att han också gråter.'], ['Kanske.', 'KANSKE. Jag har skrivit upp det. Det står "kanske" i kalendern nu. Med röd penna.']] },
+  { id: 'm_mack', vem: 'mamma', nar: () => S.dag >= 3, text: 'Jag har städat ditt rum. Det tog tre dagar. Jag hittade en macka från i somras. En macka.' },
+  { id: 'm_strumpor', vem: 'mamma', nar: () => S.dag >= 9 && S.dag <= 10, text: 'Har du varma strumpor? Det ska bli kallt!', svar: [['Ja mamma.', 'Bra. Vilka då? De bruna? De bruna har hål. Jag vet att de har hål.'], ['Nej.', 'Jag skickar ett paket. Med strumpor. Och en mössa. Och sju mackor.']] },
+  { id: 'm_masar', vem: 'mamma', nar: () => S.dag >= 4, text: 'Jag läste om en man som bodde på en soptipp. Han blev attackerad av måsar. Finns det måsar där?', svar: [['Bara en katt.', 'En katt? Är den vaccinerad? Rör den inte. Eller jo. Ge den en macka.'], ['Massor av måsar.', 'Jag kommer och hämtar dig. … Pappa vill inte köra. Pappa säger att måsar är ok.']] },
+  { id: 'm_ali', bunden: true, vem: 'mamma', nar: () => S.stat.salt >= 3 && S.dag <= 5, text: 'Vem är den där Ali? Är han snäll? Betalar han dig ordentligt?', svar: [['Han är snäll. Typ.', 'Typ? Jag ringer honom. Vad heter butiken? Jag hittar den.'], ['Han är sur.', 'Sur men ärlig? Det är bra. Pappa är sur men ärlig. Fast mest tyst.']] },
+  { id: 'm_rolf', bunden: true, vem: 'mamma', nar: () => S.rolf.i >= 1 && inom('rolf1', 3), text: 'Det har ringt en karl som heter Rolf och frågat om du gillar korv. Vem är det? Varför har han mitt nummer?' },
+  { id: 'm_tva', bunden: true, vem: 'mamma', nar: () => skrivare.length === 2 && inom('skrivare2', 3), text: 'Din bror säger att du har två skrivare nu. Är du med i en sekt? Du kan berätta för mig om du är med i en sekt.' },
+  { id: 'm_pengar', vem: 'mamma', nar: () => S.mynt >= 3000, text: 'Din bror säger att du har pengar. Du har aldrig haft pengar. Har du sålt en njure?', svar: [['Jag säljer saker jag printar.', 'Printar. Vad är printar. Är det lagligt? Säg att det är lagligt.'], ['Ja, en njure.', 'Det är inte roligt. … Pappa skrattade. Första gången sen 1998.']] },
+  { id: 'm_sover', vem: 'mamma', nar: () => S.dag >= 5, text: 'Sover du ordentligt? Du ser trött ut. Jag vet att jag inte kan se dig. Men jag vet.' },
+  { id: 'm_jul', vem: 'mamma', nar: () => S.dag >= 7, text: 'Kommer du hem på jul? Pappa har redan köpt skinkan. I augusti. Den ligger i frysen och tittar på mig.', svar: [['Klart jag kommer.', 'Jag gråter. Pappa har gått ut i garaget. Det betyder att han också gråter.'], ['Kanske.', 'Kanske. Jag har skrivit upp det. Det står "kanske" i kalendern nu. Med röd penna.']] },
   { id: 'm_mormor', bunden: true, vem: 'mamma', nar: () => S.dag >= 6 && S.rolf.i >= 1, text: 'Mormor frågar om du har träffat någon på soptippen. Jag sa att du har en sopgubbe och en katt. Hon blev jätteglad.' },
-  { id: 'm_bod', bunden: true, vem: 'mamma', nar: () => !!S.bod && inom('bod', 2), text: 'Bygger du ett HUS TILL?! Du har inte ens dammsugit ditt rum här hemma på fyra år.' },
+  { id: 'm_bod', bunden: true, vem: 'mamma', nar: () => !!S.bod && inom('bod', 2), text: 'Bygger du ett hus till? Du har inte ens dammsugit ditt rum här hemma på fyra år.' },
   { id: 'm_facebook', vem: 'mamma', nar: () => S.dag >= 9, text: 'Jag har lagt upp en bild på ditt skjul på Facebook. 47 gilla. Faster Inger skrev "Va fint, är det en bastu?"' },
-  { id: 'm_tandborste', vem: 'mamma', nar: () => S.dag >= 2, text: 'Har du borstat tänderna idag? Ljug inte. Jag hör om du ljuger. Även på sms.', svar: [['Ja.', 'Bra. Jag tror dig. Nästan.'], ['…nej.', 'Jag VISSTE det. Ali säljer väl tandborstar? Köp en. Köp tre.']] },
-  { id: 'm_pappa_tv', vem: 'mamma', nar: () => S.dag >= 4, text: 'Jag sa till pappa att du bor på en SOPTIPP. Han sa "aha, vad lugnt då" och satte på Formel 1. LUGNT?!' },
+  { id: 'm_tandborste', vem: 'mamma', nar: () => S.dag >= 2, text: 'Har du borstat tänderna idag? Ljug inte. Jag hör om du ljuger. Även på sms.', svar: [['Ja.', 'Bra. Jag tror dig. Nästan.'], ['…nej.', 'Jag visste det. Ali säljer väl tandborstar? Köp en. Köp tre.']] },
+  { id: 'm_pappa_tv', vem: 'mamma', nar: () => S.dag >= 4, text: 'Jag sa till pappa att du bor på en soptipp. Han sa "aha, vad lugnt då" och satte på Formel 1. Lugnt?' },
   // brorsan: bryr sig men säger det inte, och har koll på pappa
   { id: 'b_pappa_bil', vem: 'bror', nar: () => S.dag >= 3, text: 'Pappa har tvättat bilen tre gånger den här veckan. Jag sa att du bor på tippen. Han frågade vilken modell sopbilen var.' },
   { id: 'b_gym', vem: 'bror', nar: () => S.dag >= 4, text: 'Jag har gjort om ditt rum till gym. Mamma vet inte. Säg inget.', svar: [['Okej, jag säger inget.', 'Bra. Jag har satt upp en räcka i din garderob. Den håller. Typ.'], ['Jag säger det.', 'Då säger jag att din bästa kompis är en sopgubbe. Vi är kvitt.']] },
@@ -10850,9 +10907,9 @@ const SMS_POOL = [
   { id: 'r_hudik', vem: 'rolf', nar: () => S.rolf.i >= 3, text: 'Rolfs Rockers spelade en gång i Folkets park i Hudiksvall. 14 pers. 3 dansade. Bästa kvällen i mitt liv. /R' },
   { id: 'r_maskin', vem: 'rolf', nar: () => S.rolf.i >= 3, text: 'Chefen har köpt en kaffemaskin som pratar. Den sa "god morgon Rolf". Ja litar inte på den. /R' },
   { id: 'r_backa', vem: 'rolf', nar: () => S.rolf.i >= 4, text: '31 år på bilen och ja har aldrig backat in i nåt. Utom en gång. En brevlåda. Den hade det kommit. /R' },
-  { id: 'm_burk1', vem: 'mamma', nar: () => (S.burkar || 0) >= 2, text: 'Fick du burkarna?? Honungen är från Gunnars bigårdar och lingonen plockade jag SJÄLV. Ät upp allt!', svar: [['Tack mamma ❤️', 'Bra! Pappa tar med fler på torsdag. Jag har 40 burkar kvar i källaren.'], ['Jag har ingenstans att ställa dem.', 'Ställ dem i kylen. Har du ingen KYL?? Jag skickar fler så du har något att äta.']] },
-  { id: 'm_burk2', vem: 'mamma', nar: () => (S.burkar || 0) >= 8, text: 'Har du ätit upp honungen? Pappa säger att han såg den på golvet. Den ska stå SVALT.' },
-  { id: 'm_kompott', vem: 'mamma', nar: () => (S.burkar || 0) >= 4, text: 'Fick du kompotten? Det är rotfruktsgratäng. Potatisen var slut så jag tog kålrot, palsternacka och lite selleri. Värm i ugnen! Har du ugn??', svar: [['Jag har ingen ugn.', 'INGEN UGN. Jag skickar en ugn med pappa. … Pappa säger att den inte får plats i bilen. Ät den kall då.'], ['Den var god!', 'Jag VISSTE det! Pappa sa att ingen äter kålrot frivilligt. Jag skickar två till.']] },
+  { id: 'm_burk1', vem: 'mamma', nar: () => (S.burkar || 0) >= 2, text: 'Fick du burkarna? Honungen är från Gunnars bigårdar och lingonen plockade jag själv. Ät upp allt!', svar: [['Tack mamma ❤️', 'Bra! Pappa tar med fler på torsdag. Jag har 40 burkar kvar i källaren.'], ['Jag har ingenstans att ställa dem.', 'Ställ dem i kylen. Har du ingen kyl? Jag skickar fler så du har något att äta.']] },
+  { id: 'm_burk2', vem: 'mamma', nar: () => (S.burkar || 0) >= 8, text: 'Har du ätit upp honungen? Pappa säger att han såg den på golvet. Den ska stå svalt.' },
+  { id: 'm_kompott', vem: 'mamma', nar: () => (S.burkar || 0) >= 4, text: 'Fick du kompotten? Det är rotfruktsgratäng. Potatisen var slut så jag tog kålrot, palsternacka och lite selleri. Värm i ugnen! Har du ugn?', svar: [['Jag har ingen ugn.', 'Ingen ugn. Jag skickar en ugn med pappa. … Pappa säger att den inte får plats i bilen. Ät den kall då.'], ['Den var god!', 'Jag visste det! Pappa sa att ingen äter kålrot frivilligt. Jag skickar två till.']] },
   { id: 'r_lukt', bunden: true, vem: 'rolf', nar: () => placerade.some((p) => p.typ.startsWith('burk_mogel')), text: 'Ja kände lukten från sopbilen. FRÅN SOPBILEN. Vad har du där borta? /R' },
   { id: 'b_burk', vem: 'bror', nar: () => (S.burkar || 0) >= 6, text: 'Mamma har gjort lingonsylt i tre dagar. Hela köket är rött. Hon säger att det är till dig. Lycka till.' },
   { id: 'r_burk', vem: 'rolf', nar: () => (S.burkar || 0) >= 10, text: 'Såg alla burkar vid ditt skjul. Försökte ge Kajsa honung. Hon vill inte heller ha den. /R' },
@@ -10869,7 +10926,7 @@ const SMS_POOL = [
   { id: 'b_bengt', vem: 'bror', nar: () => (S.bengtSkrik || 0) >= 2, text: 'Mamma såg på Facebook att en gubbe vid soptippen jagat bort en hemtjänstbil med en kratta. Säg att det inte är din granne.', svar: [['Det är min granne.', 'Okej. Mamma har bokat ett pepparsprej på nätet. Till dig.'], ['Ingen aning.', 'Bra. Jag säger till mamma att det var en annan soptipp.']] },
   { id: 'r_pappa', bunden: true, vem: 'rolf', nar: () => !!S.pappaBesok && inom('pappaBesok', 3), text: 'Din farsa e en bra karl. Vi prata Scania o hockey. Han säger "drar" istället för går. Ja ska börja me det. /R' },
   // mamma och brorsan efter pappas besök
-  { id: 'm_pappa_besok', bunden: true, vem: 'mamma', nar: () => !!S.pappaBesok && inom('pappaBesok', 2), text: 'Var pappa DÄR?! Han sa att han skulle köpa mjölk! Han kom hem och sa "aha, vad lugnt dom har det". LUGNT?!' },
+  { id: 'm_pappa_besok', bunden: true, vem: 'mamma', nar: () => !!S.pappaBesok && inom('pappaBesok', 2), text: 'Var pappa där? Han sa att han skulle köpa mjölk! Han kom hem och sa "aha, vad lugnt dom har det". Lugnt?' },
   { id: 'b_pappa_besok', bunden: true, vem: 'bror', nar: () => !!S.pappaBesok && inom('pappaBesok', 3), text: 'Pappa kom hem och sa att Rolf var "en riktig räv bakom örat". Sen satte han på hockeyn. Det var allt.' },
 ];
 // när man svarar: svaret visas som en egen bubbla och följdsvaret kommer en stund senare
@@ -11086,6 +11143,7 @@ const REAKTION_MAX_VANTAN = 4000;
 let pratVikt = '';
 const pratKo = [];
 function prata(vem, text, vikt = 'REAKTION', o = {}) {
+  if (vem === 'mamma') try { if (!introPagar && ui.igang) mammaTonKoll(text); } catch {}   /* inkorg 22: introt får skrika */
   if (typeof text === 'string' && text.includes('\n')) text = text.replace(/\s*\n+\s*/g, ' ').trim();   /* inkorg 10d: radbrytningarna i dagboken är bara layout – rösten och klippen läser en rad text */
   // punkt 15: i scener (samtal, besök, julen, introt), i menyer (svar på det man gör) och i öppna meddelanden pratar man direkt.
   // Allt annat är en sak i kanalen och väntar på sin tur.
@@ -11166,7 +11224,7 @@ addEventListener('keydown', (e) => {
   const ny = { rost: 'prat', prat: 'tal', tal: 'av', av: 'rost' }[rostLage()];
   S.rost = ny !== 'av'; S.rostLage = ny === 'av' ? S.rostLage : ny; sparaSnart(); tystna();
   regi.info({ rost: 'Riktiga röster – varje figur har sin egen röst (V byter)', prat: 'Pratljud – figurerna babblar som i ett spel (V byter)', tal: 'Datorns talsyntes (V byter)', av: 'Inga röster (V byter)' }[ny], '');
-  if (ny !== 'av') prata('mamma', 'Hallå? Hör du mig?!');
+  if (ny !== 'av') prata('mamma', 'Hallå? Hör du mig?');
 });
 
 // ---------- Meddelanden i helskärm: spelet pausar tills du läst ----------
@@ -11437,6 +11495,7 @@ function uppdatera(dt) {
     if (vevTest > 0) vevTest -= dt;
     const vevar = S.kvarnStar && (anvandNere && interaktor.hovrad === vevYta || vevTest > 0) && S.kvarn.tratt > 0 && !extruderFull();   // vevTest: testkrok
     try { flaskTick(dt, trampar, vevar); } catch (e) { if (!flaskFel) { flaskFel = 1; console.warn('flask', e); } }   /* EE */
+    handlingNu = trampar || vevar || spikar || hand.saker.length > 0;   /* inkorg 22: trampa, mala, spika, bära – sms och småprat väntar */
     if (anvandNere && interaktor.hovrad === vevYta && extruderFull() && !fullVarnad) { fullVarnad = true; varna('rulle'); }
     if (vevar) {
       S.kvarn.prog += dt * (S.dag === 1 ? 1.6 : 1) * (1 + trimNiva('kvarn') * 0.25) * (harProto('m_nano') ? 1.6 : 1) / (VEV_TID * nastaGram() / 200);
@@ -11451,7 +11510,7 @@ function uppdatera(dt) {
       const st = STEG[S.steg]; const sags = st.tanke && (stegVisat === S.steg || st.tankeForst); S.steg++;
       /* A-072: knuffen före nästa mål sägs nu av målet självt (en mening, aldrig två) – se malRuta() */
       if (sags && !harSagt(st.tanke)) { const nastaI = S.steg; if (st.tankeForst) tanke(st.tanke, 'mål klart', 'STORY', () => S.steg <= nastaI, { forst: true, kvitto: { t: performance.now(), fri: kvittoFri(), meny: menyTot, steg: S.steg, namn: 'mål klart' } });   /* EA: tanken förklarar nästa mål – kastas om det redan är gjort */ else paket([{ tanke: st.tanke }], { om: 500, vikt: 'REAKTION', varfor: 'mål klart', kvitto: true }); }   /* DT: skräptanken kommer före nästa mål */   /* högst en tanke per mål, en gång */
-      malBockText = malRaw; if (malKlartTid <= malVisadTid) { malKlartTid = performance.now(); menyVidKlart = menyTot; }   /* EC#5: fristen räknas från första mål som klarats sedan rutan senast byttes */ senastMalKlartT = performance.now(); kvittoBock(st); handelse('malKlart', { id: st.id || 'steg' + (S.steg - 1), del: st.del, nasta: STEG[S.steg]?.id || 'steg' + S.steg });
+      malBockText = malRaw; if (malKlartTid <= malVisadTid) { malKlartTid = performance.now(); menyVidKlart = menyTot; }   /* EC#5: fristen räknas från första mål som klarats sedan rutan senast byttes */ senastMalKlartT = performance.now(); try { regiLogg('klar', 'mål', '', malRaw, 0); } catch {}   /* inkorg 22: när uppgiften blev grön – andrummet efter en klar uppgift räknas härifrån */ kvittoBock(st); handelse('malKlart', { id: st.id || 'steg' + (S.steg - 1), del: st.del, nasta: STEG[S.steg]?.id || 'steg' + S.steg });
       if (st.lapp && !S.lappar.includes(st.lapp)) visaLapp(st.lapp);
       if (nasta0(S.steg)?.sov && STEG[S.steg].sms && !(S.smsSkickat || []).includes(STEG[S.steg].sms[1])) { const sv = STEG[S.steg]; S.smsSkickat = [...(S.smsSkickat || []), sv.sms[1]]; paket([{ sms: sv.sms }], { om: 4000, vikt: 'STORY', varfor: 'EC: kvällens förvarning (A-043: stryks aldrig – somnar man kommer den först i morgon)' }); }
       if (st.sms && !st.sov && !(S.smsSkickat || []).includes(st.lapp || st.sms[1])) { S.smsSkickat = [...(S.smsSkickat || []), st.lapp || st.sms[1]]; sms(st.sms[0], st.sms[1]); }
@@ -11468,7 +11527,7 @@ function uppdatera(dt) {
     if (STEG[S.steg]?.id === 'mysigt' && !S.lampaFinal && !lampFin && S.hem?.taklampa && trivsel() >= TRIVSEL_MAL && kanalLedig() && !kanal.length && !menyOppen()) startaLampFinal();   // CL: lampan tänds först
     if (S.steg >= STEG.findIndex((x) => x.k1Slut) && !S.kapitelKlart) {   // B50: när trivselmålet är klart (före sömnen)
       S.kapitelKlart = true; document.body.classList.remove('ph-tidig'); andraRespekt(10, 'Byggde en riktig fristad'); S.mynt += KAP1_BELONING; spar.spara(true);   // startkapital till kapitel 2
-      paket([{ sms: ['mamma', `Pappa och jag har lagt undan lite. ${krT(KAP1_BELONING)} kr. Till något fint i ditt HUS. Inte till chips. ❤️ /Mamma`] }], { om: 9000 });
+      paket([{ sms: ['mamma', `Pappa och jag har lagt undan lite. ${krT(KAP1_BELONING)} kr. Till något fint i ditt hus. Inte till chips. ❤️ /Mamma`] }], { om: 9000 });
       kapitelSlut();
     }
   }
@@ -11795,12 +11854,12 @@ function kopMark(id) {
   S.mynt -= t.pris; S.mark.agt.push(id); ljudH('stampel'); ui.stangButik();
   uppdateraMark();
   andraRespekt(id === 'egen' ? 10 : id === 'rolfhus' ? 25 : id === 'huset' ? 15 : 5, id === 'egen' ? 'Äger din egen mark' : id === 'rolfhus' ? 'Byggde ett hus åt Rolf' : 'Köpte ' + t.namn.toLowerCase());
-  if (id === 'huset') { uppdateraHinder(); paket([{ sms: ['mamma', 'Pappa säger att du har byggt ett HUS. Med TRAPPA. Är det säkert?? Har du räcke?? Jag skickar en brandvarnare. Och sylt.'] }], { om: 9000 }); }
+  if (id === 'huset') { uppdateraHinder(); paket([{ sms: ['mamma', 'Pappa säger att du har byggt ett hus. Med trappa. Är det säkert? Har du räcke? Jag skickar en brandvarnare. Och sylt.'] }], { om: 9000 }); }
   regi.info(id === 'huset' ? '🏡 Huset står klart på ängen! Två rum och en trappa upp till sovloftet.' : id === 'rolfhus' ? '🏠 Rolf har ett riktigt hus! Garaget står vid tippen.' : id === 'tippen' ? '🗑️ Tippen är din. Rolf kör åt dig nu.' : id === 'egen' ? '🏡 Du äger marken du bor på! Inte längre en hobo dweller.' : `🌲 ${t.namn} är din! Gärdesgården har flyttats – där får du ställa saker nu.`, 'guld');
   if (id !== 'norr' || !S.julFirad) paket([{ sms: ['rolf', ROLF_MARK[id]] }], { om: 2500 });
   if (id === 'norr' && S.julFirad) setTimeout(() => visaBengt('HMPF. Backen. Den är brant. Den passar er.'), 1500);
   if (id === 'rolfhus') { S.tippgodsagare = true; if (S.tradgard?.rosor) S.tradgard.rosorFlyttade = true; setTimeout(() => { kollaSkylt(); ritaRolfRosor(); }, 3000); }
-  if (id === 'egen') paket([{ sms: ['mamma', 'Pappa säger att du har KÖPT MARK?! Hur?? Vems?? Har du skrivit på något?? Skicka papperen till mig så läser jag.'] }], { om: 9000 });
+  if (id === 'egen') paket([{ sms: ['mamma', 'Pappa säger att du har köpt mark? Hur? Vems? Har du skrivit på något? Skicka papperen till mig så läser jag.'] }], { om: 9000 });
   sparaSnart();
 }
 // ---------- Åk med Rolf i sopbilen: morgonkontoret, konditoriet och det hemliga stället ----------
@@ -11870,7 +11929,7 @@ function slutaResa() {
   ui.stangButik(); S.resa = 'klar'; S.dagTid = Math.max(S.dagTid || 0, DAG_LANGD * 0.6); spelare.aktiv = true; sparaSnart();
   regi.info('🚛 Hemma igen! Tolv rullar kolfiber och tre saker från Rolfs hemliga ställe ligger i dina saker.', 'guld');
   paket([{ sms: ['rolf', 'Tack för sällskapet. Ja har int haft nån i bilen sen Birgitta. Kajsa räknas int, hon sover. Vi tar en runda till nån gång. /R'] }], { om: 15000 });
-  paket([{ sms: ['mamma', 'Pappa säger att du åkt SOPBIL hela dagen?! Hade du bilbälte?? Var det rent?? Åt du något?'] }], { om: 30000 });
+  paket([{ sms: ['mamma', 'Pappa säger att du åkt sopbil hela dagen? Hade du bilbälte? Var det rent? Åt du något?'] }], { om: 30000 });
 }
 interaktor.registrera(sopbil, { text: () => bil.fas !== 'resaVantar' ? '' : utsiktBjuden() ? '🚛 Hoppa in hos Rolf' : S.resa === 'bjuden' ? '🚛 Hoppa in hos Rolf – följ med på rundan' : '', kanAktivera: () => bil.fas === 'resaVantar' && (utsiktBjuden() || S.resa === 'bjuden'), aktivera: () => utsiktBjuden() ? startaUtsikt() : startaResa() });
 
@@ -11941,7 +12000,7 @@ function ritaGast() {   // tak, isolering och dörr syns på husvagnen
 }
 const FYND = [
   { id: 'volvo', mark: 'norr', x: 4, z: -TOMT - 14, namn: 'En gammal Volvo 240, halvt begravd', ger: () => { S.mynt += 2500; laggTill('rulle3', 2); }, text: 'I bakluckan: 2 500 kr i en kaffeburk och två rullar kolfiber. Pappas Volvo. Han begravde den när han gick i konkurs.', sms: ['rolf', 'Hitta du VOLVON?? De va hans pappas. Han begravde den när han gick i konkurs. Säj int nåt till Bengt-Åke. /R'] },   /* BELOPP: Volvons kaffeburk är ett skämt (A-067) */
-  { id: 'kallare', mark: 'oster', x: TOMT + 15, z: 9, namn: 'En övervuxen jordkällare', ger: () => { laggTill('r_radio'); S.mynt += 900; }, text: 'Inne i källaren: en gammal rörradio som fortfarande spelar dansband, och 900 kr i en syltburk.', sms: ['mamma', 'Pappa säger att du hittat en RADIO i en källare. Är den smittad?? Torka av den!'] },
+  { id: 'kallare', mark: 'oster', x: TOMT + 15, z: 9, namn: 'En övervuxen jordkällare', ger: () => { laggTill('r_radio'); S.mynt += 900; }, text: 'Inne i källaren: en gammal rörradio som fortfarande spelar dansband, och 900 kr i en syltburk.', sms: ['mamma', 'Pappa säger att du hittat en radio i en källare. Är den smittad? Torka av den!'] },
   { id: 'husvagn', mark: 'tippkant', x: TIPP.x + TIPP_HV.x, z: TIPP.z + TIPP_HV.z,   /* A-074: halvt begravd i berget */ namn: 'En rostig husvagn från -78', ger: () => {},   /* CS: ingen belöning – husvagnen blir gäststuga */ text: 'Någon har bott här. I skåpet: tre rullar röd PETG, 1 200 kr och en stickad gardin.', sms: ['rolf', 'Husvagnen? De va vår första. Birgitta o ja bodde där när vi kom hit 2009. Gardinen stickade hon. Behåll pengarna. Gardinen me. /R'] },   /* BELOPP: texten används inte (husvagnen har eget skåp, A-074) */
 ];
 function byggFynd(f) {
@@ -12081,7 +12140,7 @@ const storHus = new THREE.Group();
       if (S.flyttatIn) { regi.info('Hemma.'); return; }
       S.flyttatIn = true; delmal('inflytt'); konfetti(160); fanfar(); sparaSnart();
       regi.info('🏡 Du har flyttat in! Skjulet blir verkstad – du bor i ett riktigt hus nu.', 'guld');
-      paket([{ sms: ['mamma', 'Du har flyttat in i ett HUS. Med trappa. Jag har köpt en dörrmatta. Det står VÄLKOMMEN på den. Pappa ville att det skulle stå GÅ HEM. Jag sa nej.'] }], { om: 5000 });
+      paket([{ sms: ['mamma', 'Du har flyttat in i ett hus. Med trappa. Jag har köpt en dörrmatta. Det står "Välkommen" på den. Pappa ville att det skulle stå "Gå hem". Jag sa nej.'] }], { om: 5000 });
     },
   });
 }
@@ -12109,7 +12168,7 @@ function kollaPolett() {
   if (S.folkbokMal || S.dag < 14 || !S.kapitelKlart) return;
   S.folkbokMal = true; markTavla.visible = true; S.mark.tips = true; sparaSnart();
   // B4 L2: mammas sms → dagboken → brorsan när nästa mål är klart (en sak i taget)
-  sms('mamma', 'Paketet kom TILLBAKA. Det står "Okänd mottagare". Är du ens skriven där?? Vart ska jag skicka din POST?!', undefined, true, { vikt: 'STORY' });
+  sms('mamma', 'Paketet kom tillbaka. Det står "Okänd mottagare". Är du ens skriven där? Vart ska jag skicka din post?', undefined, true, { vikt: 'STORY' });
   paket([{ lapp: 'polett' }, { toast: ['💡 Poletten trillar ner: du bor faktiskt här. Nytt mål: bli folkbokförd (tavlan vid vägen).', 'guld'] }], { om: 500 });   /* EA: lappen → toasten i samma paket */
   { let gjord = false; paHandelse('malKlart', () => { if (gjord) return; gjord = true; sms('bror', 'Mamma har ringt Skatteverket. Två gånger. De sa att du måste äga där du bor eller ha ett kontrakt. Hon frågade om de kunde göra ett undantag "för det är ju mitt barn". De kunde inte.'); }); }
   return true;
@@ -13121,7 +13180,7 @@ function kapitel2Slut() {   // anropas när kapitel 3 är klart (k === 4)
   andraRespekt(15, 'Gamingbod och jacuzzi – folk pratar');
   delmal('kapitel'); konfetti(160); fanfar();
   void ['Mamma här. Du skickade en bild på en JACUZZI?!'];   // punkt BD: mammas jacuzzi-sms kommer när jacuzzin står ute (paHandelse placerat)
-  paket([{ sms: ['mamma', 'Pappa såg bilden. Han sa "aha, vad lugnt då". Det betyder att han är JÄTTESTOLT.'] }], { om: 1500 });
+  paket([{ sms: ['mamma', 'Pappa såg bilden. Han sa "aha, vad lugnt då". Det betyder att han är jättestolt.'] }], { om: 1500 });
   paket([{ sms: ['rolf', 'Hörde att du har JACUZZI. Ja tar med grillen. Och Kajsa. Hon e en katt. Hon badar inte. /R'] }], { om: 5000 });
   regi.info('🏆 KAPITEL 3 KLART! Fabriken sköter sig själv.', 'guld');
 }
@@ -13136,7 +13195,7 @@ paHandelse('tagitUrPrint', () => {
   S.goranSedd = true; S.goranForsta = true; S.goranSnoDag = -1; sparaSnart(); goran.visible = true; goran.position.copy(goranHem()); gor.fas = 'dyk'; goranSkri();
 });
 const GORAN_REPLIK = {
-  mamma: ['mamma', 'Det finns MÅSAR vid soptippar!! Dom tar MAT. Och SMÅ HUNDAR. Du är inte en liten hund men ÄNDÅ.'],
+  mamma: ['mamma', 'Det finns måsar vid soptippar! Dom tar mat. Och små hundar. Du är inte en liten hund men ändå.'],
   rolf: ['rolf', 'Dä ä Göran. Han ä från 2014. Han tar int skräp, bara grejer som e fina. MVH ROLF'],
   rad: ['rolf', 'Göran tar dina grejer? Birgitta hade ett fågelbad vid husvagnen. Då lät han bli våra. MVH ROLF'],
   ali: ['ali', 'Ali här. Din mås stod på min disk i morse. Han köpte inget.'],
@@ -13719,7 +13778,7 @@ function iBild(obj) {
 }
 const bubblaNickad = new Set();
 function varldsBubbla(obj, text, sek = 3.5, hojd = 2.3, klass = '') {
-  if (!iKanalVisa && ui.igang && !scenPagar()) { kanalLagg({ vikt: 'REAKTION', vem: 'värld:' + String(text).slice(0, 30), text, rost: false, minMs: Math.min(3000, sek * 1000), gammalMs: 20000, visa: () => varldsBubbla(obj, text, sek, hojd, klass) }); return; }   /* A-065 tillägg: bubblor från världen går också genom kön */
+  if (!iKanalVisa && ui.igang && !scenPagar()) { kanalLagg({ vikt: 'REAKTION', vem: 'värld:' + String(text).slice(0, 30), text, rost: false, svar: franKlicket(obj), minMs: Math.min(3000, sek * 1000), gammalMs: 20000, visa: () => varldsBubbla(obj, text, sek, hojd, klass) }); return; }   /* A-065 tillägg: bubblor från världen går också genom kön */
   sek = Math.max(sek, lasTid(text) / 1000);   /* A-080 regel 3: bubblan står läsbar tid */
   /* A-080 regel 5: en replik (inte ett kort ljud som "TUUT!") från något utom bild – kameran nickar dit först */
   if (!bubblaNickad.has(text) && String(text).trim().split(/\s+/).length > 3 && !iBild(obj) && obj?.getWorldPosition && ui.igang && !pausad) {
@@ -16276,7 +16335,7 @@ const HUMOR_T = {
 };
 function humorSangDag() {
   if (S.humorSovDag === S.dag || S.dag < 2) return; S.humorSovDag = S.dag; const k = klockan(), h = k == null ? 14 : Math.floor(k / 60);
-  paket([{ sms: ['mamma', `Sover du?? KLOCKAN ÄR ${h}.`] }], { vikt: 'REAKTION', varfor: 'A-041: säng mitt på dagen' }); skratt('mamma: sover du');
+  paket([{ sms: ['mamma', `Sover du? Klockan är ${h}.`] }], { vikt: 'REAKTION', varfor: 'A-041: säng mitt på dagen' }); skratt('mamma: sover du');
 }
 function humorSpagetti(typ) {
   if (!VAROR[typ]?.pris || S.dag < 2 || typ === STEG[S.steg]?.bild || Math.random() > 1 / 30) return false;

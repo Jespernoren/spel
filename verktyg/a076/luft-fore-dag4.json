@@ -1,0 +1,1064 @@
+{
+ "namn": "fore",
+ "dag": 4,
+ "meddelanden": 95,
+ "medelLuft": 3.8,
+ "minstLuft": -13,
+ "trangsel2": 59,
+ "exempel": [
+  {
+   "t": 17.6,
+   "kanal": "röst",
+   "vem": "berattare",
+   "text": "Vänta på sopbilen. Den lämnar något..",
+   "luft": 4.4,
+   "efterKlar": 0
+  },
+  {
+   "t": 48.8,
+   "kanal": "röst",
+   "vem": "ali",
+   "text": "Dina krukor säljer. Tanterna i kvarteret älskar dem.",
+   "luft": 9,
+   "efterKlar": 2.4
+  },
+  {
+   "t": 51.2,
+   "kanal": "röst",
+   "vem": "ali",
+   "text": "Precis det jag ville ha idag, min vän.",
+   "luft": -1.4,
+   "efterKlar": 4.8
+  },
+  {
+   "t": 51.2,
+   "kanal": "röst",
+   "vem": "ali",
+   "text": "Precis det jag ville ha idag, min vän.",
+   "luft": -3.2,
+   "efterKlar": 4.8
+  },
+  {
+   "t": 56.4,
+   "kanal": "röst",
+   "vem": "du",
+   "text": "En skottkärra! Jag väljer den med hjulet och kör den full me",
+   "luft": 2,
+   "efterKlar": 0
+  },
+  {
+   "t": 78.5,
+   "kanal": "röst",
+   "vem": "ali",
+   "text": "Sålt nåt idag? Jag köper.",
+   "luft": -0.9,
+   "efterKlar": 22.1
+  },
+  {
+   "t": 78.5,
+   "kanal": "röst",
+   "vem": "ali",
+   "text": "Sålt nåt idag? Jag köper.",
+   "luft": -2.5,
+   "efterKlar": 22.1
+  },
+  {
+   "t": 79.5,
+   "kanal": "bubbla",
+   "vem": "",
+   "text": "Sålt nåt idag? Jag köper.",
+   "luft": -1.5,
+   "efterKlar": 23.1
+  },
+  {
+   "t": 86.3,
+   "kanal": "tanke-text",
+   "vem": "",
+   "text": "💭 Skrivare M hinner inte heller. Den kunde gå fortare.",
+   "luft": 3,
+   "efterKlar": 29.9
+  },
+  {
+   "t": 86.3,
+   "kanal": "tanke",
+   "vem": "du",
+   "text": "Skrivare M hinner inte heller. Den kunde gå fortare.",
+   "luft": -4.5,
+   "efterKlar": 29.9
+  },
+  {
+   "t": 86.3,
+   "kanal": "röst",
+   "vem": "du",
+   "text": "Skrivare M hinner inte heller. Den kunde gå fortare.",
+   "luft": -4.5,
+   "efterKlar": 29.9
+  },
+  {
+   "t": 92.7,
+   "kanal": "sms",
+   "vem": "ali",
+   "text": "Ali här. Skrivartrim igen. Nästa nivå. Den här gången skruva",
+   "luft": 1.9,
+   "efterKlar": 36.3
+  }
+ ],
+ "sidfel": [],
+ "minuter": null,
+ "logg": [
+  {
+   "start": 1622,
+   "slut": 1622,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Vänta på sopbilen. Den lämnar något.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 14811,
+   "slut": 14811,
+   "kanal": "hjälp",
+   "prio": "kontroll",
+   "vem": "",
+   "text": "Tab: Dina sms och dagboken",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 19210,
+   "slut": 22104,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "berattare",
+   "text": "Vänta på sopbilen. Den lämnar något..",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 38010,
+   "slut": 41370,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "🛒 4 skräp från famnen i skottkärran",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 50410,
+   "slut": 54234,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Dina krukor säljer. Tanterna i kvarteret älskar dem.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 52810,
+   "slut": 56010,
+   "kanal": "röst",
+   "prio": "story",
+   "vem": "ali",
+   "text": "Precis det jag ville ha idag, min vän.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 52810,
+   "slut": 55766,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Precis det jag ville ha idag, min vän.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 58010,
+   "slut": 62826,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "En skottkärra! Jag väljer den med hjulet och kör den full med skräp.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 80110,
+   "slut": 81010,
+   "kanal": "kamera",
+   "prio": "nick",
+   "vem": "",
+   "text": "9, 30",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 80110,
+   "slut": 82610,
+   "kanal": "röst",
+   "prio": "småprat",
+   "vem": "ali",
+   "text": "Sålt nåt idag? Jag köper.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 80110,
+   "slut": 82260,
+   "kanal": "röst",
+   "prio": "SMÅPRAT",
+   "vem": "ali",
+   "text": "Sålt nåt idag? Jag köper.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 81110,
+   "slut": 84910,
+   "kanal": "bubbla",
+   "prio": "",
+   "vem": "",
+   "text": "Sålt nåt idag? Jag köper.",
+   "dag": 4,
+   "steg": 41,
+   "dolt": false
+  },
+  {
+   "start": 87910,
+   "slut": 92410,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Skrivare M hinner inte heller. Den kunde gå fortare.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 87910,
+   "slut": 92310,
+   "kanal": "tanke",
+   "prio": "story",
+   "vem": "du",
+   "text": "Skrivare M hinner inte heller. Den kunde gå fortare.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 87910,
+   "slut": 91734,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Skrivare M hinner inte heller. Den kunde gå fortare.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 94310,
+   "slut": 101010,
+   "kanal": "sms",
+   "prio": "story",
+   "vem": "ali",
+   "text": "Ali här. Skrivartrim igen. Nästa nivå. Den här gången skruvade jag åt rätt håll.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 94310,
+   "slut": 99870,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Ali här. Skrivartrim igen. Nästa nivå. Den här gången skruvade jag åt rätt håll.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 152010,
+   "slut": 155010,
+   "kanal": "bubbla",
+   "prio": "",
+   "vem": "",
+   "text": "TUUT! Tjena!",
+   "dag": 4,
+   "steg": 41,
+   "dolt": false
+  },
+  {
+   "start": 157010,
+   "slut": 157110,
+   "kanal": "röst",
+   "prio": "story",
+   "vem": "",
+   "text": "(läget ändras)",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 161810,
+   "slut": 164690,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "12 st i tratten – motorn mal",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 166010,
+   "slut": 170010,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 En badanka. Den överlevde kvarnen.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 166010,
+   "slut": 168910,
+   "kanal": "tanke",
+   "prio": "reaktion",
+   "vem": "du",
+   "text": "En badanka. Den överlevde kvarnen.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 166010,
+   "slut": 168718,
+   "kanal": "röst",
+   "prio": "REAKTION",
+   "vem": "du",
+   "text": "En badanka. Den överlevde kvarnen.",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 190510,
+   "slut": 197210,
+   "kanal": "röst",
+   "prio": "story",
+   "vem": "rolf",
+   "text": "Tjo. Ska grilla på lördag. Min grillspade smälte. Kan du göra en sån hä? /Rolf 🍖​",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 190510,
+   "slut": 196194,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "rolf",
+   "text": "Tjo. Ska grilla på lördag. Min grillspade smälte. Kan du göra en sån hä? /Rolf 🍖​",
+   "dag": 4,
+   "steg": 41
+  },
+  {
+   "start": 194710,
+   "slut": 194710,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Ge Rolf grillspade",
+   "dag": 4,
+   "steg": 43
+  },
+  {
+   "start": 199210,
+   "slut": 200988,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "berattare",
+   "text": "Ge Rolf grillspade.",
+   "dag": 4,
+   "steg": 43
+  },
+  {
+   "start": 203410,
+   "slut": 203510,
+   "kanal": "röst",
+   "prio": "story",
+   "vem": "",
+   "text": "(läget ändras)",
+   "dag": 4,
+   "steg": 43
+  },
+  {
+   "start": 205210,
+   "slut": 205210,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Töm en full kärra i kvarnen",
+   "dag": 4,
+   "steg": 44
+  },
+  {
+   "start": 205410,
+   "slut": 210570,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Kärran rymmer massor. Jag fyller den och tippar allt i kvarnen.",
+   "dag": 4,
+   "steg": 44
+  },
+  {
+   "start": 205410,
+   "slut": 209916,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Kärran rymmer massor. Jag fyller den och tippar allt i kvarnen.",
+   "dag": 4,
+   "steg": 44
+  },
+  {
+   "start": 212810,
+   "slut": 216170,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "🛒 4 skräp från famnen i skottkärran",
+   "dag": 4,
+   "steg": 44
+  },
+  {
+   "start": 223210,
+   "slut": 226810,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "11 st i tratten · 5 st på marken bredvid",
+   "dag": 4,
+   "steg": 44
+  },
+  {
+   "start": 226810,
+   "slut": 226810,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Plocka skräp och mal det",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 227210,
+   "slut": 231710,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 En sophållare bakom kvarnen. Då matar den sig själv.",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 227210,
+   "slut": 231034,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "En sophållare bakom kvarnen. Då matar den sig själv.",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 233610,
+   "slut": 237990,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Det får inte plats. Jag behöver något att tippa i.",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 233610,
+   "slut": 237810,
+   "kanal": "tanke",
+   "prio": "story",
+   "vem": "du",
+   "text": "Det får inte plats. Jag behöver något att tippa i.",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 233610,
+   "slut": 237310,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Det får inte plats. Jag behöver något att tippa i.",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 275510,
+   "slut": 279510,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Jaha, Rolf har hämtat grillspade.",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 275510,
+   "slut": 278310,
+   "kanal": "tanke",
+   "prio": "reaktion",
+   "vem": "du",
+   "text": "Jaha, Rolf har hämtat grillspade.",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 275510,
+   "slut": 278156,
+   "kanal": "röst",
+   "prio": "REAKTION",
+   "vem": "du",
+   "text": "Jaha, Rolf har hämtat grillspade.",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 297710,
+   "slut": 300710,
+   "kanal": "bubbla",
+   "prio": "",
+   "vem": "",
+   "text": "TUUT TUUT!",
+   "dag": 4,
+   "steg": 45,
+   "dolt": false
+  },
+  {
+   "start": 374710,
+   "slut": 377530,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "5 st i tratten – motorn mal",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 412610,
+   "slut": 415610,
+   "kanal": "bubbla",
+   "prio": "",
+   "vem": "",
+   "text": "TUUT! Hej grannen!",
+   "dag": 4,
+   "steg": 45,
+   "dolt": false
+  },
+  {
+   "start": 425810,
+   "slut": 435810,
+   "kanal": "sms",
+   "prio": "story",
+   "vem": "ali",
+   "text": "Ali här. 🗑️ Sophållaren. Jag frågade AI:n hur man slipper bära skräp. Den gjorde det här. Den har mer fritid än jag. Suck.",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 425810,
+   "slut": 434036,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Ali här. 🗑️ Sophållaren. Jag frågade AI:n hur man slipper bära skräp. Den gjorde det här. Den har mer fritid än jag. Suck.",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 462010,
+   "slut": 466030,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "3D-modell köpt – printa sophållare på skrivaren",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 462010,
+   "slut": 465586,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Bra val. 3D-modellen är din. Den räcker till en.",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 476210,
+   "slut": 478430,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "Fullt i händerna.",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 479610,
+   "slut": 482490,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "12 st i tratten – motorn mal",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 507110,
+   "slut": 511110,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Nu kan jag tömma hela kärran på en gång.",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 507110,
+   "slut": 510190,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Nu kan jag tömma hela kärran på en gång.",
+   "dag": 4,
+   "steg": 45
+  },
+  {
+   "start": 510510,
+   "slut": 516690,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "🗑️ Sophållaren står bakom kvarnen! Töm allt skräp i den – den matar kvarnen själv.",
+   "dag": 4,
+   "steg": 46
+  },
+  {
+   "start": 510710,
+   "slut": 510710,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Printa en pall",
+   "dag": 4,
+   "steg": 46
+  },
+  {
+   "start": 514510,
+   "slut": 519310,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Jag behöver något att sitta på. En pall. Lagom ambitiöst.",
+   "dag": 4,
+   "steg": 46
+  },
+  {
+   "start": 514510,
+   "slut": 518644,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Jag behöver något att sitta på. En pall. Lagom ambitiöst.",
+   "dag": 4,
+   "steg": 46
+  },
+  {
+   "start": 514910,
+   "slut": 515810,
+   "kanal": "kamera",
+   "prio": "nick",
+   "vem": "",
+   "text": "9, 28",
+   "dag": 4,
+   "steg": 46
+  },
+  {
+   "start": 528010,
+   "slut": 531462,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Bra val. Folk köper sånt. Jag vet inte varför.",
+   "dag": 4,
+   "steg": 46
+  },
+  {
+   "start": 541610,
+   "slut": 541610,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Printa och sälj",
+   "dag": 4,
+   "steg": 47
+  },
+  {
+   "start": 541810,
+   "slut": 547030,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 En vindsnurra till på skjulets tak. Skrivarna vill ha mer ström.",
+   "dag": 4,
+   "steg": 47
+  },
+  {
+   "start": 541810,
+   "slut": 546378,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "En vindsnurra till på skjulets tak. Skrivarna vill ha mer ström.",
+   "dag": 4,
+   "steg": 47
+  },
+  {
+   "start": 561510,
+   "slut": 564390,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "16 st i tratten – motorn mal",
+   "dag": 4,
+   "steg": 47
+  },
+  {
+   "start": 594610,
+   "slut": 600070,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 En snurra räcker inte. Skrivarna står still så fort det blir stilla.",
+   "dag": 4,
+   "steg": 47
+  },
+  {
+   "start": 594610,
+   "slut": 600310,
+   "kanal": "tanke",
+   "prio": "story",
+   "vem": "du",
+   "text": "En snurra räcker inte. Skrivarna står still så fort det blir stilla.",
+   "dag": 4,
+   "steg": 47
+  },
+  {
+   "start": 594610,
+   "slut": 599426,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "En snurra räcker inte. Skrivarna står still så fort det blir stilla.",
+   "dag": 4,
+   "steg": 47
+  },
+  {
+   "start": 602310,
+   "slut": 608710,
+   "kanal": "sms",
+   "prio": "story",
+   "vem": "ali",
+   "text": "Ali här. En snurra till? Taket har plats för två. Vinden har inget emot det.",
+   "dag": 4,
+   "steg": 47
+  },
+  {
+   "start": 602310,
+   "slut": 607622,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Ali här. En snurra till? Taket har plats för två. Vinden har inget emot det.",
+   "dag": 4,
+   "steg": 47
+  },
+  {
+   "start": 612210,
+   "slut": 617190,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "3D-modell köpt – printa vindsnurra till skjultaket på skrivaren",
+   "dag": 4,
+   "steg": 47
+  },
+  {
+   "start": 612210,
+   "slut": 615786,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Bra val. 3D-modellen är din. Den räcker till en.",
+   "dag": 4,
+   "steg": 47
+  },
+  {
+   "start": 624610,
+   "slut": 630490,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "🌬️ Vindsnurran ligger i handen – klicka på skjulet för att sätta den på taket",
+   "dag": 4,
+   "steg": 47
+  },
+  {
+   "start": 632710,
+   "slut": 638350,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "🌬️ Vindsnurran sitter på taket – den trampar cykeln åt dig när det blåser",
+   "dag": 4,
+   "steg": 47
+  },
+  {
+   "start": 634710,
+   "slut": 634710,
+   "kanal": "dagbok",
+   "prio": "story",
+   "vem": "du",
+   "text": "Slut på trampandet.\nNästan.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 634710,
+   "slut": 639610,
+   "kanal": "tanke",
+   "prio": "kvittens",
+   "vem": "du",
+   "text": "Slut på trampandet.\nNästan.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 634910,
+   "slut": 637184,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Slut på trampandet. Nästan.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 639610,
+   "slut": 639610,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Isolera två väggar · 0/2",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 639910,
+   "slut": 644830,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Det drar genom väggarna. Isolering, och sen blir det varmt.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 639910,
+   "slut": 644168,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Det drar genom väggarna. Isolering, och sen blir det varmt.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 640310,
+   "slut": 641210,
+   "kanal": "kamera",
+   "prio": "nick",
+   "vem": "",
+   "text": "9, 28",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 649510,
+   "slut": 651226,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "pappa",
+   "text": "Hej. Det är pappa.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 651910,
+   "slut": 653130,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Hej pappa.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 655110,
+   "slut": 659368,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "pappa",
+   "text": "Mamma står bredvid. Hon säger att jag ska fråga om du äter.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 658910,
+   "slut": 663168,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Jag äter. Och jag har en egen kvarn nu. Och en 3D-skrivare.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 664910,
+   "slut": 667308,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "pappa",
+   "text": "Jaha. En kvarn. Vad lugnt då.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 668310,
+   "slut": 671824,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "pappa",
+   "text": "Jag kanske kommer förbi nån dag. Om det passar.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 673310,
+   "slut": 674592,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Det passar.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 675710,
+   "slut": 677240,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "pappa",
+   "text": "Bra. Hej då då.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 684810,
+   "slut": 697810,
+   "kanal": "sms",
+   "prio": "sms",
+   "vem": "ali",
+   "text": "Ali igen. Jag har sagt till min bror att jag inte går i pension. Jag startar något. Han skrattade. Jag skrattade också. Men jag menar det. Tack. Säg inget.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 684810,
+   "slut": 693810,
+   "kanal": "röst",
+   "prio": "SMÅPRAT",
+   "vem": "ali",
+   "text": "Ali igen. Jag har sagt till min bror att jag inte går i pension. Jag startar något. Han skrattade. Jag skrattade också. Men jag menar det. Tack. Säg inget.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 694610,
+   "slut": 699110,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "3D-modell köpt – printa isolerskiva (vägg) på skrivaren",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 711110,
+   "slut": 713870,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "🧱 Bakväggen klar. 3 kvar.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 728410,
+   "slut": 731350,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "🧱 Vänster vägg klar. 2 kvar.",
+   "dag": 4,
+   "steg": 48
+  },
+  {
+   "start": 730410,
+   "slut": 730410,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Klart för idag – sov när du vill",
+   "dag": 4,
+   "steg": 49
+  },
+  {
+   "start": 732410,
+   "slut": 735056,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "berattare",
+   "text": "Klart för idag – sov när du vill.",
+   "dag": 4,
+   "steg": 49
+  },
+  {
+   "start": 737210,
+   "slut": 744170,
+   "kanal": "notis",
+   "prio": "",
+   "vem": "",
+   "text": "🌇 Klockan är 21. Ali slår igen luckan. Dagens jobb är klart – gå in i skjulet och sov i sängen.",
+   "dag": 4,
+   "steg": 49
+  }
+ ]
+}

@@ -1,0 +1,1700 @@
+{
+ "namn": "fore",
+ "dag": 1,
+ "meddelanden": 159,
+ "medelLuft": 0.2,
+ "minstLuft": -12.1,
+ "trangsel2": 119,
+ "exempel": [
+  {
+   "t": 13.9,
+   "kanal": "hjälp",
+   "vem": "",
+   "text": "Hjulet eller 1–9: Rulla hjulet för att ta hammaren",
+   "luft": -4.3,
+   "efterKlar": null
+  },
+  {
+   "t": 21.7,
+   "kanal": "röst",
+   "vem": "du",
+   "text": "Se så mycket skräp här är. Det är ju en guldgruva!",
+   "luft": 3.5,
+   "efterKlar": 3.5
+  },
+  {
+   "t": 26.9,
+   "kanal": "kamera",
+   "vem": "",
+   "text": "-3, 20",
+   "luft": 1.5,
+   "efterKlar": 8.7
+  },
+  {
+   "t": 26.9,
+   "kanal": "röst",
+   "vem": "du",
+   "text": "Men först en skylt, så att alla vet var jag bor.",
+   "luft": -0.9,
+   "efterKlar": 8.7
+  },
+  {
+   "t": 33.6,
+   "kanal": "dagbok",
+   "vem": "du",
+   "text": "Spikade ihop en skylt av lösa bräder från tippen.\n\nSoptippsv",
+   "luft": 3.1,
+   "efterKlar": 15.4
+  },
+  {
+   "t": 33.8,
+   "kanal": "röst",
+   "vem": "du",
+   "text": "Spikade ihop en skylt av lösa bräder från tippen. Soptippsvä",
+   "luft": 0.2,
+   "efterKlar": 15.6
+  },
+  {
+   "t": 44.4,
+   "kanal": "tanke-text",
+   "vem": "",
+   "text": "💭 Skrivaren står kvar på cykeln. Den ska av.",
+   "luft": 2.9,
+   "efterKlar": 26.2
+  },
+  {
+   "t": 44.4,
+   "kanal": "röst",
+   "vem": "du",
+   "text": "Skrivaren står kvar på cykeln. Den ska av.",
+   "luft": -4,
+   "efterKlar": 26.2
+  },
+  {
+   "t": 48.2,
+   "kanal": "röst",
+   "vem": "berattare",
+   "text": "Klicka på cykeln och lasta av storebrors skrivare.",
+   "luft": -0.2,
+   "efterKlar": 0
+  },
+  {
+   "t": 54.9,
+   "kanal": "tanke-text",
+   "vem": "",
+   "text": "💭 Tung. Den har storebror aldrig burit så långt.",
+   "luft": 3,
+   "efterKlar": 6.7
+  },
+  {
+   "t": 54.9,
+   "kanal": "röst",
+   "vem": "du",
+   "text": "Tung. Den har storebror aldrig burit så långt.",
+   "luft": -4.1,
+   "efterKlar": 6.7
+  },
+  {
+   "t": 57.8,
+   "kanal": "hjälp",
+   "vem": "",
+   "text": "E: Ryggsäcken och kistan",
+   "luft": -1.2,
+   "efterKlar": 9.6
+  }
+ ],
+ "sidfel": [],
+ "minuter": null,
+ "logg": [
+  {
+   "start": 1548,
+   "slut": 1548,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Lasta av skrivaren från cykeln",
+   "dag": 1,
+   "steg": 0
+  },
+  {
+   "start": 15405,
+   "slut": 19725,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Brorsans skrivare står kvar på cykeln vid vägen. Den ska av.",
+   "dag": 1,
+   "steg": 0
+  },
+  {
+   "start": 15411,
+   "slut": 15411,
+   "kanal": "hjälp",
+   "prio": "kontroll",
+   "vem": "",
+   "text": "Hjulet eller 1–9: Rulla hjulet för att ta hammaren",
+   "dag": 1,
+   "steg": 0
+  },
+  {
+   "start": 23213,
+   "slut": 26913,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Se så mycket skräp här är. Det är ju en guldgruva!",
+   "dag": 1,
+   "steg": 0
+  },
+  {
+   "start": 28413,
+   "slut": 29313,
+   "kanal": "kamera",
+   "prio": "nick",
+   "vem": "",
+   "text": "-3, 20",
+   "dag": 1,
+   "steg": 0
+  },
+  {
+   "start": 28413,
+   "slut": 31989,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Men först en skylt, så att alla vet var jag bor.",
+   "dag": 1,
+   "steg": 0
+  },
+  {
+   "start": 35113,
+   "slut": 35113,
+   "kanal": "dagbok",
+   "prio": "story",
+   "vem": "du",
+   "text": "Spikade ihop en skylt av lösa bräder från tippen.\n\nSoptippsv",
+   "dag": 1,
+   "steg": 0
+  },
+  {
+   "start": 35313,
+   "slut": 43043,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Spikade ihop en skylt av lösa bräder från tippen. Soptippsvägen 1. Det är inte mycket för världen. Men det är MITT.",
+   "dag": 1,
+   "steg": 0
+  },
+  {
+   "start": 45913,
+   "slut": 49913,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Skrivaren står kvar på cykeln. Den ska av.",
+   "dag": 1,
+   "steg": 0
+  },
+  {
+   "start": 45913,
+   "slut": 49117,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Skrivaren står kvar på cykeln. Den ska av.",
+   "dag": 1,
+   "steg": 0
+  },
+  {
+   "start": 49713,
+   "slut": 53413,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "berattare",
+   "text": "Klicka på cykeln och lasta av storebrors skrivare.",
+   "dag": 1,
+   "steg": 0
+  },
+  {
+   "start": 56413,
+   "slut": 60553,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Tung. Den har storebror aldrig burit så långt.",
+   "dag": 1,
+   "steg": 0
+  },
+  {
+   "start": 56413,
+   "slut": 59865,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Tung. Den har storebror aldrig burit så långt.",
+   "dag": 1,
+   "steg": 0
+  },
+  {
+   "start": 59313,
+   "slut": 59313,
+   "kanal": "hjälp",
+   "prio": "kontroll",
+   "vem": "",
+   "text": "E: Ryggsäcken och kistan",
+   "dag": 1,
+   "steg": 1
+  },
+  {
+   "start": 60013,
+   "slut": 60013,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Ställ skrivaren på rutan",
+   "dag": 1,
+   "steg": 1
+  },
+  {
+   "start": 60313,
+   "slut": 65253,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Skrivaren ställer jag där borta, mot skräpberget. Min första verkstad.",
+   "dag": 1,
+   "steg": 1
+  },
+  {
+   "start": 60713,
+   "slut": 61613,
+   "kanal": "kamera",
+   "prio": "nick",
+   "vem": "",
+   "text": "-13, 12",
+   "dag": 1,
+   "steg": 1
+  },
+  {
+   "start": 61913,
+   "slut": 67493,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Skrivaren ställer jag där borta, mot skräpberget. Min första verkstad.",
+   "dag": 1,
+   "steg": 1
+  },
+  {
+   "start": 71113,
+   "slut": 75373,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "🖨️ Storebrors skrivare står på sin plats i linje 1",
+   "dag": 1,
+   "steg": 1
+  },
+  {
+   "start": 73113,
+   "slut": 73113,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Skrivaren behöver ström",
+   "dag": 1,
+   "steg": 2
+  },
+  {
+   "start": 75113,
+   "slut": 79553,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Skrivaren behöver ström. Hur fixar jag det här ute?",
+   "dag": 1,
+   "steg": 2
+  },
+  {
+   "start": 75113,
+   "slut": 78875,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Skrivaren behöver ström. Hur fixar jag det här ute?",
+   "dag": 1,
+   "steg": 2
+  },
+  {
+   "start": 105413,
+   "slut": 109413,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Cykeln… och storebrors generator?",
+   "dag": 1,
+   "steg": 2
+  },
+  {
+   "start": 105413,
+   "slut": 108213,
+   "kanal": "tanke",
+   "prio": "kvittens",
+   "vem": "du",
+   "text": "Cykeln… och storebrors generator?",
+   "dag": 1,
+   "steg": 2
+  },
+  {
+   "start": 105413,
+   "slut": 108059,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Cykeln… och storebrors generator?",
+   "dag": 1,
+   "steg": 2
+  },
+  {
+   "start": 108213,
+   "slut": 108213,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Ställ cykeln och generatorn vid skrivaren · 0/2",
+   "dag": 1,
+   "steg": 3
+  },
+  {
+   "start": 108513,
+   "slut": 114135,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Om jag trampar ström med cykeln kan skrivaren gå. Cykeln där, generatorn bredvid.",
+   "dag": 1,
+   "steg": 3
+  },
+  {
+   "start": 108913,
+   "slut": 109813,
+   "kanal": "kamera",
+   "prio": "nick",
+   "vem": "",
+   "text": "-1, 21",
+   "dag": 1,
+   "steg": 3
+  },
+  {
+   "start": 110913,
+   "slut": 117153,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Om jag trampar ström med cykeln kan skrivaren gå. Cykeln där, generatorn bredvid.",
+   "dag": 1,
+   "steg": 3
+  },
+  {
+   "start": 117413,
+   "slut": 121613,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Storebrors generator. Den gör el av trampandet.",
+   "dag": 1,
+   "steg": 3
+  },
+  {
+   "start": 117413,
+   "slut": 121413,
+   "kanal": "tanke",
+   "prio": "reaktion",
+   "vem": "du",
+   "text": "Storebrors generator. Den gör el av trampandet.",
+   "dag": 1,
+   "steg": 3
+  },
+  {
+   "start": 117413,
+   "slut": 120927,
+   "kanal": "röst",
+   "prio": "REAKTION",
+   "vem": "du",
+   "text": "Storebrors generator. Den gör el av trampandet.",
+   "dag": 1,
+   "steg": 3
+  },
+  {
+   "start": 128513,
+   "slut": 129413,
+   "kanal": "kamera",
+   "prio": "nick",
+   "vem": "",
+   "text": "-13, 14",
+   "dag": 1,
+   "steg": 3
+  },
+  {
+   "start": 129513,
+   "slut": 133013,
+   "kanal": "röst",
+   "prio": "reaktion",
+   "vem": "berattare",
+   "text": "Ställ cykeln och generatorn vid skrivaren.",
+   "dag": 1,
+   "steg": 3
+  },
+  {
+   "start": 129513,
+   "slut": 132717,
+   "kanal": "röst",
+   "prio": "REAKTION",
+   "vem": "berattare",
+   "text": "Ställ cykeln och generatorn vid skrivaren.",
+   "dag": 1,
+   "steg": 3
+  },
+  {
+   "start": 133013,
+   "slut": 133013,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Klicka på skrivaren och välj vad du vill printa",
+   "dag": 1,
+   "steg": 4
+  },
+  {
+   "start": 135013,
+   "slut": 139753,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Nu ska skrivaren få jobba. Jag väljer något litet först.",
+   "dag": 1,
+   "steg": 4
+  },
+  {
+   "start": 135013,
+   "slut": 139085,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Nu ska skrivaren få jobba. Jag väljer något litet först.",
+   "dag": 1,
+   "steg": 4
+  },
+  {
+   "start": 144213,
+   "slut": 148213,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Den piper. Den GÖR något.",
+   "dag": 1,
+   "steg": 4
+  },
+  {
+   "start": 144213,
+   "slut": 146363,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Den piper. Den GÖR något.",
+   "dag": 1,
+   "steg": 4
+  },
+  {
+   "start": 144213,
+   "slut": 144213,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Trampa!",
+   "dag": 1,
+   "steg": 5
+  },
+  {
+   "start": 146713,
+   "slut": 149917,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Cykeln är kraftverket. Nu får benen jobba.",
+   "dag": 1,
+   "steg": 5
+  },
+  {
+   "start": 149713,
+   "slut": 153713,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Cykeln är kraftverket. Nu får benen jobba.",
+   "dag": 1,
+   "steg": 6
+  },
+  {
+   "start": 150213,
+   "slut": 150213,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Printa en nyckelring till",
+   "dag": 1,
+   "steg": 6
+  },
+  {
+   "start": 150213,
+   "slut": 153975,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "En nyckelring till, så länge brorsans rulle räcker.",
+   "dag": 1,
+   "steg": 6
+  },
+  {
+   "start": 154713,
+   "slut": 159153,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 En nyckelring till, så länge brorsans rulle räcker.",
+   "dag": 1,
+   "steg": 6
+  },
+  {
+   "start": 163613,
+   "slut": 172973,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Slut på brorsans rulle. Och här ligger ju plast överallt. Om jag bara kunde göra tråd av skräpet… Affären mitt emot kanske har något.",
+   "dag": 1,
+   "steg": 7
+  },
+  {
+   "start": 163613,
+   "slut": 174713,
+   "kanal": "tanke",
+   "prio": "kvittens",
+   "vem": "du",
+   "text": "Slut på brorsans rulle. Och här ligger ju plast överallt. Om jag bara kunde göra tråd av skräpet… Affären mitt emot kanske har något.",
+   "dag": 1,
+   "steg": 7
+  },
+  {
+   "start": 163613,
+   "slut": 172459,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Slut på brorsans rulle. Och här ligger ju plast överallt. Om jag bara kunde göra tråd av skräpet… Affären mitt emot kanske har något.",
+   "dag": 1,
+   "steg": 7
+  },
+  {
+   "start": 167113,
+   "slut": 167113,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Sälj nyckelringarna i affären mitt emot · 5/30 kr",
+   "dag": 1,
+   "steg": 7
+  },
+  {
+   "start": 175013,
+   "slut": 179573,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Två nyckelringar. Affären mitt emot kanske köper dem.",
+   "dag": 1,
+   "steg": 7
+  },
+  {
+   "start": 175013,
+   "slut": 178899,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Två nyckelringar. Affären mitt emot kanske köper dem.",
+   "dag": 1,
+   "steg": 7
+  },
+  {
+   "start": 181413,
+   "slut": 186973,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Hej. Jag är Ali. Pappas butik – min sedan tjugofem år. Jag köper det du printar.",
+   "dag": 1,
+   "steg": 7
+  },
+  {
+   "start": 185113,
+   "slut": 191013,
+   "kanal": "sms",
+   "prio": "sms",
+   "vem": "bror",
+   "text": "VA FAN?! Fick du igång den?? Jag försökte i typ ett år. Den bara pep. 😳",
+   "dag": 1,
+   "steg": 8
+  },
+  {
+   "start": 185113,
+   "slut": 190177,
+   "kanal": "röst",
+   "prio": "REAKTION",
+   "vem": "bror",
+   "text": "VA FAN?! Fick du igång den?? Jag försökte i typ ett år. Den bara pep. 😳",
+   "dag": 1,
+   "steg": 8
+  },
+  {
+   "start": 188613,
+   "slut": 188613,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Köp kvarnen hos Ali · 30 kr",
+   "dag": 1,
+   "steg": 8
+  },
+  {
+   "start": 193013,
+   "slut": 197213,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Ali har en gammal kvarn. Den gör tråd av skräp.",
+   "dag": 1,
+   "steg": 8
+  },
+  {
+   "start": 193013,
+   "slut": 196527,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Ali har en gammal kvarn. Den gör tråd av skräp.",
+   "dag": 1,
+   "steg": 8
+  },
+  {
+   "start": 198313,
+   "slut": 202013,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Och kommer du på nåt smart, så vet du var jag bor.",
+   "dag": 1,
+   "steg": 8
+  },
+  {
+   "start": 200713,
+   "slut": 207613,
+   "kanal": "röst",
+   "prio": "story",
+   "vem": "ali",
+   "text": "Pappas gamla köttkvarn. Den har malt allt utom kött. Trettio kronor, så är den din.",
+   "dag": 1,
+   "steg": 9
+  },
+  {
+   "start": 200713,
+   "slut": 206459,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Pappas gamla köttkvarn. Den har malt allt utom kött. Trettio kronor, så är den din.",
+   "dag": 1,
+   "steg": 9
+  },
+  {
+   "start": 204213,
+   "slut": 204213,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Ställ kvarnen vid tornet",
+   "dag": 1,
+   "steg": 9
+  },
+  {
+   "start": 209613,
+   "slut": 215673,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Kvarnen ställer jag bredvid skrivaren, närmast skräpberget. Där finns skräpet.",
+   "dag": 1,
+   "steg": 9
+  },
+  {
+   "start": 209613,
+   "slut": 215049,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Kvarnen ställer jag bredvid skrivaren, närmast skräpberget. Där finns skräpet.",
+   "dag": 1,
+   "steg": 9
+  },
+  {
+   "start": 218113,
+   "slut": 220713,
+   "kanal": "röst",
+   "prio": "story",
+   "vem": "foto",
+   "text": "Första nyckelringen",
+   "dag": 1,
+   "steg": 9
+  },
+  {
+   "start": 221913,
+   "slut": 221913,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Plocka skräp och veva kvarnen",
+   "dag": 1,
+   "steg": 10
+  },
+  {
+   "start": 222713,
+   "slut": 227033,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Skräp i kvarnen, sen vevar jag. Då blir det tråd.",
+   "dag": 1,
+   "steg": 10
+  },
+  {
+   "start": 222713,
+   "slut": 226351,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Skräp i kvarnen, sen vevar jag. Då blir det tråd.",
+   "dag": 1,
+   "steg": 10
+  },
+  {
+   "start": 223113,
+   "slut": 224013,
+   "kanal": "kamera",
+   "prio": "nick",
+   "vem": "",
+   "text": "-19, 18",
+   "dag": 1,
+   "steg": 10
+  },
+  {
+   "start": 228813,
+   "slut": 232893,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Någon köpte nåt jag gjort. Det här kan funka.",
+   "dag": 1,
+   "steg": 10
+  },
+  {
+   "start": 228813,
+   "slut": 232613,
+   "kanal": "tanke",
+   "prio": "story",
+   "vem": "du",
+   "text": "Någon köpte nåt jag gjort. Det här kan funka.",
+   "dag": 1,
+   "steg": 10
+  },
+  {
+   "start": 228813,
+   "slut": 232203,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Någon köpte nåt jag gjort. Det här kan funka.",
+   "dag": 1,
+   "steg": 10
+  },
+  {
+   "start": 234613,
+   "slut": 239513,
+   "kanal": "sms",
+   "prio": "story",
+   "vem": "mamma",
+   "text": "HUR KUNDE DU BARA GÅ?!?! Är du ok?? SVARA NÄR JAG RINGER!!",
+   "dag": 1,
+   "steg": 10
+  },
+  {
+   "start": 234613,
+   "slut": 238809,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "mamma",
+   "text": "HUR KUNDE DU BARA GÅ?!?! Är du ok?? SVARA NÄR JAG RINGER!!",
+   "dag": 1,
+   "steg": 10
+  },
+  {
+   "start": 239513,
+   "slut": 242213,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "3 st i tratten – veva nu!",
+   "dag": 1,
+   "steg": 10
+  },
+  {
+   "start": 241513,
+   "slut": 241513,
+   "kanal": "dagbok",
+   "prio": "story",
+   "vem": "du",
+   "text": "Kvarnen funkar.\n\nSoptippen är en gruva.",
+   "dag": 1,
+   "steg": 11
+  },
+  {
+   "start": 241513,
+   "slut": 247313,
+   "kanal": "tanke",
+   "prio": "kvittens",
+   "vem": "du",
+   "text": "Kvarnen funkar.\n\nSoptippen är en gruva.",
+   "dag": 1,
+   "steg": 11
+  },
+  {
+   "start": 241713,
+   "slut": 244669,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Kvarnen funkar. Soptippen är en gruva.",
+   "dag": 1,
+   "steg": 11
+  },
+  {
+   "start": 247613,
+   "slut": 247613,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Printa en nyckelring av din egen tråd",
+   "dag": 1,
+   "steg": 11
+  },
+  {
+   "start": 247613,
+   "slut": 252053,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Min egen tråd. Nu printar jag en nyckelring av den.",
+   "dag": 1,
+   "steg": 11
+  },
+  {
+   "start": 247613,
+   "slut": 251375,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Min egen tråd. Nu printar jag en nyckelring av den.",
+   "dag": 1,
+   "steg": 11
+  },
+  {
+   "start": 256313,
+   "slut": 266753,
+   "kanal": "notis",
+   "prio": "",
+   "vem": "",
+   "text": "📻 Radio Tippen: God morgon, det är Kjelle på Radio Tippen! Det har flyttat in någon i det gamla skjulet. Med en cykel och en skrivare. Spännande, Gunnar.",
+   "dag": 1,
+   "steg": 11
+  },
+  {
+   "start": 256313,
+   "slut": 267713,
+   "kanal": "röst",
+   "prio": "reaktion",
+   "vem": "kjelle",
+   "text": "God morgon, det är Kjelle på Radio Tippen! Det har flyttat in någon i det gamla skjulet. Med en cykel och en skrivare. Spännande, Gunnar.",
+   "dag": 1,
+   "steg": 11
+  },
+  {
+   "start": 256313,
+   "slut": 265313,
+   "kanal": "röst",
+   "prio": "REAKTION",
+   "vem": "kjelle",
+   "text": "God morgon, det är Kjelle på Radio Tippen! Det har flyttat in någon i det gamla skjulet. Med en cykel och en skrivare. Spännande, Gunnar.",
+   "dag": 1,
+   "steg": 11
+  },
+  {
+   "start": 262013,
+   "slut": 262013,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Sälj nyckelringarna hos Ali",
+   "dag": 1,
+   "steg": 12
+  },
+  {
+   "start": 269713,
+   "slut": 274153,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Affären på andra sidan vägen kanske köper sånt här.",
+   "dag": 1,
+   "steg": 12
+  },
+  {
+   "start": 269713,
+   "slut": 273475,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Affären på andra sidan vägen kanske köper sånt här.",
+   "dag": 1,
+   "steg": 12
+  },
+  {
+   "start": 270113,
+   "slut": 271013,
+   "kanal": "kamera",
+   "prio": "nick",
+   "vem": "",
+   "text": "9, 28",
+   "dag": 1,
+   "steg": 12
+  },
+  {
+   "start": 291213,
+   "slut": 296401,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Nyckelringar igen? Folk tappar sina nycklar hela tiden. Bra affär för oss.",
+   "dag": 1,
+   "steg": 12
+  },
+  {
+   "start": 292413,
+   "slut": 292413,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Gå till Alis butik",
+   "dag": 1,
+   "steg": 13
+  },
+  {
+   "start": 294713,
+   "slut": 299333,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Ali har något åt mig. Jag går över vägen till affären.",
+   "dag": 1,
+   "steg": 13
+  },
+  {
+   "start": 294713,
+   "slut": 298661,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Ali har något åt mig. Jag går över vägen till affären.",
+   "dag": 1,
+   "steg": 13
+  },
+  {
+   "start": 301213,
+   "slut": 307641,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Ali här. Jag såg dig cykla. Det ser jobbigt ut. Testa koppla på den här. Bra kunder får bonus.",
+   "dag": 1,
+   "steg": 13
+  },
+  {
+   "start": 312413,
+   "slut": 319253,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Nu sparas lite ström. En nyckelring, typ. Framtiden är här, och den sitter fast med eltejp.",
+   "dag": 1,
+   "steg": 13
+  },
+  {
+   "start": 312413,
+   "slut": 320013,
+   "kanal": "tanke",
+   "prio": "kvittens",
+   "vem": "du",
+   "text": "Nu sparas lite ström. En nyckelring, typ. Framtiden är här, och den sitter fast med eltejp.",
+   "dag": 1,
+   "steg": 13
+  },
+  {
+   "start": 312413,
+   "slut": 318655,
+   "kanal": "röst",
+   "prio": "REAKTION",
+   "vem": "du",
+   "text": "Nu sparas lite ström. En nyckelring, typ. Framtiden är här, och den sitter fast med eltejp.",
+   "dag": 1,
+   "steg": 13
+  },
+  {
+   "start": 316013,
+   "slut": 316013,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Plocka skräp och mal det",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 320313,
+   "slut": 325173,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Med en skräpgrip slipper jag böja mig. Ali har en ritning.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 320313,
+   "slut": 324509,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Med en skräpgrip slipper jag böja mig. Ali har en ritning.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 320713,
+   "slut": 321613,
+   "kanal": "kamera",
+   "prio": "nick",
+   "vem": "",
+   "text": "9, 28",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 327213,
+   "slut": 339313,
+   "kanal": "sms",
+   "prio": "story",
+   "vem": "ali",
+   "text": "Ali här. Nyckelringen sålde. Jag ville bli ingenjör, men fick ta över pappas butik. I natt lät jag en AI rita en skräpgrip åt mig. Kom och titta.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 327213,
+   "slut": 336213,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Ali här. Nyckelringen sålde. Jag ville bli ingenjör, men fick ta över pappas butik. I natt lät jag en AI rita en skräpgrip åt mig. Kom och titta.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 341313,
+   "slut": 345613,
+   "kanal": "röst",
+   "prio": "reaktion",
+   "vem": "berattare",
+   "text": "Köp en skräpgrip hos Ali. Den kostar femtio kronor.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 341313,
+   "slut": 345075,
+   "kanal": "röst",
+   "prio": "REAKTION",
+   "vem": "berattare",
+   "text": "Köp en skräpgrip hos Ali. Den kostar femtio kronor.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 345613,
+   "slut": 348313,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "3 st i tratten – veva nu!",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 358213,
+   "slut": 362473,
+   "kanal": "notis",
+   "prio": "",
+   "vem": "",
+   "text": "Ali: ”Du får bonus! 25 kr extra. Kvalitet. Nästan.”",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 358213,
+   "slut": 361913,
+   "kanal": "röst",
+   "prio": "reaktion",
+   "vem": "ali",
+   "text": "Du får bonus! 25 kr extra. Kvalitet. Nästan.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 358213,
+   "slut": 361541,
+   "kanal": "röst",
+   "prio": "REAKTION",
+   "vem": "ali",
+   "text": "Du får bonus! 25 kr extra. Kvalitet. Nästan.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 363913,
+   "slut": 364013,
+   "kanal": "röst",
+   "prio": "reaktion",
+   "vem": "",
+   "text": "(läget ändras)",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 394913,
+   "slut": 402353,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Kvarnen står och väntar för att hållaren är full. Om den rymde fler rullar kunde den mala hela tiden.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 394913,
+   "slut": 403313,
+   "kanal": "tanke",
+   "prio": "story",
+   "vem": "du",
+   "text": "Kvarnen står och väntar för att hållaren är full. Om den rymde fler rullar kunde den mala hela tiden.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 394913,
+   "slut": 401775,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Kvarnen står och väntar för att hållaren är full. Om den rymde fler rullar kunde den mala hela tiden.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 405313,
+   "slut": 411013,
+   "kanal": "sms",
+   "prio": "story",
+   "vem": "ali",
+   "text": "Ali här. Rullställ. Fyra rullar i stället för en. Har ett på hyllan.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 405313,
+   "slut": 410129,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Ali här. Rullställ. Fyra rullar i stället för en. Har ett på hyllan.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 415613,
+   "slut": 416513,
+   "kanal": "kamera",
+   "prio": "nick",
+   "vem": "",
+   "text": "9, 29",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 419113,
+   "slut": 425169,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Jag har pengar nu. Hos Ali kan jag köpa uppgraderingar – bära mer eller printa snabbare.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 507713,
+   "slut": 510413,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "3 st i tratten – veva nu!",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 542813,
+   "slut": 546773,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "3D-modell köpt – printa skräpgrip på skrivaren",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 542813,
+   "slut": 546389,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Bra val. 3D-modellen är din. Den räcker till en.",
+   "dag": 1,
+   "steg": 14
+  },
+  {
+   "start": 545113,
+   "slut": 545113,
+   "kanal": "dagbok",
+   "prio": "story",
+   "vem": "du",
+   "text": "Min första 3D-modell!\nNu ska den bara printas.\n\nJag printar ",
+   "dag": 1,
+   "steg": 15
+  },
+  {
+   "start": 545113,
+   "slut": 554813,
+   "kanal": "tanke",
+   "prio": "kvittens",
+   "vem": "du",
+   "text": "Min första 3D-modell!\nNu ska den bara printas.\n\nJag printar inte bara saker –\njag printar maskiner.",
+   "dag": 1,
+   "steg": 15
+  },
+  {
+   "start": 545313,
+   "slut": 551989,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Min första 3D-modell! Nu ska den bara printas. Jag printar inte bara saker – jag printar maskiner.",
+   "dag": 1,
+   "steg": 15
+  },
+  {
+   "start": 622013,
+   "slut": 622013,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Printa din skräpgrip",
+   "dag": 1,
+   "steg": 15
+  },
+  {
+   "start": 622213,
+   "slut": 626213,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Ritningen är min. Nu printar jag gripen.",
+   "dag": 1,
+   "steg": 15
+  },
+  {
+   "start": 622213,
+   "slut": 625293,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Ritningen är min. Nu printar jag gripen.",
+   "dag": 1,
+   "steg": 15
+  },
+  {
+   "start": 625613,
+   "slut": 628853,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "Klicka för att ta på dig skräpgrip",
+   "dag": 1,
+   "steg": 15
+  },
+  {
+   "start": 629713,
+   "slut": 635293,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "🦾 Skräpgripen sitter! Bär 6, lättare att sikta, plockar när du går nära.",
+   "dag": 1,
+   "steg": 15
+  },
+  {
+   "start": 633313,
+   "slut": 633313,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Köp krukreceptet hos Ali (40 kr)",
+   "dag": 1,
+   "steg": 16
+  },
+  {
+   "start": 633713,
+   "slut": 637793,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Ali vill ha krukor. Jag printar en blomkruka.",
+   "dag": 1,
+   "steg": 16
+  },
+  {
+   "start": 633713,
+   "slut": 637103,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Ali vill ha krukor. Jag printar en blomkruka.",
+   "dag": 1,
+   "steg": 16
+  },
+  {
+   "start": 634113,
+   "slut": 635013,
+   "kanal": "kamera",
+   "prio": "nick",
+   "vem": "",
+   "text": "9, 28",
+   "dag": 1,
+   "steg": 16
+  },
+  {
+   "start": 636813,
+   "slut": 640265,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Bra val. Folk köper sånt. Jag vet inte varför.",
+   "dag": 1,
+   "steg": 16
+  },
+  {
+   "start": 639513,
+   "slut": 647013,
+   "kanal": "sms",
+   "prio": "sms",
+   "vem": "ali",
+   "text": "Ali här. Jag såg Skräpgrip på avstånd. Ett streck blev lite snett. Mitt fel. Vackert ändå.",
+   "dag": 1,
+   "steg": 16
+  },
+  {
+   "start": 639513,
+   "slut": 645693,
+   "kanal": "röst",
+   "prio": "REAKTION",
+   "vem": "ali",
+   "text": "Ali här. Jag såg Skräpgrip på avstånd. Ett streck blev lite snett. Mitt fel. Vackert ändå.",
+   "dag": 1,
+   "steg": 16
+  },
+  {
+   "start": 649013,
+   "slut": 653693,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Nyckelringar, nyckelringar. Ali kan inte vilja ha fler.",
+   "dag": 1,
+   "steg": 16
+  },
+  {
+   "start": 649013,
+   "slut": 653613,
+   "kanal": "tanke",
+   "prio": "story",
+   "vem": "du",
+   "text": "Nyckelringar, nyckelringar. Ali kan inte vilja ha fler.",
+   "dag": 1,
+   "steg": 16
+  },
+  {
+   "start": 649013,
+   "slut": 653023,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Nyckelringar, nyckelringar. Ali kan inte vilja ha fler.",
+   "dag": 1,
+   "steg": 16
+  },
+  {
+   "start": 653713,
+   "slut": 654613,
+   "kanal": "kamera",
+   "prio": "nick",
+   "vem": "",
+   "text": "-13, 12",
+   "dag": 1,
+   "steg": 16
+  },
+  {
+   "start": 655613,
+   "slut": 660013,
+   "kanal": "sms",
+   "prio": "story",
+   "vem": "ali",
+   "text": "Prova en kruka. Folk köper krukor. Ingen vet varför.",
+   "dag": 1,
+   "steg": 16
+  },
+  {
+   "start": 655613,
+   "slut": 659437,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Prova en kruka. Folk köper krukor. Ingen vet varför.",
+   "dag": 1,
+   "steg": 16
+  },
+  {
+   "start": 661013,
+   "slut": 665693,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 En kruka. Mamma skulle bli så stolt. Hon får inte veta.",
+   "dag": 1,
+   "steg": 17
+  },
+  {
+   "start": 661013,
+   "slut": 665023,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "En kruka. Mamma skulle bli så stolt. Hon får inte veta.",
+   "dag": 1,
+   "steg": 17
+  },
+  {
+   "start": 661013,
+   "slut": 661013,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Sälj blomkrukan hos Ali",
+   "dag": 1,
+   "steg": 17
+  },
+  {
+   "start": 665913,
+   "slut": 668745,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Ali gillar krukor. Han sa det själv.",
+   "dag": 1,
+   "steg": 17
+  },
+  {
+   "start": 666513,
+   "slut": 670513,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Ali gillar krukor. Han sa det själv.",
+   "dag": 1,
+   "steg": 17
+  },
+  {
+   "start": 678813,
+   "slut": 678813,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Köp sängens 3D-modell hos Ali (60 kr)",
+   "dag": 1,
+   "steg": 18
+  },
+  {
+   "start": 679013,
+   "slut": 684293,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Jag kan inte sova på betongen en natt till. Ali har en säng. Typ.",
+   "dag": 1,
+   "steg": 18
+  },
+  {
+   "start": 679013,
+   "slut": 683643,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Jag kan inte sova på betongen en natt till. Ali har en säng. Typ.",
+   "dag": 1,
+   "steg": 18
+  },
+  {
+   "start": 687913,
+   "slut": 689629,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "ali",
+   "text": "Sov gott, min vän.",
+   "dag": 1,
+   "steg": 18
+  },
+  {
+   "start": 689313,
+   "slut": 689313,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Printa sängen",
+   "dag": 1,
+   "steg": 19
+  },
+  {
+   "start": 689513,
+   "slut": 693513,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Sängen tar lång tid. Den är värd det.",
+   "dag": 1,
+   "steg": 19
+  },
+  {
+   "start": 689513,
+   "slut": 692407,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Sängen tar lång tid. Den är värd det.",
+   "dag": 1,
+   "steg": 19
+  },
+  {
+   "start": 708913,
+   "slut": 711613,
+   "kanal": "info",
+   "prio": "kvittens",
+   "vem": "",
+   "text": "6 st i tratten – veva nu!",
+   "dag": 1,
+   "steg": 19
+  },
+  {
+   "start": 720513,
+   "slut": 720513,
+   "kanal": "dagbok",
+   "prio": "story",
+   "vem": "du",
+   "text": "Dag 1. Inget mer tjat.\n\nHär står jag, vid soptippen,\nmed sto",
+   "dag": 1,
+   "steg": 20
+  },
+  {
+   "start": 720513,
+   "slut": 720513,
+   "kanal": "målruta",
+   "prio": "mål",
+   "vem": "",
+   "text": "Ställ sängen i skjulet och sov",
+   "dag": 1,
+   "steg": 20
+  },
+  {
+   "start": 720713,
+   "slut": 729713,
+   "kanal": "röst",
+   "prio": "STORY",
+   "vem": "du",
+   "text": "Dag 1. Inget mer tjat. Här står jag, vid soptippen, med storebrors gamla 3D-skrivare och ett skjul som luktar mus. Men skräp är plast – och plast är filament. P",
+   "dag": 1,
+   "steg": 20
+  },
+  {
+   "start": 736813,
+   "slut": 740813,
+   "kanal": "tanke-text",
+   "prio": "",
+   "vem": "",
+   "text": "💭 Sängen ska in i skjulet. Sen sover jag.",
+   "dag": 1,
+   "steg": 20
+  },
+  {
+   "start": 736813,
+   "slut": 739831,
+   "kanal": "röst",
+   "prio": "MÅL",
+   "vem": "du",
+   "text": "Sängen ska in i skjulet. Sen sover jag.",
+   "dag": 1,
+   "steg": 20
+  },
+  {
+   "start": 737213,
+   "slut": 738113,
+   "kanal": "kamera",
+   "prio": "nick",
+   "vem": "",
+   "text": "8, 6",
+   "dag": 1,
+   "steg": 20
+  }
+ ]
+}
