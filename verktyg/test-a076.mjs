@@ -39,14 +39,14 @@ await stang(); await p.waitForTimeout(1500);
 const h2 = await H(() => ({ hammare: window.__printahem.antalInv('hammare'), toast: window.__printahem.textLogg().some((e) => /Hammaren ligger i verktygsraden/.test(e.text)), bubbla: window.__printahem.pilBildTyp(), steg: window.__printahem.stegId() }));
 ut.push([`bildbubblan vid skylten: ${b1} (hammaren), efter skylten: ${h2.bubbla} vid steget ${h2.steg}`, /^hammare/.test(b1) && /^skrivareS/.test(h2.bubbla)]);
 ut.push([`hammaren i verktygsraden (${h2.hammare}) – den ligger där från start (A-076 tillägg 12:25)`, h2.hammare === 1]);
-// 4. inkorg 18: den andra ringen tömmer brorsans rulle → sälj → köp kvarnen hos Ali (ingen gåva, inget besök – test-a076m testar köpet i detalj)
+// 4. inkorg 18: den andra ringen tömmer storebrors rulle → sälj → köp kvarnen hos Ali (ingen gåva, inget besök – test-a076m testar köpet i detalj)
 await H(() => { const P = window.__printahem, S = P.S; S.skrivareLastad = S.skrivareStar = S.cykelStar = S.generatorStar = S.cykelOmbyggd = true; S.stat.printat = 1; S.steg = P.STEG.findIndex((x) => x.id === 'rullSlut'); });
 await stang(); await p.waitForTimeout(1500);
 const r4 = await H(() => { const P = window.__printahem; return { steg: P.stegId(), bubbla: P.pilBildTyp() }; });
 await H(() => { const P = window.__printahem, S = P.S; S.stat.printat = 2; P.skrivare.find((x) => x.id === 'g1').fil = 0; P.handelse('printKlar', { sak: 'nyckelring', n: 2 }); });   /* den andra ringen är klar */
 await p.waitForTimeout(1500); await stang();
 await p.screenshot({ path: dir + 'rullen-slut.png' });
-const r5 = await H(() => ({ slut: !!window.__printahem.S.rullSlut, tanke: window.__printahem.textLogg().some((e) => /Slut på brorsans rulle/.test(e.text)), steg: window.__printahem.stegId() }));
+const r5 = await H(() => ({ slut: !!window.__printahem.S.rullSlut, tanke: window.__printahem.textLogg().some((e) => /Slut på storebrors rulle/.test(e.text)), steg: window.__printahem.stegId() }));
 ut.push([`rullen tom efter den andra ringen (${r5.slut}) med tanken (${r5.tanke}), nästa mål ${r5.steg} · bubblan vid "${r4.steg}": ${r4.bubbla}`, r5.slut && r5.tanke && r5.steg === 'saljTva' && /^nyckelring/.test(r4.bubbla)]);
 await H(() => { const P = window.__printahem, S = P.S; S.mynt = 5 + P.MASKINER.gammalkvarn.ritning; S.stat.salt = 2; });
 const r6 = await H(async () => { const P = window.__printahem; P.oppnaMarknad(); await new Promise((r) => setTimeout(r, 400)); const k = [...document.querySelectorAll('[data-kopnu]')].find((e) => /gammalkvarn/.test(e.dataset.kopnu)); k?.click(); await new Promise((r) => setTimeout(r, 600)); P.ui.stangButik(); await new Promise((r) => setTimeout(r, 2500)); return { kvarn: !!P.S.kvarnKopt, iHand: P.valdTyp(), steg: P.stegId() }; });

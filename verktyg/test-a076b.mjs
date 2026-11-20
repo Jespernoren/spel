@@ -1,4 +1,4 @@
-// A-076 tillägg: brorsans rulle syns på skrivaren och krymper, tom spole när den är slut, slangen först när tornet är kopplat.
+// A-076 tillägg: storebrors rulle syns på skrivaren och krymper, tom spole när den är slut, slangen först när tornet är kopplat.
 // Kör: node verktyg/test-a076b.mjs [url]  → skärmdumpar i verktyg/a076/skrivare-*.png
 import fs from 'node:fs';
 import { chromium } from '/home/claude/verktyg/node_modules/playwright-core/index.mjs';
@@ -18,7 +18,7 @@ const las = () => H(() => { const P = window.__printahem, g1 = P.skrivare.find((
   return { fil: g1?.fil, spole: !!u?.spole?.visible, lindning: !!u?.spoleKarna?.visible, skala: +(u?.spoleKarna?.scale.x || 0).toFixed(2), slang: !!u?.slang?.visible, matar: !!ms?.visible, star: !!P.S.skrivareStar }; });
 const titta = async (x, z, fram = 1.6) => { await H(([x, z, fram]) => { const P = window.__printahem; const sp = P.spelare; sp.pos.set(x + fram, sp.pos.y, z + fram); sp.yaw = Math.atan2(-(x - sp.pos.x), -(z - sp.pos.z)); sp.pitch = -0.45; }, [x, z, fram]); await p.waitForTimeout(2500); };
 const g1Pos = () => H(() => { const P = window.__printahem, m = P.skrivare.find((x) => x.id === 'g1').mesh; return [m.position.x, m.position.z]; });
-// 1. på cykeln: brorsans rulle sitter i rullhållaren
+// 1. på cykeln: storebrors rulle sitter i rullhållaren
 await stang();
 const cyk = await H(() => { const P = window.__printahem, c = P.vagCykel, u = c.userData.skrivare?.userData; return { x: c.position.x, z: c.position.z, spole: !!u?.spole?.visible, lindning: !!u?.spoleKarna?.visible, slang: !!u?.slang?.visible }; });
 await titta(cyk.x, cyk.z, 1.4); await p.screenshot({ path: dir + 'skrivare-pa-cykeln.png' });

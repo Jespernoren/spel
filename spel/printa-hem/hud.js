@@ -200,6 +200,7 @@ export const HUD_CSS = `
 .hud-stopp.stopp{animation:hudStoppPuls 1.4s ease-in-out infinite}
 .hud-stopp.vantar{background:${LAGER},#b07a1a;border-bottom-color:#6b4708}.hud-stopp.vantar::after{border-top-color:#6b4708}
 @keyframes hudStoppPuls{50%{filter:brightness(1.18)}}
+.hud-stopp.status{background:rgba(22,26,36,.82);border-bottom-color:rgba(0,0,0,.35);box-shadow:0 4px 10px rgba(0,0,0,.25);min-width:0;padding:5px 10px 6px}.hud-stopp.status::after{border-top-color:rgba(22,26,36,.82)}.hud-stopp.status span{font:700 13px/1.2 system-ui}   /* inkorg 23 p.12: en lugn statusetikett */
 .hud-stopp.klar{background:${LAGER},#2f8a52;border-bottom-color:#1d5a35}.hud-stopp.klar::after{border-top-color:#1d5a35}
 .hud-stopp.hit{background:${LAGER},#e0a82e;color:#2a1c05;border-bottom-color:#8a6510}.hud-stopp.hit::after{border-top-color:#8a6510}.hud-stopp.hit em{background:rgba(255,255,255,.3)}
 .hud-flik kbd{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);font:900 10px system-ui;padding:1px 5px;border-radius:4px;background:#0f1217;border:1px solid #3a4155;color:var(--papper)}

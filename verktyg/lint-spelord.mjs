@@ -7,5 +7,7 @@ const fel = [];
 const block = (namn) => { const i = kod.indexOf(`const ${namn} = {`); if (i < 0) return ''; return kod.slice(i, kod.indexOf('\n};', i)); };
 for (const namn of ['JAG_TAL', 'STEG_TAL']) for (const m of block(namn).matchAll(/:\s*'([^']*)'/g)) if (SPELORD.test(m[1])) fel.push(`${namn}: "${m[1]}"`);
 for (const re of [/knuff:\s*'([^']*)'/g, /tanke:\s*'([^']*)'/g, /regi\.info\(\s*'([^']*)'/g, /prata\(\s*'[a-z]+',\s*'([^']*)'/g]) for (const m of kod.matchAll(re)) if (SPELORD.test(m[1])) fel.push(`${re.source.split('\\')[0]} "${m[1].slice(0, 70)}"`);
+/* inkorg 23 p.8 (Jesper: "storebror är bättre"): alltid storebror – aldrig brorsan i text eller tal. Alla strängar i spelets filer. */
+for (const f of ['spel.js', 'intro-bilder.js', 'hud.js', 'regelvakt.js']) { const fp = new URL('../spel/printa-hem/' + f, import.meta.url).pathname; if (!fs.existsSync(fp)) continue; const k = fs.readFileSync(fp, 'utf8'); for (const m of k.matchAll(/'([^'\n]*)'|`([^`\n]*)`|"([^"\n]*)"/g)) { const t = m[1] ?? m[2] ?? m[3]; if (/brorsan/i.test(t) && t !== 'BRORSAN') fel.push(`BRORSAN ${f}: "${t.slice(0, 70)}"`); } }
 if (fel.length) { console.log('lint-spelord: ' + fel.length + ' SPELORD I REPLIK'); for (const f of fel) console.log('  ' + f); process.exit(1); }
-console.log('lint-spelord: 0 spelord i uppmaningar, tankar och info');
+console.log('lint-spelord: 0 spelord i uppmaningar, tankar och info · 0 BRORSAN');

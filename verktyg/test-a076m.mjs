@@ -1,5 +1,5 @@
 // Inkorg 18 (ersätter A-076 18:46): kvarnen KÖPS hos Ali för pengarna från två nyckelringar – ingen gåva, inget besök.
-// Brorsans rulle ger exakt 2 nyckelringar, kvarnen kostar 2 × nyckelringens pris, kvarnen syns i butiken först när rullen är tom,
+// Storebrors rulle ger exakt 2 nyckelringar, kvarnen kostar 2 × nyckelringens pris, kvarnen syns i butiken först när rullen är tom,
 // köpknappen är låst med skälet tills pengarna räcker, och köpet är den enda vägen (0 SAK UTAN KÄLLA).
 // Kör: node verktyg/test-a076m.mjs [url]
 import { chromium } from '/home/claude/verktyg/node_modules/playwright-core/index.mjs';
@@ -13,11 +13,11 @@ const H = (f, a) => p.evaluate(f, a);
 await H(() => window.__startaSpel()); await p.waitForTimeout(2500);
 for (let i = 0; i < 6; i++) { if (await H(() => !!document.querySelector('.ph-med:not([hidden]) .ph-dagbokkort'))) await p.keyboard.press('Enter'); await p.waitForTimeout(400); }
 const ut = [];
-// skrivaren, cykeln och generatorn på plats, ström, och två printar av brorsans rulle
+// skrivaren, cykeln och generatorn på plats, ström, och två printar av storebrors rulle
 await H(() => { const P = window.__printahem, S = P.S; S.skyltUppe = true; S.skrivareLastad = true; S.skrivareStar = true; S.cykelStar = true; S.generatorStar = true; P.ritaStart(); P.byggOmCykeln(); S.steg = P.STEG.findIndex((x) => x.id === 'trampa'); });
 await p.waitForTimeout(1500);
 const fore = await H(() => { const P = window.__printahem, g1 = P.skrivare.find((x) => x.id === 'g1'); return { fil: g1.fil, gram: P.VAROR.nyckelring.gram, pris: P.VAROR.nyckelring.pris, kvarnPris: P.MASKINER.gammalkvarn.ritning }; });
-ut.push([`brorsans rulle ${fore.fil} g = 2 × nyckelringen (${fore.gram} g)`, fore.fil === 2 * fore.gram]);
+ut.push([`storebrors rulle ${fore.fil} g = 2 × nyckelringen (${fore.gram} g)`, fore.fil === 2 * fore.gram]);
 ut.push([`kvarnen kostar ${fore.kvarnPris} kr = 2 × nyckelringens pris (${fore.pris} kr)`, fore.kvarnPris === 2 * fore.pris]);
 const butikHar = () => H(async () => { const P = window.__printahem; P.oppnaMarknad(); await new Promise((r) => setTimeout(r, 300)); const k = [...document.querySelectorAll('[data-kopnu]')].find((e) => /gammalkvarn/.test(e.dataset.kopnu)); k?.click(); await new Promise((r) => setTimeout(r, 300)); return { finns: !!k, text: (document.body.innerText.match(/[^\n]*sälj nyckelringarna[^\n]*/i) || [''])[0] }; });
 const stangButik = () => H(() => window.__printahem.ui.stangButik());
@@ -31,12 +31,12 @@ for (let n = 1; n <= 2; n++) {
   await p.waitForTimeout(600);
 }
 await p.waitForTimeout(1200);
-const efter = await H(() => { const P = window.__printahem, g1 = P.skrivare.find((x) => x.id === "g1"); return { fil: g1.fil, slut: !!P.S.rullSlut, printat: P.S.stat.printat || 0, steg: P.STEG[P.S.steg]?.id, tankar: P.textLogg().filter((x) => /Slut på brorsans rulle/.test(x.text || x.t || JSON.stringify(x))).length }; });
-ut.push([`två nyckelringar printade (${efter.printat}), rullen tom (${efter.fil} g), brorsans rulle slut: ${efter.slut} · tanken om affären mitt emot: ${efter.tankar ? 'ja' : 'NEJ'}`, efter.printat === 2 && efter.fil === 0 && efter.slut && efter.tankar > 0]);
+const efter = await H(() => { const P = window.__printahem, g1 = P.skrivare.find((x) => x.id === "g1"); return { fil: g1.fil, slut: !!P.S.rullSlut, printat: P.S.stat.printat || 0, steg: P.STEG[P.S.steg]?.id, tankar: P.textLogg().filter((x) => /Slut på storebrors rulle/.test(x.text || x.t || JSON.stringify(x))).length }; });
+ut.push([`två nyckelringar printade (${efter.printat}), rullen tom (${efter.fil} g), storebrors rulle slut: ${efter.slut} · tanken om affären mitt emot: ${efter.tankar ? 'ja' : 'NEJ'}`, efter.printat === 2 && efter.fil === 0 && efter.slut && efter.tankar > 0]);
 const tredje = await H(() => { const P = window.__printahem, g1 = P.skrivare.find((x) => x.id === 'g1'); g1.klar = null; P.startaDirekt(g1, { typ: 'nyckelring' }); P.S.strom = 999; return true; });
 await p.waitForTimeout(4000);
 const t3 = await H(() => { const P = window.__printahem, g1 = P.skrivare.find((x) => x.id === 'g1'); return { klar: !!g1.klar, prog: +(g1.prog || 0).toFixed(2), printat: P.S.stat.printat || 0 }; });
-ut.push([`en tredje ring av brorsans rulle blir inte klar (printat ${t3.printat})`, t3.printat === 2 && !t3.klar]);
+ut.push([`en tredje ring av storebrors rulle blir inte klar (printat ${t3.printat})`, t3.printat === 2 && !t3.klar]);
 await H(() => { const P = window.__printahem, g1 = P.skrivare.find((x) => x.id === 'g1'); g1.jobb = null; g1.prog = 0; P.S.mynt = 5; });
 bu = await butikHar(); await stangButik();
 ut.push([`rullen tom, 5 kr: kvarnen syns i butiken men är låst med skälet (${bu.text.slice(0, 90)})`, bu.finns && /sälj nyckelringarna/i.test(bu.text)]);
