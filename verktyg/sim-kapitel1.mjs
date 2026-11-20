@@ -131,11 +131,9 @@ for (let i = 1; i < syn.length; i++) {
   }
 }
 // röst avbruten
-const rost = r.logg.filter((e) => e.kalla === 'röst');
-for (let i = 1; i < rost.length; i++) {
-  const a = rost[i - 1], c = rost[i], langd = Math.min(9, 0.6 + a.text.length * 0.062);
-  if (c.tot - a.tot < langd - 0.3) flaggor.push({ dag: c.dag, t: c.t, typ: 'RÖST AVBRUTEN', text: `${a.vem}: "${a.text.slice(0, 50)}" (behöver ${langd.toFixed(1)} s, fick ${(c.tot - a.tot).toFixed(1)} s) ← ${c.vem}: "${c.text.slice(0, 40)}"` });
-}
+/* A-090 p.3: spelet loggar själv när en röst klipps (röst-avbruten) – med riktig klipplängd och talfart. Den gamla uppskattningen
+   (0,062 s per tecken utan talfarten 1,3) larmade för repliker som talats klart. */
+for (const e of r.logg.filter((x) => x.kalla === 'röst-avbruten')) flaggor.push({ dag: e.dag, t: e.t, typ: 'RÖST AVBRUTEN', text: `${e.vem}: ${e.text}` });
 // punkt BE: kvittens → varför → nytt mål. Flagga om något saknas eller om målet läses upp mer än 2 s efter att kedjan pratat klart.
 const rostLangd = (t) => Math.min(9, 0.6 + t.length * 0.062);
 const rostFor = (text, efter) => r.logg.find((e) => e.kalla === 'röst' && e.tot >= efter - 0.5 && e.text.includes(text.slice(0, 40)));   /* en replik kan vara en del av en längre (Alis hälsning + gåvan) */
@@ -151,6 +149,7 @@ for (const kv of r.logg.filter((e) => e.kalla === 'kvittens')) {
   else if (!r.logg.some((e) => e.kalla === 'händelse' && e.vem === 'malKlart' && e.tot - kv.tot > -2 && e.tot - kv.tot < 1.5)) { /* kvittens mitt i ett mål – inget nytt mål väntas */ }
   else if (!mal || mal.tot - slut > 20) flaggor.push({ dag: kv.dag, t: kv.t, typ: 'KEDJA', text: `${kv.varfor}: inget nytt mål lästes upp efter kedjan` });
   else if (gap > 2 && r.logg.some((e) => (e.kalla === 'meddelande' || (e.kalla === 'lapp' && /^Dag \d/.test(e.text))) && e.tot >= slut - 0.5 && e.tot <= mal.tot)) { /* en dagbokssida (pausad scen) får stå mellan kedjan och målet */ }
+  else if (gap > 2 && mal.tot - rs.tot <= 6.6) { /* A-090 p.5: målets tanke väntar 6 s efter förra tanken (kvittensen) */ }
   else if (gap > 2) flaggor.push({ dag: kv.dag, t: kv.t, typ: 'KEDJA', text: `${kv.varfor}: nytt mål ${gap.toFixed(1)} s efter kedjan (max 2 s)` });
 }
 for (const m of r.logg.filter((e) => e.kalla === 'MÅL')) {
