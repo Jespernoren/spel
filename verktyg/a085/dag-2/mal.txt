@@ -1,9 +1,10 @@
-01	15:16	kopMotor	Mal skräp, printa och sälj
-02	3:59	monteraMotor	Printa kvarnmotorn till kvarnen
-03	4:32	kopSack	Kolla vad som flög ut från sopbilen
-04	5:14	rolf0-brev	Vänta på sopbilen. Den lämnar något.
-05	6:46	rolf0-printa	Printa ölhållare med kylklamp
-06	6:51	rolf0-ge	Ge Rolf ölhållare med kylklamp
-07	7:21	vindsnurra	Trampa, printa och sälj
-08	11:12	n1-bygg-dorr-skjulet	Bygg en dörr till skjulet
-09	12:53	sov2	Klart för idag – sov när du vill
+01	15:41	kopMotor	Mal skräp, printa och sälj
+02	4:29	monteraMotor	Printa kvarnmotorn till kvarnen
+03	5:02	kopSack	Kolla vad som flög ut från sopbilen
+04	5:45	rolf0-brev	Vänta på sopbilen. Den lämnar något.
+05	7:38	rolf0-printa	Printa ölhållare med kylklamp
+06	7:43	rolf0-ge	Ge Rolf ölhållare med kylklamp
+07	8:56	vindsnurra	Trampa, printa och sälj
+08	13:50	n1-bygg-dorr-skjulet	Bygg en dörr till skjulet
+09	14:46	sov2	Klart för idag – sov när du vill
+01	0:00	sov2	Klart för idag – sov när du vill

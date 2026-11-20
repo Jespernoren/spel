@@ -1,10 +1,10 @@
-01	13:18	rolf1-brev	Vänta på sopbilen. Den lämnar något.
-02	4:44	n2-hamta-skrap	Hämta 5 skräp på soptippen
-03	4:49	rolf1-printa	Printa flasköppnare med magnet
-04	5:11	rolf1-ge	Ge Rolf flasköppnare med magnet
-05	5:31	kopBatteri	Printa och sälj
-06	9:22	ryggkorg	Plocka skräp och mal det
-07	10:35	n2-bygg-arbetsbord	Bygg ett arbetsbord
-08	11:24	n2-bygg-skrivare-m	Printa och sälj
-09	13:25	n2-lagg-plattak-skjulet	Lägg plåttak på skjulet
-10	14:34	sov3	Klart för idag – sov när du vill
+01	0:19	rolf1-brev	Vänta på sopbilen. Den lämnar något.
+02	4:01	n2-hamta-skrap	Hämta 5 skräp på soptippen
+03	4:06	rolf1-printa	Printa flasköppnare med magnet
+04	5:29	rolf1-ge	Ge Rolf flasköppnare med magnet
+05	5:51	kopBatteri	Printa och sälj
+06	9:28	ryggkorg	Plocka skräp och mal det
+07	10:40	n2-bygg-arbetsbord	Bygg ett arbetsbord
+08	11:28	n2-bygg-skrivare-m	Printa och sälj
+09	13:29	n2-lagg-plattak-skjulet	Lägg plåttak på skjulet
+10	14:58	sov3	Klart för idag – sov när du vill
