@@ -1,7 +1,7 @@
 // A-076: dag 1 v3. Kör: node verktyg/test-a076.mjs [url]  → skärmdumpar i verktyg/a076/
 // 1 menyn före introt, introt → rakt in i spelet, dagboksnotisen med dagens mål ovanpå spelet, HUD:en med bildprickar
 // 2 skylten: bildbubblan visar hammaren, hammaren hamnar i verktygsraden · 3 bubblan följer steget
-// 4 rullen tar slut → Ali kommer över med kvarnen · 5 kvarnen i handen utan spegelvänd text · 6 kapitelkortet högst ca 3 s
+// 4 den andra ringen tömmer rullen → sälj → köp kvarnen hos Ali (inkorg 18) · 5 kvarnen i handen utan spegelvänd text · 6 kapitelkortet högst ca 3 s
 import fs from 'node:fs';
 import { chromium } from '/home/claude/verktyg/node_modules/playwright-core/index.mjs';
 const url = process.argv[2] || 'http://127.0.0.1:8765/printa-hem.html';
@@ -39,24 +39,18 @@ await stang(); await p.waitForTimeout(1500);
 const h2 = await H(() => ({ hammare: window.__printahem.antalInv('hammare'), toast: window.__printahem.textLogg().some((e) => /Hammaren ligger i verktygsraden/.test(e.text)), bubbla: window.__printahem.pilBildTyp(), steg: window.__printahem.stegId() }));
 ut.push([`bildbubblan vid skylten: ${b1} (hammaren), efter skylten: ${h2.bubbla} vid steget ${h2.steg}`, /^hammare/.test(b1) && /^skrivareS/.test(h2.bubbla)]);
 ut.push([`hammaren i verktygsraden (${h2.hammare}) – den ligger där från start (A-076 tillägg 12:25)`, h2.hammare === 1]);
-// 4. rullen tar slut → Ali kommer
+// 4. inkorg 18: den andra ringen tömmer brorsans rulle → sälj → köp kvarnen hos Ali (ingen gåva, inget besök – test-a076m testar köpet i detalj)
 await H(() => { const P = window.__printahem, S = P.S; S.skrivareLastad = S.skrivareStar = S.cykelStar = S.generatorStar = S.cykelOmbyggd = true; S.stat.printat = 1; S.steg = P.STEG.findIndex((x) => x.id === 'rullSlut'); });
 await stang(); await p.waitForTimeout(1500);
-const r4 = await H(() => { const P = window.__printahem; const g1 = P.skrivare.find((x) => x.id === 'g1'); return { fil: g1?.fil, steg: P.stegId(), bubbla: P.pilBildTyp() }; });
-await H(() => { const P = window.__printahem, S = P.S; const g1 = P.skrivare.find((x) => x.id === 'g1'); g1.fil = 40; P.startaDirekt(g1, { typ: 'nyckelring' }); g1.prog = 0.55; g1.fil = 0.3; S.strom = 100;   /* mitt i printen: rullen räcker inte till resten */ });
-await p.waitForTimeout(1000); await stang(); for (let i = 0; i < 16; i++) { await H(() => { window.__printahem.S.strom = 100; }); await p.waitForTimeout(500); }   // trampar
-
+const r4 = await H(() => { const P = window.__printahem; return { steg: P.stegId(), bubbla: P.pilBildTyp() }; });
+await H(() => { const P = window.__printahem, S = P.S; S.stat.printat = 2; P.skrivare.find((x) => x.id === 'g1').fil = 0; P.handelse('printKlar', { sak: 'nyckelring', n: 2 }); });   /* den andra ringen är klar */
+await p.waitForTimeout(1500); await stang();
 await p.screenshot({ path: dir + 'rullen-slut.png' });
-const r5 = await H(() => ({ slut: !!window.__printahem.S.rullSlut, tanke: window.__printahem.textLogg().some((e) => /Om man bara kunde göra tråd av skräpet/.test(e.text)), steg: window.__printahem.stegId() }));
-ut.push([`rullen tar slut mitt i printen (${r5.slut}) med tanken (${r5.tanke}), nästa mål ${r5.steg} · bubblan vid "${r4.steg}": ${r4.bubbla}`, r5.slut && r5.tanke && r5.steg === 'aliKvarn' && /^nyckelring/.test(r4.bubbla)]);
-let aliNara = false;
-for (let i = 0; i < 40 && !aliNara; i++) { await p.waitForTimeout(1000); await stang();  aliNara = await H(() => { const P = window.__printahem, v = P.aliFig.getWorldPosition(P.spelare.pos.clone()); return Math.hypot(v.x - (-10.6), v.z - 13.9) < 4; }); }
-await H(() => { const P = window.__printahem, v = P.aliFig.getWorldPosition(P.spelare.pos.clone()); P.spelare.pos.set(v.x + 1.5, P.spelare.pos.y, v.z + 3.2); P.tittaMot?.(v.x, v.z, 0.3, { tvang: true, nyckel: 'ali76' }); });
-await p.waitForTimeout(7000); await p.screenshot({ path: dir + 'ali-vid-skrivaren.png' });
-for (let i = 0; i < 200 && !(await H(() => !!window.__printahem.S.kvarnKopt)); i++) { await p.waitForTimeout(1000); if (i % 10 === 0) await stang(); }
-for (let i = 0; i < 40 && (await H(() => window.__printahem.textLogg().filter((e) => e.vem === 'ali' && e.kalla === 'replik').length)) < 6; i++) await p.waitForTimeout(1000);
-const r6 = await H(() => ({ kvarn: !!window.__printahem.S.kvarnKopt, iHand: window.__printahem.valdTyp(), repliker: window.__printahem.textLogg().filter((e) => e.vem === 'ali' && e.kalla === 'replik').map((e) => e.text) }));
-ut.push([`Ali kom över (nära skrivaren ${aliNara}) och gav kvarnen (${r6.kvarn}, i handen: ${r6.iHand}) · ${r6.repliker.length} repliker: ${r6.repliker.join(' / ')}`, aliNara && r6.kvarn && r6.repliker.length >= 4 && /uppfinnare/.test(r6.repliker[0] || '')]);
+const r5 = await H(() => ({ slut: !!window.__printahem.S.rullSlut, tanke: window.__printahem.textLogg().some((e) => /Slut på brorsans rulle/.test(e.text)), steg: window.__printahem.stegId() }));
+ut.push([`rullen tom efter den andra ringen (${r5.slut}) med tanken (${r5.tanke}), nästa mål ${r5.steg} · bubblan vid "${r4.steg}": ${r4.bubbla}`, r5.slut && r5.tanke && r5.steg === 'saljTva' && /^nyckelring/.test(r4.bubbla)]);
+await H(() => { const P = window.__printahem, S = P.S; S.mynt = 5 + P.MASKINER.gammalkvarn.ritning; S.stat.salt = 2; });
+const r6 = await H(async () => { const P = window.__printahem; P.oppnaMarknad(); await new Promise((r) => setTimeout(r, 400)); const k = [...document.querySelectorAll('[data-kopnu]')].find((e) => /gammalkvarn/.test(e.dataset.kopnu)); k?.click(); await new Promise((r) => setTimeout(r, 600)); P.ui.stangButik(); await new Promise((r) => setTimeout(r, 2500)); return { kvarn: !!P.S.kvarnKopt, iHand: P.valdTyp(), steg: P.stegId() }; });
+ut.push([`kvarnen köpt hos Ali (${r6.kvarn}), i handen: ${r6.iHand}, nästa mål ${r6.steg}`, r6.kvarn && r6.iHand === 'byggsats:gammalkvarn' && r6.steg === 'kvarn']);
 // 5. kvarnen i handen
 await H(() => { const P = window.__printahem; const i = P.S.hotbar.findIndex((x) => x?.typ === 'byggsats:gammalkvarn'); if (i >= 0) P.byt(i); P.spelare.pos.set(0, P.spelare.pos.y, 10); });
 await p.waitForTimeout(2000); await p.screenshot({ path: dir + 'kvarnen-i-handen.png' });

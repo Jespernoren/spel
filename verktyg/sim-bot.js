@@ -465,7 +465,8 @@
         if (H.antalInv('nyckelring') < 3 && fil(sk) >= 100) { await strom(6); await printa({ typ: 'nyckelring' }); return; }
         await ali(() => saljAllt(), 'sälja nyckelringar'); return;
       }
-      case 'aliKvarn': handling('väntar på Ali'); await vanta(2); return;   /* A-076: Ali kommer själv med kvarnen */
+      case 'saljTva': { const sk = H.skrivare.find((x) => x.id === 'g1'); if (sk?.klar) { await taUt(sk); return; } await ali(() => saljAllt(), 'sälja de två nyckelringarna'); return; }   /* inkorg 18 */
+      case 'aliKvarn': { const ok = await kopMaskin('gammalkvarn'); handling(ok ? 'köpte kvarnen' : 'kunde inte köpa kvarnen'); if (!ok) await vanta(2); return; }   /* inkorg 18: kvarnen köps hos Ali */
       case 'rullSlut': { const sk = H.skrivare[0]; if (sk.klar) await taUt(sk); if (!sk.jobb) { await gaTill(sk.mesh, 1.4, 'skrivaren'); await vanta(MENY_TID); handling(H.startaJobb(sk, { typ: 'nyckelring' }) ? 'printar Nyckelring (sista av brorsans rulle)' : 'kunde inte starta nyckelringen'); } await strom(6); for (let i = 0; i < 20 && !S.rullSlut && !S.kvarnKopt; i++) { await strom(2); } return; }   /* A-076: printen hackar när brorsans rulle tar slut */
       case 'egenPrint': { const sk = H.skrivare[0]; if (sk?.klar) { await taUt(sk); return; } if (sk?.jobb) { await strom(6); return; } await strom(6); await printa({ typ: 'nyckelring' }); return; }   /* A-076 */
       case 'strom': if (window.__simStromDirekt) { await klick(H.vagCykel, 'cykeln (generatorn)'); return; } await vanta(4); return;   /* A-073: gåtan – boten väntar på hjälpen (STROM_DIREKT: tar generatorn direkt) */
