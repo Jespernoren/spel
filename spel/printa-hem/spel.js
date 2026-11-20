@@ -12598,13 +12598,13 @@ const INTRO3 = [
   { tid: 3000, tyst: 0, lager: [IB3('v4kort7a'), IB3('v4kort7', { r: 'pek' }), { id: 'vinjett', vinjett: true }], tal: [['mamma', 'Du kan lika gärna BO på en soptipp!', { b: 'v4kort7', cls: 'rop1', vanster: true, visa: ['pek', 0.62] }]] },   /* inkorg 12b: armen åker upp på ordet soptipp */   // rakt in i ansiktet, fingret mot kameran (rasande+rök)
   { tid: 2200, rorelse: true, ljud: 'gitarr', lager: [IB3('v4kort8a'), IB3('v4kort8', { cls: 'sen1kort' })], tal: [['du', 'Okej.'], ['du', 'Då gör jag väl det.']] },   // du reser dig vid datorn, mamma pekar ut genom dörren
   { tid: 2300, rorelse: true, lager: [IB3('v4kort9a', { cls: 'folj' }), IB3('v4kort9b', { cls: 'folj sen1' }), IB3('v4kort9', { cls: 'folj sen2' })], tal: [] },   /* A-078 tillägg 11:50: du går förbi henne i bild – framför henne, förbi, och hon vänder sig */   // A-078 ruta 9: ut förbi mamma, kameran följer med dig ut (mamma förvånad)
-  { tid: 2600, rorelse: true, ljud: 'band', lager: [IB3('v5pack10a'), IB3('v5pack10b', { cls: 'sen1kort' }), IB3('v5pack10c', { cls: 'sen2kort' })], tal: [['du', 'Jag packar ryggan med sånt som kan vara bra att ha.'], ['du', 'Och surrar fast brorsans gamla 3D-skrivare på cykeln.']] },   /* inkorg 12b: de längre raderna tillbaka */   /* A-078 facit ruta 10: garaget, från sidan, tre steg */
+  { tid: 2600, rorelse: true, ljud: 'band', lager: [IB3('v5pack10g'), IB3('v5pack10a', { r: 1 }), IB3('v5pack10b', { r: 1, cls: 'sen1kort' }), IB3('v5pack10c', { r: 1, cls: 'sen2kort' })], tal: [['du', 'Jag packar ryggan med sånt som kan vara bra att ha.'], ['du', 'Och surrar fast brorsans gamla 3D-skrivare på cykeln.']] },   /* inkorg 19: två klipp – generatorn och hammaren ner i ryggsäcken, sedan skrivaren på cykeln */   /* inkorg 12b: de längre raderna tillbaka */   /* A-078 facit ruta 10: garaget, från sidan, tre steg */
   { tid: 3000, rorelse: true, musik: true, lager: [{ id: 'vagloop', loop: 'intro/vag.webp' }, { id: 'cyklist', sprite: 'intro/cyklist-tramp.webp', n: 4 }], tal: [['berattare', 'Förbi skolan.'], ['berattare', 'Förbi affären.'], ['berattare', 'Förbi där husen tar slut.']] },
   { tid: 3500, ljud: 'masar', lager: [{ id: 'spelgard', spel: 'gard' }], tal: [['berattare', 'Vid soptippen står ett gammalt skjul.'], ['berattare', 'Och en gård full av skräp.']] },
   { tid: 3000, rorelse: true, lager: [{ id: 'tavla', tavla: true }], tal: [['berattare', 'Skräp är plast.', { rita: [['skrap', 0]] }], ['berattare', 'En kvarn gör det till filament.', { rita: [['pil1', 0], ['kvarn', 250], ['pil2', 1300], ['filament', 1450]] }], ['berattare', 'Och med filament kan man printa… allt.', { rita: [['pil3', 0], ['skrivare', 200]] }], ['du', 'Jag behöver bara komma på hur.']] },
   { tid: 6000, lager: [{ id: 'n1', spel: 'dorrhal' }, { id: 'natt', natt: true, r: 1 }, { id: 'n2', spel: 'dorrhalRatta', r: 2 }, { id: 'm2', spel: 'mammaRitning', r: 2, cls: 'poff' }, { id: 'hv', spel: 'hem', r: 3 }, { id: 'h2', spel: 'hem2', r: 3, cls: 'hemsteg' }, { id: 'h3', spel: 'hem3', r: 3, cls: 'hemsteg h3' }, { id: 'h4', spel: 'hem4', r: 3, cls: 'hemsteg h4' }, { id: 'n3', spel: 'start', r: 3, cls: 'sistbild' }],
     /* inkorg 19: mamma → råtta som i d16c583 – ritningen fladdrar, poff, råttan sitter kvar en stund – sedan "Ett hem?" */
-    tal: [['berattare', 'Inget tak.'], ['berattare', 'Ingen dörr.'], ['berattare', 'Ingen mamma som tjatar.', { pip: true, efter: 2400 }], ['berattare', 'Tänk om det här kunde bli ett riktigt hem?', { fore: 300, efter: 600 }]], slut: true, rorelse: true },
+    tal: [['berattare', 'Inget tak.'], ['berattare', 'Ingen dörr.'], ['berattare', 'Ingen mamma som tjatar.', { pip: true, efter: 2900 }], ['berattare', 'Tänk om det här kunde bli ett riktigt hem?', { fore: 300, efter: 600 }]], slut: true, rorelse: true },
 ];
 const introCss3 = document.createElement('style');
 introCss3.textContent = `
@@ -15149,7 +15149,7 @@ function introLager(namn, W = 1000, H = 625) {
     poseFigur(R.mamma, { x: 2.0, z: 0.55, motKamera: [2.15, 0, -0.55], humor: 'arg', handerISidan: true });
     return ut(introRendera(sc, introKamera([-0.6, 1.5, 1.2], [2.2, 1.2, -0.2], 55, W / H), W, H, 3.0));
   }
-  if (/^v5pack10[abc]$/.test(namn)) return ut(packScen10(namn.slice(-1), W, H));   /* A-078 facit ruta 10: packningen utanför garaget, från sidan, i tre steg */
+  if (/^v5pack10[abcg]$/.test(namn)) return ut(packScen10(namn.slice(-1), W, H));   /* A-078 facit ruta 10: packningen utanför garaget, från sidan, i tre steg */
   if (namn === 'v3pack9') {   // ryggan packas och skrivaren surras fast på pakethållaren med spännband
     const sc2 = introLjusScen(0xa8d4f0); byggVilla(sc2);
     const c = vagCykel.clone(true); c.children.forEach((o) => { o.visible = true; }); c.position.set(0.6, 0, 2.3); c.rotation.set(0, -Math.PI / 2 + 0.25, 0); sc2.add(c);
@@ -15211,7 +15211,18 @@ function packScen10(steg, W, H) {
   const rem = mat(0x2a2a2a); for (const x of [-0.13, 0.13]) { du.add(at(box(0.06, 0.42, 0.025, rem), x, 1.32, 0.148)); du.add(at(box(0.07, 0.025, 0.31, rem), x, 1.56, 0)); }
   const u = du.userData, arm = (a, v) => a.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), new THREE.Vector3(...v).normalize());
   const [cx, , cz] = PACK10.cykel;
-  if (steg === 'a') {   // du lyfter skrivaren mot pakethållaren
+  if (steg === 'g') {   /* inkorg 19: "Jag packar ryggan …" – ryggsäcken står på marken med hammaren i, du stoppar ner generatorn. Skrivaren och generatorn sitter inte på cykeln än. */
+    pak.visible = false; band(-0.62).concat(band(-0.38)).forEach((o) => { o.visible = false; }); du.remove(sack); du.children.filter((o) => o.material === rem).forEach((o) => du.remove(o));
+    c.traverse((o) => { if (o.isMesh && o.material?.color?.getHex?.() === 0xf1c40f) o.parent.visible = false; });   // storebrors generator ligger inte på ramen – den åker i ryggsäcken
+    const rot = Math.PI / 2 - 0.35, fx = Math.sin(rot), fz = Math.cos(rot), px = cx - 1.8, pz = cz - 0.05;
+    poseFigur(du, { x: px, z: pz, rot, humor: 'likgiltig' });
+    arm(u.hoger, [-0.25, -0.8, 0.6]); arm(u.vanster, [0.25, -0.8, 0.6]);
+    const sx = px + fx * 0.52, sz = pz + fz * 0.52;
+    sack.scale.setScalar(1.05); sack.rotation.set(0, rot + Math.PI / 2, 0); sack.position.set(sx, 0, sz); sc2.add(sack); sack.updateMatrixWorld(true);
+    const sb = new THREE.Box3().setFromObject(sack); sack.position.y -= sb.min.y; sack.updateMatrixWorld(true); const topp = sb.max.y - sb.min.y;
+    const ham = passaIn(skapaSak('hammare'), 0.4); ham.position.set(sx + 0.1, topp + 0.04, sz - 0.12); ham.rotation.set(-0.35, 0.6, 0.35); sc2.add(ham);   // skaftet upp ur säcken
+    const gen = passaIn(skapaRiktig('generator'), 0.34); gen.position.set(px + fx * 0.46, 0.8, pz + fz * 0.46); gen.rotation.y = rot + 0.4; sc2.add(gen);   // i händerna, på väg ner i säcken
+  } else if (steg === 'a') {   // du lyfter skrivaren mot pakethållaren
     pak.visible = false; band(-0.62).concat(band(-0.38)).forEach((o) => { o.visible = false; });
     poseFigur(du, { x: cx - 1.3, z: cz - 0.1, rot: Math.PI / 2 - 0.25, humor: 'likgiltig' });
     arm(u.hoger, [0, 0.05, 1]); arm(u.vanster, [0, 0.05, 1]);
