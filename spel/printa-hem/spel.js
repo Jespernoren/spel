@@ -12734,7 +12734,7 @@ introCss.textContent = `
 .ph-skjul14 polyline{fill:none;stroke:#fff;stroke-width:.55;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:200;stroke-dashoffset:200;filter:url(#phSkakig);opacity:.95}
 .ph-skjul14 polyline.rita{animation:phRita 1.6s ease-out forwards}
 @keyframes phRita{to{stroke-dashoffset:0}}
-.ph-blick{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:rgba(10,14,24,.78);opacity:0;transition:opacity .5s;pointer-events:none}.ph-blick.in{opacity:1}.ph-blick img{max-width:70vw;max-height:62vh;border-radius:6px;filter:sepia(.45) contrast(.95) blur(.3px);box-shadow:0 0 60px rgba(0,0,0,.6)}.ph-blick span{position:absolute;bottom:14vh;color:#f4f1e6;font:600 22px/1.3 system-ui;text-shadow:0 2px 8px #000}.ph-blick .ph-dagbokkort{transform:scale(.9);filter:sepia(.35)}   /* A-088 §5: tillbakablick */
+.ph-blick{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:rgba(10,14,24,.78);opacity:0;transition:opacity .5s;pointer-events:none}.ph-blick.in{opacity:1}.ph-blick img{max-width:70vw;max-height:62vh;border-radius:6px;filter:sepia(.45) contrast(.95) blur(.3px);box-shadow:0 0 60px rgba(0,0,0,.6)}.ph-blick span{position:absolute;bottom:14vh;color:#f4f1e6;font:600 22px/1.3 system-ui;text-shadow:0 2px 8px #000}.ph-blick .ph-dagbokkort{transform:scale(.9);filter:sepia(.35)}.ph-blick-bild{position:relative}.ph-blick-bild img.over{position:absolute;inset:0;width:100%;height:100%;filter:none;box-shadow:none;background:none}   /* A-088 §5: tillbakablick */
 @keyframes phZoom{to{transform:scale(1.32)}}
 .ph-intro-text{font:500 clamp(17px,2.2vw,21px)/1.5 system-ui;opacity:.92;min-height:3em;transition:opacity .4s}
 .ph-intro-bubbla{display:inline-block;background:#fff;color:#222;font:800 clamp(20px,2.8vw,28px)/1.3 system-ui;padding:14px 22px;border-radius:22px 22px 22px 6px;box-shadow:0 10px 30px rgba(0,0,0,.4);max-width:92%}
@@ -13347,7 +13347,7 @@ setInterval(() => {
 }, 400);
 /* tillbakablicken kommer före uppgiften: målet väntar tills den är visad */
 const BLICK_FORE = {
-  'm18-gjut-grunden-huset': ['hem', () => `<img src="${spelBild('hem4')}" alt=""><span>Tänk om det här kunde bli ett riktigt hem? Till jul.</span>`],
+  'm18-gjut-grunden-huset': ['hem', () => `<div class="ph-blick-bild"><img src="${spelBild('hem')}" alt="">${['hem2', 'hem3', 'hem4'].map((v) => `<img class="over" src="${spelBild(v)}" alt="">`).join('')}</div><span>Tänk om det här kunde bli ett riktigt hem? Till jul.</span>`],   /* introts ruta 15: skjulet + ritningen ovanpå */
   'm21-bli-folkbokford': ['paketet', () => `<div class="ph-papper ph-dagbokkort"><div class="ph-pap-text">${rens(LAPPAR.polett[1].split('. ').slice(0, 3).join('. '))}.</div></div>`],
 };
 function blickHaller() { try { const b = BLICK_FORE[STEG[S.steg]?.id]; if (!b || (S.blickar || []).includes(b[0])) return false; tillbakablick(b[0], b[1]); return true; } catch (e) { return false; } }   /* try: kan anropas innan BLICK_FORE finns (TDZ) */

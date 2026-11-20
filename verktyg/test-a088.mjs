@@ -31,9 +31,10 @@ async function oppna(sparfil) {
 {
   const { p, fel } = await oppna('dag18.json');
   await p.evaluate(() => { const P = window.__printahem; P.S.blickar = []; P.S.steg = P.STEG.findIndex((x) => x.id === 'm18-gjut-grunden-huset'); });
-  let syns = false; for (let i = 0; i < 90 && !syns; i++) { await p.waitForTimeout(300); syns = await p.evaluate(() => !!document.querySelector('.ph-blick.in')); }
-  await p.waitForTimeout(700); await p.screenshot({ path: dir + 'tillbakablick-dag18.png' });
-  await p.waitForTimeout(3500); const borta = await p.evaluate(() => !document.querySelector('.ph-blick'));
+  let syns = false; for (let i = 0; i < 300 && !syns; i++) { await p.waitForTimeout(100); syns = await p.evaluate(() => !!document.querySelector('.ph-blick.in')); }
+  await p.evaluate(() => { const d = document.querySelector('.ph-blick'); if (d) { const k = d.cloneNode(true); k.classList.add('in'); k.id = 'blickKopia'; document.body.appendChild(k); } });   /* headless ritar ca 1 bild/s – kopian står kvar tills skärmdumpen är tagen */
+  await p.screenshot({ path: dir + 'tillbakablick-dag18.png' }); await p.evaluate(() => document.getElementById('blickKopia')?.remove());
+  await p.waitForTimeout(4500); const borta = await p.evaluate(() => !document.querySelector('.ph-blick'));
   ut.push([`tillbakablicken "Ett hem?" dag 18 syns (${syns}) och försvinner (${borta})`, syns && borta]);
   ut.push([`${fel.length} sidfel ${fel.slice(0, 2).join(' · ')}`, !fel.length]);
   await p.close();
