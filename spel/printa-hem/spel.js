@@ -12275,12 +12275,8 @@ function mammaRitningBild() {
   try {
     const cam = spelKamera('dorrhal'), zf = SKJUL.z + SKJUL.d / 2, f = introFigur('mamma');
     poseFigur(f, { x: SKJUL.x + 0.12, z: zf - 0.15, motKamera: [cam.position.x, 0, cam.position.z], pekaMot: [cam.position.x, 1.0, cam.position.z], humor: 'arg1' }); f.updateMatrixWorld(true);
-    const rit = byggRitning([f]), sc = new THREE.Scene(); sc.add(rit);
-    const r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio(), cc = r.getClearColor(new THREE.Color()), ca = r.getClearAlpha();
-    r.setPixelRatio(1); r.setSize(1280, 800, false); r.setClearColor(0x000000, 0); r.render(sc, cam);
-    const C = document.createElement('canvas'); C.width = 1280; C.height = 800; C.getContext('2d').drawImage(r.domElement, 0, 0, 1280, 800);
-    r.setClearColor(cc, ca); r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); rit.traverse((o) => o.geometry?.dispose?.());
-    return C.toDataURL('image/png');
+    const rit = byggRitning([f], ritMat, ritGlodDjup), sc = new THREE.Scene(); sc.add(rit);
+    return ritningsBild(sc, cam);   /* inkorg 19: samma tjocka linjer som "Ett hem?" – mamma syns tydligt */
   } catch (e) { console.warn('mammaRitning', e); return ''; }
 }
 /* inkorg 14 (A-078 ruta 15, facit "hemmet v3"): skjulet blir ett hem i tre ritade steg ovanpå det riktiga skjulet.
@@ -12326,13 +12322,17 @@ function hemRitningBild(n) {
     const cam = spelKamera('hem'), h = hemRitning(), alla = Object.values(h.steg).flat(), sc = new THREE.Scene();
     const djup = byggRitning([...alla, (() => { const o = new THREE.Mesh(new THREE.BoxGeometry(SKJUL.b, SKJUL.h, SKJUL.d), new THREE.MeshBasicMaterial()); o.position.set(SKJUL.x, SKJUL.h / 2, SKJUL.z); o.updateMatrixWorld(true); return o; })()]);
     djup.children.filter((o) => !o.userData.ritDjup).forEach((o) => djup.remove(o)); sc.add(djup, byggRitning(h.steg[n], ritMat, ritGlodDjup));
-    const r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio(), cc = r.getClearColor(new THREE.Color()), ca = r.getClearAlpha();
-    r.setPixelRatio(1); r.setSize(1280, 800, false); r.setClearColor(0x000000, 0);
-    const C = document.createElement('canvas'); C.width = 1280; C.height = 800; const g2 = C.getContext('2d');
-    for (const [dx, dy] of [[0, 0], [1.2, 0], [-1.2, 0], [0, 1.2], [0, -1.2]]) { cam.setViewOffset(1280, 800, dx, dy, 1280, 800); r.render(sc, cam); g2.drawImage(r.domElement, 0, 0, 1280, 800); }   // linjerna blir ca 3 px (WebGL ritar 1 px)
-    cam.clearViewOffset(); r.setClearColor(cc, ca); r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); sc.traverse((o) => o.geometry?.dispose?.());
-    return C.toDataURL('image/png');
+    return ritningsBild(sc, cam);
   } catch (e) { console.warn('hemRitning', e); return ''; }
+}
+/* en ritning som bild med genomskinlig bakgrund, 1280×800, linjerna ca 3 px (WebGL ritar 1 px – bilden ritas fem gånger med 1 px förskjutning) */
+function ritningsBild(sc, cam) {
+  const r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio(), cc = r.getClearColor(new THREE.Color()), ca = r.getClearAlpha();
+  r.setPixelRatio(1); r.setSize(1280, 800, false); r.setClearColor(0x000000, 0);
+  const C = document.createElement('canvas'); C.width = 1280; C.height = 800; const g2 = C.getContext('2d');
+  for (const [dx, dy] of [[0, 0], [1.2, 0], [-1.2, 0], [0, 1.2], [0, -1.2]]) { cam.setViewOffset(1280, 800, dx, dy, 1280, 800); r.render(sc, cam); g2.drawImage(r.domElement, 0, 0, 1280, 800); }
+  cam.clearViewOffset(); r.setClearColor(cc, ca); r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); sc.traverse((o) => o.geometry?.dispose?.());
+  return C.toDataURL('image/png');
 }
 function kritaSvg(vy) {
   const cam = spelKamera(/^skjul/.test(vy) ? 'start' : 'skrivare'), v = new THREE.Vector3();
@@ -12603,7 +12603,8 @@ const INTRO3 = [
   { tid: 3500, ljud: 'masar', lager: [{ id: 'spelgard', spel: 'gard' }], tal: [['berattare', 'Vid soptippen står ett gammalt skjul.'], ['berattare', 'Och en gård full av skräp.']] },
   { tid: 3000, rorelse: true, lager: [{ id: 'tavla', tavla: true }], tal: [['berattare', 'Skräp är plast.', { rita: [['skrap', 0]] }], ['berattare', 'En kvarn gör det till filament.', { rita: [['pil1', 0], ['kvarn', 250], ['pil2', 1300], ['filament', 1450]] }], ['berattare', 'Och med filament kan man printa… allt.', { rita: [['pil3', 0], ['skrivare', 200]] }], ['du', 'Jag behöver bara komma på hur.']] },
   { tid: 6000, lager: [{ id: 'n1', spel: 'dorrhal' }, { id: 'natt', natt: true, r: 1 }, { id: 'n2', spel: 'dorrhalRatta', r: 2 }, { id: 'm2', spel: 'mammaRitning', r: 2, cls: 'poff' }, { id: 'hv', spel: 'hem', r: 3 }, { id: 'h2', spel: 'hem2', r: 3, cls: 'hemsteg' }, { id: 'h3', spel: 'hem3', r: 3, cls: 'hemsteg h3' }, { id: 'h4', spel: 'hem4', r: 3, cls: 'hemsteg h4' }, { id: 'n3', spel: 'start', r: 3, cls: 'sistbild' }],
-    tal: [['berattare', 'Inget tak.'], ['berattare', 'Ingen dörr.'], ['berattare', 'Ingen mamma som tjatar.', { pip: true }], ['berattare', 'Tänk om det här kunde bli ett riktigt hem?', { fore: 600, efter: 1200 }]], slut: true, rorelse: true },
+    /* inkorg 19: mamma → råtta som i d16c583 – ritningen fladdrar, poff, råttan sitter kvar en stund – sedan "Ett hem?" */
+    tal: [['berattare', 'Inget tak.'], ['berattare', 'Ingen dörr.'], ['berattare', 'Ingen mamma som tjatar.', { pip: true, efter: 2400 }], ['berattare', 'Tänk om det här kunde bli ett riktigt hem?', { fore: 300, efter: 600 }]], slut: true, rorelse: true },
 ];
 const introCss3 = document.createElement('style');
 introCss3.textContent = `
@@ -12647,6 +12648,7 @@ introCss3.textContent = `
 .ph-intro3 .ph-intro-ord{position:relative;z-index:20;width:var(--bw);box-sizing:border-box;height:calc(2.7em + .6em);min-height:0;max-height:none;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 auto;padding:.3em .9em;background:rgba(0,0,0,.66);border-radius:10px;color:#fff;font:700 clamp(18px, calc(var(--bw) * .026), 34px)/1.35 system-ui;text-align:center;text-shadow:0 2px 3px rgba(0,0,0,.6)}   /* direkt under bilden, samma bredd, texten följer bilden */
 .ph-intro3 .ph-intro-ord.tom{visibility:hidden}
 .ph-intro3 .ph-intro-ord .ph-ut-rad{opacity:1}
+.ph-intro3 .ph-intro-ord .ph-ut-inre{display:block;max-width:100%}
 .ph-intro3 .ph-intro-rad .ph-vem{font:800 11px system-ui;letter-spacing:.1em;opacity:.6;margin-right:6px;text-transform:uppercase}
 .ph-dag1{position:fixed;inset:0;z-index:9500;display:grid;place-items:center;background:#2b1d16;opacity:0;transition:opacity .6s}
 .ph-dag1.syns{opacity:1}
@@ -12739,8 +12741,8 @@ function visaIntro3(klar, o = {}) {
       if (o.b && rens(text).length <= UTROP_MAX) bubbla(p, text, o);
       else {
         const fore = j > 0 ? p.tal[j - 1] : null, ihop = fore && fore[0] === vem && !(fore[2]?.b && rens(fore[1]).length <= UTROP_MAX) && !o.fore && (textEl.textContent.length + rens(text).length + 1) <= UNDERTEXT_MAX;
-        if (!ihop) textEl.innerHTML = '';
-        const d = document.createElement('span'); d.className = 'ph-ut-rad'; d.textContent = (ihop ? ' ' : '') + rens(text); textEl.appendChild(d);
+        if (!ihop) textEl.innerHTML = '<div class="ph-ut-inre"></div>';   /* inkorg 19: raderna i ett eget block – i flexrutan (e5be177) blev varje rad en egen del och mellanslaget försvann */
+        const d = document.createElement('span'); d.className = 'ph-ut-rad'; d.textContent = (ihop ? ' ' : '') + rens(text); (textEl.querySelector('.ph-ut-inre') || textEl).appendChild(d);
         textEl.classList.toggle('tom', !textEl.textContent.trim());
       }
       logg('rad', j);
