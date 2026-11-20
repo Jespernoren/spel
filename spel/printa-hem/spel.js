@@ -12509,19 +12509,16 @@ function visaIntroV2(klar) {
 const BUB3 = { v4dag2: [60.6, 36.5], v4dag3: [50, 33], v4dag4: [50, 40.9], v4dag5: [50, 43.5], v4dag6b: [50, 24.8], v4kort7: [32.5, 30.8], v4kort7a: [32.5, 30.8], };   // huvudet i % av bilden (verktyg/ai3.mjs PTS)
 const IB3 = (namn, extra = {}) => ({ id: extra.id || namn, src: `intro/${namn}.webp`, ...extra });
 const KAL3 = (dag, fore) => ({ id: 'kal', kal: dag, fore, cls: 'vanster' });
-const IDE3 = {   /* ruta 12: idéskissen i vita konturer, i ordningen skräp → kvarn → filament → skrivare → allt man kan printa */
-  skrap: '<rect x="60" y="250" width="40" height="100" rx="12"/><rect x="72" y="230" width="16" height="20"/><path d="M110 350 L120 290 L170 300 L165 350 Z"/><circle cx="150" cy="270" r="18"/>',
-  pil1: '<path d="M175 290 L235 285 M222 276 L235 285 L222 294"/>',
-  kvarn: '<rect x="250" y="220" width="130" height="120"/><path d="M240 220 L315 150 L390 220"/><circle cx="315" cy="280" r="26"/><line x1="380" y1="300" x2="420" y2="300"/>',
-  fraga: '<text x="228" y="150" class="ph-fraga">?</text><text x="398" y="140" class="ph-fraga">?</text><text x="212" y="345" class="ph-fraga">?</text><text x="408" y="365" class="ph-fraga">?</text>',
-  pil2: '<path d="M425 290 L460 290 M449 282 L460 290 L449 298"/>',
-  filament: '<circle cx="520" cy="290" r="55"/><circle cx="520" cy="290" r="18"/>',
-  pil3: '<path d="M580 290 L690 250 M676 246 L690 250 L681 262"/>',
-  skrivare: '<circle cx="680" cy="380" r="45"/><circle cx="830" cy="380" r="45"/><path d="M680 380 L740 300 L830 380 M740 300 L790 300"/><rect x="700" y="200" width="110" height="95"/><line x1="700" y1="250" x2="810" y2="250"/>',
-  sang: '<rect x="120" y="470" width="120" height="50"/><rect x="120" y="440" width="35" height="30"/>',
-  tak: '<path d="M330 520 L330 470 L400 430 L470 470 L470 520 Z"/>',
-  jacuzzi: '<ellipse cx="610" cy="490" rx="70" ry="28"/><path d="M560 470 Q575 450 590 470 M620 470 Q635 450 650 470"/>',
-  hus: '<rect x="760" y="440" width="140" height="90"/><path d="M745 445 L830 390 L915 445"/><rect x="815" y="480" width="30" height="50"/>',
+const IDE3 = {   /* inkorg 13 (ritpapperet v10): ruta 13 på blått rutpapper, 100 px luft mot alla fyra kanter (x 100–900, y 100–525).
+     Vänster kolumn: skräpet → PLAST på pilen rakt ner → tratten → kvarnen. Åt höger: FILAMENT på pilen → rullen → PRINTA ALLT! på pilen → skrivaren.
+     Texten hör till sin pil och ritas fram med den. Inget flyttar sig mellan stegen. */
+  skrap: '<rect x="105" y="118" width="30" height="67" rx="9"/><rect x="113" y="102" width="14" height="16"/><path d="M150 185 L157 140 L196 147 L192 185 Z"/><path d="M205 185 L210 160 L228 150 L243 165 L238 185 Z"/>',
+  pil1: '<path d="M175 198 L175 262 M165 249 L175 262 L185 249"/><text x="240" y="240" class="ph-ritord">PLAST</text>',
+  kvarn: '<path d="M130 272 L220 272 L190 312 L160 312 Z"/><rect x="110" y="312" width="130" height="143" rx="4"/><circle cx="175" cy="378" r="24"/><path d="M240 412 L262 412 L262 432 L240 432"/>',
+  pil2: '<path d="M275 422 L420 422 M406 412 L420 422 L406 432"/><text x="348" y="400" class="ph-ritord">FILAMENT</text>',
+  filament: '<circle cx="498" cy="422" r="62"/><circle cx="498" cy="422" r="20"/><path d="M463 380 Q498 365 533 380"/>',
+  pil3: '<path d="M580 422 L758 422 M744 412 L758 422 L744 432"/><text x="669" y="400" class="ph-ritord">PRINTA ALLT!</text>',
+  skrivare: '<path d="M778 525 L778 335 L892 335 L892 525 M770 525 L900 525"/><rect x="792" y="478" width="86" height="10"/><rect x="820" y="358" width="30" height="28"/><path d="M830 386 L835 397 L840 386 M778 358 L892 358"/><circle cx="835" cy="466" r="10"/>',
 };
 let introRitarVarld = false;
 const UTROP_MAX = 12, UNDERTEXT_MAX = 84;   /* A-078 tillägg 11:45: utrop i bubblan · högst 2 rader undertext (ca 42 tecken per rad) */
@@ -12538,7 +12535,7 @@ const INTRO3 = [
   { tid: 2600, rorelse: true, ljud: 'band', lager: [IB3('v5pack10a'), IB3('v5pack10b', { cls: 'sen1kort' }), IB3('v5pack10c', { cls: 'sen2kort' })], tal: [['du', 'Jag packar ryggan med sånt som kan vara bra att ha.'], ['du', 'Och surrar fast brorsans gamla 3D-skrivare på cykeln.']] },   /* inkorg 12b: de längre raderna tillbaka */   /* A-078 facit ruta 10: garaget, från sidan, tre steg */
   { tid: 3000, rorelse: true, musik: true, lager: [{ id: 'vagloop', loop: 'intro/vag.webp' }, { id: 'cyklist', sprite: 'intro/cyklist-tramp.webp', n: 4 }], tal: [['berattare', 'Förbi skolan.'], ['berattare', 'Förbi affären.'], ['berattare', 'Förbi där husen tar slut.']] },
   { tid: 3500, ljud: 'masar', lager: [{ id: 'spelgard', spel: 'gard' }], tal: [['berattare', 'Vid soptippen står ett gammalt skjul.'], ['berattare', 'Och en gård full av skräp.']] },
-  { tid: 3000, rorelse: true, lager: [{ id: 'tavla', tavla: true }], tal: [['berattare', 'Skräp är plast.', { rita: [['skrap', 0]] }], ['berattare', 'En kvarn gör det till filament.', { rita: [['pil1', 0], ['kvarn', 200], ['fraga', 700], ['pil2', 1200], ['filament', 1300]] }], ['berattare', 'Och med filament kan man printa… allt.', { rita: [['pil3', 0], ['skrivare', 200]] }], ['du', 'Jag behöver bara komma på hur.']] },
+  { tid: 3000, rorelse: true, lager: [{ id: 'tavla', tavla: true }], tal: [['berattare', 'Skräp är plast.', { rita: [['skrap', 0]] }], ['berattare', 'En kvarn gör det till filament.', { rita: [['pil1', 0], ['kvarn', 250], ['pil2', 1300], ['filament', 1450]] }], ['berattare', 'Och med filament kan man printa… allt.', { rita: [['pil3', 0], ['skrivare', 200]] }], ['du', 'Jag behöver bara komma på hur.']] },
   { tid: 6000, lager: [{ id: 'n1', spel: 'dorrhal' }, { id: 'natt', natt: true, r: 1 }, { id: 'n2', spel: 'dorrhalRatta', r: 2 }, { id: 'm2', spel: 'mammaRitning', r: 2, cls: 'poff' }, { id: 'n3', spel: 'start', r: 3, cls: 'zoomut' }, { id: 'k3', krita: 'skjul3', r: 3 }],
     tal: [['berattare', 'Inget tak.'], ['berattare', 'Ingen dörr.'], ['berattare', 'Ingen mamma som tjatar.', { pip: true }], ['berattare', 'Tänk om det här kunde bli ett riktigt hem?', { fore: 600 }]], slut: true, rorelse: true },
 ];
@@ -12561,12 +12558,15 @@ introCss3.textContent = `
 .ph-bub.hoger:after{left:-24px;border-right:16px solid #fff}.ph-bub.vanster:after{right:-24px;border-left:16px solid #fff}
 .ph-bub.rop1{font-size:calc(var(--bw,680px) * .05)}.ph-bub.rop2{font-size:calc(var(--bw,680px) * .065)}.ph-bub.rop3{font-size:calc(var(--bw,680px) * .08)}
 @keyframes phBub{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
-.ph-tavla{background:#23302a}
+.ph-tavla{background:linear-gradient(rgba(255,255,255,.09) 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,rgba(255,255,255,.09) 1px,transparent 1px) 0 0/28px 28px,#1f4f8f}   /* inkorg 13: blått rutpapper, samma som byggRitning i 2D */
+.ph-tavla svg{filter:drop-shadow(0 0 3px rgba(255,255,255,.55))}
 .ph-tavla svg{position:absolute;inset:0;width:100%;height:100%}
 .ph-tavla g{opacity:0}.ph-tavla g.rita{opacity:1}
 .ph-tavla path,.ph-tavla rect,.ph-tavla circle,.ph-tavla line,.ph-tavla ellipse{fill:none;stroke:#f4f1e6;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:900;stroke-dashoffset:900}
 .ph-tavla g.rita path,.ph-tavla g.rita rect,.ph-tavla g.rita circle,.ph-tavla g.rita line,.ph-tavla g.rita ellipse{animation:phTavla 1.1s ease-out forwards}
-.ph-tavla .ph-fraga{fill:#ffd43b;stroke:none;font:700 34px "Comic Sans MS",system-ui}
+.ph-tavla .ph-ritord{fill:#f4f1e6;stroke:none;font:700 24px "Comic Sans MS","Chalkboard SE",system-ui;letter-spacing:.02em;text-anchor:middle;opacity:0}
+.ph-tavla g.rita .ph-ritord{animation:phRitord .9s ease-out .25s forwards}
+@keyframes phRitord{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @keyframes phTavla{to{stroke-dashoffset:0}}
 .ph-il.zoomut{transition:transform 2.6s ease-in-out,opacity .4s}
 .ph-krita .ph-fonsterljus{opacity:0;animation:phLjus .6s 2.4s forwards}.ph-krita.sen polyline{animation-delay:1.2s}
