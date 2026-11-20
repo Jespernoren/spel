@@ -6256,14 +6256,14 @@ function sov() {
     const tanke = morgonTanke(); S.morgonTanke = tanke; S.morgonTankeIgar = tanke?.id || S.morgonTankeIgar;
     const ig = S.igar, rapport = ig ? `<span class="br-rapport">${S.saljLadaIgar ? `📦 Ali hämtade säljlådan i natt: ${S.saljLadaIgar.n} st · +${krT(S.saljLadaIgar.summa)} kr<br>` : ''}${S.webbIgar ? `🖥️ Webbshopen: ${S.webbIgar.n} paket levererade · +${krT(S.webbIgar.du)} kr<br>` : ''}Igår: ${ig.printat} printat · ${ig.salt} sålt</span>` : '';
     /* A-076 tillägg 14:22/15:40: morgonsidan är dagbokskortet – högst 2 meningar, direkt när dagen börjar, spelet står still bakom */
-    const dagText = [julKvar(S.dag), INSATS[S.dag - 1]].filter(Boolean).join('\n') || 'En ny dag.';   /* A-088 §4: insatsen på rad två. Dagnumret står i rubriken och insatsen är dagens mål, så DAG_STORY behövs inte här (LÅNG DAGBOK: högst 2 meningar) */
+    const dagText = [julRad(S.dag), INSATS[S.dag - 1]].filter(Boolean).join('\n') || 'En ny dag.';   /* A-088 §4: insatsen på rad två. Dagnumret står bara i nedräkningsraden (inkorg 26 p.1) och insatsen är dagens mål, så DAG_STORY behövs inte här (LÅNG DAGBOK: högst 2 meningar) */
     if (S.dag <= JULAFTON_DAG && !INSATS[S.dag - 1]) regelvakt.brott('UTAN INSATS', `morgonkortet dag ${S.dag} har ingen andra rad`);   /* inkorg 24 p.2: nedräkningen först, sedan dagens mål. Morgontanken sägs som tanke efter dagens första mål (morgonkortStangt). */   /* inkorg 10d: en tanke per rad, luft emellan */
     const extra = `${aliVillHtml()}${rapport}${!nasta && S.julFirad ? efterspelHtml() : ''}`;
     const kapK = +Object.keys(KAP_RITNING).find((n) => KAP_RITNING[n].dag === S.dag) || 0, kapR = kapK && !(S.kapRitSedd || []).includes(kapK) ? KAP_RITNING[kapK] : null;
     if (kapR) { S.kapRitSedd = [...(S.kapRitSedd || []), kapK]; S.kapVisad = [...new Set([...(S.kapVisad || []), kapK])]; sparaSnart(); }   /* A-088 §3: kapitelkortet ersätter morgonkortet och det gamla rubrikkortet */
     hurVarDagen(natt, () => { ui.starta(true); dagenBorjar(() => kapR
       ? (dagbokKort(kapR.men, { rubrik: `KAPITEL ${kapK} · ${julRad(S.dag).replace(/\.$/, '')}`, morgon: true, extra: kapRitningHtml(kapK) + extra }), kapRitAuto())
-      : dagbokKort(dagText, { rubrik: `Dag ${S.dag} – ${del.replace(/^Dag \d+ – /, '')}`, morgon: true, extra })); });
+      : dagbokKort(dagText, { rubrik: forstaStor(del.replace(/^Dag \d+ – /, '')), morgon: true, extra })); });
     const vanta = setInterval(() => { if (!ui.igang) return; clearInterval(vanta); handelse('morgonkortStangt', { dag: S.dag }); const f = morgonKo; morgonKo = null; if (f) setTimeout(f, 2500); }, 300);
   }, 5500);
 }
@@ -6273,7 +6273,7 @@ function kapRitAuto() { let n = 0; const iv = setInterval(() => { const k = docu
 /* inkorg 24 p.2: morgonkortets första rad räknar ner till jul – julafton är dag 22. Ingen räknare i HUD. */
 /* A-088 §4: morgonkortets andra rad är insatsen – vad som händer annars (kylan, mamma eller julen). En per dag 1–22. */
 const INSATS = ['Klarar jag inte en natt här får mamma rätt.', 'Utan dörr blåser natten rakt in.', 'Utan tak regnar det in i natt.', 'Drar det i skjulet får mamma rätt.', 'Utan pengar blir det ingen jul här.', 'Utan en fabrik räcker pengarna inte till jul.', 'Säljer jag inget blir det tomt till jul.', 'Utan mer ström står allt still i kylan.', 'Utan pengar får mamma rätt.', 'Utan väggar fryser jag i natt.', 'Utan värme håller jag inte till jul.', 'Står maskinerna still får mamma rätt.', 'Utan ett eget rum är det bara ett skjul.', 'Utan en fristad är det inget hem till jul.', 'Utan adress finns jag inte på riktigt.', 'Utan en egen tomt kan jag inte bli skriven här.', 'Utan pengar blir det inget hus före jul.', 'Utan grund blir det inget hus före jul.', 'Utan hus kommer mamma och hämtar mig.', 'Utan kamin får mamma rätt.', 'Utan adress får mamma rätt.', 'Utan skylt på dörren kör mamma hem med mig.'];
-function julKvar(dag) { return julRad(dag).replace(/^Dag \d+\. /, ''); }   /* nedräkningen utan dagnumret – det står redan i rubriken */
+const forstaStor = (t) => String(t || '').charAt(0).toUpperCase() + String(t || '').slice(1);   /* inkorg 26 p.1: rubriken utan dagnummer börjar med stor bokstav */
 function julRad(dag) { const kvar = JULAFTON_DAG - dag; return kvar > 0 ? `Dag ${dag}. ${kvar} ${kvar === 1 ? 'dag' : 'dagar'} till jul.` : kvar === 0 ? 'Julafton.' : ''; }
 // BN: en mening per dag om dagens storymål (dag 1–22)
 const DAG_STORY = ['Få igång skrivaren och sova i en egen säng.', 'Städa upp – och kanske träffa grannarna.', 'Bära mer och få tak över huvudet.', 'Sluta trampa och stänga ute kylan.', 'Fler skrivare och ett riktigt mysigt skjul.',
@@ -11487,10 +11487,19 @@ const langDagbok = [], dagbokVisad = [];
 /* inkorg 10d: en tanke per rad (\n) och luft mellan tankarna (\n\n) */
 function dagbokMatt(k) { const cs = getComputedStyle(k), tx = k.querySelector('.ph-pap-text'), ti = k.querySelector('.ph-pap-titel'), kn = k.querySelector('.ph-fortsatt'); return { bredd: k.offsetWidth, marginal: parseFloat(cs.paddingLeft), textstorlek: parseFloat(getComputedStyle(tx).fontSize), radhojd: parseFloat(getComputedStyle(tx).lineHeight) || 0, rubrikrad: ti?.offsetHeight || 0, knappbredd: kn?.offsetWidth || 0, knapphojd: kn?.offsetHeight || 0 }; }   /* offset-mått: utan in-animationens skalning */
 function dagbokRader(t) { return rens(String(t || '')).split(/\n\s*\n/).map((st) => st.split('\n').map((r) => r.trim()).join('<br>')).join('<span class="ph-dk-luft"></span>'); }
+/* inkorg 26 p.1: samma sak får inte stå i både rubriken och texten (t.ex. dagnumret två gånger) */
+function rubrikDubbel(rubrik, text) {
+  if (!rubrik) return; const norm = (x) => String(x).toLowerCase().replace(/[^\p{L}\p{N} ]/gu, ' ').replace(/\s+/g, ' ').trim();
+  const dagR = String(rubrik).match(/\bdag \d+\b/i), dagT = String(text).match(/\bdag \d+\b/i);
+  const delar = String(rubrik).split(/\s+[–·-]\s+|[.!?]\s*/).map(norm).filter((x) => x.length > 8);
+  const tn = norm(text);
+  if ((dagR && dagT && dagR[0].toLowerCase() === dagT[0].toLowerCase()) || delar.some((d) => tn.includes(d))) regelvakt.brott('SAMMA MENING TVÅ GÅNGER', `rubriken "${rubrik}" står också i texten`);
+}
 function dagbokKort(text, o = {}) {
   const t = String(text || '').trim(); if (!t) return;
-  if (o.morgon) { const tr = t.replace(/^(\d+ dagar? till jul|Julafton)\.$/m, '').trim();   /* A-088: nedräkningen är en statusrad, ingen tanke – den räknas inte */
+  if (o.morgon) { const tr = t.replace(/^(Dag \d+\. \d+ dagar? till jul|Julafton)\.$/m, '').trim();   /* A-088: nedräkningen är en statusrad, ingen tanke – den räknas inte */
     const meningar = tr.split(/(?<=[.!?…])\s+/).filter((x) => /\p{L}/u.test(x)).length, ord = tr.split(/\s+/).filter(Boolean).length; if (meningar > DAGBOK_MAX_MENINGAR || ord > DAGBOK_MAX_ORD) langDagbok.push(`dag ${S.dag}: ${meningar} meningar, ${ord} ord`); }
+  rubrikDubbel(o.rubrik, t);
   const m = { typ: 'dagbok', titel: 'Dagbok', text: t, rubrik: o.rubrik || '', id: o.id, kvitto: o.kvitto, efter: o.efter, extra: o.extra || '', vem: o.vem || 'du', morgon: !!o.morgon, lasIgen: !!o.lasIgen };
   if (o.forst || o.morgon || o.lasIgen) medKo.unshift(m); else medKo.push(m);
   if (medEl2.hidden) visaNastaMeddelande();
@@ -13135,7 +13144,7 @@ function dagenBorjar(kort) { dagBorjadeT = performance.now(); handelse('dagenBor
 function visaDagNotis() {
   if (S.dag !== 1 || S.dag1Sida) return; S.dag1Sida = true; S.dag1Forsta = true; sparaSnart();
   document.body.classList.add('dn-forsta');
-  dagenBorjar(() => dagbokKort([julKvar(1) + '\n' + INSATS[0], DAG1_KANSLA[1]].join('\n\n'), { rubrik: DAG1_NOTIS.replace(/\.$/, ''), morgon: true, efter: () => {
+  dagenBorjar(() => dagbokKort([julRad(1) + '\n' + INSATS[0], DAG1_KANSLA[1]].join('\n\n'), { rubrik: forstaStor(DAG1_NOTIS.replace(/^Dag \d+ – /, '').replace(/\.$/, '')), morgon: true, efter: () => {
     prata('du', DAG1_FORST, 'STORY', { forst: true, start: () => { document.body.classList.remove('dn-forsta'); handelse('dagNotisKlar'); } });
     setTimeout(() => document.body.classList.remove('dn-forsta'), 6000);   // reserv om rösten inte kommer igång
   } }));
