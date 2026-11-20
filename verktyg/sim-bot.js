@@ -421,7 +421,6 @@
     if (H.TA_PA) for (const t of Object.keys(H.TA_PA)) if (H.antalInv(t)) { valj(t); H.taPaVald(); handling('tar på ' + t.replace('byggsats:', '')); await vanta(0.5); }
     if (H.MONTERA) for (const t of Object.keys(H.MONTERA)) { if (!H.antalInv(t)) continue; const m = H.MONTERA[t], mal = m.mal()[0]; if (!mal || m.hinder?.()) continue; valj(t); await klick(mal, m.namn.toLowerCase()); return; }
     if (H.antalInv('korv')) { valj('korv'); H.ata('korv'); }
-    if (!S.skyltUppe && S.dag === 1 && !S.hammareGiven && H.hammarPaBrador) { await klick(H.hammarPaBrador, 'hammaren på brädorna'); await vanta(1); return; }   /* A-076 13:45: ta hammaren först */
     if (!S.skyltUppe && S.dag === 1) { valj('hammare'); await klick(H.bradhog, 'brädhögen');   /* A-076 tillägg 12:25: hammaren först */ await vanta(4); return; }
     const id = H.stegId(), st = H.STEG[S.steg], txt = (typeof st?.text !== 'function' && window.__stegKanon?.[id]) || H.stegText() || '';   /* A-069 §5: målet hittas på sitt id – en ändrad måltext gör inget (texter som beror på läget läses som de står) */
     if (!st && S.julFirad) {   /* A-042: efterspelet – köp marken som är kvar när pengarna räcker, tjäna under tiden, sov när dagen är slut */
@@ -452,7 +451,6 @@
       case 'lasta': await klick(H.vagCykel, 'cykeln vid vägen'); return;
       case 'stall': valj('skrivareS'); await klick(H.startYta, 'rutan i linje 1'); return;
       case 'bygg': {   /* A-071: generatorn och cykeln i valfri ordning – boten växlar (udda dagar generatorn först) */
-        if (!S.generatorTagen && !S.generatorStar) { await klick(H.vagCykel, 'cykeln (generatorn)'); return; }
         const genForst = !window.__simCykelForst;
         const stallGen = async () => { valj('byggsats:generator'); await klick(H.startYta, 'generatorns plats'); };
         const stallCykel = async () => { if (!S.cykelBuren && !S.cykelStar) { H.byt(0); await klick(H.vagCykel, 'cykeln (lyfter den)'); return; } valj('cykelS'); await klick(H.startYta, 'cykelns plats'); };
@@ -469,7 +467,7 @@
       case 'aliKvarn': { const ok = await kopMaskin('gammalkvarn'); handling(ok ? 'köpte kvarnen' : 'kunde inte köpa kvarnen'); if (!ok) await vanta(2); return; }   /* inkorg 18: kvarnen köps hos Ali */
       case 'rullSlut': { const sk = H.skrivare[0]; if (sk.klar) await taUt(sk); if (!sk.jobb) { await gaTill(sk.mesh, 1.4, 'skrivaren'); await vanta(MENY_TID); handling(H.startaJobb(sk, { typ: 'nyckelring' }) ? 'printar Nyckelring (sista av brorsans rulle)' : 'kunde inte starta nyckelringen'); } await strom(6); for (let i = 0; i < 20 && !S.rullSlut && !S.kvarnKopt; i++) { await strom(2); } return; }   /* A-076: printen hackar när brorsans rulle tar slut */
       case 'egenPrint': { const sk = H.skrivare[0]; if (sk?.klar) { await taUt(sk); return; } if (sk?.jobb) { await strom(6); return; } await strom(6); await printa({ typ: 'nyckelring' }); return; }   /* A-076 */
-      case 'strom': if (window.__simStromDirekt) { await klick(H.vagCykel, 'cykeln (generatorn)'); return; } await vanta(4); return;   /* A-073: gåtan – boten väntar på hjälpen (STROM_DIREKT: tar generatorn direkt) */
+      case 'strom': if (window.__simStromDirekt) { valj('byggsats:generator'); await vanta(1); return; } await vanta(4); return;   /* A-073: gåtan – boten väntar på hjälpen (STROM_DIREKT: tar generatorn direkt) */
       case 'kopBatteri': await ali(async () => { await kopHosAli('cykelbatteri'); }, 'bilbatteriet'); if (!S.batteriKopt && !H.antalInv('byggsats:cykelbatteri')) await tjana(60, 'bilbatteriet'); return;
       case 'kvarn': valj('byggsats:gammalkvarn'); await klick(H.startYta, 'kvarnens ruta'); return;
       case 'flaska': { if (!H.hand.saker.length) await plockaLass({}); await tomIKvarnen(); await mal(); return; }   /* A-073: kvarnen före skrivaren – mal tills tråden kommer */

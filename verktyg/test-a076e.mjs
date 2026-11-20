@@ -13,21 +13,16 @@ await p.goto(url); await p.waitForTimeout(5000);
 const H = (f, a) => p.evaluate(f, a);
 await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())); await p.waitForTimeout(2500); await p.keyboard.press('Enter'); await p.waitForTimeout(6000);
 for (let i = 0; i < 40 && !(await H(() => !!document.querySelector('.ph-dagbokkort'))); i++) await p.waitForTimeout(250); await p.keyboard.press('Enter'); await p.waitForTimeout(1500);   /* A-076 14:22: morgonsidan stängs med FORTSÄTT */
-// 1. A-076 tillägg 13:45: hammaren ligger på brädorna, första hjälpen är att ta upp
-let k1 = null; for (let i = 0; i < 60; i++) { await p.waitForTimeout(500); await H((i) => { const P = window.__printahem; if (P.kStat.start) { if (i < 6) { P.spelare.pos.x = P.kStat.start.x + 3; P.spelare.yaw = (P.kStat.yaw0 || 0) + 1; } else { const c = P.hammarPaBrador.getWorldPosition(P.spelare.pos.clone()), sp = P.spelare; sp.pos.x = c.x + 2; sp.pos.z = c.z; sp.yaw = Math.PI / 2; sp.pitch = -Math.atan2(1.6 - c.y, 2); } }   /* A-076 14:00: klick-hjälpen bara när siktet är på hammaren */ }, i); k1 = await H(() => document.querySelector('.ph-kontroll')?.textContent || null); if (/ta upp/i.test(k1 || '')) break; }   // gå och titta är redan gjorda
-const s1 = await H(() => { const P = window.__printahem; return { iRaden: P.antalInv('hammare'), paBrador: P.hammarPaBrador.visible, hand: P.valdTyp() || 'tom' }; });
-await p.screenshot({ path: dir + 'e-hammaren-pa-bradorna.png' });
-ut.push([`hammaren på brädorna (${s1.paBrador}), inte i raden (${s1.iRaden}), första hjälpen: "${k1}"`, s1.paBrador && !s1.iRaden && /ta upp/i.test(k1 || '')]);
-// 2. brädorna utan hammare: "Jag behöver hammaren."
+// 1. inkorg 20: hammaren och generatorn i verktygsraden från start, ingen hammare på brädorna, första hjälpen är hjulet
+let k1 = null; for (let i = 0; i < 40; i++) { await p.waitForTimeout(400); k1 = await H(() => document.querySelector('.ph-kontroll')?.textContent || null); if (/hjulet/i.test(k1 || '')) break; }
+const s1 = await H(() => { const P = window.__printahem; return { rad: P.S.hotbar.slice(0, 3).map((x) => x?.typ || 'hand').join(' · '), hand: P.valdTyp() || 'tom', paBrador: P.bradhog.children.some((o) => o.children?.length === 2 && o.children[1].material?.color?.getHex?.() === 0x444444) }; });
+await p.screenshot({ path: dir + 'e-hammaren-i-raden.png' });
+ut.push([`verktygsraden från start: ${s1.rad}, handen ${s1.hand}, ingen hammare på brädorna (${!s1.paBrador}), första hjälpen: "${k1}"`, s1.rad === 'hand · hammare · byggsats:generator' && s1.hand === 'tom' && !s1.paBrador && /Rulla hjulet för att ta hammaren/.test(k1 || '')]);
+// 2. brädorna med tom hand: "Rulla hjulet för att ta hammaren."
 const l0 = await H(() => window.__printahem.textLogg().length);
 await H(() => window.__printahem.bradhog.userData.interaktion.aktivera()); await p.waitForTimeout(2500);
 const s2 = await H((l0) => { const P = window.__printahem; return { uppe: !!P.S.skyltUppe, sagt: P.textLogg().slice(l0).filter((e) => e.vem === 'du').map((e) => e.text) }; }, l0);
-ut.push([`brädorna utan hammaren: ingen skylt (${!s2.uppe}), "${s2.sagt.find((t) => /hammaren/.test(t)) || ''}"`, !s2.uppe && s2.sagt.some((t) => /Jag behöver hammaren/.test(t))]);
-// 2b. ta hammaren → i raden, hjälpen blir hjulet
-await H(() => window.__printahem.hammarPaBrador.userData.interaktion.aktivera()); await p.waitForTimeout(400);
-let k2 = null; for (let i = 0; i < 30; i++) { await p.waitForTimeout(400); k2 = await H(() => document.querySelector('.ph-kontroll')?.textContent || null); if (/hjulet/i.test(k2 || '')) break; }
-const s2b = await H(() => ({ iRaden: window.__printahem.antalInv('hammare'), hand: window.__printahem.valdTyp() || 'tom', paBrador: window.__printahem.hammarPaBrador.visible }));
-ut.push([`hammaren tagen: i raden (${s2b.iRaden}), handen ${s2b.hand}, borta från brädorna (${!s2b.paBrador}), hjälpen: "${k2}"`, s2b.iRaden === 1 && !s2b.paBrador && /Rulla hjulet för att ta hammaren/.test(k2 || '')]);
+ut.push([`brädorna med tom hand: ingen skylt (${!s2.uppe}), "${s2.sagt.find((t) => /hammaren/.test(t)) || ''}"`, !s2.uppe && s2.sagt.some((t) => /Rulla hjulet för att ta hammaren/.test(t))]);
 // 3. skrivaren före skylten: spärrad
 const l1 = await H(() => window.__printahem.textLogg().length);
 await H(() => window.__printahem.vagCykel.userData.interaktion.aktivera()); await p.waitForTimeout(2500);

@@ -48,9 +48,9 @@ const r = await H(() => {
   return ut;
 });
 ut.push([`${r.ok}/${r.totalt} klickbara saker träffas från 2 m med 10° fel · miss: ${r.miss.join(', ') || 'inga'} · utan auto-yta (för stora/egna): ${r.utan.length} ${r.utan.slice(0,30).join(', ')}`, r.totalt > 20 && r.ok / r.totalt >= 0.95]);
-// hammaren på brädhögen: sikta 10° bredvid från 2 m → hammaren, inte högen; vit kontur syns
+// inkorg 20: brädhögen (skylten) – sikta 10° bredvid från 2 m → siktet tar högen; ingen vit kontur
 const h = await H(async () => {
-  const P = window.__printahem, I = P.interaktor, sp = P.spelare, hm = P.hammarPaBrador;
+  const P = window.__printahem, I = P.interaktor, sp = P.spelare, hm = P.bradhog;
   const c = new hm.position.constructor(); (hm.autoTraffYta || hm).getWorldPosition(c);
   const yaw = Math.atan2(sp.pos.x - c.x, sp.pos.z - c.z);
   sp.pos.x = c.x + Math.sin(yaw) * 2; sp.pos.z = c.z + Math.cos(yaw) * 2;
@@ -60,8 +60,8 @@ const h = await H(async () => {
   const kont = P.scen ? !P.scen.getObjectByName('siktKontur') : null;   /* A-076 rättelse 16:15: ingen vit ritning runt saker som står */
   return { hov: I.hovrad === hm, text: I.hovrad?.userData.interaktion?.text, kont };
 });
-await p.waitForTimeout(300); await p.screenshot({ path: dir + 'g-hammaren-10-grader.png' });
-ut.push([`hammaren från 2 m, 10° bredvid: siktet tar hammaren (${h.hov}, "${h.text}") · ingen vit ritning runt hammaren (${h.kont})`, h.hov && h.kont !== false]);
+await p.waitForTimeout(300); await p.screenshot({ path: dir + 'g-bradorna-10-grader.png' });
+ut.push([`brädhögen från 2 m, 10° bredvid: siktet tar högen (${h.hov}, "${h.text}") · ingen vit ritning runt högen (${h.kont})`, h.hov && h.kont !== false]);
 const brott = await H(() => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && ['SAK UTAN TRÄFFYTA', 'RITNING PÅ BYGGD SAK'].includes(e.vem)).map((e) => e.vem + ' ' + e.text));
 ut.push([`SAK UTAN TRÄFFYTA / RITNING PÅ BYGGD SAK: ${brott.length} ${brott.slice(0, 3).join(' · ')}`, !brott.length]);
 for (const [t, ok] of ut) console.log(ok ? '✓' : '✗', t);

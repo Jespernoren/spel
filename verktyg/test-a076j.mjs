@@ -35,7 +35,7 @@ let uppg = false; for (let i = 0; i < 30 && !uppg; i++) { await p.waitForTimeout
 await p.screenshot({ path: dir + 'j-efter-fortsatt.png' });
 ut.push([`FORTSÄTT (Enter) stänger · du säger "Först borde jag spika upp en skylt." (${sagt}) · uppgiftsrutan inne (${uppg})`, sagt && uppg]);
 // 4. skylt-kvittensen i samma kort, stängs med Esc
-await H(() => { const P = window.__printahem; P.hammarPaBrador.userData.interaktion.aktivera(); P.byt(P.S.hotbar.findIndex((x) => x?.typ === 'hammare')); P.bradhog.userData.interaktion.aktivera(); });
+await H(() => { const P = window.__printahem; P.byt(P.S.hotbar.findIndex((x) => x?.typ === 'hammare')); P.bradhog.userData.interaktion.aktivera(); });
 let k2 = null; for (let i = 0; i < 80 && !k2; i++) { await p.waitForTimeout(250); k2 = await kort(); }
 await p.waitForTimeout(600); await p.screenshot({ path: dir + 'j-skylt-kvittens.png' });
 await p.keyboard.press('Space'); await p.waitForTimeout(500);   /* A-076 15:30: Esc på kortet öppnar menyn – mellanslag stänger */

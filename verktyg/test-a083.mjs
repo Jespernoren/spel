@@ -29,10 +29,11 @@ const GOR = {
   h: () => { window.__printahem.kStat.h++; },
 };
 const FORBERED = {
-  ga: () => { const P = window.__printahem; P.spelare.yaw += Math.PI; P.spelare.pitch = 0; P.kStat.yaw0 = P.spelare.yaw; },   /* A-076 16:30: siktar man på hammaren tar klick-hjälpen över – titta bort först */
+  ga: () => { const P = window.__printahem; P.spelare.yaw += Math.PI; P.spelare.pitch = 0; P.kStat.yaw0 = P.spelare.yaw; P.kStat.start = { x: P.spelare.pos.x, z: P.spelare.pos.z }; },   /* A-076 16:30: siktar man på hammaren tar klick-hjälpen över – titta bort först */
   stall: () => { const P = window.__printahem, sp = P.spelare; P.S.skyltUppe = true; P.S.hotbar[1] = { typ: 'skrivareS', n: 1 }; P.byt(1); P.ritaStart(); const c = P.startYta.position; sp.pos.x = c.x; sp.pos.z = c.z + 2.6; sp.yaw = 0; sp.pitch = -0.55; },   /* A-076 14:00: klick-hjälpen bara med saken vald och siktet på platsen */
-  byta: () => { const P = window.__printahem; P.S.hammareGiven = true; P.S.hotbar[1] = { typ: 'hammare', n: 1 }; P.byt(0); },
-  klick: () => { const P = window.__printahem, sp = P.spelare; P.S.hammareGiven = false; P.byt(0); const c = P.hammarPaBrador.getWorldPosition(sp.pos.clone()); sp.pos.x = c.x + 2; sp.pos.z = c.z; sp.yaw = Math.PI / 2; sp.pitch = -Math.atan2(1.6 - c.y, 2); },
+  byta: () => { const P = window.__printahem; P.byt(0); },
+  titta: () => { const P = window.__printahem; P.spelare.pitch = 0.6; P.kStat.yaw0 = P.spelare.yaw; },   /* inkorg 20: hammaren är i handen – siktet bort från brädorna, annars tar spika-hjälpen över */   /* inkorg 20: hammaren ligger i raden från start – hjulet är den första hjälpen */
+  klick: () => { const P = window.__printahem, sp = P.spelare; P.S.skyltUppe = true; P.byt(0); const c = P.vagCykel.getWorldPosition(sp.pos.clone()); sp.pos.x = c.x + 2; sp.pos.z = c.z; sp.yaw = Math.PI / 2; sp.pitch = -Math.atan2(1.6 - 0.8, 2); },   /* inkorg 20: det första man tar upp är skrivaren från cykeln */
   vrid: () => { const P = window.__printahem; P.spoke.grupp = { visible: true }; P.spoke.ok = false; },
   trampa: () => { const P = window.__printahem; P.S.cykelOmbyggd = true; const g = P.skrivare.find((x) => x.id === 'g1'); if (g && !g.jobb) { g.fil = Math.max(g.fil || 0, 100); P.startaDirekt(g, { typ: 'nyckelring' }); } },   /* A-076 13:20: trampa först när en modell är vald */
   veva: () => { const P = window.__printahem; P.S.kvarnKopt = true; if (P.S.kvarn) P.S.kvarn.motor = false; },
@@ -41,7 +42,7 @@ const FORBERED = {
   h: () => { window.__printahem.sattHjalpBehov(); },
 };
 const sett = [];
-for (const id of ['ga', 'titta', 'klick', 'byta', 'stall', 'vrid', 'trampa', 'veva', 'e', 'tab', 'h']) {
+for (const id of ['byta', 'ga', 'titta', 'klick', 'stall', 'vrid', 'trampa', 'veva', 'e', 'tab', 'h']) {
   if (id === 'h') await H(() => { const P = window.__printahem; P.kStat.h = 0; P.S.kontrollKlar = (P.S.kontrollKlar || []).filter((x) => x !== 'h'); });
   await H(`(${FORBERED[id] || (() => {})})()`);
   let aktiv = null; for (let i = 0; i < 50 && aktiv !== id; i++) { await p.waitForTimeout(300); aktiv = await H(() => window.__printahem.kHjalpAktiv()); if (id === 'byta' && aktiv === 'rullaTill') aktiv = 'byta'; }   /* A-076 14:00: "Rulla hjulet för att ta hammaren" är byt-hjälpen */

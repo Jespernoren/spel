@@ -15,7 +15,7 @@ const H = (f, a) => p.evaluate(f, a);
 for (let i = 0; i < 20; i++) { if (await H(() => !!document.querySelector('.ph-med:not([hidden]) .ph-dagbokkort'))) await p.keyboard.press('Enter'); await p.waitForTimeout(400); }
 const hammareIBild = () => H(() => { const P = window.__printahem; let n = 0; P.kamera.traverse((o) => { if (o.userData?.iHanden === 'hammare') { let syns = true; for (let x = o; x; x = x.parent) if (!x.visible) syns = false; if (syns) n++; } }); return n; });
 // ta hammaren och rulla till den
-await H(() => { const P = window.__printahem; P.hammarPaBrador.userData.interaktion.aktivera(); });
+/* inkorg 20: hammaren finns i raden från start */
 await p.waitForTimeout(600);
 await H(() => { const P = window.__printahem; P.byt(P.S.hotbar.findIndex((x) => x?.typ === 'hammare')); });
 await p.waitForTimeout(600);

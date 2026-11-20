@@ -43,6 +43,8 @@ await p.goto(url); await p.waitForTimeout(3500);
 await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())).catch(() => {}); await p.waitForTimeout(2000);
 for (let i = 0; i < 30 && !(await p.evaluate(() => !!window.__printahem?.S).catch(() => false)); i++) await p.waitForTimeout(1000);
 p.on('pageerror', (e) => console.log('[sidfel]', e.message));
+const startRad = await p.evaluate(() => window.__printahem.S.hotbar.slice(0, 3).map((x) => x?.typ || 'hand'));   /* inkorg 20: verktygsraden från start */
+let forstaHjalp = ''; for (let i = 0; i < 40 && !forstaHjalp; i++) { forstaHjalp = await p.evaluate(() => document.querySelector('.ph-kontroll')?.textContent || ''); if (!forstaHjalp) await p.waitForTimeout(250); }   /* inkorg 20: första uppmaningen, innan boten gör något */
 await p.evaluate(([u, m, c]) => { window.__vt.start(); window.__simUtforlig = u; window.__simStegMax = m; window.__simCykelForst = c[0]; window.__simStromDirekt = c[1]; }, [!!process.env.UTFORLIG, +(process.env.SIM_STEGMAX || 15), [!!process.env.CYKEL_FORST, !!process.env.STROM_DIREKT]]);   /* A-073: STROM_DIREKT=1 tar generatorn direkt i stället för att vänta på hjälpen */   /* A-071: CYKEL_FORST=1 ställer cykeln före generatorn */
 await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.meta.url), 'utf8') });
 // skärmdump varje gång målet byts (eller en sida visas) – i verklig tid medan boten kör
@@ -73,6 +75,10 @@ const promptSkylt = L.find((e) => ['sak', 'sak-del'].includes(e.kalla) && /Men f
 const duns = L.filter((e) => e.kalla === 'duns'), print = L.filter((e) => e.kalla === 'brott' && e.vem === 'FEL BYGGEFFEKT');
 console.log('| tid | mål klart | kvittens | nästa mål | s |'); for (const x of rader) console.log(`| ${x.t.toFixed(1)} | ${x.id} | ${x.kv.slice(0, 50)} | ${x.mal.slice(0, 50)} | ${x.v == null ? '–' : x.v.toFixed(1)}${x.sida ? ' (sida)' : ''} |`);
 ut.push([`dag 1 spelad: ${mal.length} mål klara`, mal.length >= 10 && r.dagar.length >= 1]);
+ut.push([`inkorg 20: verktygsraden från start ${startRad.join(' · ')}`, startRad.join() === 'hand,hammare,byggsats:generator']);
+{ const tagit = L.filter((e) => /Ta hammaren|Ta generatorn|hammaren på brädorna/.test(String(e.text || '')));
+  ut.push([`inkorg 20: första kontrollhjälpen "${forstaHjalp || '–'}"`, /Rulla hjulet för att ta hammaren/.test(forstaHjalp)]);
+  ut.push([`inkorg 20: ingen hammare på brädorna eller generator på cykeln (${tagit.length})`, tagit.length === 0]); }
 ut.push([`prompten före skylten: "${promptSkylt?.text || '–'}"`, !!promptSkylt && (!skylt || promptSkylt.tot < skylt.tot)]);
 ut.push([`dagbokssidan om skylten ${sidaSkylt ? Math.abs(sidaSkylt.tot - skylt.tot).toFixed(1) + ' s' : 'saknas'} från skyltKlar (högst 2 s)`, !!sidaSkylt && Math.abs(sidaSkylt.tot - skylt.tot) <= 2]);
 { const sena = rader.filter((x) => x.v != null && x.v > 4 && !x.sida); ut.push([`nästa mål inom 4 s efter varje händelse (sidor som pausar undantagna): ${sena.map((x) => `${x.id} ${x.v.toFixed(1)} s`).join(', ') || 'alla'}`, !sena.length]); }

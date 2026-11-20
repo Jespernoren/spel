@@ -17,13 +17,13 @@ for (let i = 0; i < 40 && !(await p.evaluate(() => !!document.querySelector('.ph
 const kontroll = () => H(() => { const e = document.querySelector('.ph-kontroll.in span'); return e ? e.textContent : ''; });
 const vanta = async (f, ms = 4000) => { for (let t = 0; t < ms; t += 200) { const v = await f(); if (v) return v; await p.waitForTimeout(200); } return await f(); };
 // 16:30: tar man hammaren utan att ha gått eller tittat runt kommer hjälpen om hjulet direkt (Gå/Titta håller inte platsen)
-await H(() => { window.__printahem.hammarPaBrador.userData.interaktion.aktivera(); });
+/* inkorg 20: hammaren finns i raden från start */
 const k00 = await vanta(async () => /Rulla hjulet för att ta hammaren/.test(await kontroll()) && kontroll(), 1500);
 await p.screenshot({ path: dir + 'h-0-utan-att-ga.png' });
 ut.push([`tog hammaren utan att gå: "${k00 || await kontroll()}" inom 1,5 s`, !!k00]);
 await H(() => { const P = window.__printahem, S = P.S; S.kontrollKlar = ['ga', 'titta', 'klick', 'byta']; P.spelare.pos.x += 3; P.spelare.yaw += 1; });
 await p.waitForTimeout(1500);
-await H(() => { const P = window.__printahem; P.hammarPaBrador.userData.interaktion.aktivera(); });
+/* inkorg 20: hammaren finns i raden från start */
 // 0. hammaren i raden, handen vald
 await H(() => window.__printahem.byt(0)); await p.waitForTimeout(1200);
 const k0 = await vanta(async () => /Rulla hjulet för att ta hammaren/.test(await kontroll()) && kontroll());
