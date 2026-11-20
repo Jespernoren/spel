@@ -17,18 +17,22 @@ await p.waitForTimeout(3000); for (let i = 0; i < 20 && await p.evaluate(() => !
 await p.waitForTimeout(1500);
 const ut = [];
 // stormen
+await p.evaluate(() => { const P = window.__printahem, sp = P.spelare, Sk = P.SKJUL; if (sp && Sk) { sp.pos.set(Sk.x + Sk.b / 2 + 9, sp.pos.y, Sk.z + 7); sp.yaw = Math.atan2(-(Sk.x - sp.pos.x), -(Sk.z - sp.pos.z)); sp.pitch = -0.12; } });
+await p.waitForTimeout(800); await p.screenshot({ path: dir + 'stormen-fore.png' });
 const st = await p.evaluate(() => { const P = window.__printahem, S = P.S; S.storm = 0; S.flyttatIn = false; S.hem = { ...(S.hem || {}), tak: true }; S.dag = 17; P.handelse('morgonkortStangt', { dag: 17 }); return { storm: S.storm }; });
 await p.waitForTimeout(9000);
 const st2 = await p.evaluate(() => { const L = window.__printahem.textLogg(); return { tanke: (L.find((e) => /tillbaka där jag började/.test(String(e.text))) || {}).text || '', rolf: !!L.find((e) => /plåten låg på marken/.test(String(e.text))) }; });
 ut.push([`stormen dag 17: S.storm=${st.storm}, tanken "${st2.tanke}", Rolfs sms ${st2.rolf}`, st.storm === 17 && /^Fem dagar kvar/.test(st2.tanke)]);
-await p.evaluate(() => { const P = window.__printahem, sp = P.spelare, Sk = P.SKJUL; if (sp && Sk) { sp.pos.set(Sk.x + Sk.b / 2 + 5, sp.pos.y, Sk.z + 4); sp.yaw = Math.atan2(-(Sk.x - sp.pos.x), -(Sk.z - sp.pos.z)); sp.pitch = -0.15; } });
+await p.evaluate(() => { const P = window.__printahem, sp = P.spelare, Sk = P.SKJUL; if (sp && Sk) { sp.pos.set(Sk.x + Sk.b / 2 + 9, sp.pos.y, Sk.z + 7); sp.yaw = Math.atan2(-(Sk.x - sp.pos.x), -(Sk.z - sp.pos.z)); sp.pitch = -0.12; } });
 await p.waitForTimeout(800);
 await p.screenshot({ path: dir + 'stormen.png' });
 // julafton
 await p.evaluate(() => { const P = window.__printahem, S = P.S; S.dag = 22; S.julFirad = false; S.dorrSkylt = false; S.skyltTand = false; S.julSms = false; S.steg = P.STEG ? P.STEG.findIndex((x) => x.id === 'm22-tand-skylten') : S.steg; });
 await p.waitForTimeout(3500);
+const j0 = 0;
 const j1 = await p.evaluate(() => { const P = window.__printahem; const k = P.interaktor.mal.find((o) => /Sätt upp skylten med ditt namn/.test((() => { try { return String(o.userData.interaktion?.text?.(o) || ''); } catch { return ''; } })())); const t = k ? k.userData.interaktion.text() : ''; if (k) k.userData.interaktion.aktivera(); const L = P.textLogg(); return { t, sms: (L.find((e) => /kl 15/.test(String(e.text))) || {}).text || '', dorr: !!P.S.dorrSkylt }; });
-await p.waitForTimeout(3500);
+for (let i = 0; i < 40 && !(await p.evaluate(() => !!window.__printahem.S.julBilKom)); i++) await p.waitForTimeout(500);
+await p.waitForTimeout(2500);
 const j2 = await p.evaluate(() => { const P = window.__printahem; const g = P.interaktor.mal.find((o) => o.visible && /Ta emot mamma/.test((() => { try { return String(o.userData.interaktion?.text?.(o) || ''); } catch { return ''; } })())); if (g) g.userData.interaktion.aktivera(); return !!g; });
 ut.push([`julafton: pekrutan "${j1.t}", mammas sms "${j1.sms}", skylten sitter ${j1.dorr}, mamma vid grinden ${j2}`, /Sätt upp skylten/.test(j1.t) && /kl 15/.test(j1.sms) && j1.dorr && j2]);
 for (let i = 0; i < 60 && await p.evaluate(() => !!document.querySelector('.ph-jul')); i++) { await p.keyboard.press('Enter'); await p.waitForTimeout(250); }

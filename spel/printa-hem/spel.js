@@ -541,8 +541,29 @@ const LAPPAR = {
   klart: ['📔 Dagbok', 'Lampan lyser.\n\nPappa ska visst komma förbi i morgon.'],   // CL: själva repliken sägs när lampan tänds
   gard: ['📔 Dagbok', 'Gården är STÄDAD.\nAv mig. Frivilligt.\n\nMamma skulle aldrig tro det.'],
 };
+/* A-088 §1: skylten är den röda tråden – första gången en ny person hittar till dig skriver kvällens sida "Nu vet X att jag bor HÄR.", högst en rad per kväll (den andra skjuts till nästa kväll).
+   Dag 1 är kvällssidan redan full (LÅNG DAGBOK), så den som kommer dag 1 får sin rad dag 2. */
+const ROD_TRAD = [
+  ['ali', () => kand('ali'), 'Nu vet Ali att jag bor HÄR.'],
+  ['rolf', () => kand('rolf'), 'Nu vet Rolf att jag bor HÄR.'],
+  ['goran', () => kand('goran'), 'Nu vet en mås att jag bor HÄR.'],
+  ['pappa', () => !!S.pappaBesok, 'Nu vet pappa att jag bor HÄR.'],
+  ['bengt', () => (S.bengtSkrik || 0) > 0 || !!S.bengtNamnd, 'Nu vet grannen att jag bor HÄR. Han verkar inte glad.'],
+  ['helen', () => !!S.helen, 'Nu vet Helen att jag bor HÄR.'],
+  ['kommunen', () => !!S.gunBritt, 'Nu vet kommunen att jag bor HÄR.'],
+  ['skatteverket', () => !!S.folkbokford, 'Nu vet Skatteverket att jag bor HÄR.'],
+];
+function rodTradKoll() { S.rodTrad = S.rodTrad || { mot: {}, skriven: {} }; for (const [id, villkor] of ROD_TRAD) { try { if (!S.rodTrad.mot[id] && villkor()) S.rodTrad.mot[id] = S.dag; } catch (e) {} } }
+function rodTradIkvall() {
+  rodTradKoll(); if (S.dag >= JULAFTON_DAG) return '';   /* julafton: ingen rad – alla står i dörren */
+  const nasta = ROD_TRAD.filter(([id]) => S.rodTrad.mot[id] && !S.rodTrad.skriven[id]).sort((a, b) => S.rodTrad.mot[a[0]] - S.rodTrad.mot[b[0]])[0];
+  if (!nasta) return ''; S.rodTrad.skriven[nasta[0]] = S.dag; sparaSnart(); return nasta[2];
+}
+setInterval(() => { try { if (ui.igang) rodTradKoll(); } catch (e) {} }, 3000);
 /* inkorg 24 p.3: kvällskroken – varje kväll slutar med morgondagens problem i en rad. Dag 1 står i LAPPAR.start, dag 2–21 får en kort kvällssida när sov-uppgiften kommer. */
-const KVALL_KROK = ['Gården är full av skräp. I morgon.', 'Taket läcker. I morgon.', 'Benen orkar inte trampa mer. I morgon.', 'En skrivare räcker inte. I morgon.', 'Det tunga skräpet går inte att mala. I morgon.', 'Blå plast säljer billigt. I morgon.', 'Ryggen värker av allt bärande. I morgon.', 'Strömmen räcker inte till alla skrivare. I morgon.', 'Det drar kallt genom väggarna. I morgon.', 'Jag hinner inte bära allt skräp själv. I morgon.', 'Maskinerna står och väntar på mig. I morgon.', 'Allt säljs bara när jag är vaken. I morgon.', 'Kvarnen är för långsam. I morgon.', 'Skjulet är fortfarande ett skjul. I morgon.', 'Marken är inte min. I morgon.', 'Det ska blåsa hårt i natt.', 'Huset behöver en grund. I morgon.', 'Jag vill bo i ett riktigt hus. I morgon.', 'Det blir kallare för varje natt. I morgon.', 'Jag finns inte på riktigt här än. I morgon.', 'I morgon är det julafton.'];
+/* A-088 §2: varje kapitel slutar på ett MEN – kvällens sista rad */
+const KAPITEL_MEN = { 5: 'Pengarna är borta. Med en mås.', 10: 'I natt frös jag. Tolv dagar kvar.', 15: 'På pappret finns jag inte.', 17: 'Fem dagar kvar. Inget tak.' };
+const KVALL_KROK = ['Gården är full av skräp. I morgon.', 'Taket läcker. I morgon.', 'Benen orkar inte trampa mer. I morgon.', 'En skrivare räcker inte. I morgon.', 'Pengarna är borta. Med en mås.', 'Blå plast säljer billigt. I morgon.', 'Ryggen värker av allt bärande. I morgon.', 'Strömmen räcker inte till alla skrivare. I morgon.', 'Det drar kallt genom väggarna. I morgon.', 'I natt frös jag. Tolv dagar kvar.', 'Maskinerna står och väntar på mig. I morgon.', 'Allt säljs bara när jag är vaken. I morgon.', 'Kvarnen är för långsam. I morgon.', 'Skjulet är fortfarande ett skjul. I morgon.', 'På pappret finns jag inte.', 'Det ska blåsa hårt i natt.', 'Fem dagar kvar. Inget tak.', 'Jag vill bo i ett riktigt hus. I morgon.', 'Det blir kallare för varje natt. I morgon.', 'Jag finns inte på riktigt här än. I morgon.', 'I morgon är det julafton.'];
 for (let d = 2; d < JULAFTON_DAG; d++) LAPPAR['kvall' + d] = ['📔 Dagbok', `Dag ${d} är slut.\n\n${KVALL_KROK[d - 1]}`];
 
 // brev från Rolf heter 'rolf:0', 'rolftack:0' osv
@@ -877,7 +898,7 @@ const PAMINN_T = {
   krukaD1: 'En blomkruka åt Ali.', saljKruka: 'Krukan till Ali.', kopSang: 'Sängen. Jag behöver pengar till den.', printSang: 'Sängen ska printas.', sov1: 'Sängen in i skjulet. Sen sover jag.',
 };
 const PAMINN_UTAN_FRAMSTEG_MS = 30000, PAMINN_EFTER_SAGT_MS = 60000;   // ca 30 s utan framsteg, och minst 60 s efter att uppgiften sades (SAMMA SAK TVÅ GÅNGER)
-let brorOrdFran = -1, spelordFran = -1; const ochSenSett = new Set(); let arstidFran = -1, snoFran = -1;
+let brorOrdFran = -1, spelordFran = -1; const ochSenSett = new Set(); let arstidFran = -1, snoFran = -1, kapMenKollad = false; const rodTradFlaggad = new Set();
 const SPELORD = /lysande (rutan|platsen)|markeringen|konturen|\bmålet\b|uppdraget|klicka här/i;
 const SPELORD_DAG1 = /\brutan\b|\blinje 1\b|\bSkrivare S\b|\btornet\b/i;   /* inkorg 23 p.3: ord som inget betyder för en ny spelare dag 1 */
 const SI = Object.fromEntries(STEG.map((x, i) => [x.id, i]).filter(([id]) => id));   // steg-id → index (dag 1)
@@ -4812,6 +4833,81 @@ const FOR_DU = {
   'mysigt': ['men', 'skjulet är tätt men inte mysigt'],
   'vind5': ['men', 'skrivare M drar mycket ström'],
   'sov5': ['darfor', 'skjulet är mysigt'],
+  /* A-088: OCH SEN gäller alla 22 dagar */
+  'pappa6': ['darfor', 'pappa vill se vad jag håller på med'],
+  'r6-kop-roda-kvarnen': ['men', 'det tunga skräpet går inte att mala i min lilla kvarn'],
+  'r6-mal-tunna-roda': ['darfor', 'den röda kvarnen står'],
+  'sol6': ['men', 'trampandet räcker inte för två skrivare'],
+  'goran6': ['men', 'Göran snor mina nyckelringar'],
+  'sov6': ['darfor', 'dagen är klar'],
+  'r7-bygg-petg-skrivaren': ['darfor', 'den röda plasten behöver en egen skrivare'],
+  'r7-printa-designvas-rod': ['darfor', 'PETG-skrivaren står'],
+  'r7-salj-designvasen': ['darfor', 'vasen är klar'],
+  'saljlada': ['men', 'jag hinner inte gå till Ali med allt'],
+  'saljlada3': ['darfor', 'säljlådan står'],
+  'sov7': ['darfor', 'vaserna står i lådan'],
+  'r8-bygg-skrivare-l': ['men', 'skrivarna hinner inte med kvarnen'],
+  'r8-bygg-magnetpistolen': ['men', 'gripen tar en sak i taget'],
+  'r8-mal-tunga-saker': ['darfor', 'magneten tar det tunga'],
+  'r8-bygg-batteribank': ['men', 'strömmen tar slut på natten'],
+  'hylla8': ['men', 'sakerna ligger på golvet'],
+  'sov8': ['darfor', 'hyllan sitter'],
+  'r9-kop-receptet-cykelhjalmen': ['darfor', 'Ali vill ha en cykelhjälm'],
+  'r9-bygg-solcellspark': ['men', 'batterierna räcker inte'],
+  'paket9': ['darfor', 'datorn kan sälja det jag printar'],
+  'petgtorn9': ['men', 'den röda kvarnen får inte plats med fler rullar'],
+  'sov9': ['darfor', 'tornet står'],
+  'tapeter': ['men', 'skjulet är fortfarande grått'],
+  'r10-gor-skjulet-varmt': ['men', 'nätterna blir kallare'],
+  'spis10': ['men', 'jag behöver äta något varmt'],
+  'sov10': ['darfor', 'skjulet är varmt'],
+  'kolfkvarn': ['men', 'kajakerna går inte att mala i de andra kvarnarna'],
+  'kolfband': ['darfor', 'kolfiberkvarnen står'],
+  'kajak3': ['darfor', 'bandet går från tippen'],
+  'kolfrulle': ['darfor', 'kajakerna mals'],
+  'sov11': ['darfor', 'den första svartgrå rullen är klar'],
+  'kolfskrivare': ['darfor', 'kolfibern behöver en egen skrivare'],
+  'kolfslang': ['men', 'slangen räcker bara till en skrivare'],
+  'kolfstol': ['darfor', 'skrivarna är kopplade'],
+  'f12-batteribank2': ['men', 'kolfibern drar mycket ström'],
+  'sov12': ['darfor', 'batterierna räcker'],
+  'f13-bygg-gamingboden': ['men', 'skjulet är fullt av maskiner'],
+  'f13-stall-in-gamersak': ['darfor', 'boden står'],
+  'sov13': ['darfor', 'boden har sin första sak'],
+  'jet14': ['men', 'kolfiberkvarnen är för långsam'],
+  'f14-bygg-leveransladan': ['darfor', 'jetmotorn ger mer än jag hinner bära'],
+  'f14-kop-mutor-rolf': ['men', 'Rolf börjar undra vad jag håller på med'],
+  'sov14': ['darfor', 'Rolf är nöjd'],
+  'f15-bygg-gamingboden': ['darfor', 'boden ska bli klar'],
+  'gamer': ['darfor', 'boden står'],
+  'f15-printa-stall-ut': ['darfor', 'fristaden behöver något extra'],
+  'f15-varldens-basta-fristad': ['darfor', 'allt är på plats'],
+  'sov15': ['darfor', 'fristaden är klar'],
+  'm16-kop-tomten-bor': ['men', 'på pappret finns jag inte'],
+  'm16-lagg-flagan-bengt': ['men', 'grannen är arg'],
+  'm16-ge-rolf-kapskiva': ['darfor', 'Rolf har hjälpt mig'],
+  'sov16': ['darfor', 'tomten är min'],
+  'm17-kop-angen-oster': ['men', 'stormen tog taket – jag behöver plats för ett riktigt hus'],
+  'm17-vaska-guld-floden': ['men', 'huset kostar mer än jag har'],
+  'm17-solpark2': ['men', 'ett hus drar mer ström'],
+  'sov17': ['darfor', 'ängen är min'],
+  'm18-bygg-diamantkvarnen': ['darfor', 'guldet ska malas'],
+  'm18-mal-rulle-guld': ['darfor', 'diamantkvarnen står'],
+  'm18-gjut-grunden-huset': ['darfor', 'guldet betalar grunden'],
+  'sov18': ['darfor', 'grunden är gjuten'],
+  'm19-bygg-huset-grunden': ['darfor', 'grunden har torkat'],
+  'm19-vindkraft': ['men', 'huset drar mer ström än solen ger'],
+  'm19-guldskrivare': ['men', 'guldet behöver en egen skrivare'],
+  'm19-flytta-in-huset': ['darfor', 'huset står'],
+  'sov19': ['darfor', 'jag bor i ett hus'],
+  'm20-printa-stall-ut': ['men', 'huset är kallt'],
+  'm20-stall-in-kamin': ['darfor', 'kaminen är printad'],
+  'sov20': ['darfor', 'det är varmt'],
+  'm21-bli-folkbokford': ['men', 'på pappret finns jag fortfarande inte'],
+  'sov21': ['darfor', 'jag är skriven här'],
+  'm22-printa-julbordet': ['darfor', 'det är julafton'],
+  'm22-tand-skylten': ['darfor', 'mamma kommer kl 15'],
+  'm22-oppna-dorren-gasterna': ['darfor', 'skylten sitter på dörren'],
 };
 const STORYKEDJA_VERSION = 1;
 let storykedjaCache = null;
@@ -5631,7 +5727,7 @@ function uppdateraMalPil() {
   // instruktionen läses först när dagboken är läst och (i ett nytt spel) skylten är uppe
   // punkt 15: ett nytt mål är en sak i kanalen. Målrutan visar det klara målet med ✓ tills det nya målets tur kommer –
   // då byts rutan och berättaren läser upp målet (finns ingen uppläsning byts rutan tyst).
-  if (malKoSteg !== S.steg && !morgonVantar && (S.skyltUppe || S.steg > 1) && !pbVantar()) {   /* rad 23 p.11: uppgiften väntar på Alis sms */
+  if (malKoSteg !== S.steg && !morgonVantar && (S.skyltUppe || S.steg > 1) && !pbVantar() && !blickHaller()) {   /* rad 23 p.11: uppgiften väntar på Alis sms */
     const st = S.steg, id = stegId(); malKoSteg = st;
     /* A-072: nästa steg sägs högt direkt när rutan byts – din knuff om målet har en, annars berättaren. Aldrig båda. */
     const ny = STEG[st], knuff = ny?.knuff && !harSagt(ny.knuff) && !(typeof ny.klar === 'function' && ny.klar()) && !(ny.id === 'powerbank' && S.powerbankGiven) ? ny.knuff : null;
@@ -5642,7 +5738,7 @@ function uppdateraMalPil() {
       stryksOm: () => S.steg !== st || (!!knuff && ny.id === 'powerbank' && !!S.powerbankGiven) };   /* rad 23 p.11: Ali gav den redan – tanken om att gå dit är inaktuell */
     kanalLagg(malIt);
   }
-  if (malVisasSteg !== S.steg && !morgonVantar && !pbVantar() && (performance.now() - malKlartTid - (menyTot - menyVidKlart) > MAL_SENAST_MS || !eaHallerMal())) {   // EA/EC#5: rutan visar nästa mål när förklaringen har visats – senast 10 s
+  if (malVisasSteg !== S.steg && !morgonVantar && !pbVantar() && !blickHaller() && (performance.now() - malKlartTid - (menyTot - menyVidKlart) > MAL_SENAST_MS || !eaHallerMal())) {   // EA/EC#5: rutan visar nästa mål när förklaringen har visats – senast 10 s
     malRuta();
     const mi = [...kanal, ...kanalSenare].find((x) => x.vikt === 'MÅL' && x.vem !== 'bud'); if (mi) mi.forst = true;   /* A-072: målet sägs först av allt i kön */
   }
@@ -6160,14 +6256,23 @@ function sov() {
     const tanke = morgonTanke(); S.morgonTanke = tanke; S.morgonTankeIgar = tanke?.id || S.morgonTankeIgar;
     const ig = S.igar, rapport = ig ? `<span class="br-rapport">${S.saljLadaIgar ? `📦 Ali hämtade säljlådan i natt: ${S.saljLadaIgar.n} st · +${krT(S.saljLadaIgar.summa)} kr<br>` : ''}${S.webbIgar ? `🖥️ Webbshopen: ${S.webbIgar.n} paket levererade · +${krT(S.webbIgar.du)} kr<br>` : ''}Igår: ${ig.printat} printat · ${ig.salt} sålt</span>` : '';
     /* A-076 tillägg 14:22/15:40: morgonsidan är dagbokskortet – högst 2 meningar, direkt när dagen börjar, spelet står still bakom */
-    const dagText = [julRad(S.dag), nasta && DAG_STORY[S.dag - 1] ? DAG_STORY[S.dag - 1] : ''].filter(Boolean).join('\n\n') || 'En ny dag.';   /* inkorg 24 p.2: nedräkningen först, sedan dagens mål. Morgontanken sägs som tanke efter dagens första mål (morgonkortStangt). */   /* inkorg 10d: en tanke per rad, luft emellan */
+    const dagText = [[julRad(S.dag), INSATS[S.dag - 1]].filter(Boolean).join('\n'), nasta && DAG_STORY[S.dag - 1] ? DAG_STORY[S.dag - 1] : ''].filter(Boolean).join('\n\n') || 'En ny dag.';   /* A-088 §4: insatsen på rad två */
+    if (S.dag <= JULAFTON_DAG && !INSATS[S.dag - 1]) regelvakt.brott('UTAN INSATS', `morgonkortet dag ${S.dag} har ingen andra rad`);   /* inkorg 24 p.2: nedräkningen först, sedan dagens mål. Morgontanken sägs som tanke efter dagens första mål (morgonkortStangt). */   /* inkorg 10d: en tanke per rad, luft emellan */
     const extra = `${aliVillHtml()}${rapport}${!nasta && S.julFirad ? efterspelHtml() : ''}`;
-    hurVarDagen(natt, () => { ui.starta(true); dagenBorjar(() => dagbokKort(dagText, { rubrik: `Dag ${S.dag} – ${del.replace(/^Dag \d+ – /, '')}`, morgon: true, extra })); });
+    const kapK = +Object.keys(KAP_RITNING).find((n) => KAP_RITNING[n].dag === S.dag) || 0, kapR = kapK && !(S.kapRitSedd || []).includes(kapK) ? KAP_RITNING[kapK] : null;
+    if (kapR) { S.kapRitSedd = [...(S.kapRitSedd || []), kapK]; S.kapVisad = [...new Set([...(S.kapVisad || []), kapK])]; sparaSnart(); }   /* A-088 §3: kapitelkortet ersätter morgonkortet och det gamla rubrikkortet */
+    hurVarDagen(natt, () => { ui.starta(true); dagenBorjar(() => kapR
+      ? (dagbokKort(kapR.men, { rubrik: `KAPITEL ${kapK} · ${julRad(S.dag).replace(/\.$/, '')}`, morgon: true, extra: kapRitningHtml(kapK) + extra }), kapRitAuto())
+      : dagbokKort(dagText, { rubrik: `Dag ${S.dag} – ${del.replace(/^Dag \d+ – /, '')}`, morgon: true, extra })); });
     const vanta = setInterval(() => { if (!ui.igang) return; clearInterval(vanta); handelse('morgonkortStangt', { dag: S.dag }); const f = morgonKo; morgonKo = null; if (f) setTimeout(f, 2500); }, 300);
   }, 5500);
 }
 let morgonKo = null;
+/* A-088 §3: kapitelkortet stängs själv efter 6 s om ingen klickat */
+function kapRitAuto() { let n = 0; const iv = setInterval(() => { const k = document.querySelector('.ph-kapritn'); if (!k) { if (++n > 40) clearInterval(iv); return; } clearInterval(iv); setTimeout(() => { if (document.querySelector('.ph-kapritn')) medEl2.querySelector('button.fp-knapp')?.click(); }, 6000); }, 250); }
 /* inkorg 24 p.2: morgonkortets första rad räknar ner till jul – julafton är dag 22. Ingen räknare i HUD. */
+/* A-088 §4: morgonkortets andra rad är insatsen – vad som händer annars (kylan, mamma eller julen). En per dag 1–22. */
+const INSATS = ['Klarar jag inte en natt här får mamma rätt.', 'Utan dörr blåser natten rakt in.', 'Utan tak regnar det in i natt.', 'Drar det i skjulet får mamma rätt.', 'Utan pengar blir det ingen jul här.', 'Utan en fabrik räcker pengarna inte till jul.', 'Säljer jag inget blir det tomt till jul.', 'Utan mer ström står allt still i kylan.', 'Utan pengar får mamma rätt.', 'I natt blir det kallt. Utan väggar fryser jag.', 'Utan värme håller jag inte till jul.', 'Står maskinerna still får mamma rätt.', 'Utan ett eget rum är det bara ett skjul.', 'Utan en fristad är det inget hem till jul.', 'Utan adress finns jag inte på riktigt.', 'Utan en egen tomt kan jag inte bli skriven här.', 'Utan pengar blir det inget hus före jul.', 'Utan grund blir det inget hus före jul.', 'Utan hus kommer mamma och hämtar mig.', 'Utan kamin får mamma rätt.', 'Utan adress får mamma rätt.', 'Utan skylt på dörren kör mamma hem med mig.'];
 function julRad(dag) { const kvar = JULAFTON_DAG - dag; return kvar > 0 ? `Dag ${dag}. ${kvar} ${kvar === 1 ? 'dag' : 'dagar'} till jul.` : kvar === 0 ? 'Julafton.' : ''; }
 // BN: en mening per dag om dagens storymål (dag 1–22)
 const DAG_STORY = ['Få igång skrivaren och sova i en egen säng.', 'Städa upp – och kanske träffa grannarna.', 'Bära mer och få tak över huvudet.', 'Sluta trampa och stänga ute kylan.', 'Fler skrivare och ett riktigt mysigt skjul.',
@@ -8635,6 +8740,8 @@ let klockTest = null;   // testkrok: __printahem.tidTest(min)
 function klockan() {
   if (klockTest != null) return klockTest;
   const st = STEG[S.steg];
+  if (st?.id === 'm22-tand-skylten') return 14 * 60;   /* A-088 §5: julafton – skylten före kl 15 */
+  if (st?.id === 'm22-oppna-dorren-gasterna') return S.julBilKom ? 15 * 60 : 14 * 60 + 30;
   if (!st) return Math.min(21 * 60, Math.round((8 * 60 + (S.dagTid || 0) / DAG_LANGD * 13 * 60) / 15) * 15);
   if (st.sov) return kvallKlar() ? 21 * 60 : Math.round((14 * 60 + (S.vakenTid || 0) / MIN_VAKEN * 7 * 60) / 15) * 15;
   if (sangKvall()) return 20 * 60;
@@ -11089,7 +11196,7 @@ const ROLF_IBLAND = [
 ];
 // EA #18: mamma ett sms dag 2 – det arga, på morgonen. Storebror på kvällen (bonus)
 /* inkorg 24 p.3: kvällskroken dag 2–21 – när kvällens sov-uppgift kommer */
-paHandelse('malKlart', () => { const id = 'kvall' + S.dag; if (!STEG[S.steg]?.sov || !LAPPAR[id] || (S.lappar || []).includes(id)) return; paket([{ lapp: id }], { om: 1500, varfor: 'inkorg 24 p.3: kvällskroken' }); });
+paHandelse('malKlart', () => { const id = 'kvall' + S.dag; if (!STEG[S.steg]?.sov || !LAPPAR[id] || (S.lappar || []).includes(id)) return; const rad = rodTradIkvall(); LAPPAR[id] = ['📔 Dagbok', `Dag ${S.dag} är slut.\n\n${rad ? rad + '\n' : ''}${KVALL_KROK[S.dag - 1]}`]; paket([{ lapp: id }], { om: 1500, varfor: 'inkorg 24 p.3: kvällskroken' + (rad ? ' + A-088 röd tråd' : '') }); });
 paHandelse('malKlart', () => { if (S.dag !== 2 || S.brorKvall2 || !STEG[S.steg]?.sov) return; S.brorKvall2 = true; sparaSnart(); paket([{ sms: FAMILJ[2][0] }], { vikt: 'SMÅPRAT', varfor: 'storebror på kvällen dag 2' }); });
 /* EL 30: mammas arga sms kommer dag 1, några minuter efter att man har kommit fram och lastat av – då har hon upptäckt att man har gått */
 paHandelse('lastatAv', () => {
@@ -12369,7 +12476,7 @@ if (S.pappaBesok && !S.sackkarra) { S.sackkarra = true; setTimeout(() => { try {
 if (S.hem?.taklampa && S.kapitelKlart) S.lampaFinal = true;   // CL
 setTimeout(() => { try { ritaGast(); flyttaHelen(); ritaHelen(); } catch (e) { console.warn(e); } }, 500);   // CS
 // ---------- Introt: varför bor du vid en soptipp? ----------
-const MAMMA_SVAR_K1 = ['HAHA träplankor?!', 'Vad är det för skit? Du har ju inte ens TAPETER på väggarna.', 'Och var är badrummet?? Du duschar väl??', 'Pappa säger "aha, vad lugnt då". Pappa säger det om allt.'];
+const MAMMA_SVAR_K1 = ['Haha, träplankor?', 'Vad är det för skit? Du har ju inte ens tapeter på väggarna.', 'Och var är badrummet? Du duschar väl?', 'Pappa säger "aha, vad lugnt då". Pappa säger det om allt.'];
 // sista raden: mamma säger något fint om det du faktiskt har
 const MAMMA_K1_SLUT = { gardin: '…men gardinerna i fönstret var fina. Har du gjort dem själv? ❤️', fonster: '…men fönstret var fint. Det kommer in ljus i alla fall. ❤️', annars: '…men du har en säng. Det är en början. Jag är stolt. Säg inte det till pappa. ❤️' };
 const mammaK1Slut = () => harPlacerat('r_gardin') ? MAMMA_K1_SLUT.gardin : (S.hem?.fonster?.length ? MAMMA_K1_SLUT.fonster : MAMMA_K1_SLUT.annars);
@@ -12627,6 +12734,7 @@ introCss.textContent = `
 .ph-skjul14 polyline{fill:none;stroke:#fff;stroke-width:.55;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:200;stroke-dashoffset:200;filter:url(#phSkakig);opacity:.95}
 .ph-skjul14 polyline.rita{animation:phRita 1.6s ease-out forwards}
 @keyframes phRita{to{stroke-dashoffset:0}}
+.ph-blick{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:rgba(10,14,24,.78);opacity:0;transition:opacity .5s;pointer-events:none}.ph-blick.in{opacity:1}.ph-blick img{max-width:70vw;max-height:62vh;border-radius:6px;filter:sepia(.45) contrast(.95) blur(.3px);box-shadow:0 0 60px rgba(0,0,0,.6)}.ph-blick span{position:absolute;bottom:14vh;color:#f4f1e6;font:600 22px/1.3 system-ui;text-shadow:0 2px 8px #000}.ph-blick .ph-dagbokkort{transform:scale(.9);filter:sepia(.35)}   /* A-088 §5: tillbakablick */
 @keyframes phZoom{to{transform:scale(1.32)}}
 .ph-intro-text{font:500 clamp(17px,2.2vw,21px)/1.5 system-ui;opacity:.92;min-height:3em;transition:opacity .4s}
 .ph-intro-bubbla{display:inline-block;background:#fff;color:#222;font:800 clamp(20px,2.8vw,28px)/1.3 system-ui;padding:14px 22px;border-radius:22px 22px 22px 6px;box-shadow:0 10px 30px rgba(0,0,0,.4);max-width:92%}
@@ -12796,6 +12904,20 @@ const IDE3 = {   /* inkorg 13 (ritpapperet v10): ruta 13 på blått rutpapper, 1
   skrivare: '<path d="M778 525 L778 335 L892 335 L892 525 M770 525 L900 525"/><rect x="792" y="478" width="86" height="10"/><rect x="820" y="358" width="30" height="28"/><path d="M830 386 L835 397 L840 386 M778 358 L892 358"/><circle cx="835" cy="466" r="10"/>',
 };
 let introRitarVarld = false;
+/* A-088 §3: kapitelkortet – ritpapperet från introt kommer tillbaka första morgonen i K2, K3 och K4 (dag 6, 11, 16) med ett nytt steg.
+   Introts kedja tonas ned, en pil går från skrivaren ned till de nya stegen. Aldrig ett steg från ett senare kapitel. Ersätter morgonkortet, försvinner efter klick eller 6 s. */
+const KAP_RITNING = {
+  2: { dag: 6, steg: 'EN FABRIK', men: 'Pengarna tog slut. Därför: en fabrik.', rit: '<path d="M770 840 L770 730 L815 760 L815 730 L860 760 L860 730 L905 760 L905 840 Z"/><rect x="782" y="790" width="18" height="22"/><rect x="830" y="790" width="18" height="22"/><path d="M880 730 L880 690 L895 690 L895 745"/>', x: 838 },
+  3: { dag: 11, steg: 'VÄRME', men: 'Nätterna blir kalla. Därför: värme.', rit: '<path d="M500 845 C450 820 455 770 485 735 C487 765 500 772 510 760 C505 730 520 705 545 690 C540 730 575 755 560 800 C555 828 532 845 500 845 Z"/><path d="M500 845 C485 830 490 810 502 795 C510 812 522 818 520 830"/>', x: 505 },
+  4: { dag: 16, steg: 'ETT RIKTIGT HUS', men: 'På pappret finns jag inte. Därför: en egen tomt och ett riktigt hus.', rit: '<path d="M110 760 L170 705 L230 760"/><path d="M122 750 L122 845 L218 845 L218 750"/><rect x="155" y="795" width="28" height="50"/><rect x="190" y="770" width="20" height="18"/><path d="M200 735 L200 712 L212 712 L212 745"/>', x: 170 },
+};
+function kapRitningHtml(k) {
+  const steg = Object.entries(KAP_RITNING).filter(([n]) => +n <= k);
+  const kedja = Object.entries(IDE3).map(([n, v]) => `<g class="rita gammal">${v}</g>`).join('');
+  const ned = '<path d="M835 545 L835 640 M825 627 L835 640 L845 627"/>';
+  const delar = steg.map(([n, d], i) => { const nu = +n === k; const pil = i > 0 ? `<path d="M${steg[i - 1][1].x - 70} 790 L${d.x + 80} 790 M${d.x + 94} 780 L${d.x + 80} 790 L${d.x + 94} 800"/>` : ''; return `<g class="rita${nu ? ' ny' : ' gammal'}">${pil}${d.rit}<text x="${d.x}" y="890" class="ph-ritord" text-anchor="middle">${d.steg}</text></g>`; }).join('');
+  return `<div class="ph-tavla ph-kapritn"><svg viewBox="0 0 1000 920">${kedja}<g class="rita gammal">${ned}</g>${delar}</svg></div>`;
+}
 const UTROP_MAX = 12, UNDERTEXT_MAX = 84;   /* A-078 tillägg 11:45: utrop i bubblan · högst 2 rader undertext (ca 42 tecken per rad) */
 const INTRO3 = [
   { tid: 3500, ljud: 'spel', lager: [IB3('v3rum1')], tal: [['berattare', 'Ditt rum.'], ['berattare', 'Ungefär som vanligt.']] },
@@ -12838,6 +12960,7 @@ introCss3.textContent = `
 .ph-tavla svg{filter:drop-shadow(0 0 3px rgba(255,255,255,.55))}
 .ph-tavla svg{position:absolute;inset:0;width:100%;height:100%}
 .ph-tavla g{opacity:0}.ph-tavla g.rita{opacity:1}
+.ph-kapritn{position:relative;height:min(40vh,330px);aspect-ratio:1000/920;margin:6px auto 10px;border-radius:6px}.ph-kapritn g.gammal{opacity:.35}.ph-kapritn g.rita path,.ph-kapritn g.rita rect,.ph-kapritn g.rita circle{stroke-dashoffset:0}.ph-kapritn g.ny path,.ph-kapritn g.ny rect,.ph-kapritn g.ny circle{stroke-dashoffset:900;animation:phRita 1.6s .3s ease-out forwards}.ph-kapritn text{fill:#f4f1e6}   /* A-088 §3 */
 .ph-tavla path,.ph-tavla rect,.ph-tavla circle,.ph-tavla line,.ph-tavla ellipse{fill:none;stroke:#f4f1e6;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:900;stroke-dashoffset:900}
 .ph-tavla g.rita path,.ph-tavla g.rita rect,.ph-tavla g.rita circle,.ph-tavla g.rita line,.ph-tavla g.rita ellipse{animation:phTavla 1.1s ease-out forwards}
 .ph-tavla .ph-ritord{fill:#f4f1e6;stroke:none;font:700 24px "Comic Sans MS","Chalkboard SE",system-ui;letter-spacing:.02em;text-anchor:middle;opacity:0}
@@ -13001,7 +13124,7 @@ const DAG1_NOTIS = 'Dag 1 – äntligen fri från tjat.';
 /* A-076 tillägg 13:20 (facit 13:26): bara nästa uppgift syns. Dagboksnotisen läser känslan och slutar med att du säger första uppgiften –
    uppgiftsrutan glider in medan det sägs, och notisen tonas bort. Ingen lista över dagens mål någonstans. */
 const DAG1_KANSLA = ['Ingen som tjatar.', 'Bara jag, ett skjul och en massa skräp.'];   /* A-076 tillägg 14:20: högst 2 korta meningar */
-const DAG1_FORST = 'Först borde jag spika upp en skylt, så att alla ser var jag bor.';   /* inkorg 12d: första gången – obestämd form och varför */
+const DAG1_FORST = 'Först borde jag spika upp en skylt, så att alla ser att jag bor HÄR.';   /* A-088 §1: skylten är den röda tråden */   /* inkorg 12d: första gången – obestämd form och varför */
 /* A-076 tillägg 15:40: morgonsidan startas av händelsen "dagen börjar" (efter introt eller sömnen) – direkt, före allt i kön.
    Spelet står still bakom kortet. FORTSÄTT → du säger första uppgiften och uppgiftsrutan glider in. */
 let dagBorjadeT = null;
@@ -13009,7 +13132,7 @@ function dagenBorjar(kort) { dagBorjadeT = performance.now(); handelse('dagenBor
 function visaDagNotis() {
   if (S.dag !== 1 || S.dag1Sida) return; S.dag1Sida = true; S.dag1Forsta = true; sparaSnart();
   document.body.classList.add('dn-forsta');
-  dagenBorjar(() => dagbokKort([julRad(1), DAG1_KANSLA.join('\n')].join('\n\n'), { rubrik: DAG1_NOTIS.replace(/\.$/, ''), morgon: true, efter: () => {
+  dagenBorjar(() => dagbokKort([julRad(1) + '\n' + INSATS[0], DAG1_KANSLA.join('\n')].join('\n\n'), { rubrik: DAG1_NOTIS.replace(/\.$/, ''), morgon: true, efter: () => {
     prata('du', DAG1_FORST, 'STORY', { forst: true, start: () => { document.body.classList.remove('dn-forsta'); handelse('dagNotisKlar'); } });
     setTimeout(() => document.body.classList.remove('dn-forsta'), 6000);   // reserv om rösten inte kommer igång
   } }));
@@ -13209,6 +13332,30 @@ interaktor.registrera(adressSkylt, { text: () => S.dag >= 22 && skyltVersion() =
 const julKrans = new THREE.Group();
 { const k = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.08, 8, 18), mat(0x2e6b3a)); julKrans.add(k); for (let i = 0; i < 6; i++) julKrans.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 5), mat(0xc8213a)), Math.cos(i) * 0.28, Math.sin(i) * 0.28, 0.06));
   julKrans.visible = false; scen.add(julKrans); traffYta(julKrans, 0.9, 0.9, 0.3, 0, 0); }
+/* A-088 §5: korta tillbakablickar (2–3 s) före de tre största ögonblicken – befintliga bilder och röster, tonas in och ut, köas som STORY */
+const blickKoad = new Set(); let blickKo = [];
+/* visas när ingen pratar och inget annat syns (kön får inte avbrytas) – inte via kanalen, eftersom målet väntar på tillbakablicken */
+function tillbakablick(id, html, efter) {
+  S.blickar = S.blickar || []; if (S.blickar.includes(id)) { efter?.(); return; } if (blickKoad.has(id)) return; blickKoad.add(id); blickKo.push({ id, html, efter }); textLogg('väntar', 'du', 'tillbakablick ' + id, 'A-088 §5');
+}
+setInterval(() => {
+  const b = blickKo[0]; if (!b) return; const nu = performance.now();
+  if (kanalAktiv || kanalPausad() || nu < pratarTill + 800 || document.querySelector('.ph-blick')) return;
+  blickKo.shift(); lugnTill = Math.max(lugnTill, nu + 3600);
+  const d = document.createElement('div'); d.className = 'ph-blick'; d.innerHTML = typeof b.html === 'function' ? b.html() : b.html; document.body.appendChild(d); textLogg('tillbakablick', 'du', b.id, 'A-088 §5'); regiLogg?.('tillbakablick', 'STORY', 'du', b.id);
+  requestAnimationFrame(() => d.classList.add('in')); setTimeout(() => d.classList.remove('in'), 2600); setTimeout(() => { d.remove(); S.blickar.push(b.id); blickKoad.delete(b.id); sparaSnart(); b.efter?.(); }, 3200);
+}, 400);
+/* tillbakablicken kommer före uppgiften: målet väntar tills den är visad */
+const BLICK_FORE = {
+  'm18-gjut-grunden-huset': ['hem', () => `<img src="${spelBild('hem4')}" alt=""><span>Tänk om det här kunde bli ett riktigt hem? Till jul.</span>`],
+  'm21-bli-folkbokford': ['paketet', () => `<div class="ph-papper ph-dagbokkort"><div class="ph-pap-text">${rens(LAPPAR.polett[1].split('. ').slice(0, 3).join('. '))}.</div></div>`],
+};
+function blickHaller() { try { const b = BLICK_FORE[STEG[S.steg]?.id]; if (!b || (S.blickar || []).includes(b[0])) return false; tillbakablick(b[0], b[1]); return true; } catch (e) { return false; } }   /* try: kan anropas innan BLICK_FORE finns (TDZ) */
+/* julafton: när skylten sitter (kl 14:30) hörs mammas röst från vadet, sedan bilen */
+let blickVantar = false;
+setInterval(() => { if (S.dag !== JULAFTON_DAG || !S.dorrSkylt || S.julBilKom || S.julFirad || blickVantar) return; blickVantar = true;
+  tillbakablick('vadet', () => { setTimeout(() => prata('mamma', 'Det är du alltid.', 'STORY'), 400); return `<img src="intro/v5pack10a.webp" alt=""><span>”Det är du alltid.”</span>`; }, () => { S.julBilKom = true; blickVantar = false; sparaSnart(); regi.info('🚗 En bil svänger in vid grinden.', 'bra'); });
+}, 1000);
 /* inkorg 24b p.5: skylten med ditt namn på dörren */
 let dorrSkyltMesh = null;
 function ritaDorrSkylt() { if (!S.dorrSkylt) return; if (!dorrSkyltMesh) { dorrSkyltMesh = skylt(String(S.spelarNamn || 'Soptippsvägen 1').slice(0, 18), 0.7, 0.2); scen.add(dorrSkyltMesh); } dorrSkyltMesh.position.copy(julKrans.position).add(new THREE.Vector3(0, -0.5, 0)); dorrSkyltMesh.rotation.y = julKrans.rotation.y; if (S.flyttatIn) dorrSkyltMesh.position.x -= 0.02; else dorrSkyltMesh.position.z += 0.02; }
@@ -13222,7 +13369,7 @@ setInterval(() => { const v = S.dag >= 22 && !S.julFirad && !julPagar; if (v && 
 let julFam = null;
 function julGaster() {
   if (S.dag >= 22 && !S.julFirad && !S.julSms && ui.igang) { S.julSms = true; sparaSnart(); sms('mamma', 'Jag kommer kl 15 och hämtar dig. Pappa kör. Var redo.'); }   /* inkorg 24b p.5 */
-  const redo = S.dag >= 22 && !S.julFirad && !julPagar && !!S.dorrSkylt;   /* bilen kommer när skylten sitter uppe */
+  const redo = S.dag >= 22 && !S.julFirad && !julPagar && !!S.dorrSkylt && !!S.julBilKom;   /* A-088 §5: bilen kommer efter tillbakablicken kl 14:30 */   /* bilen kommer när skylten sitter uppe */
   if (!julFam) { julFam = [introFigur('mamma'), pappaGubbe.clone(), introFigur('bror')]; julFam.forEach((g, i) => { g.visible = false; g.position.set(PAPPA_GRIND.x - 1.2 + i * 1.1, 0, PAPPA_GRIND.z + 0.4); g.rotation.y = Math.PI; scen.add(g);
     interaktor.registrera(g, { text: () => g.visible ? '🎄 Ta emot mamma' : '', kanAktivera: () => g.visible, aktivera: () => { julFam.forEach((x) => { x.visible = false; }); julScen(); } }); }); }
   const syns = redo && !menyOppen();
@@ -13873,7 +14020,7 @@ function kapitelSlut() {
       <div class="ph-tel-kropp">${bild ? `<img class="ph-tel-bild" src="${bild}" alt="">` : ''}<div class="ph-tel-jag">Kolla här. Jag har det faktiskt rätt bra.</div><div class="ph-tel-svar"></div></div>
       <button class="fp-knapp" disabled>…</button></div>`;
     const svar = el.querySelector('.ph-tel-svar'), knapp = el.querySelector('button');
-    const MAMMA_SVAR = ['Mamma skriver…', ...MAMMA_SVAR_K1, mammaK1Slut()]; void ['Mamma skriver…', 'HAHA träplankor?!', 'Vad är det för skit? Du har ju inte ens TAPETER på väggarna.', 'Och var är badrummet?? Du duschar väl??', 'Pappa säger "aha, vad lugnt då". Pappa säger det om allt.', '…men gardinerna i fönstret var fina. Har du gjort dem själv? ❤️'];
+    const MAMMA_SVAR = ['Mamma skriver…', ...MAMMA_SVAR_K1, mammaK1Slut()]; void ['Mamma skriver…', 'Haha, träplankor?', 'Vad är det för skit? Du har ju inte ens tapeter på väggarna.', 'Och var är badrummet? Du duschar väl?', 'Pappa säger "aha, vad lugnt då". Pappa säger det om allt.', '…men gardinerna i fönstret var fina. Har du gjort dem själv? ❤️'];
     let i = 0;
     const nasta = () => {
       if (i === 0) { svar.innerHTML = '<div class="ph-tel-mamma"><span class="prickar"><span>.</span><span>.</span><span>.</span></span></div>'; i++; setTimeout(nasta, 1600); return; }
@@ -13889,7 +14036,7 @@ function kapitelSlut() {
     setTimeout(nasta, 1200);
     knapp.onclick = () => {
       el.remove(); blixt.remove(); tystna();
-      S.sms.push({ fran: 'mamma', text: 'HAHA träplankor?! Du har ju inte ens TAPETER på väggarna.' }); sparaSnart();
+      S.sms.push({ fran: 'mamma', text: 'Haha, träplankor? Du har ju inte ens tapeter på väggarna.' }); sparaSnart();
       pausad = false;
       ui.visaStart('📕 Kapitel 2: Ett riktigt hem', 'Mamma är inte imponerad. Än.<br><br>Nästa mål: <b>tapeter</b>, en egen <b>gamingbod</b> med RGB, gamer-inredning – och en <b>jacuzzi</b>. Visa henne.<br><br>Ali har nya ritningar – och <b>♾️ trimningar</b> som aldrig tar slut.', 'Kör!');
     };
@@ -16829,9 +16976,11 @@ if (ui) {
   regelvakt.regel('FAST I HANDEN', () => { if (!ui.igang) return []; const t = valdTyp(); return t && fastIHanden(t) ? [`${t} i handen har ingen plats och kan inte monteras`] : []; });   /* A-071 */
   regelvakt.regel('DUBBEL KVITTENS', () => dubbelKvittens.slice(-5), { enGang: true });   /* A-065 lager 2 */
   regelvakt.regel('KÖ FÖRE KVITTENS', () => koForeKvittens.slice(-5), { enGang: true });   /* A-065 lager 2 */
+  regelvakt.regel('KAPITEL UTAN MEN', () => { if (kapMenKollad) return []; kapMenKollad = true; const ut = []; for (const [d, rad] of Object.entries(KAPITEL_MEN)) if (KVALL_KROK[d - 1] !== rad) ut.push(`dag ${d}: kvällen slutar med "${KVALL_KROK[d - 1]}"`); return ut; });   /* A-088 §2 */
+  regelvakt.regel('RÖD TRÅD', () => { const ut = []; const R = S.rodTrad; if (!R) return ut; for (const [id] of ROD_TRAD) { const m = R.mot[id]; if (m && !R.skriven[id] && S.dag > m + 4 && !rodTradFlaggad.has(id)) { rodTradFlaggad.add(id); ut.push(`${id} hittade hit dag ${m} men har ingen rad i dagboken`); } } return ut; });   /* A-088 §1 */
   regelvakt.regel('ÅRSTID', () => { const ut = []; for (const e of TEXTLOGG) { if (e.t <= arstidFran) continue; const x = String(e.text || ''); if (/\b(sommar|höst)/i.test(x) && !/sommaren \d{4}/i.test(x) && e.kalla !== 'brott') ut.push(`${e.vem || e.kalla}: "${x.slice(0, 60)}"`); } arstidFran = TEXTLOGG[TEXTLOGG.length - 1]?.t ?? arstidFran; return ut.slice(0, 3); });   /* inkorg 24c p.1: en dag är en dag, december */
   regelvakt.regel('SNÖ', () => { const ut = []; for (const e of TEXTLOGG) { if (e.t <= snoFran) continue; const x = String(e.text || ''); if (/\bsnö(a|ar|n|fall|gubbe)?\b|\bfrost/i.test(x) && e.kalla !== 'brott') ut.push(`${e.vem || e.kalla}: "${x.slice(0, 60)}"`); } snoFran = TEXTLOGG[TEXTLOGG.length - 1]?.t ?? snoFran; if (miljo.snoSyns?.()) ut.push('snöfall syns i världen'); return ut.slice(0, 3); });   /* inkorg 24b p.1: grön jul i södra Sverige */
-  regelvakt.regel('OCH SEN', () => { if (!ui.igang || S.dag > 5 || S.steg >= STEG.length || ochSenSett.has(S.steg)) return []; ochSenSett.add(S.steg); const k = STORYKEDJA()[S.steg]; return k && !k.forDu ? [`"${rens(String(stegText(STEG[S.steg]) || '')).slice(0, 50)}" (${k.id}) har ingen men/därför i STORYKEDJA`] : []; });   /* inkorg 24 p.4 */
+  regelvakt.regel('OCH SEN', () => { if (!ui.igang || S.dag > JULAFTON_DAG || S.steg >= STEG.length || ochSenSett.has(S.steg)) return []; ochSenSett.add(S.steg); const k = STORYKEDJA()[S.steg]; return k && !k.forDu ? [`"${rens(String(stegText(STEG[S.steg]) || '')).slice(0, 50)}" (${k.id}) har ingen men/därför i STORYKEDJA`] : []; });   /* inkorg 24 p.4 */
   regelvakt.regel('OREGISTRERAT MÅL', () => { if (!ui.igang || S.steg >= STEG.length) return []; const st = STEG[S.steg]; return st && !STORYKEDJA_ID().has(storyId(S.steg)) ? [`"${rens(String(stegText(st) || '')).slice(0, 50)}" saknar id i STORYKEDJA`] : []; });   /* A-065 lager 2 */
   regelvakt.regel('SPÖKE', () => spokeFynd.slice(-5), { enGang: true });   /* A-063 */
   regelvakt.regel('FEL BYGGEFFEKT', () => felByggeffekt.slice(-5), { enGang: true });   /* A-063 */

@@ -1,6 +1,6 @@
 # Träffytor – inkorg 21
 
-*2026-11-20 10:09 · `verktyg/test-a076t.mjs` · från 2 m, 10° fel åt vänster, höger, upp och ner. "tom" = tom hand, "bär" = en sak som går att ställa ut i handen. "–" = saken finns inte eller går inte att klicka i det läget. "stor sak" = större än 3,5 m, själva modellen är träffytan.*
+*2026-11-20 17:39 · `verktyg/test-a076t.mjs` · från 2 m, 10° fel åt vänster, höger, upp och ner. "tom" = tom hand, "bär" = en sak som går att ställa ut i handen. "–" = saken finns inte eller går inte att klicka i det läget. "stor sak" = större än 3,5 m, själva modellen är träffytan.*
 
 | Sak | Träffyta | nytt spel · tom | nytt spel · bär | efter omladdning · tom | efter omladdning · bär | dag 1 · tom | dag 1 · bär | dag 2 · tom | dag 2 · bär | dag 3 · tom | dag 3 · bär | dag 4 · tom | dag 4 · bär | dag 5 · tom | dag 5 · bär |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -18,8 +18,9 @@
 | Fastpressad. Den sitter som i betong. | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja |
 | Först skylten. | ja | ja | ja | ja | ja | – | – | – | – | – | – | – | – | – | – |
 | Gå fram till Alis disk – köp och sälj | stor sak | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja |
-| Igensvetsad. Någon ville verkligen inte in h | stor sak | ja | ja | – | – | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja |
-| Igensvetsad. Någon ville verkligen inte in h | stor sak | – | – | ja | ja | – | – | – | – | – | – | – | – | – | – |
+| Igensvetsad. Någon ville verkligen inte in h | stor sak | ja | ja | ja | ja | – | – | – | – | – | – | ja | ja | – | – |
+| Igensvetsad. Någon ville verkligen inte in h | stor sak | – | – | – | – | ja | ja | ja | ja | – | – | – | – | ja | ja |
+| Igensvetsad. Någon ville verkligen inte in h | stor sak | – | – | – | – | – | – | – | – | ja | ja | – | – | – | – |
 | Kvarnen · tratten: 11/12 · sophållaren: 0/60 | stor sak | – | – | – | – | – | – | – | – | – | – | – | – | ja¹ | ja¹ |
 | Kvarnen pressar ut plasten som en tråd · rul | ja | – | – | – | – | – | – | ja¹ | ja¹ | ja¹ | ja¹ | ja¹ | ja¹ | ja¹ | ja¹ |
 | Lägg i tratten (4 st ≈ 1,1 rullar) | stor sak | – | – | – | – | – | – | ja¹ | ja¹ | ja | ja | ja | ja | – | – |
@@ -41,6 +42,6 @@
 | Ta filamentrullen (1 rulle klar) | ja | – | – | – | – | – | – | ja¹ | ja¹ | ja¹ | ja¹ | ja¹ | ja¹ | ja¹ | ja¹ |
 | Öppna postlådan – Rolf har lämnat: 250 kr +  | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja | ja |
 
-**Summa:** 36 saker · missar 0 · skymda från alla håll 0 · utan träffyta 0 · utan text i pekrutan 0 · SAK UTAN TRÄFFYTA 0
+**Summa:** 37 saker · missar 0 · skymda från alla håll 0 · utan träffyta 0 · utan text i pekrutan 0 · SAK UTAN TRÄFFYTA 0
 
 ¹ Vid något av felen tar siktet det som står på eller sitter i saken (samma plats): Arbetsbord (det står något på den) → Printa · 1,1 rullar · Arbetsbord (det står något på den) → Printa · 1 rulle · Kvarnen · tratten: 11/12 · sophållaren: 0/60 → 🗑️ Sophållaren: 0/60 skräp · tom – töm skrä · Kvarnen pressar ut plasten som en tråd · rul → Ta filamentrullen (1 rulle klar) · Lägg i tratten (4 st ≈ 1,1 rullar) → ✋ Klicka och håll – veva · 6 kvar i tratten · Ta filamentrullen (1 rulle klar) → Kvarnen pressar ut plasten som en tråd · rul
