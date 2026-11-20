@@ -41,6 +41,7 @@ await H(() => { const h = window.__printahem, S = h.S; S.cykelStar = true; h.rit
 await p.waitForTimeout(3500);
 ut.push(['båda står → generatorn monteras (cykeln ombyggd)', await H(() => !!window.__printahem.S.cykelOmbyggd)]);
 // 4. kvarnens kontur före och efter
+await H(() => { window.__printahem.S.kvarnKopt = true; });   /* sedan A-076 kommer kvarnen från Ali (giKvarn sätter kvarnKopt) – konturen visas först då */
 await p.waitForTimeout(800); k = await kontur(); ut.push([`kvarnens kontur före: ${k}`, /kvarn/.test(k)]);
 await bild('kvarn-fore', [k0.kvarn[0] + 4, k0.kvarn[2] + 3], [k0.kvarn[0], k0.kvarn[2], 0.6]);
 await H(() => { const h = window.__printahem, S = h.S; S.kvarnKopt = true; S.kvarnStar = true; h.ritaStart(); });
