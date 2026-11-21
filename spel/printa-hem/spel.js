@@ -1868,7 +1868,7 @@ function spikaSkylt() {
     if (!S.hammareGiven) { S.hammareGiven = true; laggTill('hammare'); }   /* gamla sparfiler: hammaren hamnar i raden efter skylten */
   });
 }
-interaktor.registrera(bradhog, { text: () => (kanNu('spika').ja ? 'Spika ihop en skylt av brädorna vid vägen – det här är MITT' : kanNu('spika').skal), aktivera: () => { const svar = kanNu('spika'); if (!svar.ja) { visaNej(svar); return; } spikaSkylt(); } });   /* A-076 tillägg 12:25: skylten kräver hammaren i handen */
+interaktor.registrera(bradhog, { text: () => (kanNu('spika').ja || antalInv('hammare') ? 'Spika ihop en skylt av brädorna vid vägen – det här är MITT' : kanNu('spika').skal), aktivera: () => { if (!kanNu('spika').ja && antalInv('hammare')) valjTyp('hammare');   /* inkorg 41: klicket tar fram hammaren – skräpet i famnen ligger kvar */ const svar = kanNu('spika'); if (!svar.ja) { visaNej(svar); return; } if (valdTyp() !== 'hammare') regelvakt.brott('FEL I HANDEN', `spikar utan hammaren synlig (${valdTyp() || 'handen'})`); spikaSkylt(); } });   /* A-076 tillägg 12:25: skylten kräver hammaren i handen */
 
 // kvarnen (plast → filament)
 const plastFargerTidig = [0x7fc8f8, 0x6ad48a, 0xf5f5f5];
@@ -3159,7 +3159,7 @@ function plockaSkrap(s, tyst = false) {
     S.karraLast.push(s.userData.variant ?? 0); ritaKarraLast(); ljudH('plock');
     S.stat.plockat++; sparaSnart(); return;
   }
-  if (!skrapLage()) { if (tyst) return; byt(0); }
+  if (!skrapLage()) { if (tyst) return; const forra = valdTyp(); byt(0); if (forra === 'hammare' && !S.hammareVantar) { S.hammareVantar = true; tanke('Hammaren får vänta.', 'inkorg 41: klicket på skräp tar fram handen', 'REAKTION'); } }   /* inkorg 41: det som syns i bild är det som används */
   hand.kapacitet = BARA_SKRAP[niva()];
   if (hand.full) { if (!tyst) { if (!S.kvarnStar && niva() === 0) { if (!enGang(HANDER_T, 'DT: händerna fulla före kvarnen')) ljudH('fel'); } else varna(niva() === 0 ? 'enHand' : 'full'); } return; }
   helenArkiv(s);
@@ -3167,6 +3167,7 @@ function plockaSkrap(s, tyst = false) {
   skrapLista.splice(skrapLista.indexOf(s), 1);
   if (paTippen(s.position.x, s.position.z)) S.stat.tipp++;
   if (s.userData.tung) S.stat.tunga = (S.stat.tunga || 0) + 1;
+  if (!skrapLage() || tomhant) regelvakt.brott('FEL I HANDEN', `plockar skräp med ${valdTyp() || 'tom hand'} i bild`);   /* inkorg 41 */
   hand.plocka(s); ljud.plock();
   S.stat.plockat++; sparaSnart(); plockPop(s.userData.gram);
 }
@@ -9745,7 +9746,7 @@ const ui = new FpUI({
     if (bodSpoke.visible) { byggBodHar(); return; }
     if (VAROR[valdTyp()]?.tapet != null) { tapetsera(valdTyp()); return; }
     if (valdKarra() && (!interaktor.hovrad || interaktor.hovrad.userData.typ === 'skrap') && (karraKand || skrapLista.some((x) => Math.hypot(x.position.x - spelare.pos.x, x.position.z - spelare.pos.z) < 4))) { karraKlick(); return; }   // CJ
-    if (valdTyp() === 'hammare' && interaktor.hovrad !== bradhog) svingaHammare();   /* inkorg 10b: med hammaren ger ett klick alltid ett slag – brädorna har sin egen spikning */
+    if (valdTyp() === 'hammare' && interaktor.hovrad !== bradhog && interaktor.hovrad?.userData.typ !== 'skrap') svingaHammare();   /* inkorg 41: klick på skräp tar fram handen i stället för att slå */   /* inkorg 10b: med hammaren ger ett klick alltid ett slag – brädorna har sin egen spikning */
     if (interaktor.hovrad && !(spoke.grupp?.visible && spoke.bord && paBord(valdTyp()))) { interaktor.aktivera(); return; }
     if (valdTyp() === 'hammare') return;   /* A-076 tillägg 11:45: hammaren slår för skojs skull */
     if (valdTyp() === 'cykelS') { ljudH('fel'); if (!enGang(CYKEL_HAR_T, 'A-068: cykeln någon annanstans')) regi.info(CYKEL_HAR_T, 'fel'); return; }   /* A-068 */
@@ -17314,7 +17315,7 @@ function kHjalpPekRuta() {   /* pilen pekar på rutan i verktygsraden när hjule
   const k = kHjalpAktiv?.id === 'rullaTill' ? kedjaNu() : null, i = k?.fattas === 'vald' ? S.hotbar.findIndex((x) => x?.typ === k.sak) : -1;
   for (const el of document.querySelectorAll('.ph-hotbar [data-i]')) el.classList.toggle('ph-pekas', +el.dataset.i === i);
 }
-{ const st = document.createElement('style'); st.textContent = '.ph-hotbar .ph-pekas{outline:3px solid #ffd84a;outline-offset:1px;position:relative}.ph-hotbar .ph-pekas::after{content:"▼";position:absolute;left:50%;top:-30px;transform:translateX(-50%);color:#ffd84a;font:900 22px system-ui;text-shadow:0 1px 3px #000;animation:phPek .7s ease-in-out infinite alternate}@keyframes phPek{from{top:-34px}to{top:-24px}}'; document.head.appendChild(st); }
+{ const st = document.createElement('style'); st.textContent = '.ph-hotbar .ph-pekas{position:relative}.ph-hotbar .ph-pekas::after{content:"▼";position:absolute;left:50%;top:-30px;transform:translateX(-50%);color:#ffd84a;font:900 22px system-ui;text-shadow:0 1px 3px #000;animation:phPek .7s ease-in-out infinite alternate}@keyframes phPek{from{top:-34px}to{top:-24px}}'; document.head.appendChild(st); }
 setInterval(kHjalpTick, 200);
 window.__slang = () => ({ tornPunkt, slangMax, slangAvst, slangNar, kopplad, matarSlang, slangar, gammal, uppdateraSlangar, skrivarText });   /* testkrok: inkorg 10f */
 window.__kHjalp = () => ({ akt: kHjalpAktiv?.id || null, el: !!kHjalpEl?.isConnected, ko: hjalpIKo.sedan ? hjalpIKo.text : '', lista: KONTROLL_HJALP.filter((k) => { try { return (k.kedja || k.upprepa) && k.nar() && !k.klar(); } catch { return false; } }).map((k) => k.id + (kHjalpKlar(k.id) ? '(klar)' : '')) });   /* testkrok: kontrollhjälpens läge */
