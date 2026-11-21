@@ -30,11 +30,14 @@ await p.screenshot({ path: dir + 'stormen.png' });
 await p.evaluate(() => { const P = window.__printahem, S = P.S; S.dag = 22; S.julFirad = false; S.dorrSkylt = false; S.skyltTand = false; S.julSms = false; S.steg = P.STEG ? P.STEG.findIndex((x) => x.id === 'm22-tand-skylten') : S.steg; });
 await p.waitForTimeout(3500);
 const j0 = 0;
-const j1 = await p.evaluate(() => { const P = window.__printahem; const k = P.interaktor.mal.find((o) => /Sätt upp skylten med ditt namn/.test((() => { try { return String(o.userData.interaktion?.text?.(o) || ''); } catch { return ''; } })())); const t = k ? k.userData.interaktion.text() : ''; if (k) k.userData.interaktion.aktivera(); const L = P.textLogg(); return { t, sms: (L.find((e) => /kl 15/.test(String(e.text))) || {}).text || '', dorr: !!P.S.dorrSkylt }; });
+/* A-092 §1: som en spelare – följ pilen, sikta på det den pekar på och klicka */
+const j1 = await p.evaluate(() => { const P = window.__printahem, I = P.interaktorObj(), sp = P.spelare, V = sp.pos.constructor; const m = P.malPunkt(); if (!m) return { t: '', fel: 'ingen pil' };
+  let t = ''; for (let i = 0; i < 16 && !t; i++) { const v = i * Math.PI / 8, x = m.x + Math.sin(v) * 2, z = m.z + Math.cos(v) * 2; sp.pos.set(x, sp.pos.y, z); sp.yaw = Math.atan2(-(m.x - x), -(m.z - z)); sp.pitch = Math.atan2(m.y - 1.6, 2); P.kameraObj().position.set(x, 1.6, z); P.kameraObj().rotation.set(sp.pitch, sp.yaw, 0, 'YXZ'); P.kameraObj().updateMatrixWorld(true); P.uppdateraSikte(); t = I.text; }
+  if (/Sätt upp skylten/.test(t)) I.aktivera(); const L = P.textLogg(); return { t, pil: m.toArray().map((x) => +x.toFixed(1)), sms: (L.find((e) => /kl 15/.test(String(e.text))) || {}).text || '', dorr: !!P.S.dorrSkylt }; });
 for (let i = 0; i < 40 && !(await p.evaluate(() => !!window.__printahem.S.julBilKom)); i++) await p.waitForTimeout(500);
 await p.waitForTimeout(2500);
 const j2 = await p.evaluate(() => { const P = window.__printahem; const g = P.interaktor.mal.find((o) => o.visible && /Ta emot mamma/.test((() => { try { return String(o.userData.interaktion?.text?.(o) || ''); } catch { return ''; } })())); if (g) g.userData.interaktion.aktivera(); return !!g; });
-ut.push([`julafton: pekrutan "${j1.t}", mammas sms "${j1.sms}", skylten sitter ${j1.dorr}, mamma vid grinden ${j2}`, /Sätt upp skylten/.test(j1.t) && /kl 15/.test(j1.sms) && j1.dorr && j2]);
+ut.push([`julafton: pilen ${JSON.stringify(j1.pil)} → pekrutan "${j1.t}", mammas sms "${j1.sms}", skylten sitter ${j1.dorr}, mamma vid grinden ${j2}`, /Sätt upp skylten/.test(j1.t) && /kl 15/.test(j1.sms) && j1.dorr && j2]);
 for (let i = 0; i < 60 && await p.evaluate(() => !!document.querySelector('.ph-jul')); i++) { await p.keyboard.press('Enter'); await p.waitForTimeout(250); }
 await p.waitForTimeout(9000);
 for (let i = 0; i < 10 && await p.evaluate(() => !!document.querySelector('.ph-dagbokkort')); i++) { await p.screenshot({ path: dir + 'julklappen.png' }); await p.keyboard.press('Enter'); await p.waitForTimeout(500); }

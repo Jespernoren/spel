@@ -286,7 +286,7 @@
     if (sk.klar) await taUt(sk);
     const delar = val.maskin ? (H.MASKINER[val.maskin].delar || 1) : 1;
     const gram = (val.maskin ? H.MASKINER[val.maskin].gram : H.VAROR[val.typ].gram) * delar;
-    if (gram > 2000) for (const x of H.skrivare) if (x !== sk) x.upprepaPa = false;   /* AX g34: en stor print (jacuzzin) svälter om de andra skrivarna autoprintar samtidigt */
+    if (gram > 2000 || val.maskin) for (const x of H.skrivare) if (x !== sk) x.upprepaPa = false;   /* AX g34: en stor print (jacuzzin) svälter om de andra skrivarna autoprintar samtidigt – A-092: en byggsats också (krukorna åt upp all blå plast dag 17 när tippen var tom) */
     if (!(await filament(sk, Math.min(gram, 1000 * 2)))) return false;   // rullhållaren tar 3 hela rullar – en halv rulle kvar räcker inte för en till
     await gaTill(sk.mesh, 1.4, 'skrivaren'); await vanta(MENY_TID);
     const r = H.startaJobb(sk, val); if (!r) { handling(`kunde inte starta ${namn}`); return false; }
@@ -562,6 +562,9 @@
       const t = H.nastaInred(); if (t?.startsWith('byggsats:')) { await bygg(t.split(':')[1]); return; } await tjana(S.mynt + 300, 'värmen'); return; }
     if (/^Bli folkbokförd/.test(txt)) { await gaTill(H.markTavla, 1.8, 'tavlan vid vägen'); if (H.kanFolkbokfora()) { H.folkbokfor(); handling('blir folkbokförd'); } else await tjana(S.mynt + 500, 'folkbokföringen'); await vanta(2); return; }
     if (/^Printa julbordet/.test(txt)) { await kopRecept('julbord'); await printa({ typ: 'julbord' }); return; }
+    /* A-092 §1: julafton – skylten med namnet sitter på dörren (följ pilen), sedan tar man emot mamma vid grinden */
+    if (/^Skylten med mitt namn/.test(txt)) { await klick(H.julKrans, 'dörren (namnskylten)', 1.6); await vanta(3); return; }
+    if (/^Ta emot mamma/.test(txt)) { const txtAv = (o) => { try { const t = o.userData.interaktion?.text; return String(typeof t === 'function' ? t(o) : t || ''); } catch { return ''; } }; const g = H.interaktor.mal.find((o) => o.visible && /Ta emot mamma/.test(txtAv(o))); if (g) await klick(g, 'mamma vid grinden', 1.8); await vanta(3); for (let i = 0; i < 40 && !S.julFirad; i++) { await stangPopups(); await vanta(3); } return; }
     if (/^Tänd skylten vid vägen/.test(txt)) { await klick(H.adressSkylt, 'skylten vid vägen', 1.8); await vanta(2); return; }
     if (/^Öppna dörren – gästerna kommer/.test(txt)) { await klick(H.julKrans, 'kransen på dörren', 1.6); await vanta(3); for (let i = 0; i < 40 && !S.julFirad; i++) { await stangPopups(); await vanta(3); } return; }
     handling(`vet inte vad jag ska göra: "${txt}"`); await vanta(5);

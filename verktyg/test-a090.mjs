@@ -12,7 +12,7 @@ await p.addInitScript((spar) => { if (!sessionStorage.getItem('t')) { sessionSto
 await p.goto(url); await p.waitForTimeout(6000);
 await p.waitForFunction(() => window.__startaSpel && document.querySelector('.br-starta'), null, { timeout: 8000 }).then(() => p.evaluate(() => window.__startaSpel())).catch(() => {});
 await p.waitForTimeout(4000);
-const mont = ['matarband', 'turbomotor', 'jetmotor', 'petgtorn', 'petgcontainer', 'hardkniv', 'diamantkniv', 'stortratt', 'kolfslang', 'kolfband', 'helenskjul', 'gamingbod', 'kvarnmotor', 'vindsnurra', 'rullstall'];
+const mont = ['matarband', 'turbomotor', 'jetmotor', 'petgtorn', 'petgcontainer', 'hardkniv', 'diamantkniv', 'stortratt', 'kolfslang', 'kolfband', 'helenskjul', 'gamingbod', 'kvarnmotor', 'vindsnurra', 'rullstall', 'magnet'];
 const fast = await p.evaluate((m) => m.filter((x) => window.__printahem.fastIHanden('byggsats:' + x)), mont);
 ut.push([`byggsatser som monteras på en maskin är inte FAST I HANDEN (${fast.join(', ') || 'alla har en plats'})`, !fast.length]);
 ut.push([`inga 404 vid start (${saknas.join(', ') || 'inga'})`, !saknas.length]);
