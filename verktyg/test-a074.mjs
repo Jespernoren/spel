@@ -60,7 +60,7 @@ for (const s of [0, 9]) {
   await H((s) => window.__printahem.sattTippSteg(s, true), s);
   let ok = 0, fast = [];
   for (let i = 0; i < 8; i++) {
-    const a = i / 8 * Math.PI * 2 + 0.4,   /* förbi bommen vid infarten (den spärrar med flit) */ ute = [T.x + Math.cos(a) * 11.5, T.z + Math.sin(a) * 11.5], mal = [T.x + Math.cos(a) * 0.8, T.z + Math.sin(a) * 0.8];
+    const a = i / 8 * Math.PI * 2 + 0.4,   /* förbi bommen vid infarten (den spärrar med flit) */ ute = [T.x + Math.cos(a) * 7.3, T.z + Math.sin(a) * 7.3]   /* A-091: innanför staketet (det står på 8 m) */, mal = [T.x + Math.cos(a) * 0.8, T.z + Math.sin(a) * 0.8];
     const runt = s >= 6 && Math.hypot(ute[0] - (T.x - 4.2), ute[1] - (T.z + 0.8)) < 8;   /* husvagnen står fri från steg 6 och är ett hinder: gå runt den */
     if (runt) await ga(ute, [T.x - 3.5, T.z + 3.8]);
     const inn = runt ? await ga([T.x - 3.5, T.z + 3.8], mal) : await ga(ute, mal); const ut2 = await ga([inn.x, inn.z], ute);
@@ -69,8 +69,10 @@ for (const s of [0, 9]) {
   ut.push([`steg ${s}: in till mitten och ut igen i ${ok}/8 riktningar${fast.length ? ' – ' + fast.join('; ') : ''}`, ok === 8]);
 }
 // före nyckeln: tippen spärrar (ingen grind behövs)
-const spar = await H(() => { const P = window.__printahem; P.S.tippNyckel = false; const r = P.tippSparr(P.TIPP.x + 6, P.TIPP.z) && !P.tippSparr(P.TIPP.x + 12, P.TIPP.z); P.S.tippNyckel = true; return r; });
-ut.push(['före nyckeln spärrar berget, utanför är fritt', spar]);
+await H(() => { window.__printahem.S.tippNyckel = false; });
+const utanfor = []; for (const [dx, dz] of [[0, -1], [-1, 0], [0.3, 1]]) { const r = await ga([T.x + dx * 12, T.z + dz * 12], [T.x, T.z], 12); utanfor.push(Math.max(Math.abs(r.x - T.x), Math.abs(r.z - T.z))); }
+await H(() => { window.__printahem.S.tippNyckel = true; });
+ut.push([`A-091: före nyckeln stoppar staketet (${utanfor.map((d) => d.toFixed(1)).join(', ')} m från mitten, staketet på 8 m)`, utanfor.every((d) => d > 7.9)]);
 // lösa saker följer ytan vid varje sänkning
 const los = await H(async () => { const P = window.__printahem, fel = [];
   for (let s = 0; s <= 9; s++) { P.S.tippSteg = s; await new Promise((r) => setTimeout(r, 2400)); for (const k of P.skrapLista) { if (!P.paTippen(k.position.x, k.position.z) || k.userData.helen) continue; const y = P.tippHojd(k.position.x, k.position.z); if (Math.abs(k.position.y - y) > 0.4) fel.push(`steg ${s} ${k.userData.sort} ${k.position.y.toFixed(2)}/${y.toFixed(2)}`); } }

@@ -83,7 +83,7 @@ export class Interaktor {
       else if (k && k !== this.hovrad && this.#storlek(k) * 4 < storlek) this.hovrad = k;   // en liten sak i siktet går före en mycket större bakom/runt den
     }
     if (this.hovrad) {
-      this.ram.setFromObject(this.hovrad);
+      this.ram.setFromObject(this.ramFranTraff && this.hovrad.autoTraffYta ? this.hovrad.autoTraffYta : this.hovrad);   // ramFranTraff: ramen visar exakt var klicket når (den osynliga träffytan)
       this.ram.visible = !this.utanRam && !this.hovrad.userData.interaktion?.utanRam;   // utanRam: platsen visas på annat sätt (t.ex. en kontur), eller spelet har ingen ram alls
     } else {
       this.ram.visible = false;
