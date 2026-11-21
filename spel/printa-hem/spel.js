@@ -3112,7 +3112,7 @@ function startaTidtipp() {
     const forra = tidRekord(), nytt = !forra || sek < forra;
     if (nytt) { try { localStorage.setItem(TIDTIPP_NYCKEL, String(Math.round(sek))); } catch {} }
     S.tidRekord = Math.round(nytt ? sek : forra); sparaSnart();
-    tidtipp.el.remove(); tidtipp = null; ljudH('nytt-mal');
+    ljudH('nytt-mal'); tidtipp.el.remove(); tidtipp = null;   /* inkorg 56: tippen på tid är klar – ljudet hör till den */
     visaFirande(nytt ? 'Nytt rekord!' : 'Tippen på tid', tidText(sek), nytt && forra ? `Förra rekordet: ${tidText(forra)}` : `Rekord: ${tidText(S.tidRekord)}`, nytt);
   };
   tick();
@@ -10373,8 +10373,7 @@ function hudMatare(namn, niva, ikonFn, varde, andel) {
 }
 let tipsTill = 0, hudListaNyckel = '', hudSenastKlar = -1, hudForraText = '', hudForraSteg = S.steg, hudForraSkylt = !!S.skyltUppe;
 // klarat uppdrag: grönt, bock, konfetti – sedan stryks det och glider bort
-function firaUppdrag(text) {
-  spelaLjud('nytt-mal');
+function firaUppdrag(text) {   /* inkorg 56 (A-111): inget pling när en uppgift blir klar – bocken och raden som glider bort räcker */
   const mEl = malText.parentElement;
   const k = document.createElement('div'); k.className = 'hud-klarad';
   k.innerHTML = `<span class="b">✓</span><span class="t">${rens(text)}</span>`;
@@ -11189,6 +11188,7 @@ function laddaLjud() {
 addEventListener('pointerdown', laddaLjud, { once: true, capture: true }); addEventListener('keydown', laddaLjud, { once: true, capture: true });
 const senastLjud = {};
 function spelaLjud(n, vol = 1, rate = null) {
+  if (n === 'nytt-mal' && !tidtipp) try { regelvakt.brott('PLING UTAN HANDLING', 'nytt-mal utanför tidtippen'); } catch {}   /* inkorg 56 (A-111): korta ljud bara som svar på det du gör */
   const c = ljud.vakna(), b = ljudBuf[n]; if (!c || !b || !ljud.pa) return false;
   const nu = performance.now(); if (rate == null && nu - (senastLjud[n] || 0) < 60) return true; senastLjud[n] = nu;   // inte samma ljud flera gånger samma ögonblick
   const k = c.createBufferSource(), g = c.createGain(); k.buffer = b; g.gain.value = LJUDFILER[n] * vol; k.playbackRate.value = rate ?? (0.96 + Math.random() * 0.08);
@@ -12697,7 +12697,7 @@ const storHus = new THREE.Group();
     kanAktivera: () => storHus.visible,
     aktivera: () => {
       if (S.flyttatIn) { regi.info('Hemma.'); return; }
-      S.flyttatIn = true; delmal('inflytt'); konfetti(160); fanfar(); sparaSnart();
+      S.flyttatIn = true; delmal('inflytt'); konfetti(160); sparaSnart();   /* inkorg 56: fanfaren bara vid kapitelslut och jul */
       regi.info('🏡 Jag har flyttat in! Skjulet blir verkstad – jag bor i ett riktigt hus nu.', 'guld');
       paket([{ sms: ['mamma', 'Du har flyttat in i ett hus. Med trappa. Jag har köpt en dörrmatta. Det står "Välkommen" på den. Pappa ville att det skulle stå "Gå hem". Jag sa nej.'] }], { om: 5000 });
     },
@@ -12735,7 +12735,7 @@ function kollaPolett() {
 function folkbokfor() {
   if (!kanFolkbokfora()) return;
   S.mynt -= B.LAGFART; S.folkbokford = true; S.folkbokDag = S.dag; ui.stangButik(); sparaSnart();
-  delmal('folkbok'); konfetti(260); fanfar();
+  delmal('folkbok'); konfetti(260);   /* inkorg 56 */
   andraRespekt(30, 'Folkbokförd på Soptippsvägen 1');
   regi.info('📮 Jag är folkbokförd! Soptippsvägen 1 är min adress.', 'guld');
   setTimeout(() => konfetti(200), 5000);   // punkt BD: mammas brev kommer på julen (mammajul), inte här
@@ -13557,7 +13557,7 @@ document.head.appendChild(kapCss);
 /* A-062: fanfar och konfetti bara vid stora delmål. Varje delmål markeras här först; regelvakten flaggar FÖR TIDIG FANFAR annars. */
 const DELMAL = ['kapitel', 'tippen', 'inflytt', 'folkbok', 'jul'];
 let delmalNu = -1e9; const tidigFanfar = [];
-function delmal(id) { if (!DELMAL.includes(id)) console.warn('okänt delmål', id); delmalNu = performance.now(); (S.delmal ||= {})[id] = true; }
+let delmalId = ''; function delmal(id) { if (!DELMAL.includes(id)) console.warn('okänt delmål', id); delmalNu = performance.now(); delmalId = id; (S.delmal ||= {})[id] = true; }
 function fanfarKoll(vad) { if (performance.now() - delmalNu > 8000) tidigFanfar.push(`${vad} dag ${S.dag} utan delmål`); }
 function konfetti(n = 140) {
   fanfarKoll('konfetti');
@@ -13570,7 +13570,7 @@ function konfetti(n = 140) {
     document.body.appendChild(k); setTimeout(() => k.remove(), 6000);
   }
 }
-function fanfar() { fanfarKoll('fanfar'); if (ljudH('fanfar')) return; [523, 659, 784, 1046].forEach((f, i) => ton(f, 0.35, 0.09, 'triangle', i * 0.16)); ton(784, 0.7, 0.08, 'triangle', 0.7); ton(1046, 0.9, 0.09, 'triangle', 0.85); }
+function fanfar() { fanfarKoll('fanfar'); if (!['kapitel', 'jul'].includes(delmalId) || performance.now() - delmalNu > 8000) regelvakt.brott('PLING UTAN HANDLING', `fanfaren utan kapitelslut eller jul (${delmalId || 'inget delmål'})`);   /* inkorg 56 */ if (ljudH('fanfar')) return; [523, 659, 784, 1046].forEach((f, i) => ton(f, 0.35, 0.09, 'triangle', i * 0.16)); ton(784, 0.7, 0.08, 'triangle', 0.7); ton(1046, 0.9, 0.09, 'triangle', 0.85); }
 // ---------- Kapitlen: varje kapitel slutar med en belöning och börjar med ett kapitelkort ----------
 function kapitelBorjar(k) {
   if (k === 3) {   // kapitel 2 klart: Rolfs jukebox + pengar
@@ -14659,7 +14659,7 @@ function uppdateraKameraAk() {
 const TIPP_SVEP_T = '…Det här räcker i hundra år.';
 function tippSvep() {
   const V = (x, y, z) => new THREE.Vector3(x, y, z), T = TIPP;
-  delmal('tippen'); konfetti(120); fanfar();
+  delmal('tippen'); konfetti(120);   /* inkorg 56 */
   startaKameraAk([
     { t: 0, pos: V(T.x + 9, 3.2, T.z + 9), mot: V(T.x, 1, T.z) },
     { t: 1.5, pos: V(T.x + 4, 5, T.z + 10), mot: V(T.x - 2, 0.5, T.z - 2) },
@@ -17992,7 +17992,7 @@ function dnKlarAnim(u, forra, forraBild, gammalHtml) {   /* A-076 tillägg 13:20
   try {
         const r0 = u.getBoundingClientRect(), kl = u.cloneNode(true); if (gammalHtml) kl.innerHTML = gammalHtml; kl.classList.add('dn-klar-kopia'); Object.assign(kl.style, { position: 'fixed', left: r0.left + 'px', top: r0.top + 'px', width: r0.width + 'px', height: r0.height + 'px', margin: 0, zIndex: 24 });
         kl.querySelector('.nu') && (kl.querySelector('.nu').textContent = 'KLART!'); kl.querySelector('.bild')?.insertAdjacentHTML('beforeend', '<b class="dn-stor-bock">✓</b>'); kl.querySelector('.tips') && (kl.querySelector('.tips').textContent = ''); kl.querySelector('.nasta-hjalp')?.remove();
-        document.body.appendChild(kl); try { ljud.klar?.(); } catch {}
+        document.body.appendChild(kl);   /* inkorg 56: inget pling när målet är klart */
         const mal = dnTopp.querySelector('.dn-mal').getBoundingClientRect();
         setTimeout(() => { kl.style.transition = 'transform .5s ease-in, opacity .5s ease-in'; kl.style.transformOrigin = 'left center'; kl.style.transform = `translate(${(mal.right || r0.left) - r0.left}px, ${(mal.top || r0.top) - r0.top}px) scale(.08)`; kl.style.opacity = '0.2'; }, 650);
         setTimeout(() => { kl.remove(); S.dagBockar.lista.push({ text: forra, bild: forraBild }); dnC.mal = null; sparaSnart(); }, 1200);
