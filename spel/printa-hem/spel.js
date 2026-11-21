@@ -10024,6 +10024,10 @@ css.textContent = `
 .ph-dagbokkort{background:#f6eedb;color:#2a2018;padding:22px 28px 22px;transform:rotate(-.6deg);width:min(560px,90vw)!important;max-width:none!important;box-sizing:border-box;text-align:left}.ph-dagbokkort .ph-las-klick{cursor:pointer}.ph-dagbokkort .ph-las-klick.pulsar{text-shadow:0 0 1px rgba(90,70,48,.35)}.ph-dk-luft{display:block;height:.55em}.ph-dagbokkort .ph-pap-text{margin-bottom:16px}.ph-dagbokkort .ph-pap-titel{opacity:.75;justify-content:flex-start}.ph-dagbokkort .ph-lasigen{border:0;background:rgba(0,0,0,.08);border-radius:999px;width:30px;height:30px;display:grid;place-items:center;cursor:pointer;color:#5a4630;padding:5px}.ph-dagbokkort .ph-lasigen svg{width:18px;height:18px}
 .ph-dk-rub{font:700 22px/1.3 "Bradley Hand","Segoe Print","Comic Sans MS",cursive;text-align:left;margin:2px 0 6px}.ph-dagbokkort .ph-pap-text{font:500 22px/1.5 "Bradley Hand","Segoe Print","Comic Sans MS",cursive}.ph-dk-extra{font:500 13px/1.45 system-ui;text-align:left;margin:-6px 0 14px;opacity:.75}.ph-dk-extra .br-rapport{display:block;background:none;color:#5a4630;padding:0;border:0;box-shadow:none}.ph-dk-extra .ali-vill{background:none;color:#5a4630;border:0;box-shadow:none;padding:0}.ph-kontroll[hidden]{display:none!important}
 .ph-dagbokkort .ph-fortsatt{display:block;margin:0 auto;background:#d8392b;color:#fff;letter-spacing:.06em;font-weight:900;min-width:180px}
+.ph-dk-a4{--dk-u:min(1vh,.5625vw);--dk-px:23;width:calc(var(--dk-u)*50)!important;height:calc(var(--dk-u)*70.7);min-height:calc(var(--dk-u)*70.7);padding:calc(var(--dk-u)*6.2) calc(var(--dk-u)*5) calc(var(--dk-u)*11)!important;position:relative;display:block;font:400 calc(var(--dk-u)*var(--dk-px)/7.2)/1.45 system-ui,-apple-system,"Segoe UI",sans-serif!important;border-radius:3px}
+.ph-dk-a4 .ph-dk-sida{cursor:pointer}.ph-dk-a4 .ph-dk-dag{white-space:nowrap;margin:0 0 1.45em}.ph-dk-a4 .ph-dk-dag b{font-weight:800}.ph-dk-a4 .ph-dk-rub{font:inherit;font-weight:400;margin:0 0 1.45em;text-align:left}.ph-dk-a4 .ph-pap-text{font:inherit!important;margin:0!important}.ph-dk-a4 .ph-dk-luft{height:.725em}.ph-dk-a4 .ph-dk-extra{font-size:.62em;margin:.8em 0 0}.ph-dk-a4 .ph-dk-extra *{color:#5a4630!important}
+.ph-dk-a4 .ph-fortsatt{position:absolute;left:50%;bottom:calc(var(--dk-u)*3.33);transform:translateX(-50%);margin:0;min-width:calc(var(--dk-u)*20)}
+.ph-dk-a4 .ph-dk-rost{top:calc(var(--dk-u)*2);right:calc(var(--dk-u)*2);width:calc(var(--dk-u)*4.6);height:calc(var(--dk-u)*4.6);padding:0;justify-content:center;background:rgba(0,0,0,.07);color:#5a4630}.ph-dk-a4 .ph-dk-rost svg{width:60%;height:60%}.ph-dk-a4 .ph-dk-rost.av{background:rgba(0,0,0,.07);color:#5a4630}
 .ph-pap-text{font:500 21px/1.5 "Comic Sans MS","Chalkboard SE","Segoe Print",system-ui,sans-serif;text-align:left;margin-bottom:18px;white-space:pre-line}
 @keyframes phIn{from{transform:scale(.8) translateY(40px);opacity:0}}
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:5;opacity:var(--skymning,0);background:radial-gradient(ellipse at center,transparent 45%,rgba(40,10,60,.55) 100%)}
@@ -11546,7 +11550,8 @@ document.body.appendChild(medEl2);
 const DAGBOK_MAX_MENINGAR = 2, DAGBOK_MAX_ORD = 25;
 const langDagbok = [], dagbokVisad = [];
 /* inkorg 10d: en tanke per rad (\n) och luft mellan tankarna (\n\n) */
-function dagbokMatt(k) { const cs = getComputedStyle(k), tx = k.querySelector('.ph-pap-text'), ti = k.querySelector('.ph-pap-titel'), kn = k.querySelector('.ph-fortsatt'); return { bredd: k.offsetWidth, marginal: parseFloat(cs.paddingLeft), textstorlek: parseFloat(getComputedStyle(tx).fontSize), radhojd: parseFloat(getComputedStyle(tx).lineHeight) || 0, rubrikrad: ti?.offsetHeight || 0, knappbredd: kn?.offsetWidth || 0, knapphojd: kn?.offsetHeight || 0 }; }   /* offset-mått: utan in-animationens skalning */
+function dagbokMatt(k) { if (k.classList.contains('ph-dk-a4')) { const kn = k.querySelector('.ph-fortsatt'), cs = getComputedStyle(k); return { bredd: k.offsetWidth, marginal: parseFloat(cs.paddingLeft), knappbredd: kn?.offsetWidth || 0, knapphojd: kn?.offsetHeight || 0 }; }   /* inkorg 35: A4-sidan – textstorleken får krympa 23 → 20 px och sidan växa därefter, så de jämförs inte */
+  const cs = getComputedStyle(k), tx = k.querySelector('.ph-pap-text'), ti = k.querySelector('.ph-pap-titel'), kn = k.querySelector('.ph-fortsatt'); return { bredd: k.offsetWidth, marginal: parseFloat(cs.paddingLeft), textstorlek: parseFloat(getComputedStyle(tx).fontSize), radhojd: parseFloat(getComputedStyle(tx).lineHeight) || 0, rubrikrad: ti?.offsetHeight || 0, knappbredd: kn?.offsetWidth || 0, knapphojd: kn?.offsetHeight || 0 }; }   /* offset-mått: utan in-animationens skalning */
 function dagbokRader(t) { return rens(String(t || '')).split(/\n\s*\n/).map((st) => st.split('\n').map((r) => r.trim()).join('<br>')).join('<span class="ph-dk-luft"></span>'); }
 /* inkorg 26 p.1: samma sak får inte stå i både rubriken och texten (t.ex. dagnumret två gånger) */
 function rubrikDubbel(rubrik, text) {
@@ -11564,6 +11569,32 @@ function dagbokKort(text, o = {}) {
   const m = { typ: 'dagbok', titel: 'Dagbok', text: t, rubrik: o.rubrik || '', id: o.id, kvitto: o.kvitto, efter: o.efter, extra: o.extra || '', vem: o.vem || 'du', morgon: !!o.morgon, lasIgen: !!o.lasIgen };
   if (o.forst || o.morgon || o.lasIgen) medKo.unshift(m); else medKo.push(m);
   if (medEl2.hidden) visaNastaMeddelande();
+}
+/* inkorg 35 (A-094): dagbokssidan är en egen stående A4-sida. Rad 1 "Dag N." i fetstil, rad 2 nedräkningen, tom rad,
+   rubriken (slutar med punkt), tom rad, texten. Samma sans-serif och storlek på all text. Högtalaren uppe till höger,
+   FORTSÄTT nere i mitten. Kapitelkortet (rubrik "KAPITEL …") behåller sitt gamla kort. */
+const DK_TYST = '<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 9.5a3.5 3.5 0 0 1 0 5M18.5 7a7 7 0 0 1 0 10" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".35"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';   /* överstruken högtalare = rösten av */
+const DK_TEXT_PX = 23, DK_MIN_PX = 20, DK_FYLL = 0.70;   // textstorlek på 1280×720, minsta storlek, största andel av sidans höjd
+function dagbokDelar(m) {
+  let text = String(m.text || '').trim(), dag = '', kvar = '';
+  const f = text.match(/^(Dag \d+\.|Julafton\.)[ \t]*([^\n]*)\n?/);
+  if (f) { dag = f[1]; const rest = f[2].replace(/^\d+ dag(ar)? till jul\.\s*/, '').trim(); text = (rest ? rest + '\n' : '') + text.slice(f[0].length).replace(/^\s*\n/, ''); }
+  else if (!m.lasIgen) dag = julRad(S.dag).match(/^(Dag \d+\.|Julafton\.)/)?.[1] || '';
+  const n = +(dag.match(/\d+/)?.[0] || 0); if (dag && n) kvar = julRad(n).replace(/^Dag \d+\.\s*/, '');
+  let rub = String(m.rubrik || '').trim(); if (rub && !/[.!?…]$/.test(rub)) rub += '.';
+  return { dag, kvar, rub, text: text.trim() };
+}
+function dagbokLasText(m) { if (/^KAPITEL /.test(m.rubrik || '')) return (m.rubrik ? m.rubrik + '. ' : '') + m.text.replace(/\s*\n+\s*/g, ' '); const d = dagbokDelar(m); return [d.dag, d.kvar, d.rub, d.text.replace(/\s*\n+\s*/g, ' ')].filter(Boolean).join(' '); }
+function dagbokHtml(m) {
+  if (/^KAPITEL /.test(m.rubrik || '')) return `<div class="ph-papper ph-dagbokkort"><div class="ph-pap-titel ph-las-klick" data-las-text="${lasEsc((m.rubrik ? m.rubrik + '. ' : '') + m.text.replace(/\s*\n+\s*/g, ' '))}" data-las-vem="${lasEsc(m.vem || 'du')}" title="Klicka för att höra sidan igen">${portratt(m.vem || 'du', 34)}<span>Dagbok</span></div>${m.rubrik ? `<div class="ph-dk-rub">${rens(m.rubrik)}</div>` : ''}<div class="ph-pap-text ph-las-klick" data-las-text="${lasEsc((m.rubrik ? m.rubrik + '. ' : '') + m.text.replace(/\s*\n+\s*/g, ' '))}" data-las-vem="${lasEsc(m.vem || 'du')}" title="Klicka för att höra sidan igen">${dagbokRader(m.text)}</div>${m.extra ? `<div class="ph-dk-extra">${m.extra}</div>` : ''}<button class="fp-knapp ph-fortsatt">FORTSÄTT</button></div>`;
+  const d = dagbokDelar(m), las = `data-las-text="${lasEsc(dagbokLasText(m))}" data-las-vem="${lasEsc(m.vem || 'du')}" title="Klicka för att höra sidan igen"`;
+  return `<div class="ph-papper ph-dagbokkort ph-dk-a4"><div class="ph-dk-sida ph-las-klick" ${las}>${d.dag ? `<div class="ph-dk-dag"><b>${rens(d.dag)}</b>${d.kvar ? `<br>${rens(d.kvar)}` : ''}</div>` : ''}${d.rub ? `<div class="ph-dk-rub">${rens(d.rub)}</div>` : ''}<div class="ph-pap-text">${dagbokRader(d.text)}</div>${m.extra ? `<div class="ph-dk-extra">${m.extra}</div>` : ''}</div><button class="fp-knapp ph-fortsatt">FORTSÄTT</button></div>`;
+}
+/* texten får fylla högst 70 % av sidan: krymp stegvis till 20 px (skalat) innan sidan får växa */
+function dagbokPassa(k) {
+  const sida = k?.querySelector('.ph-dk-sida'); if (!sida) return; const u = k.offsetHeight / 509;
+  for (let px = DK_TEXT_PX; px >= DK_MIN_PX; px -= 0.5) { k.style.setProperty('--dk-px', px); if (sida.scrollHeight <= k.offsetHeight * DK_FYLL + 1) return; }
+  k.style.minHeight = Math.ceil(sida.scrollHeight / DK_FYLL) + 'px'; void u;
 }
 function visaNastaMeddelande() {
   const m = medKo.shift(); if (!m) return;
@@ -11599,11 +11630,12 @@ function visaNastaMeddelande() {
         ${SMS_POOL.find((x) => x.id === m.id)?.svar && S.smsSvar?.[m.id] == null ? `<div class="ph-tel-svar">${SMS_POOL.find((x) => x.id === m.id).svar.map(([t], i) => `<button class="ph-svarknapp" data-svar="${i}" disabled>${t}</button>`).join('')}</div>` : ''}
         <button class="fp-knapp" disabled>Läst</button></div>`
     : m.typ === 'dagbok'
-      ? `<div class="ph-papper ph-dagbokkort"><div class="ph-pap-titel ph-las-klick" data-las-text="${lasEsc((m.rubrik ? m.rubrik + '. ' : '') + m.text.replace(/\s*\n+\s*/g, ' '))}" data-las-vem="${lasEsc(m.vem || 'du')}" title="Klicka för att höra sidan igen">${portratt(m.vem || 'du', 34)}<span>Dagbok</span></div>${m.rubrik ? `<div class="ph-dk-rub">${rens(m.rubrik)}</div>` : ''}<div class="ph-pap-text ph-las-klick" data-las-text="${lasEsc((m.rubrik ? m.rubrik + '. ' : '') + m.text.replace(/\s*\n+\s*/g, ' '))}" data-las-vem="${lasEsc(m.vem || 'du')}" title="Klicka för att höra sidan igen">${dagbokRader(m.text)}</div>${m.extra ? `<div class="ph-dk-extra">${m.extra}</div>` : ''}<button class="fp-knapp ph-fortsatt">FORTSÄTT</button></div>`
+      ? dagbokHtml(m)
       : `<div class="ph-papper"><div class="ph-pap-titel">${portratt(vemAvTitel(m.titel), 34)}<span>${rens(m.titel)}</span></div><div class="ph-pap-text">${rens(m.text)}</div><button class="fp-knapp">${m.knapp || 'Läst'}</button></div>`;
   medEl2.classList.toggle('dk', m.typ === 'dagbok'); medEl2._efter = m.efter || null; medEl2._lasIgen = !!m.lasIgen; medEl2._dagbok = m.typ === 'dagbok';
   if (m.typ === 'dagbok') { dagbokVisad.push({ t: performance.now(), morgon: m.morgon, text: m.text.slice(0, 60) }); textLogg('dagbokkort', m.vem || 'du', (m.rubrik ? m.rubrik + ' · ' : '') + m.text, 'A-076 14:22'); regiLogg('dagbok', 'story', m.vem || 'du', m.text.slice(0, 60), 0); }
   medEl2.hidden = false;
+  if (m.typ === 'dagbok') dagbokPassa(medEl2.querySelector('.ph-dk-a4'));
   const knapp = medEl2.querySelector('button.fp-knapp');
   if (sms2) {
     vibrera();
@@ -11620,12 +11652,13 @@ function visaNastaMeddelande() {
     }; });
   } else if (m.typ === 'dagbok') {
     try { introLjud3('penna'); } catch {}
-    const las = () => { tystna(); prata(m.vem || 'du', (m.rubrik ? m.rubrik + '. ' : '') + m.text, 'STORY', { direkt: true }); };
+    const las = () => { tystna(); prata(m.vem || 'du', dagbokLasText(m), 'STORY', { direkt: true }); };
     if (S.rost !== false) setTimeout(() => { if (!medEl2.hidden && medEl2._dagbok && !document.body.classList.contains('meny-oppen')) las(); }, 120);
   } else { ljud.plock(); prata(vemAvTitel(m.titel), m.text, 'STORY'); }
   // röst på/av – valet sparas och gäller alla meddelanden tills man klickar igen
   const ljudKnapp = document.createElement('button'); ljudKnapp.className = 'ph-rostknapp';
-  const ritaLjud = () => { const pa = S.rost !== false; ljudKnapp.innerHTML = `${pa ? IKON.rost : IKON.tyst}<span>${pa ? 'Röst på' : 'Tyst'}</span>`; ljudKnapp.title = pa ? 'Stäng av uppläsningen' : 'Slå på uppläsningen'; ljudKnapp.classList.toggle('av', !pa); };
+  const a4 = !!medEl2.querySelector('.ph-dk-a4'); if (a4) ljudKnapp.classList.add('ph-dk-rost');
+  const ritaLjud = () => { const pa = S.rost !== false; ljudKnapp.innerHTML = a4 ? (pa ? IKON.rost : DK_TYST) : `${pa ? IKON.rost : IKON.tyst}<span>${pa ? 'Röst på' : 'Tyst'}</span>`; ljudKnapp.title = pa ? 'Stäng av uppläsningen' : 'Slå på uppläsningen'; ljudKnapp.classList.toggle('av', !pa); };
   ljudKnapp.onclick = (e) => {
     e.stopPropagation();
     if (S.rost === false) { S.rost = true; if (performance.now() >= pratarTill) prata(sms2 ? m.fran : vemAvTitel(m.titel), m.text, 'STORY', { direkt: true }); } else { S.rost = false; tystna(); }   // B48: läses aldrig upp ovanpå sig själv
@@ -16970,7 +17003,7 @@ if (ui) {
   /* inkorg 10c: en knapp som ser klickbar ut måste gå att klicka – inte pointer-events:none och inte täckt av något annat */
   regelvakt.regel('DÖD KNAPP', () => {
     const tackt = (dodKnappTackt ||= new Map());
-    if (!ui.igang || pausad || !ui.overlay.hidden || !ui.butiksOverlay.hidden || !medEl2.hidden || [...document.querySelectorAll('.fp-overlay')].some((o) => !o.hidden && o.offsetParent) || sover || document.querySelector('.ph-fel, .ph-intro, .ph-intro3, .ph-kap, .ph-kapkort, .ph-jul, .ph-resa, .ph-natt, .ph-blick')) { tackt.clear(); return []; }   /* AX A-088: en helskärmsscen (kapitelslut, jul, resa) täcker HUD:en med flit – knappen är inte död */
+    if (!ui.igang || pausad || !ui.overlay.hidden || !ui.butiksOverlay.hidden || !medEl2.hidden || [...document.querySelectorAll('.fp-overlay')].some((o) => !o.hidden && o.offsetParent) || sover || document.querySelector('.ph-fel, .ph-intro, .ph-intro3, .ph-kap, .ph-kapkort, .ph-jul, .ph-resa, .ph-natt, .ph-blick, .ph-hurvar')) { tackt.clear(); return []; }   /* AX A-088: en helskärmsscen (kapitelslut, jul, resa) täcker HUD:en med flit – knappen är inte död */
     const ut = [], nu = performance.now(), sett = new Set();   /* täckt i mer än 3 s räknas – en notis som glider förbi gör inte knappen död */
     for (const el of document.querySelectorAll('.ph-lasupp, [data-hjalp], .ph-kontroll button, .dn-uppg button, .ph-notis button, .ph-dagbokkort button')) {
       const r = el.getBoundingClientRect(); if (!r.width || !r.height || !el.offsetParent) continue;
@@ -17027,7 +17060,7 @@ if (ui) {
   regelvakt.regel('SEN MORGONSIDA', () => { if (dagBorjadeT == null) return []; const v = dagbokVisad.find((x) => x.morgon && x.t >= dagBorjadeT - 5); const nu = performance.now(); if (v) { const d = v.t - dagBorjadeT; dagBorjadeT = null; return d > 500 ? [`morgonsidan kom ${Math.round(d)} ms efter att dagen började`] : []; } if (nu - dagBorjadeT > 500) { dagBorjadeT = null; return ['morgonsidan kom inte när dagen började']; } return []; });   /* A-076 tillägg 15:40 */
   let dagbokMattRef = null;
   regelvakt.regel('ANNAN DAGBOKSLAYOUT', () => { const ut = []; for (const el of document.querySelectorAll('.ph-dagnotis, .ph-dag1, .ph-papper:not(.ph-dagbokkort)')) { if (el.offsetParent === null && !el.closest('.ph-med:not([hidden])')) continue; if (/Dagbok|📔/.test(el.querySelector('.ph-pap-titel, .rub')?.textContent || el.textContent.slice(0, 40))) ut.push('dagbokstext utanför dagbokskortet: ' + el.textContent.trim().slice(0, 50)); }
-    { const k = document.querySelector('.ph-med:not([hidden]) .ph-dagbokkort'); if (k) { const m = dagbokMatt(k); dagbokMattRef ||= m; for (const [n, v] of Object.entries(m)) if (Math.abs(v - dagbokMattRef[n]) > 2) ut.push(`dagbokskortet har annan ${n}: ${Math.round(v)} mot ${Math.round(dagbokMattRef[n])}`); } }   /* inkorg 10d: jämför måtten, inte bara att komponenten används */
+    { const k = document.querySelector('.ph-med:not([hidden]) .ph-dk-a4'); if (k) { const m = dagbokMatt(k); dagbokMattRef ||= m; for (const [n, v] of Object.entries(m)) if (Math.abs(v - dagbokMattRef[n]) > 2) ut.push(`dagbokskortet har annan ${n}: ${Math.round(v)} mot ${Math.round(dagbokMattRef[n])}`); } }   /* inkorg 10d: jämför måtten, inte bara att komponenten används */
     return ut.slice(0, 2); });   /* A-076 tillägg 14:22 */
   regelvakt.regel('RITNING PÅ BYGGD SAK', () => { const ut = [], b = new THREE.Box3(), c = new THREE.Vector3(), c2 = new THREE.Vector3(), s1 = new THREE.Vector3(), s2 = new THREE.Vector3(); const synlig = (o) => { for (let x = o; x; x = x.parent) if (!x.visible) return false; return true; };
     for (const r of scen.children) { if (r.name !== 'ritning' && r.name !== 'siktKontur') continue; if (!synlig(r) || r.userData.tonar) continue;   /* A-092: ritningen som tonar bort medan saken printas fram ur den är effekten, inte en kvarglömd ritning */ b.setFromObject(r); if (b.isEmpty()) continue; b.getCenter(c); b.getSize(s1);
