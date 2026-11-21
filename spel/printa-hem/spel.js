@@ -672,6 +672,15 @@ const STEG_TAL_SPARA = {
 };
 const nasta0 = (i) => STEG[i];
 /* A-092 §3: varifrån pengarna kommer, per dag (S.inkDag[dag][källa]) – boten och ekonomi-rapporten läser den */
+/* inkorg 35 tillägg 10:05: dagens printar per sort, till nattskärmens kort */
+function printDagLogg(typ) { const d = (S.printDag ||= {}), r = (d[S.dag] ||= {}); r[typ] = (r[typ] || 0) + 1; }
+const NATT_KORT_RADER = 6, NATT_KORT_EXTRA_MS = 2400;   // högst 6 sorter, nattskärmen står 2,4 s längre när kortet visas
+function dagensPrintarHtml(dag) {
+  const p = Object.entries(S.printDag?.[dag] || {}).sort((a, b) => b[1] - a[1]), tot = p.reduce((x, [, n]) => x + n, 0);
+  const kr = Object.entries(S.inkDag?.[dag] || {}).filter(([k]) => !/^l[aå]n/.test(k)).reduce((x, [, v]) => x + v, 0);
+  const rader = p.slice(0, NATT_KORT_RADER).map(([t, n]) => `<div class="np-rad">${ikonHtml(t, 30)}<span>${rens(VAROR[t]?.namn || t)}</span><b>× ${n}</b></div>`).join('') + (p.length > NATT_KORT_RADER ? `<div class="np-fler">+ ${p.length - NATT_KORT_RADER} sorter till</div>` : '');
+  return `<div class="ph-nattprint">${tot ? `<div class="np-rub">DAGENS PRINTAR</div>${rader}<div class="np-streck"></div><div class="np-tot"><span>Totalt</span><b>${tot} ${tot === 1 ? 'print' : 'printar'}</b></div>` : ''}<div class="np-tot np-kr"><span>💰 Tjänat i dag</span><b>+${krT(kr)} kr</b></div></div>`;
+}
 function inkLogg(k, kr) { kr = Math.round(+kr || 0); if (kr <= 0) return; const d = (S.inkDag ||= {}), r = (d[S.dag] ||= {}); r[k] = (r[k] || 0) + kr; }
 const stegTal = (id) => STEG_TAL_SPARA[id] && S.mynt < STEG_TAL_SPARA[id][1] ? STEG_TAL_SPARA[id][0] : (STEG_TAL[id] || '');
 const STEG = [
@@ -4043,7 +4052,7 @@ function uppdateraSkrivare(sk, dt) {
         
       }
     } else if (S.auto?.lada && sk.upprepa === j.typ && VAROR[j.typ]?.pris > 0) {
-      sk.jobb = null; tomBadd(sk); S.stat.printat++; S.printTot = { ...(S.printTot || {}), [j.typ]: (S.printTot?.[j.typ] || 0) + 1 };
+      sk.jobb = null; tomBadd(sk); S.stat.printat++; S.printTot = { ...(S.printTot || {}), [j.typ]: (S.printTot?.[j.typ] || 0) + 1 }; printDagLogg(j.typ);
       S.auto.innehall = { ...(S.auto.innehall || {}), [j.typ]: (S.auto.innehall?.[j.typ] || 0) + 1 }; S.stat.iLada = (S.stat.iLada || 0) + 1;
       ladaPaket(sk, j.typ); ljud.placera(); if (sk.ko?.length) nastaJobb(sk, null);
     } else {
@@ -4053,7 +4062,7 @@ function uppdateraSkrivare(sk, dt) {
       else if (nUt % 3 === 0) skrivarNotis(sk, `${nUt} st klara på skrivaren – ta ut dem`, 'bra');
       if (VAROR[j.typ]?.lyx) S.ritningar = S.ritningar.filter((x) => x !== 'recept:' + j.typ);   // Alis fina ritningar räcker till en
       aliStolt(j.typ, VAROR[j.typ]?.namn, !!VAROR[j.typ]?.recept);
-      S.stat.printat++; S.printTot = { ...(S.printTot || {}), [j.typ]: (S.printTot?.[j.typ] || 0) + 1 }; handelse('printKlar', { sak: j.typ, n: S.printTot[j.typ] });
+      S.stat.printat++; S.printTot = { ...(S.printTot || {}), [j.typ]: (S.printTot?.[j.typ] || 0) + 1 }; printDagLogg(j.typ); handelse('printKlar', { sak: j.typ, n: S.printTot[j.typ] });
       if (S.stat.printat === 1) forstaPrintWow(sk);
       nastaJobb(sk, j.typ);
     }
@@ -6270,8 +6279,9 @@ function sov() {
   const forsta = !S.lappar.includes('sang');
   const natt = S.dag;
   const sl = document.createElement('div'); sl.className = 'ph-natt';   /* A-093 p.3: nattskärmen är en helskärmsscen (DÖD KNAPP räknar inte knappar under den) */
-  sl.style.cssText = 'position:fixed;inset:0;z-index:40;background:#05070f;opacity:0;transition:opacity 1.2s;display:grid;place-items:center;color:#fff;font:700 28px system-ui,sans-serif;text-align:center';
-  sl.innerHTML = `<div>🌙 Natt ${natt}<br><span style="font-size:18px;opacity:.7">zzz…${forsta ? ' i en riktig säng' : ''}</span></div>`;
+  sl.style.cssText = 'position:fixed;inset:0;z-index:9000;background:#05070f;opacity:0;transition:opacity 1.2s;display:grid;place-items:center;color:#fff;font:700 28px system-ui,sans-serif;text-align:center';
+  sl.innerHTML = `<div>🌙 Dag ${natt} är slut. God natt.<br><span style="font-size:18px;opacity:.7">zzz…${forsta ? ' i en riktig säng' : ''}</span></div>`;   /* inkorg 35 tillägg 10:05 */
+  let nattExtra = 0;
   document.body.appendChild(sl);
   /* sova spelas redan */;
   requestAnimationFrame(() => { sl.style.opacity = '1'; });
@@ -6282,6 +6292,7 @@ function sov() {
     S.igar = { salt: Object.values(S.saltIdag || {}).reduce((x, y) => x + y, 0), printat: S.stat.printat - (S.dagPrintat ?? S.stat.printat), flask: fl && fl[1] >= 20 ? (FLASK_NAMN[fl[0]] || fl[0]) : null, fix: fl && fl[1] >= 20 ? FLASK_FIX[fl[0]]?.() : null };
     S.dagPrintat = S.stat.printat;
     S.saljLadaIgar = null; S.webbIgar = null; inkomstTick(); aliHamtarLadan(); aliHamtarSaljlada(); webbBetalning(); inkomstTick();   // leveranslådan räknas till dagen den printades
+    { const kort = dagensPrintarHtml(natt); { nattExtra = window.__simBot ? 0 : NATT_KORT_EXTRA_MS; sl.firstElementChild?.insertAdjacentHTML('beforeend', kort); textLogg('nattkort', 'du', sl.innerText.replace(/\s+/g, ' ').slice(0, 160), 'inkorg 35 tillägg'); } }   /* dagens printar under God natt – kortet läses inte upp */
     matDag(natt); kollaKyla(); S.dag = natt + 1; S.saltIdag = {}; aliVillVal(); try { webbNyDag(); } catch (e) { console.warn(e); } S.dagTid = 0; S.vakenTid = 0; sparaSnart(); ruttnaOverNatten(); uppdateraArstid(); helenNatt();
     // morgonens meddelanden väntar tills du klickat "Börja dagen" – sen kommer de ett i taget
     // B16: max två saker på morgonen – Rolfs brev (i postlådan) och EN story-händelse. Resten kommer senare under dagen:
@@ -6293,9 +6304,10 @@ function sov() {
     const morgonRolf = () => { if (S.dag >= 6 && S.kapitel >= 2 && S.pappaBesok && !(S.filGava || []).includes(0) && !(S.filGava || []).includes(2)) { S.filGava = [...(S.filGava || []), 0]; S.post.tillMig = [...S.post.tillMig, 'sak:rulle2', 'sak:rulle2', 'sak:rulle2']; visaPostInne(); paket([{ sms: ['rolf', ROLF_RODA] }], { om: 1500 }); } };   // BI: tre rullar röd PETG direkt dag 6
     setTimeout(sparaDagBokmarke, 1500);
     skymning = 0; sover = false; sol.position.set(14, 24, 8); if (hemiLjus) hemiLjus.intensity = 1.4; if (skjulLampa) skjulLampa.intensity = skjulLampa.userData.bas || 4;
-    satLjus(DAG); sl.innerHTML = `<div><svg viewBox="0 0 160 120" style="width:min(340px,70vw);display:block;margin:0 auto 10px">${kalenderSvg('DAG ' + S.dag, 40, 14, 'DAG ' + natt)}</svg>☀️ ${['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag'][(S.dag - 1) % 7]}</div>`;   /* morgonen: snarkningen räcker */
+    setTimeout(() => { if (sl.isConnected) sl.innerHTML = morgonHtml; }, nattExtra);
+    satLjus(DAG); const morgonHtml = `<div><svg viewBox="0 0 160 120" style="width:min(340px,70vw);display:block;margin:0 auto 10px">${kalenderSvg('DAG ' + S.dag, 40, 14, 'DAG ' + natt)}</svg>☀️ ${['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag'][(S.dag - 1) % 7]}</div>`;   /* morgonen: snarkningen räcker */ if (!nattExtra) sl.innerHTML = morgonHtml;
   }, 2600);
-  setTimeout(() => { sl.style.opacity = '0'; }, 5000); if (forsta && !S.lappar.includes('sang')) S.sangLappSen = true;   /* EA #10: dagboken efter BÖRJA DAGEN */
+  setTimeout(() => { sl.style.opacity = '0'; }, 5000 + (window.__simBot ? 0 : NATT_KORT_EXTRA_MS)); if (forsta && !S.lappar.includes('sang')) S.sangLappSen = true;   /* EA #10: dagboken efter BÖRJA DAGEN */
   setTimeout(() => {
     sl.remove();
     rolfMorgonTack();
@@ -6309,14 +6321,14 @@ function sov() {
     /* A-076 tillägg 14:22/15:40: morgonsidan är dagbokskortet – högst 2 meningar, direkt när dagen börjar, spelet står still bakom */
     const dagText = [julRad(S.dag), INSATS[S.dag - 1]].filter(Boolean).join('\n') || 'En ny dag.';   /* A-088 §4: insatsen på rad två. Dagnumret står bara i nedräkningsraden (inkorg 26 p.1) och insatsen är dagens mål, så DAG_STORY behövs inte här (LÅNG DAGBOK: högst 2 meningar) */
     if (S.dag <= JULAFTON_DAG && !INSATS[S.dag - 1]) regelvakt.brott('UTAN INSATS', `morgonkortet dag ${S.dag} har ingen andra rad`);   /* inkorg 24 p.2: nedräkningen först, sedan dagens mål. Morgontanken sägs som tanke efter dagens första mål (morgonkortStangt). */   /* inkorg 10d: en tanke per rad, luft emellan */
-    const nytt = `${aliVillHtml()}${rapport}`, extra = `${!nasta && S.julFirad ? efterspelHtml() : ''}`;   /* inkorg 35 tillägg 09:55: Ali, webbshopen och igår blir blocket Nytt i morse efter FORTSÄTT */
+    const nytt = { ali: aliVill() || null, webb: S.webbIgar ? { n: S.webbIgar.n, kr: S.webbIgar.du } : null, lada: S.saljLadaIgar ? { n: S.saljLadaIgar.n, kr: S.saljLadaIgar.summa } : null }, extra = `${!nasta && S.julFirad ? efterspelHtml() : ''}`;   /* inkorg 35 tillägg 10:05: Ali och webbshopen blir små notiser efter FORTSÄTT, igår står på nattskärmen */ void rapport;
     const kapK = +Object.keys(KAP_RITNING).find((n) => KAP_RITNING[n].dag === S.dag) || 0, kapR = kapK && !(S.kapRitSedd || []).includes(kapK) ? KAP_RITNING[kapK] : null;
     if (kapR) { S.kapRitSedd = [...(S.kapRitSedd || []), kapK]; S.kapVisad = [...new Set([...(S.kapVisad || []), kapK])]; sparaSnart(); }   /* A-088 §3: kapitelkortet ersätter morgonkortet och det gamla rubrikkortet */
     hurVarDagen(natt, () => { ui.starta(true); dagenBorjar(() => kapR
-      ? (dagbokKort(kapR.men, { rubrik: `KAPITEL ${kapK} · ${julRad(S.dag).replace(/\.$/, '')}`, morgon: true, extra: kapRitningHtml(kapK) + extra, efter: () => visaNyttIMorse(nytt) }), kapRitAuto())
-      : dagbokKort(dagText, { rubrik: forstaStor(del.replace(/^Dag \d+ – /, '')), morgon: true, extra, efter: () => visaNyttIMorse(nytt) })); });
+      ? (dagbokKort(kapR.men, { rubrik: `KAPITEL ${kapK} · ${julRad(S.dag).replace(/\.$/, '')}`, morgon: true, extra: kapRitningHtml(kapK) + extra, efter: () => visaMorgonNotiser(nytt) }), kapRitAuto())
+      : dagbokKort(dagText, { rubrik: forstaStor(del.replace(/^Dag \d+ – /, '')), morgon: true, extra, efter: () => visaMorgonNotiser(nytt) })); });
     const vanta = setInterval(() => { if (!ui.igang) return; clearInterval(vanta); handelse('morgonkortStangt', { dag: S.dag }); const f = morgonKo; morgonKo = null; if (f) setTimeout(f, 2500); }, 300);
-  }, 5500);
+  }, 5500 + (window.__simBot ? 0 : NATT_KORT_EXTRA_MS));
 }
 let morgonKo = null;
 /* A-088 §3: kapitelkortet stängs själv efter 6 s om ingen klickat */
@@ -10025,7 +10037,7 @@ css.textContent = `
 .ph-dagbokkort{background:#f6eedb;color:#2a2018;padding:22px 28px 22px;transform:rotate(-.6deg);width:min(560px,90vw)!important;max-width:none!important;box-sizing:border-box;text-align:left}.ph-dagbokkort .ph-las-klick{cursor:pointer}.ph-dagbokkort .ph-las-klick.pulsar{text-shadow:0 0 1px rgba(90,70,48,.35)}.ph-dk-luft{display:block;height:.55em}.ph-dagbokkort .ph-pap-text{margin-bottom:16px}.ph-dagbokkort .ph-pap-titel{opacity:.75;justify-content:flex-start}.ph-dagbokkort .ph-lasigen{border:0;background:rgba(0,0,0,.08);border-radius:999px;width:30px;height:30px;display:grid;place-items:center;cursor:pointer;color:#5a4630;padding:5px}.ph-dagbokkort .ph-lasigen svg{width:18px;height:18px}
 .ph-dk-rub{font:700 22px/1.3 "Bradley Hand","Segoe Print","Comic Sans MS",cursive;text-align:left;margin:2px 0 6px}.ph-dagbokkort .ph-pap-text{font:500 22px/1.5 "Bradley Hand","Segoe Print","Comic Sans MS",cursive}.ph-dk-extra{font:500 13px/1.45 system-ui;text-align:left;margin:-6px 0 14px;opacity:.75}.ph-dk-extra .br-rapport{display:block;background:none;color:#5a4630;padding:0;border:0;box-shadow:none}.ph-dk-extra .ali-vill{background:none;color:#5a4630;border:0;box-shadow:none;padding:0}.ph-kontroll[hidden]{display:none!important}
 .ph-dagbokkort .ph-fortsatt{display:block;margin:0 auto;background:#d8392b;color:#fff;letter-spacing:.06em;font-weight:900;min-width:180px}
-.ph-nytt{width:auto!important;max-width:100%!important;box-sizing:border-box}.ph-nytt .kropp{display:block;text-align:left;white-space:normal}.ph-nytt .kropp *{white-space:normal;overflow-wrap:anywhere;min-width:0}.ph-nytt .nytt-rad{display:flex;gap:8px;align-items:flex-start;margin:3px 0;font-size:13px;line-height:1.35}.ph-nytt .ali-vill{display:flex;gap:8px;align-items:center;background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 6px;color:#fff!important;font-size:13px}.ph-nytt .ali-vill b{color:#ffd35a}.ph-nytt .ph-lasupp{margin-top:6px}
+.ph-nattprint{margin:18px auto 0;width:min(340px,80vw);background:#141b33;border-radius:14px;padding:14px 18px;font:500 15px/1.3 system-ui,sans-serif;text-align:left;box-shadow:0 10px 30px rgba(0,0,0,.5)}.ph-nattprint .np-rub{font:800 12px system-ui;letter-spacing:.14em;opacity:.65;margin-bottom:8px}.ph-nattprint .np-rad{display:flex;align-items:center;gap:10px;margin:4px 0}.ph-nattprint .np-rad span{flex:1}.ph-nattprint .np-rad b{font-weight:700;opacity:.9}.ph-nattprint .np-fler{opacity:.6;font-size:13px;margin:4px 0 0 40px}.ph-nattprint .np-streck{height:1px;background:rgba(255,255,255,.18);margin:10px 0 8px}.ph-nattprint .np-tot{display:flex;justify-content:space-between;margin:3px 0}.ph-nattprint .np-kr b{color:#ffd35a}
 .ph-dk-a4{--dk-u:min(1vh,.5625vw);--dk-px:23;width:calc(var(--dk-u)*50)!important;height:calc(var(--dk-u)*70.7);min-height:calc(var(--dk-u)*70.7);padding:calc(var(--dk-u)*6.2) calc(var(--dk-u)*5) calc(var(--dk-u)*11)!important;position:relative;display:block;font:400 calc(var(--dk-u)*var(--dk-px)/7.2)/1.45 system-ui,-apple-system,"Segoe UI",sans-serif!important;border-radius:3px}
 .ph-dk-a4 .ph-dk-sida{cursor:pointer}.ph-dk-a4 .ph-dk-dag{white-space:nowrap;margin:0 0 1.45em}.ph-dk-a4 .ph-dk-dag b{font-weight:800}.ph-dk-a4 .ph-dk-rub{font:inherit;font-weight:400;margin:0 0 1.45em;text-align:left}.ph-dk-a4 .ph-pap-text{font:inherit!important;margin:0!important}.ph-dk-a4 .ph-dk-luft{height:.725em}.ph-dk-a4 .ph-dk-extra{font-size:.62em;margin:.8em 0 0}.ph-dk-a4 .ph-dk-extra *{color:#5a4630!important}
 .ph-dk-a4 .ph-fortsatt{position:absolute;left:50%;bottom:calc(var(--dk-u)*3.33);transform:translateX(-50%);margin:0;min-width:calc(var(--dk-u)*20)}
@@ -10568,7 +10580,7 @@ setInterval(() => {   // första gången en högtalare syns: den pulserar extra 
 function notisVisa(text, typ = '', o = {}) {
   if (typ === 'tanke') senastTankeT = performance.now();   /* A-090 p.5 */
   /* A-065 tillägg: ett talutrymme – en notis som inte kommer från kön läggs i kön (utom sms/lappar och det som uttryckligen är direkt) */
-  if (!iKanalVisa && !o.direkt && !o.lagTill && typ !== 'sms' && typ !== 'lapp' && ui.igang && !scenPagar()) { kanalLagg({ vikt: o.vikt || 'REAKTION', vem: 'notis:' + text.slice(0, 40), text, rost: false, minMs: 2500, gammalMs: 20000, visa: () => notisVisa(text, typ, { ...o, direkt: true }) }); return null; }
+  if (!iKanalVisa && !o.direkt && !o.lagTill && typ !== 'sms' && typ !== 'lapp' && ui.igang && !scenPagar()) { kanalLagg({ vikt: o.vikt || 'REAKTION', vem: 'notis:' + text.slice(0, 40), text, rost: false, minMs: 2500, gammalMs: o.gammalMs || 20000, ...(o.svar != null ? { svar: o.svar } : {}), visa: () => notisVisa(text, typ, { ...o, direkt: true }) }); return null; }
   if (o.lagTill) {   // nästa del i samma inslag (kvittens → varför): samma kort, en rad till
     const forra = [...notisEl.children].find((k) => !k.classList.contains('ut') && k.classList.contains(typ || 'x'));
     if (forra) { forra.querySelector('.kropp').insertAdjacentHTML('beforeend', '<br>' + rens(text)); clearTimeout(forra._t); forra._t = setTimeout(() => taBort(forra), NOTIS_TID); textLogg('notis-del', typ, text); return forra; }
@@ -11599,17 +11611,14 @@ function dagbokPassa(k) {
   for (let px = DK_TEXT_PX; px >= DK_MIN_PX; px -= 0.5) { k.style.setProperty('--dk-px', px); if (sida.scrollHeight <= k.offsetHeight * DK_FYLL + 1) return; }
   k.style.minHeight = Math.ceil(sida.scrollHeight / DK_FYLL) + 'px'; void u;
 }
-/* inkorg 35 tillägg 09:55 (förslag B): "Nytt i morse" – ett mörkt block i HUD-stil uppe till höger när morgonsidan stängts.
-   Ali vill ha idag, webbshopen och igår. Har 🔊 som andra texter och är ingen dagbok. */
-const NYTT_TID = 14000;
-function visaNyttIMorse(html) {
-  if (!html || !String(html).trim()) return;
-  const tmp = document.createElement('div'); tmp.innerHTML = html; const text = tmp.innerText.replace(/\s+/g, ' ').trim();
-  const k = document.createElement('div'); k.className = 'ph-notis ph-nytt';
-  k.innerHTML = `<div class="rubrik"><span>${ik('info')} Nytt i morse</span><span>nu</span></div><div class="kropp">${html}${lasUppKnapp(text, 'berattare', { liten: true })}</div>`;
-  notisEl.prepend(k); requestAnimationFrame(() => k.classList.add('in'));
-  textLogg('notis', 'nytt', text, 'inkorg 35 tillägg'); regiLogg('notis', 'INFO', '', text, NYTT_TID);
-  k._t = setTimeout(() => taBort(k), NYTT_TID); k.onclick = (e) => { if (e.target.closest('.ph-lasupp')) return; clearTimeout(k._t); taBort(k); };
+/* inkorg 35 tillägg 10:05: Alis önskan och webbshopen blir två vanliga små notiser efter FORTSÄTT (1 s emellan, tonar bort som
+   andra notiser). Finns inget att säga kommer ingen notis. Igår står i stället på nattskärmen (dagbokPrintar). */
+function visaMorgonNotiser(n) {
+  const lista = [];
+  if (n.ali) lista.push([`Ali vill ha idag · ${VAROR[n.ali]?.namn || n.ali} · +50 %`, { bild: n.ali, titel: 'Ali' }]);
+  if (n.webb) lista.push([`Webbshopen · ${n.webb.n} paket i natt · +${krT(n.webb.kr)} kr`, { titel: 'Webbshopen' }]);
+  if (n.lada) lista.push([`Säljlådan · ${n.lada.n} st i natt · +${krT(n.lada.kr)} kr`, { titel: 'Ali' }]);
+  lista.forEach(([t, o], i) => setTimeout(() => notisVisa(t, '', { ...o, svar: true, vikt: 'STORY' }), 600 + i * 1000));   /* svar på FORTSÄTT: de kommer direkt efter sidan, inte efter dagens första tankar */
 }
 function visaNastaMeddelande() {
   const m = medKo.shift(); if (!m) return;

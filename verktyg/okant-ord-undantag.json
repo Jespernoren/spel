@@ -786,5 +786,9 @@
 {
 "block": "kollaRaddning",
 "skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "visaMorgonNotiser",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
 }
 ]

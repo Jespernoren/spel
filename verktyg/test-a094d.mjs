@@ -15,7 +15,7 @@ const MATT = () => { const k = document.querySelector('.ph-med:not([hidden]) .ph
   return { bredd: k.offsetWidth, hojd: k.offsetHeight, px, fyll: +(s.scrollHeight / k.offsetHeight).toFixed(2), dagRader: d ? Math.round(d.offsetHeight / lh) : 0, dagFet: d ? getComputedStyle(d.querySelector('b')).fontWeight : '',
     knappKant: Math.round(r.bottom - kr.bottom), knappMitt: Math.round(Math.abs((kr.left + kr.right) / 2 - (r.left + r.right) / 2)), rostUppeHoger: !!rr && rr.top - r.top < 40 && r.right - rr.right < 40, rostText: (ro?.textContent || '').trim(),
     avatar: k.querySelectorAll('.ph-pap-titel, .portratt, .ph-dk-sida > img, .ph-dk-sida > .ph-dk-dag img').length, dagbokOrd: /\bDagbok\b/.test(k.innerText), typsnitt: getComputedStyle(k).fontFamily.split(',')[0], text: k.innerText.split('\n').slice(0, 4).join(' / ') }; };
-async function sida(namn, spar, gor) {
+async function sida(namn, spar, gor, natt) {
   const p = await b.newPage({ viewport: { width: 1280, height: 720 } }); p.on('pageerror', (e) => fel.push(e.message));
   await p.addInitScript((spar) => { if (!sessionStorage.getItem('t')) { sessionStorage.setItem('t', 1); localStorage.clear(); localStorage.setItem('spar:printahem2:v1', spar || JSON.stringify({ spelarNamn: 'Test' })); } }, spar);
   await p.goto(url);
@@ -27,7 +27,10 @@ async function sida(namn, spar, gor) {
   matt[namn] = await p.evaluate(MATT);
   if (matt[namn]) await p.screenshot({ path: `${dir}dagbok-${namn}.png` });
   matt[namn + ':nyheterPaSidan'] = await p.evaluate(() => !!document.querySelector('.ph-dk-a4 .ali-vill, .ph-dk-a4 .nytt-rad, .ph-dk-a4 .br-rapport'));
-  if (/morgon/.test(namn)) { await p.keyboard.press('Enter'); await p.waitForTimeout(1500); matt[namn + ':nytt'] = await p.evaluate(() => { const n = document.querySelector('.ph-nytt'); return n ? { text: n.innerText.replace(/\s+/g, ' ').slice(0, 160), hogtalare: !!n.querySelector('.ph-lasupp'), uppeHoger: n.getBoundingClientRect().right > innerWidth - 60 && n.getBoundingClientRect().top < 200 } : null; }); if (matt[namn + ':nytt']) await p.screenshot({ path: `${dir}nytt-${namn}.png` }); }
+  if (/morgon/.test(namn)) { await p.keyboard.press('Enter'); const sett = new Map(); for (let i = 0; i < 40; i++) { for (const x of await p.evaluate(() => [...document.querySelectorAll('.ph-notis:not(.ut)')].map((n) => ({ text: n.innerText.replace(/\s+/g, ' ').trim(), hogtalare: !!n.querySelector('.ph-lasupp'), bild: !!n.querySelector('.ph-notis-bild') })))) sett.set(x.text, x); if ([...sett.keys()].filter((t) => /Ali vill ha idag|Webbshopen ·/.test(t)).length >= 2) break; await p.waitForTimeout(500); } matt[namn + ':notiser'] = [...sett.values()]; await p.screenshot({ path: `${dir}notiser-${namn}.png`, clip: { x: 760, y: 0, width: 520, height: 320 } }); }
+  if (natt) { await p.evaluate((pr) => { const S = window.__printahem.S; S.printDag = { ...(S.printDag || {}), [S.dag]: pr.p }; S.inkDag = { ...(S.inkDag || {}), [S.dag]: pr.k }; for (const n of document.querySelectorAll('.ph-med:not([hidden]) .ph-fortsatt')) n.click(); window.__printahem.sov(); }, natt);
+    for (let i = 0; i < 20 && !(await p.evaluate(() => !!document.querySelector('.ph-nattprint'))); i++) await p.waitForTimeout(300);
+    await p.waitForTimeout(400); matt[namn + ':natt'] = await p.evaluate(() => document.querySelector('.ph-nattprint')?.innerText.replace(/\s+/g, ' ').trim() || null); await p.screenshot({ path: `${dir}natt-${namn.replace('-morgon', '').replace('-kvall', '')}.png` }); }
   matt[namn + ':brott'] = await p.evaluate(() => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && /ANNAN DAGBOKSLAYOUT|LÅNG DAGBOK|DÖD KNAPP|TEXT UTAN HÖGTALARE/.test(e.vem)).map((e) => e.vem + ' ' + e.text));
   await p.close();
 }
@@ -35,11 +38,11 @@ await sida('dag1-morgon', null, async (p) => { await p.waitForTimeout(2500); awa
 await sida('dag1-kvall', null, async (p) => { await p.waitForTimeout(2500); await p.keyboard.press('Enter');
   for (let i = 0; i < 60 && !(await p.evaluate(() => !!document.querySelector('.ph-med:not([hidden]) .ph-dk-a4'))); i++) await p.waitForTimeout(500);
   for (let i = 0; i < 5 && (await p.evaluate(() => !!document.querySelector('.ph-med:not([hidden])'))); i++) { await p.keyboard.press('Enter'); await p.waitForTimeout(600); }
-  await p.waitForTimeout(1000); await p.evaluate(() => window.__printahem.visaLapp('start')); });
+  await p.waitForTimeout(1000); await p.evaluate(() => window.__printahem.visaLapp('start')); }, { p: { nyckelring: 4, kruka: 2 }, k: { 'ali:nyckelring': 60, 'ali:kruka': 50 } });
 await sida('dag10-morgon', dag8, async (p) => { await p.waitForTimeout(4000);
   for (let i = 0; i < 8 && (await p.evaluate(() => !!document.querySelector('.ph-med:not([hidden])'))); i++) { await p.keyboard.press('Enter'); await p.waitForTimeout(600); }
   await p.evaluate(() => { window.__printahem.S.dag = 9; window.__printahem.sov(); });
-  await p.waitForFunction(() => window.__printahem.S.dag === 10, null, { timeout: 60000 }).catch(() => {}); await p.evaluate(() => window.__printahem.textLogg().length); });
+  await p.waitForFunction(() => window.__printahem.S.dag === 10, null, { timeout: 60000 }).catch(() => {}); }, { p: { n2_vas: 6, pall: 4, kruka: 3, nyckelring: 3, lampskarm: 2, fagelholk: 2, figurhylla: 1, h_mjolkpall: 1 }, k: { 'ali:n2_vas': 7110, webbshoppen: 1121, bonus: 400 } });
 execFileSync('python3', ['-c', `
 import sys
 from PIL import Image
@@ -60,8 +63,10 @@ ut.push([`FORTSÄTT nere i mitten ca 24 px från kanten (${ok.map((m) => `${m.kn
 ut.push([`högtalaren uppe till höger, utan text (${ok.map((m) => `${m.rostUppeHoger} "${m.rostText}"`).join(', ')})`, ok.every((m) => m.rostUppeHoger && !m.rostText)]);
 ut.push([`ingen avatar och inget "Dagbok" (${ok.map((m) => `${m.avatar} ${m.dagbokOrd}`).join(', ')})`, ok.every((m) => !m.avatar && !m.dagbokOrd)]);
 ut.push([`Ali, webbshopen och igår står inte på sidan (${N.map((n) => matt[n + ':nyheterPaSidan']).join(', ')})`, N.every((n) => matt[n + ':nyheterPaSidan'] === false)]);
-const ny = matt['dag10-morgon:nytt'];
-ut.push([`dag 10: Nytt i morse uppe till höger efter FORTSÄTT, med 🔊 (${ny ? ny.text : 'syntes inte'})`, !!ny && ny.hogtalare && ny.uppeHoger && /Ali vill ha/.test(ny.text) && /Igår/.test(ny.text)]);
+const no = matt['dag10-morgon:notiser'] || [], ali = no.find((x) => /Ali vill ha idag/.test(x.text)), webb = no.find((x) => /Webbshopen ·/.test(x.text));
+ut.push([`dag 10: två små notiser efter FORTSÄTT, med 🔊 (${no.map((x) => x.text).join(' | ') || 'inga'})`, !!ali && !!webb && ali.hogtalare && webb.hogtalare && ali.bild && !no.some((x) => /Nytt i morse/.test(x.text))]);
+ut.push([`dag 1 morgon: ingen notis när det inte finns något att säga (${(matt['dag1-morgon:notiser'] || []).map((x) => x.text).join(' | ') || 'inga'})`, !(matt['dag1-morgon:notiser'] || []).some((x) => /Ali vill ha idag|Webbshopen ·/.test(x.text))]);
+for (const n of ['dag1-kvall', 'dag10-morgon']) ut.push([`nattskärmen ${n.split('-')[0]}: ${matt[n + ':natt'] || 'syntes inte'}`, /DAGENS PRINTAR/.test(matt[n + ':natt'] || '') && /Totalt/.test(matt[n + ':natt']) && /Tjänat i dag/.test(matt[n + ':natt'])]);
 const br = N.flatMap((n) => matt[n + ':brott'] || []);
 ut.push([`0 ANNAN DAGBOKSLAYOUT, LÅNG DAGBOK, DÖD KNAPP, TEXT UTAN HÖGTALARE (${br.join(' · ') || 'inga'})`, !br.length]);
 ut.push([`0 sidfel (${fel.slice(0, 2).join(' · ') || 'inga'})`, !fel.length]);
