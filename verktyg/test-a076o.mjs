@@ -59,7 +59,7 @@ const nyckel = (m) => `${m.a4}|${m.bredd}|${m.marginal}|${m.knapp}`;   /* inkorg
 const lika = ok.every(([, m]) => nyckel(m) === nyckel(ok[0][1]));
 for (const [n, m] of varianter) console.log(`  ${n}: ${m ? `bredd ${m.bredd}, marginal ${m.marginal}, text ${m.text}px, rubrikrad ${m.titel}, knapp ${m.knapp}, 🔊 ${m.hogtalare}, röstknapp ${m.rostknapp}, rader ${m.rader}` : 'syntes inte'}`);
 ut.push([`${ok.length} av ${varianter.length} varianter visades, alla med samma mått (${lika}) – verktyg/a076/dagbok-alla.png`, ok.length === varianter.length && lika]);
-ut.push([`A4-sidan ca 360 × 509 px (växer bara när texten nått 20 px) och text 20–23 px på alla (${ok.map(([, m]) => `${m.bredd}×${m.hojd} ${m.text}px`).join(', ')})`, ok.every(([, m]) => m.a4 && Math.abs(m.bredd - 360) <= 4 && (Math.abs(m.hojd - 509) <= 4 || m.hojd > 509 && m.text === 20) && m.text >= 20 && m.text <= 23)]);
+ut.push([`A4-sidan ca 360 × 509 px (växer bara när texten nått 18 px) och text 18–20 px på alla (${ok.map(([, m]) => `${m.bredd}×${m.hojd} ${m.text}px`).join(', ')})`, ok.every(([, m]) => m.a4 && Math.abs(m.bredd - 360) <= 4 && (Math.abs(m.hojd - 509) <= 4 || m.hojd > 509 && m.text === 18) && m.text >= 18 && m.text <= 20)]);
 ut.push([`varje kort har exakt en ljudknapp (Röst på/av) och ingen extra 🔊`, ok.every(([, m]) => m.rostknapp === 1 && m.hogtalare === 0)]);
 ut.push([`radbrytningar: varje kort har flera rader (${ok.map(([, m]) => m.rader).join(', ')})`, ok.every(([, m]) => m.rader >= 2)]);
 const brott = await H(() => window.__brott.filter((x) => /^(ANNAN DAGBOKSLAYOUT|LÅNG DAGBOK|DÖD KNAPP|TEXT UTAN HÖGTALARE) /.test(x)));

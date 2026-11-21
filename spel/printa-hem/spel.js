@@ -10045,7 +10045,7 @@ css.textContent = `
 .ph-dk-rub{font:700 22px/1.3 "Bradley Hand","Segoe Print","Comic Sans MS",cursive;text-align:left;margin:2px 0 6px}.ph-dagbokkort .ph-pap-text{font:500 22px/1.5 "Bradley Hand","Segoe Print","Comic Sans MS",cursive}.ph-dk-extra{font:500 13px/1.45 system-ui;text-align:left;margin:-6px 0 14px;opacity:.75}.ph-dk-extra .br-rapport{display:block;background:none;color:#5a4630;padding:0;border:0;box-shadow:none}.ph-dk-extra .ali-vill{background:none;color:#5a4630;border:0;box-shadow:none;padding:0}.ph-kontroll[hidden]{display:none!important}
 .ph-dagbokkort .ph-fortsatt{display:block;margin:0 auto;background:#d8392b;color:#fff;letter-spacing:.06em;font-weight:900;min-width:180px}
 .ph-nattprint{margin:18px auto 0;width:min(340px,80vw);background:#141b33;border-radius:14px;padding:14px 18px;font:500 15px/1.3 system-ui,sans-serif;text-align:left;box-shadow:0 10px 30px rgba(0,0,0,.5)}.ph-nattprint .np-rub{font:800 12px system-ui;letter-spacing:.14em;opacity:.65;margin-bottom:8px}.ph-nattprint .np-rad{display:flex;align-items:center;gap:10px;margin:4px 0}.ph-nattprint .np-rad span{flex:1}.ph-nattprint .np-rad b{font-weight:700;opacity:.9}.ph-nattprint .np-fler{opacity:.6;font-size:13px;margin:4px 0 0 40px}.ph-nattprint .np-streck{height:1px;background:rgba(255,255,255,.18);margin:10px 0 8px}.ph-nattprint .np-tot{display:flex;justify-content:space-between;margin:3px 0}.ph-nattprint .np-kr b{color:#ffd35a}
-.ph-dk-a4{--dk-u:min(1vh,.5625vw);--dk-px:23;width:calc(var(--dk-u)*50)!important;height:calc(var(--dk-u)*70.7);min-height:calc(var(--dk-u)*70.7);padding:calc(var(--dk-u)*6.2) calc(var(--dk-u)*5) calc(var(--dk-u)*11)!important;position:relative;display:block;font:400 calc(var(--dk-u)*var(--dk-px)/7.2)/1.45 system-ui,-apple-system,"Segoe UI",sans-serif!important;border-radius:3px}
+.ph-dk-a4{--dk-u:min(1vh,.5625vw);--dk-px:20;width:calc(var(--dk-u)*50)!important;height:calc(var(--dk-u)*70.7);min-height:calc(var(--dk-u)*70.7);padding:calc(var(--dk-u)*6.2) calc(var(--dk-u)*5) calc(var(--dk-u)*11)!important;position:relative;display:block;font:400 calc(var(--dk-u)*var(--dk-px)/7.2)/1.45 system-ui,-apple-system,"Segoe UI",sans-serif!important;border-radius:3px}
 .ph-dk-a4 .ph-dk-sida{cursor:pointer}.ph-dk-a4 .ph-dk-dag{white-space:nowrap;margin:0 0 1.45em}.ph-dk-a4 .ph-dk-dag b{font-weight:800}.ph-dk-a4 .ph-dk-rub{font:inherit;font-weight:400;margin:0 0 1.45em;text-align:left}.ph-dk-a4 .ph-pap-text{font:inherit!important;margin:0!important}.ph-dk-a4 .ph-dk-luft{height:.725em}.ph-dk-a4 .ph-dk-extra{font-size:.62em;margin:.8em 0 0}.ph-dk-a4 .ph-dk-extra *{color:#5a4630!important}
 .ph-dk-a4 .ph-fortsatt{position:absolute;left:50%;bottom:calc(var(--dk-u)*3.33);transform:translateX(-50%);margin:0;min-width:calc(var(--dk-u)*20)}
 .ph-dk-a4 .ph-dk-rost{top:calc(var(--dk-u)*2);right:calc(var(--dk-u)*2);width:calc(var(--dk-u)*4.6);height:calc(var(--dk-u)*4.6);padding:0;justify-content:center;background:rgba(0,0,0,.07);color:#5a4630}.ph-dk-a4 .ph-dk-rost svg{width:60%;height:60%}.ph-dk-a4 .ph-dk-rost.av{background:rgba(0,0,0,.07);color:#5a4630}
@@ -10596,8 +10596,8 @@ function notisVisa(text, typ = '', o = {}) {
   const el = typ === 'sms' || typ === 'lapp' ? medEl : notisEl;   // meddelanden till vänster, notiser till höger
   const finns = [...el.children].find((k) => k.dataset.text === text && !k.classList.contains('ut'));
   if (finns) { clearTimeout(finns._t); finns._t = setTimeout(() => taBort(finns), NOTIS_TID); finns.animate([{ transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 200 }); return finns; }
-  if (el === notisEl && (o.forst || iKanalVisa)) for (const x of [...el.children])   /* A-093 p.5: det kön visar nu sägs nu – texten får inte vänta bakom en äldre notis och komma 3 s efter rösten */ if (!x.classList.contains('ut')) { clearTimeout(x._t); taBort(x); }   /* svaret på ett klick går först: den gamla notisen viker undan direkt */
-  if (el === notisEl && [...el.children].some((x) => !x.classList.contains('ut'))) {   // en syns redan: köa (samma text bara en gång)
+  if (el === notisEl && !o.stapla && (o.forst || iKanalVisa)) for (const x of [...el.children])   /* A-093 p.5: det kön visar nu sägs nu – texten får inte vänta bakom en äldre notis och komma 3 s efter rösten */ if (!x.classList.contains('ut')) { clearTimeout(x._t); taBort(x); }   /* svaret på ett klick går först: den gamla notisen viker undan direkt */
+  if (el === notisEl && !o.stapla && [...el.children].some((x) => !x.classList.contains('ut'))) {   // en syns redan: köa (morgonens notiser staplas – inkorg 42 p.2) (samma text bara en gång)
     if (!notisKo.some(([t]) => t === text)) notisKo.push([text, typ, o]); if (notisKo.length > 6) notisKo.shift(); return null;
   }
   textLogg('notis', typ, text);   // loggas när den faktiskt visas (inte när den väntar i notiskön)
@@ -10608,7 +10608,7 @@ function notisVisa(text, typ = '', o = {}) {
   el.prepend(k);
   requestAnimationFrame(() => k.classList.add('in'));
   const ut = [...el.children].filter((x) => !x.classList.contains('ut'));
-  ut.slice(el === medEl ? 3 : NOTIS_MAX).forEach(taBort);
+  ut.slice(el === medEl ? 3 : o.stapla ? 3 : NOTIS_MAX).forEach(taBort);   /* inkorg 42: morgonens notiser får ligga under varandra */
   { const e = regiLogg(typ === 'sms' ? 'sms' : typ === 'lapp' ? 'dagbok' : typ === 'tanke' ? 'tanke-text' : 'notis', o.vikt || '', '', text, Math.max(lasTid(text), el === notisEl ? NOTIS_TID : o.tid || 7000)); if (o.svar != null) e.svar = !!o.svar; }   /* A-080 · inkorg 22 */
   k._t = setTimeout(() => { taBort(k); if (el === notisEl) setTimeout(() => { const n = notisKo.shift(); if (n) notisVisa(n[0], n[1], { ...n[2], direkt: true }); }, 450);   /* notisen har redan gått genom Regissören – tillbaka in i kön ströks den som upprepning */ }, Math.max(lasTid(text), el === notisEl ? (o.tid || NOTIS_TID) : o.tid || 7000));   /* A-080 regel 3: läsbar tid */
   return k;
@@ -11596,7 +11596,7 @@ function dagbokKort(text, o = {}) {
    rubriken (slutar med punkt), tom rad, texten. Samma sans-serif och storlek på all text. Högtalaren uppe till höger,
    FORTSÄTT nere i mitten. Kapitelkortet (rubrik "KAPITEL …") behåller sitt gamla kort. */
 const DK_TYST = '<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 9.5a3.5 3.5 0 0 1 0 5M18.5 7a7 7 0 0 1 0 10" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".35"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';   /* överstruken högtalare = rösten av */
-const DK_TEXT_PX = 23, DK_MIN_PX = 20, DK_FYLL = 0.70;   // textstorlek på 1280×720, minsta storlek, största andel av sidans höjd
+const DK_TEXT_PX = 20, DK_MIN_PX = 18, DK_FYLL = 0.70;   /* inkorg 42 p.4 (Jesper 11:07): 20 px, lägst 18 px */   // textstorlek på 1280×720, minsta storlek, största andel av sidans höjd
 function dagbokDelar(m) {
   let text = String(m.text || '').trim(), dag = '', kvar = '';
   const f = text.match(/^(Dag \d+\.|Julafton\.)[ \t]*([^\n]*)\n?/);
@@ -11622,10 +11622,11 @@ function dagbokPassa(k) {
    andra notiser). Finns inget att säga kommer ingen notis. Igår står i stället på nattskärmen (dagbokPrintar). */
 function visaMorgonNotiser(n) {
   const lista = [];
-  if (n.ali) lista.push([`Ali vill ha idag · ${VAROR[n.ali]?.namn || n.ali} · +50 %`, { bild: n.ali, titel: 'Ali' }]);
-  if (n.webb) lista.push([`Webbshopen · ${n.webb.n} paket i natt · +${krT(n.webb.kr)} kr`, { titel: 'Webbshopen' }]);
-  if (n.lada) lista.push([`Säljlådan · ${n.lada.n} st i natt · +${krT(n.lada.kr)} kr`, { titel: 'Ali' }]);
-  lista.forEach(([t, o], i) => setTimeout(() => notisVisa(t, '', { ...o, svar: true, vikt: 'STORY' }), 600 + i * 1000));   /* svar på FORTSÄTT: de kommer direkt efter sidan, inte efter dagens första tankar */
+  /* inkorg 42 p.1–2: rubriken säger vem, texten säger vad – inget dubbelord. Ali kommer sist, så att han ligger överst */
+  if (n.webb) lista.push([`${n.webb.n} paket i natt · +${krT(n.webb.kr)} kr`, { titel: 'Webbshopen' }]);
+  if (n.lada) lista.push([`${n.lada.n} st i natt · +${krT(n.lada.kr)} kr`, { titel: 'Säljlådan' }]);
+  if (n.ali) lista.push([`${VAROR[n.ali]?.namn || n.ali} · +50 %`, { bild: n.ali, titel: 'Ali vill ha idag' }]);
+  lista.forEach(([t, o], i) => setTimeout(() => notisVisa(t, '', { ...o, svar: true, vikt: 'STORY', stapla: true, tid: 8000 }), 600 + i * 1000));   /* svar på FORTSÄTT: de kommer direkt efter sidan, inte efter dagens första tankar */
 }
 function visaNastaMeddelande() {
   const m = medKo.shift(); if (!m) return;
