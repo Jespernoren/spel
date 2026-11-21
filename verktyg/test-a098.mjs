@@ -53,7 +53,36 @@ for (let i = 0; i < 40 && !(await p.evaluate(() => { const h = document.querySel
 await p.waitForTimeout(600); await p.screenshot({ path: dir + 'rad-b-efter.png', clip: rad }); await p.screenshot({ path: dir + 'b-handen-till-hammaren.png' });
 const siffra = await p.evaluate(() => document.querySelector('.ph-hotbar [data-i="0"] .n')?.textContent || '');
 ut.push([`(b) ${b0.famn} skräp i famnen med ${b0.typ}, klick på "${s2.namn || s2.fel}": nu ${b1.typ}, handen syns ${b1.handSyns}, famnen ${b1.famn}, siffran på plats 1 "${siffra}"`, b0.famn === 3 && b1.typ === 'hammare' && !b1.handSyns && b1.famn === 3 && /3/.test(siffra)]);
-ut.push([`0 FEL I HANDEN (${b1.brott.join(' · ') || 'inga'})`, !b1.brott.length]);
+// inkorg 41b: samma regel för alla verktyg
+await p.waitForTimeout(1500);
+for (let i = 0; i < 10; i++) { if (await p.evaluate(() => !!document.querySelector('.ph-med:not([hidden])'))) await p.keyboard.press('Enter'); await p.waitForTimeout(300); }
+const sattRad = (f) => p.evaluate(f);
+const siktaObj = (f) => p.evaluate((f) => { const P = window.__printahem, I = P.interaktorObj(), sp = P.spelare, V = sp.pos.constructor; const o = new Function('P', 'return ' + f)(P); if (!o) return { fel: 'ingen sak' };
+  const c = new (P.THREE.Box3)().setFromObject(o.autoTraffYta || o).getCenter(new V());
+  for (let i = 0; i < 16; i++) { const v = i * Math.PI / 8, d = 2.2, x = c.x + Math.sin(v) * d, z = c.z + Math.cos(v) * d; sp.pos.set(x, sp.pos.y, z); sp.yaw = Math.atan2(-(c.x - x), -(c.z - z)); sp.pitch = Math.atan2(c.y - 1.6, d); P.kameraObj().position.set(x, 1.6, z); P.kameraObj().rotation.set(sp.pitch, sp.yaw, 0, 'YXZ'); P.kameraObj().updateMatrixWorld(true); P.uppdateraSikte(); let ok = false; for (let h = I.hovrad; h; h = h.parent) if (h === o) ok = true; if (ok) return { namn: 'ok' }; }
+  return { fel: 'siktet tog den aldrig' }; }, f);
+// gripen: plats 1 är gripen, hammaren vald, klick på skräp
+await sattRad(() => { const S = window.__printahem.S; S.grip = true; window.__printahem.hand.saker.splice(0); });
+await p.keyboard.press('Digit2'); await p.waitForTimeout(300);
+const g0 = await lage(); await sikta('pet-flaska|Plocka|Yoghurt|påse|skräp'); await klick(); const g1 = await lage();
+ut.push([`gripen: ${g0.typ} vald, klick på skräp → ${g1.typ} (plats ${g1.vald}), i famnen ${g0.famn} → ${g1.famn}`, g0.typ === 'hammare' && g1.vald === 0 && g1.famn === g0.famn + 1]);
+// magneten vald: klick på skräp – magneten får vara kvar (den plockar skräp)
+await sattRad(() => { const S = window.__printahem.S; S.hotbar[4] = { typ: 'magnet', n: 1 }; window.__printahem.hand.saker.splice(0); });
+await p.keyboard.press('Digit5'); await p.waitForTimeout(300);
+const m0 = await lage(); await sikta('pet-flaska|Plocka|Yoghurt|påse|skräp'); await klick(); const m1 = await lage();
+ut.push([`magneten: ${m0.typ} vald, klick på skräp → ${m1.typ} kvar i bild`, m0.typ === 'magnet' && m1.typ === 'magnet']);
+// pirran: röd back, hammaren vald
+await sattRad(() => { const P = window.__printahem, S = P.S; S.hotbar[5] = { typ: 'sackkarra', n: 1 }; const sp = P.spelare.pos; P.laggSkrap(sp.x + 3, sp.z + 3, P.variantFor('rodback'), 0); });
+await p.keyboard.press('Digit2'); await p.waitForTimeout(300);
+const r0 = await lage(); const rs = await siktaObj("P.skrapLista.filter((x) => x.userData.sort === 'rodback').slice(-1)[0]"); await klick(); const r1 = await lage();
+ut.push([`pirran: ${r0.typ} vald, klick på en röd back (${rs.namn || rs.fel}) → ${r1.typ}`, r0.typ === 'hammare' && r1.typ === 'sackkarra']);
+// montering: uppgiften är vindsnurran, den ligger i raden, handen vald, klick på skjulet
+await sattRad(() => { const P = window.__printahem, S = P.S; S.hotbar[6] = { typ: 'byggsats:vindsnurra', n: 1 }; try { P.lasUpp('vindsnurra'); } catch {} S.steg = P.STEGLISTA().findIndex((x) => x.id === 'vindsnurra'); });
+await p.keyboard.press('Digit1'); await p.waitForTimeout(300);
+const k0 = await lage(); const ks = await siktaObj("P.MONTERA['byggsats:vindsnurra'].mal()[0]"); await klick(); const k1 = await p.evaluate(() => ({ kvar: window.__printahem.S.hotbar.some((x) => x?.typ === 'byggsats:vindsnurra'), steg: window.__printahem.S.steg }));
+ut.push([`montering: ${k0.typ} vald, klick på skjulet (${ks.namn || ks.fel}) → vindsnurran tagen ur raden och monterad (${!k1.kvar})`, ks.namn === 'ok' && !k1.kvar]);
+const allaBrott = await p.evaluate(() => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && e.vem === 'FEL I HANDEN').map((e) => e.text));
+ut.push([`0 FEL I HANDEN (${allaBrott.join(' · ') || 'inga'})`, !allaBrott.length]);
 ut.push([`0 sidfel (${fel.slice(0, 2).join(' · ') || 'inga'})`, !fel.length]);
 await b.close();
 for (const [t, o] of ut) console.log(`${o ? '✓' : '✗'} ${t}`);
