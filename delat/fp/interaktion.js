@@ -108,7 +108,7 @@ export class Interaktor {
   }
 
   #storlek(o) {
-    const g = o.autoTraffYta?.geometry?.parameters;
+    const g = o.autoTraffYta?.geometry?.parameters || (o.isMesh && o.geometry?.type === 'BoxGeometry' ? o.geometry.parameters : null);   // en egen träffyta (t.ex. veven på kvarnen) har sin egen storlek, så att den går före den stora saken den sitter på
     return g ? g.width * g.height * g.depth : Infinity;
   }
 

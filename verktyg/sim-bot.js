@@ -5,6 +5,9 @@
 // Allt som visas eller läses upp loggas med tid och källa (window.__textLogg i spel.js).
 (() => {
   const H = window.__printahem, S = H.S;
+  /* inkorg 52: TESTKROK I STÄLLET FÖR SPELARE – veva och trampa räknas bara som spelarens om siktet står på veven/cykeln (som med riktig mus) */
+  { const traff = (mal) => { const h = H.interaktorObj?.().hovrad; if (!h || !mal) return false; for (let x = h; x; x = x.parent) if (x === mal) return true; return false; };
+    for (const [f, mal] of [['veva', () => H.vevYtaObj?.()], ['trampa', () => H.cykelObj?.()]]) { const o = H[f]; if (typeof o === 'function') H[f] = (...a) => { if (!traff(mal())) H.regelvakt?.brott?.('TESTKROK I STÄLLET FÖR SPELARE', `${f} utan att siktet står på ${f === 'veva' ? 'veven' : 'cykeln'}`); return o.apply(H, a); }; } }
   /* A-081 Nybörjarboten (window.__nyborjare): samma händer som AX, men den vet bara det som syns – målrutan, pilen och det som sägs.
      Den går långsammare, läser 60 ms per tecken, följer pilen (inte koden), tittar runt när målet är otydligt, går fel ibland och
      använder bara kontroller som spelet har förklarat. Flaggorna samlas i window.__nyFlaggor. */
@@ -156,7 +159,15 @@
     if (d <= avst) { titta(m); return; }
     const k = (d - avst) / d; await ga(p.x + (m.x - p.x) * k, p.z + (m.z - p.z) * k, namn); titta(m);
   }
-  function titta(m) { const p = H.spelare.pos; H.spelare.yaw = Math.atan2(-(m.x - p.x), -(m.z - p.z)); H.spelare.pitch = -0.3; }
+  /* inkorg 52: som en spelare – gå runt saken tills siktet står på den (veven syns inte från alla håll) */
+  async function siktaPa(o) {
+    const traff = () => { const h = H.interaktorObj?.().hovrad; for (let x = h; x; x = x.parent) if (x === o) return true; return false; };
+    await vanta(0.15); if (traff()) return true;
+    const m = pos(o), p0 = H.spelare.pos.clone();
+    for (const r of [1.3, 0.9, 1.8]) for (let i = 0; i < 12; i++) { const v = i * Math.PI / 6; H.spelare.pos.set(m.x + Math.sin(v) * r, p0.y, m.z + Math.cos(v) * r); titta(m); await vanta(0.15); if (traff()) return true; }
+    H.spelare.pos.copy(p0); titta(m); return false;
+  }
+  function titta(m) { const p = H.spelare.pos, d = Math.hypot(m.x - p.x, m.z - p.z) || 1; H.spelare.yaw = Math.atan2(-(m.x - p.x), -(m.z - p.z)); H.spelare.pitch = Math.max(-0.9, Math.min(0.3, Math.atan2((m.y ?? 1.3) - 1.6, d))); }   /* inkorg 52: siktet på saken, inte bara åt rätt håll */
   async function klick(o, namn, avst) {
     await gaTill(o, avst ?? 1.4, namn);
     const ia = o.userData?.interaktion;
@@ -225,7 +236,7 @@
     // veva tills tratten är tom (med motor: vänta medan motorn mal)
     let varv = 0;
     while (S.kvarn.tratt > 0 && !H.extruderFull() && varv++ < 400) {
-      if (!S.kvarn.motor) { await gaTill(H.vevYta, 1.2); H.veva(1.2); }
+      if (!S.kvarn.motor) { await gaTill(H.vevYta, 1.2); if (await siktaPa(H.vevYta)) H.veva(1.2); else await vanta(1); }
       else if (S.strom < 1 && H.solEffekt() <= 0) { await strom(5); continue; }   // motorn behöver ström
       vantanIdag += 1; await vanta(1);   // BM: VÄNTAN – står och väntar på printen utan annat att göra
     }
@@ -263,7 +274,7 @@
   // ström: trampa vid cykeln tills det räcker
   async function strom(behov = 3) {
     if (H.solEffekt() > 0 || S.strom >= behov) return;
-    await gaTill(H.cykel, 1.2, 'cykeln'); let n = 0;
+    await gaTill(H.cykel, 1.2, 'cykeln'); await vanta(0.2); let n = 0;
     while (S.strom < Math.min(behov + 4, 11.5, H.stromMax() - 0.2) && n++ < 60) { H.trampa(1.1); await vanta(1); }
   }
 
@@ -300,7 +311,7 @@
     let varv = 0;
     while (sk.jobb && varv++ < 2000) {
       if (fil(sk) < 5 && sk.jobb) { await filament(sk, 300); continue; }
-      if (!S.batteriKopt && !S.powerbank && sk.jobb && H.solEffekt() <= 0) { await gaTill(H.cykel, 1.2, 'cykeln'); H.trampa(1.1); await vanta(1); continue; }   // DT: utan lagring går skrivaren bara medan man trampar
+      if (!S.batteriKopt && !S.powerbank && sk.jobb && H.solEffekt() <= 0) { await gaTill(H.cykel, 1.2, 'cykeln'); await vanta(0.2); H.trampa(1.1); await vanta(1); continue; }   // DT: utan lagring går skrivaren bara medan man trampar
       if (H.solEffekt() <= 0 && S.strom < 1.5) { await strom(4); continue; }
       if (S.strom > 6 || H.solEffekt() > 0) {
         if (!H.extruderFull() && S.kvarn.tratt < 3 && gardsSkrap().length) { await plockaLass({}); await tomIKvarnen(); if (!S.kvarn.motor) await mal(); continue; }
