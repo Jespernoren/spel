@@ -68,18 +68,6 @@
   "skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
  },
  {
-  "block": "ALI_POWERBANK",
-  "skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
- },
- {
-  "block": "ALI_PB_KOM",
-  "skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
- },
- {
-  "block": "ALI_FORSTA",
-  "skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
- },
- {
   "block": "ALI_HEJ",
   "skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
  },
@@ -173,10 +161,6 @@
  },
  {
   "block": "MAMMA_BURK_ARG",
-  "skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
- },
- {
-  "block": "BROR_SMS2",
   "skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
  },
  {

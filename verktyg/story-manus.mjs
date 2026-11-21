@@ -16,6 +16,8 @@ for (const d of STORY) {
     for (const [l, v] of Object.entries(p.lagen || {})) ut += `  - i läget **${l}:** "${v.tanke}"\n`;
     for (const m of p.medan || []) ut += `  - medan steget pågår (${m.id}): "${m.tanke}"\n`;
     ut += `- **Påminnelse:** ${txt(p.pamin)}\n- **Kvitto:** ${txt(p.kvitto)}\n`;
+    if (p.startSvarPa || p.startVet) ut += `  - starten väntar på: ${[p.startSvarPa, ...(p.startVet || []).map((f) => 'vet ' + f)].filter(Boolean).join(', ')}\n`;
+    if (p.dialog?.length) { ut += `- **Dialog** (inkorg 61):\n`; for (const d of p.dialog) ut += `  - **${d.vem}** (${d.kanal}${d.en ? ', en gång' : ''}): ${txt(d.text)} · *svarar på* ${d.svarPa || '–'}${d.vet?.length ? ' · *vet* ' + d.vet.join(', ') : ''}${d.ger?.length ? ' · *ger* ' + d.ger.join(', ') : ''}\n`; }
     if (p.tal) ut += `- **Uppläsning:** "${p.tal}"${p.talSpara ? ` (utan pengar: "${p.talSpara[0]}")` : ''}\n`;
   });
 }

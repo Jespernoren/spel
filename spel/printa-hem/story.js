@@ -9,6 +9,10 @@
 //   bild       bilden i uppgiftsrutan och över pilen – sak-id eller (S, G) => sak-id
 //   pil        var pilen pekar (namn som spelet känner, se PIL_MAL i spel.js) – annars stegets bild
 //   sak        saken steget gäller (lage(sak) styr texterna i lagen)
+//   dialog     inkorg 61 (A-116): allt som sägs i steget av andra och av dig utöver start: [{ id, vem, kanal: 'butik'|'sms'|'tanke', text, svarPa, vet, fore, ger, en, stryksNar }]
+//              svarPa = händelsen eller repliken den svarar på ('oppnatButik', 'salt:nyckelring', 'kopt:gammalkvarn', 'steg:powerbank', 'dialog:<id>')
+//              vet = det spelaren måste känna till · fore = det repliken bara kan sägas innan spelaren vet · ger = det spelaren vet efteråt · en = en gång per spel
+//   startSvarPa/startVet/startFore  samma regler för stegets start: den väntar tills orsaken har visats
 //   lasText/butikNamn  (kop-steg) Alis lås-text innan köpet går, och namnet i "Låst – köp X först"
 //   handling   vad spelaren gör: spika, lyfta, stallNer, montera, valj, trampa, salj, kop, lagg, veva, printa, ta, sov
 //   kraver/ger tillstånd steget behöver och skapar (kontrolleras av verktyg/story-koll.mjs)
@@ -68,10 +72,10 @@ export const STORY = [
       bild: (S) => (S.cykelStar || S.cykelBuren) ? 'byggsats:generator' : 'cykelS',
       kraver: ['stromIdee', 'generatorIRaden'], ger: ['cykelOmbyggd'],
       mal: (S) => S.cykelStar && S.generatorStar ? 'Montera generatorn' : 'Ställ cykel och generator', tal: 'Ställ cykeln och generatorn vid skrivaren.',
-      start: (S) => S.cykelStar ? 'Nu generatorn på cykeln.' : 'Cykeln där borta vid vägen kan ge ström, om generatorn sitter på. Båda ska stå vid skrivaren.',
+      start: (S) => S.cykelStar ? 'Nu generatorn på cykeln. Den gör el när hjulet snurrar.' : 'Cykeln… och storebrors generator?',   /* inkorg 61: en replik per läge, i den ordning det görs */
       lagen: {
-        handen: { tanke: 'Cykeln ska stå vid skrivaren. Generatorn sätter jag på sen.' },
-        stalld: { tanke: 'Nu generatorn på cykeln.' },
+        handen: { tanke: 'Cykeln ska stå vid skrivaren.' },
+        stalld: { tanke: 'Nu generatorn på cykeln. Den gör el när hjulet snurrar.' },
       },
       pamin: (S) => S.cykelStar ? 'Generatorn på cykeln.' : 'Cykeln, sen generatorn.',
       kvitto: null,
@@ -98,6 +102,10 @@ export const STORY = [
       mal: 'En nyckelring till', tal: 'Printa en nyckelring till.',
       start: 'En nyckelring till, så länge storebrors rulle räcker.',
       pamin: 'En ring till.',
+      dialog: [
+        { id: 'brorSms1', vem: 'bror', kanal: 'sms', text: 'VA FAN?! Fick du igång den?? Jag försökte i typ ett år. Den bara pep. 😳', svarPa: 'tagitUrPrint:nyckelring', en: true },
+        { id: 'brorSms2', vem: 'bror', kanal: 'sms', text: 'Sälj den till Ali, han med affären mitt emot. Han köper gamla grejer. Han köpte min gamla mopedhjälm för 20 spänn.', svarPa: 'dialog:brorSms1', ger: ['hortAli'], en: true },
+      ],
       klar: (S) => !!S.rullSlut || !!S.kvarnKopt },
 
     { id: 'saljTva', mom: 'Gör egen tråd', forDu: ['men', 'storebrors rulle är slut'], sak: 'nyckelring', handling: 'salj', pil: 'ali', bild: 'nyckelring',
@@ -105,13 +113,20 @@ export const STORY = [
       mal: 'Sälj nyckelringarna', tal: 'Sälj nyckelringarna hos Ali.',
       start: null,   // tanken när rullen tar slut säger redan det här
       pamin: 'Affären mitt emot kanske köper ringarna.',
+      dialog: [
+        { id: 'aliForsta', vem: 'ali', kanal: 'butik', text: 'Hej. Jag är Ali. Pappas butik – min sedan tjugofem år. Jag köper det du printar.', svarPa: 'oppnatButik', fore: ['kandAli'], ger: ['kandAli'], en: true },
+        { id: 'aliKvarnErbjud', vem: 'ali', kanal: 'butik', text: (S, G) => `Pappas gamla köttkvarn. Den har malt allt utom kött. ${G.kronorOrd(G.KVARN_PRIS)}, så är den din.`, svarPa: 'salt:nyckelring', vet: ['kandAli'], ger: ['aliHarKvarn'], en: true, stryksNar: (S) => !!S.kvarnKopt },
+      ],
       klar: (S, G) => S.mynt >= G.KVARN_PRIS || !!S.kvarnKopt },
 
     { id: 'aliKvarn', lasText: 'Kommer när storebrors rulle är slut', butikNamn: 'kvarnen', mom: 'Gör egen tråd', forDu: ['darfor', 'ringarna gav pengar till kvarnen'], sak: 'byggsats:gammalkvarn', handling: 'kop', pil: 'ali', bild: 'byggsats:gammalkvarn',
       kraver: ['kvarnPengar'], ger: ['kvarnKopt'],
       mal: 'Köp kvarnen', tal: 'Köp kvarnen hos Ali.',
-      start: 'Ali har en gammal kvarn. Den gör tråd av skräp.',
+      start: 'Ali har en gammal kvarn. Den gör tråd av skräp.', startSvarPa: 'dialog:aliKvarnErbjud',
       pamin: 'Kvarnen hos Ali.',
+      dialog: [
+        { id: 'aliKvarnKopt', vem: 'ali', kanal: 'butik', text: 'Den är din. Pappa hade blivit glad. Han trodde aldrig att nån skulle vilja ha den.', svarPa: 'kopt:gammalkvarn', en: true },
+      ],
       klar: (S) => !!S.kvarnKopt },
 
     { id: 'kvarn', mom: 'Gör egen tråd', forDu: ['darfor', 'kvarnen är köpt'], sak: 'byggsats:gammalkvarn', handling: 'stallNer', pil: 'startYta', bild: 'byggsats:gammalkvarn',
@@ -146,14 +161,21 @@ export const STORY = [
     { id: 'salj', mom: 'Gör egen tråd', forDu: ['darfor', 'en ring av egen tråd ska säljas'], sak: 'nyckelring', handling: 'salj', pil: 'ali', bild: 'nyckelring',
       kraver: ['egenRing'], ger: ['saltEgen'],
       mal: 'Sälj hos Ali', tal: 'Sälj nyckelringarna hos Ali.',
-      start: 'Affären på andra sidan vägen kanske köper sånt här.',
+      start: 'Ali köper nog den här också.', startVet: ['kandAli'],
       pamin: 'Ali köper det jag printar.',
+      dialog: [
+        { id: 'aliNyckelIgen', vem: 'ali', kanal: 'butik', text: 'Nyckelringar igen? Folk tappar sina nycklar hela tiden.', svarPa: 'salt:nyckelring', vet: ['kandAli'], en: true },
+      ],
       klar: (S) => (S.stat.salt || 0) > (S.saltVidKvarn ?? 0) },
 
     { id: 'powerbank', mom: 'Gör egen tråd', forDu: ['darfor', 'Ali har något åt mig'], sak: 'byggsats:powerbank', handling: 'montera', pil: 'ali', bild: 'byggsats:powerbank',
       kraver: ['saltEgen'], ger: ['powerbank'],
       mal: (S, G) => G.antalInv('byggsats:powerbank') ? 'Koppla in powerbanken' : 'Gå till Ali',
-      start: (S) => S.powerbankGiven ? null : 'Ali har något åt mig. Jag går över vägen till affären.',
+      start: (S) => S.powerbankGiven ? null : 'Ali har något åt mig. Jag går över vägen till affären.', startSvarPa: 'dialog:aliPbKom',
+      dialog: [
+        { id: 'aliPbKom', vem: 'ali', kanal: 'sms', text: 'Ali här. Glömde en sak. Kom tillbaka, jag har nåt åt dig.', svarPa: 'salt:nyckelring', vet: ['kandAli'], en: true },
+        { id: 'aliPowerbank', vem: 'ali', kanal: 'butik', text: 'Jag såg dig cykla. Det ser jobbigt ut. Ta den här. Bra kunder får bonus.', svarPa: 'oppnatButik', vet: ['kandAli'], en: true },
+      ],
       lagen: { handen: { tanke: 'Powerbanken ska sitta på cykeln.' }, raden: { tanke: 'Powerbanken ligger i raden. Den ska på cykeln.' } },
       pamin: 'Ali har något åt mig.',
       klar: (S) => !!S.powerbank },
@@ -162,9 +184,13 @@ export const STORY = [
       kraver: ['powerbank'], ger: ['gripRitning'],
       mal: (S) => S.mynt >= 50 ? 'Köp skräpgripen' : 'Spara till gripen', tal: 'Köp en skräpgrip hos Ali. Den kostar femtio kronor.',
       talSpara: ['Printa och sälj nyckelringar tills du har femtio kronor till gripen.', 50],
-      start: (S) => S.mynt >= 50 ? 'Med en skräpgrip slipper jag böja mig. Ali har en ritning.' : 'Gripen kostar femtio. Fler nyckelringar, alltså.',
+      start: (S) => S.mynt >= 50 ? 'Med en skräpgrip slipper jag böja mig. Ali har en ritning.' : 'Gripen kostar femtio. Fler nyckelringar, alltså.', startSvarPa: 'dialog:aliGripSms',
       medan: [{ id: 'harRad', nar: (S) => S.mynt >= 50, tanke: 'Femtio kronor. Nu har jag råd med gripen.' }],
-      pamin: 'Gripen hos Ali. Femtio kronor.',
+      pamin: 'Gripen hos Ali.',   /* inkorg 61: "femtio kronor" sägs redan när du har råd */
+      dialog: [
+        { id: 'aliGripSms', vem: 'ali', kanal: 'sms', text: 'Ali här. Nyckelringen sålde direkt. Jag ville bli ingenjör en gång. Nu har jag låtit en AI rita en skräpgrip. Kom och titta.', svarPa: 'malKlart:powerbank', vet: ['kandAli'], ger: ['aliHarGrip'], en: true },
+        { id: 'aliForstaRitning', vem: 'ali', kanal: 'butik', text: 'Bra val. Ritningen räcker till en skräpgrip.', svarPa: 'kopt:grip', en: true },
+      ],
       klar: (S, G) => S.ritningar.includes('grip') || G.forstaUpp() },
 
     { id: 'printGrip', mom: 'Sova', forDu: ['darfor', 'modellen är köpt'], sak: 'byggsats:grip', handling: 'printa', pil: 'skrivare',
@@ -177,15 +203,19 @@ export const STORY = [
     { id: 'krukaD1', mom: 'Sova', forDu: ['men', 'Ali vill inte bara ha nyckelringar'], sak: 'kruka', handling: 'printa', pil: 'skrivare', bild: 'kruka', las: 'kruka',
       kraver: ['grip'], ger: ['kruka1'],
       mal: (S, G) => S.ritningar.includes('recept:kruka') ? 'Printa en blomkruka' : S.krukaErbjuden ? (S.mynt >= G.VAROR.kruka.recept ? 'Köp krukreceptet' : 'Spara till receptet') : 'Sälj en nyckelring till',
-      start: 'Ali vill ha krukor. Jag printar en blomkruka.',
+      start: 'Ali vill ha krukor. Jag printar en blomkruka.', startSvarPa: 'dialog:aliKrukaSms',
       pamin: 'En blomkruka åt Ali.',
       kvitto: 'En kruka. Mamma skulle bli så stolt. Hon får inte veta.',
+      dialog: [
+        { id: 'aliKrukaSms', vem: 'ali', kanal: 'sms', text: 'Prova en kruka. Folk köper krukor. Ingen vet varför.', svarPa: 'upplast:kruka', vet: ['kandAli'], en: true },
+        { id: 'aliKrukaRecept', vem: 'ali', kanal: 'butik', text: 'Blomkruka? Bra val. Folk köper sånt. Jag vet inte varför.', svarPa: 'kopt:kruka', en: true },
+      ],
       klar: (S, G) => G.printat('kruka') >= 1 },
 
     { id: 'saljKruka', mom: 'Sova', forDu: ['darfor', 'krukan är printad'], sak: 'kruka', handling: 'salj', pil: 'ali', bild: 'kruka',
       kraver: ['kruka1'], ger: ['krukaSald'],
       mal: 'Sälj blomkrukan',
-      start: 'Ali gillar krukor. Han sa det själv.',
+      start: 'Ali gillar krukor. Han sa det själv.', startSvarPa: 'dialog:aliKrukaSms',   /* inkorg 61: "han sa det" – efter hans sms */
       pamin: 'Krukan till Ali.',
       klar: (S) => (S.stat.krukaSald || 0) >= 1 },
 
@@ -196,6 +226,9 @@ export const STORY = [
       start: 'Jag tänker inte sova på betongen i natt. Ali har en säng. Typ.',
       medan: [{ id: 'morkt', nar: (S, G) => G.klockan() >= 18 * 60, tanke: 'Det börjar bli mörkt. Jag kan inte sova på jorden.' }],
       pamin: 'En säng. Jag behöver pengar till den.',
+      dialog: [
+        { id: 'aliSang', vem: 'ali', kanal: 'butik', text: 'Sov gott, min vän.', svarPa: 'kopt:sang', en: true },
+      ],
       klar: (S) => S.ritningar.includes('sang') || !!S.sang },
 
     { id: 'printSang', mom: 'Sova', forDu: ['darfor', 'pengarna räcker till sängen'], sak: 'sang', handling: 'printa', pil: 'skrivare', bild: 'sang',

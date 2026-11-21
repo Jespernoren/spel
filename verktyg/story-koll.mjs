@@ -5,7 +5,7 @@ import { STORY_STEG, FRAN_START, HANDLINGAR, LAGEN } from '../spel/printa-hem/st
 
 const fel = [];
 const PIL_NAMN = ['bradhog', 'vagCykel', 'startYta', 'skrivare', 'cykel', 'ali', 'vevYta', 'skjul'];   // samma namn som PIL_MAL i spel.js
-const givet = new Set(FRAN_START), sett = new Set();
+const givet = new Set(FRAN_START), sett = new Set(), dialogFore = new Set(), dialogId = new Set(), vetFore = new Set();
 STORY_STEG.forEach((p, i) => {
   const vid = `steg ${i} (${p.id || '?'})`;
   if (!p.id) fel.push(`${vid}: saknar id`);
@@ -24,6 +24,23 @@ STORY_STEG.forEach((p, i) => {
     if (fore && !igen) fel.push(`${vid}: bilden ${p.bild} hör till det klara steget ${fore.id}`);
   }
   for (const g of p.ger || []) givet.add(g);
+  // inkorg 61 (A-116): dialogen – varje replik svarar på något som redan har hänt, och förutsätter bara det spelaren redan vet
+  const koll = (vad, svarPa, vet, fore) => {
+    if (svarPa && svarPa.startsWith('dialog:') && !dialogFore.has(svarPa.slice(7))) fel.push(`${vid}: ${vad} svarar på ${svarPa}, som inte har sagts före (SVAR FÖRE ORSAK)`);
+    if (svarPa && /^(steg|malKlart):/.test(svarPa) && !sett.has(svarPa.split(':')[1])) fel.push(`${vid}: ${vad} svarar på ${svarPa}, som kommer senare (SVAR FÖRE ORSAK)`);
+    for (const f of vet || []) if (!vetFore.has(f)) fel.push(`${vid}: ${vad} förutsätter att spelaren vet "${f}", men ingen replik före ger det`);
+    for (const f of fore || []) if (vetFore.has(f)) fel.push(`${vid}: ${vad} kan bara sägas innan spelaren vet "${f}", men det vet spelaren redan (GLÖMT VAD MAN VET)`);
+  };
+  for (const d of p.dialog || []) {
+    if (!d.id) fel.push(`${vid}: en replik saknar id`);
+    if (dialogId.has(d.id)) fel.push(`${vid}: replik-id ${d.id} finns två gånger`); dialogId.add(d.id);
+    if (!['butik', 'sms', 'tanke'].includes(d.kanal)) fel.push(`${vid}: ${d.id} har okänd kanal "${d.kanal}"`);
+    if (!d.svarPa && !d.stamning) fel.push(`${vid}: ${d.id} svarar inte på något (SVARAR INTE PÅ NÅGOT)`);
+    if (d.kanal !== 'sms' && typeof d.text === 'string' && /^Ali här\b/.test(d.text)) fel.push(`${vid}: ${d.id} säger "Ali här." ansikte mot ansikte (SMS-FORM)`);
+    koll(d.id, d.svarPa, d.vet, d.fore);
+    dialogFore.add(d.id); for (const f of d.ger || []) vetFore.add(f);
+  }
+  if (p.startSvarPa || p.startVet || p.startFore) koll('starten', p.startSvarPa, p.startVet, p.startFore);   // starten får vänta på en replik i samma steg
 });
 // de gamla tabellerna får inte ha kvar poster för stegen i story.js
 const spel = fs.readFileSync(new URL('../spel/printa-hem/spel.js', import.meta.url), 'utf8');
@@ -36,4 +53,4 @@ for (const p of STORY_STEG) if (new RegExp(`x\\.id === '${p.id}'`).test(tabell('
 for (const gammal of ['DAG1_FORST', 'DU_BYGG']) if (new RegExp(`const ${gammal}\\b`).test(spel)) fel.push(`${gammal} finns kvar (står som start i story.js)`);
 
 if (fel.length) { console.log(`story-koll: ${fel.length} fel`); fel.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
-console.log(`story-koll: ${STORY_STEG.length} steg i ordning, kraver/ger går ihop, 0 fel`);
+console.log(`story-koll: ${STORY_STEG.length} steg i ordning, kraver/ger går ihop, ${dialogId.size} repliker svarar på något som redan hänt, 0 fel`);
