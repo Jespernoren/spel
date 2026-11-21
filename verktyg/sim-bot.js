@@ -274,8 +274,8 @@
   // ström: trampa vid cykeln tills det räcker
   async function strom(behov = 3) {
     if (H.solEffekt() > 0 || S.strom >= behov) return;
-    await gaTill(H.cykel, 1.2, 'cykeln'); await vanta(0.2); let n = 0;
-    while (S.strom < Math.min(behov + 4, 11.5, H.stromMax() - 0.2) && n++ < 60) { H.trampa(1.1); await vanta(1); }
+    await gaTill(H.cykel, 1.2, 'cykeln'); await siktaPa(H.cykel); let n = 0;
+    while (S.strom < Math.min(behov + 4, 11.5, H.stromMax() - 0.2) && n++ < 60) { if (!(await siktaPa(H.cykel))) { await vanta(1); continue; } H.trampa(1.1); await vanta(1); }   /* inkorg 52: trampa bara med siktet på cykeln */
   }
 
   // ---------- printa ----------
@@ -311,7 +311,7 @@
     let varv = 0;
     while (sk.jobb && varv++ < 2000) {
       if (fil(sk) < 5 && sk.jobb) { await filament(sk, 300); continue; }
-      if (!S.batteriKopt && !S.powerbank && sk.jobb && H.solEffekt() <= 0) { await gaTill(H.cykel, 1.2, 'cykeln'); await vanta(0.2); H.trampa(1.1); await vanta(1); continue; }   // DT: utan lagring går skrivaren bara medan man trampar
+      if (!S.batteriKopt && !S.powerbank && sk.jobb && H.solEffekt() <= 0) { await gaTill(H.cykel, 1.2, 'cykeln'); if (await siktaPa(H.cykel)) H.trampa(1.1); await vanta(1); continue; }   // DT: utan lagring går skrivaren bara medan man trampar
       if (H.solEffekt() <= 0 && S.strom < 1.5) { await strom(4); continue; }
       if (S.strom > 6 || H.solEffekt() > 0) {
         if (!H.extruderFull() && S.kvarn.tratt < 3 && gardsSkrap().length) { await plockaLass({}); await tomIKvarnen(); if (!S.kvarn.motor) await mal(); continue; }

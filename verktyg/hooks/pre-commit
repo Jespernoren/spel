@@ -1,5 +1,9 @@
 #!/bin/sh
 # A-065 lager 4: sekvensreglerna kollas före varje commit
+# inkorg 58 (A-113): masterfilen story.js – ordningen kollas och manuset skrivs
+node verktyg/story-koll.mjs || { echo "story-koll stoppade committen (se ovan)"; exit 1; }
+node verktyg/story-manus.mjs > /dev/null && git add verktyg/story-manus.md
+node verktyg/lint-story.mjs || { echo "lint-story stoppade committen (se ovan)"; exit 1; }
 node verktyg/lint-sekvens.mjs || { echo "lint-sekvens stoppade committen (se ovan)"; exit 1; }
 # A-067: ändras balans.js räknas ekonomin om – DYR DAG, BILLIG DAG och PLATT STEG stoppar committen
 if git diff --cached --name-only | grep -q 'printa-hem/balans.js'; then node verktyg/ekonomi.mjs > /dev/null || { node verktyg/ekonomi.mjs | tail -5; echo "ekonomi.mjs stoppade committen"; exit 1; }; fi
