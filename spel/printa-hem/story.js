@@ -9,6 +9,7 @@
 //   bild       bilden i uppgiftsrutan och över pilen – sak-id eller (S, G) => sak-id
 //   pil        var pilen pekar (namn som spelet känner, se PIL_MAL i spel.js) – annars stegets bild
 //   sak        saken steget gäller (lage(sak) styr texterna i lagen)
+//   lasText/butikNamn  (kop-steg) Alis lås-text innan köpet går, och namnet i "Låst – köp X först"
 //   handling   vad spelaren gör: spika, lyfta, stallNer, montera, valj, trampa, salj, kop, lagg, veva, printa, ta, sov
 //   kraver/ger tillstånd steget behöver och skapar (kontrolleras av verktyg/story-koll.mjs)
 //   start      det du säger direkt när steget börjar (null = det som kom precis före säger det redan)
@@ -106,7 +107,7 @@ export const STORY = [
       pamin: 'Affären mitt emot kanske köper ringarna.',
       klar: (S, G) => S.mynt >= G.KVARN_PRIS || !!S.kvarnKopt },
 
-    { id: 'aliKvarn', mom: 'Gör egen tråd', forDu: ['darfor', 'ringarna gav pengar till kvarnen'], sak: 'byggsats:gammalkvarn', handling: 'kop', pil: 'ali', bild: 'byggsats:gammalkvarn',
+    { id: 'aliKvarn', lasText: 'Kommer när storebrors rulle är slut', butikNamn: 'kvarnen', mom: 'Gör egen tråd', forDu: ['darfor', 'ringarna gav pengar till kvarnen'], sak: 'byggsats:gammalkvarn', handling: 'kop', pil: 'ali', bild: 'byggsats:gammalkvarn',
       kraver: ['kvarnPengar'], ger: ['kvarnKopt'],
       mal: 'Köp kvarnen', tal: 'Köp kvarnen hos Ali.',
       start: 'Ali har en gammal kvarn. Den gör tråd av skräp.',
@@ -157,7 +158,7 @@ export const STORY = [
       pamin: 'Ali har något åt mig.',
       klar: (S) => !!S.powerbank },
 
-    { id: 'kopGrip', mom: 'Sova', forDu: ['men', 'det tar tid att plocka skräp med händerna'], sak: 'byggsats:grip', handling: 'kop', pil: 'ali', bild: 'byggsats:grip', las: 'grip', lapp: 'ritning',
+    { id: 'kopGrip', lasText: 'Kommer när kvarnen står', butikNamn: 'gripen', mom: 'Sova', forDu: ['men', 'det tar tid att plocka skräp med händerna'], sak: 'byggsats:grip', handling: 'kop', pil: 'ali', bild: 'byggsats:grip', las: 'grip', lapp: 'ritning',
       kraver: ['powerbank'], ger: ['gripRitning'],
       mal: (S) => S.mynt >= 50 ? 'Köp skräpgripen' : 'Spara till gripen', tal: 'Köp en skräpgrip hos Ali. Den kostar femtio kronor.',
       talSpara: ['Printa och sälj nyckelringar tills du har femtio kronor till gripen.', 50],
@@ -188,7 +189,7 @@ export const STORY = [
       pamin: 'Krukan till Ali.',
       klar: (S) => (S.stat.krukaSald || 0) >= 1 },
 
-    { id: 'kopSang', mom: 'Sova', forDu: ['men', 'sängen kostar mer än jag har'], sak: 'sang', handling: 'kop', pil: 'ali', bild: 'sang',
+    { id: 'kopSang', lasText: 'Kommer när första krukan är såld', butikNamn: 'sängen', mom: 'Sova', forDu: ['men', 'sängen kostar mer än jag har'], sak: 'sang', handling: 'kop', pil: 'ali', bild: 'sang',
       kraver: ['krukaSald'], ger: ['sangRitning'],
       mal: (S, G) => S.mynt >= G.SANG_INSTRUKTION ? 'Köp sängen' : 'Spara till sängen', tal: 'Köp 3D-modellen till sängen hos Ali.',
       talSpara: ['Printa och sälj mer tills du har sextio kronor till sängen.', 'SANG_INSTRUKTION'],
