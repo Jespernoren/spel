@@ -72,7 +72,10 @@ ut.push([`startrepliken sägs (${startar.length - ejSagd.length}/${startar.lengt
 const kv = steg1.filter((s) => typeof s.kvitto === 'string');
 const kvFel = kv.filter((s) => { const h = L.find((e) => e.kalla === 'händelse' && e.vem === 'malKlart' && e.text.includes('id=' + s.id + ' ')) || L.find((e) => e.kalla === 'händelse' && e.vem === 'malKlart' && e.text.endsWith('id=' + s.id)); const k = L.find((e) => e.kalla === 'kvittens' && e.text === s.kvitto); return !k || (h && k.tot > h.tot + 4); });
 ut.push([`kvittot efter steget (${kv.length - kvFel.length}/${kv.length})${kvFel.length ? ' – saknas: ' + kvFel.map((s) => s.id).join(', ') : ''}`, !kvFel.length]);
-const FLAGGOR = ['SEKVENSFEL', 'REDAN GJORT', 'FEL PLATS I TEXT', 'GÅVA SOM KÖP', 'PIL PÅ GJORD SAK'];
+// inkorg 59: din egen röst före berättaren – skyltens startreplik först, ingen uppläsning av målet efter
+{ const roster = L.filter((e) => e.kalla === 'röst'); const forst = roster.findIndex((e) => String(e.text).includes('Först borde jag spika upp en skylt')); const ber = roster.findIndex((e) => /^Spika upp din adresskylt/.test(String(e.text)));
+  ut.push([`inkorg 59: "Först borde jag spika upp en skylt…" sägs (${forst >= 0}), berättaren läser inte "Spika upp din adresskylt." (${ber < 0 ? 'ingen' : 'röst nr ' + ber})`, forst >= 0 && ber < 0]); }
+const FLAGGOR = ['SEKVENSFEL', 'REDAN GJORT', 'FEL PLATS I TEXT', 'GÅVA SOM KÖP', 'PIL PÅ GJORD SAK', 'BERÄTTAREN FÖRE DIG', 'RÖST AVBRUTEN'];
 const br = L.filter((e) => e.kalla === 'brott' && FLAGGOR.includes(e.vem));
 ut.push([`0 ${FLAGGOR.join(', 0 ')} dag 1 (${br.map((e) => e.vem + ': ' + e.text).join(' · ') || 'inga'})`, !br.length]);
 ut.push([`dag 1 spelad till sömnen (${L.filter((e) => e.kalla === 'händelse' && e.vem === 'malKlart').length} mål)`, r.dagar.length >= 1]);
