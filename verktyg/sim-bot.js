@@ -595,6 +595,7 @@
       const stopp = tid + maxMin * 60; let sista = -1, samma = 0, stegT = tid;
       while (S.dag < tillDag && tid < stopp) {   // B55: boten kör vidare in i kapitel 2
         { let w = 0; while (H.pratar?.() && w++ < 120) await vanta(0.1); }   // en spelare lyssnar klart innan hen gör nästa sak
+        if (window.__simVidSteg) try { await window.__simVidSteg(H.stegId?.() || ''); } catch {}   /* inkorg 44: testerna kan titta på varje steg */
         const fore = S.steg + ':' + S.dag; console.log(`[sim] dag ${S.dag} ${fmt(tid - dagStart)} ${S.mynt} kr · ${H.stegId?.() || ''} · ${(H.stegText() || '').slice(0, 50)} · kö ${H.kanalLage?.().n ?? "?"}`); await gorSteg();
         if (NY && nyMalSteg.steg === S.steg && !H.pausad()) {   /* A-081: framsteg = målet byts. Mer än 30 s → FÖRVIRRAD, mer än 2 min utan en handling → FAST */
           const nyckel = [S.steg, S.stat.plockat, S.stat.printat, S.stat.salt, Math.floor((S.stat.trampat || 0) / 5), S.stat.malt, S.mynt, S.kvarn?.ut | 0].join(':');

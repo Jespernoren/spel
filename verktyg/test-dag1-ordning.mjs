@@ -51,10 +51,22 @@ await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.m
 let n = 0, forra = '';
 const dumpa = setInterval(async () => { try {
   const k = await p.evaluate(() => { const P = window.__printahem; return P.S.dag > 1 ? 'slut' : P.S.steg + '|' + (P.medEl2.hidden ? '' : 'sida'); });
-  if (k === 'slut') return; if (k !== forra) { forra = k; n++; await p.screenshot({ path: `verktyg/a063-steg-${String(n).padStart(2, '0')}.png` }); }
+  if (k === 'slut') return; if (k !== forra) { forra = k; n++; await p.screenshot({ path: `verktyg/a063-steg-${String(n).padStart(2, '0')}.png` });
+ }
 } catch {} }, 700);
-const r = await p.evaluate(() => window.__simBot.kor(2, 30)); clearInterval(dumpa);
-const L = r.logg.filter((e) => e.dag === 1), ut = []; fs.writeFileSync('/tmp/a063-logg.json', JSON.stringify(L));
+await p.exposeFunction('__a100bild', async (id) => { fs.mkdirSync('verktyg/a100', { recursive: true }); await p.screenshot({ path: `verktyg/a100/pil-${id}.png` }); });
+await p.evaluate(() => { const sett = {}; window.__a100 = sett; const tl = window.__textLogg; window.__textLogg = (k, v, t, ...r) => { try { tl?.(k, v, t, ...r); } finally { if (k === 'pil' || k === 'målruta') { const id = window.__printahem?.stegId?.(); if (/^(strom|valjModell|trampa)$/.test(id) && !sett[id]) window.__simVidSteg(id); } } }; window.__simVidSteg = async (id) => { if (!/^(strom|valjModell|trampa)$/.test(id) || sett[id]) return; sett[id] = {}; const P = window.__printahem, S = P.S, st = P.STEGLISTA()[S.steg];
+  const m = P.malPunkt(); const V = P.THREE.Vector3; const nara = m ? [['cykeln', P.cykelObj()], ['skrivaren', P.skrivareLista().find((x) => x.id === 'g1')?.mesh], ['generatorn', P.genStar], ['cykeln vid vägen', P.vagCykelObj()]].filter(([, o]) => o && o.visible !== false).map(([n, o]) => [n, o.getWorldPosition(new V()).setY(m.y).distanceTo(m)]).sort((a, b) => a[1] - b[1])[0] : null;
+  sett[id] = { text: P.stegText(), bild: (() => { try { return typeof st.bild === 'function' ? st.bild() : st.bild; } catch { return ''; } })(), pekar: nara ? nara[0] : '–', avst: nara ? +nara[1].toFixed(2) : 99 };
+  const sp = P.spelare; if (m) { const d = 3.2, x = m.x + 2.2, z = m.z + 2.3; sp.pos.set(x, sp.pos.y, z); sp.yaw = Math.atan2(-(m.x - x), -(m.z - z)); sp.pitch = Math.atan2(m.y - 1.6, d); P.kameraObj().position.set(x, 1.6, z); P.kameraObj().rotation.set(sp.pitch, sp.yaw, 0, 'YXZ'); }
+  const pil = P.malPilObj(), v0 = pil.visible, p0 = pil.position.clone(); if (m) { pil.position.copy(m); pil.visible = true; } P.rendera(); await window.__a100bild(id); pil.visible = v0; pil.position.copy(p0); };   /* bara för bilden: pilen där malPunkt säger (den flyttas på riktigt när steget sägs) */ });
+const r = await p.evaluate(() => window.__simBot.kor(2, 30));
+const pilar = await p.evaluate(() => window.__a100); clearInterval(dumpa);
+const L = r.logg.filter((e) => e.dag === 1), ut = [];
+for (const [id, x] of Object.entries(pilar)) console.log(`  pilen i ${id}: "${x.text}" · bild ${x.bild} · pekar på ${x.pekar}`);
+{ const P = pilar || {}, ok = (id, re, bild, text) => !!P[id] && re.test(P[id].pekar) && P[id].avst < 1.5 && (!bild || P[id].bild === bild) && (!text || P[id].text === text);
+  ut.push([`inkorg 44: pilen efter Ställ upp skrivaren pekar på cykeln (${JSON.stringify(P.strom || null)}), efter generatorn på skrivaren med "Välj vad skrivaren ska printa" (${JSON.stringify(P.valjModell || null)}), efter vald print på cykeln (${JSON.stringify(P.trampa || null)}) – bilder i verktyg/a100/`, ok('strom', /cykeln/, 'cykelS') && ok('valjModell', /skrivaren/, 'skrivareS', 'Välj vad skrivaren ska printa') && ok('trampa', /^cykeln$/, 'cykelS', 'Trampa cykeln')]);
+  const pg = L.filter((e) => e.kalla === 'brott' && e.vem === 'PIL PÅ GJORD SAK'); ut.push([`0 PIL PÅ GJORD SAK dag 1 (${pg.map((e) => e.text).join(' · ') || 'inga'})`, !pg.length]); } fs.writeFileSync('/tmp/a063-logg.json', JSON.stringify(L));
 const mal = L.filter((e) => e.kalla === 'händelse' && e.vem === 'malKlart');
 const rader = [];
 for (const h of mal) {
