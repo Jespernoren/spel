@@ -1374,10 +1374,17 @@ if (Array.isArray(S.pos) && S.pos.every(Number.isFinite)) {
 const interaktor = new Interaktor(kamera, scen, { rackvidd: 3.2, baraSynliga: true });   // punkt AS: det som inte står på gården än går inte att använda
 /* inkorg 41b: verktygFor(sak) – vilket verktyg ett klick på saken kräver. Interaktorn tar fram det före aktivera, för alla saker,
    och FEL I HANDEN kollas på samma ställe: det som syns i bild är det som används. 'hand' = plats 1 (handen, gripen eller magneten). */
+const VERKTYG_MAL = [
+  [(o) => slyKlumpar.some((k) => k.g === o && k.g.visible), 'motorsag'],
+  [(o) => o === bergYta, 'hacka'],
+  [(o) => o === aderYta, 'vaskpanna'],
+];
 function verktygFor(o) {
   if (!o) return null;
   try {
     if (o === bradhog && !S.skyltUppe) return 'hammare';
+    /* inkorg 50 p.1: verktygen i kapitel 3–4 går genom samma tabell – klicket tar fram verktyget när det ligger i raden */
+    for (const [mal, v] of VERKTYG_MAL) { let t = false; try { t = mal(o); } catch {} if (t) return v; }
     if (o.userData?.typ === 'skrap') { if (o.userData.sort === 'kajak') return null; if (valdKarra() && !o.userData.tung) return null; return o.userData.tung ? 'sackkarra' : 'hand'; }
     const st = STEG[S.steg], b = st && (typeof st.bild === 'function' ? st.bild() : st.bild);
     if (b && MONTERA[b] && antalI(S.hotbar, b, 1) && (MONTERA[b].mal?.() || []).includes(o)) return b;   /* uppgiften är att montera det du har i raden */
@@ -1385,12 +1392,18 @@ function verktygFor(o) {
   return null;
 }
 const verktygFramme = (v) => v === 'hand' ? skrapLage() && !tomhant : valdTyp() === v;
-const verktygIRaden = (v) => v === 'hand' || antalI(S.hotbar, v, 1) > 0;
-function taFramVerktyg(v) { if (!v || verktygFramme(v)) return; const forra = valdTyp(); if (v === 'hand') { tomhant = false; byt(0); if (forra === 'hammare' && !S.hammareVantar) { S.hammareVantar = true; tanke('Hammaren får vänta.', 'inkorg 41: klicket på skräp tar fram handen', 'REAKTION'); } } else valjTyp(v); }
+const verktygIRaden = (v) => v === 'hand' || antalI(S.hotbar, v, 1) > 0 || (S.ryggsack || []).some((x) => x?.typ === v);   /* inkorg 50 p.1: ryggsäcken räknas – du har verktyget med dig */
+function verktygTillRaden(v) {   // ligger verktyget i ryggsäcken flyttas det till en ledig plats i raden (eller byter plats med det som är valt)
+  if (v === 'hand' || antalI(S.hotbar, v, 1) > 0) return; const r = (S.ryggsack || []).findIndex((x) => x?.typ === v); if (r < 0) return;
+  let i = S.hotbar.findIndex((x, j) => j > 0 && !x); if (i < 1) i = S.vald > 0 ? S.vald : S.hotbar.length - 1;
+  const ut = S.hotbar[i]; S.hotbar[i] = S.ryggsack[r]; S.ryggsack[r] = ut || null; ritaHotbar(); sparaSnart();
+}
+function taFramVerktyg(v) { if (!v || verktygFramme(v)) return; verktygTillRaden(v); const forra = valdTyp(); if (v === 'hand') { tomhant = false; byt(0); if (forra === 'hammare' && !S.hammareVantar) { S.hammareVantar = true; tanke('Hammaren får vänta.', 'inkorg 41: klicket på skräp tar fram handen', 'REAKTION'); } } else valjTyp(v); }
 /* inkorg 41b: en monteringsplats syns för siktet också när delen ligger i raden men inte är framme – klicket tar fram den */
 function provMed(v, fn) { const gammal = S.vald, i = S.hotbar.findIndex((x, j) => j > 0 && x?.typ === v); if (i < 1) return false; S.vald = i; try { return fn(); } catch { return false; } finally { S.vald = gammal; } }
 { const reg0 = interaktor.registrera.bind(interaktor); interaktor.registrera = (obj, info, ...r) => {
   const montV = (o) => { const v = verktygFor(o); return v && v !== 'hand' && !verktygFramme(v) && verktygIRaden(v) ? v : null; };
+  if (info && !info.kanAktivera && info.text) { const t0 = info.text; info.text = (o = obj) => { const v = montV(o); if (v) { const t = provMed(v, () => (typeof t0 === 'function' ? t0(o) : t0)); if (t) return t; } return typeof t0 === 'function' ? t0(o) : t0; }; }   /* inkorg 50 p.1: pekrutan säger vad verktyget i raden gör */
   if (info?.kanAktivera) { const k0 = info.kanAktivera; info.kanAktivera = (o = obj) => { if (k0(o)) return true; const v = montV(o); return !!(v && provMed(v, () => k0(o))); };
     const t0 = info.text; info.text = (o = obj) => { const v = !k0(o) && montV(o); if (v) { const t = provMed(v, () => (typeof t0 === 'function' ? t0(o) : t0)); if (t) return t; } return typeof t0 === 'function' ? t0(o) : t0; }; }
   return reg0(obj, info, ...r); }; }

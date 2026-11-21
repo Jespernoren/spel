@@ -81,6 +81,16 @@ await sattRad(() => { const P = window.__printahem, S = P.S; S.hotbar[6] = { typ
 await p.keyboard.press('Digit1'); await p.waitForTimeout(300);
 const k0 = await lage(); const ks = await siktaObj("P.MONTERA['byggsats:vindsnurra'].mal()[0]"); await klick(); const k1 = await p.evaluate(() => ({ kvar: window.__printahem.S.hotbar.some((x) => x?.typ === 'byggsats:vindsnurra'), steg: window.__printahem.S.steg }));
 ut.push([`montering: ${k0.typ} vald, klick på skjulet (${ks.namn || ks.fel}) → vindsnurran tagen ur raden och monterad (${!k1.kvar})`, ks.namn === 'ok' && !k1.kvar]);
+// inkorg 50 p.1: motorsågen (slyet) och vaskpannan (bäcken) – hammaren vald, verktyget ligger i raden (motorsågen i ryggsäcken)
+await sattRad(() => { const S = window.__printahem.S; S.hotbar[7] = { typ: 'vaskpanna', n: 1 }; const r = S.ryggsack.findIndex((x) => !x); S.ryggsack[r >= 0 ? r : 0] = { typ: 'motorsag', n: 1 }; S.hotbar[8] = { typ: 'hacka', n: 1 }; window.__printahem.slyKlumpar.forEach((k) => { k.g.visible = true; }); S.guldAder = true; window.__printahem.ader.visible = true; });
+await p.keyboard.press('Digit2'); await p.waitForTimeout(300);
+{ const s0 = await lage(); const ss = await siktaObj('P.slyKlumpar[0].g'); await klick(); const s1 = await lage();
+  ut.push([`motorsågen: ${s0.typ} vald, motorsågen i ryggsäcken, klick på slyet (${ss.namn || ss.fel}) → ${s1.typ}`, s1.typ === 'motorsag']); }
+await p.keyboard.press('Digit2'); await p.waitForTimeout(300);
+{ const v0 = await lage(); const vs = await p.evaluate(() => { const P = window.__printahem, I = P.interaktorObj(), y = P.ader.children.find((c) => c.isMesh && c.material?.colorWrite === false); I.hovrad = y; I.aktivera(); return { namn: y ? 'bäckens yta (siktet satt direkt, bäcken ligger i svackan)' : null, fel: 'ingen yta' }; }); await p.waitForTimeout(300); const v1 = await lage();
+  ut.push([`vaskpannan: ${v0.typ} vald, klick på bäcken (${vs.namn || vs.fel}) → ${v1.typ}`, v1.typ === 'vaskpanna']); }
+{ const h = await p.evaluate(() => window.__printahem.verktygFor(window.__printahem.bergYta));
+  ut.push([`hackan: ådern i gruvan kräver ${h} (samma tabell, klicket tar fram den)`, h === 'hacka']); }
 const allaBrott = await p.evaluate(() => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && e.vem === 'FEL I HANDEN').map((e) => e.text));
 ut.push([`0 FEL I HANDEN (${allaBrott.join(' · ') || 'inga'})`, !allaBrott.length]);
 ut.push([`0 sidfel (${fel.slice(0, 2).join(' · ') || 'inga'})`, !fel.length]);
