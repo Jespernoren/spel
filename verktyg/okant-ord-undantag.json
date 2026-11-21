@@ -1,0 +1,790 @@
+[
+{
+"block": "ROLF_RA",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ROLF",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ROLF_JOBB",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ROLF_RIK",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ROLF_TACK",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "CHEFEN",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ROLF_IBLAND",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ROLF_JOBBLAPP",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ROLF_SACK_LAPP",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ROLF_PAKET_LAPP",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ROLF_SALJLADA",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ALI_UPPLAS",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ALI_SPECIAL",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ALI_STOLT",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ALI_NY_MALL",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ALI_GAMMALKVARN",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ALI_BATTERI",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ALI_POWERBANK",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ALI_PB_KOM",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ALI_FORSTA",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ALI_HEJ",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ALI_KLICKAR",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "ALI_NIVA5",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "KJELLE_SLUT",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "KJELLE_TOM",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "KJELLE_FORSTA",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "KJELLE_JUL",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "GUNBRITT_1",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "GUNBRITT_2",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "GAST_ROLF",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "GAST_KLAR_ROLF",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "HELEN_ROLF_SMS",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "HELEN_ROLF_RITNING",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "HELEN_GAST_ROLF",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "HELEN_QUIRK",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "GRUS_T",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "RESA",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "UTSIKT_T",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "BAGE_T",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "JUL_REPLIK",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "JULSCEN_REPLIK",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "julScen",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "familjSms",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "MAMMA_BURK_ARG",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "BROR_SMS2",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "PROTO_SVAR",
+"skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
+},
+{
+"block": "VAROR",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "MASKINER",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "MASKIN_GER",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "nivaText",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "TRIM",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "HYLLOR",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "aliKopLista",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "aliDuFar",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "oppnaMarknad",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "oppnaPrintMeny",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "printKort",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "slagChip",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "SALJ_GRUPPER",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "saljGrupp",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "oppnaSaljlada",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "saljladaText",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "oppnaInv",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "invFlytta",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "invKlick",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "invAvsluta",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "oppnaDator",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "oppnaMark",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "MARK_TOMTER",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "MARK_GER",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "kopMark",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "kopDirekt",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "oppnaJobbVal",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "oppnaRespekt",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "oppnaSkapet",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "oppnaDagbok",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "oppnaLjud",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "BELONING_NAMN",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "PRESTATIONER",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "RANGER",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "efterspelKvar",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "efterspelHtml",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "julEfterBrev",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "AVSANDARE",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "ALI_MAX",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "WEBB_KUNDER",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "DN_TRIVSEL",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "trivselRad",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "trivselToast",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "markeraAliIdag",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "aliVillHtml",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "gavaKort",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "aliVisaRad",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "smsBubbla",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "visaHotbarNamn",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "fabriksplanSvg",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "husvagnText",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "uppdatera",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "(toppen)",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "dagensMalHtml",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "sopbilText",
+"skal": "Visas bara i en meny, butiken, pekrutan eller HUD:en. Regelvakten läser de texterna varje sekund (OKÄNT ORD i synligaTexter)."
+},
+{
+"block": "STEG",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "STEG_TAL",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "JAG_TAL",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "PAMINN_T",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "KNUFF_T",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "FOR_DU",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "KEDJA_TEXT",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "stegKonkret",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "nuTips",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "TANKAR_NYA",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "MORGON_TANKAR",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "DAG_STORY",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "FLAGGAN_T",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "POST_FLAGGA_T",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "PUFFAR",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "FORSTA",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "KLAGO",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "HUMOR_T",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "humorNyckelringar",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "GORAN_FAGELBAD",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "GULD_T",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "FRO_T",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "HELEN_MINNEN",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "tipsFor",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "underTiden",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "ALI_FORBI",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "ALI_NEJ",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "SACK_FLYG_T",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "LAPPAR",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "lappInfo",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "rolfSteg",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "D1",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "startaTidtipp",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "monteraAuto",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "byggAuto",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "lastaPaBand",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "petgAktivera",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kolfText",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kolfAktivera",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "flaskhals",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "tapetsera",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "uppdateraSkymning",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "efterBeloning",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "visaFynd",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "mammaLugn",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kollaKyla",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "rolfFyndSms",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "giAliBonus",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "malFynd",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kanNu",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kollaAliSteg",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "saljTillAli",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "saljladaAktivera",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kedjaLas",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "nastaAtgard",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "filGrund",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "maskinStopp",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "stromFix",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "SMS_POOL",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "ROLF_MARK",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "startaResa",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "resaSteg",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "slutaResa",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "startaRolfVidHusvagn",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "uppdateraGast",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kollaBengt",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "visaBengtTyst",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "grav",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kollaTradgard",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "POLAROID",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kapitelSlut",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kollaBengtAvslojande",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "tippSvep",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kollaUtsikt",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "startaUtsikt",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "helenReplik",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "pratHelen",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "geHelen",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "helenSkjulKlart",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kollaHelen",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "rolfKaparGrinden",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kjelleText",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kjelleSand",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "uppdateraGoran",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kollaGoran",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "ata",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "aliSmsIdag",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "aliSenare",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "PAPPA_SCEN",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "ALI_KANNA",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "tippaLast",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "tippSvavarKoll",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "rostManus",
+"skal": "Röstmanus för inspelning. Visas aldrig i spelet."
+},
+{
+"block": "BESOK",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "webbLaggIPostlada",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+},
+{
+"block": "kollaRaddning",
+"skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
+}
+]

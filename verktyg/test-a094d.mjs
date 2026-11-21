@@ -26,6 +26,8 @@ async function sida(namn, spar, gor) {
   await p.waitForTimeout(1500);
   matt[namn] = await p.evaluate(MATT);
   if (matt[namn]) await p.screenshot({ path: `${dir}dagbok-${namn}.png` });
+  matt[namn + ':nyheterPaSidan'] = await p.evaluate(() => !!document.querySelector('.ph-dk-a4 .ali-vill, .ph-dk-a4 .nytt-rad, .ph-dk-a4 .br-rapport'));
+  if (/morgon/.test(namn)) { await p.keyboard.press('Enter'); await p.waitForTimeout(1500); matt[namn + ':nytt'] = await p.evaluate(() => { const n = document.querySelector('.ph-nytt'); return n ? { text: n.innerText.replace(/\s+/g, ' ').slice(0, 160), hogtalare: !!n.querySelector('.ph-lasupp'), uppeHoger: n.getBoundingClientRect().right > innerWidth - 60 && n.getBoundingClientRect().top < 200 } : null; }); if (matt[namn + ':nytt']) await p.screenshot({ path: `${dir}nytt-${namn}.png` }); }
   matt[namn + ':brott'] = await p.evaluate(() => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && /ANNAN DAGBOKSLAYOUT|LÅNG DAGBOK|DÖD KNAPP|TEXT UTAN HÖGTALARE/.test(e.vem)).map((e) => e.vem + ' ' + e.text));
   await p.close();
 }
@@ -57,6 +59,9 @@ ut.push([`"Dag N." i fetstil och nedräkningen på två rader utan radbrytning (
 ut.push([`FORTSÄTT nere i mitten ca 24 px från kanten (${ok.map((m) => `${m.knappKant} px, ${m.knappMitt} px från mitten`).join(', ')})`, ok.every((m) => Math.abs(m.knappKant - 24) <= 3 && m.knappMitt <= 2)]);
 ut.push([`högtalaren uppe till höger, utan text (${ok.map((m) => `${m.rostUppeHoger} "${m.rostText}"`).join(', ')})`, ok.every((m) => m.rostUppeHoger && !m.rostText)]);
 ut.push([`ingen avatar och inget "Dagbok" (${ok.map((m) => `${m.avatar} ${m.dagbokOrd}`).join(', ')})`, ok.every((m) => !m.avatar && !m.dagbokOrd)]);
+ut.push([`Ali, webbshopen och igår står inte på sidan (${N.map((n) => matt[n + ':nyheterPaSidan']).join(', ')})`, N.every((n) => matt[n + ':nyheterPaSidan'] === false)]);
+const ny = matt['dag10-morgon:nytt'];
+ut.push([`dag 10: Nytt i morse uppe till höger efter FORTSÄTT, med 🔊 (${ny ? ny.text : 'syntes inte'})`, !!ny && ny.hogtalare && ny.uppeHoger && /Ali vill ha/.test(ny.text) && /Igår/.test(ny.text)]);
 const br = N.flatMap((n) => matt[n + ':brott'] || []);
 ut.push([`0 ANNAN DAGBOKSLAYOUT, LÅNG DAGBOK, DÖD KNAPP, TEXT UTAN HÖGTALARE (${br.join(' · ') || 'inga'})`, !br.length]);
 ut.push([`0 sidfel (${fel.slice(0, 2).join(' · ') || 'inga'})`, !fel.length]);

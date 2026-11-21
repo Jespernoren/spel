@@ -526,7 +526,7 @@ const LAPPAR = {
   // punkt N: Rolfs brev dag 11 och efter växthuset
   tr_brev: ['✉️ Brev från Rolf', 'ÖJ. Ja va int mä mej själv på konditoriet. Förlåt att ja prata så mycke. Bakom husvagnen fanns Birgittas trädgård. Nu ä dä bara nässlor. Ja har int rört den på sju år. Ja kan int. Men om nån annan började … Ja vet int. Du ä ju bra på skräp. MVH ROLF'],
   tr_rosor: ['✉️ Brev från Rolf', 'Hon hade gillat dä. Ja planterade rosorna i natt. Kajsa höll ficklampan. Hon ä int bra på att hålla ficklampa. MVH ROLF'],
-  skylt: ['📔 Dagbok', 'Spikade ihop en skylt av lösa bräder från tippen.\n\nSoptippsvägen 1.\n\nDet är inte mycket för världen.\nMen det är MITT.'],
+  skylt: ['📔 Dagbok', 'Spikade ihop en skylt av lösa bräder från skräpberget.\n\nSoptippsvägen 1.\n\nDet är inte mycket för världen.\nMen det är MITT.'],
   start: ['📔 Dagbok', 'Dag 1. Nitton år. Inget mer tjat.\n\nEn skrivare, ett skjul och en säng.\nDet räcker för i natt.\n\nGården är full av skräp. I morgon.'],   /* inkorg 24 p.3: kvällen slutar med morgondagens problem */
   sang: ['📔 Dagbok', 'Första natten i en riktig säng.\nJag printade den själv.'],
   mammajul: ['🎁 Brev från Mamma', 'Du sa att du skulle fira jul ensam. Jag är glad att du ljög. Kram, Mamma'],   /* inkorg 24c p.3: brevet i julklappen svarar på vadet */
@@ -629,7 +629,7 @@ const KAPITEL = [null,
   { namn: 'Fabriken sköter sig själv', mal: 'Maskiner som jobbar åt dig.' },
   { namn: 'Folkbokförd', mal: 'Mark, ett hus och en adress före jul.' }];
 const KAP1_NAMN = 'Ett hem att bo i', KAP1_MAL = 'Ett varmt hem. Lite mysigt också.';   /* A-062: en mening per rad */
-const D1 = 'Dag 1 – Kom igång', N1 = 'Dag 2 – Tippen och Rolf', N2 = 'Dag 3 – En skrivare till och taket', N3 = 'Dag 4 – Kärran och mer vind', N4 = 'Dag 5 – Tätt och mysigt';
+const D1 = 'Dag 1 – Kom igång', N1 = 'Dag 2 – Tippen bredvid', N2 = 'Dag 3 – En skrivare till och taket', N3 = 'Dag 4 – Kärran och mer vind', N4 = 'Dag 5 – Tätt och mysigt';
 const KAP1_DELAR = [D1, N1, N2, N3, N4];   // en dag = en nivå – du sover dig vidare
 const KAP_DELAR = [null, KAP1_DELAR, [R6, R7, R8, R9, R10], [F11, F12, F13, F14, F15], [M16, M17, M18, M19, M20, M21, M22]];
 const kapitelFor = (del) => KAP_DELAR.findIndex((d) => d && d.includes(del));
@@ -4707,6 +4707,7 @@ paHandelse('morgonkortStangt', () => { morgonVantar = false; malKlartTid = perfo
 const arKvitto = (x) => x.vikt === 'MÅL' ? 0 : (x.kedja || x.kvitto) ? 1 : x.infoKvitto ? 0.5 : 0;   /* A-080: ett svar på ett klick är också en kvittens, men efter berättelsens kvittens */   /* A-080: ett svar på det man just gjorde är också en kvittens */   /* A-065 lager 1: kvittensen har förtur framför allt annat i kön */
 const notisNyckel = (t) => String(t).replace(/[\d%]+/g, '#').replace(/×#/g, '').trim();
 function kanalLagg(it) {
+  if (it.text && !it.ko) { it.ko = 1; koKoll(it.text, it.vem, it.sms ? 'sms' : it.info ? 'info' : it.arTanke ? 'tanke' : /^värld:/.test(it.vem || '') ? 'bubbla' : 'kön'); }   /* inkorg 36 */
   if (it.sms && performance.now() - dagStartTid < SMS_TIDIGAST) it.tidigast = Math.max(it.tidigast || 0, dagStartTid + SMS_TIDIGAST);   // BV: inget sms de första 30 s
   if (it.text && !/^\(/.test(it.text) && [kanalAktiv, ...kanal, ...kanalSenare].some((x) => x && x.vem === it.vem && x.text === it.text)) { textLogg('struken', it.vem || '', it.text, 'EC#4: står redan i kön'); return; }   // EC#4: samma text köas aldrig två gånger
   const nu0 = performance.now(); it.t = it.t0 ?? nu0; it.vikt = it.vikt || 'REAKTION'; it.dag = it.dag ?? S.dag;
@@ -6304,16 +6305,16 @@ function sov() {
     const del = nasta?.del || (S.julFirad ? 'Efterspelet' : 'Fritt bygge');
     // BN: morgonkortet visar storyn – rubrik, en mening om dagens storymål, gårdagen, Alis vara, humörfrågan och morgontanken. Inga delmål.
     const tanke = morgonTanke(); S.morgonTanke = tanke; S.morgonTankeIgar = tanke?.id || S.morgonTankeIgar;
-    const ig = S.igar, rapport = ig ? `<span class="br-rapport">${S.saljLadaIgar ? `📦 Ali hämtade säljlådan i natt: ${S.saljLadaIgar.n} st · +${krT(S.saljLadaIgar.summa)} kr<br>` : ''}${S.webbIgar ? `🖥️ Webbshopen: ${S.webbIgar.n} paket levererade · +${krT(S.webbIgar.du)} kr<br>` : ''}Igår: ${ig.printat} printat · ${ig.salt} sålt</span>` : '';
+    const ig = S.igar, rapport = ig ? `${S.saljLadaIgar ? `<div class="nytt-rad">📦 <span>Ali hämtade säljlådan i natt: ${S.saljLadaIgar.n} st · +${krT(S.saljLadaIgar.summa)} kr</span></div>` : ''}${S.webbIgar ? `<div class="nytt-rad">🖥️ <span><b>Webbshopen:</b> ${S.webbIgar.n} paket levererade · +${krT(S.webbIgar.du)} kr</span></div>` : ''}<div class="nytt-rad">📈 <span><b>Igår:</b> ${ig.printat} printat · ${ig.salt} sålt</span></div>` : '';   /* inkorg 35 tillägg 09:55: nyheterna är ett eget block, inte dagbok */
     /* A-076 tillägg 14:22/15:40: morgonsidan är dagbokskortet – högst 2 meningar, direkt när dagen börjar, spelet står still bakom */
     const dagText = [julRad(S.dag), INSATS[S.dag - 1]].filter(Boolean).join('\n') || 'En ny dag.';   /* A-088 §4: insatsen på rad två. Dagnumret står bara i nedräkningsraden (inkorg 26 p.1) och insatsen är dagens mål, så DAG_STORY behövs inte här (LÅNG DAGBOK: högst 2 meningar) */
     if (S.dag <= JULAFTON_DAG && !INSATS[S.dag - 1]) regelvakt.brott('UTAN INSATS', `morgonkortet dag ${S.dag} har ingen andra rad`);   /* inkorg 24 p.2: nedräkningen först, sedan dagens mål. Morgontanken sägs som tanke efter dagens första mål (morgonkortStangt). */   /* inkorg 10d: en tanke per rad, luft emellan */
-    const extra = `${aliVillHtml()}${rapport}${!nasta && S.julFirad ? efterspelHtml() : ''}`;
+    const nytt = `${aliVillHtml()}${rapport}`, extra = `${!nasta && S.julFirad ? efterspelHtml() : ''}`;   /* inkorg 35 tillägg 09:55: Ali, webbshopen och igår blir blocket Nytt i morse efter FORTSÄTT */
     const kapK = +Object.keys(KAP_RITNING).find((n) => KAP_RITNING[n].dag === S.dag) || 0, kapR = kapK && !(S.kapRitSedd || []).includes(kapK) ? KAP_RITNING[kapK] : null;
     if (kapR) { S.kapRitSedd = [...(S.kapRitSedd || []), kapK]; S.kapVisad = [...new Set([...(S.kapVisad || []), kapK])]; sparaSnart(); }   /* A-088 §3: kapitelkortet ersätter morgonkortet och det gamla rubrikkortet */
     hurVarDagen(natt, () => { ui.starta(true); dagenBorjar(() => kapR
-      ? (dagbokKort(kapR.men, { rubrik: `KAPITEL ${kapK} · ${julRad(S.dag).replace(/\.$/, '')}`, morgon: true, extra: kapRitningHtml(kapK) + extra }), kapRitAuto())
-      : dagbokKort(dagText, { rubrik: forstaStor(del.replace(/^Dag \d+ – /, '')), morgon: true, extra })); });
+      ? (dagbokKort(kapR.men, { rubrik: `KAPITEL ${kapK} · ${julRad(S.dag).replace(/\.$/, '')}`, morgon: true, extra: kapRitningHtml(kapK) + extra, efter: () => visaNyttIMorse(nytt) }), kapRitAuto())
+      : dagbokKort(dagText, { rubrik: forstaStor(del.replace(/^Dag \d+ – /, '')), morgon: true, extra, efter: () => visaNyttIMorse(nytt) })); });
     const vanta = setInterval(() => { if (!ui.igang) return; clearInterval(vanta); handelse('morgonkortStangt', { dag: S.dag }); const f = morgonKo; morgonKo = null; if (f) setTimeout(f, 2500); }, 300);
   }, 5500);
 }
@@ -8017,7 +8018,7 @@ function uppdateraBesok(dt) {
 }
 
 // ---------- CR: datorn och webbshoppen – beställningar betalar mer än Ali, paketen går med Rolf ----------
-const WEBB_KUNDER = ['Gun-Britt i Nässjö (mammas väninna)', 'Lasse på bussdepån (Rolfs polare)', 'Någon i Mora', 'En pensionär i Kiruna', 'Kenneth på bilskroten', 'Två syskon i Lund', 'En lärare i Sundsvall', 'Ett kafé i Ystad', 'Majken, 91, i Skellefteå', 'Någon som bara skrev "hej"', 'En fotbollsklubb i Borås', 'Agneta på biblioteket'];
+const WEBB_KUNDER = ['Majvor i Nässjö (mammas väninna)', 'Lasse på bussdepån (Rolfs polare)', 'Någon i Mora', 'En pensionär i Kiruna', 'Kenneth på bilskroten', 'Två syskon i Lund', 'En lärare i Sundsvall', 'Ett kafé i Ystad', 'Majken, 91, i Skellefteå', 'Någon som bara skrev "hej"', 'En fotbollsklubb i Borås', 'Agneta på biblioteket'];
 const WEBB_MIN = 1.3, WEBB_MAX = 1.8, ROLF_ANDEL = 0.1;
 const ROLF_PAKET_LAPP = 'Ja kör dina paket till posten. Ja ska ändå förbi. Ja tar en tia för bensinen. Eller för Kajsas lax. Mest för laxen. /Rolf';
 const ROLF_PAKET_SEN = 'Kajsa har fått lax tre dar i rad. Tack vare dina paket. Hon e otrevlig mot mej nu. /R';
@@ -10024,6 +10025,7 @@ css.textContent = `
 .ph-dagbokkort{background:#f6eedb;color:#2a2018;padding:22px 28px 22px;transform:rotate(-.6deg);width:min(560px,90vw)!important;max-width:none!important;box-sizing:border-box;text-align:left}.ph-dagbokkort .ph-las-klick{cursor:pointer}.ph-dagbokkort .ph-las-klick.pulsar{text-shadow:0 0 1px rgba(90,70,48,.35)}.ph-dk-luft{display:block;height:.55em}.ph-dagbokkort .ph-pap-text{margin-bottom:16px}.ph-dagbokkort .ph-pap-titel{opacity:.75;justify-content:flex-start}.ph-dagbokkort .ph-lasigen{border:0;background:rgba(0,0,0,.08);border-radius:999px;width:30px;height:30px;display:grid;place-items:center;cursor:pointer;color:#5a4630;padding:5px}.ph-dagbokkort .ph-lasigen svg{width:18px;height:18px}
 .ph-dk-rub{font:700 22px/1.3 "Bradley Hand","Segoe Print","Comic Sans MS",cursive;text-align:left;margin:2px 0 6px}.ph-dagbokkort .ph-pap-text{font:500 22px/1.5 "Bradley Hand","Segoe Print","Comic Sans MS",cursive}.ph-dk-extra{font:500 13px/1.45 system-ui;text-align:left;margin:-6px 0 14px;opacity:.75}.ph-dk-extra .br-rapport{display:block;background:none;color:#5a4630;padding:0;border:0;box-shadow:none}.ph-dk-extra .ali-vill{background:none;color:#5a4630;border:0;box-shadow:none;padding:0}.ph-kontroll[hidden]{display:none!important}
 .ph-dagbokkort .ph-fortsatt{display:block;margin:0 auto;background:#d8392b;color:#fff;letter-spacing:.06em;font-weight:900;min-width:180px}
+.ph-nytt{width:auto!important;max-width:100%!important;box-sizing:border-box}.ph-nytt .kropp{display:block;text-align:left;white-space:normal}.ph-nytt .kropp *{white-space:normal;overflow-wrap:anywhere;min-width:0}.ph-nytt .nytt-rad{display:flex;gap:8px;align-items:flex-start;margin:3px 0;font-size:13px;line-height:1.35}.ph-nytt .ali-vill{display:flex;gap:8px;align-items:center;background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 6px;color:#fff!important;font-size:13px}.ph-nytt .ali-vill b{color:#ffd35a}.ph-nytt .ph-lasupp{margin-top:6px}
 .ph-dk-a4{--dk-u:min(1vh,.5625vw);--dk-px:23;width:calc(var(--dk-u)*50)!important;height:calc(var(--dk-u)*70.7);min-height:calc(var(--dk-u)*70.7);padding:calc(var(--dk-u)*6.2) calc(var(--dk-u)*5) calc(var(--dk-u)*11)!important;position:relative;display:block;font:400 calc(var(--dk-u)*var(--dk-px)/7.2)/1.45 system-ui,-apple-system,"Segoe UI",sans-serif!important;border-radius:3px}
 .ph-dk-a4 .ph-dk-sida{cursor:pointer}.ph-dk-a4 .ph-dk-dag{white-space:nowrap;margin:0 0 1.45em}.ph-dk-a4 .ph-dk-dag b{font-weight:800}.ph-dk-a4 .ph-dk-rub{font:inherit;font-weight:400;margin:0 0 1.45em;text-align:left}.ph-dk-a4 .ph-pap-text{font:inherit!important;margin:0!important}.ph-dk-a4 .ph-dk-luft{height:.725em}.ph-dk-a4 .ph-dk-extra{font-size:.62em;margin:.8em 0 0}.ph-dk-a4 .ph-dk-extra *{color:#5a4630!important}
 .ph-dk-a4 .ph-fortsatt{position:absolute;left:50%;bottom:calc(var(--dk-u)*3.33);transform:translateX(-50%);margin:0;min-width:calc(var(--dk-u)*20)}
@@ -11563,10 +11565,11 @@ function rubrikDubbel(rubrik, text) {
 }
 function dagbokKort(text, o = {}) {
   const t = String(text || '').trim(); if (!t) return;
+  if (!o.lasIgen) koKoll(t + (o.rubrik ? ' ' + o.rubrik : ''), o.vem || 'du', 'dagbok');   /* inkorg 36 */
   if (o.morgon) { const tr = t.replace(/^(Dag \d+\. \d+ dag(ar)? till jul|Julafton)\.$/m, '')   /* A-092 §2.9: "1 dag" räknades inte (dagar? kräver "daga") */.trim();   /* A-088: nedräkningen är en statusrad, ingen tanke – den räknas inte */
     const meningar = tr.split(/(?<=[.!?…])\s+/).filter((x) => /\p{L}/u.test(x)).length, ord = tr.split(/\s+/).filter(Boolean).length; if (meningar > DAGBOK_MAX_MENINGAR || ord > DAGBOK_MAX_ORD) langDagbok.push(`dag ${S.dag}: ${meningar} meningar, ${ord} ord`); }
   rubrikDubbel(o.rubrik, t);
-  const m = { typ: 'dagbok', titel: 'Dagbok', text: t, rubrik: o.rubrik || '', id: o.id, kvitto: o.kvitto, efter: o.efter, extra: o.extra || '', vem: o.vem || 'du', morgon: !!o.morgon, lasIgen: !!o.lasIgen };
+  const m = { typ: 'dagbok', titel: 'Dagbok', dag: o.dag ?? S.dag, text: t, rubrik: o.rubrik || '', id: o.id, kvitto: o.kvitto, efter: o.efter, extra: o.extra || '', vem: o.vem || 'du', morgon: !!o.morgon, lasIgen: !!o.lasIgen };
   if (o.forst || o.morgon || o.lasIgen) medKo.unshift(m); else medKo.push(m);
   if (medEl2.hidden) visaNastaMeddelande();
 }
@@ -11579,7 +11582,7 @@ function dagbokDelar(m) {
   let text = String(m.text || '').trim(), dag = '', kvar = '';
   const f = text.match(/^(Dag \d+\.|Julafton\.)[ \t]*([^\n]*)\n?/);
   if (f) { dag = f[1]; const rest = f[2].replace(/^\d+ dag(ar)? till jul\.\s*/, '').trim(); text = (rest ? rest + '\n' : '') + text.slice(f[0].length).replace(/^\s*\n/, ''); }
-  else if (!m.lasIgen) dag = julRad(S.dag).match(/^(Dag \d+\.|Julafton\.)/)?.[1] || '';
+  else if (!m.lasIgen) dag = julRad(m.dag ?? S.dag).match(/^(Dag \d+\.|Julafton\.)/)?.[1] || '';
   const n = +(dag.match(/\d+/)?.[0] || 0); if (dag && n) kvar = julRad(n).replace(/^Dag \d+\.\s*/, '');
   let rub = String(m.rubrik || '').trim(); if (rub && !/[.!?…]$/.test(rub)) rub += '.';
   return { dag, kvar, rub, text: text.trim() };
@@ -11595,6 +11598,18 @@ function dagbokPassa(k) {
   const sida = k?.querySelector('.ph-dk-sida'); if (!sida) return; const u = k.offsetHeight / 509;
   for (let px = DK_TEXT_PX; px >= DK_MIN_PX; px -= 0.5) { k.style.setProperty('--dk-px', px); if (sida.scrollHeight <= k.offsetHeight * DK_FYLL + 1) return; }
   k.style.minHeight = Math.ceil(sida.scrollHeight / DK_FYLL) + 'px'; void u;
+}
+/* inkorg 35 tillägg 09:55 (förslag B): "Nytt i morse" – ett mörkt block i HUD-stil uppe till höger när morgonsidan stängts.
+   Ali vill ha idag, webbshopen och igår. Har 🔊 som andra texter och är ingen dagbok. */
+const NYTT_TID = 14000;
+function visaNyttIMorse(html) {
+  if (!html || !String(html).trim()) return;
+  const tmp = document.createElement('div'); tmp.innerHTML = html; const text = tmp.innerText.replace(/\s+/g, ' ').trim();
+  const k = document.createElement('div'); k.className = 'ph-notis ph-nytt';
+  k.innerHTML = `<div class="rubrik"><span>${ik('info')} Nytt i morse</span><span>nu</span></div><div class="kropp">${html}${lasUppKnapp(text, 'berattare', { liten: true })}</div>`;
+  notisEl.prepend(k); requestAnimationFrame(() => k.classList.add('in'));
+  textLogg('notis', 'nytt', text, 'inkorg 35 tillägg'); regiLogg('notis', 'INFO', '', text, NYTT_TID);
+  k._t = setTimeout(() => taBort(k), NYTT_TID); k.onclick = (e) => { if (e.target.closest('.ph-lasupp')) return; clearTimeout(k._t); taBort(k); };
 }
 function visaNastaMeddelande() {
   const m = medKo.shift(); if (!m) return;
@@ -12112,7 +12127,7 @@ const paMarkRekt = (x, z, hx, hz) => paMark(x - hx, z - hz) && paMark(x + hx, z 
 // utforska innan du köper: när du har respekten öppnas gärdesgården – men du får bara ställa saker på mark du äger
 const tillgang = (id) => { const t = MARK_TOMTER.find((x) => x.id === id); return agerMark(id) || (S.mark.tips && S.respekt >= t.respekt && (!t.kraver || t.kraver === 'egen' || agerMark(t.kraver))); };
 /* ---------- A-066: två kommunala vägbommar på stora vägen ---------- */
-const BOMMAR = { vanster: { x: BAS_GRANS.minX + 0.4, oppen: () => (S.dag || 1) >= 11, fro: 'Avstängt. Rolf kör ju förbi här varje dag.' }, hoger: { x: BAS_GRANS.maxX + 0.9, oppen: () => !!S.bengtAvslojad, fro: 'Avstängt. Vem bor där borta egentligen?' } };
+const BOMMAR = { vanster: { x: BAS_GRANS.minX + 0.4, oppen: () => (S.dag || 1) >= 11, fro: () => kand('rolf') ? 'Avstängt. Rolf kör ju förbi här varje dag.' : 'Avstängt. Någon kör ju förbi här varje dag.' }   /* inkorg 36 (A-095): Rolf nämns inte innan man träffat honom */, hoger: { x: BAS_GRANS.maxX + 0.9, oppen: () => !!S.bengtAvslojad, fro: 'Avstängt. Vem bor där borta egentligen?' } };
 function bomOppen(id) { try { return BOMMAR[id].oppen(); } catch { return false; } }
 for (const [id, b] of Object.entries(BOMMAR)) {
   const g = new THREE.Group(); g.position.set(b.x, 0, TOMT + 3);
@@ -12129,7 +12144,7 @@ setInterval(() => { try {
     const mal = bomOppen(id) ? -1.45 : 0;
     if (Math.abs(b.vinkel - mal) > 0.01) { const forst = b.vinkel === 0 && mal < 0; b.vinkel += Math.sign(mal - b.vinkel) * 0.12; if (Math.abs(b.vinkel - mal) < 0.12) b.vinkel = mal; b.arm.rotation.x = b.vinkel;
       if (forst && !(S.bomOppnad || {})[id]) { S.bomOppnad = { ...(S.bomOppnad || {}), [id]: S.dag }; sparaSnart(); try { ton(820, 0.5, 0.05, 'sawtooth'); ton(760, 0.4, 0.04, 'sawtooth', 0.3); } catch {} tittaMot(b.x + (id === 'vanster' ? -12 : 14), TOMT + 3, 2.0, { tvang: true, nyckel: 'bom:' + id }); textLogg('ljud', 'bom', `Bommen fälls upp (${id})`, 'A-066'); uppdateraMark(); } }
-    const p = spelare.pos; if (!bomOppen(id) && Math.abs(p.x - b.x) < 4 && Math.abs(p.z - (TOMT + 3)) < 5 && !(S.bomSett || {})[id]) { S.bomSett = { ...(S.bomSett || {}), [id]: S.dag }; sparaSnart(); tanke(b.fro, 'A-066: frö vid bommen', 'REAKTION'); }
+    const p = spelare.pos; if (!bomOppen(id) && Math.abs(p.x - b.x) < 4 && Math.abs(p.z - (TOMT + 3)) < 5 && !(S.bomSett || {})[id]) { S.bomSett = { ...(S.bomSett || {}), [id]: S.dag }; sparaSnart(); tanke(typeof b.fro === 'function' ? b.fro() : b.fro, 'A-066: frö vid bommen', 'REAKTION'); }
   }
 } catch (e) { console.warn('bom', e); } }, 250);
 var privatSkyltarRef = null;   // var: uppdateraMark körs innan skyltarna är byggda
@@ -14178,6 +14193,7 @@ function iBild(obj) {
 }
 const bubblaNickad = new Set();
 function varldsBubbla(obj, text, sek = 3.5, hojd = 2.3, klass = '') {
+  if (!iKanalVisa && (!ui.igang || scenPagar())) koKoll(String(text), 'värld:', 'bubbla');   /* inkorg 36: bubblor som går förbi kön */
   if (!iKanalVisa && ui.igang && !scenPagar()) { kanalLagg({ vikt: 'REAKTION', vem: 'värld:' + String(text).slice(0, 30), text, rost: false, svar: franKlicket(obj), minMs: Math.min(3000, sek * 1000), gammalMs: 20000, visa: () => varldsBubbla(obj, text, sek, hojd, klass) }); return; }   /* A-065 tillägg: bubblor från världen går också genom kön */
   sek = Math.max(sek, lasTid(text) / 1000);   /* A-080 regel 3: bubblan står läsbar tid */
   /* A-080 regel 5: en replik (inte ett kort ljud som "TUUT!") från något utom bild – kameran nickar dit först */
@@ -14531,9 +14547,10 @@ const STORYLAGER = {
   grind: () => !!S.grindKapad, baeck: () => !!S.grindKapad, husvagn78: () => !!S.h78, tipplager: () => (S.tippLager || 1) >= 2,
   servett: () => harPlacerat('extraktor'), gunnar: () => S.resa === 'klar', kikare: () => !!S.bengtAvslojad, kuvert: () => !!S.gunBritt, gunbritt: () => !!S.gunBritt,
 };
+const FRO_T_OKAND = { husvagn78: 'En husvagn mitt i skräpberget. Och grinden är låst.' };
 function froSett(id, saga = true) {
   S.fro ||= {}; if (S.fro[id]) return false; S.fro[id] = S.kapitel || 1; sparaSnart();
-  if (saga) tanke(FRO_T[id], 'A-057: frö ' + id, 'REAKTION'); return true;
+  if (saga) tanke(okandaOrd(FRO_T[id]).length && FRO_T_OKAND[id] ? FRO_T_OKAND[id] : FRO_T[id], 'A-057: frö ' + id, 'REAKTION'); return true;   /* inkorg 36: före presentationen säger fröet det man ser */
 }
 const froNara = (x, z, r) => Math.hypot(spelare.pos.x - x, spelare.pos.z - z) < r;
 setInterval(() => { try {
@@ -16896,6 +16913,10 @@ const KAND_AUTO = {
   helen: () => !!S.helen,   /* EP: alla figurer presenteras innan de nämns */
   bengt: () => (S.bengtSkrik || 0) > 0 || (S.kapitel || 1) >= 3 || !!S.bengtNamnd,   /* A-061: Rolf pekar ut huset från bänken */
   goran: () => !!S.goranSedd || !!S.goranForsta,
+  kjelle: () => !!S.kjelleForsta && (S.dag > 1 || (S.kand || []).includes('kjelle')),   /* inkorg 36: Kjelle presenterar sig själv i radion */
+  gunnar: () => false,   /* inkorg 36: bara när någon som känner honom nämner honom (koKoll) */
+  birgitta: () => (S.rolf?.i ?? -1) >= 2 || (S.kapitel || 1) >= 2,
+  gunbritt: () => !!S.gunBritt,
 };
 function kand(sak) {
   if ((S.kand || []).includes(sak)) return true;
@@ -16920,6 +16941,7 @@ const KAND_ORD = [
   [/\bRolfs?\b/, 'rolf'], [/\bAlis?\b/, 'ali'], [/\btornet\b|\btorn\b|rulltorn/i, 'torn'], [/\bpowerbank/i, 'powerbank'], [/bilbatteri/i, 'bilbatteri'],
   [/batteribank/i, 'batteribank'], [/sopbil/i, 'sopbil'], [/\btippen\b/i, 'tippen'], [/\bslang/i, 'slang'], [/\btratt/i, 'tratt'], [/rullställ/i, 'rullstall'],
   [/PETG|röda linjen/i, 'petg'], [/kolfiber/i, 'kolfiber'], [/\bboden\b/i, 'boden'], [/gäststug/i, 'gaststugan'], [/\bHelens?\b/, 'helen'], [/\bBengt/, 'bengt'], [/\bGörans?\b/, 'goran'], [/\bRudolfs?\b/, 'rudolf'], [/grustag|svackan|gruvan/i, 'grustaget'],
+  [/\bKjelle/, 'kjelle'], [/\bGunnars?\b/, 'gunnar'], [/\bBirgittas?\b/, 'birgitta'], [/Gun-Britt/, 'gunbritt'],   /* inkorg 36 */
 ];
 /* inkorg 12d: OKÄND SAK I BESTÄMD FORM – första gången en sak nämns i tal eller tanke står den i obestämd form (en skylt, en kvarn).
    Bestämd form (skylten) först när spelaren har sett saken eller hört om den. [nyckel, obestämda former, bestämda former, sett] */
@@ -16944,6 +16966,20 @@ function formKoll(text) {
       const b = f.be.exec(text), o = f.ob.exec(text); if (!b && !o) continue;
       if (b && !pres.includes(f.k) && !f.sett() && !(o && o.index < b.index)) formBrott.add(`"${b[0]}" innan saken presenterats: "${text.slice(0, 70)}"`);
       if (!pres.includes(f.k)) pres.push(f.k);
+    }
+  } catch {}
+}
+/* inkorg 36 (A-095): okandaOrd körs när texten KÖAS, inte bara när den syns. Den som presenterar en person får nämna den
+   (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali) – då blir personen känd. Allt annat loggas som OKÄNT ORD med källa. */
+function koKoll(text, vem, kalla) {
+  try {
+    if (!text || typeof text !== 'string' || !S || !S.dag) return;
+    const v = String(vem || ''), avs = /^(info|värld):/.test(v) ? '' : v;
+    const PRES = { rullstall: ['ali'], powerbank: ['ali'], bilbatteri: ['ali'], kolfiber: ['ali'], petg: ['ali', 'pappa'], grustaget: ['rolf'], rolf: ['rolf', 'chefen'], ali: ['ali', 'bror'], helen: ['helen', 'rolf'], bengt: ['bengt', 'rolf'], goran: ['rolf'], rudolf: ['chefen', 'rolf'], birgitta: ['rolf'], gunnar: ['kjelle', 'mamma', 'rolf', 'gunnar'], kjelle: ['kjelle'], gunbritt: ['gunbritt'], tippen: ['rolf', 'bror'], sopbil: ['rolf'] };
+    const avsKand = (a) => ({ rolf: 'rolf', chefen: 'rolf', ali: 'ali', helen: 'helen', bengt: 'bengt', kjelle: 'kjelle' }[a] ? kand({ chefen: 'rolf' }[a] || a) : true);
+    for (const k of okandaOrd(text)) {
+      if (avs && PRES[k]?.includes(avs) && (avs === k || avsKand(avs))) {   /* den som presenterar sig själv behöver inte vara känd innan */ S.kand = [...new Set([...(S.kand || []), k])]; continue; }
+      regelvakt.brott('OKÄNT ORD', `${k} i ${kalla}${avs ? ' från ' + avs : ''} (köad): "${text.slice(0, 70)}"`);
     }
   } catch {}
 }
