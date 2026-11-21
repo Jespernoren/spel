@@ -201,9 +201,9 @@ for (const h of r.logg.filter((e) => e.kalla === 'händelse' && e.vem === 'malKl
   const fore = [...r.logg].reverse().find((e) => e.kalla === 'målruta' && e.tot < h.tot - 0.05);   // räkna från första mål som klarades sedan rutan senast byttes
   if (fore && r.logg.some((e) => e.kalla === 'händelse' && e.vem === 'malKlart' && e.tot > fore.tot && e.tot < h.tot - 0.05)) continue;
   const mk = r.logg.find((e) => e.kalla === 'händelse' && e.vem === 'morgonkortStangt' && e.tot >= h.tot && e.tot <= m.tot);
-  if (r.logg.some((e) => e.kalla === 'meddelande' && e.tot >= h.tot - 0.05 && e.tot <= m.tot)) continue;   /* EK 25: en pausad dagbokssida räknas inte */
+  if (r.logg.some((e) => (e.kalla === 'meddelande' || e.kalla === 'morgonkort') && e.tot >= h.tot - 0.05 && e.tot <= m.tot)) continue;   /* EK 25: en pausad dagbokssida räknas inte – inte heller ett helskärmskort (julens slutkort) */
   const v2 = m.tot - (mk ? mk.tot : h.tot);
-  if (v2 > 10.5) flaggor.push({ dag: h.dag, t: h.t, typ: 'TOM RUTA', text: `${v2.toFixed(1)} s innan "${m.text.slice(0, 60)}" syntes` });
+  if (v2 > 4.5) flaggor.push({ dag: h.dag, t: h.t, typ: 'TOM RUTA', text: `${v2.toFixed(1)} s innan "${m.text.slice(0, 60)}" syntes` });
 }
 // EC: SPAM – samma notis (siffror bortsett) två gånger inom 2 min
 { const sen = new Map();
