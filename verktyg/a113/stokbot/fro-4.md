@@ -1,0 +1,66 @@
+# Stökboten frö 4
+
+- ✓ frö 4: 51 stök, nådde dag 4
+- ✓ frö 4: 0 FAST (inga)
+- ✓ frö 4: 0 SEKVENSFEL, REDAN GJORT, FEL PLATS I TEXT, GÅVA SOM KÖP, PIL PÅ GJORD SAK (inga)
+- ✓ frö 4: 0 gånger tillbaka från kistan/ryggsäcken/borta (SAK FÖR UPPGIFT SAKNAS är räddningen, inte ett fel)
+- ✓ frö 4: 0 sidfel (inga)
+
+## Dagarna
+- dag 1: 9.2 min
+- dag 2: 7.3 min
+- dag 3: 9.6 min
+- dag 4: 0.0 min (ofärdig)
+
+## Stöket (51)
+- dag 1 strom: sprang iväg
+- dag 1 strom: sprang iväg
+- dag 1 strom: bytte till plats 7
+- dag 1 strom: sprang iväg
+- dag 1 strom: sprang iväg
+- dag 1 strom: la hammare i kistan
+- dag 1 strom: klickade på Group
+- dag 1 valjModell: sprang iväg
+- dag 1 valjModell: öppnade och stängde oppnaMarknad
+- dag 1 rullSlut: la nyckelring i ryggsäcken
+- dag 1 rullSlut: försökte sälja nyckelring (15 kr)
+- dag 1 rullSlut: klickade på Group
+- dag 1 saljTva: öppnade och stängde oppnaInv
+- dag 1 salj: sprang iväg
+- dag 1 salj: la nyckelring i kistan
+- dag 1 powerbank: bytte till plats 5
+- dag 1 powerbank: öppnade och stängde oppnaDagbok
+- dag 1 powerbank: försökte sälja byggsats:powerbank (nej)
+- dag 1 kopGrip: klickade på Group
+- dag 1 kopGrip: bytte till plats 6
+- dag 1 kopGrip: sprang iväg
+- dag 1 kopSang: klickade på Group
+- dag 1 printSang: öppnade och stängde oppnaInv
+- dag 1 sov1: öppnade och stängde oppnaDagbok
+- dag 1 sov1: bytte till plats 1
+- dag 1 sov1: la sang i ryggsäcken
+- dag 2 kopMotor: sprang iväg
+- dag 2 kopMotor: klickade på Group
+- dag 2 kopMotor: klickade på Group
+- dag 2 kopMotor: sprang iväg
+- dag 2 kopMotor: öppnade och stängde oppnaInv
+- dag 2 kopMotor: klickade på Group
+- dag 2 kopMotor: öppnade och stängde oppnaInv
+- dag 2 monteraMotor: öppnade och stängde oppnaDagbok
+- dag 2 rolf0-ge: klickade på Group
+- dag 2 rolf0-ge: försökte sälja olhallare (nej)
+- dag 2 vindsnurra: öppnade och stängde oppnaDagbok
+- dag 2 sov2: öppnade och stängde oppnaInv
+- dag 3 rolf1-brev: bytte till plats 4
+- dag 3 rolf1-brev: öppnade och stängde oppnaMarknad
+- dag 3 rolf1-brev: klickade på Group
+- dag 3 rolf1-brev: sprang iväg
+- dag 3 rolf1-brev: öppnade och stängde oppnaInv
+- dag 3 rolf1-printa: klickade på Group
+- dag 3 kopBatteri: öppnade och stängde oppnaInv
+- dag 3 kopBatteri: klickade på Group
+- dag 3 kopBatteri: klickade på Group
+- dag 3 kopBatteri: bytte till plats 0
+- dag 3 kopBatteri: klickade på Group
+- dag 3 kopBatteri: la byggsats:cykelbatteri i kistan
+- dag 3 ryggkorg: klickade på Group

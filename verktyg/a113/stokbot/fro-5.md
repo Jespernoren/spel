@@ -1,0 +1,64 @@
+# Stökboten frö 5
+
+- ✓ frö 5: 49 stök, nådde dag 4
+- ✓ frö 5: 0 FAST (inga)
+- ✓ frö 5: 0 SEKVENSFEL, REDAN GJORT, FEL PLATS I TEXT, GÅVA SOM KÖP, PIL PÅ GJORD SAK (inga)
+- ✓ frö 5: 0 gånger tillbaka från kistan/ryggsäcken/borta (SAK FÖR UPPGIFT SAKNAS är räddningen, inte ett fel)
+- ✓ frö 5: 0 sidfel (inga)
+
+## Dagarna
+- dag 1: 8.3 min
+- dag 2: 9.6 min
+- dag 3: 10.4 min
+- dag 4: 0.0 min (ofärdig)
+
+## Stöket (49)
+- dag 1 lasta: försökte sälja hammare (nej)
+- dag 1 lasta: la hammare i kistan
+- dag 1 lasta: försökte sälja byggsats:generator (nej)
+- dag 1 rullSlut: öppnade och stängde oppnaInv
+- dag 1 rullSlut: bytte till plats 4
+- dag 1 saljTva: la nyckelring i ryggsäcken
+- dag 1 aliKvarn: sprang iväg
+- dag 1 aliKvarn: försökte sälja hammare (nej)
+- dag 1 flaska: bytte till plats 1
+- dag 1 salj: bytte till plats 0
+- dag 1 salj: la hammare i kistan
+- dag 1 salj: bytte till plats 2
+- dag 1 powerbank: sprang iväg
+- dag 1 powerbank: klickade på Group
+- dag 1 kopGrip: sprang iväg
+- dag 1 kopGrip: sprang iväg
+- dag 1 kopGrip: klickade på Group
+- dag 1 kopGrip: öppnade och stängde oppnaMarknad
+- dag 1 printGrip: bytte till plats 5
+- dag 1 printGrip: sprang iväg
+- dag 1 saljKruka: bytte till plats 1
+- dag 1 saljKruka: klickade på Group
+- dag 1 saljKruka: la kruka i kistan
+- dag 1 sov1: öppnade och stängde oppnaMarknad
+- dag 1 sov1: försökte sälja sang (nej)
+- dag 2 kopMotor: öppnade och stängde oppnaInv
+- dag 2 kopMotor: sprang iväg
+- dag 2 kopMotor: sprang iväg
+- dag 2 kopMotor: sprang iväg
+- dag 2 kopSack: sprang iväg
+- dag 2 rolf0-brev: klickade på Group
+- dag 2 vindsnurra: klickade på Group
+- dag 2 vindsnurra: klickade på Group
+- dag 2 vindsnurra: öppnade och stängde oppnaMarknad
+- dag 2 vindsnurra: la byggsats:servett i ryggsäcken
+- dag 2 vindsnurra: öppnade och stängde oppnaDagbok
+- dag 2 vindsnurra: bytte till plats 5
+- dag 2 n1-bygg-dorr-skjulet: klickade på Group
+- dag 3 rolf1-brev: klickade på Group
+- dag 3 rolf1-brev: öppnade och stängde oppnaDagbok
+- dag 3 rolf1-brev: klickade på Group
+- dag 3 rolf1-brev: sprang iväg
+- dag 3 kopBatteri: försökte sälja byggsats:servett (nej)
+- dag 3 kopBatteri: la byggsats:servett i kistan
+- dag 3 n2-bygg-skrivare-m: klickade på Group
+- dag 3 n2-bygg-skrivare-m: öppnade och stängde oppnaDagbok
+- dag 3 n2-lagg-plattak-skjulet: bytte till plats 5
+- dag 3 n2-lagg-plattak-skjulet: öppnade och stängde oppnaMarknad
+- dag 3 sov3: öppnade och stängde oppnaMarknad

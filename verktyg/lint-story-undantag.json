@@ -26,48 +26,8 @@
  },
  {
   "regel": "PLATS UTAN LÄGE",
-  "text": "Generatorn! Den låg kvar längst ner i ryggsäcken.",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "Hammaren! Den låg kvar längst ner i ryggsäcken.",
-  "skal": "dag 2–23 – flyttas till story.js i omgång 3"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "Kvarnen! Den låg kvar längst ner i ryggsäcken.",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
   "text": "FEL I HANDEN",
   "skal": "dag 2–23 – flyttas till story.js i omgång 3"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "Jag gjorde skylten vid vägen finare i natt. En fabrik ska ha en ordentlig skylt.",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "Skylten vid vägen fick röd PETG. Den syns från vägen nu.",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "Jag gjorde en ny skylt vid vägen. Som de har vid riktiga hus.",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "Kommunen har satt upp en riktig skylt vid vägen. Med mitt namn.",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "Spika ihop en skylt av brädorna vid vägen – det här är MITT",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
  },
  {
   "regel": "PLATS UTAN LÄGE",
@@ -90,16 +50,6 @@
   "skal": "dag 2–23 – flyttas till story.js i omgång 3"
  },
  {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "🎒 Ryggsäcken är full – det hamnade i kistan i skjulet. Lägg något i kistan eller sälj.",
-  "skal": "dag 2–23 – flyttas till story.js i omgång 3"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "inkorg 20: generatorn i handen första gången",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
   "regel": "UPPMANING UTAN STEG",
   "text": "Jag behöver nånstans att göra av det här.",
   "skal": "dag 2–23 – flyttas till story.js i omgång 3"
@@ -111,28 +61,8 @@
  },
  {
   "regel": "PLATS UTAN LÄGE",
-  "text": "🎒 Ryggsäcken är full – lägg något i kistan eller sälj först. Det printade väntar i skriva",
-  "skal": "dag 2–23 – flyttas till story.js i omgång 3"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
   "text": "${namnFor(typ)} ligger i handen.",
   "skal": "dag 2–23 – flyttas till story.js i omgång 3"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "🔧 Montera generatorn på cykeln",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "🖨️ Storebrors skrivare. Den ska stå där borta, mot skräpberget.",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
-  "regel": "UPPMANING UTAN STEG",
-  "text": "kvarnen står – skräpet ska bli tråd",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
  },
  {
   "regel": "UPPMANING UTAN STEG",
@@ -168,11 +98,6 @@
   "regel": "UPPMANING UTAN STEG",
   "text": "Det får inte plats. Jag behöver något att tippa i.",
   "skal": "dag 2–23 – flyttas till story.js i omgång 3"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "Hallå! Du där borta med skrivaren! Kom över vägen, jag köper sånt där!",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
  },
  {
   "regel": "PLATS UTAN LÄGE",
@@ -212,7 +137,7 @@
  {
   "regel": "UPPMANING UTAN STEG",
   "text": "Kvarnen hinner mer än skrivaren. Jag behöver en skrivare till.",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
+  "skal": "dag 2–23 – flyttas till story.js i omgång 3"
  },
  {
   "regel": "UPPMANING UTAN STEG",
@@ -223,16 +148,6 @@
   "regel": "UPPMANING UTAN STEG",
   "text": "Det blev mörkt i maskinerna. Jag behöver mer ström.",
   "skal": "dag 2–23 – flyttas till story.js i omgång 3"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "🔋 Powerbanken ska kopplas in på cykeln.",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "🔋 Bilbatteriet ska kopplas in på cykeln.",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
  },
  {
   "regel": "UPPMANING UTAN STEG",
@@ -250,11 +165,6 @@
   "skal": "dag 2–23 – flyttas till story.js i omgång 3"
  },
  {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "powerbanken på cykeln",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
   "regel": "UPPMANING UTAN STEG",
   "text": "Allt är fullt. Dags att printa och sälja!",
   "skal": "dag 2–23 – flyttas till story.js i omgång 3"
@@ -262,11 +172,6 @@
  {
   "regel": "PLATS UTAN LÄGE",
   "text": "<div class=\"pk-pris till\"><b>Till skjulet</b><small>${x.id === 'sang' ? 'Ställ den i skjul",
-  "skal": "dag 2–23 – flyttas till story.js i omgång 3"
- },
- {
-  "regel": "UPPMANING UTAN STEG",
-  "text": "Jag behöver hammaren.",
   "skal": "dag 2–23 – flyttas till story.js i omgång 3"
  },
  {
@@ -296,16 +201,6 @@
  },
  {
   "regel": "PLATS UTAN LÄGE",
-  "text": "Cykeln står vid vägen – klicka på den",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "Klicka på cykeln vid vägen igen",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
   "text": "Brädhögen ligger vid vägen · ${d} m – följ den gula pilen",
   "skal": "dag 2–23 – flyttas till story.js i omgång 3"
  },
@@ -313,21 +208,6 @@
   "regel": "PLATS UTAN LÄGE",
   "text": "Mark köper du på tavlan vid vägen · prototyper hos Ali",
   "skal": "dag 2–23 – flyttas till story.js i omgång 3"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "Skylten står vid vägen – klicka på den",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "Klicka på skrivaren med en rulle i handen",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "Klicka och håll på cykeln",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
  },
  {
   "regel": "UPPMANING UTAN STEG",
@@ -358,11 +238,6 @@
   "regel": "PLATS UTAN LÄGE",
   "text": "💡 Poletten trillar ner: du bor faktiskt här. Nytt mål: bli folkbokförd (tavlan vid vägen)",
   "skal": "dag 2–23 – flyttas till story.js i omgång 3"
- },
- {
-  "regel": "PLATS UTAN LÄGE",
-  "text": "Allt surras fast på cykeln.",
-  "skal": "dag 1: pekrutan, info eller en tanke som säger var saken är just då (sägs när saken är där) – gås igenom mot lage() i omgång 2"
  },
  {
   "regel": "UPPMANING UTAN STEG",

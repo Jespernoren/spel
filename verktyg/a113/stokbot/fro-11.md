@@ -1,0 +1,77 @@
+# Stökboten frö 11
+
+- ✓ frö 11: 62 stök, nådde dag 4
+- ✓ frö 11: 0 FAST (inga)
+- ✓ frö 11: 0 SEKVENSFEL, REDAN GJORT, FEL PLATS I TEXT, GÅVA SOM KÖP, PIL PÅ GJORD SAK (inga)
+- ✓ frö 11: 0 gånger tillbaka från kistan/ryggsäcken/borta (SAK FÖR UPPGIFT SAKNAS är räddningen, inte ett fel)
+- ✓ frö 11: 0 sidfel (inga)
+
+## Dagarna
+- dag 1: 8.3 min
+- dag 2: 7.6 min
+- dag 3: 10.1 min
+- dag 4: 0.0 min (ofärdig)
+
+## Stöket (62)
+- dag 1 lasta: sprang iväg
+- dag 1 lasta: sprang iväg
+- dag 1 stall: la byggsats:generator i ryggsäcken
+- dag 1 stall: bytte till plats 7
+- dag 1 strom: sprang iväg
+- dag 1 strom: bytte till plats 5
+- dag 1 strom: sprang iväg
+- dag 1 bygg: klickade på Group
+- dag 1 valjModell: sprang iväg
+- dag 1 rullSlut: öppnade och stängde oppnaDagbok
+- dag 1 rullSlut: la nyckelring i kistan
+- dag 1 aliKvarn: bytte till plats 4
+- dag 1 aliKvarn: sprang iväg
+- dag 1 aliKvarn: bytte till plats 2
+- dag 1 kvarn: la hammare i kistan
+- dag 1 egenPrint: öppnade och stängde oppnaMarknad
+- dag 1 salj: bytte till plats 5
+- dag 1 salj: sprang iväg
+- dag 1 salj: klickade på Group
+- dag 1 kopGrip: öppnade och stängde oppnaMarknad
+- dag 1 printGrip: sprang iväg
+- dag 1 printGrip: bytte till plats 0
+- dag 1 krukaD1: klickade på Group
+- dag 1 saljKruka: bytte till plats 6
+- dag 1 printSang: klickade på Group
+- dag 1 sov1: la sang i kistan
+- dag 1 sov1: klickade på Group
+- dag 2 kopMotor: bytte till plats 4
+- dag 2 kopMotor: sprang iväg
+- dag 2 kopMotor: öppnade och stängde oppnaMarknad
+- dag 2 kopSack: klickade på Group
+- dag 2 kopSack: bytte till plats 0
+- dag 2 kopSack: sprang iväg
+- dag 2 rolf0-brev: klickade på Group
+- dag 2 rolf0-brev: bytte till plats 3
+- dag 2 rolf0-brev: bytte till plats 0
+- dag 2 rolf0-brev: bytte till plats 6
+- dag 2 rolf0-ge: försökte sälja olhallare (nej)
+- dag 2 rolf0-ge: öppnade och stängde oppnaDagbok
+- dag 2 vindsnurra: öppnade och stängde oppnaMarknad
+- dag 2 vindsnurra: bytte till plats 0
+- dag 2 vindsnurra: öppnade och stängde oppnaMarknad
+- dag 2 vindsnurra: sprang iväg
+- dag 2 vindsnurra: klickade på Group
+- dag 2 n1-bygg-dorr-skjulet: sprang iväg
+- dag 2 n1-bygg-dorr-skjulet: bytte till plats 5
+- dag 3 rolf1-brev: klickade på Group
+- dag 3 rolf1-brev: öppnade och stängde oppnaMarknad
+- dag 3 rolf1-brev: sprang iväg
+- dag 3 rolf1-ge: klickade på Group
+- dag 3 kopBatteri: öppnade och stängde oppnaMarknad
+- dag 3 kopBatteri: öppnade och stängde oppnaMarknad
+- dag 3 kopBatteri: öppnade och stängde oppnaInv
+- dag 3 kopBatteri: sprang iväg
+- dag 3 kopBatteri: sprang iväg
+- dag 3 kopBatteri: öppnade och stängde oppnaDagbok
+- dag 3 ryggkorg: sprang iväg
+- dag 3 ryggkorg: sprang iväg
+- dag 3 n2-bygg-skrivare-m: öppnade och stängde oppnaMarknad
+- dag 3 n2-lagg-plattak-skjulet: klickade på Group
+- dag 3 sov3: sprang iväg
+- dag 3 sov3: sprang iväg

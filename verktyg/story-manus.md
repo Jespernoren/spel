@@ -10,6 +10,7 @@
 - **Kräver:** hammareIRaden · **ger:** skyltUppe
 - **Start (sägs när steget börjar):** "Först borde jag spika upp en skylt, så att alla ser att jag bor HÄR."
   - i läget **ryggan:** "Hammaren ligger i ryggsäcken. Den ska fram."
+  - i läget **borta:** "Jag behöver hammaren."
 - **Påminnelse:** "Skylten. Hammaren och brädorna vid vägen."
 - **Kvitto:** –
 

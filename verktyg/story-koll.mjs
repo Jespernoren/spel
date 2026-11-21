@@ -28,7 +28,7 @@ STORY_STEG.forEach((p, i) => {
 // de gamla tabellerna får inte ha kvar poster för stegen i story.js
 const spel = fs.readFileSync(new URL('../spel/printa-hem/spel.js', import.meta.url), 'utf8');
 const tabell = (namn) => { const i = spel.indexOf(`const ${namn} = {`); if (i < 0) return ''; return spel.slice(i, spel.indexOf('\n};', i)); };
-for (const namn of ['STEG_TAL', 'STEG_TAL_SPARA', 'JAG_TAL', 'PAMINN_T', 'KEDJA_TEXT', 'KEDJA_MAL']) {
+for (const namn of ['STEG_TAL', 'STEG_TAL_SPARA', 'JAG_TAL', 'PAMINN_T', 'KEDJA_TEXT', 'KEDJA_MAL', 'FOR_DU']) {
   const t = tabell(namn);
   for (const p of STORY_STEG) if (new RegExp(`^\\s+'?${p.id}'?:`, 'm').test(t)) fel.push(`${namn} har kvar en post för ${p.id} (den ska bara stå i story.js)`);
 }

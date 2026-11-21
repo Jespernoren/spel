@@ -1,0 +1,63 @@
+# Stökboten frö 9
+
+- ✓ frö 9: 48 stök, nådde dag 4
+- ✓ frö 9: 0 FAST (inga)
+- ✓ frö 9: 0 SEKVENSFEL, REDAN GJORT, FEL PLATS I TEXT, GÅVA SOM KÖP, PIL PÅ GJORD SAK (inga)
+- ✓ frö 9: 0 gånger tillbaka från kistan/ryggsäcken/borta (SAK FÖR UPPGIFT SAKNAS är räddningen, inte ett fel)
+- ✓ frö 9: 0 sidfel (inga)
+
+## Dagarna
+- dag 1: 9.6 min
+- dag 2: 9.3 min
+- dag 3: 10.6 min
+- dag 4: 0.0 min (ofärdig)
+
+## Stöket (48)
+- dag 1 strom: klickade på Group
+- dag 1 strom: klickade på Group
+- dag 1 strom: la byggsats:generator i kistan
+- dag 1 strom: bytte till plats 6
+- dag 1 strom: la hammare i ryggsäcken
+- dag 1 bygg: försökte sälja hammare (nej)
+- dag 1 bygg: klickade på Group
+- dag 1 bygg: försökte sälja hammare (nej)
+- dag 1 valjModell: öppnade och stängde oppnaMarknad
+- dag 1 rullSlut: öppnade och stängde oppnaMarknad
+- dag 1 rullSlut: bytte till plats 6
+- dag 1 rullSlut: sprang iväg
+- dag 1 saljTva: försökte sälja nyckelring (15 kr)
+- dag 1 aliKvarn: sprang iväg
+- dag 1 kvarn: la byggsats:gammalkvarn i kistan
+- dag 1 kvarn: öppnade och stängde oppnaMarknad
+- dag 1 egenPrint: sprang iväg
+- dag 1 egenPrint: sprang iväg
+- dag 1 salj: försökte sälja hammare (nej)
+- dag 1 powerbank: klickade på Group
+- dag 1 kopGrip: klickade på Group
+- dag 1 kopGrip: öppnade och stängde oppnaDagbok
+- dag 1 kopSang: öppnade och stängde oppnaDagbok
+- dag 2 kopMotor: bytte till plats 4
+- dag 2 kopMotor: öppnade och stängde oppnaInv
+- dag 2 kopSack: la byggsats:korg i kistan
+- dag 2 kopSack: klickade på Group
+- dag 2 kopSack: öppnade och stängde oppnaInv
+- dag 2 rolf0-ge: öppnade och stängde oppnaMarknad
+- dag 2 rolf0-ge: klickade på Group
+- dag 2 sov2: öppnade och stängde oppnaMarknad
+- dag 3 rolf1-brev: öppnade och stängde oppnaMarknad
+- dag 3 rolf1-brev: klickade på Group
+- dag 3 rolf1-brev: försökte sälja hammare (nej)
+- dag 3 rolf1-brev: sprang iväg
+- dag 3 rolf1-brev: bytte till plats 3
+- dag 3 rolf1-ge: klickade på Group
+- dag 3 rolf1-ge: öppnade och stängde oppnaInv
+- dag 3 rolf1-ge: la flaskoppnare i kistan
+- dag 3 kopBatteri: försökte sälja byggsats:servett (nej)
+- dag 3 kopBatteri: sprang iväg
+- dag 3 kopBatteri: klickade på Group
+- dag 3 ryggkorg: försökte sälja hammare (nej)
+- dag 3 ryggkorg: försökte sälja byggsats:ryggkorg (100 kr)
+- dag 3 ryggkorg: försökte sälja hammare (nej)
+- dag 3 n2-lagg-plattak-skjulet: bytte till plats 1
+- dag 3 n2-lagg-plattak-skjulet: bytte till plats 4
+- dag 3 sov3: sprang iväg

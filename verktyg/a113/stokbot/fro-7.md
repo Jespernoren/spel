@@ -1,0 +1,63 @@
+# Stökboten frö 7
+
+- ✓ frö 7: 48 stök, nådde dag 4
+- ✓ frö 7: 0 FAST (inga)
+- ✓ frö 7: 0 SEKVENSFEL, REDAN GJORT, FEL PLATS I TEXT, GÅVA SOM KÖP, PIL PÅ GJORD SAK (inga)
+- ✓ frö 7: 0 gånger tillbaka från kistan/ryggsäcken/borta (SAK FÖR UPPGIFT SAKNAS är räddningen, inte ett fel)
+- ✓ frö 7: 0 sidfel (inga)
+
+## Dagarna
+- dag 1: 8.9 min
+- dag 2: 8.0 min
+- dag 3: 13.0 min
+- dag 4: 0.0 min (ofärdig)
+
+## Stöket (48)
+- dag 1 lasta: la byggsats:generator i ryggsäcken
+- dag 1 lasta: la hammare i kistan
+- dag 1 stall: la skrivareS i ryggsäcken
+- dag 1 stall: klickade på Group
+- dag 1 strom: bytte till plats 4
+- dag 1 strom: försökte sälja byggsats:generator (nej)
+- dag 1 bygg: öppnade och stängde oppnaMarknad
+- dag 1 bygg: öppnade och stängde oppnaInv
+- dag 1 bygg: försökte sälja cykelS (nej)
+- dag 1 valjModell: klickade på Group
+- dag 1 valjModell: bytte till plats 6
+- dag 1 rullSlut: la nyckelring i kistan
+- dag 1 rullSlut: sprang iväg
+- dag 1 egenPrint: bytte till plats 2
+- dag 1 salj: sprang iväg
+- dag 1 salj: försökte sälja nyckelring (15 kr)
+- dag 1 powerbank: öppnade och stängde oppnaMarknad
+- dag 1 powerbank: sprang iväg
+- dag 1 kopGrip: sprang iväg
+- dag 1 printGrip: bytte till plats 2
+- dag 1 printSang: sprang iväg
+- dag 1 printSang: bytte till plats 5
+- dag 2 kopMotor: öppnade och stängde oppnaMarknad
+- dag 2 kopMotor: bytte till plats 4
+- dag 2 monteraMotor: bytte till plats 4
+- dag 2 monteraMotor: försökte sälja byggsats:kvarnmotor (50 kr)
+- dag 2 monteraMotor: bytte till plats 7
+- dag 2 kopSack: klickade på Group
+- dag 2 kopSack: la byggsats:korg i ryggsäcken
+- dag 2 rolf0-ge: sprang iväg
+- dag 2 vindsnurra: sprang iväg
+- dag 2 vindsnurra: la byggsats:servett i ryggsäcken
+- dag 2 vindsnurra: klickade på Group
+- dag 2 n1-bygg-dorr-skjulet: sprang iväg
+- dag 2 sov2: bytte till plats 5
+- dag 3 rolf1-brev: öppnade och stängde oppnaInv
+- dag 3 rolf1-brev: bytte till plats 4
+- dag 3 rolf1-brev: öppnade och stängde oppnaDagbok
+- dag 3 rolf1-ge: bytte till plats 7
+- dag 3 rolf1-ge: öppnade och stängde oppnaDagbok
+- dag 3 rolf1-ge: försökte sälja byggsats:servett (nej)
+- dag 3 kopBatteri: försökte sälja byggsats:servett (nej)
+- dag 3 kopBatteri: sprang iväg
+- dag 3 kopBatteri: sprang iväg
+- dag 3 ryggkorg: försökte sälja byggsats:ryggkorg (100 kr)
+- dag 3 n2-bygg-skrivare-m: öppnade och stängde oppnaInv
+- dag 3 sov3: öppnade och stängde oppnaInv
+- dag 3 sov3: öppnade och stängde oppnaInv

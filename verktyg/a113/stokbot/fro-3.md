@@ -1,0 +1,70 @@
+# Stökboten frö 3
+
+- ✓ frö 3: 55 stök, nådde dag 4
+- ✓ frö 3: 0 FAST (inga)
+- ✓ frö 3: 0 SEKVENSFEL, REDAN GJORT, FEL PLATS I TEXT, GÅVA SOM KÖP, PIL PÅ GJORD SAK (inga)
+- ✓ frö 3: 0 gånger tillbaka från kistan/ryggsäcken/borta (SAK FÖR UPPGIFT SAKNAS är räddningen, inte ett fel)
+- ✓ frö 3: 0 sidfel (inga)
+
+## Dagarna
+- dag 1: 10.7 min
+- dag 2: 7.4 min
+- dag 3: 9.5 min
+- dag 4: 0.0 min (ofärdig)
+
+## Stöket (55)
+- dag 1 lasta: bytte till plats 4
+- dag 1 lasta: la hammare i ryggsäcken
+- dag 1 strom: försökte sälja byggsats:generator (nej)
+- dag 1 strom: försökte sälja byggsats:generator (nej)
+- dag 1 strom: sprang iväg
+- dag 1 strom: öppnade och stängde oppnaInv
+- dag 1 strom: bytte till plats 2
+- dag 1 bygg: klickade på Group
+- dag 1 bygg: sprang iväg
+- dag 1 bygg: öppnade och stängde oppnaDagbok
+- dag 1 bygg: la hammare i ryggsäcken
+- dag 1 rullSlut: sprang iväg
+- dag 1 rullSlut: sprang iväg
+- dag 1 rullSlut: bytte till plats 0
+- dag 1 rullSlut: klickade på Group
+- dag 1 aliKvarn: öppnade och stängde oppnaInv
+- dag 1 aliKvarn: sprang iväg
+- dag 1 kvarn: klickade på Mesh
+- dag 1 kvarn: försökte sälja hammare (nej)
+- dag 1 flaska: försökte sälja hammare (nej)
+- dag 1 flaska: öppnade och stängde oppnaInv
+- dag 1 egenPrint: öppnade och stängde oppnaDagbok
+- dag 1 salj: la nyckelring i kistan
+- dag 1 powerbank: försökte sälja hammare (nej)
+- dag 1 powerbank: klickade på Group
+- dag 1 powerbank: klickade på Group
+- dag 1 kopGrip: sprang iväg
+- dag 1 kopGrip: bytte till plats 5
+- dag 1 printGrip: öppnade och stängde oppnaDagbok
+- dag 1 printGrip: la byggsats:grip i kistan
+- dag 1 krukaD1: sprang iväg
+- dag 1 saljKruka: försökte sälja kruka (70 kr)
+- dag 1 saljKruka: öppnade och stängde oppnaInv
+- dag 1 kopSang: försökte sälja kruka (70 kr)
+- dag 2 kopMotor: försökte sälja hammare (nej)
+- dag 2 kopMotor: sprang iväg
+- dag 2 kopMotor: sprang iväg
+- dag 2 monteraMotor: försökte sälja byggsats:kvarnmotor (50 kr)
+- dag 2 kopSack: öppnade och stängde oppnaMarknad
+- dag 2 rolf0-ge: försökte sälja hammare (nej)
+- dag 2 rolf0-ge: klickade på Group
+- dag 2 rolf0-ge: öppnade och stängde oppnaMarknad
+- dag 2 n1-bygg-dorr-skjulet: bytte till plats 5
+- dag 2 sov2: öppnade och stängde oppnaMarknad
+- dag 3 rolf1-brev: klickade på Group
+- dag 3 rolf1-brev: bytte till plats 3
+- dag 3 rolf1-brev: öppnade och stängde oppnaInv
+- dag 3 rolf1-brev: försökte sälja hammare (nej)
+- dag 3 rolf1-brev: klickade på Group
+- dag 3 rolf1-brev: försökte sälja hammare (nej)
+- dag 3 rolf1-brev: öppnade och stängde oppnaInv
+- dag 3 rolf1-brev: sprang iväg
+- dag 3 n2-lagg-plattak-skjulet: sprang iväg
+- dag 3 sov3: sprang iväg
+- dag 3 sov3: sprang iväg

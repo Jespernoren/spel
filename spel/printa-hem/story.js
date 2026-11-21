@@ -33,12 +33,12 @@ export const STORY = [
       kraver: ['hammareIRaden'], ger: ['skyltUppe'],
       mal: 'Spika upp din adresskylt',
       start: 'Först borde jag spika upp en skylt, så att alla ser att jag bor HÄR.',
-      lagen: { ryggan: { tanke: 'Hammaren ligger i ryggsäcken. Den ska fram.' } },
+      lagen: { ryggan: { tanke: 'Hammaren ligger i ryggsäcken. Den ska fram.' }, borta: { tanke: 'Jag behöver hammaren.' } },
       pamin: 'Skylten. Hammaren och brädorna vid vägen.',
       kvitto: null,   // dagboksnotisen om skylten är kvittot
       klar: (S) => !!S.skyltUppe },
 
-    { id: 'lasta', mom: 'Ställ upp skrivaren', sak: 'skrivareS', handling: 'lyfta', pil: 'vagCykel', bild: 'skrivareS',
+    { id: 'lasta', mom: 'Ställ upp skrivaren', forDu: ['darfor', 'skylten sitter – nu ska verkstaden upp'], sak: 'skrivareS', handling: 'lyfta', pil: 'vagCykel', bild: 'skrivareS',
       kraver: ['skyltUppe', 'skrivarePaCykeln'], ger: ['skrivareLastad'],
       mal: 'Lasta av skrivaren', tal: 'Klicka på cykeln och lasta av storebrors skrivare.',
       start: 'Storebrors skrivare står kvar på cykeln vid vägen. Den ska av.',
@@ -46,7 +46,7 @@ export const STORY = [
       kvitto: 'Tung. Den har storebror aldrig burit så långt.',
       klar: (S) => !!S.skrivareLastad },
 
-    { id: 'stall', mom: 'Ställ upp skrivaren', sak: 'skrivareS', handling: 'stallNer', pil: 'startYta', bild: 'skrivareS',
+    { id: 'stall', mom: 'Ställ upp skrivaren', forDu: ['darfor', 'skrivaren är av cykeln'], sak: 'skrivareS', handling: 'stallNer', pil: 'startYta', bild: 'skrivareS',
       kraver: ['skrivareLastad'], ger: ['skrivareStar'],
       mal: 'Ställ upp skrivaren', tal: 'Skrivaren ska stå mot skräpberget.',
       start: 'Skrivaren ställer jag mot skräpberget. Min första verkstad.',
@@ -55,7 +55,7 @@ export const STORY = [
       kvitto: null,
       klar: (S) => !!S.skrivareStar },
 
-    { id: 'strom', mom: 'Få ström', sak: 'cykelS', handling: 'lyfta', pil: 'vagCykel',
+    { id: 'strom', mom: 'Få ström', forDu: ['men', 'skrivaren står men har ingen ström'], sak: 'cykelS', handling: 'lyfta', pil: 'vagCykel',
       bild: (S) => (S.cykelStar || S.cykelBuren) && !S.generatorStar ? 'byggsats:generator' : 'cykelS',
       kraver: ['skrivareStar', 'cykelVidVagen'], ger: ['stromIdee'],
       mal: 'Skrivaren behöver ström',
@@ -63,7 +63,7 @@ export const STORY = [
       pamin: 'Ström. Hur får jag ström här ute?',
       klar: (S, G) => !!(S.stromHjalp || (S.skrivareStar && G.valdTyp() === 'byggsats:generator') || S.generatorStar || S.cykelBuren || S.cykelStar || S.cykelOmbyggd) },
 
-    { id: 'bygg', mom: 'Få ström', sak: 'cykelS', handling: 'stallNer', pil: 'startYta',
+    { id: 'bygg', mom: 'Få ström', forDu: ['darfor', 'cykeln och generatorn kan ge ström'], sak: 'cykelS', handling: 'stallNer', pil: 'startYta',
       bild: (S) => (S.cykelStar || S.cykelBuren) ? 'byggsats:generator' : 'cykelS',
       kraver: ['stromIdee', 'generatorIRaden'], ger: ['cykelOmbyggd'],
       mal: (S) => S.cykelStar && S.generatorStar ? 'Montera generatorn' : 'Ställ cykel och generator', tal: 'Ställ cykeln och generatorn vid skrivaren.',
@@ -76,7 +76,7 @@ export const STORY = [
       kvitto: null,
       klar: (S) => !!S.cykelOmbyggd },
 
-    { id: 'valjModell', mom: 'Första printen', sak: 'skrivareS', handling: 'valj', pil: 'skrivare', bild: 'skrivareS', forslag: 'nyckelring',
+    { id: 'valjModell', mom: 'Första printen', forDu: ['darfor', 'nu finns ström'], sak: 'skrivareS', handling: 'valj', pil: 'skrivare', bild: 'skrivareS', forslag: 'nyckelring',
       kraver: ['cykelOmbyggd', 'brorsRulle'], ger: ['printJobb'],
       mal: 'Välj vad skrivaren ska printa', tal: 'Klicka på skrivaren och välj vad du vill printa.',
       start: 'Strömmen finns. Nu ska skrivaren veta vad den ska göra, sen trampar jag.',
@@ -84,7 +84,7 @@ export const STORY = [
       kvitto: 'Den piper. Den GÖR något.',
       klar: (S, G) => G.skrivare().some((x) => x.jobb || x.klar) || G.printat('nyckelring') >= 1 || S.stat.printat >= 1 },
 
-    { id: 'trampa', mom: 'Första printen', sak: 'cykelS', handling: 'trampa', pil: 'cykel', bild: 'cykelS',
+    { id: 'trampa', mom: 'Första printen', forDu: ['men', 'skrivaren stannar utan trampande'], sak: 'cykelS', handling: 'trampa', pil: 'cykel', bild: 'cykelS',
       kraver: ['printJobb'], ger: ['nyckelring1'],
       mal: 'Trampa cykeln', tal: 'Trampa!',
       start: 'Nu behöver den ström. Trampa.',
@@ -92,28 +92,28 @@ export const STORY = [
       kvitto: (S, G) => G.nyckelringUttagen() ? null : 'Klar! Ta ut den innan den ändrar sig.',
       klar: (S, G) => G.printat('nyckelring') >= 1 || S.stat.printat >= 1 },
 
-    { id: 'rullSlut', mom: 'Första printen', sak: 'nyckelring', handling: 'printa', pil: 'skrivare', bild: 'nyckelring',
+    { id: 'rullSlut', mom: 'Första printen', forDu: ['darfor', 'första ringen blev klar'], sak: 'nyckelring', handling: 'printa', pil: 'skrivare', bild: 'nyckelring',
       kraver: ['nyckelring1'], ger: ['rullSlut'],
       mal: 'En nyckelring till', tal: 'Printa en nyckelring till.',
       start: 'En nyckelring till, så länge storebrors rulle räcker.',
       pamin: 'En ring till.',
       klar: (S) => !!S.rullSlut || !!S.kvarnKopt },
 
-    { id: 'saljTva', mom: 'Gör egen tråd', sak: 'nyckelring', handling: 'salj', pil: 'ali', bild: 'nyckelring',
+    { id: 'saljTva', mom: 'Gör egen tråd', forDu: ['men', 'storebrors rulle är slut'], sak: 'nyckelring', handling: 'salj', pil: 'ali', bild: 'nyckelring',
       kraver: ['rullSlut'], ger: ['kvarnPengar'],
       mal: 'Sälj nyckelringarna', tal: 'Sälj nyckelringarna hos Ali.',
       start: null,   // tanken när rullen tar slut säger redan det här
       pamin: 'Affären mitt emot kanske köper ringarna.',
       klar: (S, G) => S.mynt >= G.KVARN_PRIS || !!S.kvarnKopt },
 
-    { id: 'aliKvarn', mom: 'Gör egen tråd', sak: 'byggsats:gammalkvarn', handling: 'kop', pil: 'ali', bild: 'byggsats:gammalkvarn',
+    { id: 'aliKvarn', mom: 'Gör egen tråd', forDu: ['darfor', 'ringarna gav pengar till kvarnen'], sak: 'byggsats:gammalkvarn', handling: 'kop', pil: 'ali', bild: 'byggsats:gammalkvarn',
       kraver: ['kvarnPengar'], ger: ['kvarnKopt'],
       mal: 'Köp kvarnen', tal: 'Köp kvarnen hos Ali.',
       start: 'Ali har en gammal kvarn. Den gör tråd av skräp.',
       pamin: 'Kvarnen hos Ali.',
       klar: (S) => !!S.kvarnKopt },
 
-    { id: 'kvarn', mom: 'Gör egen tråd', sak: 'byggsats:gammalkvarn', handling: 'stallNer', pil: 'startYta', bild: 'byggsats:gammalkvarn',
+    { id: 'kvarn', mom: 'Gör egen tråd', forDu: ['darfor', 'kvarnen är köpt'], sak: 'byggsats:gammalkvarn', handling: 'stallNer', pil: 'startYta', bild: 'byggsats:gammalkvarn',
       kraver: ['kvarnKopt'], ger: ['kvarnStar'],
       mal: 'Ställ kvarnen', tal: 'Ställ kvarnen vid tornet.',
       start: 'Kvarnen ställer jag bredvid skrivaren, närmast skräpberget. Där finns skräpet.',
@@ -127,7 +127,7 @@ export const STORY = [
       kvitto: null,
       klar: (S) => !!S.kvarnStar },
 
-    { id: 'flaska', mom: 'Gör egen tråd', sak: 'kvarn', handling: 'veva', pil: 'vevYta', lapp: 'malt',
+    { id: 'flaska', mom: 'Gör egen tråd', forDu: ['darfor', 'kvarnen står – skräpet ska bli tråd'], sak: 'kvarn', handling: 'veva', pil: 'vevYta', lapp: 'malt',
       kraver: ['kvarnStar'], ger: ['trad'],
       mal: (S, G) => S.kvarn.tratt ? 'Veva kvarnen' : G.handSaker() ? 'Skräp i kvarnen' : 'Gör egen tråd', tal: 'Lägg skräpet i kvarnen och veva.',
       start: 'Skräp i kvarnen, sen vevar jag. Då blir det tråd.',
@@ -135,21 +135,21 @@ export const STORY = [
       kvitto: 'Det blir tråd! Riktig plasttråd.',
       klar: (S, G) => !!S.stat.maltNagot || G.helaRullar() >= 1 },
 
-    { id: 'egenPrint', mom: 'Gör egen tråd', sak: 'nyckelring', handling: 'printa', pil: 'skrivare', bild: 'nyckelring',
+    { id: 'egenPrint', mom: 'Gör egen tråd', forDu: ['darfor', 'egen tråd finns'], sak: 'nyckelring', handling: 'printa', pil: 'skrivare', bild: 'nyckelring',
       kraver: ['trad'], ger: ['egenRing'],
       mal: 'Printa med egen tråd', tal: 'Printa en nyckelring av din egen tråd.',
       start: 'Min egen tråd. Nu printar jag en nyckelring av den.',
       pamin: 'Nu printar jag med min egen tråd.',
       klar: (S, G) => G.printat('nyckelring') >= 3 || (S.stat.printat || 0) >= 3 },
 
-    { id: 'salj', mom: 'Gör egen tråd', sak: 'nyckelring', handling: 'salj', pil: 'ali', bild: 'nyckelring',
+    { id: 'salj', mom: 'Gör egen tråd', forDu: ['darfor', 'en ring av egen tråd ska säljas'], sak: 'nyckelring', handling: 'salj', pil: 'ali', bild: 'nyckelring',
       kraver: ['egenRing'], ger: ['saltEgen'],
       mal: 'Sälj hos Ali', tal: 'Sälj nyckelringarna hos Ali.',
       start: 'Affären på andra sidan vägen kanske köper sånt här.',
       pamin: 'Ali köper det jag printar.',
       klar: (S) => (S.stat.salt || 0) > (S.saltVidKvarn ?? 0) },
 
-    { id: 'powerbank', mom: 'Gör egen tråd', sak: 'byggsats:powerbank', handling: 'montera', pil: 'ali', bild: 'byggsats:powerbank',
+    { id: 'powerbank', mom: 'Gör egen tråd', forDu: ['darfor', 'Ali har något åt mig'], sak: 'byggsats:powerbank', handling: 'montera', pil: 'ali', bild: 'byggsats:powerbank',
       kraver: ['saltEgen'], ger: ['powerbank'],
       mal: (S, G) => G.antalInv('byggsats:powerbank') ? 'Koppla in powerbanken' : 'Gå till Ali',
       start: (S) => S.powerbankGiven ? null : 'Ali har något åt mig. Jag går över vägen till affären.',
@@ -157,7 +157,7 @@ export const STORY = [
       pamin: 'Ali har något åt mig.',
       klar: (S) => !!S.powerbank },
 
-    { id: 'kopGrip', mom: 'Sova', sak: 'byggsats:grip', handling: 'kop', pil: 'ali', bild: 'byggsats:grip', las: 'grip', lapp: 'ritning',
+    { id: 'kopGrip', mom: 'Sova', forDu: ['men', 'det tar tid att plocka skräp med händerna'], sak: 'byggsats:grip', handling: 'kop', pil: 'ali', bild: 'byggsats:grip', las: 'grip', lapp: 'ritning',
       kraver: ['powerbank'], ger: ['gripRitning'],
       mal: (S) => S.mynt >= 50 ? 'Köp skräpgripen' : 'Spara till gripen', tal: 'Köp en skräpgrip hos Ali. Den kostar femtio kronor.',
       talSpara: ['Printa och sälj nyckelringar tills du har femtio kronor till gripen.', 50],
@@ -166,14 +166,14 @@ export const STORY = [
       pamin: 'Gripen hos Ali. Femtio kronor.',
       klar: (S, G) => S.ritningar.includes('grip') || G.forstaUpp() },
 
-    { id: 'printGrip', mom: 'Sova', sak: 'byggsats:grip', handling: 'printa', pil: 'skrivare',
+    { id: 'printGrip', mom: 'Sova', forDu: ['darfor', 'modellen är köpt'], sak: 'byggsats:grip', handling: 'printa', pil: 'skrivare',
       kraver: ['gripRitning'], ger: ['grip'],
       mal: (S, G) => G.skrivare().some((x) => x.klar === 'byggsats:grip') ? 'Ta ut gripen' : 'Printa skräpgripen', tal: 'Printa skräpgripen på skrivaren.',
       start: null,   // dagbokssidan om ritningen säger redan det här
       pamin: 'Gripen ska printas.',
       klar: (S, G) => G.forstaUpp() },
 
-    { id: 'krukaD1', mom: 'Sova', sak: 'kruka', handling: 'printa', pil: 'skrivare', bild: 'kruka', las: 'kruka',
+    { id: 'krukaD1', mom: 'Sova', forDu: ['men', 'Ali vill inte bara ha nyckelringar'], sak: 'kruka', handling: 'printa', pil: 'skrivare', bild: 'kruka', las: 'kruka',
       kraver: ['grip'], ger: ['kruka1'],
       mal: (S, G) => S.ritningar.includes('recept:kruka') ? 'Printa en blomkruka' : S.krukaErbjuden ? (S.mynt >= G.VAROR.kruka.recept ? 'Köp krukreceptet' : 'Spara till receptet') : 'Sälj en nyckelring till',
       start: 'Ali vill ha krukor. Jag printar en blomkruka.',
@@ -181,14 +181,14 @@ export const STORY = [
       kvitto: 'En kruka. Mamma skulle bli så stolt. Hon får inte veta.',
       klar: (S, G) => G.printat('kruka') >= 1 },
 
-    { id: 'saljKruka', mom: 'Sova', sak: 'kruka', handling: 'salj', pil: 'ali', bild: 'kruka',
+    { id: 'saljKruka', mom: 'Sova', forDu: ['darfor', 'krukan är printad'], sak: 'kruka', handling: 'salj', pil: 'ali', bild: 'kruka',
       kraver: ['kruka1'], ger: ['krukaSald'],
       mal: 'Sälj blomkrukan',
       start: 'Ali gillar krukor. Han sa det själv.',
       pamin: 'Krukan till Ali.',
       klar: (S) => (S.stat.krukaSald || 0) >= 1 },
 
-    { id: 'kopSang', mom: 'Sova', sak: 'sang', handling: 'kop', pil: 'ali', bild: 'sang',
+    { id: 'kopSang', mom: 'Sova', forDu: ['men', 'sängen kostar mer än jag har'], sak: 'sang', handling: 'kop', pil: 'ali', bild: 'sang',
       kraver: ['krukaSald'], ger: ['sangRitning'],
       mal: (S, G) => S.mynt >= G.SANG_INSTRUKTION ? 'Köp sängen' : 'Spara till sängen', tal: 'Köp 3D-modellen till sängen hos Ali.',
       talSpara: ['Printa och sälj mer tills du har sextio kronor till sängen.', 'SANG_INSTRUKTION'],
@@ -197,7 +197,7 @@ export const STORY = [
       pamin: 'En säng. Jag behöver pengar till den.',
       klar: (S) => S.ritningar.includes('sang') || !!S.sang },
 
-    { id: 'printSang', mom: 'Sova', sak: 'sang', handling: 'printa', pil: 'skrivare', bild: 'sang',
+    { id: 'printSang', mom: 'Sova', forDu: ['darfor', 'pengarna räcker till sängen'], sak: 'sang', handling: 'printa', pil: 'skrivare', bild: 'sang',
       kraver: ['sangRitning'], ger: ['sangPrintad'],
       mal: 'Printa sängen', tal: 'Printa sängen på skrivaren.',
       start: 'En säng tar lång tid. Den är värd det.',
@@ -205,7 +205,7 @@ export const STORY = [
       kvitto: 'En säng. Jag printade en SÄNG.',
       klar: (S, G) => G.antalInv('sang') > 0 || !!S.sang },
 
-    { id: 'sov1', mom: 'Sova', sak: 'sang', handling: 'sov', pil: 'skjul', bild: 'sang',
+    { id: 'sov1', mom: 'Sova', forDu: ['darfor', 'sängen är klar'], sak: 'sang', handling: 'sov', pil: 'skjul', bild: 'sang',
       kraver: ['sangPrintad'], ger: ['dag2'],
       mal: 'Sängen i skjulet', tal: 'Ställ sängen i skjulet och sov.',
       start: 'Sängen ska in i skjulet. Sen sover jag.',
