@@ -730,7 +730,7 @@ for (const p of STORY_STEG) { const lagg = (t, lag) => { if (typeof t === 'strin
 const DIALOG = new Map(), DIALOG_TEXT = new Map();
 for (const p of STORY_STEG) for (const d of p.dialog || []) { DIALOG.set(d.id, { ...d, steg: p.id }); if (typeof d.text === 'string') DIALOG_TEXT.set(d.text, d.id); }
 for (const p of STORY_STEG) if (p.start && typeof p.start === 'string' && (p.startSvarPa || p.startVet || p.startFore)) DIALOG_TEXT.set(p.start, 'start:' + p.id);
-const dialogText = (id) => { const d = DIALOG.get(id); return d ? String(varde(d.text, S, storyHjalp) || '') : ''; };
+const dialogText = (id) => { const d = DIALOG.get(id); if (!d) return ''; let s = {}; try { s = S; } catch {} return String(varde(d.text, s, storyHjalp) || ''); };   /* inkorg 62 AKUT: texterna i LAPPAR byggs innan S finns – annars kraschar modulen vid start */
 LAPPAR.salt = ['🧺 Ali', dialogText('aliGripSms')];   /* inkorg 61: Alis grip-sms står i story.js */
 const hantSenast = {}; let senastDu = -1e9;
 /* inkorg 61: dialogloggen – allt som sägs, i den ordning det hördes, för verktyg/dialog-dag-N.md */
