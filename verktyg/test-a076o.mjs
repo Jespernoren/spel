@@ -34,10 +34,8 @@ const las1 = await H((l0) => window.__printahem.textLogg().slice(l0).some((e) =>
 await p.click('.ph-med:not([hidden]) .ph-dagbokkort .ph-dk-dag'); await p.waitForTimeout(400); await p.click('.ph-med:not([hidden]) .ph-dagbokkort .ph-dk-dag'); await p.waitForTimeout(400);
 const las2 = await H((l0) => window.__printahem.textLogg().slice(l0).filter((e) => e.kalla === 'läs upp').length >= 2, l0);
 ut.push([`klick på texten läser upp sidan igen (${las1}), klick på dagraden likaså (${las2})`, las1 && las2]);
-await fanga('kvittens-skylten', () => window.__printahem.visaLapp('skylt'));
-await fanga('kvittens-kvarnen', () => window.__printahem.visaLapp('malt'));
-await fanga('kapitelsida-petg', () => window.__printahem.visaLapp('petg'));
 await fanga('morgon-dag3', () => window.__printahem.dagbokKort('Fick en ny idé i natt.\n\nBära mer och få tak över huvudet.', { rubrik: 'Dag 3 – Ett tak', morgon: true }));
+/* inkorg 43: skylten, kvarnen och PETG-sidan är dagboksnotiser nu (test-a099) – bara morgonen och det man läser igen är helsidor */
 await fanga('las-igen', () => window.__printahem.dagbokKort('Kvarnen funkar.\n\nSoptippen är en gruva.', { lasIgen: true }));
 await stang();
 // rutnät

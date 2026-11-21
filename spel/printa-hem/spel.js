@@ -526,21 +526,21 @@ const LAPPAR = {
   // punkt N: Rolfs brev dag 11 och efter växthuset
   tr_brev: ['✉️ Brev från Rolf', 'ÖJ. Ja va int mä mej själv på konditoriet. Förlåt att ja prata så mycke. Bakom husvagnen fanns Birgittas trädgård. Nu ä dä bara nässlor. Ja har int rört den på sju år. Ja kan int. Men om nån annan började … Ja vet int. Du ä ju bra på skräp. MVH ROLF'],
   tr_rosor: ['✉️ Brev från Rolf', 'Hon hade gillat dä. Ja planterade rosorna i natt. Kajsa höll ficklampan. Hon ä int bra på att hålla ficklampa. MVH ROLF'],
-  skylt: ['📔 Dagbok', 'Spikade ihop en skylt av lösa bräder från skräpberget.\n\nSoptippsvägen 1.\n\nDet är inte mycket för världen.\nMen det är MITT.'],
-  start: ['📔 Dagbok', 'Dag 1. Nitton år. Inget mer tjat.\n\nEn skrivare, ett skjul och en säng.\nDet räcker för i natt.\n\nGården är full av skräp. I morgon.'],   /* inkorg 24 p.3: kvällen slutar med morgondagens problem */
+  skylt: ['📔 Dagbok', 'Spikade ihop en skylt av bräder från skräpberget: Soptippsvägen 1.\n\nInte mycket för världen, men det är MITT.'],
+  start: ['📔 Dagbok', 'Dag 1. Nitton år. Inget mer tjat.\n\nGården är full av skräp. I morgon.'],   /* inkorg 43: kvällen = en rad + kroken på nattskärmen */   /* inkorg 24 p.3: kvällen slutar med morgondagens problem */
   sang: ['📔 Dagbok', 'Första natten i en riktig säng.\nJag printade den själv.'],
   mammajul: ['🎁 Brev från Mamma', 'Du sa att du skulle fira jul ensam. Jag är glad att du ljög. Kram, Mamma'],   /* inkorg 24c p.3: brevet i julklappen svarar på vadet */
-  polett: ['📔 Dagbok', 'Dag 14. Mammas paket kom tillbaka: "Okänd mottagare". Jag bor ju här. Det här är mitt hem nu. Men på pappret finns jag inte här. Jag måste bli folkbokförd – och då måste jag äga tomten jag bor på och ha ett riktigt hus.'],
+  polett: ['📔 Dagbok', 'Dag 14. Mammas paket kom tillbaka: \"Okänd mottagare\". Det här är mitt hem, men på pappret finns jag inte här.'],
   sopbil: ['📔 Dagbok', 'Sopbilen tippade en ny last.\n\nAllt det skräpet –\noch grinden är låst.'],
   malt: ['📔 Dagbok', 'Kvarnen funkar.\n\nSoptippen är en gruva.'],
   motor: ['📔 Dagbok', 'Grip OCH motor.\nNu går det undan.'],
   salt: ['🧺 Ali', 'Ali här. Nyckelringen sålde. Jag ville bli ingenjör, men fick ta över pappas butik. I natt lät jag en AI rita en skräpgrip åt mig. Kom och titta.'],
-  ritning: ['📔 Dagbok', 'Min första 3D-modell!\nNu ska den bara printas.\n\nJag printar inte bara saker –\njag printar maskiner.'],
+  ritning: ['📔 Dagbok', 'Min första 3D-modell!\n\nJag printar inte bara saker – jag printar maskiner.'],
   sol: ['📔 Dagbok', 'Slut på trampandet.\nNästan.'],
-  petg: ['📔 Dagbok', 'Tunnorna och de röda backarna\när för tunga för min lilla kvarn.\n\nMen Ali har en röd kvarn för sånt – PETG.\nRöd plast.\nOch en röd skrivare som bara äter den.\n\nTvå fabriker.\nJag har två fabriker. Snart.'],
+  petg: ['📔 Dagbok', 'Det tunga skräpet är för tungt för min lilla kvarn. Men Ali har en röd kvarn för PETG – snart har jag två fabriker.'],
   skrivare2: ['📱 Storebror', 'VA?! Du har byggt en skrivare TILL?? Du har typ en printfarm nu. Okej. Det är faktiskt ganska ballt. 🔥'],
   klart: ['📔 Dagbok', 'Lampan lyser.\n\nPappa ska visst komma förbi i morgon.'],   // CL: själva repliken sägs när lampan tänds
-  gard: ['📔 Dagbok', 'Gården är STÄDAD.\nAv mig. Frivilligt.\n\nMamma skulle aldrig tro det.'],
+  gard: ['📔 Dagbok', 'Gården är STÄDAD, av mig, frivilligt.\n\nMamma skulle aldrig tro det.'],
 };
 /* A-088 §1: skylten är den röda tråden – första gången en ny person hittar till dig skriver kvällens sida "Nu vet X att jag bor HÄR.", högst en rad per kväll (den andra skjuts till nästa kväll).
    Dag 1 är kvällssidan redan full (LÅNG DAGBOK), så den som kommer dag 1 får sin rad dag 2. */
@@ -6286,7 +6286,8 @@ function sov() {
   const natt = S.dag;
   const sl = document.createElement('div'); sl.className = 'ph-natt';   /* A-093 p.3: nattskärmen är en helskärmsscen (DÖD KNAPP räknar inte knappar under den) */
   sl.style.cssText = 'position:fixed;inset:0;z-index:9000;background:#05070f;opacity:0;transition:opacity 1.2s;display:grid;place-items:center;color:#fff;font:700 28px system-ui,sans-serif;text-align:center';
-  sl.innerHTML = `<div>🌙 Dag ${natt} är slut. God natt.<br><span style="font-size:18px;opacity:.7">zzz…${forsta ? ' i en riktig säng' : ''}</span></div>`;   /* inkorg 35 tillägg 10:05 */
+  const kvall = (() => { if (S.kvallRad?.dag === natt) return S.kvallRad.text; const id = natt === 1 ? 'start' : 'kvall' + natt; const li = LAPPAR[id] && lappInfo(id); if (!li) return ''; if (!S.lappar.includes(id)) S.lappar.push(id); const t = dagbokRen(li[1]); dagbokRadSpara(natt, t, true); return t; })();   /* inkorg 43: kvällens rad och kroken */
+  sl.innerHTML = `<div>🌙 Dag ${natt} är slut. God natt.<br><span style="font-size:18px;opacity:.7">zzz…${forsta ? ' i en riktig säng' : ''}</span>${kvall ? `<div class="ph-nattrad">${dagbokRader(kvall)}</div>` : ''}</div>`;   /* inkorg 35 tillägg 10:05 */
   let nattExtra = 0;
   document.body.appendChild(sl);
   /* sova spelas redan */;
@@ -9706,8 +9707,13 @@ function oppnaDagbok() {
       + sektion('Trivsel') + `<div class="ui-fakta"><span>${ik('hjarta')}${trivsel()} trivsel</span><span>${ik('klocka')}Dag ${S.dag}</span><span>${ik('mynt')}${krT(S.mynt)} kr</span></div>`;
   } else if (dagbokFlik === 'dagbok') {
     // det du själv har skrivit – nyast först, läses upp med din egen röst
-    const mina = S.lappar.slice().reverse().filter((l) => /Dagbok/.test(lappInfo(l)[0]));
-    kropp = sektion('Min dagbok', 'Det jag har skrivit, nyast först') + (mina.length ? mina.map((l) => rad({ bild: portratt('du', 40), titel: '', text: `<span style="font-size:15px;color:#f2f2f2">${rens(lappInfo(l)[1])}</span>`, hoger: `${lasUppKnapp(lappInfo(l)[1], 'du')} ${knapp({ text: 'Öppna', typ: 'neutral', attr: `data-las="${l}"`, ikon: 'bok' })}` })).join('') : '<p class="ui-tom">Inget skrivet än.</p>');
+    /* inkorg 43: dagens uppslag – morgonsidan och dagens rader under, utan datum */
+    const dagar = Object.keys(S.dagbok || {}).map(Number).sort((x, y) => y - x);
+    const upps = dagar.map((d) => { const u = S.dagbok[d], m = u.morgon, txt = [m ? `${m.rubrik ? m.rubrik.replace(/\.?$/, '.') + '\n\n' : ''}${dagbokDelar({ text: m.text, dag: d }).text}` : '', ...u.rader.map((r) => r.text)].filter(Boolean).join('\n\n');
+      return `<div class="ph-uppslag" data-uppslag="${d}"><div class="ph-upp-dag"><b>Dag ${d}.</b> ${rens(julRad(d).replace(/^Dag \d+\.\s*/, ''))} ${lasUppKnapp(txt.replace(/\s*\n+\s*/g, ' '), 'du', { liten: true })}</div>${m ? `<div class="ph-upp-morgon">${m.rubrik ? `<div class="ph-upp-rub">${rens(m.rubrik.replace(/\.?$/, '.'))}</div>` : ''}${dagbokRader(dagbokDelar({ text: m.text, dag: d }).text)}</div>` : ''}${u.rader.map((r) => `<div class="ph-upp-rad${r.kvall ? ' kvall' : ''}">${dagbokRader(r.text)}</div>`).join('')}</div>`; }).join('');
+    const dagbokLappar = new Set(dagar.flatMap((d) => S.dagbok[d].rader.map((r) => r.text)));
+    const mina = S.lappar.slice().reverse().filter((l) => /Dagbok/.test(lappInfo(l)[0]) && !dagbokLappar.has(dagbokRen(lappInfo(l)[1])));
+    kropp = sektion('Min dagbok', 'En sida per dag – morgonen och det jag skrev under dagen') + upps + (mina.length && upps ? sektion('Äldre sidor') : '') + (mina.length || upps ? '' : '') + (mina.length ? mina.map((l) => rad({ bild: portratt('du', 40), titel: '', text: `<span style="font-size:15px;color:#f2f2f2">${rens(lappInfo(l)[1])}</span>`, hoger: `${lasUppKnapp(lappInfo(l)[1], 'du')} ${knapp({ text: 'Öppna', typ: 'neutral', attr: `data-las="${l}"`, ikon: 'bok' })}` })).join('') : (upps ? '' : '<p class="ui-tom">Inget skrivet än.</p>'));
     if (senaSystem() && S.prestLogg?.length) kropp += sektion('Prestationer', 'Små saker jag har klarat, nyast först') + S.prestLogg.map((x) => { const p = PRESTATIONER.find((y) => y.id === x.id); return p ? rad({ bild: `<span class="ui-headik" style="width:30px;height:30px">${ik('stjarna')}</span>`, titel: rens(p.namn), text: `${rens(p.rad)} · dag ${x.dag}` }) : ''; }).join('');
   } else if (dagbokFlik === 'plan') {   // punkt AS: fabriksplanen ovanifrån
     kropp = sektion('Fabriksplanen', 'Gården ovanifrån – en linje per filament. Låsta linjer öppnas i senare kapitel.') + `<div style="display:flex;justify-content:center;padding:6px 0">${fabriksplanSvg()}</div>`
@@ -10044,7 +10050,10 @@ css.textContent = `
 .ph-dagbokkort{background:#f6eedb;color:#2a2018;padding:22px 28px 22px;transform:rotate(-.6deg);width:min(560px,90vw)!important;max-width:none!important;box-sizing:border-box;text-align:left}.ph-dagbokkort .ph-las-klick{cursor:pointer}.ph-dagbokkort .ph-las-klick.pulsar{text-shadow:0 0 1px rgba(90,70,48,.35)}.ph-dk-luft{display:block;height:.55em}.ph-dagbokkort .ph-pap-text{margin-bottom:16px}.ph-dagbokkort .ph-pap-titel{opacity:.75;justify-content:flex-start}.ph-dagbokkort .ph-lasigen{border:0;background:rgba(0,0,0,.08);border-radius:999px;width:30px;height:30px;display:grid;place-items:center;cursor:pointer;color:#5a4630;padding:5px}.ph-dagbokkort .ph-lasigen svg{width:18px;height:18px}
 .ph-dk-rub{font:700 22px/1.3 "Bradley Hand","Segoe Print","Comic Sans MS",cursive;text-align:left;margin:2px 0 6px}.ph-dagbokkort .ph-pap-text{font:500 22px/1.5 "Bradley Hand","Segoe Print","Comic Sans MS",cursive}.ph-dk-extra{font:500 13px/1.45 system-ui;text-align:left;margin:-6px 0 14px;opacity:.75}.ph-dk-extra .br-rapport{display:block;background:none;color:#5a4630;padding:0;border:0;box-shadow:none}.ph-dk-extra .ali-vill{background:none;color:#5a4630;border:0;box-shadow:none;padding:0}.ph-kontroll[hidden]{display:none!important}
 .ph-dagbokkort .ph-fortsatt{display:block;margin:0 auto;background:#d8392b;color:#fff;letter-spacing:.06em;font-weight:900;min-width:180px}
+.ph-uppslag{background:#f6eedb;color:#2a2018;border-radius:6px;padding:14px 18px;margin:0 0 12px;font:400 15px/1.45 system-ui,sans-serif}.ph-uppslag .ph-dk-luft{display:block;height:.5em}.ph-upp-dag{display:flex;align-items:center;gap:8px;margin-bottom:8px}.ph-upp-dag .ph-lasupp{margin-left:auto}.ph-upp-rub{margin-bottom:6px}.ph-upp-morgon{padding-bottom:8px;margin-bottom:8px;border-bottom:1px dashed rgba(90,70,48,.3)}.ph-upp-rad{margin:0 0 8px}.ph-upp-rad.kvall{font-style:italic;opacity:.85}
+.ph-nattrad{margin:16px auto 0;width:min(340px,80vw);font:500 17px/1.45 system-ui,sans-serif;text-align:left;color:#f6eedb;opacity:.92}.ph-nattrad .ph-dk-luft{display:block;height:.5em}
 .ph-nattprint{margin:18px auto 0;width:min(340px,80vw);background:#141b33;border-radius:14px;padding:14px 18px;font:500 15px/1.3 system-ui,sans-serif;text-align:left;box-shadow:0 10px 30px rgba(0,0,0,.5)}.ph-nattprint .np-rub{font:800 12px system-ui;letter-spacing:.14em;opacity:.65;margin-bottom:8px}.ph-nattprint .np-rad{display:flex;align-items:center;gap:10px;margin:4px 0}.ph-nattprint .np-rad span{flex:1}.ph-nattprint .np-rad b{font-weight:700;opacity:.9}.ph-nattprint .np-fler{opacity:.6;font-size:13px;margin:4px 0 0 40px}.ph-nattprint .np-streck{height:1px;background:rgba(255,255,255,.18);margin:10px 0 8px}.ph-nattprint .np-tot{display:flex;justify-content:space-between;margin:3px 0}.ph-nattprint .np-kr b{color:#ffd35a}
+.ph-notis.dagbok{background:#f6eedb!important;color:#2a2018!important;border-left-color:#c0392b!important}.ph-notis.dagbok .rubrik{color:#7a2a1e!important}.ph-notis.dagbok .rubrik svg,.ph-notis.dagbok .rubrik .ui-ik{color:#c0392b!important}.ph-notis.dagbok .ph-lasupp{background:rgba(0,0,0,.08);color:#5a4630}
 .ph-dk-a4{--dk-u:min(1vh,.5625vw);--dk-px:20;width:calc(var(--dk-u)*50)!important;height:calc(var(--dk-u)*70.7);min-height:calc(var(--dk-u)*70.7);padding:calc(var(--dk-u)*6.2) calc(var(--dk-u)*5) calc(var(--dk-u)*11)!important;position:relative;display:block;font:400 calc(var(--dk-u)*var(--dk-px)/7.2)/1.45 system-ui,-apple-system,"Segoe UI",sans-serif!important;border-radius:3px}
 .ph-dk-a4 .ph-dk-sida{cursor:pointer}.ph-dk-a4 .ph-dk-dag{white-space:nowrap;margin:0 0 1.45em}.ph-dk-a4 .ph-dk-dag b{font-weight:800}.ph-dk-a4 .ph-dk-rub{font:inherit;font-weight:400;margin:0 0 1.45em;text-align:left}.ph-dk-a4 .ph-pap-text{font:inherit!important;margin:0!important}.ph-dk-a4 .ph-dk-luft{height:.725em}.ph-dk-a4 .ph-dk-extra{font-size:.62em;margin:.8em 0 0}.ph-dk-a4 .ph-dk-extra *{color:#5a4630!important}
 .ph-dk-a4 .ph-fortsatt{position:absolute;left:50%;bottom:calc(var(--dk-u)*3.33);transform:translateX(-50%);margin:0;min-width:calc(var(--dk-u)*20)}
@@ -10556,7 +10565,7 @@ const notisEl = document.querySelector('.ph-hoger .ph-notiser'), medEl = documen
 const NOTIS_MAX = 1, NOTIS_TID = 4000;   // punkt AA: en notis i taget, 4 sekunder, resten köas
 const notisKo = [];
 const RUBRIK = { bra: 'Klart', guld: 'Nytt', fel: 'Obs', '': 'Info', sms: 'Meddelande', lapp: 'Dagbok' };
-const RUBRIK_IKON = { bra: 'bock', guld: 'stjarna', fel: 'varning', '': 'info', sms: 'telefon', lapp: 'bok' };
+const RUBRIK_IKON = { dagbok: 'bok', bra: 'bock', guld: 'stjarna', fel: 'varning', '': 'info', sms: 'telefon', lapp: 'bok' };
 const notisSenast = new Map();   // EC#1: samma notis (siffror bortsett) högst en gång per 2 min
 const NOTIS_SAMMA_MS = 120000;
 function notis(text, typ = '', o = {}) {
@@ -10603,7 +10612,7 @@ function notisVisa(text, typ = '', o = {}) {
   textLogg('notis', typ, text);   // loggas när den faktiskt visas (inte när den väntar i notiskön)
   const k = document.createElement('div');
   k.className = 'ph-notis ' + typ; k.dataset.text = text;
-  k.innerHTML = `<div class="rubrik"><span>${ik(RUBRIK_IKON[typ] || 'info')} ${rens(o.titel || RUBRIK[typ] || 'Info')}</span><span>nu</span></div><div class="kropp">${o.bild ? `<span class="ph-notis-bild">${ikonHtml(o.bild, 40)}</span>` : ''}${rens(text)}${lasUppKnapp(text, typ === 'tanke' ? 'du' : typ === 'sms' ? (o.fran || 'berattare') : 'berattare', { liten: true })}</div>`;   /* A-076 tillägg 11:35: ett nej har en bild */
+  k.innerHTML = `<div class="rubrik"><span>${ik(RUBRIK_IKON[typ] || 'info')} ${rens(o.titel || RUBRIK[typ] || 'Info')}</span><span>nu</span></div><div class="kropp">${o.bild ? `<span class="ph-notis-bild">${ikonHtml(o.bild, 40)}</span>` : ''}${rens(text)}${lasUppKnapp(text, typ === 'tanke' || typ === 'dagbok' ? 'du' : typ === 'sms' ? (o.fran || 'berattare') : 'berattare', { liten: true })}</div>`;   /* A-076 tillägg 11:35: ett nej har en bild */
   if (o.klick) { k.classList.add('klickbar'); k.insertAdjacentHTML('beforeend', '<div class="las"><kbd>Tab</kbd> läs och lyssna</div>'); k.onclick = (e) => { e.stopPropagation(); taBort(k); o.klick(); }; }
   el.prepend(k);
   requestAnimationFrame(() => k.classList.add('in'));
@@ -11585,6 +11594,10 @@ function rubrikDubbel(rubrik, text) {
 function dagbokKort(text, o = {}) {
   const t = String(text || '').trim(); if (!t) return;
   if (!o.lasIgen) koKoll(t + (o.rubrik ? ' ' + o.rubrik : ''), o.vem || 'du', 'dagbok');   /* inkorg 36 */
+  /* inkorg 43 (A-099): bara morgonen (och kapitelkortet, och det man läser igen) är en hel sida. Resten av dagen blir små dagboksnotiser,
+     och kvällen står på nattskärmen. Allt skrivs in i dagens uppslag (Tab → Min dagbok). */
+  if (!(o.morgon || o.lasIgen || o.helsida || /^KAPITEL /.test(o.rubrik || ''))) { dagbokRad(t, o); return; }
+  if (o.morgon) { const d = ((S.dagbok ||= {})[S.dag] ||= { rader: [] }); d.morgon = { rubrik: o.rubrik || '', text: t }; }
   if (o.morgon) { const tr = t.replace(/^(Dag \d+\. \d+ dag(ar)? till jul|Julafton)\.$/m, '')   /* A-092 §2.9: "1 dag" räknades inte (dagar? kräver "daga") */.trim();   /* A-088: nedräkningen är en statusrad, ingen tanke – den räknas inte */
     const meningar = tr.split(/(?<=[.!?…])\s+/).filter((x) => /\p{L}/u.test(x)).length, ord = tr.split(/\s+/).filter(Boolean).length; if (meningar > DAGBOK_MAX_MENINGAR || ord > DAGBOK_MAX_ORD) langDagbok.push(`dag ${S.dag}: ${meningar} meningar, ${ord} ord`); }
   rubrikDubbel(o.rubrik, t);
@@ -11628,6 +11641,19 @@ function visaMorgonNotiser(n) {
   if (n.ali) lista.push([`${VAROR[n.ali]?.namn || n.ali} · +50 %`, { bild: n.ali, titel: 'Ali vill ha idag' }]);
   lista.forEach(([t, o], i) => setTimeout(() => notisVisa(t, '', { ...o, svar: true, vikt: 'STORY', stapla: true, tid: 8000 }), 600 + i * 1000));   /* svar på FORTSÄTT: de kommer direkt efter sidan, inte efter dagens första tankar */
 }
+const DAGBOK_NOTIS_MS = 8000;
+const dagbokRen = (t) => String(t || '').replace(/^Dag \d+( är slut)?\.[ \t]*/, '').trim();
+function dagbokRadSpara(dag, text, kvall) { const d = ((S.dagbok ||= {})[dag] ||= { rader: [] }); if (!d.rader.some((r) => r.text === text)) d.rader.push({ text, kvall: !!kvall }); sparaSnart(); }
+function dagbokRad(t, o = {}) {
+  const ren = dagbokRen(t), kvall = /^(kvall\d+|start)$/.test(o.id || '');
+  dagbokRadSpara(S.dag, ren, kvall);
+  if (kvall) { S.kvallRad = { dag: S.dag, text: ren }; textLogg('kvallsrad', 'du', ren, 'inkorg 43: kvällen står på nattskärmen'); try { o.efter?.(); } catch {} return; }
+  { const m = ren.split(/(?<=[.!?…])\s+/).filter((x) => /\p{L}/u.test(x)).length; if (m > DAGBOK_MAX_MENINGAR) langDagbok.push(`dagboksnotis dag ${S.dag}: ${m} meningar – "${ren.slice(0, 50)}"`); }
+  if (o.kvitto) senKvittensKoll(o.kvitto, ren);
+  textLogg('dagbokrad', 'du', ren, 'inkorg 43');
+  notisVisa(ren.replace(/\s*\n+\s*/g, ' '), 'dagbok', { titel: 'Dagboken', tid: DAGBOK_NOTIS_MS, ...(o.kvitto ? { svar: true } : {}) });
+  try { o.efter?.(); } catch {}
+}
 function visaNastaMeddelande() {
   const m = medKo.shift(); if (!m) return;
   if (m.kvitto) senKvittensKoll(m.kvitto, m.text || m.titel || '');   /* A-063 */
@@ -11665,6 +11691,7 @@ function visaNastaMeddelande() {
       ? dagbokHtml(m)
       : `<div class="ph-papper"><div class="ph-pap-titel">${portratt(vemAvTitel(m.titel), 34)}<span>${rens(m.titel)}</span></div><div class="ph-pap-text">${rens(m.text)}</div><button class="fp-knapp">${m.knapp || 'Läst'}</button></div>`;
   medEl2.classList.toggle('dk', m.typ === 'dagbok'); medEl2._efter = m.efter || null; medEl2._lasIgen = !!m.lasIgen; medEl2._dagbok = m.typ === 'dagbok';
+  if (m.typ === 'dagbok' && !m.morgon && !m.lasIgen && !/^KAPITEL /.test(m.rubrik || '')) regelvakt.brott('HELSIDA UNDER DAGEN', `"${m.text.slice(0, 50)}"`);   /* inkorg 43 */
   if (m.typ === 'dagbok') { dagbokVisad.push({ t: performance.now(), morgon: m.morgon, text: m.text.slice(0, 60) }); textLogg('dagbokkort', m.vem || 'du', (m.rubrik ? m.rubrik + ' · ' : '') + m.text, 'A-076 14:22'); regiLogg('dagbok', 'story', m.vem || 'du', m.text.slice(0, 60), 0); }
   medEl2.hidden = false;
   if (m.typ === 'dagbok') dagbokPassa(medEl2.querySelector('.ph-dk-a4'));
@@ -13487,7 +13514,7 @@ setInterval(() => {
 /* tillbakablicken kommer före uppgiften: målet väntar tills den är visad */
 const BLICK_FORE = {
   'm18-gjut-grunden-huset': ['hem', () => `<div class="ph-blick-bild"><img src="${spelBild('hem')}" alt="">${['hem2', 'hem3', 'hem4'].map((v) => `<img class="over" src="${spelBild(v)}" alt="">`).join('')}</div><span>Tänk om det här kunde bli ett riktigt hem? Till jul.</span>`],   /* introts ruta 15: skjulet + ritningen ovanpå */
-  'm21-bli-folkbokford': ['paketet', () => { const t = LAPPAR.polett[1].split('. ').slice(0, 3).join('. ') + '.'; return `<div class="ph-papper ph-dagbokkort">${lasUppKnapp(t, 'mamma')}<div class="ph-pap-text">${rens(t)}</div></div>`; }],   /* A-093 p.6: lappen har en 🔊 som alla texter */
+  'm21-bli-folkbokford': ['paketet', () => { const t = dagbokRen(LAPPAR.polett[1]);   /* inkorg 43: lappen är två meningar nu */ return `<div class="ph-papper ph-dagbokkort">${lasUppKnapp(t, 'mamma')}<div class="ph-pap-text">${rens(t)}</div></div>`; }],   /* A-093 p.6: lappen har en 🔊 som alla texter */
 };
 function blickHaller() { try { const b = BLICK_FORE[STEG[S.steg]?.id]; if (!b || (S.blickar || []).includes(b[0])) return false; tillbakablick(b[0], b[1]); const k = blickKo.find((x) => x.id === b[0]); return !k || performance.now() - k.t0 < BLICK_HALL_MS; } catch (e) { return false; } }
 const BLICK_HALL_MS = 5000;   /* A-093 p.2: kan tillbakablicken inte visas på 5 s (butiken öppen, en lång replik) kommer uppgiften ändå – blicken visas när det går */   /* try: kan anropas innan BLICK_FORE finns (TDZ) */
