@@ -6433,7 +6433,7 @@ function sov() {
   const sl = document.createElement('div'); sl.className = 'ph-natt';   /* A-093 p.3: nattskärmen är en helskärmsscen (DÖD KNAPP räknar inte knappar under den) */
   sl.style.cssText = 'position:fixed;inset:0;z-index:9000;background:#05070f;opacity:0;transition:opacity 1.2s;display:grid;place-items:center;color:#fff;font:700 28px system-ui,sans-serif;text-align:center';
   const kvall = (() => { if (S.kvallRad?.dag === natt) return S.kvallRad.text; const id = natt === 1 ? 'start' : 'kvall' + natt; const li = LAPPAR[id] && lappInfo(id); if (!li) return ''; if (!S.lappar.includes(id)) S.lappar.push(id); const t = dagbokRen(li[1]); dagbokRadSpara(natt, t, true); return t; })();   /* inkorg 43: kvällens rad och kroken */
-  sl.innerHTML = `<div>🌙 Dag ${natt} är slut. God natt.<br><span style="font-size:18px;opacity:.7">zzz…${forsta ? ' i en riktig säng' : ''}</span>${kvall ? `<div class="ph-nattrad">${dagbokRader(kvall)}</div>` : ''}</div>`;   /* inkorg 35 tillägg 10:05 */
+  sl.innerHTML = `<div>🌙 ${natt >= JULAFTON_DAG ? 'God jul.' : `${JULAFTON_DAG - natt} ${JULAFTON_DAG - natt === 1 ? 'dag' : 'dagar'} kvar. God natt.`}<br><span style="font-size:18px;opacity:.7">zzz…${forsta ? ' i en riktig säng' : ''}</span>${kvall ? `<div class="ph-nattrad">${dagbokRader(kvall)}</div>` : ''}</div>`;   /* inkorg 35 tillägg 10:05 */
   let nattExtra = 0;
   document.body.appendChild(sl);
   /* sova spelas redan */;
@@ -6490,7 +6490,7 @@ function kapRitAuto() { let n = 0; const iv = setInterval(() => { const k = docu
 /* A-088 §4: morgonkortets andra rad är insatsen – vad som händer annars (kylan, mamma eller julen). En per dag 1–22. */
 const INSATS = ['Klarar jag inte en natt här får mamma rätt.', 'Utan dörr blåser natten rakt in.', 'Utan tak regnar det in i natt.', 'Drar det i skjulet blir natten lång.', 'Utan pengar blir det ingen jul här.', 'Utan en fabrik räcker pengarna inte till jul.', 'Säljer jag inget blir det tomt till jul.', 'Utan mer ström står allt still i kylan.', 'Utan fler skrivare hinner jag inte till jul.', 'Utan väggar fryser jag i natt.', 'Utan värme håller jag inte till jul.', 'Står maskinerna still får mamma rätt.', 'Utan ett eget rum är det bara ett skjul.', 'Går kvarnen så här långsamt hinner jag inte till jul.', 'Utan adress finns jag inte på riktigt.', 'Utan en egen tomt kan jag inte bli skriven här.', 'Utan pengar blir det inget hus före jul.', 'Utan grund blir det inget hus före jul.', 'Utan hus kommer mamma och hämtar mig.', 'Utan kamin får mamma rätt.', 'Utan adress finns jag inte, hur fint huset än är.', 'Utan skylt på dörren kör mamma hem med mig.'];
 const forstaStor = (t) => String(t || '').charAt(0).toUpperCase() + String(t || '').slice(1);   /* inkorg 26 p.1: rubriken utan dagnummer börjar med stor bokstav */
-function julRad(dag) { const kvar = JULAFTON_DAG - dag; return kvar > 0 ? `Dag ${dag}. ${kvar} ${kvar === 1 ? 'dag' : 'dagar'} till jul.` : kvar === 0 ? 'Julafton.' : ''; }
+function julRad(dag) { const kvar = JULAFTON_DAG - dag; return kvar > 0 ? `${kvar} ${kvar === 1 ? 'dag' : 'dagar'} till jul.` : kvar === 0 ? 'Julafton.' : ''; }   /* inkorg 54 (A-109): bara nedräkningen – inget dagnummer */
 // BN: en mening per dag om dagens storymål (dag 1–22)
 const DAG_STORY = ['Få igång skrivaren och sova i en egen säng.', 'Städa upp – och kanske träffa grannarna.', 'Bära mer och få tak över huvudet.', 'Sluta trampa och stänga ute kylan.', 'Fler skrivare och ett riktigt mysigt skjul.',
   'Tunga saker kan bli ny plast.', 'Printa i rött och sälja dyrare.', 'Bära det tunga utan att slita ut sig.', 'Mer ström till fler skrivare.', 'Bli klar innan kylan kommer.',
@@ -9829,7 +9829,7 @@ function oppnaInkorg() {
   // DN: fliken Telefon – samma gröna bubblor, grupperade per person (senast först), klockslag under. Klick läser upp igen.
   const grupper = []; S.sms.forEach((m, i) => { let g = grupper.find((x) => x.fran === m.fran); if (!g) { g = { fran: m.fran, l: [], sist: 0 }; grupper.push(g); } g.l.push([m, i]); g.sist = i; });
   grupper.sort((a, b) => b.sist - a.sist);
-  const kropp = S.sms.length ? `<div class="dn-tel">${grupper.map((g) => `<div><h4>${portratt(vemAvSms(g.fran), 30)}${rens(AVSANDARE[g.fran]?.namn || g.fran)}</h4>${g.l.map(([m, i]) => `<div class="b" data-lasupp="${i}" title="Klicka för att höra igen">${rens(m.text)} ${lasUppKnapp(m.text, m.fran, { liten: true })}</div><div class="t">${m.dag ? `Dag ${m.dag}` : ''}${m.tid ? ' · ' + m.tid : ''}${m.ny ? ' · ny' : ''}</div>`).join('')}</div>`).join('')}</div>` : `<p class="ui-tom">Inga sms än.</p>`;
+  const kropp = S.sms.length ? `<div class="dn-tel">${grupper.map((g) => `<div><h4>${portratt(vemAvSms(g.fran), 30)}${rens(AVSANDARE[g.fran]?.namn || g.fran)}</h4>${g.l.map(([m, i]) => `<div class="b" data-lasupp="${i}" title="Klicka för att höra igen">${rens(m.text)} ${lasUppKnapp(m.text, m.fran, { liten: true })}</div><div class="t">${m.dag ? datumText(m.dag) : ''}${m.tid ? ' · ' + m.tid : ''}${m.ny ? ' · ny' : ''}</div>`).join('')}</div>`).join('')}</div>` : `<p class="ui-tom">Inga sms än.</p>`;
   oppnaRuta(panel({ ikon: 'telefon', titel: 'Telefon', sub: olasta ? `${olasta} nya – de läses upp en i taget` : 'Allt läst', flikar: [['sms', 'telefon', 'Telefon'], ['dagbok', 'bok', 'Min dagbok'], ['mal', 'mal', 'Mål'], ['brev', 'brev', 'Brev'], ['spel', 'kugghjul', 'Spelet']], aktivFlik: 'sms', kropp }), (el) => {
     el.querySelectorAll('[data-flik]').forEach((k) => { if (k.dataset.flik !== 'sms') k.onclick = () => { dagbokFlik = k.dataset.flik; ljud.plock(); oppnaDagbok(); }; });
     el.querySelectorAll('[data-lasupp]').forEach((k) => { k.onclick = () => { const m = S.sms[+k.dataset.lasupp]; if (m) prata(m.fran, m.text); }; });
@@ -9884,7 +9884,7 @@ async function oppnaSparplatser() {
   oppnaRuta(panel({ ikon: 'spara', titel: 'Sparplatser', sub: 'Läser in…', kropp: '' }));
   const info = [];
   for (let n = 1; n <= PLATSER; n++) info.push(await lasPlats(n));
-  const besk = (d) => d ? `Dag ${d.dag || 1} · ${krT((d.mynt || 0))} kr · sparad ${new Date(d.sparadTid || 0).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : 'Tom plats';
+  const besk = (d) => d ? `${datumText(d.dag || 1) || 'Efter jul'} · ${krT((d.mynt || 0))} kr · sparad ${new Date(d.sparadTid || 0).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : 'Tom plats';
   const kropp = sektion('Dina sparplatser', 'spelet sparar alltid automatiskt – här kan du spara en kopia') + grid(info.map((d, i) => uiRuta({ bild: ik(d ? 'spara' : 'ny'), attr: `data-plats="${i + 1}"`, vald: platsVald === i + 1, antal: i + 1, titel: d ? platsTitel(d, i + 1) : `Plats ${i + 1}`, etikett: true })));
   const d = info[platsVald - 1];
   const namnFalt = `<span class="ph-platsnamn"><input data-namn maxlength="28" placeholder="Döp sparningen…" value="${rens(d?.platsNamn || '')}">${d ? '<button data-dop>Döp om</button>' : ''}</span>`;
@@ -9918,13 +9918,13 @@ function oppnaDagbok() {
     const iDel = STEG.map((x, i) => [x, i]).filter(([x]) => x.del === del);
     kropp = sektion(del || 'Oändligt bygge') + (st ? iDel.map(([x, i]) => rad({ bild: `<span class="ui-headik" style="width:30px;height:30px;color:${i < S.steg ? '#3ccf73' : i === S.steg ? '#ffb84d' : '#5d667a'}">${i < S.steg ? IKON.bock : i === S.steg ? IKON.pil : IKON.mal}</span>`, titel: rens(stegText(x)), text: i === S.steg ? 'Ditt mål just nu' : '' })).join('')
       : rad({ bild: `<span class="ui-headik" style="width:30px;height:30px">${IKON.oandlig}</span>`, titel: `Nästa mål: trivsel ${Math.ceil((trivsel() + 1) / 100) * 100}`, text: 'Trimma maskinerna hos Ali, printa inredning och bygg vidare. Det tar aldrig slut.' }))
-      + sektion('Trivsel') + `<div class="ui-fakta"><span>${ik('hjarta')}${trivsel()} trivsel</span><span>${ik('klocka')}Dag ${S.dag}</span><span>${ik('mynt')}${krT(S.mynt)} kr</span></div>`;
+      + sektion('Trivsel') + `<div class="ui-fakta"><span>${ik('hjarta')}${trivsel()} trivsel</span><span>${ik('klocka')}${datumText() || 'Efter jul'}</span><span>${ik('mynt')}${krT(S.mynt)} kr</span></div>`;
   } else if (dagbokFlik === 'dagbok') {
     // det du själv har skrivit – nyast först, läses upp med din egen röst
     /* inkorg 43: dagens uppslag – morgonsidan och dagens rader under, utan datum */
     const dagar = Object.keys(S.dagbok || {}).map(Number).sort((x, y) => y - x);
     const upps = dagar.map((d) => { const u = S.dagbok[d], m = u.morgon, txt = [m ? `${m.rubrik ? m.rubrik.replace(/\.?$/, '.') + '\n\n' : ''}${dagbokDelar({ text: m.text, dag: d }).text}` : '', ...u.rader.map((r) => r.text)].filter(Boolean).join('\n\n');
-      return `<div class="ph-uppslag" data-uppslag="${d}"><div class="ph-upp-dag"><b>Dag ${d}.</b> ${rens(julRad(d).replace(/^Dag \d+\.\s*/, ''))} ${lasUppKnapp(txt.replace(/\s*\n+\s*/g, ' '), 'du', { liten: true })}</div>${m ? `<div class="ph-upp-morgon">${m.rubrik ? `<div class="ph-upp-rub">${rens(m.rubrik.replace(/\.?$/, '.'))}</div>` : ''}${dagbokRader(dagbokDelar({ text: m.text, dag: d }).text)}</div>` : ''}${u.rader.map((r) => `<div class="ph-upp-rad${r.kvall ? ' kvall' : ''}">${dagbokRader(r.text)}</div>`).join('')}</div>`; }).join('');
+      return `<div class="ph-uppslag" data-uppslag="${d}"><div class="ph-upp-dag"><b>${rens(datumText(d) || julRad(d))}</b> ${rens(datumText(d) ? julRad(d) : '')} ${lasUppKnapp(txt.replace(/\s*\n+\s*/g, ' '), 'du', { liten: true })}</div>${m ? `<div class="ph-upp-morgon">${m.rubrik ? `<div class="ph-upp-rub">${rens(m.rubrik.replace(/\.?$/, '.'))}</div>` : ''}${dagbokRader(dagbokDelar({ text: m.text, dag: d }).text)}</div>` : ''}${u.rader.map((r) => `<div class="ph-upp-rad${r.kvall ? ' kvall' : ''}">${dagbokRader(r.text)}</div>`).join('')}</div>`; }).join('');
     const dagbokLappar = new Set(dagar.flatMap((d) => S.dagbok[d].rader.map((r) => r.text)));
     const mina = S.lappar.slice().reverse().filter((l) => /Dagbok/.test(lappInfo(l)[0]) && !dagbokLappar.has(dagbokRen(lappInfo(l)[1])));
     kropp = sektion('Min dagbok', 'En sida per dag – morgonen och det jag skrev under dagen') + upps + (mina.length && upps ? sektion('Äldre sidor') : '') + (mina.length || upps ? '' : '') + (mina.length ? mina.map((l) => rad({ bild: portratt('du', 40), titel: '', text: `<span style="font-size:15px;color:#f2f2f2">${rens(lappInfo(l)[1])}</span>`, hoger: `${lasUppKnapp(lappInfo(l)[1], 'du')} ${knapp({ text: 'Öppna', typ: 'neutral', attr: `data-las="${l}"`, ikon: 'bok' })}` })).join('') : (upps ? '' : '<p class="ui-tom">Inget skrivet än.</p>'));
@@ -9939,7 +9939,7 @@ function oppnaDagbok() {
     kropp = sektion('Spelet') + (S.kapitel2Klart ? `<div class="ui-grid" style="gap:10px;margin-bottom:10px">${knapp({ text: `Tippen på tid${tidRekord() ? ' · rekord ' + tidText(tidRekord()) : ''}`, typ: 'plus', attr: 'data-tidtipp', ikon: 'klocka' })}</div><p class="ui-tom">Gården fylls med ${TIDTIPP_N} skräp. Plocka upp allt så fort du kan – klockan går tills det sista är borta.</p>` : '') + `<div class="ui-grid" style="gap:10px">${knapp({ text: 'Se introt igen', typ: 'neutral', attr: 'data-intro', ikon: 'film' })}${knapp({ text: `Namn: ${S.spelarNamn || 'Anonym'} · byt`, typ: 'neutral', attr: 'data-bytnamn', ikon: 'stjarna' })}${knapp({ text: 'Sparplatser', typ: 'neutral', attr: 'data-sparplatser', ikon: 'spara' })}${knapp({ text: 'Ljud: musik, effekter, röster', typ: 'neutral', attr: 'data-ljudval', ikon: 'rost' })}${knapp({ text: `Musik: ${S.musik === false ? 'av' : 'på'}`, typ: 'neutral', attr: 'data-musik', ikon: 'rost' })}${knapp({ text: `Röster: ${{ rost: 'riktiga röster', prat: 'pratljud', tal: 'datorns talsyntes', av: 'av' }[rostLage()]}`, typ: 'neutral', attr: 'data-roster', ikon: 'rost' })}</div>`
       + sektion('Styrning') + `<p class="ui-tom">WASD gå · mus titta · klick/E använd · klicka och håll = veva, gripa och mer · hjulet/1–8 byt sak · 0 tomhänt · H vad gör jag nu? · Shift+Q släpp allt · R vrid · I dina saker · M meddelanden · B dagbok · V röster</p>`;
   }
-  oppnaRuta(panel({ ikon: 'bok', titel: 'Dagbok', sub: `Dag ${S.dag}`, resurser: resurserHtml(), flikar: [['sms', 'telefon', 'Telefon' + (S.olasta ? ` (${S.olasta})` : '')], ['dagbok', 'bok', 'Min dagbok'], ['mal', 'mal', 'Mål'], ['plan', 'kvarn', 'Fabriksplanen'], ['brev', 'brev', 'Brev'], ['spel', 'kugghjul', 'Spelet']], aktivFlik: dagbokFlik, kropp }), (el) => {
+  oppnaRuta(panel({ ikon: 'bok', titel: 'Dagbok', sub: datumText() || julRad(S.dag), resurser: resurserHtml(), flikar: [['sms', 'telefon', 'Telefon' + (S.olasta ? ` (${S.olasta})` : '')], ['dagbok', 'bok', 'Min dagbok'], ['mal', 'mal', 'Mål'], ['plan', 'kvarn', 'Fabriksplanen'], ['brev', 'brev', 'Brev'], ['spel', 'kugghjul', 'Spelet']], aktivFlik: dagbokFlik, kropp }), (el) => {
     el.querySelector('[data-flik="sms"]')?.addEventListener('click', (e) => { e.stopImmediatePropagation(); ljud.plock(); oppnaInkorg(); }, true);
     el.querySelectorAll('[data-las]').forEach((k) => { k.onclick = () => dagbokKort(lappInfo(k.dataset.las)[1], { lasIgen: true }); });   /* A-076 tillägg 14:22: samma kort när man läser igen */
     el.querySelectorAll('[data-flik]').forEach((k) => { k.onclick = () => { dagbokFlik = k.dataset.flik; ljud.plock(); oppnaDagbok(); }; });
@@ -10033,7 +10033,7 @@ function finnsSparning() { if (harSparning()) return true; try { for (let n = 1;
 function harSparning() { return !!(S.spelarNamn && (S.introSett || S.steg > 0 || S.dag > 1)); }   // funktion: startrutan ritas innan resten av filen har körts
 function menyRad(attr, ikon, rub, sub, klass = '') { return `<button class="br3-rad ${klass}" ${attr}><span class="ik">${ik(ikon)}</span><span class="tx"><b>${rub}</b><small>${sub}</small></span><span class="pil">›</span></button>`; }
 function menyHem(titel, text) {
-  const t = rens(titel), logga = t.includes('<svg') ? t : '', dagTid = `Dag ${S.dag} · ${klockText(klockan())}`;
+  const t = rens(titel), logga = t.includes('<svg') ? t : '', dagTid = `${datumText() || 'Efter jul'} · ${klockText(klockan())}`;
   const topp = menyPaus ? `<div class="br3-paus"><b>PAUSAD</b><span>${dagTid}</span></div>` : `${logga || `<h1>${t}</h1>`}${harSparning() ? '' : `<div class="br-ingress">${rens(text)}</div>`}`;
   if (menyKort) return `<h1>${t}</h1><div class="br-ingress">${text}</div><div class="br3-par"><button class="fp-knapp br-starta br3-stor">${rens(menyKort.knapp)}</button></div>`;   /* AX dag 5: kapitelkortet visade STARTA (= ny omgång) */
   const stor = !menyPaus
@@ -10053,17 +10053,17 @@ async function nyOmgang(titel, text) {
 let menyFullt = false;
 async function menySpara(el) {
   const info = []; for (let n = 1; n <= PLATSER; n++) info.push(await lasPlats(n));
-  const senast = !menyPaus && harSparning() ? `<div class="br3-plats nu br3-senast"><span class="ik">${ik('spara')}</span><span class="tx"><b>Senast spelad</b><small>Dag ${S.dag} · ${klockText(klockan())} · ${krT(S.mynt || 0)} kr</small></span><button class="br3-mini" data-fortsatt>Fortsätt</button></div>` : '';
+  const senast = !menyPaus && harSparning() ? `<div class="br3-plats nu br3-senast"><span class="ik">${ik('spara')}</span><span class="tx"><b>Senast spelad</b><small>${datumText() || 'Efter jul'} · ${klockText(klockan())} · ${krT(S.mynt || 0)} kr</small></span><button class="br3-mini" data-fortsatt>Fortsätt</button></div>` : '';
   const fullt = menyFullt ? `<p class="br3-fullt">Alla ${PLATSER} platser är fulla. Spara det du har på en plats du inte behöver, så startar en ny omgång.</p>` : '';
-  const besk = (d) => d ? `Dag ${d.dag || 1} · ${krT(d.mynt || 0)} kr · ${new Date(d.sparadTid || 0).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : 'Tom plats';
+  const besk = (d) => d ? `${datumText(d.dag || 1) || 'Efter jul'} · ${krT(d.mynt || 0)} kr · ${new Date(d.sparadTid || 0).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : 'Tom plats';
   el.querySelector('.br3-kropp').innerHTML = `${fullt}<div class="br3-platser">${senast}${info.map((d, i) => `<div class="br3-plats ${platsVald === i + 1 ? 'nu' : ''}"><span class="ik">${ik(d ? 'spara' : 'ny')}</span><span class="tx"><b>${d ? rens(platsTitel(d, i + 1)) : `Plats ${i + 1}`}${platsVald === i + 1 ? ' · <em>du spelar nu</em>' : ''}</b><small>${besk(d)}</small></span><button class="br3-mini" data-spara="${i + 1}">Spara</button>${d ? `<button class="br3-mini" data-ladda="${i + 1}">Ladda</button>` : ''}</div>`).join('')}</div>
-    <div class="br3-farlig"><button data-borjaom>${ik('omstart')}<span><b>Börja om från dag 1</b><small>Allt du har byggt försvinner</small></span></button></div>`;
+    <div class="br3-farlig"><button data-borjaom>${ik('omstart')}<span><b>Börja om från början</b><small>Allt du har byggt försvinner</small></span></button></div>`;
   el.querySelectorAll('[data-spara]').forEach((k) => { k.onclick = async () => { const n = +k.dataset.spara; if (info[n - 1] && !confirm(`Skriva över plats ${n}?`)) return; k.disabled = true; await sparaPlats(n); platsVald = n; regi.info(`Sparat på plats ${n}`, 'bra'); if (menyFullt) { menyFullt = false; try { sessionStorage.setItem('printa-hem:nyOmgang', '1'); } catch {} spar.nollstall(); try { await MOLN?.ref?.delete(); } catch {} location.reload(); return; } menySpara(el); }; });
   el.querySelector('[data-fortsatt]')?.addEventListener('click', () => { ui.starta(false); visaDagNotis(); });
   el.querySelectorAll('[data-ladda]').forEach((k) => { k.onclick = async () => { if (!confirm('Ladda den sparningen? Det du har nu ersätts (spara det först om du vill ha kvar det).')) return; k.disabled = true; await laddaPlats(+k.dataset.ladda); }; });
   el.querySelector('[data-borjaom]').onclick = () => {
     const pop = document.createElement('div'); pop.className = 'br-bekrafta';
-    pop.innerHTML = `<div class="br-bekrafta-ruta"><div class="br-bekrafta-ik">${ik('omstart')}</div><b>Börja om från dag 1?</b><p>Allt du har byggt försvinner. Vill du spara först?</p><div class="br-val" style="max-width:420px"><button class="br-valknapp" data-nej>Avbryt</button><button class="br-valknapp" data-sparaforst>${ik('spara')}<span>Spara först</span></button><button class="br-valknapp farlig" data-ja>${ik('omstart')}<span>Börja om</span></button></div></div>`;
+    pop.innerHTML = `<div class="br-bekrafta-ruta"><div class="br-bekrafta-ik">${ik('omstart')}</div><b>Börja om från början?</b><p>Allt du har byggt försvinner. Vill du spara först?</p><div class="br-val" style="max-width:420px"><button class="br-valknapp" data-nej>Avbryt</button><button class="br-valknapp" data-sparaforst>${ik('spara')}<span>Spara först</span></button><button class="br-valknapp farlig" data-ja>${ik('omstart')}<span>Börja om</span></button></div></div>`;
     el.appendChild(pop); menyBreddKoll(pop.querySelector('.br-bekrafta-ruta'), 'Börja om'); pop.querySelector('[data-nej]').onclick = () => pop.remove(); pop.onclick = (e) => { if (e.target === pop) pop.remove(); };
     pop.querySelector('[data-sparaforst]').onclick = () => { pop.remove(); };   // stannar på sidan Spara och ladda – välj en plats
     pop.querySelector('[data-ja]').onclick = () => ui.o.onNollstall?.();
@@ -11851,7 +11851,7 @@ function dagbokKort(text, o = {}) {
      och kvällen står på nattskärmen. Allt skrivs in i dagens uppslag (Tab → Min dagbok). */
   if (!(o.morgon || o.lasIgen || o.helsida || /^KAPITEL /.test(o.rubrik || ''))) { dagbokRad(t, o); return; }
   if (o.morgon) { const d = ((S.dagbok ||= {})[S.dag] ||= { rader: [] }); d.morgon = { rubrik: o.rubrik || '', text: t }; }
-  if (o.morgon) { const tr = t.replace(/^(Dag \d+\. \d+ dag(ar)? till jul|Julafton)\.$/m, '')   /* A-092 §2.9: "1 dag" räknades inte (dagar? kräver "daga") */.trim();   /* A-088: nedräkningen är en statusrad, ingen tanke – den räknas inte */
+  if (o.morgon) { const tr = t.replace(/^((Dag \d+\. )?\d+ dag(ar)? till jul|Julafton)\.$/m, '')   /* A-092 §2.9: "1 dag" räknades inte (dagar? kräver "daga") */.trim();   /* A-088: nedräkningen är en statusrad, ingen tanke – den räknas inte */
     const meningar = tr.split(/(?<=[.!?…])\s+/).filter((x) => /\p{L}/u.test(x)).length, ord = tr.split(/\s+/).filter(Boolean).length; if (meningar > DAGBOK_MAX_MENINGAR || ord > DAGBOK_MAX_ORD) langDagbok.push(`dag ${S.dag}: ${meningar} meningar, ${ord} ord`); }
   rubrikDubbel(o.rubrik, t);
   const m = { typ: 'dagbok', titel: 'Dagbok', dag: o.dag ?? S.dag, text: t, rubrik: o.rubrik || '', id: o.id, kvitto: o.kvitto, efter: o.efter, extra: o.extra || '', vem: o.vem || 'du', morgon: !!o.morgon, lasIgen: !!o.lasIgen };
@@ -11863,15 +11863,17 @@ function dagbokKort(text, o = {}) {
    FORTSÄTT nere i mitten. Kapitelkortet (rubrik "KAPITEL …") behåller sitt gamla kort. */
 const DK_TYST = '<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 9.5a3.5 3.5 0 0 1 0 5M18.5 7a7 7 0 0 1 0 10" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".35"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';   /* överstruken högtalare = rösten av */
 const DK_TEXT_PX = 20, DK_MIN_PX = 18, DK_FYLL = 0.70;   /* inkorg 42 p.4 (Jesper 11:07): 20 px, lägst 18 px */   // textstorlek på 1280×720, minsta storlek, största andel av sidans höjd
-function dagbokDelar(m) {
-  let text = String(m.text || '').trim(), dag = '', kvar = '';
-  const f = text.match(/^(Dag \d+\.|Julafton\.)[ \t]*([^\n]*)\n?/);
-  if (f) { dag = f[1]; const rest = f[2].replace(/^\d+ dag(ar)? till jul\.\s*/, '').trim(); text = (rest ? rest + '\n' : '') + text.slice(f[0].length).replace(/^\s*\n/, ''); }
-  else if (!m.lasIgen) dag = julRad(m.dag ?? S.dag).match(/^(Dag \d+\.|Julafton\.)/)?.[1] || '';
-  const n = +(dag.match(/\d+/)?.[0] || 0); if (dag && n) kvar = julRad(n).replace(/^Dag \d+\.\s*/, '');
+function dagbokDelar(m) {   /* inkorg 54: första raden i fetstil är nedräkningen ("21 dagar till jul." / "Julafton."). Gamla texter som börjar med "Dag N." skrivs om. */
+  let text = String(m.text || '').trim(), dag = '';
+  const gammal = text.match(/^Dag (\d+)\.[ \t]*(?:\d+ dag(?:ar)? till jul\.|Julafton\.)?[ \t]*([^\n]*)\n?/);
+  const ny = !gammal && text.match(/^(\d+ dag(?:ar)? till jul\.|Julafton\.)[ \t]*([^\n]*)\n?/);
+  if (gammal) { dag = julRad(+gammal[1]); text = (gammal[2].trim() ? gammal[2].trim() + '\n' : '') + text.slice(gammal[0].length).replace(/^\s*\n/, ''); }
+  else if (ny) { dag = ny[1]; text = (ny[2].trim() ? ny[2].trim() + '\n' : '') + text.slice(ny[0].length).replace(/^\s*\n/, ''); }
+  else if (!m.lasIgen) dag = julRad(m.dag ?? S.dag);
   let rub = String(m.rubrik || '').trim(); if (rub && !/[.!?…]$/.test(rub)) rub += '.';
-  return { dag, kvar, rub, text: text.trim() };
+  return { dag, kvar: '', rub, text: text.trim() };
 }
+
 function dagbokLasText(m) { if (/^KAPITEL /.test(m.rubrik || '')) return (m.rubrik ? m.rubrik + '. ' : '') + m.text.replace(/\s*\n+\s*/g, ' '); const d = dagbokDelar(m); return [d.dag, d.kvar, d.rub, d.text.replace(/\s*\n+\s*/g, ' ')].filter(Boolean).join(' '); }
 function dagbokHtml(m) {
   if (/^KAPITEL /.test(m.rubrik || '')) return `<div class="ph-papper ph-dagbokkort"><div class="ph-pap-titel ph-las-klick" data-las-text="${lasEsc((m.rubrik ? m.rubrik + '. ' : '') + m.text.replace(/\s*\n+\s*/g, ' '))}" data-las-vem="${lasEsc(m.vem || 'du')}" title="Klicka för att höra sidan igen">${portratt(m.vem || 'du', 34)}<span>Dagbok</span></div>${m.rubrik ? `<div class="ph-dk-rub">${rens(m.rubrik)}</div>` : ''}<div class="ph-pap-text ph-las-klick" data-las-text="${lasEsc((m.rubrik ? m.rubrik + '. ' : '') + m.text.replace(/\s*\n+\s*/g, ' '))}" data-las-vem="${lasEsc(m.vem || 'du')}" title="Klicka för att höra sidan igen">${dagbokRader(m.text)}</div>${m.extra ? `<div class="ph-dk-extra">${m.extra}</div>` : ''}<button class="fp-knapp ph-fortsatt">FORTSÄTT</button></div>`;
@@ -12226,7 +12228,7 @@ function uppdatera(dt) {
     const oppen = aliOppen();
     ali.visible = oppen; aliStangt.visible = !oppen;
     if (oppen) ali.userData.huvud.rotation.y = Math.sin(performance.now() / 2300) * 0.35;
-    const k = klockan(); varnaKyla(k); const kt = `Dag ${S.dag} · ${datumText()}` + (k == null ? '' : (k >= 21 * 60 ? ' · 21:00 · Ali har stängt' : ` · ${klockText(k)}`));
+    const k = klockan(); varnaKyla(k); const kt = `${datumText() || 'Efter jul'}` + (k == null ? '' : (k >= 21 * 60 ? ' · 21:00 · Ali har stängt' : ` · ${klockText(k)}`));
     const ke = document.querySelector('.ph-klocka'), kt2 = rens(kt); if (ke && ke.textContent !== kt2) { ke.textContent = kt2; ke.parentElement.style.display = kt2 ? '' : 'none'; }
   }
   // motorn mal av sig själv (även när menyn är öppen)
@@ -12871,7 +12873,7 @@ function sparaDagBokmarke() {
 function oppnaBokmarken() {
   const lista = lasBokmarken();
   const kropp = sektion('Varje ny dag sparas som ett bokmärke. Hoppa tillbaka för att se var du var i storyn – din nuvarande dag sparas först i en sparplats.')
-    + (lista.length ? lista.slice().reverse().map((b) => rad({ bild: `<span class="ui-headik" style="width:48px;height:48px;font:800 18px system-ui;display:grid;place-items:center;background:#2d5cbf;color:#fff;border-radius:12px">${b.dag}</span>`, titel: `Dag ${b.dag}` + (b.dag === S.dag ? ' (idag)' : ''), text: `${b.mal} · ${krT(b.mynt)} kr · respekt ${b.respekt} · ${new Date(b.tid).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`, hoger: knapp({ text: 'Hoppa hit', typ: 'neutral', attr: `data-dag="${b.dag}"` }) })).join('') : '<div class="ph-resp-rad">Inga bokmärken än. Sov en natt så sparas dag 2.</div>');
+    + (lista.length ? lista.slice().reverse().map((b) => rad({ bild: `<span class="ui-headik" style="width:48px;height:48px;font:800 18px system-ui;display:grid;place-items:center;background:#2d5cbf;color:#fff;border-radius:12px">${b.dag}</span>`, titel: `${datumText(b.dag) || 'Efter jul'}` + (b.dag === S.dag ? ' (idag)' : ''), text: `${b.mal} · ${krT(b.mynt)} kr · respekt ${b.respekt} · ${new Date(b.tid).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`, hoger: knapp({ text: 'Hoppa hit', typ: 'neutral', attr: `data-dag="${b.dag}"` }) })).join('') : '<div class="ph-resp-rad">Inga bokmärken än. Sov en natt så sparas nästa morgon.</div>');
   oppnaRuta(panel({ ikon: 'bok', titel: 'Dagar', sub: `Du är på dag ${S.dag}`, kropp }), (el) => {
     el.querySelectorAll('[data-dag]').forEach((k) => { k.onclick = async () => {
       const b = lasBokmarken().find((x) => x.dag === Number(k.dataset.dag)); if (!b) return;
@@ -13541,7 +13543,7 @@ function dagMalLista(del) {
   return m;
 }
 const dagMalHtml = (lista) => `<ul class="ph-dagmal">${lista.map((x) => `<li class="${x.klar ? 'klar' : ''}">${x.bild ? ikonHtml(x.bild, 34) : '<span class="tom"></span>'}<span>${rens(x.text)}</span></li>`).join('')}</ul>`;
-const DAG1_NOTIS = 'Dag 1 – äntligen fri från tjat.';
+const DAG1_NOTIS = 'Äntligen fri från tjat.';   /* inkorg 54 */
 /* A-076 tillägg 13:20 (facit 13:26): bara nästa uppgift syns. Dagboksnotisen läser känslan och slutar med att du säger första uppgiften –
    uppgiftsrutan glider in medan det sägs, och notisen tonas bort. Ingen lista över dagens mål någonstans. */
 const DAG1_KANSLA = ['Ingen som tjatar.',   /* A-088: [0] visas inte längre – rubriken säger redan ”fri från tjat” och insatsen tog platsen */
@@ -13565,22 +13567,7 @@ body.dn-forsta .dn-uppg{opacity:0;transform:translateY(-18px)}.dn-uppg{transitio
 .ph-dagmal{list-style:none;margin:0;padding:0;display:grid;gap:4px}.ph-dagmal li{display:flex;align-items:center;gap:10px}.ph-dagmal li img,.ph-dagmal .tom{width:34px;height:34px;flex:none;border-radius:50%;background:rgba(0,0,0,.06)}.ph-dagmal li.klar{opacity:.5;text-decoration:line-through}
 .br-morgon .ph-dagmal{font:600 15px system-ui;margin-top:10px}.br-morgon .ph-dagmal li img,.br-morgon .ph-dagmal .tom{width:28px;height:28px}
 .dn-mal .c img{width:80%;height:80%;border-radius:50%}.dn-mal .c.klar{position:relative}.dn-mal .c .bock{position:absolute;right:-3px;bottom:-3px;font:900 11px system-ui;color:#3ddc84;text-shadow:0 0 3px #000}`; document.head.appendChild(st); }
-/* A-062 v3: dagboken sida 1 – efter startmenyn, före spelet. Handskriven, pennan hörs, knappen Börja. */
-function visaDag1(klar) {
-  if (S.dag1Sida || S.steg > 0 || S.skyltUppe) { klar(); return; }
-  const el = document.createElement('div'); el.className = 'ph-dag1';
-  el.innerHTML = `<div class="ph-dag1-sida"><div><b>Dag 1.</b></div><div>Äntligen fri från tjat.</div><div>Nu ska jag bygga något som är mitt!</div><button class="fp-knapp" disabled>Börja</button></div>`;
-  document.body.appendChild(el); requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('syns')));
-  const rader = [...el.querySelectorAll('.ph-dag1-sida div')], knapp = el.querySelector('button');
-  rader.forEach((r, j) => setTimeout(() => { r.classList.add('syns'); introLjud3('penna'); }, 500 + j * 900));
-  setTimeout(() => { knapp.disabled = false; }, 500 + rader.length * 900);
-  textLogg('lapp', '📔 Dagbok', 'Dag 1. Äntligen fri från tjat. Nu ska jag bygga något som är mitt!');
-  const ga = () => { if (knapp.disabled) return; S.dag1Sida = true; sparaSnart(); removeEventListener('keydown', tangent, true); el.classList.remove('syns'); setTimeout(() => el.remove(), 600);
-    const svart = document.createElement('div'); svart.className = 'ph-tona-in'; document.body.appendChild(svart); requestAnimationFrame(() => requestAnimationFrame(() => { svart.style.opacity = 0; })); setTimeout(() => svart.remove(), 1400);   // spelet tonas in
-    klar(); };
-  const tangent = (e) => { if (['Enter', 'Space', 'KeyE'].includes(e.code)) { e.preventDefault(); e.stopImmediatePropagation(); ga(); } };
-  addEventListener('keydown', tangent, true); knapp.onclick = ga;
-}
+/* inkorg 54: den gamla dagbokssidan visaDag1 (A-062 v3) användes inte längre – morgonsidan är dagbokskortet – och är borttagen */
 // hoppfull musik i introt från "Du packar det viktigaste" – byggs upp lager för lager (Web Audio, inga filer)
 const introMusik = (() => {
   let timer = null, master = null, nasta = 0, steg = 0;
@@ -14322,7 +14309,7 @@ function polaroidTex(f) {
   const skriv = () => {
     g.fillStyle = '#2a2a2a'; g.font = '600 15px "Segoe Print","Comic Sans MS","Bradley Hand",cursive'; g.textAlign = 'center';
     let fs = 15; while (g.measureText(txt).width > 148 && fs > 9) { fs--; g.font = `600 ${fs}px "Segoe Print","Comic Sans MS","Bradley Hand",cursive`; }
-    g.fillText(txt, 80, 150); if (f.dag) { g.font = '500 11px system-ui'; g.fillStyle = '#7a7468'; g.fillText('Dag ' + f.dag, 80, 172); }
+    g.fillText(txt, 80, 150); if (f.dag) { g.font = '500 11px system-ui'; g.fillStyle = '#7a7468'; g.fillText(datumText(f.dag) || '', 80, 172); }
     t.needsUpdate = true;
   };
   if (f.bild) { const im = new Image(); im.onload = () => { g.drawImage(im, 8, 8, 144, 108); skriv(); }; im.src = f.bild; }
@@ -14356,7 +14343,7 @@ interaktor.registrera(polaroidVagg, { text: () => `Polaroidväggen · ${(S.polar
 function oppnaPolaroider() {
   ui.slappMus();
   const lista = S.polaroid || [];
-  const kort = POLAROID.map((p) => { const f = lista.find((x) => x.id === p.id); if (!f) return '<figure class="ph-pol saknas"><div class="ph-pol-tom"></div><figcaption>&nbsp;</figcaption></figure>'; return `<figure class="ph-pol">${f.bild ? `<img src="${f.bild}" alt="">` : `<div class="ph-pol-tom">${ik(f.ikon || 'stjarna')}</div>`}<figcaption>${rens(p.text)}${f.dag ? `<small>Dag ${f.dag}</small>` : ''}</figcaption></figure>`; }).join('');
+  const kort = POLAROID.map((p) => { const f = lista.find((x) => x.id === p.id); if (!f) return '<figure class="ph-pol saknas"><div class="ph-pol-tom"></div><figcaption>&nbsp;</figcaption></figure>'; return `<figure class="ph-pol">${f.bild ? `<img src="${f.bild}" alt="">` : `<div class="ph-pol-tom">${ik(f.ikon || 'stjarna')}</div>`}<figcaption>${rens(p.text)}${f.dag ? `<small>${datumText(f.dag)}</small>` : ''}</figcaption></figure>`; }).join('');
   oppnaRuta(panel({ ikon: 'film', titel: 'Polaroidväggen', sub: `${lista.length} av ${POLAROID.length} foton`, kropp: `<div class="ph-pol-grid">${kort || '<p class="ui-tom">Inga foton än.</p>'}</div>` }));
 }
 // ta fotot: det du ser just nu, utan pilen
@@ -14837,7 +14824,7 @@ function visaForeEfter() {
   if (S.foreEfterVisad || !S.foreBild) return; if (!S.efterBild) S.efterBild = foreEfterBild();
   S.foreEfterVisad = true; sparaSnart(); ui.slappMus?.();
   const pol = (src, t) => `<figure class="ph-pol" style="flex:1"><img src="${src}" alt=""><figcaption>${t}</figcaption></figure>`;
-  oppnaRuta(panel({ ikon: 'film', titel: '📔 Dagbok', sub: 'Före och efter', kropp: `<div style="display:flex;gap:18px;padding:14px 16px">${pol(S.foreBild, 'Dag 1')}${pol(S.efterBild, 'Dag 3')}</div><div style="padding:0 16px 14px;font:600 18px system-ui;text-align:center">${UTSIKT_T.foreEfter}</div>` }));
+  oppnaRuta(panel({ ikon: 'film', titel: '📔 Dagbok', sub: 'Före och efter', kropp: `<div style="display:flex;gap:18px;padding:14px 16px">${pol(S.foreBild, datumText(1))}${pol(S.efterBild, datumText(3))}</div><div style="padding:0 16px 14px;font:600 18px system-ui;text-align:center">${UTSIKT_T.foreEfter}</div>` }));
   textLogg('lapp', 'Dagbok', UTSIKT_T.foreEfter, 'A-061: före och efter'); { let n = 0; const sag = () => (performance.now() < pratarTill && n++ < 40) ? setTimeout(sag, 250) : prata('du', UTSIKT_T.foreEfter); sag(); }   /* A-090 p.3: rösten väntar tills den som pratar är klar */
 }
 
@@ -17099,7 +17086,7 @@ function kjelleSand(text, varfor) {
   const bygg = () => { const ut = []; const hem = S.hem || {}; for (const [k, t] of Object.entries(KJELLE_HEM)) if (hem[k]) ut.push(k + ':' + t); return ut; };
   let snapDag = S.dag, snap = bygg();
   paHandelse('placerat', ({ sak }) => { const n = VAROR[sak]?.namn || MASKINER[sak]?.namn; if (!n || /storebror/i.test(n)) return; S.kjelleIdag = [...new Set([...(S.kjelleIdag || []), `har fått ${n.toLowerCase().replace(/ \(.*\)$/, '')}`])].slice(-4); });
-  paHandelse('lastatAv', () => { if (S.kjelleForsta) return; S.kjelleForsta = true; setTimeout(() => kjelleSand(KJELLE_FORSTA, 'A-047: dag 1, efter avlastningen'), 200000); });
+  paHandelse('lastatAv', () => { if (S.kjelleForsta) return; S.kjelleForsta = true; setTimeout(() => kjelleSand(KJELLE_FORSTA, 'A-047: första dagen, efter avlastningen'), 200000); });
   setInterval(() => {
     if (!ui.igang || sover) return;
     if (S.dag !== snapDag) {   // ny dag: det som byggdes i går blir dagens utrop
@@ -17528,6 +17515,7 @@ if (ui) {
       if (r.right > W + 1 || r.left < -1 || r.bottom > H + 1 || r.top < -1 || (/ph-notis|ph-kontroll/.test(el.className) && el.scrollWidth > el.clientWidth + 2)) { const k = `${(el.className || '').toString().split(' ')[0]}: "${(el.textContent || '').trim().slice(0, 40)}"`; nu.add(k); if (utanforForra.has(k)) ut.push(`${k} (${Math.round(r.left)}–${Math.round(r.right)} × ${Math.round(r.top)}–${Math.round(r.bottom)} av ${W}×${H})`); } }   /* två kontroller i rad – en ruta som glider in räknas inte */
     utanforForra.clear(); nu.forEach((k) => utanforForra.add(k)); return ut.slice(0, 3); }, { enGang: true });
   regelvakt.regel('FEL BÖJNING', () => ui.igang ? [...synligaTexter(), ...[...document.querySelectorAll('.ui-ruta, .ph-panel, .dc-panel')].filter((d) => d.getClientRects().length).map((d) => ['rutan', d.textContent])].filter(([, t]) => new RegExp(BOJ_RE.source).test(t)).map(([v, t]) => `${v}: "${t.slice(0, 70)}"`) : []);   /* inkorg 45 p.5 */
+  regelvakt.regel('DAGNUMMER I TEXT', () => [...synligaTexter(), ...[...document.querySelectorAll('.ph-dagbokkort, .ph-natt, .fp-overlay:not([hidden]), .dn-matare')].map((e) => ['ruta', e.textContent || ''])].filter(([, t]) => /\bDag \d+\b/.test(t)).map(([v, t]) => `${v}: "${t.slice(0, 70)}"`));   /* inkorg 54: spelaren ser datumet och nedräkningen, aldrig "Dag N" */
   regelvakt.regel('OKÄNT ORD', () => ui.igang ? synligaTexter().flatMap(([v, t]) => okandaOrd(t).map((k) => `${k} i ${v}: "${t.slice(0, 70)}"`)) : []);
   regelvakt.regel('FEL SIFFRA', () => {
     if (!ui.igang) return []; const ut = [];
@@ -17859,7 +17847,7 @@ async function oppnaFelrapporter(foralder) {
   const alla = await felAlla();
   const pop = document.createElement('div'); pop.className = 'br-bekrafta';
   pop.innerHTML = `<div class="br-bekrafta-ruta"><b>🐞 Felrapporter (${alla.length})</b><p>Tryck <kbd>F8</kbd> när som helst i spelet för att spara ett fel.</p>
-    <div style="max-height:240px;overflow:auto;text-align:left;font-size:13px">${alla.slice().reverse().map((r) => `<div style="padding:4px 0;border-bottom:1px solid rgba(0,0,0,.12)">Dag ${r.dag} · ${rens(r.mal || r.stegId || '')}<br><i>${rens(r.text || (r.ljud ? '🎤 röstanteckning' : '(ingen text)'))}</i></div>`).join('') || '<i>Inga rapporter än.</i>'}</div>
+    <div style="max-height:240px;overflow:auto;text-align:left;font-size:13px">${alla.slice().reverse().map((r) => `<div style="padding:4px 0;border-bottom:1px solid rgba(0,0,0,.12)">${datumText(r.dag) || 'Efter jul'} · ${rens(r.mal || r.stegId || '')}<br><i>${rens(r.text || (r.ljud ? '🎤 röstanteckning' : '(ingen text)'))}</i></div>`).join('') || '<i>Inga rapporter än.</i>'}</div>
     <div class="br-val" style="max-width:420px"><button class="br-valknapp" data-ny>🐞 Ny rapport</button><button class="br-valknapp" data-exp ${alla.length ? '' : 'disabled'}>Exportera alla</button><button class="br-valknapp farlig" data-rensa ${alla.length ? '' : 'disabled'}>Rensa</button><button class="br-valknapp" data-nej>Stäng</button></div></div>`;
   foralder.appendChild(pop);
   pop.querySelector('[data-nej]').onclick = () => pop.remove(); pop.onclick = (e) => { if (e.target === pop) pop.remove(); };
@@ -18233,7 +18221,7 @@ function dnKlarAnim(u, forra, forraBild, gammalHtml) {   /* A-076 tillägg 13:20
 function ritaDN() {
   // dagrutan
   const k = klockan(), d = dnTopp.querySelector('.dn-dag');
-  dnSatt(d.querySelector('.dagt'), 'textContent', `Dag ${S.dag}`);
+  dnSatt(d.querySelector('.dagt'), 'textContent', datumText() || 'Efter jul');   /* inkorg 54 */
   dnSatt(d.querySelector('.ar'), 'textContent', document.body.classList.contains('ph-tidig') ? '' : rens(datumText()));
   const kl = d.querySelector('.klk'); dnSatt(kl, 'textContent', k == null ? '--:--' : klockText(Math.min(k, 21 * 60))); kl.classList.toggle('natt', k != null && (k >= 20 * 60 || k < 7 * 60));
   /* A-076 tillägg 13:20: bara nästa uppgift syns – dagrutan visar de avklarade uppgifterna som små gröna bockar med uppgiftens bild, inget om det som kommer */
