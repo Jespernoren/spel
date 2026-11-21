@@ -1327,12 +1327,22 @@ const interaktor = new Interaktor(kamera, scen, { rackvidd: 3.2, baraSynliga: tr
 interaktor.utanRam = false; interaktor.ramFranTraff = true;   /* A-091 p.1 (Jesper 22:50): den vita lådan är tillbaka runt det siktet står på och som går att använda nu – den följer träffytan. Platser med kontur (utanRam på platsen) får ingen låda. */
 /* A-076 tillägg 14:20: allt klickbart får en generös osynlig träffyta (~1,5× storleken, minst 0,4 m) när det registreras – inte för hand */
 const TRAFF_FAKTOR = 1.5, TRAFF_MIN = 0.4, TRAFF_STORST = 3.5, SIKTE_HJALP = 12;
+/* A-094 (Jesper 08:30): träffytan efter sakens storlek – största sidan på sakens synliga box (i meter):
+   liten < 0,5 m: 1,5× och minst 0,4 m · mellan 0,5–1,5 m: boxen + 10 cm åt varje håll · stor > 1,5 m: boxen + 5 cm åt varje håll.
+   Varje axel får ändå minst 0,4 m, så att en platt sak (en planka) går att träffa. */
+const TRAFF_LITEN = 0.5, TRAFF_STOR = 1.5, TRAFF_MELLAN_KANT = 0.10, TRAFF_STOR_KANT = 0.05;
+function traffMatt(st, sk) {   // st: sakens box i egna enheter, sk: skalan i världen → träffytans mått i egna enheter
+  const w = [st.x * Math.abs(sk.x), st.y * Math.abs(sk.y), st.z * Math.abs(sk.z)], L = Math.max(...w);
+  const f = (v) => Math.max(TRAFF_MIN, L < TRAFF_LITEN ? v * TRAFF_FAKTOR : v + 2 * (L <= TRAFF_STOR ? TRAFF_MELLAN_KANT : TRAFF_STOR_KANT));
+  return new THREE.Vector3(f(w[0]) / Math.max(1e-3, Math.abs(sk.x)), f(w[1]) / Math.max(1e-3, Math.abs(sk.y)), f(w[2]) / Math.max(1e-3, Math.abs(sk.z)));
+}
 const utanAutoTraff = new Set();
 function lokalLada(obj) {
   obj.updateMatrixWorld(true);
   const inv = new THREE.Matrix4().copy(obj.matrixWorld).invert(), b = new THREE.Box3(), t = new THREE.Box3(), m4 = new THREE.Matrix4();
   obj.traverse((m) => {
-    if (!m.isMesh || !m.geometry || m.material === traffMat || m.userData.autoTraff) return;
+    if (!m.isMesh || !m.geometry || m.material === traffMat || m.userData.autoTraff || m.material?.colorWrite === false) return;
+    for (let q = m; q && q !== obj; q = q.parent) if (!q.visible) return;   /* A-094: bara det som syns räknas */
     if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
     t.copy(m.geometry.boundingBox).applyMatrix4(m4.multiplyMatrices(inv, m.matrixWorld)); b.union(t);
   });
@@ -1344,8 +1354,8 @@ function autoTraffYta(obj) {
   const b = lokalLada(obj); if (b.isEmpty()) return null;
   const st = b.getSize(new THREE.Vector3()); if (Math.max(st.x, st.y, st.z) > TRAFF_STORST) return null;
   const c = b.getCenter(new THREE.Vector3()), sk = obj.getWorldScale(new THREE.Vector3());
-  const mat = (v, s) => Math.max(v * TRAFF_FAKTOR, TRAFF_MIN / Math.max(1e-3, Math.abs(s)));
-  const y = new THREE.Mesh(new THREE.BoxGeometry(mat(st.x, sk.x), mat(st.y, sk.y), mat(st.z, sk.z)), traffMat);
+  const tm = traffMatt(st, sk);
+  const y = new THREE.Mesh(new THREE.BoxGeometry(tm.x, tm.y, tm.z), traffMat);
   y.position.copy(c); y.userData.autoTraff = true; y.userData.ingenRitning = true; y.castShadow = y.receiveShadow = false;
   obj.add(y); obj.autoTraffYta = y; return y;
 }
@@ -1367,8 +1377,8 @@ function uppdateraSikte(bar) {
 const vantarTraff = new Set(), utanYtaSedan = new WeakMap();   // saker som registreras innan de har fått sin modell – ytan läggs till när modellen finns
 { const _reg = interaktor.registrera.bind(interaktor); interaktor.registrera = (obj, info) => { const r = _reg(obj, info); try { if (!autoTraffYta(obj) && !obj.autoTraffYta) vantarTraff.add(obj); } catch {} return r; }; }
 /* inkorg 21: en modell som byggs om under spelets gång (cykeln byggs om, kvarnen får tratt och torn, skrivaren byts) får en ny träffyta när storleken ändras mer än 20 % */
-setInterval(() => { const st = new THREE.Vector3(); for (const o of interaktor.mal) { const y = o.autoTraffYta; if (!y?.userData.autoTraff || y.parent !== o) continue; const b = lokalLada(o); if (b.isEmpty()) continue; b.getSize(st); const g = y.geometry.parameters, sk = o.getWorldScale(new THREE.Vector3()), mat0 = (v, s2) => Math.max(v * TRAFF_FAKTOR, TRAFF_MIN / Math.max(1e-3, Math.abs(s2)));
-  if (Math.abs(mat0(st.x, sk.x) - g.width) > 0.2 * g.width || Math.abs(mat0(st.y, sk.y) - g.height) > 0.2 * g.height || Math.abs(mat0(st.z, sk.z) - g.depth) > 0.2 * g.depth || b.getCenter(new THREE.Vector3()).distanceTo(y.position) > 0.15) { o.remove(y); y.geometry.dispose(); o.autoTraffYta = null; if (!autoTraffYta(o)) vantarTraff.add(o); } } }, 2000);
+setInterval(() => { const st = new THREE.Vector3(); for (const o of interaktor.mal) { const y = o.autoTraffYta; if (!y?.userData.autoTraff || y.parent !== o) continue; const b = lokalLada(o); if (b.isEmpty()) continue; b.getSize(st); const g = y.geometry.parameters, sk = o.getWorldScale(new THREE.Vector3()), tm = traffMatt(st, sk);
+  if (Math.abs(tm.x - g.width) > 0.2 * g.width || Math.abs(tm.y - g.height) > 0.2 * g.height || Math.abs(tm.z - g.depth) > 0.2 * g.depth || b.getCenter(new THREE.Vector3()).distanceTo(y.position) > 0.15) { o.remove(y); y.geometry.dispose(); o.autoTraffYta = null; if (!autoTraffYta(o)) vantarTraff.add(o); } } }, 2000);
 setInterval(() => { for (const o of vantarTraff) { if (!interaktor.mal.includes(o) || o.autoTraffYta) { vantarTraff.delete(o); continue; } try { if (autoTraffYta(o)) vantarTraff.delete(o); } catch {} } }, 300);
 /* siktet ger vit kontur direkt på det du tittar på */
 const siktKonturMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95, depthWrite: false });
