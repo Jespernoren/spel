@@ -51,6 +51,13 @@ await p.evaluate(([u, m, c]) => { window.__vt.start(); window.__simUtforlig = u;
 await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.meta.url), 'utf8') });
 const r = await p.evaluate(() => window.__simBot.kor(4, 90));   /* inkorg 63: dag 1–3 */
 const L = r.logg.filter((e) => e.dag === 1), L3 = r.logg.filter((e) => e.dag <= 3), ut = []; fs.writeFileSync('/tmp/story-logg.json', JSON.stringify(L)); fs.writeFileSync('/tmp/story-logg3.json', JSON.stringify(L3));
+{ /* inkorg 71: Ali, Rolf, du och berättaren spelar sina egna klipp (Piper), inte talsyntesen */
+  const K = await p.evaluate(() => window.__printahem.rostKallor()); fs.writeFileSync('/tmp/rostkallor.json', JSON.stringify(K));
+  for (const f of ['du', 'ali', 'rolf', 'berattare']) {
+    const a = K.filter((x) => x[0] === f), pip = a.filter((x) => x[1] !== 'talsyntes'), ts = a.filter((x) => x[1] === 'talsyntes');
+    ut.push([`inkorg 71: ${f} spelar egna klipp dag 1–3 (${pip.length} klipp, ${ts.length} talsyntes${ts.length ? ': ' + ts.slice(0, 3).map((x) => x[2]).join(' | ') : ''})`, (pip.length > 0 || (['rolf', 'berattare'].includes(f) && !a.length)) && ts.length <= Math.max(1, Math.floor(a.length * 0.1))]);
+  }
+}
 const steg1 = STORY_STEG.filter((x) => x.dag === 1);
 // 1. målen i rätt ordning, med texten ur story.js
 const rutor = L.filter((e) => e.kalla === 'målruta').map((e) => e.text);
@@ -96,7 +103,7 @@ ut.push([`kvittot efter steget (${kv.length - kvFel.length}/${kv.length})${kvFel
   ut.push([`inkorg 63 p.5: fotot av första nyckelringen ${dt == null ? 'saknas' : dt.toFixed(2) + ' s'} efter att den tagits ut (högst 0,5 s)`, dt != null && dt <= 0.5]);
   const klarNotis = L3.filter((e) => ['notis', 'toast', 'sak'].includes(e.kalla) && /är klar – ta ut|st klara på skrivaren/.test(String(e.text || '')));
   ut.push([`inkorg 63 p.4: en klar print ger bara den gröna skylten – 0 notiser om klar print (${klarNotis.length}${klarNotis.length ? ': ' + klarNotis[0].text.slice(0, 40) : ''})`, !klarNotis.length]); }
-const FLAGGOR = ['SEKVENSFEL', 'REDAN GJORT', 'FEL PLATS I TEXT', 'GÅVA SOM KÖP', 'PIL PÅ GJORD SAK', 'BERÄTTAREN FÖRE DIG', 'RÖST AVBRUTEN', 'TYST UPPMANING', 'KLICK UTAN SVAR', 'SVAR FÖRE ORSAK'];
+const FLAGGOR = ['SEKVENSFEL', 'REDAN GJORT', 'FEL PLATS I TEXT', 'GÅVA SOM KÖP', 'PIL PÅ GJORD SAK', 'BERÄTTAREN FÖRE DIG', 'RÖST AVBRUTEN', 'TYST UPPMANING', 'KLICK UTAN SVAR', 'SVAR FÖRE ORSAK', 'FEL RÖST'];
 const br = L.filter((e) => e.kalla === 'brott' && FLAGGOR.includes(e.vem));
 ut.push([`0 ${FLAGGOR.join(', 0 ')} dag 1 (${br.map((e) => e.vem + ': ' + e.text).join(' · ') || 'inga'})`, !br.length]);
 ut.push([`dag 1 spelad till sömnen (${L.filter((e) => e.kalla === 'händelse' && e.vem === 'malKlart').length} mål)`, r.dagar.length >= 1]);

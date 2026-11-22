@@ -51,7 +51,15 @@ p.on('response', (r) => { if (r.status() >= 400 && new URL(r.url()).host === new
 await p.goto(url, { waitUntil: 'load', timeout: 60000 });
 const meny = await p.waitForSelector('.br-starta', { timeout: 20000 }).then(() => true).catch(() => false);
 await p.waitForTimeout(1500);
+/* inkorg 71: lint RÖST SAKNAS – varje fast text i röstmanuset ska ha ett klipp för rätt figur (annars låter alla som talsyntesen) */
+const rost = await p.evaluate(async () => {
+  const h = window.__printahem; if (!h?.rostKoll) return null;
+  for (let i = 0; i < 40 && !h.rostKlippFinns('ali', 'x') && !(await fetch('roster/index.json').then(() => true).catch(() => false)); i++) await new Promise((r) => setTimeout(r, 250));
+  await new Promise((r) => setTimeout(r, 1500));
+  const k = h.rostKoll(); return Object.entries(k.figurer).filter(([, r]) => r.saknas).map(([f, r]) => `${f} ${r.saknas} (${r.saknasText.slice(0, 2).join(' | ')})`);
+}).catch(() => null);
 await b.close(); server?.close();
-const ok = !fel.length && !konsol.length && meny;
+if (rost?.length) console.log('✗ RÖST SAKNAS: ' + rost.join(' · ') + '\n  kör node verktyg/printahem-manus.mjs + verktyg/roster.py (se loggen för rad 71)');
+const ok = !fel.length && !konsol.length && meny && !rost?.length;
 console.log(`${ok ? '✓' : '✗'} röktest ${url}: ${fel.length} sidfel${fel.length ? ' (' + fel.join(' · ') + ')' : ''}, ${konsol.length} konsolfel${konsol.length ? ' (' + konsol.slice(0, 5).join(' · ') + ')' : ''}, startmenyn ${meny ? 'syns' : 'syns INTE'}`);
 process.exit(ok ? 0 : 1);
