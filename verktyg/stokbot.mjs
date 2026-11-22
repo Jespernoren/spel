@@ -67,14 +67,18 @@ await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.m
 const r = await p.evaluate(() => window.__simBot.kor(4, 90));
 const stok = await p.evaluate(() => window.__stok);
 const L = r.logg;
-const FLAGGOR = ['SEKVENSFEL', 'REDAN GJORT', 'FEL PLATS I TEXT', 'GÅVA SOM KÖP', 'PIL PÅ GJORD SAK', 'SAK FÖR UPPGIFT SAKNAS'];
+const FLAGGOR = ['SEKVENSFEL', 'REDAN GJORT', 'FEL PLATS I TEXT', 'GÅVA SOM KÖP', 'PIL PÅ GJORD SAK', 'SAK FÖR UPPGIFT SAKNAS', 'KLICK UTAN SVAR', 'SVAR FÖRE ORSAK'];
 const br = L.filter((e) => e.kalla === 'brott' && FLAGGOR.includes(e.vem));
 const fast = r.handlingar.filter((h) => /fastnade/.test(typeof h === 'string' ? h : h.text || '')).map((h) => (typeof h === 'string' ? h : h.text));
 const ut = [];
 ut.push([`frö ${FRO}: ${stok.length} stök, nådde dag ${Math.max(...r.dagar.map((d) => d.dag), 1)}${r.dagar.length ? '' : ''}`, r.dagar.some((d) => d.dag >= 3) && !fast.length]);
 ut.push([`frö ${FRO}: 0 FAST (${fast.join(' · ') || 'inga'})`, !fast.length]);
-ut.push([`frö ${FRO}: 0 SEKVENSFEL, REDAN GJORT, FEL PLATS I TEXT, GÅVA SOM KÖP, PIL PÅ GJORD SAK (${br.filter((e) => e.vem !== 'SAK FÖR UPPGIFT SAKNAS').map((e) => e.vem + ': ' + e.text).slice(0, 4).join(' · ') || 'inga'})`, !br.some((e) => e.vem !== 'SAK FÖR UPPGIFT SAKNAS')]);
+ut.push([`frö ${FRO}: 0 SEKVENSFEL, REDAN GJORT, FEL PLATS I TEXT, GÅVA SOM KÖP, PIL PÅ GJORD SAK, KLICK UTAN SVAR, SVAR FÖRE ORSAK (${br.filter((e) => e.vem !== 'SAK FÖR UPPGIFT SAKNAS').map((e) => e.vem + ': ' + e.text).slice(0, 4).join(' · ') || 'inga'})`, !br.some((e) => e.vem !== 'SAK FÖR UPPGIFT SAKNAS')]);
 ut.push([`frö ${FRO}: ${br.filter((e) => e.vem === 'SAK FÖR UPPGIFT SAKNAS').length} gånger tillbaka från kistan/ryggsäcken/borta (SAK FÖR UPPGIFT SAKNAS är räddningen, inte ett fel)`, true]);
+/* inkorg 64: dag 1 fram till gripklon – inget mål över 60 s (tiden varje mål stod i rutan) */
+{ const M = L.filter((e) => e.kalla === 'målruta' && e.dag === 1); const slut = L.find((e) => e.kalla === 'händelse' && e.vem === 'malKlart' && /id=printGrip(\s|$)/.test(e.text));
+  const langa = []; for (let i = 0; i < M.length; i++) { const t1 = (M[i + 1]?.tot ?? slut?.tot ?? M[i].tot); if (slut && M[i].tot >= slut.tot) break; if (t1 - M[i].tot > 60) langa.push(`${M[i].text} ${(t1 - M[i].tot).toFixed(0)} s`); }
+  ut.push([`frö ${FRO}: dag 1 når gripklon (${slut ? (slut.tot / 60).toFixed(1) + ' min' : 'nej'}) utan mål över 60 s (${langa.join(' · ') || 'inga'})`, !!slut && !langa.length]); }
 ut.push([`frö ${FRO}: 0 sidfel (${sidfel.slice(0, 2).join(' · ') || 'inga'})`, !sidfel.length]);
 fs.mkdirSync(new URL('./a113/stokbot/', import.meta.url), { recursive: true });
 fs.writeFileSync(new URL(`./a113/stokbot/fro-${FRO}.md`, import.meta.url), `# Stökboten frö ${FRO}\n\n${ut.map(([t, o]) => `- ${o ? '✓' : '✗'} ${t}`).join('\n')}\n\n## Dagarna\n${r.dagar.map((d) => `- dag ${d.dag}: ${(d.sek / 60).toFixed(1)} min${d.ofardig ? ' (ofärdig)' : ''}`).join('\n')}\n\n## Stöket (${stok.length})\n${stok.map((x) => '- ' + x).join('\n')}\n`);

@@ -96,7 +96,7 @@ ut.push([`kvittot efter steget (${kv.length - kvFel.length}/${kv.length})${kvFel
   ut.push([`inkorg 63 p.5: fotot av första nyckelringen ${dt == null ? 'saknas' : dt.toFixed(2) + ' s'} efter att den tagits ut (högst 0,5 s)`, dt != null && dt <= 0.5]);
   const klarNotis = L3.filter((e) => ['notis', 'toast', 'sak'].includes(e.kalla) && /är klar – ta ut|st klara på skrivaren/.test(String(e.text || '')));
   ut.push([`inkorg 63 p.4: en klar print ger bara den gröna skylten – 0 notiser om klar print (${klarNotis.length}${klarNotis.length ? ': ' + klarNotis[0].text.slice(0, 40) : ''})`, !klarNotis.length]); }
-const FLAGGOR = ['SEKVENSFEL', 'REDAN GJORT', 'FEL PLATS I TEXT', 'GÅVA SOM KÖP', 'PIL PÅ GJORD SAK', 'BERÄTTAREN FÖRE DIG', 'RÖST AVBRUTEN', 'TYST UPPMANING'];
+const FLAGGOR = ['SEKVENSFEL', 'REDAN GJORT', 'FEL PLATS I TEXT', 'GÅVA SOM KÖP', 'PIL PÅ GJORD SAK', 'BERÄTTAREN FÖRE DIG', 'RÖST AVBRUTEN', 'TYST UPPMANING', 'KLICK UTAN SVAR', 'SVAR FÖRE ORSAK'];
 const br = L.filter((e) => e.kalla === 'brott' && FLAGGOR.includes(e.vem));
 ut.push([`0 ${FLAGGOR.join(', 0 ')} dag 1 (${br.map((e) => e.vem + ': ' + e.text).join(' · ') || 'inga'})`, !br.length]);
 ut.push([`dag 1 spelad till sömnen (${L.filter((e) => e.kalla === 'händelse' && e.vem === 'malKlart').length} mål)`, r.dagar.length >= 1]);
@@ -137,6 +137,15 @@ for (const l of ['ryggan', 'kistan', 'raden', 'handen']) {
 const br2 = await q.evaluate((F) => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && F.includes(e.vem)).map((e) => e.vem + ': ' + e.text), FLAGGOR);
 ut.push([`andra passet: 0 ${FLAGGOR.join(', 0 ')} (${br2.join(' · ') || 'inga'})`, !br2.length]);
 ut.push([`0 sidfel (${[...sidfel, ...fel2].slice(0, 3).join(' · ') || 'inga'})`, !sidfel.length && !fel2.length]);
+// inkorg 64 p.3: Alis hylla efter att kvarnen ställts – gripens skäl kommer ur kraver (powerbanken), aldrig "Kommer när kvarnen står"
+await q.evaluate(() => { const P = window.__printahem, S = P.S, i = P.STEGLISTA().findIndex((x) => x.id === 'flaska'); S.steg = i; S.kvarnKopt = true; S.kvarnStar = true; S.powerbank = false; P.ritaStart?.(); P.oppnaMarknad(); });
+await q.waitForTimeout(1200);
+fs.mkdirSync(new URL('./a119/', import.meta.url), { recursive: true });
+await q.screenshot({ path: new URL('./a119/ali-hylla-kvarnen-star.png', import.meta.url).pathname });
+const hylla = await q.evaluate(() => [...document.querySelectorAll('.dc-k2.last .dc-k2-info, .dc-kort.last')].map((e) => e.textContent.trim()).join(' | '));
+const hyllaBrott = await q.evaluate(() => window.__printahem.textLogg().filter((e) => e.kalla === 'brott' && e.vem === 'SEKVENSFEL' && /hylla/.test(e.text)).map((e) => e.text));
+ut.push([`inkorg 64 p.3: Alis hylla med kvarnen ställd säger inte "Kommer när kvarnen står" (låsta: "${hylla}"), 0 SEKVENSFEL för hyllan (${hyllaBrott.join(' · ') || 'inga'})`, !/kvarnen står/.test(hylla) && !hyllaBrott.length]);
+await q.evaluate(() => window.__printahem.ui.stangButik());
 await b2.close();
 for (const [t, ok] of ut) console.log(ok ? '✓' : '✗', t);
 process.exit(ut.every((x) => x[1]) ? 0 : 1);

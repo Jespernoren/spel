@@ -87,7 +87,7 @@
 - **Moment:** Gör egen tråd · **sak:** nyckelring · **bild:** nyckelring · **pil:** ali
 - **Handling:** salj → kontrollhjälp *– (hos Ali)*
 - **Kräver:** rullSlut · **ger:** kvarnPengar
-- **Start (sägs när steget börjar):** "Rullen är slut. Nyckelringarna säljer jag hos Ali."
+- **Start (sägs när steget börjar):** "Nyckelringarna säljer jag hos Ali. Han kanske har något för plasten."
 - **Påminnelse:** "Affären mitt emot kanske köper ringarna."
 - **Kvitto:** –
 - **Dialog** (inkorg 61):
@@ -134,6 +134,7 @@
 - **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
 - **Kräver:** trad · **ger:** egenRing
 - **Start (sägs när steget börjar):** "Min egen tråd. Nu printar jag en nyckelring av den."
+  - medan steget pågår (rulleIHanden): "Min egen tråd. Den ska in i skrivaren."
 - **Påminnelse:** "Nu printar jag med min egen tråd."
 - **Kvitto:** –
 - **Uppläsning:** "Printa en nyckelring av din egen tråd."

@@ -2969,7 +2969,8 @@ function skapaSak(typ) {
   if (VAROR[typ] || typ === 'del') return skapaVara(typ);
   return skapaMaskin(typ);
 }
-const arPlacerbar = (typ) => typ?.startsWith('byggsats:') && !MASKINER[typ.split(':')[1]].verktyg && !MASKINER[typ.split(':')[1]].monteras || !!VAROR[typ]?.placerbar;
+const arMonteraSak = (typ) => { try { return !!MONTERA[typ] || !!TA_PA[typ]; } catch { return false; } };   /* inkorg 64 p.5: det som bara monteras (eller tas på) ställs aldrig på marken – ingen kontur där */
+const arPlacerbar = (typ) => (typ?.startsWith('byggsats:') && !MASKINER[typ.split(':')[1]].verktyg && !MASKINER[typ.split(':')[1]].monteras || !!VAROR[typ]?.placerbar) && !arMonteraSak(typ);
 const placeringsTyp = (typ) => typ.startsWith('byggsats:') ? typ.split(':')[1] : typ;
 const info = (typ) => VAROR[typ] || MASKINER[typ];
 
@@ -3354,7 +3355,7 @@ let tungMissSagt = false;
 const NOLAS = '\u2060';
 const BROR_RULLE_GRAM = 2 * VAROR.nyckelring.gram,   /* inkorg 18: storebrors rulle räcker till exakt 2 nyckelringar */
   KVARN_PRIS = 2 * VAROR.nyckelring.pris,   /* inkorg 18: kvarnen kostar vad två nyckelringar ger hos Ali – följer med om priset ändras */ HAMMARE_T = '🔨 Hammaren ligger i verktygsraden. Byt sak med mushjulet eller 1–9.';
-const RULL_SLUT_T = 'Slut på storebrors rulle. Och här ligger ju plast överallt. Om jag bara kunde göra tråd av skräpet… Affären mitt emot kanske har något.';   /* inkorg 18 */
+const RULL_SLUT_T = 'Slut på storebrors rulle. Och här ligger ju plast överallt. Om jag bara kunde göra tråd av skräpet…';   /* inkorg 64: vart jag går sägs en gång, i nästa stegs start (SAMMA SAK TVÅ GÅNGER) */   /* inkorg 18 */
 const KVARN_ALI_T = () => `Pappas gamla köttkvarn. Den har malt allt utom kött. ${KRONOR_ORD[KVARN_PRIS] || KVARN_PRIS + ' kronor'}, så är den din.`, KVARN_KOPT_T = 'Och kommer du på nåt smart, så vet du var jag bor.';   /* inkorg 18: Ali tar fram kvarnen · köpet */
 const KRONOR_ORD = { 8: 'Åtta kronor', 10: 'Tio kronor', 20: 'Tjugo kronor', 30: 'Trettio kronor', 40: 'Fyrtio kronor', 50: 'Femtio kronor' };   /* A-076: Jesper 00:18 */   /* A-076: en och en halv nyckelring (100 g var) */
 const PAUS_T = 'Den stannar när jag slutar trampa. Ström som sparas hade varit nåt.', HANDER_T = 'Jag behöver nånstans att göra av det här.', BROR_RULLE_T = 'Storebrors rulle. Den räcker inte länge.';   /* DT */   /* DJ: etikett utan [E] – det går inte */
@@ -3776,7 +3777,9 @@ function laddaSkrivare(sk) {
 }
 function anvandSkrivare(sk) {
   if ((valdTyp() === 'rulle' || valdTyp() === 'rulle2' || valdTyp() === 'rulle3') && !sk.klar) {
-    { const l = tornFor(sk); if (ROLL_LINJE[valdTyp()] !== l) kortTanke('farg' + l, FARG_T[l]); else kortTanke('slangT', SLANG_T); return; }   /* DM2: ingen handladdning */
+    { const l = tornFor(sk); if (ROLL_LINJE[valdTyp()] !== l) kortTanke('farg' + l, FARG_T[l]);
+      else if (aktivtStoryStag()?.rulle === 'skrivare') { const n = S.hotbar[S.vald]?.n || 0; taBortInv(valdTyp(), n); sk.fil = (sk.fil || 0) + n * RULLE; S.stat.laddat = (S.stat.laddat || 0) + n; ljudH('snapp'); sparaSkrivare(); sparaSnart(); textLogg('laddat', 'du', `${n} rulle i ${sk.id}`, 'inkorg 64 p.2'); oppnaPrintMeny(sk); }   /* inkorg 64 p.2: under "Printa med egen tråd" laddar klicket rullen och öppnar printkortet */
+      else kortTanke('slangT', SLANG_T); return; }   /* DM2: ingen handladdning */
     if (valdTyp() !== filTyp(sk)) { ljud.fel(); regi.info(sk.gen === KOLF_GEN ? 'Kolfiberskrivaren tar bara svartgrå kolfiber – den kommer från kolfiberkvarnen' : valdTyp() === 'rulle3' ? 'Kolfiber laddas i kolfiberskrivaren i linje 3.' : sk.gen === PETG_GEN ? 'PETG-skrivaren tar bara röd PETG (nivå 2) – den kommer från PETG-kvarnen' : 'Röd PETG laddas i den röda PETG-skrivaren. Här går vanlig blå filament.', 'fel'); return; }
     laddaSkrivare(sk); return;
   }
@@ -4403,6 +4406,45 @@ const cykelStall = new THREE.Group(); {
   cykelStall.add(at(box(0.55, 0.05, 0.05, m), 0, 0.42, 0.3));
   cykelStall.position.set(-12.6, 0, 13.9); cykelStall.rotation.y = 0.7; scen.add(cykelStall);
 }
+/* inkorg 64 p.1: cykeln vänds alltid så att sadeln är vänd mot skrivaren – den som trampar ser printen växa. Gäller också gamla sparfiler (körs i ritaStart). */
+let cykelRiktadMot = null;
+function riktaCykel() {
+  if (!S.cykelStar || !S.skrivareStar || typeof gammal === 'undefined' || cykelAnim) return;
+  gammal.updateMatrixWorld(true); const g = new THREE.Box3().setFromObject(gammal).getCenter(new THREE.Vector3());
+  const rot = Math.atan2(g.x - cykel.position.x, g.z - cykel.position.z);
+  if (cykelRiktadMot != null && Math.abs(rot - cykelRiktadMot) < 0.01) return;
+  cykelRiktadMot = rot; cykel.rotation.y = rot; cykel.updateMatrixWorld(true);
+  cykelStall.rotation.y = rot; cykelStall.updateMatrixWorld(true);
+  const f = fasta.find((x) => x.grupp === cykel); if (f) f.box = new THREE.Box3().setFromObject(cykel);
+  try { if (!S.cykelOmbyggd) cykelSlutPose(vagCykel); genSlutPose(genStar); dragStartKabel(); uppdateraHinder(); } catch {}
+}
+/* inkorg 64 p.1: ett klick på cykeln = jag sätter mig och trampar tills printen är klar (eller jag klickar igen eller går).
+   Ett klick på veven = jag vevar tills tratten är tom. Håll inne fungerar som förut. */
+let sitter = null;   // { pa: 'cykel' | 'vev', t0 }
+const SITT_INGEN_PRINT_T = 'Först måste skrivaren veta vad den ska printa.';
+const SITT_TOM_TRATT_T = 'Tratten är tom. Skräp i kvarnen först.';
+const sitterPa = (pa) => sitter?.pa === pa;
+function sattUpp(pa) {
+  if (pa === 'cykel') {
+    if (S.skrivareStar && !skrivare.some((sk) => sk.jobb)) { tanke(SITT_INGEN_PRINT_T, 'inkorg 64 p.1: ingen print vald', 'REAKTION', undefined, { svar: true }); return false; }
+    riktaCykel(); cykel.updateMatrixWorld(true);
+    const plats = cykel.localToWorld(new THREE.Vector3(0.45, 0, -0.2));   // bredvid sadeln, så att styret inte skymmer skrivaren
+    spelare.pos.x = plats.x; spelare.pos.z = plats.z;
+    try { gammal.updateMatrixWorld(true); const g = new THREE.Box3().setFromObject(gammal).getCenter(new THREE.Vector3()); spelare.yaw = Math.atan2(-(g.x - plats.x), -(g.z - plats.z)); spelare.pitch = Math.max(-0.6, Math.atan2(g.y - (spelare.pos.y + 1.6), Math.hypot(g.x - plats.x, g.z - plats.z))); regiLogg('kamera', 'nick', '', 'sätter sig: blicken på skrivaren', 0); } catch {}
+  } else if (pa === 'vev' && !(S.kvarn?.tratt > 0)) { tanke(SITT_TOM_TRATT_T, 'inkorg 64 p.1: tom tratt', 'REAKTION', undefined, { svar: true }); return false; }
+  sitter = { pa, t0: performance.now(), x: spelare.pos.x, z: spelare.pos.z };
+  textLogg('sitter', 'du', pa === 'cykel' ? 'cykel' : 'vev', 'inkorg 64 p.1');
+  return true;
+}
+function resUpp(varfor) { if (!sitter) return; textLogg('reser sig', 'du', sitter.pa, varfor); sitter = null; }
+/* inkorg 64 p.1: går du från cykeln medan skrivaren väntar på ström säger du efter 10 s stegets borta-replik ("Cykeln. Jag måste trampa …"), en gång per gång du går */
+let cykelBortaT = 0, cykelBortaSagt = false, cykelBortaTestSteg = null;   // testkrok: vilket story-steg som gäller (test-a119)
+function cykelBortaKoll(dt, trampar) {
+  const p = cykelBortaTestSteg ? STORY_STEG.find((x) => x.id === cykelBortaTestSteg) : aktivtStoryStag(), txt = p?.borta ? varde(p.borta, S, storyHjalp) : null;
+  const borta = !!txt && !trampar && skrivare.some((sk) => sk.jobb) && Math.hypot(spelare.pos.x - cykel.position.x, spelare.pos.z - cykel.position.z) > 3;
+  if (!borta) { cykelBortaT = 0; if (trampar) cykelBortaSagt = false; return; }
+  const nu = performance.now(); if (!cykelBortaT) cykelBortaT = nu; if (nu - cykelBortaT > 10000 && !cykelBortaSagt)   /* riktig tid, som spelaren upplever den */ { cykelBortaSagt = true; tanke(txt, 'inkorg 64 p.1: gick från cykeln', 'STORY', () => !sitter); }
+}
 // DT: rulltornet med storebrors halvtomma rulle står vid linje 1 från start (tills kvarnen ställs bredvid), och kvarnens plats är markerad
 const startTorn = new THREE.Group(); {
   kvarn.updateMatrixWorld(true); const p = rulle.getWorldPosition(new THREE.Vector3()), tra = mat(0x8a6a3f);
@@ -4436,6 +4478,7 @@ function genEllerCykelPaPlats() {   /* A-071: när båda står monteras generato
 }
 const GENERATOR_T = 'Storebrors generator. Den gör el när cykeln snurrar.';   /* inkorg 47 p.5 */   /* A-070 nr 13 */   /* EF15 */
 function ritaStart() {
+  try { riktaCykel(); } catch {}   /* inkorg 64 p.1 */
   try { vagCykel.userData.generator.visible = false;   /* inkorg 20: generatorn ligger i verktygsraden */ genStar.visible = !!S.generatorStar && !S.cykelOmbyggd && !cykelAnim; } catch (e) {}
   try { ritaMonterat(); } catch (e) {}
   kvarn.visible = !!S.kvarnStar;
@@ -4568,7 +4611,9 @@ if (TESTLAGE && typeof document !== 'undefined') {
     window.__fps = { snitt: 1000 / snitt, lagsta1: 1000 / p99, ritanrop: info?.calls, trianglar: info?.triangles };
   }, 1000);
 }
+let svarRaknare = 0;   /* inkorg 64: allt som händer räknas – KLICK UTAN SVAR ser om ett klick gav något */
 function textLogg(kalla, vem, text, varfor = '') {
+  svarRaknare++;
   try { TEXTLOGG.push({ t: Math.round(performance.now()), dag: S?.dag, kalla, vem, text: String(text ?? '').slice(0, 200), varfor }); if (TEXTLOGG.length > 3000) TEXTLOGG.shift(); } catch {}
   try { window.__textLogg?.(kalla, vem, String(text ?? ''), varfor); } catch {}
   try { if (kalla !== 'skratt' && HUMOR_TAGG().has(String(text))) textLogg('skratt', vem, String(text).slice(0, 40)); } catch {}
@@ -4783,7 +4828,7 @@ function korKanal() {
   if ((() => { try { return sover || morgonVantar; } catch { return false; } })()) return;   /* A-093 p.8 (try: kan köras innan sover/morgonVantar finns): morgonkortet kommer alltid först på morgonen – inget från kön (notiser, tankar, bubblor) före det */
   // EA: fast ordning – rang (story/reaktion, mål, bonus) → händelse → den som pratar före min tanke → tid
   const smsRadioSen = (x) => (x.sms || x.vem === 'kjelle') && x.vikt !== 'STORY' && !arBonus(x) && performance.now() - (x.fodd ?? x.t) - (x.pausMs || 0) > SMS_RADIO_MAX_MS;   /* inkorg 63 p.5: radio och sms som väntat 12 s går före nya målet (SEN-gränsen 20 s) */
-  const sortKv = (x) => x.vikt === 'MÅL' ? 0.75 : arSvarReakt(x) ? 0.9 : arKvitto(x) || (x.svar && !x.sms ? 0.8 : smsRadioSen(x) ? 0.78 : 0);   /* inkorg 63 p.5: reaktionen på din handling före nästa story-del */   /* inkorg 63 p.5: en reaktion på din egen handling går först, efter kvittensen */   /* inkorg 45 p.4: kvittensen först, sedan nya målet, sedan info-svaret – målet kommer inom 2 s efter kedjan */
+  const sortKv = (x) => x.vikt === 'MÅL' ? 0.75 : arSvarReakt(x) ? 0.9 : arKvitto(x) || (x.svar ? 0.8 : smsRadioSen(x) ? 0.78 : 0);   /* inkorg 64 p.4/7: ett sms som är orsaken till nästa steg (svar) går före det nya målet */   /* inkorg 63 p.5: reaktionen på din handling före nästa story-del */   /* inkorg 63 p.5: en reaktion på din egen handling går först, efter kvittensen */   /* inkorg 45 p.4: kvittensen först, sedan nya målet, sedan info-svaret – målet kommer inom 2 s efter kedjan */
   kanal.sort((a, b) => sortKv(b) - sortKv(a) || (b.forst ? 1 : 0) - (a.forst ? 1 : 0) || rang(a) - rang(b) || a.grupp - b.grupp || (a.paket && a.paket === b.paket ? a.ord - b.ord : 0) || arTalare(b) - arTalare(a) || a.t - b.t);
   const senare = kanalSenare; let malSnart = 0, kvSnart = 0;   /* inkorg 45 p.4: ett mål som väntar några sekunder på sin tur släpper inte fram något med lägre rang (info, notiser) före sig */
   while (kanal.length) {
@@ -4804,7 +4849,7 @@ function korKanal() {
     }
     if (it.sms && nu - dagStartTid < SMS_TIDIGAST) it.tidigast = Math.max(it.tidigast || 0, dagStartTid + SMS_TIDIGAST);   // BV: kontrolleras vid leverans
     if (it.gammalMs && nu - it.t - (it.menyMs || 0) > it.gammalMs) { textLogg('struken', it.vem || '', it.text || '', 'A-065: för gammal – tappat sitt sammanhang'); continue; }
-    { const mel = arKvitto(it) === 1 ? KVITTO_MELLAN : (arSvarReakt(it) || (it.svar && !it.sms)) ? SVAR_MELLAN : arKvitto(it) ? KVITTO_MELLAN : SYNLIG_MELLAN; if (it.vikt !== 'MÅL' && nu - senastSynlig < mel) it.tidigast = Math.max(it.tidigast || 0, senastSynlig + mel); }   /* inkorg 63 p.5: svaret på din handling väntar inte de 4 s */
+    { const mel = arKvitto(it) === 1 ? KVITTO_MELLAN : (arSvarReakt(it) || (it.svar && !it.sms)) ? SVAR_MELLAN : (arKvitto(it) || it.svar) ? KVITTO_MELLAN : SYNLIG_MELLAN; if (it.vikt !== 'MÅL' && nu - senastSynlig < mel) it.tidigast = Math.max(it.tidigast || 0, senastSynlig + mel); }   /* inkorg 63 p.5: svaret på din handling väntar inte de 4 s */
     if (it.arTanke && !arKvitto(it) && (!it.svar || it.vikt === 'MÅL') && nu - senastTankeT < TANKAR_MINST_MS) it.tidigast = Math.max(it.tidigast || 0, senastTankeT + TANKAR_MINST_MS);   /* A-090 p.5 */   /* A-065: minst 4 s mellan två saker som syns */
     const smsRadioGammal = smsRadioSen(it);   /* inkorg 63 p.5 */
     if (!it.svar && it.vikt !== 'MÅL' && !endastAli && !smsRadioGammal) {   /* inkorg 22: andrum för det som inte hör ihop med det du just gjorde */
@@ -5435,7 +5480,7 @@ interaktor.registrera(kvarn, {
   },
 });
 interaktor.registrera(vevYta, {
-  text: () => S.kvarn.motor ? 'Kvarnen mal själv' : S.kvarn.tratt ? `✋ Klicka och håll – veva · ${S.kvarn.tratt} kvar i tratten` : 'Veven – tratten är tom',
+  text: () => S.kvarn.motor ? 'Kvarnen mal själv' : S.kvarn.tratt ? `✋ Klicka – veva · ${S.kvarn.tratt} kvar i tratten` : 'Veven – tratten är tom',
   kanAktivera: () => !S.kvarn.motor && !harMotorsats() && !trattTyp() && !(valdKarra() && S.karraLast.length),   // veva går även med skräp i händerna
   aktivera: () => { if (!S.kvarn.tratt) regi.info('Lägg skräp i tratten först'); },
 });
@@ -5455,7 +5500,7 @@ interaktor.registrera(rulle, {
     if (!harRumFor('rulle', n)) { regi.info('📦 Ingen plats för rullarna – töm verktygsraden eller kistan', 'fel'); ljud.fel(); return; }
     kalla('maskin'); const vart = laggTill('rulle', n); S.kvarn.ut -= n * RULLE;
     if (typeof vart === 'number' && !valdTyp()) byt(vart);
-    regi.info(`🧵 ${n > 1 ? n + ' rullar' : 'En rulle'} filament i verktygsraden – sälj till Ali eller lägg tillbaka i tornet`, 'bra');
+    if (aktivtStoryStag()?.rulle !== 'skrivare') regi.info(`🧵 ${n > 1 ? n + ' rullar' : 'En rulle'} filament i verktygsraden – sälj till Ali eller lägg tillbaka i tornet`, 'bra');   /* inkorg 64 p.2: under steget säger du en sak (stegets medan-tanke), inget om att sälja eller lägga i tornet */
     S.stat.hamtat++; ljudH('plock'); sparaSnart();
   },
 });
@@ -5760,7 +5805,7 @@ function malRuta() {
   if (S.steg !== regiMalSteg) { regiMalSteg = S.steg; regiLogg('målruta', 'mål', '', stegText(STEG[S.steg]) || '', 0); }   /* A-080 */
   if (malVisasSteg === S.steg) return;
   malVisadTid = performance.now(); malRutaT = malVisadTid;
-  { const tom = malVisadTid - malKlartTid - ((menyTot - butikTot) - (menyVidKlart - butikVidKlart)); if (malKlartTid > dagStartTid + 1000 && tom > 4500 && ui.igang) regelvakt.brott('TOM RUTA', `${(tom / 1000).toFixed(1)} s innan "${String(stegText(STEG[S.steg]) || '').slice(0, 50)}" syntes`); }   /* inkorg 46 p.2 */
+  { const tom = malVisadTid - malKlartTid - ((menyTot - butikTot) - (menyVidKlart - butikVidKlart)) - (orsakVantat.steg === S.steg ? orsakVantat.ms : 0); if (malKlartTid > dagStartTid + 1000 && tom > 4500 && ui.igang) regelvakt.brott('TOM RUTA', `${(tom / 1000).toFixed(1)} s innan "${String(stegText(STEG[S.steg]) || '').slice(0, 50)}" syntes`); }   /* inkorg 46 p.2 */
   malVisasSteg = S.steg; try { textLogg('målruta', '', stegText(STEG[S.steg]) || '', `nytt mål i rutan · meny ${((menyTot - menyVidKlart) / 1000).toFixed(1)} s`); } catch {}
 }
 let malPilSteg = -1, malPilT = 0;
@@ -5847,7 +5892,7 @@ function flaskaMald() {
   if (nu > forut) { rullKlarTid = performance.now() + 900; if (!spelaLjud('rulle-klar')) ljud.klar(); }
   sparaSnart();
 }
-interaktor.registrera(cykel, { text: () => !kanNu('trampa').ja ? `🚲 Cykeln · ⚡ ${Math.floor(S.strom)}/${stromMax()}` : kTrampaNu() ? `🚲 Cykeln · ⚡ ${Math.floor(S.strom)}/${stromMax()}` : S.strom >= stromMax() - 0.5 ? (kand('batteribank') ? '🔋 Batteriet är fullt – en batteribank lagrar mer' : '🔋 Batteriet är fullt') : `✋ Klicka och håll – trampa · ⚡ ${Math.floor(S.strom)}/${stromMax()}`, aktivera: () => {} });
+interaktor.registrera(cykel, { text: () => !kanNu('trampa').ja ? `🚲 Cykeln · ⚡ ${Math.floor(S.strom)}/${stromMax()}` : kTrampaNu() ? `🚲 Cykeln · ⚡ ${Math.floor(S.strom)}/${stromMax()}` : S.strom >= stromMax() - 0.5 ? (kand('batteribank') ? '🔋 Batteriet är fullt – en batteribank lagrar mer' : '🔋 Batteriet är fullt') : `✋ ${sitterPa('cykel') ? 'Trampar – klick för att resa dig' : 'Klicka – sätt dig och trampa'} · ⚡ ${Math.floor(S.strom)}/${stromMax()}`, aktivera: () => {} });
 interaktor.registrera(marknad, {
   text: () => aliOppen() ? 'Gå fram till Alis disk – köp och sälj' : '🔒 Alis marknad har stängt (öppnar 08:00) – gå hem och sov',
   aktivera: () => { if (aliOppen()) { aliSagt = ''; oppnaMarknad(); } else { const t = valjOsagd(ALI_STANGT, 'ali'); ljud.fel(); if (t) prata('ali', t); regi.info(`🧔🏽 Ali (bakom luckan): ”${t}”`, 'fel'); } },
@@ -7127,7 +7172,7 @@ function kopDirekt(id) {
 const UPPLAS_FLASK = Object.fromEntries(Object.entries(B.FLASK_KEDJA).flatMap(([k, l]) => l.map((id) => [id, k])));
 const flaskS = () => { const f = S.fh || (S.fh = {}); f.sek ||= {}; f.sedan ||= {}; f.dag ||= {}; f.upp ||= []; f.vantat ||= {}; return f; };
 flaskS();
-const upplast = (id) => !UPPLAS_FLASK[id] || flaskS().upp.includes(id) || (id === 'kruka' && (!!S.krukaErbjuden || S.ritningar.includes('recept:kruka')));
+const upplast = (id) => !UPPLAS_FLASK[id] || storyUpplast(id) || flaskS().upp.includes(id) || (id === 'kruka' && (!!S.krukaErbjuden || S.ritningar.includes('recept:kruka')));
 // förutsättningar: kedjan går i ordning, och vissa saker kräver att det förra finns
 const FLASK_FORE = {
   rullstall: () => S.dag >= 2,   /* A-085 rad 23 p.6: rullstället (tanken + Alis sms) hör till dag 2 */
@@ -7229,6 +7274,8 @@ function flaskTick(dt, trampar, vevar) {
   for (const k of ['strom', 'skrivare', 'mala', 'trampa']) { const sed = Math.min(S.fh.sedan[k] || 0, S.fh.dag[S.dag]?.[k] || 0),   /* FAST räknas inom dagen: över 4 min stopp i dag utan att något nytt kommer */ nastaId = B.FLASK_KEDJA[k].find((x) => !S.fh.upp.includes(x)), nastaMi = nastaId ? STEG.findIndex((x) => x.las === nastaId) : -1, vantarStory = !!nastaId && ((FLASK_FORE[nastaId] && !FLASK_FORE[nastaId]()) || (nastaMi >= 0 && S.steg < nastaMi)), steg = nastaId && !vantarStory ? Math.floor(sed / 240) : 0;   /* A-090 p.7: väntar nästa sak på sin plats i storyn är det ingen flaskhals som fastnat – dagens mål är något annat */   /* kedjan slut: svaret är fler av samma maskin, inget nytt att låsa upp */ if (steg >= 1 && steg > (S.fh.fastLogg?.[k] || 0)) { S.fh.fastLogg = { ...(S.fh.fastLogg || {}), [k]: steg }; regelvakt.brott('FAST', `${k} har tagit stopp ${Math.round(sed)} s utan att något låses upp (nästa: ${B.FLASK_KEDJA[k].find((x) => !S.fh.upp.includes(x)) || 'inget kvar'})`); } }
   if ((flaskSpar += dt) > 5) { flaskSpar = 0; sparaSnart(); }
 }
+/* inkorg 64 p.7: en maskin vars köp-steg i story.js inte har en flaskhals (las) är upplåst när stegets kraver har hänt – samma regel som Alis hylla */
+function storyUpplast(id) { try { const st = STORY_STEG.find((s) => s.handling === 'kop' && s.sak === 'byggsats:' + id); return !!st && !st.las && kraverUppfyllt(st); } catch { return false; } }
 function lasUpp(id, k, reserv = false) {
   if (flaskS().upp.includes(id)) return;
   S.fh.upp.push(id); const sek = Math.round(S.fh.sedan[k] || 0); S.fh.sedan[k] = 0; if (S.fh.fastLogg) S.fh.fastLogg[k] = 0; sparaSnart();
@@ -8547,6 +8594,7 @@ const resurserHtml = () => resurs('mynt', `${krT(S.mynt)} kr`) + resurs('rulle',
 // punkt BH: det man köper hos Ali är en ritning – blått papper med vita linjer. I skrivarmenyn syns ritningen tills saken printats en gång.
 const bpWrap = (html) => `<span class="ph-bp">${html}</span>`;
 const printatEn = (k) => (S.printatEn || []).includes(k) || (S.printTot?.[k] || 0) > 0;
+paHandelse('printKlar', () => { if (sitterPa('cykel')) resUpp('printen är klar'); });   /* inkorg 64 p.1 */
 paHandelse('printKlar', ({ sak }) => { if (!(S.printatEn || []).includes(sak)) S.printatEn = [...(S.printatEn || []), sak]; });
 { const st = document.createElement('style'); st.textContent = `.ph-bp{display:inline-grid;place-items:center;border-radius:6px;background:#1f5fae;background-image:linear-gradient(rgba(255,255,255,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.13) 1px,transparent 1px);background-size:9px 9px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
 .ph-bp img{filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
@@ -8871,13 +8919,21 @@ function saljTillAli(t, n) {
 const ALI_PB_KOM = () => dialogText('aliPbKom');   /* inkorg 61 */
 /* A-085 rad 23 p.11: orsak före verkan – när powerbank-uppgiften är nästa säger Ali till först (sms), sedan kommer tanken och uppgiften */
 let pbT0 = 0; const PB_VANTA_MS = 2000;   /* inkorg 46 p.2: målrutan tom högst 4 s – sms:et är ett svar på försäljningen och kommer direkt */
-let svarT0 = { steg: -1, t: 0 };
+let svarT0 = { steg: -1, t: 0 }, orsakVantat = { steg: -1, ms: 0 };
 function pbVantar() {   /* inkorg 61: uppgiften väntar (högst 8 s) på det stegets start svarar på – Alis sms före "Ali har något åt mig", grip-sms:et före "Ali har en ritning" */
-  const p = aktivtStoryStag(); if (!p?.startSvarPa || harHant(p.startSvarPa)) return false;
+  const p = aktivtStoryStag(); if (!p?.startSvarPa || harHant(p.startSvarPa)) { if (svarT0.steg === S.steg && !svarT0.loggad) { svarT0.loggad = true; orsakVantat = { steg: S.steg, ms: performance.now() - svarT0.t }; textLogg('orsak-väntan', '', p?.startSvarPa || '', `${(orsakVantat.ms / 1000).toFixed(1)} s`); } return false; }   /* inkorg 64: tiden målet väntade på sin orsak (Alis sms) räknas inte som TOM RUTA */
+  { const st = STEG[S.steg]; if (st?.las && !upplast(st.las)) return false; }   /* flaskhalsen håller steget – rutan visar vad man gör under tiden, och orsaken kommer först när den släpper */
   if (p.id === 'powerbank' && (S.powerbankGiven || S.powerbank)) return false;
+  if (p.id === 'powerbank' && !S.pbSms && aliNaraNu()) { giPowerbankDirekt(); return false; }   /* inkorg 64 p.4: står du redan vid Ali kommer inget sms – han ger dig powerbanken direkt */
   if (p.id === 'powerbank' && !S.pbSms) { S.pbSms = true; sparaSnart(); paket([{ sms: ['ali', ALI_PB_KOM()] }, { ge: () => { S.pbSmsVisad = true; sparaSnart(); } }], { vikt: 'STORY', svar: true, varfor: 'rad 23 p.11: Ali före powerbank-uppgiften' }); }
   if (svarT0.steg !== S.steg) svarT0 = { steg: S.steg, t: performance.now() };
-  return performance.now() - svarT0.t <= PB_VANTA_MS;
+  return performance.now() - svarT0.t <= 12000;   /* inkorg 64 p.4/7: målet kommer efter sin orsak (Alis sms), inte före – högst 12 s */   /* inkorg 64 p.4: "Gå till Ali" kommer efter Alis sms, inte före (högst 20 s) */
+}
+const aliNaraNu = () => !ui.butiksOverlay.hidden || Math.hypot(spelare.pos.x - ALI.x, spelare.pos.z - ALI.z) < 3.5;
+function giPowerbankDirekt() {
+  S.pbSms = true; S.pbSmsVisad = true; S.powerbankGiven = true; sparaSnart();
+  aliRepl = dialogReplik('aliPowerbank'); aliReplGava = 'byggsats:powerbank'; const i = laggTill('byggsats:powerbank'); if (typeof i === 'number') byt(i);
+  textLogg('paket', 'ali', 'ali → ge', 'inkorg 64 p.4: du stod redan vid Ali – inget sms'); try { oppnaMarknad(); } catch (e) { console.warn(e); }
 }
 
 // ---------- Säljlådan (punkt BF, dag 7): lägg i det du vill sälja – Ali hämtar varje morgon och betalar ----------
@@ -9053,6 +9109,8 @@ function kopNyckel(st) {   // vilket köp hos Ali ett mål pekar på (för dagar
   return null;
 }
 function agerKop(k) { const id = k.replace(/^[a-z]+:/, ''); if (k === 'sang') return S.ritningar.includes('sang') || harSang(); if (k.startsWith('r:')) return harRecept(id) || S.ritningar.includes('recept:' + id); return S.ritningar.includes(id) || arKlar(id) || !!antalInv('byggsats:' + id); }
+/* inkorg 64 p.3: ett stegs kraver är uppfyllda när varje sak det kräver har getts av ett klart steg */
+function kraverUppfyllt(st) { return (st?.kraver || []).every((tok) => { const g = STORY_STEG.filter((x) => (x.ger || []).includes(tok)); return !g.length || g.some((x) => storyStegKlart(x.id)); }); }
 function aliStege() {
   const i = KOP_STEGE.findIndex((x) => !storyStegKlart(x.id)), ut = i < 0 ? [] : KOP_STEGE.slice(i, i + 2).filter((x) => !agerKop(x.key));
   for (let j = S.steg; ut.length < 2 && j < STEG.length; j++) { const k = kopNyckel(STEG[j]); if (k && !ut.some((x) => x.key === k) && !agerKop(k)) { const id = k.replace(/^[a-z]+:/, ''); ut.push({ key: k, namn: String((k.startsWith('m:') ? MASKINER[id]?.namn : VAROR[id]?.namn) || '').toLowerCase(), lasText: 'Kommer längre fram' }); } }
@@ -9141,9 +9199,12 @@ function aliKopLista() {
   // punkt AL: dag 1 visar Ali bara stegen i dagens mål – rullställ, dörr och resten kommer från dag 2
   if (S.dag <= 1) for (let i = L.length - 1; i >= 0; i--) if (!DAG1_ALI.includes(L[i].key) && !tvinga.has(L[i].key)) L.splice(i, 1);
   { const [nu, sedan] = stege, kNu = nu && L.find((x) => x.key === nu.key), kSedan = sedan && L.find((x) => x.key === sedan.key);
-    if (kNu?.tvingad || (kNu && nu.key === 'sang' && !((S.stat.krukaSald || 0) >= 1 || S.dag > 1))) kNu.las = nu.lasText || 'Snart';
+    /* inkorg 64 p.3: hyllans skäl läser samma kraver som stegen i story.js – ett köp är låst bara när det steget kräver inte har hänt än (inte på flaskhalsens egna villkor) */
+    const last = (x, k) => { const st = x?.id && STORY_STEG.find((s) => s.id === x.id); return st?.kraver?.length ? !kraverUppfyllt(st) : (k?.tvingad || x?.key === 'sang' && !((S.stat.krukaSald || 0) >= 1 || S.dag > 1)); };
+    if (kNu && last(nu, kNu)) kNu.las = nu.lasText || 'Snart';
     if (kSedan && kNu) kSedan.las = `Låst – köp ${nu.namn || 'det andra'} först`;
-    else if (kSedan && !kNu && (kSedan.tvingad || sedan.key === 'sang')) kSedan.las = sedan.lasText || 'Snart'; }
+    else if (kSedan && !kNu && last(sedan, kSedan)) kSedan.las = sedan.lasText || 'Snart';
+    for (const [x, k] of [[nu, kNu], [sedan, kSedan]]) { const st = x?.id && STORY_STEG.find((s) => s.id === x.id); if (k?.las && st?.lasText && st.kraver?.length && k.las === st.lasText && kraverUppfyllt(st)) regelvakt.brott('SEKVENSFEL', `Alis hylla säger "${st.lasText}" fast ${st.id} redan kan köpas (kraver ${st.kraver.join(', ')})`); } }
   for (const x of L) { Object.assign(x, aliDuFar(x)); if (/^(m|r|g):|^sang$/.test(x.key)) { const typ = x.key === 'sang' ? 'sang' : x.key.startsWith('m:') ? 'byggsats:' + x.key.slice(2) : x.key.slice(2); x.bild = bpImg(typ); } }   /* EM 37: ritningar i butiken har alltid ritningspapper */   // punkt BH: ritningar som blått papper
   const { lista, dolda } = aliSalla(L); aliDolda = dolda;
   if (stege.length >= 2 && lista.filter((x) => x.key !== 'filament').length < 2) regelvakt.brott('ALI TOM HYLLA', `hyllan visar ${lista.length} köp – nästa köp och köpet efter ska alltid synas (${stege.map((x) => x.key).join(', ')})`);   /* Jesper 22:15 */
@@ -9757,7 +9818,7 @@ const ui = new FpUI({
   touch: false, promptTangent: '',   /* A-076 tillägg 11:45: E är ryggsäcken – kontrollhjälpen lär ut klicket */
   titel: logo({ bredd: 440 }),
   text: '<p>Allt du äger är ett gammalt skjul och storebrors 3D-skrivare.</p><p>Tomten är full av skräp. Men skräp är plast, och plast är filament.</p><p class="br-slogan">Printa dig ett hem.</p>',
-  hjalp: 'WASD gå · Mus titta · Klick använd · Klicka och håll = veva/gripa · B dagbok & sparplatser<br>Hjulet / 1–8 byt sak · H tomhänt · Shift+Q släpp allt · V röster · I dina saker · B dagbok · M meddelanden · K sparplatser · G flytta gamingboden · R vrid · Q släpp skräp · Shift spring',
+  hjalp: 'WASD gå · Mus titta · Klick använd · Klick på cykeln/veven = trampa/veva tills det är klart · Klicka och håll = gripa · B dagbok & sparplatser<br>Hjulet / 1–8 byt sak · H tomhänt · Shift+Q släpp allt · V röster · I dina saker · B dagbok · M meddelanden · K sparplatser · G flytta gamingboden · R vrid · Q släpp skräp · Shift spring',
   spelare,
   pausaInte: () => sover || julPagar || S.resa === 'pagar' || !!document.querySelector('.ph-kap, .ph-kapkort, .ph-jul, .ph-resa') || !medEl2.hidden || dagbokLas || performance.now() - medStangdTid < 1500,   // B1/B49: inte heller kring lappar och dagboken. B1: ingen pausmeny i scener där muslåset släpps med flit
   onAnvand: (nere) => {
@@ -9766,8 +9827,9 @@ const ui = new FpUI({
     gripHaller = nere && gripVerktyg.visible;
     if (!nere) return;
     try { if (S.speltest?.pa) { const h = interaktor.hovrad; if (!h) stLogg('klick', { pa: null, gick: false, varfor: 'inget i siktet', verktyg: valdTyp() || 'hand' }); else if (h === cykel || h === vevYta) stLogg('klick', { pa: String(interaktor.text || '').slice(0, 80), verktyg: valdTyp() || 'hand', hall: true }); } } catch {}   /* inkorg 53: klicket med musen – det som träffar något loggas i aktivera */
-    gripKlick();
-    if ((interaktor.hovrad === cykel || interaktor.hovrad === vevYta) && !monteraPa(interaktor.hovrad)) return;   /* AKUT 09:30: ett klick på cykeln med något att montera monterar (powerbanken) – annars är cykeln bara att hålla in och trampa */
+    gripKlick(); klickSvarKoll();
+    if (sitter && !skrivare.some((sk) => sk.mesh === interaktor.hovrad || sk.mesh?.children?.includes?.(interaktor.hovrad))) { resUpp('klick'); return; }   /* inkorg 64 p.1: klick igen = res dig (utom på skrivaren, där du kan välja en ny print) */
+    if ((interaktor.hovrad === cykel || interaktor.hovrad === vevYta) && !monteraPa(interaktor.hovrad)) { sattUpp(interaktor.hovrad === cykel ? 'cykel' : 'vev'); return; }   /* AKUT 09:30 + inkorg 64 p.1: ett klick sätter dig på cykeln (eller vid veven) */   /* AKUT 09:30: ett klick på cykeln med något att montera monterar (powerbanken) – annars är cykeln bara att hålla in och trampa */
     if (niva() === MAGNET_NIVA && (!interaktor.hovrad || interaktor.hovrad.userData.typ === 'skrap')) return;
     if (bodSpoke.visible) { byggBodHar(); return; }
     if (VAROR[valdTyp()]?.tapet != null) { tapetsera(valdTyp()); return; }
@@ -9895,7 +9957,7 @@ function menyInstallningar(el) {
     kropp.querySelectorAll('[data-bryt]').forEach((k) => { k.onclick = () => { if (k.dataset.bryt === 'dagbok') { S.rost = S.rost === false; if (S.rost && (!S.rostLage || S.rostLage === 'av')) S.rostLage = 'rost'; } else S.lasUppg = S.lasUppg === false; sparaSnart(); menyInstallningar(el); }; });
     kropp.querySelectorAll('[data-talfart]').forEach((k) => { k.onclick = () => { satTalFart(+k.dataset.talfart); menyInstallningar(el); }; });
   } else {
-    const K = [['hand', 'W A S D', 'Gå'], ['hand', 'Mus', 'Titta'], ['hand', 'Klick', 'Ta upp, använd, ställ ner'], ['hand', 'Klicka och håll', 'Veva, gripa, trampa'], ['hand', 'Hjulet / 1–9', 'Byt sak i handen'], ['hand', 'R', 'Vrid det du ställer ut'], ['hand', 'E', 'Ryggsäcken och kistan'], ['hand', 'Tab', 'Sms och dagboken'], ['hand', 'H', 'Vad ska jag göra nu?'], ['hand', 'Shift', 'Spring'], ['hand', 'Mellanslag', 'Hoppa'], ['hand', 'Q / Shift + Q', 'Släpp skräp / släpp allt'], ['hand', 'F8', 'Rapportera fel'], ['hand', 'Esc', 'Menyn']];
+    const K = [['hand', 'W A S D', 'Gå'], ['hand', 'Mus', 'Titta'], ['hand', 'Klick', 'Ta upp, använd, ställ ner'], ['hand', 'Klick', 'Trampa, veva (klick igen för att sluta)'], ['hand', 'Klicka och håll', 'Gripa'], ['hand', 'Hjulet / 1–9', 'Byt sak i handen'], ['hand', 'R', 'Vrid det du ställer ut'], ['hand', 'E', 'Ryggsäcken och kistan'], ['hand', 'Tab', 'Sms och dagboken'], ['hand', 'H', 'Vad ska jag göra nu?'], ['hand', 'Shift', 'Spring'], ['hand', 'Mellanslag', 'Hoppa'], ['hand', 'Q / Shift + Q', 'Släpp skräp / släpp allt'], ['hand', 'F8', 'Rapportera fel'], ['hand', 'Esc', 'Menyn']];
     kropp.innerHTML = flikar + `<div class="br3-tangenter">${K.map(([, t, v]) => `<kbd>${t}</kbd><span>${v}</span>`).join('')}</div><label class="br-vrid" style="display:flex;gap:8px;align-items:center;margin-top:12px;cursor:pointer"><input type="checkbox" data-vrid ${vridPa ? 'checked' : ''}> Vrid kameran mot nya mål</label>`;
     kropp.querySelector('[data-vrid]').onchange = (e) => { vridPa = e.target.checked; try { localStorage.setItem(VRID_NYCKEL, vridPa ? 'pa' : 'av'); } catch {} };
   }
@@ -11094,6 +11156,7 @@ function laddaLjud() {
 addEventListener('pointerdown', laddaLjud, { once: true, capture: true }); addEventListener('keydown', laddaLjud, { once: true, capture: true });
 const senastLjud = {};
 function spelaLjud(n, vol = 1, rate = null) {
+  svarRaknare++;
   if (n === 'nytt-mal' && !tidtipp) try { regelvakt.brott('PLING UTAN HANDLING', 'nytt-mal utanför tidtippen'); } catch {}   /* inkorg 56 (A-111): korta ljud bara som svar på det du gör */
   const c = ljud.vakna(), b = ljudBuf[n]; if (!c || !b || !ljud.pa) return false;
   const nu = performance.now(); if (rate == null && nu - (senastLjud[n] || 0) < 60) return true; senastLjud[n] = nu;   // inte samma ljud flera gånger samma ögonblick
@@ -11572,7 +11635,7 @@ function korPratKo() {
 function stegUppmaningar() {
   const ut = new Set(), p = aktivtStoryStag(); if (!p) return ut;
   const add = (v) => { const t = varde(v, S, storyHjalp); if (t) ut.add(neutralt(String(t))); };
-  add(p.start); add(p.pamin); for (const l of Object.values(p.lagen || {})) add(l.tanke); for (const m of p.medan || []) add(m.tanke);
+  add(p.start); add(p.pamin); add(p.borta); for (const l of Object.values(p.lagen || {})) add(l.tanke); for (const m of p.medan || []) add(m.tanke);
   return ut;
 }
 const arUppmaning = (vem, text) => vem === 'du' && !!text && (() => { try { return stegUppmaningar().has(neutralt(String(text))); } catch { return false; } })();
@@ -11951,7 +12014,9 @@ function uppdatera(dt) {
     // trampa
     if (trampTest > 0) trampTest -= dt;
     { const paCykel = interaktor.hovrad === cykel; spelare.hoppKraft = paCykel ? 0 : 5; }   /* A-083: tangenttipset sköts av kontrollhjälpen */   /* DT: mellanslag trampar när man tittar på cykeln (inget hopp där) */
-    const trampar = ((anvandNere || spelare.tangenter.Space) && interaktor.hovrad === cykel) || (trampTest > 0 && cykel.visible);   // trampTest: testkrok
+    if (sitter) { const t = spelare.tangenter; if (t.KeyW || t.KeyA || t.KeyS || t.KeyD || t.ArrowUp || t.ArrowDown || (!spelare.pilarSvanger && (t.ArrowLeft || t.ArrowRight)) || Math.hypot(spelare.pos.x - sitter.x, spelare.pos.z - sitter.z) > 0.6 || !ui.igang) resUpp('gick'); }   /* inkorg 64 p.1: går du så reser du dig */
+    const trampar = ((anvandNere || spelare.tangenter.Space) && interaktor.hovrad === cykel) || (trampTest > 0 && cykel.visible) || (sitterPa('cykel') && cykel.visible);   // trampTest: testkrok   /* inkorg 64 p.1: sitter du på cykeln trampar du */
+    cykelBortaKoll(dt, trampar);
     laddLjud(trampar && S.strom < stromMax() - 0.01);
     if (trampar && S.strom >= stromMax() - 0.01 && S.batteriKopt) {
       if (!fullVarnad) { fullVarnad = true; /* inget ljud */; regi.info(`🔋 Batteriet är fullt! (${stromMax()})`, 'guld'); }
@@ -11997,7 +12062,8 @@ function uppdatera(dt) {
     }
     // veva kvarnen
     if (vevTest > 0) vevTest -= dt;
-    const vevar = S.kvarnStar && (anvandNere && interaktor.hovrad === vevYta || vevTest > 0) && S.kvarn.tratt > 0 && !extruderFull();   // vevTest: testkrok
+    if (sitterPa('vev') && (!S.kvarnStar || !(S.kvarn.tratt > 0) || extruderFull())) resUpp('tratten är tom');   /* inkorg 64 p.1 */
+    const vevar = S.kvarnStar && (anvandNere && interaktor.hovrad === vevYta || vevTest > 0 || sitterPa('vev')) && S.kvarn.tratt > 0 && !extruderFull();   // vevTest: testkrok
     try { flaskTick(dt, trampar, vevar); } catch (e) { if (!flaskFel) { flaskFel = 1; console.warn('flask', e); } }   /* EE */
     handlingNu = trampar || vevar || spikar || hand.saker.length > 0;   /* inkorg 22: trampa, mala, spika, bära – sms och småprat väntar */
     if (anvandNere && interaktor.hovrad === vevYta && extruderFull() && !fullVarnad) { fullVarnad = true; varna('rulle'); }
@@ -16204,7 +16270,7 @@ try { ritaStorm(); } catch (e) {}
 paHandelse('morgonkortStangt', ({ dag }) => { if (dag === 2 && !S.gronJul) { S.gronJul = true; paket([{ tanke: 'Grön jul igen. Typiskt.' }], { om: 30000, vikt: 'SMÅPRAT', varfor: 'inkorg 24b p.1: grön jul' }); } });   /* EA: ingen timer – kön ger lugn start. Dag 2: kedjan börjar när bilbatteriet är köpt */
 paHandelse('malKlart', ({ id, nasta }) => {
   if (id === 'printSang' && !S.lappar.includes('start')) paket([{ lapp: 'start' }], { om: 1500 });   // B29: dagboken på kvällen dag 1
-  if (id === 'powerbank' && !S.aliStoryVisad && !S.ritningar.includes('grip')) paket([{ lapp: 'salt' }], { villkor: () => !S.ritningar.includes('grip'), varfor: 'EA #14: Alis grip-sms före gripmålet' });
+  if (id === 'powerbank' && !S.aliStoryVisad && !S.ritningar.includes('grip')) paket([{ lapp: 'salt' }, { ge: () => { S.aliStoryVisad = true; sparaSnart(); } }], { villkor: () => !S.ritningar.includes('grip'), svar: true, vikt: 'STORY', varfor: 'inkorg 64 p.7: Alis grip-sms direkt när powerbanken sitter' });
    // F1: har man redan råd hoppar kedjan direkt (A-073: efter powerbanken, när gripen är nästa mål)   // F1: har man redan råd hoppar kedjan direkt
   const st = STEG[S.steg - 1]; const t = st ? (typeof st.text === 'function' ? st.text() : st.text) : '';
   /* inkorg 58 omgång 3: kapitel 1–2 kvitteras i story.js */
@@ -17381,14 +17447,14 @@ const KONTROLL_HJALP = [
   { id: 'stall', k: 'Klick', kedja: true, get t() { return spoke.grupp?.visible ? 'Ställ ner · R vrid' : 'Ställ ner'; }, nar: () => { const k = kedjaNu(); return k?.atgard === 'stallNer' ? k.ja : !!(spoke.grupp?.visible && spoke.ok); }, klar: () => (kStat.stallt || 0) > 0 },   /* A-076 tillägg 14:00: bara när saken är vald och siktet på platsen */
   { id: 'spika', k: 'Klick', kedja: true, t: 'Klicka för att spika', nar: () => !S.skyltUppe && kedjaNu()?.sak === 'hammare' && kedjaNu().ja, klar: () => !!S.skyltUppe },
   { id: 'vrid', k: 'R', t: 'Vrid innan du ställer ner', nar: () => kHjalpKlar('stall') && !!spoke.grupp?.visible && (!spoke.ok || (kStat.stallt || 0) >= 2), klar: () => kStat.r > 0 },
-  { id: 'trampa', k: 'Klicka och håll', t: 'Trampa cykeln (eller håll Mellanslag)', nar: () => { const p = aktivtStoryStag(); return p ? ['trampa', 'printa'].includes(p.handling) && !!S.cykelOmbyggd && skrivare.some((x) => x.jobb) : !!S.cykelOmbyggd && skrivare.some((x) => x.jobb); },   /* inkorg 58: handlingen i stegets post */   /* A-076 tillägg 13:20: först när en modell är vald */ klar: () => (S.stat.trampat || 0) > 1 },
-  { id: 'veva', k: 'Klicka och håll', t: 'Veva kvarnen', nar: () => { const p = aktivtStoryStag(); return p ? p.handling === 'veva' && lage('kvarn') === 'stalld' && !S.kvarn?.motor : !!S.kvarnStar && !S.kvarn?.motor; },   /* inkorg 58 (rad 57 p.1): bara när steget är att veva och kvarnen står */ klar: () => (S.stat.malt || 0) > 0 || !!S.kvarn?.motor },
+  { id: 'trampa', k: 'Klick', t: 'Sätt dig och trampa (klick igen eller gå för att resa dig)', nar: () => { const p = aktivtStoryStag(); return p ? ['trampa', 'printa'].includes(p.handling) && !!S.cykelOmbyggd && skrivare.some((x) => x.jobb) : !!S.cykelOmbyggd && skrivare.some((x) => x.jobb); },   /* inkorg 58: handlingen i stegets post */   /* A-076 tillägg 13:20: först när en modell är vald */ klar: () => (S.stat.trampat || 0) > 1 },
+  { id: 'veva', k: 'Klick', t: 'Veva kvarnen tills tratten är tom', nar: () => { const p = aktivtStoryStag(); return p ? p.handling === 'veva' && lage('kvarn') === 'stalld' && !S.kvarn?.motor : !!S.kvarnStar && !S.kvarn?.motor; },   /* inkorg 58 (rad 57 p.1): bara när steget är att veva och kvarnen står */ klar: () => (S.stat.malt || 0) > 0 || !!S.kvarn?.motor },
   { id: 'e', k: 'E', t: 'Ryggsäcken och kistan', tillDag: 3, nar: () => S.hotbar.slice(1).filter(Boolean).length >= 3, klar: () => kStat.e >= 2 },   /* inkorg 49 p.3: lärd efter två tryck, tre visningar eller dag 3 */
   { id: 'eFull', k: 'E', t: 'Ryggsäcken och kistan – raden är full', upprepa: true, maxMs: 8000, nar: () => S.hotbar.slice(1).every(Boolean) && performance.now() - (radFullT || 0) < 4000, klar: () => kStat.e > (kStat.eVidFull ?? 1e9) },   /* sedan bara när den behövs: raden är full */
   { id: 'tab', k: 'Tab', t: 'Dina sms och dagboken', nar: () => (S.sms?.length || 0) > 0, klar: () => kStat.tab > 0, maxMs: 8000 },   /* inkorg 23 p.10: när första sms:et kommer – borta efter Tab eller 8 s */
   /* inkorg 46 p.6: hur man gör står här, inte i info-rutorna (som säger vad i jag-form) */
   { id: 'ata', k: 'Q', t: 'Ät det du håller i', nar: () => { try { return !!MAT_VARDE[valdTyp()] || valdTyp() === 'korv'; } catch { return false; } }, klar: () => (kStat.q || 0) > 0, maxMs: 10000 },
-  { id: 'montera', k: 'Klick', t: 'Klicka för att montera', nar: () => { try { const m = MONTERA[valdTyp()]; return !!m && !!interaktor.hovrad && (m.mal?.() || []).includes(interaktor.hovrad); } catch { return false; } }, klar: () => (S.stat?.monterat || 0) >= 2, upprepa: true },
+  { id: 'montera', k: 'Klick', t: 'Klicka för att montera', nar: () => { try { const m = MONTERA[valdTyp()]; return !!m && !m.hinder?.() && !!interaktor.hovrad && (m.mal?.() || []).includes(interaktor.hovrad); } catch { return false; } }, klar: () => (S.stat?.monterat || 0) >= 2, upprepa: true },
   { id: 'tapa', k: 'Klick', t: 'Klicka för att ta på dig den', nar: () => { try { return !!TA_PA[valdTyp()]; } catch { return false; } }, klar: () => false, upprepa: true },
   { id: 'h', k: 'H', t: 'Tryck H om du inte vet vad du ska göra', nar: () => hjalpBehov, klar: () => kStat.h > 0, maxMs: 10000 },   /* ett råd, inte en kontroll som behövs – går bort efter 10 s */
 ];
@@ -17397,6 +17463,8 @@ const KONTROLL_HJALP = [
 const HUR_RE = /\s*(?:\((?:R vrid|R vrider|klicka[^)]*)\)|·\s*R vrider|·\s*klicka[^·]*)/gi;
 function hjalpUtanHur(t) { if (typeof t !== 'string' || !t) return t; try { return kHjalpEl && !kHjalpEl.hidden ? t.replace(HUR_RE, '').trim() : t; } catch { return t; } }
 var radFullT = 0; const KONTROLL_STAR_MS = 12000, KONTROLL_MAX_VISNINGAR = 3, KONTROLL_PAUS_MS = 45000; let kHjalpPaus = 0;
+/* inkorg 64: KLICK UTAN SVAR – kontrollhjälpen säger "Klick" men klicket gör ingenting (ingen händelse, inget ljud, ingen text) */
+function klickSvarKoll() { const h = kHjalpAktiv; if (!h || !kHjalpEl || !/^Klick/.test(String(h.k || ''))) return; const n0 = svarRaknare, t = String(typeof h.t === 'function' ? '' : h.t || h.id); setTimeout(() => { if (svarRaknare === n0) regelvakt.brott('KLICK UTAN SVAR', `kontrollhjälpen "${h.k} · ${t}" – klicket gjorde ingenting`); }, 900); }
 let hjalpBehov = false, kHjalpAktiv = null, kHjalpEl = null, klickFelSedan = 0; const hjalpIKo = { sedan: 0, text: '' };
 function kHjalpKlar(id) { return (S.kontrollKlar || []).includes(id); }
 function kHjalpMarkera(id) { S.kontrollKlar = [...new Set([...(S.kontrollKlar || []), id])]; sparaSnart(); }
@@ -17691,7 +17759,7 @@ async function stHamta() {
 }
 { const st = document.createElement('style'); st.textContent = '.ph-st-prick{position:fixed;top:8px;right:8px;width:12px;height:12px;border-radius:50%;background:#e23b3b;box-shadow:0 0 0 2px rgba(255,255,255,.7),0 0 8px #e23b3b;z-index:99990;pointer-events:none;animation:phStPuls 2s ease-in-out infinite}@keyframes phStPuls{50%{opacity:.45}}'; document.head.appendChild(st); }
 setTimeout(() => { stPrick(); if (stPa()) stLogg('start', { spelare: S.spelarNamn || '', bygg: window.__bygg || '', skarm: `${innerWidth}×${innerHeight}`, fortsatter: true }); }, 1500);
-window.__printahem = { varldsBubbla, malPunkt, ALI, speltest: { pa: (v) => stSattPa(v), export: async () => { const r = await stExport(); const b = new Uint8Array(await r.blob.arrayBuffer()); let s = ''; for (let i = 0; i < b.length; i += 32768) s += String.fromCharCode(...b.subarray(i, i + 32768)); return { namn: r.namn, antal: r.antal, bilder: r.bilder, b64: btoa(s) }; }, rensa: () => stRensa(), flush: () => stFlush() }, dialogLogg: () => DIALOGLOGG.slice(), DIALOG, anvandSkrivare, BEKRAFTA, bekrafta: (o, p) => bekrafta(o, p), myntRegn: (n) => myntRegn(n), ritaHotbar: () => ritaHotbar(), storyLage: (t) => lage(t), aktivtStoryStag: () => aktivtStoryStag()?.id || null, hudOverRuta, vevYtaObj: () => vevYta, adressSkyltObj: () => adressSkylt, byggSkylt: (v) => byggSkylt(v), enVara, smaNamn, bojTal, nyhetGrans, verktygFor: (o) => verktygFor(o), STEGLISTA: () => STEG, uppdateraMalPil: () => uppdateraMalPil(), malPilNu: () => malPilNu(), malPilObj: () => malPil, vagCykelObj: () => vagCykel, TIPP, julKrans, skrivareLista: () => skrivare, tippSvavarKoll, interaktorObj: () => interaktor, sattTippStegNu: (n) => { S.tippSteg = n; ritaTippHog(1, true); }, scen, sov, visaNej, skyltKoll, aliSkylt, gruvSkylt: () => gruvSkylt, oppnaDagbok, dagbokKort, dagbokMatning: () => ({ visad: dagbokVisad.slice(), borjat: handelseLogg.filter((h) => h.namn === "dagenBorjar").map((h) => h.t) }), kedjaNu, startYta, gammal, placera, stallNu, pekVinklar, efterslapande, hand, visaIntroDirekt: () => visaIntro(() => {}, { direkt: true }), matarSlangNu: () => matarSlang, get startKabel() { return startKabel; }, kanNu, oppnaPrintMeny, oppnaSaljlada, renderer, rendera: () => { try { ritaVarldsBubblor(); } catch {} renderer.render(scen, kamera); }, sattHjalpBehov: () => { hjalpBehov = true; }, hjalpNu, ledtradFor, KONTROLL_HJALP, kStat, kHjalpAktiv: () => kHjalpAktiv?.id || null, malPunkt: () => malPunkt(), startRuta: () => startRuta(ui.o.titel, ui.o.text, 'Fortsätt'), felKnapp, felAlla, felRensa, felExport: async () => { const z = await felExport(); const b = new Uint8Array(await z.arrayBuffer()); let t = ''; for (let i = 0; i < b.length; i += 8192) t += String.fromCharCode(...b.subarray(i, i + 8192)); return btoa(t); }, regiLogg: () => REGI_LOGG.slice(), lasTid, regi, tittaMot, regiTestStegText: (k) => stegText(STEG[k]) || '', regiStegFakta: (i) => { const st = STEG[i]; const b = typeof st?.bild === 'function' ? (() => { try { return st.bild(); } catch { return null; } })() : st?.bild; return { sov: !!st?.sov, id: st?.id || '', text: stegText(st) || '', bild: b && ikonBild(b) ? b : null, delar: [] }; }, regiTestSteg: (i) => { S.steg = i; S.skyltUppe = true; malVisasSteg = i; malBockText = ''; const st = STEG[i]; const b = typeof st?.bild === 'function' ? (() => { try { return st.bild(); } catch { return null; } })() : st?.bild; return { sov: !!st?.sov, id: st?.id || '', text: stegText(st) || '', bild: b && ikonBild(b) ? b : null, delar: (() => { try { return (malDelar() || []).map(([t]) => t); } catch { return []; } })() }; },   /* A-080 */ saljTillAli: (t, n) => saljTillAli(t, n), saljPris: (t) => saljPris(t), aliReplNu: () => aliRepl, krT, kollaPrestationer: () => kollaPrestationer(), B, gruvTillGrotta: () => { gruvFard = { t: GRUV_SLUT_T, ner: true }; gruvLage = 'fard'; gruvFramme(); return gruvLage; }, gruvFart: (t, n) => gruvFart(t, n), gruvKameraVid: (t, ner = true) => { const g = gruvFard; gruvFard = { t, ner }; gruvPlacera(gruvVagn, t, ner ? 1 : -1); gruvKamera(); gruvFard = g; }, gruvAk: (ner) => gruvAk(ner), gruvLage: () => gruvLage, gruvFard: () => gruvFard, gruvScen, GRUV_BANA, GRUV_LANGD, GRUV_GC, GRUV_SLUT_T, gruvVagn, bergYta, bengtHus, bengtTradgard, slyKlumpar, sagaSly: (kl) => sagaSly(kl), solparkStor: () => solparkStor(), uppdateraRitning: (dt) => uppdateraRitning(dt), SVACKA, GRUVA, SVACKA_VAG, svackaHojd, svackaSparr, BOMMAR, grop, VASK, stegText: () => stegText(STEG[S.steg]), oppnaMarknad: () => oppnaMarknad(), ritningNu: () => ritning, fastIHanden, konturMal, genStar, GEN_PLATS, CYKEL_RUTA, cykelObj: () => cykel, handelse, hemRitningKoll, hemRitningBild, spelBild, stoppRutor: () => stoppRutor, kameraObj: () => kamera, sangSpoke, kvarnMark, tippHojd, markY, sattTippSteg: (n, snap = true) => { S.tippSteg = n; ritaTippHog(0.05, snap); return tippStegNu; }, tippStegNu: () => tippStegNu, tippU, tippKant, TIPP_HV, husvagnG: () => husvagnG, husvagnHinder, TIPP_INB, tippMalSteg: () => tippMalSteg(), tippSparr, STORYKEDJA, STORYKEDJA_VERSION, besokTick: (dt) => uppdateraBesok(dt), froSett: (id, s) => froSett(id, s), froSpoiler, STORYLAGER, FRO_T, kameraAkSteg: (t, frys = false) => { if (!kameraAk) return false; kameraAk.start = performance.now() - t * 1000; kameraAk.frys = frys ? t : null; uppdateraKameraAk(); renderer.render(scen, kamera); return true; }, startaUtsikt: () => startaUtsikt(), tippSvep: () => tippSvep(), visaForeEfter: () => visaForeEfter(), kulle, kameraAk: () => kameraAk, kollaUtsikt: () => kollaUtsikt(), bilFas: () => bil.fas, sopbil, kollaBengt: (dt) => kollaBengt(dt), bengtFig: bengt, privatSkyltar, bengtGrav, stromBehov, solEffekt, FLASK_FORE, spelBild, spelBildCache, startBild: () => { const r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio(); kamera.aspect = 1.6; kamera.updateProjectionMatrix(); r.setPixelRatio(1); r.setSize(1280, 800, false); r.render(scen, kamera); const C = document.createElement('canvas'); C.width = 1280; C.height = 800; C.getContext('2d').drawImage(r.domElement, 0, 0); r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); kamera.aspect = gs.x / gs.y; kamera.updateProjectionMatrix(); return C.toDataURL('image/jpeg', 0.86); }, tidigFanfar, bengtLada, GROP, GRIND, grop, grusGrind, rolfKaparGrinden: () => rolfKaparGrinden(), ritaGrustag: () => ritaGrustag(), kollaBengtAvslojande: () => kollaBengtAvslojande(), BENGT_HUS, BENGT_LADA, BENGT_GRAV, bengtLadaHandlare, ritaNyckelSkylt: () => ritaNyckelSkylt(), kjelleText: (x) => kjelleText(x), HUMOR_T, boterFor: (m) => boterFor(m), boterSyns: (b) => boterSyns(b), CHEFEN, labb, LABB, BAGAR, TRADAR, aktivaTradar, kollaBagar: (t) => kollaBagar(t), kollaLabb: () => kollaLabb(), efterspelTest: () => efterspelTest(), vaskSlapp: (t) => vaskSlapp(t), ader, ritaStart: () => ritaStart(), vev3d: () => vev, dagMoment: (d) => dagMoment(d), SAKER, malKontrakt, rullLapp, THREE, TS, visaLapp: (id) => visaLapp(id), fotografera: (p) => fotografera(p), POLAROID, aliNejFor: (t) => aliNejFor(t), ROLF_LISTA: () => ROLF, STORY_SAKER, hoppaOver, prataNu, volym, rostLage: () => rostLage(), pratarNu: () => performance.now() < pratarTill, valjOsagd, sakModell, ikonModell, ikonLista, renderaIkon, kand, regelvakt, upplast, lasUpp, UPPLAS_FLASK, finns, startTorn, vevEl, MONTERA, TA_PA, taPaVald, monteraPa, notis, malSynligt: () => malVisasSteg === S.steg, kanalLage: () => ({ pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: !medEl2.hidden, butik: !ui.butiksOverlay.hidden, overlay: !ui.overlay.hidden, aktiv: kanalAktiv?.text?.slice(0, 40), fri: kanalFri - performance.now(), pratar: pratarTill - performance.now(), lugn: lugnTill - performance.now(), n: kanal.length }), paket, oppnaSaljlada, TRATT_MAX, giAliBonus, tangentTips, stromMax, byggBodTest: () => { Object.assign(bodVal, { ok: true, x: BOD.x, z: BOD.z, r: BOD.r }); byggBodHar(); return !!S.bod; }, aliVill, smsKortKlart, smsFram, smsBubbla, ritaDN, markeraAliIdag, dnRaknare, filTillg, dragTorn, tornPlats, tornRullar, slangNar, rullTornAktivera, flyttaSkrivarRullar, anvandSkrivare,
+window.__printahem = { laggTillInv: (t) => { const i = laggTill(t); if (typeof i === "number") byt(i); ritaHotbar(); return i; }, antalInvNu: (t) => antalInv(t), valdTypNu: () => valdTyp(), arPlacerbar: (t) => arPlacerbar(t), arMonteraSak: (t) => arMonteraSak(t), cykelBortaTestSteg: (id) => { cykelBortaTestSteg = id; }, cykelBortaInfo: () => { const p = aktivtStoryStag(); return { id: p?.id, borta: p?.borta, t: cykelBortaT, sagt: cykelBortaSagt, jobb: skrivare.some((sk) => sk.jobb), d: Math.hypot(spelare.pos.x - cykel.position.x, spelare.pos.z - cykel.position.z) }; }, startaJobb: (sk, v) => startaJobb(sk, v), sattUpp: (pa) => sattUpp(pa), sitterNu: () => sitter && { ...sitter }, riktaCykel: () => riktaCykel(), varldsBubbla, malPunkt, ALI, speltest: { pa: (v) => stSattPa(v), export: async () => { const r = await stExport(); const b = new Uint8Array(await r.blob.arrayBuffer()); let s = ''; for (let i = 0; i < b.length; i += 32768) s += String.fromCharCode(...b.subarray(i, i + 32768)); return { namn: r.namn, antal: r.antal, bilder: r.bilder, b64: btoa(s) }; }, rensa: () => stRensa(), flush: () => stFlush() }, dialogLogg: () => DIALOGLOGG.slice(), DIALOG, anvandSkrivare, BEKRAFTA, bekrafta: (o, p) => bekrafta(o, p), myntRegn: (n) => myntRegn(n), ritaHotbar: () => ritaHotbar(), storyLage: (t) => lage(t), aktivtStoryStag: () => aktivtStoryStag()?.id || null, hudOverRuta, vevYtaObj: () => vevYta, adressSkyltObj: () => adressSkylt, byggSkylt: (v) => byggSkylt(v), enVara, smaNamn, bojTal, nyhetGrans, verktygFor: (o) => verktygFor(o), STEGLISTA: () => STEG, uppdateraMalPil: () => uppdateraMalPil(), malPilNu: () => malPilNu(), malPilObj: () => malPil, vagCykelObj: () => vagCykel, TIPP, julKrans, skrivareLista: () => skrivare, tippSvavarKoll, interaktorObj: () => interaktor, sattTippStegNu: (n) => { S.tippSteg = n; ritaTippHog(1, true); }, scen, sov, visaNej, skyltKoll, aliSkylt, gruvSkylt: () => gruvSkylt, oppnaDagbok, dagbokKort, dagbokMatning: () => ({ visad: dagbokVisad.slice(), borjat: handelseLogg.filter((h) => h.namn === "dagenBorjar").map((h) => h.t) }), kedjaNu, startYta, gammal, placera, stallNu, pekVinklar, efterslapande, hand, visaIntroDirekt: () => visaIntro(() => {}, { direkt: true }), matarSlangNu: () => matarSlang, get startKabel() { return startKabel; }, kanNu, oppnaPrintMeny, oppnaSaljlada, renderer, rendera: () => { try { ritaVarldsBubblor(); } catch {} renderer.render(scen, kamera); }, sattHjalpBehov: () => { hjalpBehov = true; }, hjalpNu, ledtradFor, KONTROLL_HJALP, kStat, kHjalpAktiv: () => kHjalpAktiv?.id || null, malPunkt: () => malPunkt(), startRuta: () => startRuta(ui.o.titel, ui.o.text, 'Fortsätt'), felKnapp, felAlla, felRensa, felExport: async () => { const z = await felExport(); const b = new Uint8Array(await z.arrayBuffer()); let t = ''; for (let i = 0; i < b.length; i += 8192) t += String.fromCharCode(...b.subarray(i, i + 8192)); return btoa(t); }, regiLogg: () => REGI_LOGG.slice(), lasTid, regi, tittaMot, regiTestStegText: (k) => stegText(STEG[k]) || '', regiStegFakta: (i) => { const st = STEG[i]; const b = typeof st?.bild === 'function' ? (() => { try { return st.bild(); } catch { return null; } })() : st?.bild; return { sov: !!st?.sov, id: st?.id || '', text: stegText(st) || '', bild: b && ikonBild(b) ? b : null, delar: [] }; }, regiTestSteg: (i) => { S.steg = i; S.skyltUppe = true; malVisasSteg = i; malBockText = ''; const st = STEG[i]; const b = typeof st?.bild === 'function' ? (() => { try { return st.bild(); } catch { return null; } })() : st?.bild; return { sov: !!st?.sov, id: st?.id || '', text: stegText(st) || '', bild: b && ikonBild(b) ? b : null, delar: (() => { try { return (malDelar() || []).map(([t]) => t); } catch { return []; } })() }; },   /* A-080 */ saljTillAli: (t, n) => saljTillAli(t, n), saljPris: (t) => saljPris(t), aliReplNu: () => aliRepl, krT, kollaPrestationer: () => kollaPrestationer(), B, gruvTillGrotta: () => { gruvFard = { t: GRUV_SLUT_T, ner: true }; gruvLage = 'fard'; gruvFramme(); return gruvLage; }, gruvFart: (t, n) => gruvFart(t, n), gruvKameraVid: (t, ner = true) => { const g = gruvFard; gruvFard = { t, ner }; gruvPlacera(gruvVagn, t, ner ? 1 : -1); gruvKamera(); gruvFard = g; }, gruvAk: (ner) => gruvAk(ner), gruvLage: () => gruvLage, gruvFard: () => gruvFard, gruvScen, GRUV_BANA, GRUV_LANGD, GRUV_GC, GRUV_SLUT_T, gruvVagn, bergYta, bengtHus, bengtTradgard, slyKlumpar, sagaSly: (kl) => sagaSly(kl), solparkStor: () => solparkStor(), uppdateraRitning: (dt) => uppdateraRitning(dt), SVACKA, GRUVA, SVACKA_VAG, svackaHojd, svackaSparr, BOMMAR, grop, VASK, stegText: () => stegText(STEG[S.steg]), oppnaMarknad: () => oppnaMarknad(), ritningNu: () => ritning, fastIHanden, konturMal, genStar, GEN_PLATS, CYKEL_RUTA, cykelObj: () => cykel, handelse, hemRitningKoll, hemRitningBild, spelBild, stoppRutor: () => stoppRutor, kameraObj: () => kamera, sangSpoke, kvarnMark, tippHojd, markY, sattTippSteg: (n, snap = true) => { S.tippSteg = n; ritaTippHog(0.05, snap); return tippStegNu; }, tippStegNu: () => tippStegNu, tippU, tippKant, TIPP_HV, husvagnG: () => husvagnG, husvagnHinder, TIPP_INB, tippMalSteg: () => tippMalSteg(), tippSparr, STORYKEDJA, STORYKEDJA_VERSION, besokTick: (dt) => uppdateraBesok(dt), froSett: (id, s) => froSett(id, s), froSpoiler, STORYLAGER, FRO_T, kameraAkSteg: (t, frys = false) => { if (!kameraAk) return false; kameraAk.start = performance.now() - t * 1000; kameraAk.frys = frys ? t : null; uppdateraKameraAk(); renderer.render(scen, kamera); return true; }, startaUtsikt: () => startaUtsikt(), tippSvep: () => tippSvep(), visaForeEfter: () => visaForeEfter(), kulle, kameraAk: () => kameraAk, kollaUtsikt: () => kollaUtsikt(), bilFas: () => bil.fas, sopbil, kollaBengt: (dt) => kollaBengt(dt), bengtFig: bengt, privatSkyltar, bengtGrav, stromBehov, solEffekt, FLASK_FORE, spelBild, spelBildCache, startBild: () => { const r = renderer, gs = r.getSize(new THREE.Vector2()), pr = r.getPixelRatio(); kamera.aspect = 1.6; kamera.updateProjectionMatrix(); r.setPixelRatio(1); r.setSize(1280, 800, false); r.render(scen, kamera); const C = document.createElement('canvas'); C.width = 1280; C.height = 800; C.getContext('2d').drawImage(r.domElement, 0, 0); r.setPixelRatio(pr); r.setSize(gs.x, gs.y, false); kamera.aspect = gs.x / gs.y; kamera.updateProjectionMatrix(); return C.toDataURL('image/jpeg', 0.86); }, tidigFanfar, bengtLada, GROP, GRIND, grop, grusGrind, rolfKaparGrinden: () => rolfKaparGrinden(), ritaGrustag: () => ritaGrustag(), kollaBengtAvslojande: () => kollaBengtAvslojande(), BENGT_HUS, BENGT_LADA, BENGT_GRAV, bengtLadaHandlare, ritaNyckelSkylt: () => ritaNyckelSkylt(), kjelleText: (x) => kjelleText(x), HUMOR_T, boterFor: (m) => boterFor(m), boterSyns: (b) => boterSyns(b), CHEFEN, labb, LABB, BAGAR, TRADAR, aktivaTradar, kollaBagar: (t) => kollaBagar(t), kollaLabb: () => kollaLabb(), efterspelTest: () => efterspelTest(), vaskSlapp: (t) => vaskSlapp(t), ader, ritaStart: () => ritaStart(), vev3d: () => vev, dagMoment: (d) => dagMoment(d), SAKER, malKontrakt, rullLapp, THREE, TS, visaLapp: (id) => visaLapp(id), fotografera: (p) => fotografera(p), POLAROID, aliNejFor: (t) => aliNejFor(t), ROLF_LISTA: () => ROLF, STORY_SAKER, hoppaOver, prataNu, volym, rostLage: () => rostLage(), pratarNu: () => performance.now() < pratarTill, valjOsagd, sakModell, ikonModell, ikonLista, renderaIkon, kand, regelvakt, upplast, lasUpp, UPPLAS_FLASK, finns, startTorn, vevEl, MONTERA, TA_PA, taPaVald, monteraPa, notis, malSynligt: () => malVisasSteg === S.steg, kanalLage: () => ({ pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: !medEl2.hidden, butik: !ui.butiksOverlay.hidden, overlay: !ui.overlay.hidden, aktiv: kanalAktiv?.text?.slice(0, 40), fri: kanalFri - performance.now(), pratar: pratarTill - performance.now(), lugn: lugnTill - performance.now(), n: kanal.length }), paket, oppnaSaljlada, TRATT_MAX, giAliBonus, tangentTips, stromMax, byggBodTest: () => { Object.assign(bodVal, { ok: true, x: BOD.x, z: BOD.z, r: BOD.r }); byggBodHar(); return !!S.bod; }, aliVill, smsKortKlart, smsFram, smsBubbla, ritaDN, markeraAliIdag, dnRaknare, filTillg, dragTorn, tornPlats, tornRullar, slangNar, rullTornAktivera, flyttaSkrivarRullar, anvandSkrivare,
   framsteg, skrivarText, framstegKvarn,
   dbgKanal: () => ({ nu: performance.now(), pratarTill, pratarVem, kanalFri, aktiv: kanalAktiv && kanalAktiv.text, n: kanal.length, pausad, igang: ui.igang, anim: animationPagar(), scen: scenPagar(), med: medEl2.hidden, butik: ui.butiksOverlay.hidden, ov: ui.overlay.hidden }),
   textLogg: () => TEXTLOGG.slice(), pratar: () => !!kanalAktiv || kanal.length > 0 || performance.now() < pratarTill || performance.now() < kanalFri, kanal: () => ({ aktiv: kanalAktiv && { vem: kanalAktiv.vem, text: kanalAktiv.text, vikt: kanalAktiv.vikt }, ko: kanal.map((x) => ({ vem: x.vem, text: x.text, vikt: x.vikt })) }), rostMatning, renderaIkon, ikonLista, handelseLogg, ritningInfo: () => { const c = ritning ? new THREE.Box3().setFromObject(ritning).getCenter(new THREE.Vector3()) : null; return { nyckel: ritningNyckel, linjer: ritning?.children.length || 0, printar: printarFram.size, mitt: c && [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(2)] }; }, prata, elHelFig: () => [...(elHel || [])], avkodat, forladdaRepliker, introLager, uppdateraSikte, trampa: (sek) => { trampTest = sek; }, veva: (sek) => { vevTest = sek; }, siktaVagg: (v) => { vaggTest = v; }, vaggarKlara: () => vaggarKlara(), tapetKlara: () => tapetKlara(), nastaInred, prisNu, helaRullar, extruderFull, gardMal, kanLyfta, karraFull, harGava, valdKarra, BARA_SKRAP, SKRAP_RACKVIDD, utlagerKap, startPlats, sattFonster: () => { const n = fonsterLista().length; S.hem = { ...(S.hem || {}), fonster: [...fonsterLista(), { vagg: Object.keys(VAGGAR).filter((k) => !/dorr|fram/i.test(k))[n % 3] || Object.keys(VAGGAR)[0], u: 0.5 }] }; ritaFonster(); uppdateraSkjul(); sparaSnart(); }, medKo, medEl2, uppdatera, stegText: () => { const st = STEG[S.steg]; return st ? (typeof st.text === 'function' ? st.text() : st.text) : ''; }, valdTyp: () => valdTyp(), ritaStart, vagCykel, startYta, cykelStall, byggOmCykeln, SI, stegId, planNasta, fabriksplanSvg, kopDirekt, GAMMALT_SPEL, SPAR_ID, helen: helenTest, helenFig, helenBettan: bettan, helenSkjul, helenRuta, helenRutaYta, pratHelen, geHelen, helenNatt, helenMorgon, helenVillkor, HELEN, HELEN_RADER, introBild, nastaPlats, linjeSkrivare, linjeSpolar, ritaPlan, gardPlanBild, PLAN, rostKoll, invDragInfo: () => invDrag, tidTest: (m) => { klockTest = m; linjeTid = 0; }, invAvsluta, spikaAnim, efterspel: efterspelTest, efterspelKvar, jul: julTest, julScen, julKrans, julRader, lager: lagerTest, tippStadat, lagerFynd, grav, husvagnFri: () => husvagnFri(), oppnaSkapet: () => oppnaSkapet(), goran: goranTest, polaroid: polaroidTest,  tradgard, ritaTradgard, kollaTradgard, rolfVagn, goranFigur: goran, gor, kollaGoran, goranSittplats, kollaPolaroid, ritaPolaroider, oppnaPolaroider, polaroidVagg, POLAROID, byggSkylt, kollaSkylt, skyltVersion, rostManusDetalj: () => { rostManus(); return rostManus.detalj; }, avbrytJobb, ROLF_TACK, elKlipp: (v, t) => elKlipp(v, t), simulera: (sek, steg = 0.1) => { for (let t = 0; t < sek; t += steg) uppdatera(steg); }, oppnaInv, rymsAlla, invKlick, invFlytta, naraKista, kistPos, matDag, jobbNu, rolfFyndPaket, aliHamtarLadan, skickaData, saljladaAktivera, startaTidtipp, nastaKop, rolfMorgonTack, rolfBrevLast, antalUt, startaDirekt, petgKvarn, petgAktivera, petgText, uppdateraPetg, filTyp, solEffekt, stromBehov, saljMarkerad, oppnaMarknad, oppnaPrintMeny, aliKopLista, stegKonkret, aktivGava, harRecept, harPlacerat, ritaNasta, malRawGet: () => malRaw, ikonHtml, skapaRiktig, VAROR, MASKINER, saljPris, aliSaljLista, kollaSamtal, visaBengt, kajsa, aliVink, aliFig: ali, stegBild, humorAv, varldsBubbla, skjulYta, bodGrupp, vridTips, flyttarBod: () => flyttarBod, dagbokLas: () => dagbokLas, pausad: () => pausad, bradhog, sangSpoke, taltSang: tältSäng, rullePlats, rulleMax, nastaAtgard, STEG, sovDags, kvallKlar, maskinStopp, ritaStopp, spikaSkylt, aliRopar, tittaMot, adressSkylt, introMusik, storHus, husHinder, startaResa, kollaResa, resaSteg, FYND, tillgang, arstid, varme, kollaKyla, uppdateraArstid, folkbokfor, kollaPolett, kanFolkbokfora, rolfHus, MARK_TOMTER, tungtFilament, andraRespekt, nivaUpplast, rolfDialekt, geRolfNummer, vantarPaNummer, kollaMarkTips, ruttnaOverNatten, stallIKyl, kylAntal, kompostera, kopMark, oppnaMark, uppdateraMark, paMark, markTavla, oppnaBokmarken, sparaDagBokmarke, lasBokmarken, miljo, placera, stallBurkar, uppdateraPappa, startaPappaBesok, pappaBesok, FIGURER, malPil, spoke, rektKrock, SKJUL, laggSkrap, paTippen, tippaLast, uppdateraAuto, auto, monteraAuto, rostKlipp, rostNyckel, rostManus, familjSms, oppnaJobbVal, hamtaBeloning, oppnaDagbok, oppnaInkorg, kapitel2Slut, TRIM, bodKlar, kapitelSlut, oppnaSparplatser, sparaPlats, lasPlats, HEM_DELAR, uppdateraSkjul, visaIntro, gardSkrap, laggTill, byt, taBortInv, antalInv, kista, extruder, arende, rolfGubbe, sms, ROLF, flak, bom, postLucka, postlada, webbOrdrar, oppnaDator, BESOK, besok, startaBesok, ata, MAT_VARDE, printLinje, migreraDK, kolfKvarn, kolfAktivera, uppdateraKolf, nastaGamer, trimNiva, plockaUppPlacerad, plockaSkrap, karraRing, foremal, variantFor, valjTyp, husvagnKlick, gastScen, gastDelKlar, husvagn: () => husvagnG, rolfBesok, sackRulle, karraKlick, karraMal, pappaGubbe, grind, ALI, bil, sopbil, sov, TIPP, niva, magnetStrale, oppnaForrad, laggIForrad, vevYta, rulle, kamera, spelare, interaktor, hand, S, spar, skrivare, placerade, skrapLista, ui, kvarn, cykel, marknad, talt, trivsel, startaJobb, uppdateraSkrivare, stallNer, kollaUtsikt, lasUpp, upplast, GEN, flaskS, flyttaFelPlacerade, pilBildTyp: () => pilBildTyp, dagMalLista, visaDagNotis, regelvaktKor: () => regelvakt.kor(), spokeGrupp: () => spoke.grupp, bodSpoke, fonsterSpoke, mimikBilder, VYER4 };   /* A-078 */   /* A-076 */   /* A-069 */

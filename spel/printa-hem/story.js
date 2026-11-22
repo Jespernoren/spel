@@ -118,6 +118,7 @@ export const STORY = [
       mal: 'Trampa cykeln', tal: 'Trampa!',
       start: 'Nu behöver den ström. Trampa.',
       pamin: 'Sätt dig på cykeln och trampa.',
+      borta: 'Cykeln. Jag måste trampa, annars får skrivaren ingen ström.',   /* inkorg 64 p.1: sägs 10 s efter att du gått från cykeln */
       kvitto: (S, G) => G.nyckelringUttagen() ? null : 'Klar! Ta ut den innan den ändrar sig.',
       klar: (S, G) => G.printat('nyckelring') >= 1 || S.stat.printat >= 1 },
 
@@ -132,7 +133,7 @@ export const STORY = [
       ],
       klar: (S) => !!S.rullSlut || !!S.kvarnKopt },
 
-    { id: 'saljTva', start: 'Rullen är slut. Nyckelringarna säljer jag hos Ali.', mom: 'Gör egen tråd', forDu: ['men', 'storebrors rulle är slut'], sak: 'nyckelring', handling: 'salj', pil: 'ali', bild: 'nyckelring',
+    { id: 'saljTva', start: 'Nyckelringarna säljer jag hos Ali. Han kanske har något för plasten.', mom: 'Gör egen tråd', forDu: ['men', 'storebrors rulle är slut'], sak: 'nyckelring', handling: 'salj', pil: 'ali', bild: 'nyckelring',
       kraver: ['rullSlut'], ger: ['kvarnPengar'],
       mal: 'Sälj nyckelringarna', tal: 'Sälj nyckelringarna hos Ali.',
       pamin: 'Affären mitt emot kanske köper ringarna.',
@@ -142,7 +143,7 @@ export const STORY = [
       ],
       klar: (S, G) => S.mynt >= G.KVARN_PRIS || !!S.kvarnKopt },
 
-    { id: 'aliKvarn', lasText: 'Kommer när storebrors rulle är slut', butikNamn: 'kvarnen', mom: 'Gör egen tråd', forDu: ['darfor', 'ringarna gav pengar till kvarnen'], sak: 'byggsats:gammalkvarn', handling: 'kop', pil: 'ali', bild: 'byggsats:gammalkvarn',
+    { id: 'aliKvarn', lasText: 'Kommer när nyckelringarna är sålda', butikNamn: 'kvarnen', mom: 'Gör egen tråd', forDu: ['darfor', 'ringarna gav pengar till kvarnen'], sak: 'byggsats:gammalkvarn', handling: 'kop', pil: 'ali', bild: 'byggsats:gammalkvarn',
       kraver: ['kvarnPengar'], ger: ['kvarnKopt'],
       mal: 'Köp kvarnen', tal: 'Köp kvarnen hos Ali.',
       start: 'Ali har en gammal kvarn. Den gör tråd av skräp.', startSvarPa: 'dialog:aliKvarnErbjud',
@@ -179,6 +180,8 @@ export const STORY = [
       mal: 'Printa med egen tråd', tal: 'Printa en nyckelring av din egen tråd.',
       start: 'Min egen tråd. Nu printar jag en nyckelring av den.',
       pamin: 'Nu printar jag med min egen tråd.',
+      rulle: 'skrivare',   /* inkorg 64 p.2: rullen i handen ska in i skrivaren – ett klick på skrivaren laddar den och öppnar printkortet */
+      medan: [{ id: 'rulleIHanden', nar: (S, G) => G.valdTyp() === 'rulle', tanke: 'Min egen tråd. Den ska in i skrivaren.' }],
       klar: (S, G) => G.printat('nyckelring') >= 3 || (S.stat.printat || 0) >= 3 },
 
     { id: 'salj', mom: 'Gör egen tråd', forDu: ['darfor', 'en ring av egen tråd ska säljas'], sak: 'nyckelring', handling: 'salj', pil: 'ali', bild: 'nyckelring',
@@ -203,7 +206,7 @@ export const STORY = [
       pamin: 'Ali har något åt mig.',
       klar: (S) => !!S.powerbank },
 
-    { id: 'kopGrip', lasText: 'Kommer när kvarnen står', butikNamn: 'gripen', mom: 'Sova', forDu: ['men', 'det tar tid att plocka skräp med händerna'], sak: 'byggsats:grip', handling: 'kop', pil: 'ali', bild: 'byggsats:grip', las: 'grip', lapp: 'ritning',
+    { id: 'kopGrip', lasText: 'Kommer när powerbanken sitter på cykeln', butikNamn: 'gripen', mom: 'Sova', forDu: ['men', 'det tar tid att plocka skräp med händerna'], sak: 'byggsats:grip', handling: 'kop', pil: 'ali', bild: 'byggsats:grip',   /* inkorg 64 p.7: gripen väntar inte på flaskhalsen – den kommer direkt när powerbanken sitter */ lapp: 'ritning',
       kraver: ['powerbank'], ger: ['gripRitning'],
       mal: (S) => S.mynt >= 50 ? 'Köp skräpgripen' : 'Spara till gripen', tal: 'Köp en skräpgrip hos Ali. Den kostar femtio kronor.',
       talSpara: ['Printa och sälj nyckelringar tills du har femtio kronor till gripen.', 50],

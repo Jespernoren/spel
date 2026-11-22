@@ -1,18 +1,18 @@
 # Stökboten frö 1
 
-- ✓ frö 1: 50 stök, nådde dag 4
+- ✓ frö 1: 55 stök, nådde dag 3
 - ✓ frö 1: 0 FAST (inga)
-- ✓ frö 1: 0 SEKVENSFEL, REDAN GJORT, FEL PLATS I TEXT, GÅVA SOM KÖP, PIL PÅ GJORD SAK (inga)
+- ✓ frö 1: 0 SEKVENSFEL, REDAN GJORT, FEL PLATS I TEXT, GÅVA SOM KÖP, PIL PÅ GJORD SAK, KLICK UTAN SVAR, SVAR FÖRE ORSAK (inga)
 - ✓ frö 1: 0 gånger tillbaka från kistan/ryggsäcken/borta (SAK FÖR UPPGIFT SAKNAS är räddningen, inte ett fel)
+- ✓ frö 1: dag 1 når gripklon (5.5 min) utan mål över 60 s (inga)
 - ✓ frö 1: 0 sidfel (inga)
 
 ## Dagarna
-- dag 1: 9.7 min
+- dag 1: 7.5 min
 - dag 2: 7.3 min
-- dag 3: 9.4 min
-- dag 4: 0.0 min (ofärdig)
+- dag 3: 8.6 min
 
-## Stöket (50)
+## Stöket (55)
 - dag 1 lasta: öppnade och stängde oppnaMarknad
 - dag 1 lasta: bytte till plats 0
 - dag 1 lasta: bytte till plats 4
@@ -22,44 +22,49 @@
 - dag 1 strom: la byggsats:generator i ryggsäcken
 - dag 1 strom: bytte till plats 8
 - dag 1 strom: la hammare i ryggsäcken
-- dag 1 bygg: sprang iväg
-- dag 1 valjModell: klickade på Group
-- dag 1 valjModell: försökte sälja hammare (nej)
-- dag 1 valjModell: försökte sälja hammare (nej)
-- dag 1 rullSlut: öppnade och stängde oppnaDagbok
+- dag 1 strom: sprang iväg
+- dag 1 bygg: klickade på Group
+- dag 1 bygg: försökte sälja cykelS (nej)
+- dag 1 bygg: försökte sälja hammare (nej)
+- dag 1 valjModell: öppnade och stängde oppnaDagbok
+- dag 1 saljTva: klickade på Group
+- dag 1 saljTva: försökte sälja hammare (nej)
 - dag 1 aliKvarn: klickade på Group
-- dag 1 aliKvarn: försökte sälja hammare (nej)
-- dag 1 kvarn: klickade på Group
-- dag 1 kvarn: öppnade och stängde oppnaDagbok
-- dag 1 egenPrint: bytte till plats 6
-- dag 1 egenPrint: klickade på Group
+- dag 1 aliKvarn: öppnade och stängde oppnaDagbok
+- dag 1 flaska: bytte till plats 6
+- dag 1 flaska: klickade på Group
 - dag 1 salj: försökte sälja nyckelring (15 kr)
 - dag 1 powerbank: klickade på Group
 - dag 1 powerbank: la byggsats:powerbank i kistan
-- dag 1 kopGrip: bytte till plats 4
-- dag 1 printGrip: bytte till plats 5
-- dag 1 krukaD1: öppnade och stängde oppnaDagbok
-- dag 1 krukaD1: försökte sälja hammare (nej)
-- dag 1 kopSang: sprang iväg
-- dag 1 sov1: bytte till plats 7
+- dag 1 saljKruka: la kruka i ryggsäcken
+- dag 1 saljKruka: bytte till plats 6
+- dag 1 printSang: bytte till plats 5
 - dag 1 sov1: klickade på Group
+- dag 1 sov1: sprang iväg
+- dag 2 kopMotor: bytte till plats 0
+- dag 2 kopMotor: öppnade och stängde oppnaMarknad
+- dag 2 kopMotor: sprang iväg
+- dag 2 kopMotor: klickade på Group
 - dag 2 kopMotor: försökte sälja hammare (nej)
-- dag 2 monteraMotor: öppnade och stängde oppnaDagbok
-- dag 2 monteraMotor: la byggsats:kvarnmotor i ryggsäcken
-- dag 2 monteraMotor: öppnade och stängde oppnaInv
-- dag 2 kopSack: bytte till plats 0
-- dag 2 rolf0-brev: sprang iväg
-- dag 2 rolf0-brev: sprang iväg
-- dag 2 rolf0-brev: försökte sälja hammare (nej)
-- dag 2 rolf0-brev: bytte till plats 4
-- dag 2 rolf0-ge: la byggsats:servett i kistan
+- dag 2 kopMotor: försökte sälja hammare (nej)
+- dag 2 kopMotor: öppnade och stängde oppnaDagbok
+- dag 2 kopMotor: försökte sälja hammare (nej)
+- dag 2 kopMotor: bytte till plats 0
+- dag 2 kopMotor: bytte till plats 0
+- dag 2 monteraMotor: sprang iväg
+- dag 2 kopSack: sprang iväg
+- dag 2 kopSack: försökte sälja hammare (nej)
+- dag 2 rolf0-ge: bytte till plats 4
 - dag 2 vindsnurra: försökte sälja hammare (nej)
+- dag 2 vindsnurra: la byggsats:servett i kistan
+- dag 2 n1-bygg-dorr-skjulet: bytte till plats 4
 - dag 3 rolf1-brev: bytte till plats 6
 - dag 3 rolf1-brev: försökte sälja hammare (nej)
 - dag 3 rolf1-brev: bytte till plats 4
 - dag 3 kopBatteri: klickade på Group
-- dag 3 kopBatteri: klickade på Group
-- dag 3 kopBatteri: la byggsats:cykelbatteri i kistan
-- dag 3 kopBatteri: klickade på Group
-- dag 3 kopBatteri: bytte till plats 1
-- dag 3 n2-bygg-skrivare-m: sprang iväg
+- dag 3 ryggkorg: klickade på Group
+- dag 3 n2-bygg-skrivare-m: försökte sälja hammare (nej)
+- dag 3 n2-bygg-skrivare-m: öppnade och stängde oppnaMarknad
+- dag 3 n2-lagg-plattak-skjulet: sprang iväg
+- dag 3 n2-lagg-plattak-skjulet: sprang iväg
+- dag 3 n2-lagg-plattak-skjulet: klickade på Group
