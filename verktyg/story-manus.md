@@ -80,20 +80,22 @@
 - **Kvitto:** –
 - **Dialog** (inkorg 61):
   - **bror** (sms, en gång): "VA FAN?! Fick du igång den?? Jag försökte i typ ett år. Den bara pep. 😳" · *svarar på* tagitUrPrint:nyckelring
-  - **bror** (sms, en gång): "Sälj den till Ali, han med affären mitt emot. Han köper gamla grejer. Han köpte min gamla mopedhjälm för 20 spänn." · *svarar på* dialog:brorSms1 · *ger* hortAli
+  - **bror** (sms, en gång): "Sälj grejerna i affären mitt emot, han köper allt." · *svarar på* dialog:brorSms1
+  - **ali** (rop, en gång): "Hallå där, nya grannen! Vad är det där du gör?" · *svarar på* tagitUrPrint:nyckelring
 - **Uppläsning:** "Printa en nyckelring till."
 
-### 9. Sälj nyckelringarna `saljTva`
+### 9. Visa nyckelringarna i affären mitt emot `saljTva`
 - **Moment:** Gör egen tråd · **sak:** nyckelring · **bild:** nyckelring · **pil:** ali
 - **Handling:** salj → kontrollhjälp *– (hos Ali)*
 - **Kräver:** rullSlut · **ger:** kvarnPengar
-- **Start (sägs när steget börjar):** "Nyckelringarna säljer jag hos Ali. Han kanske har något för plasten."
-- **Påminnelse:** "Affären mitt emot kanske köper ringarna."
+- **Start (sägs när steget börjar):** "Affären mitt emot. Han verkar nyfiken. Jag visar honom."
+- **Påminnelse:** "Han i affären mitt emot ville se ringarna."
 - **Kvitto:** –
+  - starten väntar på: dialog:aliRop
 - **Dialog** (inkorg 61):
   - **ali** (butik, en gång): "Hej. Jag är Ali. Pappas butik – min sedan tjugofem år. Jag köper det du printar." · *svarar på* oppnatButik · *ger* kandAli
   - **ali** (butik, en gång): *(beror på läget)*  · *svarar på* salt:nyckelring · *vet* kandAli · *ger* aliHarKvarn
-- **Uppläsning:** "Sälj nyckelringarna hos Ali."
+- **Uppläsning:** "Visa nyckelringarna i affären mitt emot."
 
 ### 10. Köp kvarnen `aliKvarn`
 - **Moment:** Gör egen tråd · **sak:** byggsats:gammalkvarn · **bild:** byggsats:gammalkvarn · **pil:** ali

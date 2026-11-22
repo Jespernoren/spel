@@ -38,7 +38,7 @@ STORY_STEG.forEach((p, i) => {
   for (const d of p.dialog || []) {
     if (!d.id) fel.push(`${vid}: en replik saknar id`);
     if (dialogId.has(d.id)) fel.push(`${vid}: replik-id ${d.id} finns två gånger`); dialogId.add(d.id);
-    if (!['butik', 'sms', 'tanke'].includes(d.kanal)) fel.push(`${vid}: ${d.id} har okänd kanal "${d.kanal}"`);
+    if (!['butik', 'sms', 'tanke', 'rop'].includes(d.kanal)) fel.push(`${vid}: ${d.id} har okänd kanal "${d.kanal}"`);
     if (!d.svarPa && !d.stamning) fel.push(`${vid}: ${d.id} svarar inte på något (SVARAR INTE PÅ NÅGOT)`);
     if (d.kanal !== 'sms' && typeof d.text === 'string' && /^Ali här\b/.test(d.text)) fel.push(`${vid}: ${d.id} säger "Ali här." ansikte mot ansikte (SMS-FORM)`);
     koll(d.id, d.svarPa, d.vet, d.fore);
@@ -46,6 +46,14 @@ STORY_STEG.forEach((p, i) => {
   }
   if (p.startSvarPa || p.startVet || p.startFore) koll('starten', p.startSvarPa, p.startVet, p.startFore);   // starten får vänta på en replik i samma steg
 });
+/* inkorg 65 p.2: inget namn innan figuren har presenterat sig – mål, uppläsning, start, påminnelse, kvitto och repliker.
+   Ett namn med en kand-flagga i story.js (t.ex. Ali → kandAli) får bara stå efter en replik som ger flaggan. */
+{ const KAND = {}; for (const m of fs.readFileSync(new URL('../spel/printa-hem/story.js', import.meta.url), 'utf8').matchAll(/'kand([A-ZÅÄÖ][a-zåäö]+)'/g)) KAND[m[1]] = 'kand' + m[1];
+  const vet = new Set(), texter = (v) => typeof v === 'string' ? [v] : typeof v === 'function' ? [...String(v).matchAll(/(['"`])((?:\\.|(?!\1)[^\\])*)\1/g)].map((m) => m[2]) : [];
+  for (const p of STORY_STEG) {
+    for (const f of ['mal', 'tal', 'start', 'pamin', 'kvitto', 'borta']) for (const t of texter(p[f])) for (const [namn, flagga] of Object.entries(KAND)) if (new RegExp(`\\b${namn}\\b`).test(t) && !vet.has(flagga)) fel.push(`${p.id}: ${f} säger "${namn}" innan ${namn} har presenterat sig ("${t.slice(0, 50)}")`);
+    for (const d of p.dialog || []) { for (const t of texter(d.text)) for (const [namn, flagga] of Object.entries(KAND)) if (new RegExp(`\\b${namn}\\b`).test(t) && !vet.has(flagga) && !(d.ger || []).includes(flagga)) fel.push(`${p.id}: ${d.id} säger "${namn}" innan ${namn} har presenterat sig`); for (const g of d.ger || []) vet.add(g); }
+  } }
 // de gamla tabellerna får inte ha kvar poster för stegen i story.js
 const spel = fs.readFileSync(new URL('../spel/printa-hem/spel.js', import.meta.url), 'utf8');
 const tabell = (namn) => { const i = spel.indexOf(`const ${namn} = {`); if (i < 0) return ''; return spel.slice(i, spel.indexOf('\n};', i)); };

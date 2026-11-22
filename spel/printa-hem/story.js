@@ -129,14 +129,16 @@ export const STORY = [
       pamin: 'En ring till.',
       dialog: [
         { id: 'brorSms1', vem: 'bror', kanal: 'sms', text: 'VA FAN?! Fick du igång den?? Jag försökte i typ ett år. Den bara pep. 😳', svarPa: 'tagitUrPrint:nyckelring', en: true },
-        { id: 'brorSms2', vem: 'bror', kanal: 'sms', text: 'Sälj den till Ali, han med affären mitt emot. Han köper gamla grejer. Han köpte min gamla mopedhjälm för 20 spänn.', svarPa: 'dialog:brorSms1', ger: ['hortAli'], en: true },
+        { id: 'brorSms2', vem: 'bror', kanal: 'sms', text: 'Sälj grejerna i affären mitt emot, han köper allt.', svarPa: 'dialog:brorSms1', en: true },   /* inkorg 65 p.2: inget namn innan Ali har presenterat sig */
+        /* inkorg 65 p.2: Ali tar själv första kontakten – han ropar från andra sidan vägen när ringen är i handen, innan någon säger hans namn */
+        { id: 'aliRop', vem: 'ali', kanal: 'rop', text: 'Hallå där, nya grannen! Vad är det där du gör?', svarPa: 'tagitUrPrint:nyckelring', fore: ['kandAli'], en: true },
       ],
       klar: (S) => !!S.rullSlut || !!S.kvarnKopt },
 
-    { id: 'saljTva', start: 'Nyckelringarna säljer jag hos Ali. Han kanske har något för plasten.', mom: 'Gör egen tråd', forDu: ['men', 'storebrors rulle är slut'], sak: 'nyckelring', handling: 'salj', pil: 'ali', bild: 'nyckelring',
+    { id: 'saljTva', start: 'Affären mitt emot. Han verkar nyfiken. Jag visar honom.', startSvarPa: 'dialog:aliRop', mom: 'Gör egen tråd', forDu: ['men', 'storebrors rulle är slut'], sak: 'nyckelring', handling: 'salj', pil: 'ali', bild: 'nyckelring',
       kraver: ['rullSlut'], ger: ['kvarnPengar'],
-      mal: 'Sälj nyckelringarna', tal: 'Sälj nyckelringarna hos Ali.',
-      pamin: 'Affären mitt emot kanske köper ringarna.',
+      mal: 'Visa nyckelringarna i affären mitt emot', tal: 'Visa nyckelringarna i affären mitt emot.',
+      pamin: 'Han i affären mitt emot ville se ringarna.',
       dialog: [
         { id: 'aliForsta', vem: 'ali', kanal: 'butik', text: 'Hej. Jag är Ali. Pappas butik – min sedan tjugofem år. Jag köper det du printar.', svarPa: 'oppnatButik', fore: ['kandAli'], ger: ['kandAli'], en: true },
         { id: 'aliKvarnErbjud', vem: 'ali', kanal: 'butik', text: (S, G) => `Pappas gamla köttkvarn. Den har malt allt utom kött. ${G.kronorOrd(G.KVARN_PRIS)}, så är den din.`, svarPa: 'salt:nyckelring', vet: ['kandAli'], ger: ['aliHarKvarn'], en: true, stryksNar: (S) => !!S.kvarnKopt },

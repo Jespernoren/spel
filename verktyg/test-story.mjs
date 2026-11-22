@@ -51,6 +51,13 @@ await p.evaluate(([u, m, c]) => { window.__vt.start(); window.__simUtforlig = u;
 await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.meta.url), 'utf8') });
 const r = await p.evaluate(() => window.__simBot.kor(4, 90));   /* inkorg 63: dag 1–3 */
 const L = r.logg.filter((e) => e.dag === 1), L3 = r.logg.filter((e) => e.dag <= 3), ut = []; fs.writeFileSync('/tmp/story-logg.json', JSON.stringify(L)); fs.writeFileSync('/tmp/story-logg3.json', JSON.stringify(L3));
+{ /* inkorg 65 p.2: Ali ropar när första ringen är i handen, och namnet sägs inte förrän han presenterar sig vid disken */
+  const uttag = L.find((e) => e.kalla === 'händelse' && e.vem === 'tagitUrPrint' && /sak=nyckelring/.test(e.text));
+  const rop = L.find((e) => /Hallå där, nya grannen/.test(String(e.text || '')) && e.kalla !== 'struken' && e.kalla !== 'väntar' && e.kalla !== 'lapp-kö');
+  const forsta = L.findIndex((e) => /Jag är Ali\b/.test(String(e.text || '')) && !['struken', 'väntar', 'lapp-kö'].includes(e.kalla));
+  const fore = L.slice(0, forsta < 0 ? L.length : forsta).filter((e) => ['röst', 'notis', 'tanke', 'sms', 'MÅL', 'mål', 'toast', 'sak'].includes(e.kalla) && /\bAli\b/.test(String(e.text || '')));
+  ut.push([`inkorg 65 p.2: Ali ropar ${rop && uttag ? (rop.tot - uttag.tot).toFixed(1) + ' s' : '(saknas)'} efter att ringen tagits ut, och 0 texter säger "Ali" före presentationen (${fore.map((e) => e.kalla + ': ' + String(e.text).slice(0, 40)).join(' | ') || 'inga'})`, !!rop && !!uttag && rop.tot - uttag.tot < 15 && forsta >= 0 && !fore.length]);
+}
 { /* inkorg 71: Ali, Rolf, du och berättaren spelar sina egna klipp (Piper), inte talsyntesen */
   const K = await p.evaluate(() => window.__printahem.rostKallor()); fs.writeFileSync('/tmp/rostkallor.json', JSON.stringify(K));
   for (const f of ['du', 'ali', 'rolf', 'berattare']) {
@@ -103,7 +110,7 @@ ut.push([`kvittot efter steget (${kv.length - kvFel.length}/${kv.length})${kvFel
   ut.push([`inkorg 63 p.5: fotot av första nyckelringen ${dt == null ? 'saknas' : dt.toFixed(2) + ' s'} efter att den tagits ut (högst 0,5 s)`, dt != null && dt <= 0.5]);
   const klarNotis = L3.filter((e) => ['notis', 'toast', 'sak'].includes(e.kalla) && /är klar – ta ut|st klara på skrivaren/.test(String(e.text || '')));
   ut.push([`inkorg 63 p.4: en klar print ger bara den gröna skylten – 0 notiser om klar print (${klarNotis.length}${klarNotis.length ? ': ' + klarNotis[0].text.slice(0, 40) : ''})`, !klarNotis.length]); }
-const FLAGGOR = ['SEKVENSFEL', 'REDAN GJORT', 'FEL PLATS I TEXT', 'GÅVA SOM KÖP', 'PIL PÅ GJORD SAK', 'BERÄTTAREN FÖRE DIG', 'RÖST AVBRUTEN', 'TYST UPPMANING', 'KLICK UTAN SVAR', 'SVAR FÖRE ORSAK', 'FEL RÖST'];
+const FLAGGOR = ['SEKVENSFEL', 'REDAN GJORT', 'FEL PLATS I TEXT', 'GÅVA SOM KÖP', 'PIL PÅ GJORD SAK', 'BERÄTTAREN FÖRE DIG', 'RÖST AVBRUTEN', 'TYST UPPMANING', 'KLICK UTAN SVAR', 'SVAR FÖRE ORSAK', 'FEL RÖST', 'TEXT UTAN RÖST', 'TOM HYLLA'];
 const br = L.filter((e) => e.kalla === 'brott' && FLAGGOR.includes(e.vem));
 ut.push([`0 ${FLAGGOR.join(', 0 ')} dag 1 (${br.map((e) => e.vem + ': ' + e.text).join(' · ') || 'inga'})`, !br.length]);
 ut.push([`dag 1 spelad till sömnen (${L.filter((e) => e.kalla === 'händelse' && e.vem === 'malKlart').length} mål)`, r.dagar.length >= 1]);
