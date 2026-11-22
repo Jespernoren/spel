@@ -555,3 +555,629 @@
 - **Start (sägs när steget börjar):** –
 - **Påminnelse:** –
 - **Kvitto:** –
+
+## Dag 6 (kapitel 2)
+
+### 1. *(beror på läget)* 'vantar' / 'kommer' / 'Hälsa på pappa vid grinden' / 'Prata med pappa' / 'Pappa kommer förbi idag' `pappa6`
+- **Moment:** – · **sak:** pappa · **bild:** – · **pil:** gard
+- **Handling:** ga → kontrollhjälp *W A S D*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. *(beror på läget)* 'Ställ den röda kvarnen i röda linjen' / 'Köp den röda kvarnen hos Ali' `r6-kop-roda-kvarnen`
+- **Moment:** – · **sak:** byggsats:petgkvarn · **bild:** byggsats:petgkvarn · **pil:** ali
+- **Handling:** kop → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Tunnorna är röd plast. Bra plast. Den behöver en egen kvarn."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. Mal en tunna i röda kvarnen `r6-mal-tunna-roda`
+- **Moment:** – · **sak:** sackkarra · **bild:** sackkarra · **pil:** kvarn
+- **Handling:** lagg → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. Sätt en solpanel på skjulets tak `sol6`
+- **Moment:** – · **sak:** byggsats:sol · **bild:** byggsats:sol · **pil:** skjul
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** "Den röda kvarnen drar mer än vinden orkar. Solen får hjälpa till."
+
+### 5. Ge Göran ett eget ställe `goran6`
+- **Moment:** – · **sak:** fagelskramma · **bild:** beror på läget · **pil:** gard
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** "Göran har ett hem nu. Bättre än jag hade för en vecka sen."
+
+### 6. Klart för idag – sov när du vill `sov6`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 7 (kapitel 2)
+
+### 1. Bygg PETG-skrivaren `r7-bygg-petg-skrivaren`
+- **Moment:** – · **sak:** byggsats:skrivarepetg · **bild:** byggsats:skrivarepetg · **pil:** startYta
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Röd plast kräver en egen skrivare. Den vanliga vill inte."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Printa en designvas i röd PETG `r7-printa-designvas-rod`
+- **Moment:** – · **sak:** n2_vas · **bild:** n2_vas · **pil:** skrivare
+- **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "En vas. Röd. Design. Ali kommer att låtsas att han förstår den."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. Sälj designvasen `r7-salj-designvasen`
+- **Moment:** – · **sak:** n2_vas · **bild:** n2_vas · **pil:** ali
+- **Handling:** salj → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Vasen till Ali. Han betalar mer för röd."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. Bygg säljlådan vid samlingsplatsen `saljlada`
+- **Moment:** – · **sak:** byggsats:saljlada · **bild:** byggsats:saljlada · **pil:** gard
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "En säljlåda. Då slipper jag springa till Ali med varje vas."
+- **Påminnelse:** –
+- **Kvitto:** "Jag hämtar varje morgon. Du lägger i, jag betalar."
+
+### 5. *(beror på läget)*  `saljlada3`
+- **Moment:** – · **sak:** n2_vas · **bild:** n2_vas · **pil:** gard
+- **Handling:** salj → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Vaserna i lådan. Ali hämtar själv."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 6. Klart för idag – sov när du vill `sov7`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 8 (kapitel 2)
+
+### 1. Bygg Skrivare L `r8-bygg-skrivare-l`
+- **Moment:** – · **sak:** byggsats:skrivare3 · **bild:** byggsats:skrivare3 · **pil:** startYta
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Bygg magnetpistolen `r8-bygg-magnetpistolen`
+- **Moment:** – · **sak:** byggsats:magnet · **bild:** byggsats:magnet · **pil:** skrivare
+- **Handling:** ta → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. *(beror på läget)*  `r8-mal-tunga-saker`
+- **Moment:** – · **sak:** magnet · **bild:** – · **pil:** kvarn
+- **Handling:** lagg → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Mer tungt i den röda kvarnen. Magneten tar tunnorna."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. Bygg en batteribank `r8-bygg-batteribank`
+- **Moment:** – · **sak:** byggsats:bank · **bild:** byggsats:bank · **pil:** startYta
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 5. Bygg hyllan `hylla8`
+- **Moment:** – · **sak:** byggsats:hylla · **bild:** byggsats:hylla · **pil:** skjul
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** "En hylla. Jag har en hylla. Saker har en plats nu."
+
+### 6. Klart för idag – sov när du vill `sov8`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 9 (kapitel 2)
+
+### 1. Köp receptet på cykelhjälmen hos Ali `r9-kop-receptet-cykelhjalmen`
+- **Moment:** – · **sak:** n2_hjalm · **bild:** n2_hjalm · **pil:** ali
+- **Handling:** kop → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Cykelhjälmar i röd plast. Säljer bra, säger Ali."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Bygg en solcellspark `r9-bygg-solcellspark`
+- **Moment:** – · **sak:** byggsats:solpark · **bild:** byggsats:solpark · **pil:** gard
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. *(beror på läget)*  `paket9`
+- **Moment:** – · **sak:** paket · **bild:** paket · **pil:** skjul
+- **Handling:** salj → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Det har kommit beställningar. Paketen ska iväg från datorn."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. Bygg Rulltorn XL vid röda kvarnen `petgtorn9`
+- **Moment:** – · **sak:** byggsats:petgtorn · **bild:** byggsats:petgtorn · **pil:** kvarn
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Den röda kvarnen står och väntar på plats för rullarna. Ett större torn."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 5. Klart för idag – sov när du vill `sov9`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 10 (kapitel 2)
+
+### 1. *(beror på läget)*  `tapeter`
+- **Moment:** – · **sak:** byggsats:tapeter · **bild:** byggsats:tapeter · **pil:** skjul
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Skjulet ska kännas som ett rum. Tapeter."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Gör skjulet varmt inför kylan `r10-gor-skjulet-varmt`
+- **Moment:** – · **sak:** varme · **bild:** – · **pil:** skjul
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Nätterna blir kallare. Tak, dörr och väggar, så klarar jag det."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. Bygg spisen och laga en varm måltid `spis10`
+- **Moment:** – · **sak:** byggsats:spis · **bild:** beror på läget · **pil:** skjul
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** "Varm mat. I skjulet. Mamma skulle inte tro det."
+
+### 4. Klart för idag – sov när du vill `sov10`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 11 (kapitel 3)
+
+### 1. Bygg kolfiberkvarnen i linje 3 `kolfkvarn`
+- **Moment:** – · **sak:** byggsats:kolfkvarn · **bild:** byggsats:kolfkvarn · **pil:** startYta
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Kajakerna på tippen är kolfiber. Det behövs en kvarn som tål det."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Bygg rullbandet från tippen `kolfband`
+- **Moment:** – · **sak:** byggsats:kolfband · **bild:** byggsats:kolfband · **pil:** tippen
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Kajakerna är för stora att bära. Ett band från tippen."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. *(beror på läget)*  `kajak3`
+- **Moment:** – · **sak:** kajak · **bild:** – · **pil:** tippen
+- **Handling:** lagg → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Bandet går. Nu ska kajakerna upp på det."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. Vänta på den första svartgrå rullen `kolfrulle`
+- **Moment:** – · **sak:** rulle3 · **bild:** rulle3 · **pil:** kvarn
+- **Handling:** veva → kontrollhjälp *Klicka och håll · Veva kvarnen*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Kvarnen mal. Svartgrått. Det tar sin tid."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 5. Klart för idag – sov när du vill `sov11`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 12 (kapitel 3)
+
+### 1. Bygg kolfiberskrivaren i linje 3 `kolfskrivare`
+- **Moment:** – · **sak:** byggsats:kolfskrivare · **bild:** byggsats:kolfskrivare · **pil:** startYta
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Bygg slangfördelaren `kolfslang`
+- **Moment:** – · **sak:** byggsats:kolfslang · **bild:** byggsats:kolfslang · **pil:** kvarn
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Rullarna ska fram till skrivaren utan mig. En slang."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. Printa en kolfiberstol `kolfstol`
+- **Moment:** – · **sak:** n3_stol · **bild:** n3_stol · **pil:** skrivare
+- **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "En kolfiberstol. Lätt som en fjäder, hård som Rolf."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. Bygg en batteribank till `f12-batteribank2`
+- **Moment:** – · **sak:** byggsats:bank · **bild:** byggsats:bank · **pil:** startYta
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 5. Klart för idag – sov när du vill `sov12`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 13 (kapitel 3)
+
+### 1. Bygg gamingboden `f13-bygg-gamingboden`
+- **Moment:** – · **sak:** byggsats:gamingbod · **bild:** byggsats:gamingbod · **pil:** gard
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "En bod för spel. Jag förtjänar det."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Ställ in en gamersak i boden `f13-stall-in-gamersak`
+- **Moment:** – · **sak:** gamer · **bild:** beror på läget · **pil:** gard
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Boden är tom. Något att spela på."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. Klart för idag – sov när du vill `sov13`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 14 (kapitel 3)
+
+### 1. Montera jetmotorn på kolfiberkvarnen `jet14`
+- **Moment:** – · **sak:** byggsats:jetmotor · **bild:** byggsats:jetmotor · **pil:** kvarn
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Jetmotorn ska sitta på kolfiberkvarnen. Vad kan gå fel."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Bygg leveranslådan `f14-bygg-leveransladan`
+- **Moment:** – · **sak:** byggsats:utlada · **bild:** byggsats:utlada · **pil:** gard
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "En leveranslåda. Då säljer fabriken själv."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. Köp mutor till Rolf hos Ali `f14-kop-mutor-rolf`
+- **Moment:** – · **sak:** trim:sopbil · **bild:** – · **pil:** ali
+- **Handling:** kop → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Rolf tippar mer om han får bullar. Ali har bullar."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. Klart för idag – sov när du vill `sov14`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 15 (kapitel 3)
+
+### 1. Bygg gamingboden `f15-bygg-gamingboden`
+- **Moment:** – · **sak:** byggsats:gamingbod · **bild:** byggsats:gamingbod · **pil:** gard
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "En bod för spel. Jag förtjänar det."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. *(beror på läget)*  `gamer`
+- **Moment:** – · **sak:** gamer · **bild:** beror på läget · **pil:** gard
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Boden ska vara full. Tre saker."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. Printa och ställ ut en jacuzzi `f15-printa-stall-ut`
+- **Moment:** – · **sak:** jacuzzi · **bild:** jacuzzi · **pil:** gard
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "En jacuzzi. På en soptipp. Varför inte."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. *(beror på läget)*  `f15-varldens-basta-fristad`
+- **Moment:** – · **sak:** trivsel · **bild:** beror på läget · **pil:** gard
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 5. Klart för idag – sov när du vill `sov15`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 16 (kapitel 4)
+
+### 1. Köp tomten du bor på `m16-kop-tomten-bor`
+- **Moment:** – · **sak:** mark:egen · **bild:** – · **pil:** gard
+- **Handling:** kop → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Kommunen säljer tomten vid tippen. Ingen annan ville ha den."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Lägg flagan i Bengt-Åkes brevlåda `m16-lagg-flagan-bengt`
+- **Moment:** – · **sak:** guldflaga · **bild:** guldflaga · **pil:** postlada
+- **Handling:** lagg → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. Ge Rolf en kapskiva i kolfiber `m16-ge-rolf-kapskiva`
+- **Moment:** – · **sak:** kapskiva · **bild:** kapskiva · **pil:** postlada
+- **Handling:** lagg → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. Klart för idag – sov när du vill `sov16`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 17 (kapitel 4)
+
+### 1. Köp ängen i öster – tavlan vid vägen `m17-kop-angen-oster`
+- **Moment:** – · **sak:** mark:oster · **bild:** – · **pil:** gard
+- **Handling:** kop → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Kolfiber. Det säljer. Och ängen bredvid är till salu."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Vaska guld i floden `m17-vaska-guld-floden`
+- **Moment:** – · **sak:** vaskpanna · **bild:** vaskpanna · **pil:** gard
+- **Handling:** ta → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. Bygg en solcellspark på ängen `m17-solpark2`
+- **Moment:** – · **sak:** byggsats:solpark · **bild:** byggsats:solpark · **pil:** gard
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. Klart för idag – sov när du vill `sov17`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 18 (kapitel 4)
+
+### 1. Bygg diamantkvarnen `m18-bygg-diamantkvarnen`
+- **Moment:** – · **sak:** byggsats:diamantkniv · **bild:** byggsats:diamantkniv · **pil:** kvarn
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Guld. Ingen kvarn jag har klarar det."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Mal en rulle guld `m18-mal-rulle-guld`
+- **Moment:** – · **sak:** fynd4 · **bild:** fynd4 · **pil:** kvarn
+- **Handling:** lagg → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. Gjut grunden till huset `m18-gjut-grunden-huset`
+- **Moment:** – · **sak:** mark:husgrund · **bild:** – · **pil:** gard
+- **Handling:** kop → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. Klart för idag – sov när du vill `sov18`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 19 (kapitel 4)
+
+### 1. Bygg huset på grunden `m19-bygg-huset-grunden`
+- **Moment:** – · **sak:** mark:huset · **bild:** – · **pil:** gard
+- **Handling:** kop → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Ett riktigt hus. På riktigt."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Bygg vindkraftverket på backen `m19-vindkraft`
+- **Moment:** – · **sak:** byggsats:vindkraft · **bild:** byggsats:vindkraft · **pil:** gard
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. Bygg guldskrivaren i linje 4 `m19-guldskrivare`
+- **Moment:** – · **sak:** byggsats:guldskrivare · **bild:** byggsats:guldskrivare · **pil:** startYta
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. Flytta in i huset `m19-flytta-in-huset`
+- **Moment:** – · **sak:** huset · **bild:** – · **pil:** gard
+- **Handling:** ga → kontrollhjälp *W A S D*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 5. Klart för idag – sov när du vill `sov19`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 20 (kapitel 4)
+
+### 1. Printa och ställ ut en vedkamin `m20-printa-stall-ut`
+- **Moment:** – · **sak:** kamin · **bild:** kamin · **pil:** gard
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Minus fjorton. Skjulet var en sak. Huset ska vara varmt."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Ställ in en kamin i skjulet `m20-stall-in-kamin`
+- **Moment:** – · **sak:** kamin · **bild:** – · **pil:** skjul
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. Klart för idag – sov när du vill `sov20`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 21 (kapitel 4)
+
+### 1. Bli folkbokförd – tavlan vid vägen `m21-bli-folkbokford`
+- **Moment:** – · **sak:** folkbok · **bild:** – · **pil:** gard
+- **Handling:** ga → kontrollhjälp *W A S D*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Hus, mark, adress. Det är dags."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Klart för idag – sov när du vill `sov21`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 22 (kapitel 4)
+
+### 1. Julafton `m22-printa-julbordet`
+- **Moment:** – · **sak:** julbord · **bild:** julbord · **pil:** skjul
+- **Handling:** ga → kontrollhjälp *W A S D*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Skylten med mitt namn på dörren `m22-tand-skylten`
+- **Moment:** – · **sak:** dorrskylt · **bild:** – · **pil:** skjul
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. Ta emot mamma `m22-oppna-dorren-gasterna`
+- **Moment:** – · **sak:** mamma · **bild:** – · **pil:** gard
+- **Handling:** ga → kontrollhjälp *W A S D*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –

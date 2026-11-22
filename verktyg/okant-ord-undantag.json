@@ -404,7 +404,7 @@
   "skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
  },
  {
-  "block": "KEDJA_TEXT",
+  "block": "LASTARM_T",
   "skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
  },
  {
@@ -806,5 +806,23 @@
   "block": "STORY",
   "ord": "tippen",
   "skal": "inkorg 58 omgång 3: dag 2–5 flyttade från STEG/rolfSteg i spel.js. Rolf, sopbilen och tippen är presenterade före dag 2 (lappen på sopsäckarna, sopbilen dag 1–2, grindskylten). Texterna går genom Regissören och okandaOrd körs när de köas."
+ },
+ {
+  "fil": "story.js",
+  "block": "STORY",
+  "ord": "goran",
+  "skal": "inkorg 58 omgång 3: kapitel 2 (dag 6–10) flyttat från STEG i spel.js. Göran och PETG presenteras före dag 6 (Görans första stöld, Alis röda kvarn i butiken). Texterna går genom Regissören och okandaOrd körs när de köas."
+ },
+ {
+  "fil": "story.js",
+  "block": "STORY",
+  "ord": "petg",
+  "skal": "inkorg 58 omgång 3: kapitel 2 (dag 6–10) flyttat från STEG i spel.js. Göran och PETG presenteras före dag 6 (Görans första stöld, Alis röda kvarn i butiken). Texterna går genom Regissören och okandaOrd körs när de köas."
+ },
+ {
+  "fil": "story.js",
+  "block": "STORY",
+  "ord": "bengt",
+  "skal": "inkorg 58 omgång 3: dag 16-texten flyttad från STEG i spel.js (samma text, samma villkor). Bengt-Åke och hans brevlåda finns i världen och nämns av Göran när han ger flagan före steget. Texten går genom Regissören; okandaOrd körs när den köas och boten dag 1–23 mäter OKÄNT ORD."
  }
 ]

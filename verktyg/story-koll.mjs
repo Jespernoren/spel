@@ -15,6 +15,10 @@ STORY_STEG.forEach((p, i) => {
   if (p.pil && !PIL_NAMN.includes(p.pil)) fel.push(`${vid}: pilen "${p.pil}" finns inte i världen`);
   if (!p.pil) fel.push(`${vid}: saknar pil`);
   if (p.handling && !HANDLINGAR.includes(p.handling)) fel.push(`${vid}: okänd handling "${p.handling}"`);
+  { /* 58 omgång 3: ett mål som säljer (Sälj …, lägg … i säljlådan/leveranslådan) har handling salj – annars håller stegBehover kvar saken och den går inte att sälja (boten fastnade dag 7) */
+    let m = ''; try { m = typeof p.mal === 'function' ? String(p.mal({ saljLagt: {}, stat: {} }, new Proxy({}, { get: () => () => '' }))) : String(p.mal || ''); } catch { m = String(p.mal || ''); }
+    if ((/^Sälj /.test(m) || /i (sälj|leverans)lådan/.test(m)) && p.handling && p.handling !== 'salj') fel.push(`${vid}: målet säljer ("${m.slice(0, 40)}") men handling är "${p.handling}" – saken blir osäljbar medan steget pågår`);
+  }
   for (const l of Object.keys(p.lagen || {})) if (!LAGEN.includes(l)) fel.push(`${vid}: okänt läge "${l}"`);
   for (const k of p.kraver || []) if (!givet.has(k)) fel.push(`${vid}: kräver "${k}" men inget tidigare steg ger det`);
   // bilden får inte vara en sak som ett tidigare, klart steg gällde (PIL PÅ GJORD SAK, i filen)
