@@ -13,3 +13,5 @@ node verktyg/lint-roster.mjs || { echo "lint-roster stoppade committen (se ovan)
 node verktyg/lint-spelord.mjs || { echo "lint-spelord stoppade committen (se ovan)"; exit 1; }
 node verktyg/lint-okant-ord.mjs || { echo "lint-okant-ord stoppade committen (se ovan)"; exit 1; }   # inkorg 36 (A-095)
 node verktyg/lint-dagnummer.mjs || { echo "lint-dagnummer stoppade committen (se ovan)"; exit 1; }   # inkorg 54 (A-109)
+# inkorg 62 (A-117): röktest mot index.html som ES-modul (som Pages laddar den) – den bundlade filen döljer fel som "Cannot access 'S' before initialization"
+if git diff --cached --name-only | grep -qE '^(spel/printa-hem|delat)/'; then node verktyg/roktest-modul.mjs || { echo "röktestet stoppade committen: spelet startar inte som modul"; exit 1; }; fi

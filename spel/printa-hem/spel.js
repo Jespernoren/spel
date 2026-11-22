@@ -725,7 +725,7 @@ for (const p of STORY_STEG) for (const d of p.dialog || []) { DIALOG.set(d.id, {
 for (const p of STORY_STEG) if (p.start && typeof p.start === 'string' && (p.startSvarPa || p.startVet || p.startFore)) DIALOG_TEXT.set(p.start, 'start:' + p.id);
 const orsakNu = (text) => { const id = DIALOG_TEXT.get(text); if (!id) return false; const p = aktivtStoryStag(); return !!p && p.startSvarPa === 'dialog:' + id; };
 const dialogText = (id) => { const d = DIALOG.get(id); if (!d) return ''; let s = {}; try { s = S; } catch {} return String(varde(d.text, s, storyHjalp) || ''); };   /* inkorg 62 AKUT: texterna i LAPPAR byggs innan S finns – annars kraschar modulen vid start */
-LAPPAR.salt = ['🧺 Ali', dialogText('aliGripSms')];   /* inkorg 61: Alis grip-sms står i story.js */
+Object.defineProperty(LAPPAR, 'salt', { get: () => ['🧺 Ali', dialogText('aliGripSms')], enumerable: true });   /* inkorg 62: läses när lappen visas, inte när modulen laddas */   /* inkorg 61: Alis grip-sms står i story.js */
 const hantSenast = {}; let senastDu = -1e9;
 /* inkorg 61: dialogloggen – allt som sägs, i den ordning det hördes, för verktyg/dialog-dag-N.md */
 const DIALOGLOGG = [];
@@ -4575,7 +4575,7 @@ function textLogg(kalla, vem, text, varfor = '') {
 }
 /* A-041: befintliga repliker som är roliga räknas också (dag 1 får sina skratt tidigt) */
 let humorTagg = null;
-function HUMOR_TAGG() { return humorTagg || (humorTagg = new Set([ALI_GAMMALKVARN, BROR_SMS1, ALI_BONUS_FORSTA, ALI_KRUKA, FAMILJ[2][0][1]])); }
+function HUMOR_TAGG() { return humorTagg || (humorTagg = new Set([ALI_GAMMALKVARN, BROR_SMS1(), ALI_BONUS_FORSTA, ALI_KRUKA(), FAMILJ[2][0][1]])); }
 /* ========== REGI:START · A-080 Regissören: en enda tidslinje för allt som visas och sägs ==========
    Allt som syns eller hörs går genom kön (kanalLagg → korKanal). Härifrån går de enda direkta anropen till skärmen (regiToastNu)
    och loggen REGI_LOGG (start, slut, kanal, prio) som Felknappen (A-082) och Nybörjarboten (A-081) läser.
@@ -6248,7 +6248,7 @@ function morgonTanke() {
 // läses upp 20 s efter BÖRJA DAGEN (inga repliker om maskinerna de första 20 s, BO)
 paHandelse('morgonkortStangt', ({ dag }) => {
   if (S.sangLappSen) { delete S.sangLappSen; if (!S.lappar.includes('sang')) paket([{ lapp: 'sang' }], { varfor: 'EA #10: dagboken efter BÖRJA DAGEN' }); }
-  if (dag >= 2 && !S.ritningar.includes('recept:kruka')) paket([{ ali: ALI_KRUKA }, { ge: () => { if (!S.ritningar.includes('recept:kruka')) S.ritningar.push('recept:kruka'); sparaSnart(); } }, { toast: ['🪴 Ali gav dig receptet till blomkrukan – gratis', 'guld'] }], { om: 8000, varfor: 'gamla sparfiler: krukan' });
+  if (dag >= 2 && !S.ritningar.includes('recept:kruka')) paket([{ ali: ALI_KRUKA() }, { ge: () => { if (!S.ritningar.includes('recept:kruka')) S.ritningar.push('recept:kruka'); sparaSnart(); } }, { toast: ['🪴 Ali gav dig receptet till blomkrukan – gratis', 'guld'] }], { om: 8000, varfor: 'gamla sparfiler: krukan' });
   const t = S.morgonTanke; if (t) paket([{ tanke: t.text }], { om: 6000, vikt: 'STORY', varfor: 'morgontanke' }); });   // BV: efter dagens första mål
 function senareIdag(fn) {
   const dag = S.dag; let gjord = false;
@@ -7025,7 +7025,7 @@ const ALI_KOP_REPL = { korg: 'En sopsäck. Den är ren. Nästan.' };   // punkt 
 const ALI_KVARN_GAVA = '', TRAD_T = 'Det blir tråd! Riktig plasttråd.', STROM_HJALP_T = 'Cykeln… och storebrors generator?';   /* A-073: godkända av Jesper 17:27 */
 const ALI_GAMMALKVARN = 'Ali här. En kvarn? Jag har pappas. Han värmde hålskivan. Nu kommer det tråd i stället för köttfärs. Ät inte den.';   /* A-059 */   /* DT */
 const ALI_BATTERI = 'Batteriet ur min gamla Volvo. Bilen dog 2016. Batteriet vägrade.';   /* inkorg 61 p.5: "Ali här." bara i sms – han står framför dig */   /* DT: Alis gamla bilbatteri */
-const ALI_POWERBANK = dialogText('aliPowerbank');   /* inkorg 61: texten står i story.js */   /* ED8: efter kvarnens första rulle, med gåvokortet */
+const ALI_POWERBANK = () => dialogText('aliPowerbank');   /* inkorg 61: texten står i story.js */   /* ED8: efter kvarnens första rulle, med gåvokortet */
 function kopDirekt(id) {
   if (id === 'gammalkvarn') {   /* inkorg 18: kvarnen köps – köpet är källan, giKvarn lägger den i handen */
     if (S.kvarnKopt) { aliRepl = 'Den har du ju redan.'; return false; }
@@ -7170,7 +7170,7 @@ function lasUpp(id, k, reserv = false) {
   if (KLAGO[id] && !reserv && sek < B.FLASK_GRANS[k]) regelvakt.brott('FÖR TIDIGT KLAGOMÅL', `${id}: klagotanken före gränsen (${sek} av ${B.FLASK_GRANS[k]})`);   /* EG 18 */
   handelse('upplast', { id, flask: k });
   if (id === 'kruka') S.krukaErbjuden = true;
-  const ursprung = id === 'grip' ? (S.aliStoryVisad ? null : { lapp: 'salt' }) : id === 'kruka' ? { sms: ['ali', ALI_KRUKA], gava: 'visa:kruka' }
+  const ursprung = id === 'grip' ? (S.aliStoryVisad ? null : { lapp: 'salt' }) : id === 'kruka' ? { sms: ['ali', ALI_KRUKA()], gava: 'visa:kruka' }
     : ALI_SPECIAL[id] ? { sms: ['ali', ALI_SPECIAL[id]], gava: 'visa:byggsats:' + id } : ALI_UPPLAS[id] ? { sms: ['ali', ALI_UPPLAS[id]], gava: 'visa:byggsats:' + (/^vindsnurra/.test(id) ? 'vindsnurra' : /^trim_skrivare\d$/.test(id) ? 'trim_skrivare' : /^trim_rod\d$/.test(id) ? 'trim_skrivare_rod' : /^trim_kolf\d$/.test(id) ? 'trim_skrivare_kolf' : id === 'bank2' ? 'bank' : id === 'solpark2' ? 'solpark' : id) } : null;
   paket([KLAGO[id] && !reserv && { tanke: KLAGO[id] }, ursprung && { ...ursprung, villkor: () => id === 'kruka' || id === 'grip' || !kopt(id) }], { svar: true, vikt: 'STORY', varfor: `EE: ${id} låses upp av flaskhalsen ${k}` });   /* SEKVENS: Ali presenterar inte det man redan köpt */
 }
@@ -8235,17 +8235,17 @@ function flytSiffra(matare, text) {
 // plocka: "+20 %" poppar vid siktet, snabba plock i rad ger kombo med stigande ton
 let komboN = 0, komboT = 0, aliBonus = false;
 // Ali ger lite extra ibland: alltid första gången, sen slumpvis upp till tre gånger dag 1 – en liten kick
-const ALI_BONUS_FORSTA = 'Du får bonus! Första kunden som printar själv på 25 år. 40 kr extra.', ALI_KRUKA = dialogText('aliKrukaSms');   /* inkorg 61 */
+const ALI_BONUS_FORSTA = 'Du får bonus! Första kunden som printar själv på 25 år. 40 kr extra.', ALI_KRUKA = () => dialogText('aliKrukaSms');   /* inkorg 61 */
 const ALI_BONUS_RAD = [[10, 'Du får bonus! 10 kr extra. Du ser hungrig ut.'], [15, 'Du får bonus! 15 kr extra. Pappa hade gillat dig.'], [20, 'Du får bonus! 20 kr extra. Säg inget till min fru.'], [25, 'Du får bonus! 25 kr extra. Kvalitet. Nästan.']];
 function giAliBonus() {
   let kr = 0, rad = '';
   /* EA: försäljningspaketet – Ali → powerbanken och toasten → storebror → (filamenttanken från målet) → nytt mål */
   if (!S.valkomst) { S.valkomst = true; const brorKvar = !S.brorSms; S.brorSms = true; sparaSnart();
-    if (brorKvar) paket([{ sms: ['bror', BROR_SMS1], vikt: 'REAKTION', efter: true }], { varfor: 'första försäljningen' });   /* ED8: Alis svar i butiken räcker – ingen ny replik utan röst */   /* ED8: första försäljningen ger bara pengarna – powerbanken kommer efter kvarnens första rulle */
+    if (brorKvar) paket([{ sms: ['bror', BROR_SMS1()], vikt: 'REAKTION', efter: true }], { varfor: 'första försäljningen' });   /* ED8: Alis svar i butiken räcker – ingen ny replik utan röst */   /* ED8: första försäljningen ger bara pengarna – powerbanken kommer efter kvarnens första rulle */
     handelse('forstaForsaljning'); return; }
   /* EA: krukan dag 1 – vid första försäljningen efter gripen bryter den av nyckelringarna (regel 7) */
   if (false) {   /* EE: krukan erbjuds av flaskhalsen (inkomst) – se lasUpp */ S.krukaGiven = true; sparaSnart();
-    paket([{ ali: ALI_KRUKA }, { ge: () => { S.krukaErbjuden = true; sparaSnart(); } }], { varfor: 'ED: Ali erbjuder krukreceptet – man köper det (40 kr)' }); return; }
+    paket([{ ali: ALI_KRUKA() }, { ge: () => { S.krukaErbjuden = true; sparaSnart(); } }], { varfor: 'ED: Ali erbjuder krukreceptet – man köper det (40 kr)' }); return; }
   else if (S.dag === 1 && (S.aliBonusDag1 || 0) < 1 && Math.random() < 0.4) {   // punkt BD: högst en slumpbonus dag 1
     S.aliBonusDag1 = (S.aliBonusDag1 || 0) + 1; [kr, rad] = ALI_BONUS_RAD[Math.floor(Math.random() * ALI_BONUS_RAD.length)]; }
   if (!kr) return;
@@ -8263,15 +8263,15 @@ function forstaPrintWow(sk) {
 }
 paHandelse('tagitUrPrint', ({ sak }) => { if (S.dag === 1 && sak === 'nyckelring') brorSms(); });   // punkt BC: exakt trigger
 // punkt AS: storebrors två sms när den första nyckelringen är klar (undantag från regeln om inga sms dag 1)
-const BROR_SMS1 = dialogText('brorSms1');   /* inkorg 61: texterna står i story.js */
-const BROR_SMS2 = dialogText('brorSms2');
+const BROR_SMS1 = () => dialogText('brorSms1');   /* inkorg 61: texterna står i story.js */
+const BROR_SMS2 = () => dialogText('brorSms2');
 let aliRopTid = 0, brorVantar = false;
 function brorSms() {
   if (S.brorSms) return;
   /* A-085 rad 23 p.6: storebror hör av sig direkt efter första printen, inte efter första försäljningen */
   S.brorSms = true; sparaSnart();
-  paket([{ sms: ['bror', BROR_SMS1] }], { vikt: 'REAKTION' });   /* EA #5: storebror ligger i försäljningspaketet – det här är bara för gamla sparfiler */
-  if ((S.stat.salt || 0) < 1) { paket([{ sms: ['bror', BROR_SMS2] }, { ge: () => { aliRopTid = performance.now() + 30000; } }], { villkor: () => (S.stat.salt || 0) < 1, varfor: 'storebror om Ali' }); }   // pekar inte bakåt
+  paket([{ sms: ['bror', BROR_SMS1()] }], { vikt: 'REAKTION' });   /* EA #5: storebror ligger i försäljningspaketet – det här är bara för gamla sparfiler */
+  if ((S.stat.salt || 0) < 1) { paket([{ sms: ['bror', BROR_SMS2()] }, { ge: () => { aliRopTid = performance.now() + 30000; } }], { villkor: () => (S.stat.salt || 0) < 1, varfor: 'storebror om Ali' }); }   // pekar inte bakåt
 }
 // Alis rop över vägen kommer bara om man inte har gått dit inom ca 30 s efter storebrors sms
 setInterval(() => {
@@ -8801,14 +8801,14 @@ function saljTillAli(t, n) {
   giAliBonus();
   return summa;
 }
-const ALI_PB_KOM = dialogText('aliPbKom');   /* inkorg 61 */
+const ALI_PB_KOM = () => dialogText('aliPbKom');   /* inkorg 61 */
 /* A-085 rad 23 p.11: orsak före verkan – när powerbank-uppgiften är nästa säger Ali till först (sms), sedan kommer tanken och uppgiften */
 let pbT0 = 0; const PB_VANTA_MS = 2000;   /* inkorg 46 p.2: målrutan tom högst 4 s – sms:et är ett svar på försäljningen och kommer direkt */
 let svarT0 = { steg: -1, t: 0 };
 function pbVantar() {   /* inkorg 61: uppgiften väntar (högst 8 s) på det stegets start svarar på – Alis sms före "Ali har något åt mig", grip-sms:et före "Ali har en ritning" */
   const p = aktivtStoryStag(); if (!p?.startSvarPa || harHant(p.startSvarPa)) return false;
   if (p.id === 'powerbank' && (S.powerbankGiven || S.powerbank)) return false;
-  if (p.id === 'powerbank' && !S.pbSms) { S.pbSms = true; sparaSnart(); paket([{ sms: ['ali', ALI_PB_KOM] }, { ge: () => { S.pbSmsVisad = true; sparaSnart(); } }], { vikt: 'STORY', svar: true, varfor: 'rad 23 p.11: Ali före powerbank-uppgiften' }); }
+  if (p.id === 'powerbank' && !S.pbSms) { S.pbSms = true; sparaSnart(); paket([{ sms: ['ali', ALI_PB_KOM()] }, { ge: () => { S.pbSmsVisad = true; sparaSnart(); } }], { vikt: 'STORY', svar: true, varfor: 'rad 23 p.11: Ali före powerbank-uppgiften' }); }
   if (svarT0.steg !== S.steg) svarT0 = { steg: S.steg, t: performance.now() };
   return performance.now() - svarT0.t <= PB_VANTA_MS;
 }
@@ -8861,7 +8861,7 @@ function aliHamtarSaljlada() {
 }
 let aliRepl = '', aliFlik = 'kop';
 let aliVald = null;
-const ALI_FORSTA = dialogText('aliForsta');   /* inkorg 61 */
+const ALI_FORSTA = () => dialogText('aliForsta');   /* inkorg 61 */
 // batteribanker och solpaneler: varje ny kostar dubbelt så mycket – el ska vara något man jobbar för
 const DUBBEL_PRIS = ['bank', 'sol', 'solpark'];
 const antalAv = (id) => placerade.filter((p) => p.typ === id).length + antalInv('byggsats:' + id);
@@ -9215,7 +9215,7 @@ function oppnaMarknad() {
   if (bubbla && /^Ali här\.\s/.test(bubbla) && !DIALOG_TEXT.has(bubbla)) bubbla = bubbla.replace(/^Ali här\.\s*/, '');   /* inkorg 61 p.5: i butiken säger han det utan sms-hälsningen – en regel för alla hans repliker */
   const visaGava = bubbla && bubbla === aliRepl ? aliReplGava : bubbla && bubbla === aliSagt ? aliGava : null;   /* ED7 */
   if (bubbla && bubbla === aliRepl) { aliGava = aliReplGava; } aliReplGava = null;
-  if (bubbla && bubbla !== aliSagt && harSagt(aliTal(bubbla) || bubbla) && ![ALI_FORSTA, ALI_GAMMALKVARN, ALI_BONUS_FORSTA, ALI_POWERBANK, ALI_BATTERI, ALI_KVARN_GAVA].includes(bubbla) && !bubbla.includes(ALI_KVARN_GAVA)) bubbla = '*nickar*';   // CT: hellre en nick än en upprepning
+  if (bubbla && bubbla !== aliSagt && harSagt(aliTal(bubbla) || bubbla) && ![ALI_FORSTA(), ALI_GAMMALKVARN, ALI_BONUS_FORSTA, ALI_POWERBANK(), ALI_BATTERI, ALI_KVARN_GAVA].includes(bubbla) && !bubbla.includes(ALI_KVARN_GAVA)) bubbla = '*nickar*';   // CT: hellre en nick än en upprepning
   // DC: en sida – Ali överst, köpa i mitten (rutnät + infokort), sälja på en rad längst ned
   const sorteraKop = (a, b) => (dc.nya.has(b.key) - dc.nya.has(a.key)) || ((DC_LINJE[linjeFor(a.key)] || 9) - (DC_LINJE[linjeFor(b.key)] || 9)) || (!!a.las - !!b.las) || a.pris - b.pris;
   const kop = kopL.slice().sort(sorteraKop);
@@ -9260,7 +9260,7 @@ function oppnaMarknad() {
     <section class="dc-salj"><div class="dc-rub"><b>Sälja</b><span class="dc-sum">Klicka på kortet för att sälja</span></div>${saljKort(saljL, ejL)}</section>
   </div>`;
   const html = panel({ ikon: 'kop', titel: 'Alis butik', resurser: resurserHtml(), kropp, klass: 'dc-panel' });
-  if (bubbla !== aliSagt) aliSag(bubbla, [ALI_FORSTA, ALI_GAMMALKVARN, ALI_BONUS_FORSTA, ALI_POWERBANK, ALI_BATTERI, ALI_KVARN_GAVA].includes(bubbla) || bubbla.includes(ALI_KVARN_GAVA) || bubbla === kannaRepl ? 'STORY' : 'REAKTION');
+  if (bubbla !== aliSagt) aliSag(bubbla, [ALI_FORSTA(), ALI_GAMMALKVARN, ALI_BONUS_FORSTA, ALI_POWERBANK(), ALI_BATTERI, ALI_KVARN_GAVA].includes(bubbla) || bubbla.includes(ALI_KVARN_GAVA) || bubbla === kannaRepl ? 'STORY' : 'REAKTION');
   if (bubbla && bubbla !== aliSagt) textLogg('butiksbubbla', 'ali', bubbla);
   aliSagt = bubbla; aliRepl = '';
   oppnaRuta(html, (el) => {
@@ -12648,8 +12648,8 @@ function rostManus() {
   RESA.forEach((x) => (x.val || []).forEach((v) => (v[3] || []).forEach((t) => { L.push(['rolf', t]); D.push(['rolf', t, t, 'Sopbilsresan: konditoriet']); })));   // redan på värmländska – ingen rolfDialekt
   vid('Rolfs tack för presenter, jobblappar och fynd'); Object.values(ROLF_TACK).forEach((x) => add('rolf', x.text)); ROLF_JOBBLAPP.forEach((t) => add('rolf', t)); [2, 3, 4].forEach((n) => add('rolf', rolfFyndSms(n)));
   vid('Rolfs sms om marken och säljlådan'); Object.values(ROLF_MARK).forEach((t) => add('rolf', t)); LADAN_SMS.forEach((t) => add('rolf', t)); add('rolf', ROLF_SALJLADA); add('rolf', ROLF_RODA);
-  vid('Storebrors sms dag 1 (punkt AS)'); add('bror', BROR_SMS1); add('bror', BROR_SMS2);
-  vid('Ali om det begagnade (punkt AS)'); add('ali', ALI_GAMMALKVARN); add('ali', ALI_BATTERI); add('ali', ALI_POWERBANK);
+  vid('Storebrors sms dag 1 (punkt AS)'); add('bror', BROR_SMS1()); add('bror', BROR_SMS2());
+  vid('Ali om det begagnade (punkt AS)'); add('ali', ALI_GAMMALKVARN); add('ali', ALI_BATTERI); add('ali', ALI_POWERBANK());
   vid('Haggan Helen i efterspelet (punkt AN)'); HELEN_RADER().forEach((t) => add('helen', t)); [HELEN_ROLF_SMS, HELEN_ROLF_RITNING, HELEN_ROLF_1987].forEach((t) => add('rolf', t));
   vid('Pappas besök (med Rolf första gången)'); [PAPPA_SCEN, ...PAPPA_KORT, PAPPA_SLUT, ...PAPPA_DRYG, PAPPA_DRYG_SLUT].flat().forEach(([v, t]) => { if (t && t !== '…') add(v, t); });
   vid('Sms med svarsalternativ och småprat'); SMS_POOL.forEach((m) => { add(m.vem, m.text); (m.svar || []).forEach(([, f]) => add(m.vem, f)); });
@@ -12658,7 +12658,7 @@ function rostManus() {
   vid('Repliker ute i världen och när Ali säger nej'); LIV_ROST.forEach(([v, t]) => add(v, t)); Object.values(ALI_NEJ).forEach((t) => add('ali', t));
   vid('Sms ibland (storebror och mamma)'); BROR_IBLAND.forEach((t) => add('bror', t)); MAMMA_IBLAND.forEach((t) => add('mamma', t));
   vid('Mammas svar om burkarna'); [...MAMMA_SVAR_K1, ...Object.values(MAMMA_K1_SLUT)].forEach((t) => add('mamma', t)); MAMMA_SVAR_K2.forEach((t) => add('mamma', t));
-  vid('Ali i butiken'); [...ALI_SMAPRAT, ...ALI_HEJ, ...ALI_KLICKAR, ...ALI_BLOMMAR].forEach((t) => add('ali', t)); add('ali', ALI_FORSTA); ALI_STANGT.forEach((t) => add('ali', t)); Object.values(ALI_SPECIAL).forEach((t) => add('ali', t));
+  vid('Ali i butiken'); [...ALI_SMAPRAT, ...ALI_HEJ, ...ALI_KLICKAR, ...ALI_BLOMMAR].forEach((t) => add('ali', t)); add('ali', ALI_FORSTA()); ALI_STANGT.forEach((t) => add('ali', t)); Object.values(ALI_SPECIAL).forEach((t) => add('ali', t));
   vid('Ali när du printat hans modell'); for (const [id, m] of aliStoltSaker()) add('ali', aliStoltMall(id)(sakNamn(m.namn)));
   vid('Alis sms om nya 3D-modeller'); for (const id of new Set(Object.values(HUVUDKOP))) if (MASKINER[id] && !ALI_SPECIAL[id] && !ALI_INTE.has(id)) add('ali', ALI_NY_MALL(sakNamn(MASKINER[id].namn)));
   vid('Full byggplatta (punkt 11)'); add('du', PLATTA_TANKE); add('bror', PLATTA_BROR);
@@ -16898,7 +16898,7 @@ function smsOrdning(fran, text) {
   const fel = (v) => textLogg('brott', 'FEL ORDNING', `${fran}: "${String(text).slice(0, 50)}" – ${v}`);
   try {
     if (text === FAMILJ[1]?.[0]?.[1] && !S.skrivareLastad) fel('före ankaret lastatAv');
-    if (text === BROR_SMS1 && !((S.stat.printat || 0) >= 1)) fel('före första printen');   /* A-090 p.8: rad 23 p.6 – sms:et kommer direkt efter första printen */
+    if (text === BROR_SMS1() && !((S.stat.printat || 0) >= 1)) fel('före första printen');   /* A-090 p.8: rad 23 p.6 – sms:et kommer direkt efter första printen */
     const bi = MAMMA_BURK_ARG.indexOf(text);
     if (bi >= 0) { if (bi > (S.burkSmsSist ?? -1) + 1) fel(`burk-sms ${bi + 1} före ${bi}`); S.burkSmsSist = Math.max(S.burkSmsSist ?? -1, bi); }
     if ((fran === 'rolf' || fran === 'chefen') && !kand('rolf')) fel('Rolf är inte mött än');

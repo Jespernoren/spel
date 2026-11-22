@@ -1,4 +1,6 @@
 #!/bin/sh
+# inkorg 62 (A-117): först index.html som modul, sedan den bundlade filen
+node verktyg/roktest-modul.mjs || { echo "röktestet (modul) stoppade pushen"; exit 1; }
 # A-076 18:05: röktest före varje push – tom localStorage → 0 sidfel → STARTA → intro → dagbokskort → spelvyn
 URL="${ROKTEST_URL:-http://127.0.0.1:8765/printa-hem.html}"
 if curl -s -o /dev/null "$URL"; then
