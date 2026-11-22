@@ -568,7 +568,7 @@ export const STORY = [
       mal: 'Köp tomten du bor på',
       start: 'Kommunen säljer tomten vid tippen. Ingen annan ville ha den.',
       klar: (S, G) => G.agerMark('egen') },
-    { id: 'm16-lagg-flagan-bengt', forDu: ['men', 'grannen är arg'], sak: 'guldflaga', handling: 'lagg', pil: 'postlada', bild: 'guldflaga',
+    { id: 'm16-lagg-flagan-bengt', forDu: ['men', 'grannen är arg'], sak: 'guldflaga', handling: 'lagg', pil: 'bengtLada', bild: 'guldflaga',
       mal: 'Lägg flagan i Bengt-Åkes brevlåda',
       klar: (S) => !!S.flagaBengt || !!S.grindKapad },
     { id: 'm16-ge-rolf-kapskiva', forDu: ['darfor', 'Rolf har hjälpt mig'], sak: 'kapskiva', handling: 'lagg', pil: 'postlada', bild: 'kapskiva',

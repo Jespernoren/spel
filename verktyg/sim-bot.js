@@ -285,6 +285,7 @@
   const ledig = (val = {}) => { const petg = arPetg(val); const l = skrivareAlla(petg).slice().sort((a, b) => b.gen - a.gen);
     const g = val.maskin ? 0 : (H.VAROR[val.typ]?.gram || 0), stor = g >= 2000 && l.some((x) => x.gen >= 2);   /* AX g48: stora saker (kaminen) får inte plats på Skrivare S – ta den största, hellre i kö */
     const fri = l.filter((x) => !x.jobb && !x.klar && (!stor || x.gen >= 2));
+    { const pp = pilPos(); if (pp) { const under = fri.find((x) => Math.hypot(x.mesh.position.x - pp.x, x.mesh.position.z - pp.z) < 1.5); if (under) return under; } }   /* inkorg 50 p.2: pekar pilen på en skrivare som passar tar boten den (nybörjaren följer pilen) */
     return fri[0] || (stor ? l.find((x) => x.gen >= 2) : null) || l[0] || skrivareAlla()[0]; };
   async function taUt(sk) { if (!sk.klar) return; const n = H.antalUt(sk); await klick(sk.mesh, 'skrivaren'); handling(`tar ut ${n} st ur skrivaren`);
     if (sk.klar && H.antalUt(sk) === n) {   /* AX g50: fulla fickor – lägg en sak i kistan och ta ut igen (kapskivan fastnade dag 16) */
@@ -323,7 +324,8 @@
   // ---------- köp + printa + använd ----------
   const MASKIN = (id) => H.MASKINER[id];
   const tjanaFel = new Set();   /* saker som inte gick att printa (slut på röd PETG) – prövas igen nästa dag */
-  async function tjana(mal, varfor) {
+  async function tjana(mal, varfor) { const f0 = nyMalSteg.forstaGa; nyMalSteg.forstaGa = false; try { return await tjana0(mal, varfor); } finally { nyMalSteg.forstaGa = f0; } }   /* inkorg 50 p.2: att tjäna pengar till nästa köp är ett eget ärende, inte att följa pilen */
+  async function tjana0(mal, varfor) {
     if (tjanaFel.dag !== S.dag) { tjanaFel.clear(); tjanaFel.dag = S.dag; }
     // printa och sälj den bästa saken du har recept på tills du har `mal` kr
     let varv = 0;

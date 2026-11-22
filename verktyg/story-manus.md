@@ -979,7 +979,7 @@
 - **Kvitto:** –
 
 ### 2. Lägg flagan i Bengt-Åkes brevlåda `m16-lagg-flagan-bengt`
-- **Moment:** – · **sak:** guldflaga · **bild:** guldflaga · **pil:** postlada
+- **Moment:** – · **sak:** guldflaga · **bild:** guldflaga · **pil:** bengtLada
 - **Handling:** lagg → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
 - **Start (sägs när steget börjar):** –
