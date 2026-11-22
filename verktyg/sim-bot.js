@@ -417,9 +417,11 @@
     /* EA: som en riktig spelare – boten gör nästa mål först när det syns i målrutan (högst 60 s) */
     for (let w = 0; w < 120 && H.malSynligt && !H.malSynligt(); w++) await vanta(0.5);
     await nyLasMal();   /* A-081 */
-    if (S.post.tillMig?.length || S.post.lapp) { await klick(H.postlada, 'Rolfs postlåda'); await stangPopups(); }
-    if (H.vantarPaNummer?.()) { await klick(H.postlada, 'Rolfs postlåda (telefonnumret)'); }
-    for (const sk of skrivareAlla()) if (sk.klar && !sk.jobb) await taUt(sk);
+    /* inkorg 50 p.2: ärenden vid sidan av målet (posten, ta ut prints) är inte att följa pilen – FÖRVIRRAD mäts på första gången boten går mot målet */
+    const sidoArende = async (fn) => { const f = nyMalSteg.forstaGa; nyMalSteg.forstaGa = false; try { await fn(); } finally { nyMalSteg.forstaGa = f; } };
+    if (S.post.tillMig?.length || S.post.lapp) await sidoArende(async () => { await klick(H.postlada, 'Rolfs postlåda'); await stangPopups(); });
+    if (H.vantarPaNummer?.()) await sidoArende(() => klick(H.postlada, 'Rolfs postlåda (telefonnumret)'));
+    for (const sk of skrivareAlla()) if (sk.klar && !sk.jobb) await sidoArende(() => taUt(sk));
     /* ED4: FÖRE – AX:s egna villkor (oberoende av spelets finns()): syns något innan det finns? */
     { const syns = (sel) => { const e = document.querySelector(sel); return !!e && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden'; };
       const fore = [];

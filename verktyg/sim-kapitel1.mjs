@@ -285,7 +285,7 @@ function nyborjarAnalys(r) {
   const dagT0 = {}; for (const e of R) if (dagT0[e.dag] == null || e.start < dagT0[e.dag]) dagT0[e.dag] = e.start;
   const t = (e) => (e.start - (dagT0[e.dag] ?? e.start)) / 1000;
   for (let i = 1; i < v.length; i++) { const a = v[i - 1], b = v[i]; if (b.start - a.start < 2000 && a.text !== b.text && a.dag === b.dag) F.push({ dag: b.dag, t: t(b), typ: 'TRÄNGSEL', text: `${a.kanal} ”${a.text.slice(0, 40)}” och ${b.kanal} ”${b.text.slice(0, 40)}” inom ${((b.start - a.start) / 1000).toFixed(1)} s` }); }
-  for (const e of v) { const beh = 1200 + 60 * e.text.length; if (e.slut - e.start < beh - 50) F.push({ dag: e.dag, t: t(e), typ: 'HANN INTE LÄSA', text: `${e.kanal} ”${e.text.slice(0, 50)}” stod ${((e.slut - e.start) / 1000).toFixed(1)} s, behöver ${(beh / 1000).toFixed(1)} s` }); }
+  for (const e of v) { const beh = 2000 + 60 * e.text.length; if (e.kanal === 'dagbok' && e.slut === e.start) continue; /* inkorg 50 p.6: dagbokskortet står tills FORTSÄTT (loggas med 0 ms); gränsen är spelets LAS_BAS 2 s + 60 ms per tecken */ if (e.slut - e.start < beh - 50) F.push({ dag: e.dag, t: t(e), typ: 'HANN INTE LÄSA', text: `${e.kanal} ”${e.text.slice(0, 50)}” stod ${((e.slut - e.start) / 1000).toFixed(1)} s, behöver ${(beh / 1000).toFixed(1)} s` }); }
   for (const e of R.filter((x) => x.dolt)) F.push({ dag: e.dag, t: t(e), typ: 'DOLT', text: `${e.vem || 'bubbla'}: ”${e.text.slice(0, 50)}” sades utom bild` });
   for (const e of r.logg.filter((x) => x.kalla === 'brott' && x.vem === 'OKÄNT ORD')) F.push({ dag: e.dag, t: e.t, typ: 'OKÄNT ORD', text: e.text });
   return F.sort((a, b) => a.dag - b.dag || a.t - b.t);
