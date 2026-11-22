@@ -9736,7 +9736,7 @@ const ui = new FpUI({
     if (!nere) return;
     try { if (S.speltest?.pa) { const h = interaktor.hovrad; if (!h) stLogg('klick', { pa: null, gick: false, varfor: 'inget i siktet', verktyg: valdTyp() || 'hand' }); else if (h === cykel || h === vevYta) stLogg('klick', { pa: String(interaktor.text || '').slice(0, 80), verktyg: valdTyp() || 'hand', hall: true }); } } catch {}   /* inkorg 53: klicket med musen – det som träffar något loggas i aktivera */
     gripKlick();
-    if (interaktor.hovrad === cykel || interaktor.hovrad === vevYta) return;
+    if ((interaktor.hovrad === cykel || interaktor.hovrad === vevYta) && !monteraPa(interaktor.hovrad)) return;   /* AKUT 09:30: ett klick på cykeln med något att montera monterar (powerbanken) – annars är cykeln bara att hålla in och trampa */
     if (niva() === MAGNET_NIVA && (!interaktor.hovrad || interaktor.hovrad.userData.typ === 'skrap')) return;
     if (bodSpoke.visible) { byggBodHar(); return; }
     if (VAROR[valdTyp()]?.tapet != null) { tapetsera(valdTyp()); return; }
