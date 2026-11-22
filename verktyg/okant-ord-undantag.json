@@ -396,10 +396,6 @@
   "skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
  },
  {
-  "block": "JAG_TAL",
-  "skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
- },
- {
   "block": "KNUFF_T",
   "skal": "Går genom Regissören (tanke, info, sms, bubbla, dagbok, post). okandaOrd körs när texten köas och loggar OKÄNT ORD med källa; mäts med boten dag 1–23."
  },
@@ -780,5 +776,35 @@
   "block": "STORY",
   "ord": "ali",
   "skal": "inkorg 58: dag 1-texterna om Ali gäller steg efter att Ali presenterat sig (han ropar \"Hallå! Du där borta …\" när rullen tar slut, steget rullSlut). Texterna går genom Regissören; okandaOrd körs när de köas (förut JAG_TAL/PAMINN_T/STEG_TAL)."
+ },
+ {
+  "fil": "story.js",
+  "block": "rolf",
+  "ord": "rolf",
+  "skal": "inkorg 58 omgång 3: dag 2–5 flyttade från STEG/rolfSteg i spel.js. Rolf, sopbilen och tippen är presenterade före dag 2 (lappen på sopsäckarna, sopbilen dag 1–2, grindskylten). Texterna går genom Regissören och okandaOrd körs när de köas."
+ },
+ {
+  "fil": "story.js",
+  "block": "rolf",
+  "ord": "sopbil",
+  "skal": "inkorg 58 omgång 3: dag 2–5 flyttade från STEG/rolfSteg i spel.js. Rolf, sopbilen och tippen är presenterade före dag 2 (lappen på sopsäckarna, sopbilen dag 1–2, grindskylten). Texterna går genom Regissören och okandaOrd körs när de köas."
+ },
+ {
+  "fil": "story.js",
+  "block": "STORY",
+  "ord": "rolf",
+  "skal": "inkorg 58 omgång 3: dag 2–5 flyttade från STEG/rolfSteg i spel.js. Rolf, sopbilen och tippen är presenterade före dag 2 (lappen på sopsäckarna, sopbilen dag 1–2, grindskylten). Texterna går genom Regissören och okandaOrd körs när de köas."
+ },
+ {
+  "fil": "story.js",
+  "block": "STORY",
+  "ord": "sopbil",
+  "skal": "inkorg 58 omgång 3: dag 2–5 flyttade från STEG/rolfSteg i spel.js. Rolf, sopbilen och tippen är presenterade före dag 2 (lappen på sopsäckarna, sopbilen dag 1–2, grindskylten). Texterna går genom Regissören och okandaOrd körs när de köas."
+ },
+ {
+  "fil": "story.js",
+  "block": "STORY",
+  "ord": "tippen",
+  "skal": "inkorg 58 omgång 3: dag 2–5 flyttade från STEG/rolfSteg i spel.js. Rolf, sopbilen och tippen är presenterade före dag 2 (lappen på sopsäckarna, sopbilen dag 1–2, grindskylten). Texterna går genom Regissören och okandaOrd körs när de köas."
  }
 ]

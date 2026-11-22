@@ -237,3 +237,321 @@
 - **Påminnelse:** "Sängen in i skjulet. Sen sover jag."
 - **Kvitto:** –
 - **Uppläsning:** "Ställ sängen i skjulet och sov."
+
+## Dag 2 (kapitel 1)
+
+### 1. *(beror på läget)* 'Köp kvarnmotorn hos Ali (50 kr)' `kopMotor`
+- **Moment:** Kvarnmotorn · **sak:** byggsats:kvarnmotor · **bild:** byggsats:kvarnmotor · **pil:** ali
+- **Handling:** kop → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Vevandet tar på armarna. Ali har en motor till kvarnen."
+- **Påminnelse:** –
+- **Kvitto:** –
+- **Uppläsning:** "Köp kvarnmotorn hos Ali." (utan pengar: "Printa och sälj mer tills du har femtio kronor till kvarnmotorn.")
+
+### 2. Printa kvarnmotorn till kvarnen `monteraMotor`
+- **Moment:** Kvarnmotorn · **sak:** byggsats:kvarnmotor · **bild:** byggsats:kvarnmotor · **pil:** kvarn
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Motorn ska sitta där veven sitter. Jag printar den först."
+- **Påminnelse:** –
+- **Kvitto:** –
+- **Uppläsning:** "Printa kvarnmotorn på skrivaren och ta ut den. Då sätter du den direkt på kvarnen."
+
+### 3. *(beror på läget)* 'byggsats:korg' / 'Ta på dig sopsäcken' / 'Kolla vad som flög ut från sopbilen' / 'Städa gården' `kopSack`
+- **Moment:** Städa gården · **sak:** byggsats:korg · **bild:** byggsats:korg · **pil:** gard
+- **Handling:** ta → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Gården är full av skräp. Jag börjar vid skjulet."
+- **Påminnelse:** –
+- **Kvitto:** –
+- **Uppläsning:** "Städa gården. Sopbilen brukar köra förbi vid den här tiden."
+
+### 4. Städa klart gården `n1-stada-klart-garden`
+- **Moment:** Städa gården · **sak:** skrap · **bild:** – · **pil:** gard
+- **Handling:** ta → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Halva gården är ren. Tar jag resten blir det fint på riktigt."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 5. *(beror på läget)* ' + i ? ' / 'Läs brevet i Rolfs postlåda' `rolf0-brev`
+- **Moment:** Rolfs brev · **sak:** brev · **bild:** – · **pil:** postlada
+- **Handling:** ta → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 6. *(beror på läget)*  `rolf0-printa`
+- **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** skrivare
+- **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 7. *(beror på läget)*  `rolf0-ge`
+- **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** postlada
+- **Handling:** lagg → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 8. Printa vindsnurran till taket `vindsnurra`
+- **Moment:** Vindsnurran · **sak:** byggsats:vindsnurra · **bild:** byggsats:vindsnurra · **pil:** skjul
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "En vindsnurra på skjulets tak. Då blir det ström när det blåser."
+- **Påminnelse:** –
+- **Kvitto:** "Den snurrar! Långsamt. Men den snurrar."
+
+### 9. Bygg en dörr till skjulet `n1-bygg-dorr-skjulet`
+- **Moment:** Dörren · **sak:** byggsats:dorr · **bild:** byggsats:dorr · **pil:** skjul
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Det drar från dörrhålet. En dörr kan jag printa."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 10. Klart för idag – sov när du vill `sov2`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 3 (kapitel 1)
+
+### 1. *(beror på läget)* ' + i ? ' / 'Läs brevet i Rolfs postlåda' `rolf1-brev`
+- **Moment:** Rolfs brev · **sak:** brev · **bild:** – · **pil:** postlada
+- **Handling:** ta → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Hämta 5 skräp på soptippen `n2-hamta-skrap`
+- **Moment:** Rolfs brev · **sak:** skrap · **bild:** – · **pil:** tippen
+- **Handling:** ta → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Nyckeln till tippen. Där ligger skräpet i högar."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. *(beror på läget)*  `rolf1-printa`
+- **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** skrivare
+- **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. *(beror på läget)*  `rolf1-ge`
+- **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** postlada
+- **Handling:** lagg → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 5. Köp Alis gamla bilbatteri `kopBatteri`
+- **Moment:** Bilbatteriet · **sak:** byggsats:cykelbatteri · **bild:** byggsats:cykelbatteri · **pil:** ali
+- **Handling:** kop → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Ali har ett gammalt bilbatteri. Då sparar jag strömmen."
+- **Påminnelse:** –
+- **Kvitto:** "Nu printar den klart även när jag vilar benen."
+- **Uppläsning:** "Köp Alis gamla bilbatteri."
+
+### 6. Bygg ryggkorgen – bär 10 skräp `ryggkorg`
+- **Moment:** Bära och mala mer · **sak:** byggsats:ryggkorg · **bild:** byggsats:ryggkorg · **pil:** skrivare
+- **Handling:** ta → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Jag springer för mycket. Med en ryggkorg bär jag tio saker."
+- **Påminnelse:** –
+- **Kvitto:** –
+- **Uppläsning:** "Bygg ryggkorgen. Då bär du tio saker."
+
+### 7. Bygg ett arbetsbord `n2-bygg-arbetsbord`
+- **Moment:** Skrivare M · **sak:** byggsats:bord · **bild:** byggsats:bord · **pil:** startYta
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Ett arbetsbord bredvid skrivaren. Skrivare M ska stå på det."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 8. Bygg Skrivare M på bordet `n2-bygg-skrivare-m`
+- **Moment:** Skrivare M · **sak:** byggsats:skrivare2 · **bild:** byggsats:skrivare2 · **pil:** bord
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Skrivare M på bordet. Två skrivare, dubbelt så mycket."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 9. Lägg plåttak på skjulet `n2-lagg-plattak-skjulet`
+- **Moment:** Taket · **sak:** byggsats:tak · **bild:** byggsats:tak · **pil:** skjul
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Det regnar in. Plåt på taket, så slipper jag sova i en pöl."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 10. Klart för idag – sov när du vill `sov3`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 4 (kapitel 1)
+
+### 1. *(beror på läget)* ' + i ? ' / 'Läs brevet i Rolfs postlåda' `rolf2-brev`
+- **Moment:** Rolfs brev · **sak:** brev · **bild:** – · **pil:** postlada
+- **Handling:** ta → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. *(beror på läget)*  `rolf2-printa`
+- **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** skrivare
+- **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. *(beror på läget)*  `rolf2-ge`
+- **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** postlada
+- **Handling:** lagg → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. Töm en full kärra i kvarnen `n3-tom-full-karra`
+- **Moment:** Kärran · **sak:** karra · **bild:** karra · **pil:** kvarn
+- **Handling:** lagg → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Kärran rymmer massor. Jag fyller den och tippar allt i kvarnen."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 5. Bygg sophållaren `sophallare`
+- **Moment:** Kärran · **sak:** byggsats:matarband · **bild:** byggsats:matarband · **pil:** kvarn
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "En sophållare bakom kvarnen. Då matar den sig själv."
+- **Påminnelse:** –
+- **Kvitto:** "Nu kan jag tömma hela kärran på en gång."
+
+### 6. Printa en pall `pall`
+- **Moment:** Pallen · **sak:** pall · **bild:** pall · **pil:** skrivare
+- **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Jag behöver något att sitta på. En pall. Lagom ambitiöst."
+- **Påminnelse:** –
+- **Kvitto:** –
+- **Uppläsning:** "Köp receptet till pallen hos Ali och printa en."
+
+### 7. Bygg en vindsnurra till `vind4`
+- **Moment:** Mer vind · **sak:** byggsats:vindsnurra · **bild:** byggsats:vindsnurra · **pil:** skjul
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "En vindsnurra till på skjulets tak. Skrivarna vill ha mer ström."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 8. *(beror på läget)*  `n3-isolera-tva-vaggar`
+- **Moment:** – · **sak:** byggsats:vaggar · **bild:** byggsats:vaggar · **pil:** skjul
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Det drar genom väggarna. Isolering, och sen blir det varmt."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 9. Klart för idag – sov när du vill `sov4`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+## Dag 5 (kapitel 1)
+
+### 1. *(beror på läget)* ' + i ? ' / 'Läs brevet i Rolfs postlåda' `rolf3-brev`
+- **Moment:** Rolfs brev · **sak:** brev · **bild:** – · **pil:** postlada
+- **Handling:** ta → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. *(beror på läget)*  `rolf3-printa`
+- **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** skrivare
+- **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. *(beror på läget)*  `rolf3-ge`
+- **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** postlada
+- **Handling:** lagg → kontrollhjälp *Klick*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. *(beror på läget)*  `n4-isolera-de-sista`
+- **Moment:** – · **sak:** byggsats:vaggar · **bild:** byggsats:vaggar · **pil:** skjul
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Två väggar kvar i skjulet. Sen är det tätt."
+- **Påminnelse:** –
+- **Kvitto:** "Det är tätt, det är varmt."
+
+### 5. *(beror på läget)* 'Ställ datorn i skjulet' / 'Köp Alis pappas gamla dator' `dator`
+- **Moment:** – · **sak:** byggsats:webbdator · **bild:** byggsats:webbdator · **pil:** ali
+- **Handling:** kop → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Alis pappas dator. Med den kan jag sälja på nätet."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 6. Printa en lampskärm att sälja `lampskarm`
+- **Moment:** – · **sak:** lampskarm · **bild:** lampskarm · **pil:** skrivare
+- **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "En lampskärm. Folk betalar för ljus som ser fint ut."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 7. *(beror på läget)*  `mysigt`
+- **Moment:** – · **sak:** trivsel · **bild:** beror på läget · **pil:** skjul
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Skjulet ska bli mysigt på riktigt. Det är mitt hem nu."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 8. Sätt en tredje vindsnurra på taket `vind5`
+- **Moment:** Mer vind · **sak:** byggsats:vindsnurra · **bild:** byggsats:vindsnurra · **pil:** skjul
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "En tredje vindsnurra på taket. Skrivare M drar mycket."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 9. Klart för idag – sov när du vill `sov5`
+- **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
+- **Handling:** sov → kontrollhjälp *Klick · Sov*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** –
+- **Påminnelse:** –
+- **Kvitto:** –

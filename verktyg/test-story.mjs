@@ -65,7 +65,9 @@ const sagt = L.filter((e) => ['sak', 'sak-del', 'röst', 'notis'].includes(e.kal
 const startar = steg1.filter((s) => typeof s.start === 'string');
 const struken = (s) => L.some((e) => e.kalla === 'struken' && String(e.text).includes(s.start));   // boten hann före – repliken ströks (steget redan klart)
 const lagT = (s) => Object.values(s.lagen || {}).map((v) => v.tanke);   // låg saken redan i ett läge sägs lägets tanke i stället
-const ejSagd = startar.filter((s) => ![s.start, ...lagT(s)].some((x) => sagt.some((t) => t.includes(x)) || struken({ start: x })));
+const orsakText = (s) => { const id = String(s.startSvarPa || '').replace(/^dialog:/, ''); const d = STORY_STEG.flatMap((x) => x.dialog || []).find((x) => x.id === id); return typeof d?.text === 'string' ? d.text : null; };
+const orsakSedd = (s) => !s.startSvarPa || L.some((e) => String(e.text || '').includes(orsakText(s) || '§'));   // inkorg 61: starten svarar på något – kom det aldrig medan steget pågick ska den inte sägas
+const ejSagd = startar.filter((s) => orsakSedd(s) && ![s.start, ...lagT(s)].some((x) => sagt.some((t) => t.includes(x)) || struken({ start: x })));
 const tva = startar.filter((s) => L.filter((e) => e.kalla === 'röst' && String(e.text).includes(s.start)).length > 1);
 ut.push([`startrepliken sägs (${startar.length - ejSagd.length}/${startar.length})${ejSagd.length ? ' – inte: ' + ejSagd.map((s) => s.id).join(', ') : ''}, ingen två gånger${tva.length ? ' – två: ' + tva.map((s) => s.id).join(', ') : ''}`, !ejSagd.length && !tva.length]);
 // 3. kvittot sägs efter att steget blivit klart

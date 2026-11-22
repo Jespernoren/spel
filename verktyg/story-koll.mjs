@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { STORY_STEG, FRAN_START, HANDLINGAR, LAGEN } from '../spel/printa-hem/story.js';
 
 const fel = [];
-const PIL_NAMN = ['bradhog', 'vagCykel', 'startYta', 'skrivare', 'cykel', 'ali', 'vevYta', 'skjul'];   // samma namn som PIL_MAL i spel.js
+const PIL_NAMN = ['bradhog', 'vagCykel', 'startYta', 'skrivare', 'cykel', 'ali', 'vevYta', 'skjul', 'gard', 'postlada', 'tippen', 'kvarn', 'bord'];   // samma namn som PIL_MAL i spel.js
 const givet = new Set(FRAN_START), sett = new Set(), dialogFore = new Set(), dialogId = new Set(), vetFore = new Set();
 STORY_STEG.forEach((p, i) => {
   const vid = `steg ${i} (${p.id || '?'})`;

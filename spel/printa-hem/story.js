@@ -31,6 +31,27 @@ export const HANDLINGAR = ['spika', 'lyfta', 'stallNer', 'montera', 'valj', 'tra
 // tillstånd som finns från start (introt): det du har med dig
 export const FRAN_START = ['hammareIRaden', 'generatorIRaden', 'skrivarePaCykeln', 'cykelVidVagen', 'brorsRulle'];
 
+/* inkorg 58 omgång 3: steg som finns varje dag eller varje brev, byggda på ett ställe */
+// Rolfs brev: läs brevet → printa gåvan → lägg den i hans postlåda. Tacket ligger i lådan nästa morgon.
+function rolf(i, [vara, varanBest]) {
+  const v = (G) => G.rolfVara(i), nm = (G) => G.rolfNamn(i);
+  return [
+    { id: `rolf${i}-brev`, mom: 'Rolfs brev', forDu: ['darfor', i ? 'Rolf har lagt ett nytt brev' : 'Rolf har lagt ett brev'], sak: 'brev', handling: 'ta', pil: 'postlada', startPost: 'rolf:' + i,
+      mal: (S) => S.brevVantar?.lapp === 'rolf:' + i ? 'Vänta på sopbilen. Den lämnar något.' : 'Läs brevet i Rolfs postlåda',
+      klar: (S, G) => S.rolf.i > i || (S.rolf.i === i && (S.rolf.aktiv || S.post.tillRolf === v(G) || S.rolf.hamtad === i)) },
+    { id: `rolf${i}-printa`, mom: 'Rolfs brev', forDu: ['darfor', `Rolf vill ha en ${vara}`], sak: 'gava', handling: 'printa', pil: 'skrivare',
+      mal: (S, G) => `Printa ${nm(G)}`,
+      klar: (S, G) => S.rolf.i > i || G.harGava(v(G)) || S.rolf.hamtad === i },
+    { id: `rolf${i}-ge`, mom: 'Rolfs brev', forDu: ['darfor', `${varanBest} är klar`], sak: 'gava', handling: 'lagg', pil: 'postlada',
+      mal: (S, G) => `Ge Rolf ${nm(G)}`,
+      klar: (S, G) => S.rolf.i > i || S.post.tillRolf === v(G) || S.rolf.hamtad === i },
+  ];
+}
+// kvällen: sov när du vill. Uppgiften läses upp (ingen egen replik).
+function sov(dag, forDu) {
+  return { id: 'sov' + dag, forDu, sak: 'sang', handling: 'sov', pil: 'skjul', sov: true, mal: 'Klart för idag – sov när du vill', klar: (S) => S.dag > dag };
+}
+
 export const STORY = [
   { dag: 1, kapitel: 1, steg: [
 
@@ -246,7 +267,120 @@ export const STORY = [
       pamin: 'Sängen in i skjulet. Sen sover jag.',
       klar: (S) => !!S.sang && S.dag >= 2 },
   ] },
-  // dag 2–23 flyttas hit i omgång 3
+  // ---------- omgång 3: kapitel 1, dag 2–5 (inkorg 58, A-113) ----------
+  { dag: 2, kapitel: 1, steg: [
+    { id: 'kopMotor', mom: 'Kvarnmotorn', forDu: ['men', 'vevandet tar på armarna'], sak: 'byggsats:kvarnmotor', handling: 'kop', pil: 'ali', bild: 'byggsats:kvarnmotor', las: 'kvarnmotor', lasText: 'Kommer när vevandet tar för lång tid', butikNamn: 'kvarnmotorn',
+      mal: (S) => S.mynt >= 50 ? 'Köp kvarnmotorn hos Ali (50 kr)' : `Printa och sälj mer · ${S.mynt}/50 kr till kvarnmotorn`, tal: 'Köp kvarnmotorn hos Ali.',
+      talSpara: ['Printa och sälj mer tills du har femtio kronor till kvarnmotorn.', 50],
+      start: 'Vevandet tar på armarna. Ali har en motor till kvarnen.',
+      klar: (S) => S.ritningar.includes('kvarnmotor') || !!S.kvarn.motor },
+    { id: 'monteraMotor', mom: 'Kvarnmotorn', forDu: ['darfor', 'motorn är köpt'], sak: 'byggsats:kvarnmotor', handling: 'montera', pil: 'kvarn', bild: 'byggsats:kvarnmotor',
+      mal: 'Printa kvarnmotorn till kvarnen', tal: 'Printa kvarnmotorn på skrivaren och ta ut den. Då sätter du den direkt på kvarnen.',
+      start: 'Motorn ska sitta där veven sitter. Jag printar den först.',
+      klar: (S) => !!S.kvarn.motor },
+    { id: 'kopSack', mom: 'Städa gården', forDu: ['men', 'gården är full av skräp'], sak: 'byggsats:korg', handling: 'ta', pil: 'gard', bild: 'byggsats:korg',
+      mal: (S, G) => G.antalInv('byggsats:korg') ? 'Ta på dig sopsäcken' : G.sackRulleSynlig() && S.sackLagd ? 'Kolla vad som flög ut från sopbilen' : 'Städa gården',
+      tal: 'Städa gården. Sopbilen brukar köra förbi vid den här tiden.',
+      start: 'Gården är full av skräp. Jag börjar vid skjulet.',
+      klar: (S) => !!S.korg || !!S.ryggkorg },
+    { id: 'n1-stada-klart-garden', mom: 'Städa gården', forDu: ['darfor', 'halva gården är städad'], sak: 'skrap', handling: 'ta', pil: 'gard', lapp: 'gard',
+      mal: 'Städa klart gården',
+      start: 'Halva gården är ren. Tar jag resten blir det fint på riktigt.',
+      klar: (S, G) => G.gardSkrap() <= G.gardMal() || S.rolf.i >= 1 || !!S.post.tillRolf },
+    ...rolf(0, ['ölhållare', 'ölhållaren']),
+    { id: 'vindsnurra', mom: 'Vindsnurran', forDu: ['men', 'trampandet tar all tid'], sak: 'byggsats:vindsnurra', handling: 'montera', pil: 'skjul', bild: 'byggsats:vindsnurra', las: 'vindsnurra',
+      mal: 'Printa vindsnurran till taket',
+      start: 'En vindsnurra på skjulets tak. Då blir det ström när det blåser.',
+      kvitto: 'Den snurrar! Långsamt. Men den snurrar.',
+      klar: (S, G) => !!S.vindsnurra || G.harPlacerat('sol') },
+    { id: 'n1-bygg-dorr-skjulet', mom: 'Dörren', forDu: ['men', 'det blåser in i skjulet'], sak: 'byggsats:dorr', handling: 'montera', pil: 'skjul', bild: 'byggsats:dorr',
+      mal: 'Bygg en dörr till skjulet',
+      start: 'Det drar från dörrhålet. En dörr kan jag printa.',
+      klar: (S) => !!S.hem?.dorr },
+    sov(2, ['darfor', 'dörren sitter']),
+  ] },
+  { dag: 3, kapitel: 1, steg: [
+    rolf(1, ['flasköppnare', 'flasköppnaren'])[0],
+    { id: 'n2-hamta-skrap', mom: 'Rolfs brev', forDu: ['darfor', 'grinden till tippen är öppen'], sak: 'skrap', handling: 'ta', pil: 'tippen',
+      mal: 'Hämta 5 skräp på soptippen',
+      start: 'Nyckeln till tippen. Där ligger skräpet i högar.',
+      klar: (S) => (S.stat.tipp || 0) >= 5 },
+    ...rolf(1, ['flasköppnare', 'flasköppnaren']).slice(1),
+    { id: 'kopBatteri', mom: 'Bilbatteriet', forDu: ['men', 'strömmen tar slut när jag slutar trampa'], sak: 'byggsats:cykelbatteri', handling: 'kop', pil: 'ali', bild: 'byggsats:cykelbatteri', las: 'cykelbatteri', lasText: 'Kommer när strömmen tar slut', butikNamn: 'bilbatteriet',
+      mal: 'Köp Alis gamla bilbatteri', tal: 'Köp Alis gamla bilbatteri.',
+      start: 'Ali har ett gammalt bilbatteri. Då sparar jag strömmen.',
+      kvitto: 'Nu printar den klart även när jag vilar benen.',
+      klar: (S) => !!S.batteriKopt },
+    { id: 'ryggkorg', mom: 'Bära och mala mer', forDu: ['men', 'jag springer för mycket med skräp'], sak: 'byggsats:ryggkorg', handling: 'ta', pil: 'skrivare', bild: 'byggsats:ryggkorg', las: 'ryggkorg',
+      mal: 'Bygg ryggkorgen – bär 10 skräp', tal: 'Bygg ryggkorgen. Då bär du tio saker.',
+      start: 'Jag springer för mycket. Med en ryggkorg bär jag tio saker.',
+      klar: (S) => !!S.ryggkorg },
+    { id: 'n2-bygg-arbetsbord', mom: 'Skrivare M', forDu: ['men', 'en skrivare räcker inte'], sak: 'byggsats:bord', handling: 'stallNer', pil: 'startYta', bild: 'byggsats:bord',
+      mal: 'Bygg ett arbetsbord',
+      start: 'Ett arbetsbord bredvid skrivaren. Skrivare M ska stå på det.',
+      klar: (S, G) => G.harPlacerat('bord') },
+    { id: 'n2-bygg-skrivare-m', mom: 'Skrivare M', forDu: ['darfor', 'bordet står'], sak: 'byggsats:skrivare2', handling: 'stallNer', pil: 'bord', bild: 'byggsats:skrivare2', las: 'skrivare2', lapp: 'skrivare2',
+      mal: 'Bygg Skrivare M på bordet',
+      start: 'Skrivare M på bordet. Två skrivare, dubbelt så mycket.',
+      klar: (S, G) => G.harPlacerat('skrivare2') },
+    { id: 'n2-lagg-plattak-skjulet', mom: 'Taket', forDu: ['men', 'taket läcker'], sak: 'byggsats:tak', handling: 'montera', pil: 'skjul', bild: 'byggsats:tak',
+      mal: 'Lägg plåttak på skjulet',
+      start: 'Det regnar in. Plåt på taket, så slipper jag sova i en pöl.',
+      klar: (S) => !!S.hem?.tak },
+    sov(3, ['darfor', 'taket ligger på']),
+  ] },
+  { dag: 4, kapitel: 1, steg: [
+    ...rolf(2, ['grillspade', 'grillspaden']),
+    { id: 'n3-tom-full-karra', mom: 'Kärran', forDu: ['darfor', 'kärran rymmer mer än famnen'], sak: 'karra', handling: 'lagg', pil: 'kvarn', bild: 'karra',
+      mal: 'Töm en full kärra i kvarnen',
+      start: 'Kärran rymmer massor. Jag fyller den och tippar allt i kvarnen.',
+      klar: (S) => (S.stat.karraTomt || 0) >= 1 || !!S.kapitelKlart },
+    { id: 'sophallare', mom: 'Kärran', forDu: ['men', 'kvarnen väntar på att jag matar den'], sak: 'byggsats:matarband', handling: 'montera', pil: 'kvarn', bild: 'byggsats:matarband', las: 'matarband',
+      mal: 'Bygg sophållaren',
+      start: 'En sophållare bakom kvarnen. Då matar den sig själv.',
+      kvitto: 'Nu kan jag tömma hela kärran på en gång.',
+      klar: (S) => !!S.kvarn.band || !!S.kapitelKlart },
+    { id: 'pall', mom: 'Pallen', forDu: ['men', 'det finns ingenstans att sitta'], sak: 'pall', handling: 'printa', pil: 'skrivare', bild: 'pall',
+      mal: 'Printa en pall', tal: 'Köp receptet till pallen hos Ali och printa en.',
+      start: 'Jag behöver något att sitta på. En pall. Lagom ambitiöst.',
+      klar: (S, G) => G.printat('pall') >= 1 },
+    { id: 'vind4', mom: 'Mer vind', forDu: ['men', 'skrivarna vill ha mer ström'], sak: 'byggsats:vindsnurra', handling: 'montera', pil: 'skjul', bild: 'byggsats:vindsnurra', las: 'vindsnurra2', lapp: 'sol',
+      mal: 'Bygg en vindsnurra till',
+      start: 'En vindsnurra till på skjulets tak. Skrivarna vill ha mer ström.',
+      klar: (S, G) => G.antalSnurror() >= 2 || G.harPlacerat('sol') },
+    { id: 'n3-isolera-tva-vaggar', forDu: ['men', 'det drar kallt genom väggarna'], sak: 'byggsats:vaggar', handling: 'montera', pil: 'skjul', bild: 'byggsats:vaggar',
+      mal: (S) => `Isolera två väggar · ${Math.min(2, S.hem?.vagg || 0)}/2`,
+      start: 'Det drar genom väggarna. Isolering, och sen blir det varmt.',
+      klar: (S) => (S.hem?.vagg || 0) >= 2 || !!S.hem?.vaggar },
+    sov(4, ['darfor', 'två väggar är isolerade']),
+  ] },
+  { dag: 5, kapitel: 1, steg: [
+    ...rolf(3, ['tomte till flaket', 'tomten']),
+    { id: 'n4-isolera-de-sista', forDu: ['men', 'två väggar drar fortfarande'], sak: 'byggsats:vaggar', handling: 'montera', pil: 'skjul', bild: 'byggsats:vaggar',
+      mal: (S) => `Isolera de sista väggarna · ${S.hem?.vagg || 0}/4`,
+      start: 'Två väggar kvar i skjulet. Sen är det tätt.',
+      kvitto: 'Det är tätt, det är varmt.',
+      klar: (S) => !!S.hem?.vaggar || (S.hem?.vagg || 0) >= 4 },
+    { id: 'dator', forDu: ['darfor', 'Ali säljer pappas gamla dator'], sak: 'byggsats:webbdator', handling: 'kop', pil: 'ali', bild: 'byggsats:webbdator', lasText: 'Kommer när väggarna är tätade', butikNamn: 'datorn',
+      mal: (S) => S.datorKopt ? 'Ställ datorn i skjulet' : 'Köp Alis pappas gamla dator',
+      start: 'Alis pappas dator. Med den kan jag sälja på nätet.',
+      klar: (S, G) => G.harPlacerat('webbdator') },
+    { id: 'lampskarm', forDu: ['darfor', 'datorn kan sälja det jag printar'], sak: 'lampskarm', handling: 'printa', pil: 'skrivare', bild: 'lampskarm',
+      mal: 'Printa en lampskärm att sälja',
+      start: 'En lampskärm. Folk betalar för ljus som ser fint ut.',
+      klar: (S, G) => G.printat('lampskarm') >= 1 || (S.saltTot?.lampskarm || 0) >= 1 || G.harPlacerat('lampskarm') },
+    { id: 'mysigt', forDu: ['men', 'skjulet är tätt men inte mysigt'], sak: 'trivsel', handling: 'stallNer', pil: 'skjul', bild: (S, G) => G.nastaInred(), bildForslag: true, lapp: 'klart',   // bilden är ett förslag på nästa sak att göra det mysigt med (en pall till går bra)
+     
+      mal: (S, G) => G.mysigtText(),
+      start: 'Skjulet ska bli mysigt på riktigt. Det är mitt hem nu.',
+      klar: (S) => !!S.lampaFinal || !!S.kapitelKlart },
+    { id: 'vind5', mom: 'Mer vind', forDu: ['men', 'skrivare M drar mycket ström'], sak: 'byggsats:vindsnurra', handling: 'montera', pil: 'skjul', bild: 'byggsats:vindsnurra', las: 'vindsnurra3',
+      mal: 'Sätt en tredje vindsnurra på taket',
+      start: 'En tredje vindsnurra på taket. Skrivare M drar mycket.',
+      klar: (S, G) => G.antalSnurror() >= 3 || G.harPlacerat('sol') },
+    { ...sov(5, ['darfor', 'skjulet är mysigt']), k1Slut: true, sms: ['mamma', 'Pappa kommer förbi i morgon. Han säger inget men han vill. ❤️'] },   // kapitel 1 slutar med telefonscenen och sömnen
+  ] },
+  // dag 6–23 flyttas hit i omgång 3
 ];
 
 // alla steg i ordning, med dag
