@@ -5551,17 +5551,35 @@ function stegPil() {
   if (['montera', 'lagg', 'stallNer', 'printa', 'ge'].includes(p.handling) && p.sak && !antalInv(p.sak) && !(() => { try { return st.klar(); } catch { return false; } })()) {   /* du har inte saken: ritningen hos Ali först, sedan skrivaren som kan printa den */
     const id = String(p.sak).replace(/^byggsats:/, '');
     if (/^byggsats:/.test(p.sak) && MASKINER[id]?.ritning && !S.ritningar.includes(id)) return S.mynt >= MASKINER[id].ritning ? new THREE.Vector3(ALI.x, 1.4, ALI.z - 1.2) : null;   /* räcker inte pengarna: ingen pil till Ali – du ska printa och sälja först */
-    const sk = skrivareForSak(p.sak); if (sk) return sk.mesh.getWorldPosition(v).setY(0.9);
+    if (!/^byggsats:/.test(p.sak) && VAROR[id]?.recept && !harRecept(id)) return S.mynt >= VAROR[id].recept ? new THREE.Vector3(ALI.x, 1.4, ALI.z - 1.2) : null;   /* samma för ett recept (jacuzzin, kaminen) */
+    const sk = skrivareForSak(p.sak); if (sk) return skrivarPil(sk, p.sak);
   }
   return null;
+}
+/* inkorg 50 p.2 del 3: materialkedjan – räcker inte filamentet i skrivarens linje pekar pilen på linjens källa:
+   tornet om du har en rulle, annars kvarnen om den har något att mala eller du bär skräp, annars närmaste skräp av rätt sort */
+function skrivarPil(sk, key) {
+  const v = new THREE.Vector3(), id = String(key || '').replace(/^byggsats:/, ''), m = MASKINER[id], g = Math.max(1, (m?.gram || VAROR[id]?.gram || 1) * (m?.delar || 1));
+  const vid = (o, y = 0.9) => o?.getWorldPosition ? o.getWorldPosition(v).setY(y) : null;
+  const lin = sk.gen === 5 ? 'kolf' : sk.gen === 4 ? 'rod' : 'bla', fil = filTillg(sk);
+  if (sk.klar || fil >= Math.min(g, 2000) || (fil >= 1 && (lin === 'bla' ? extruderFull() : !tornPlats(lin)))) return vid(sk.mesh);   /* samma villkor som när printen kan starta: hela mängden, eller tornet fullt och skrivaren drar medan den printar */
+  const narmast = (f) => skrapLista.filter((x) => f(x) && kanLyfta(x)).sort((a, b) => a.position.distanceTo(spelare.pos) - b.position.distanceTo(spelare.pos))[0];
+  if (sk.gen === 5) { const k = kolfKvarn(); return vid(k?.mesh, 1.6) || vid(sk.mesh); }
+  if (sk.gen === 4) { const k = petgKvarn(); if (antalInv('rulle2') || (S.petg?.ko || 0) > 0 || (S.petg?.cont || []).length) return vid(k?.mesh, 1.6) || vid(sk.mesh);
+    const t = narmast((x) => x.userData.tung && x.userData.sort !== 'kajak'); return t ? vid(t, 0.6) : vid(k?.mesh, 1.6) || vid(sk.mesh); }
+  if (antalInv('rulle')) return vid(rulle, 1.2) || vid(sk.mesh);
+  if (hand.saker.length || S.kvarn?.tratt) return trattTopp().clone();
+  const x = narmast((y) => !y.userData.tung); return x ? vid(x, 0.3) : vid(sk.mesh);
 }
 /* inkorg 50 p.2: skrivaren som kan printa saken – samma linje som materialet (gen 4 röd, 5 kolfiber, 6 guld, annars blå). En skrivare där saken redan ligger klar går först, sedan en ledig. */
 function skrivareForSak(key) {
   const id = String(key || '').replace(/^byggsats:/, ''), arMaskin = !!MASKINER[id] && /^byggsats:/.test(key);
-  if (!arMaskin && !(VAROR[id]?.pris > 0)) return null;
-  const n = arMaskin ? printLinje(id) : (VAROR[id]?.niva || 1);
+  if (!arMaskin && !(VAROR[id]?.gram > 0)) return null;   /* printbar = har en vikt (kapskivan har inget pris men printas) */
+  const n = arMaskin ? printLinje(id) : (VAROR[id]?.niva || 1), g = arMaskin ? 0 : (VAROR[id]?.gram || 0);
   const passar = (x) => x.mesh?.visible !== false && (n === 4 ? x.gen === 6 : n === 3 ? x.gen === 5 : n === 2 ? x.gen === 4 : x.gen < 4);
-  const l = skrivare.filter(passar); if (!l.length) return null;
+  let l = skrivare.filter(passar); if (!l.length) return null;
+  if (g >= 2000 && l.some((x) => x.gen >= 2)) l = l.filter((x) => x.gen >= 2);   /* stora saker (jacuzzin, kaminen) får inte plats på Skrivare S */
+  l = l.slice().sort((a, b) => b.gen - a.gen);   /* den största skrivaren i linjen först, som när man väljer själv */
   return l.find((x) => x.klar === key || x.klar === id) || l.find((x) => !x.jobb && !x.klar) || l[0];
 }
 function malPunkt() {
