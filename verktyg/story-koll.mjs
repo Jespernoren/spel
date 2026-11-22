@@ -1,7 +1,7 @@
 // story-koll (inkorg 58 §4 p.1, A-113): kollar masterfilen spel/printa-hem/story.js utan att spela.
 // Stoppar committen om ordningen inte går ihop. Kör: node verktyg/story-koll.mjs
 import fs from 'node:fs';
-import { STORY_STEG, FRAN_START, HANDLINGAR, LAGEN } from '../spel/printa-hem/story.js';
+import { STORY, STORY_STEG, FRAN_START, HANDLINGAR, LAGEN } from '../spel/printa-hem/story.js';
 
 const fel = [];
 const PIL_NAMN = ['bengtLada', 'bradhog', 'vagCykel', 'startYta', 'skrivare', 'cykel', 'ali', 'vevYta', 'skjul', 'gard', 'postlada', 'tippen', 'kvarn', 'bord'];   // samma namn som PIL_MAL i spel.js
@@ -56,5 +56,13 @@ for (const namn of ['STEG_TAL', 'STEG_TAL_SPARA', 'JAG_TAL', 'PAMINN_T', 'KEDJA_
 for (const p of STORY_STEG) if (new RegExp(`x\\.id === '${p.id}'`).test(tabell('KNUFF_T') || spel.slice(spel.indexOf('const KNUFF_T'), spel.indexOf('];', spel.indexOf('const KNUFF_T'))))) fel.push(`KNUFF_T har kvar en post för ${p.id}`);
 for (const gammal of ['DAG1_FORST', 'DU_BYGG']) if (new RegExp(`const ${gammal}\\b`).test(spel)) fel.push(`${gammal} finns kvar (står som start i story.js)`);
 
+/* inkorg 63 p.3: varje steg (utom kvällen) har en start som säger nästa handling – inte bara problemet eller en fråga */
+{ const G0 = new Proxy({}, { get: (t, k) => k === 'rolfVara' || k === 'rolfNamn' ? () => 'en sak' : () => 0 }), lagenS = [{ stat: {}, rolf: {}, saljLagt: {} }, { stat: {}, rolf: {}, saljLagt: {}, cykelBuren: true }, { stat: {}, rolf: {}, saljLagt: {}, cykelStar: true }];
+  for (const st of STORY_STEG) { if (st.sov || st.handling === 'sov') continue;
+    if (!st.start) { fel.push(`${st.id}: ingen start – varje steg säger nästa handling med din röst (inkorg 63 p.3)`); continue; }
+    for (const S0 of lagenS) { let t = ''; try { t = String(typeof st.start === 'function' ? st.start(S0, G0) : st.start); } catch { t = ''; }
+      if (t && /\?\s*$/.test(t) && !/[.!]\s/.test(t)) fel.push(`${st.id}: starten är bara en fråga ("${t.slice(0, 40)}") – säg vad jag ska göra (inkorg 63 p.3)`); } } }
+/* inkorg 63 p.1: varje dag 1–22 har en insats i vanligt tal på morgonkortet – aldrig "får mamma rätt" */
+for (let d = 1; d <= 22; d++) { const dg = STORY.find((x) => x.dag === d); if (!dg?.insats) fel.push(`dag ${d}: ingen insats på morgonkortet`); else if (/får mamma rätt/i.test(dg.insats)) fel.push(`dag ${d}: insatsen säger "får mamma rätt" (inkorg 63 p.1)`); }
 if (fel.length) { console.log(`story-koll: ${fel.length} fel`); fel.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
 console.log(`story-koll: ${STORY_STEG.length} steg i ordning, kraver/ger går ihop, ${dialogId.size} repliker svarar på något som redan hänt, 0 fel`);

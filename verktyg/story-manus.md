@@ -38,17 +38,17 @@
 - **Moment:** Få ström · **sak:** cykelS · **bild:** beror på läget · **pil:** vagCykel
 - **Handling:** lyfta → kontrollhjälp *Klick · Klicka för att ta upp*
 - **Kräver:** skrivareStar, cykelVidVagen · **ger:** stromIdee
-- **Start (sägs när steget börjar):** "Skrivaren behöver ström. Hur fixar jag det här ute?"
-- **Påminnelse:** "Ström. Hur får jag ström här ute?"
+- **Start (sägs när steget börjar):** "Den har ingen ström. Cykeln vid vägen kanske kan ge ström."
+- **Påminnelse:** "Cykeln vid vägen. Den kan ge ström."
 - **Kvitto:** –
 
 ### 5. *(beror på läget)* 'Montera generatorn' / 'Ställ cykel och generator' `bygg`
 - **Moment:** Få ström · **sak:** cykelS · **bild:** beror på läget · **pil:** startYta
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** stromIdee, generatorIRaden · **ger:** cykelOmbyggd
-- **Start (sägs när steget börjar):** *(beror på läget)* 'Nu generatorn på cykeln. Den gör el när hjulet snurrar.' / 'Cykeln… och storebrors generator?'
+- **Start (sägs när steget börjar):** *(beror på läget)* 'Nu borde jag koppla på generatorn, så att cykeln gör el.' / 'Cykeln ska stå vid skrivaren. Sen kopplar jag på generatorn.' / 'Cykeln kan ge ström om generatorn sitter på. Båda ska stå vid skrivaren.'
   - i läget **handen:** "Cykeln ska stå vid skrivaren."
-  - i läget **stalld:** "Nu generatorn på cykeln. Den gör el när hjulet snurrar."
+  - i läget **stalld:** "Nu borde jag koppla på generatorn, så att cykeln gör el."
 - **Påminnelse:** *(beror på läget)* 'Generatorn på cykeln.' / 'Cykeln, sen generatorn.'
 - **Kvitto:** –
 - **Uppläsning:** "Ställ cykeln och generatorn vid skrivaren."
@@ -87,7 +87,7 @@
 - **Moment:** Gör egen tråd · **sak:** nyckelring · **bild:** nyckelring · **pil:** ali
 - **Handling:** salj → kontrollhjälp *– (hos Ali)*
 - **Kräver:** rullSlut · **ger:** kvarnPengar
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Rullen är slut. Nyckelringarna säljer jag hos Ali."
 - **Påminnelse:** "Affären mitt emot kanske köper ringarna."
 - **Kvitto:** –
 - **Dialog** (inkorg 61):
@@ -182,7 +182,7 @@
 - **Moment:** Sova · **sak:** byggsats:grip · **bild:** – · **pil:** skrivare
 - **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
 - **Kräver:** gripRitning · **ger:** grip
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Ritningen är min. Nu printar jag skräpgripen."
 - **Påminnelse:** "Gripen ska printas."
 - **Kvitto:** –
 - **Uppläsning:** "Printa skräpgripen på skrivaren."
@@ -279,7 +279,7 @@
 - **Moment:** Rolfs brev · **sak:** brev · **bild:** – · **pil:** postlada
 - **Handling:** ta → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Det ligger ett brev i postlådan vid grinden. Det läser jag."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -287,7 +287,7 @@
 - **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** skrivare
 - **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Rolf vill ha en ölhållare. Den printar jag."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -295,7 +295,7 @@
 - **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** postlada
 - **Handling:** lagg → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Ölhållaren är klar. Den lägger jag i Rolfs postlåda."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -329,7 +329,7 @@
 - **Moment:** Rolfs brev · **sak:** brev · **bild:** – · **pil:** postlada
 - **Handling:** ta → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Ett nytt brev i Rolfs postlåda. Det läser jag."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -345,7 +345,7 @@
 - **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** skrivare
 - **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Rolf vill ha en flasköppnare. Den printar jag."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -353,7 +353,7 @@
 - **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** postlada
 - **Handling:** lagg → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Flasköppnaren är klar. Den lägger jag i Rolfs postlåda."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -413,7 +413,7 @@
 - **Moment:** Rolfs brev · **sak:** brev · **bild:** – · **pil:** postlada
 - **Handling:** ta → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Ett nytt brev i Rolfs postlåda. Det läser jag."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -421,7 +421,7 @@
 - **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** skrivare
 - **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Rolf vill ha en grillspade. Den printar jag."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -429,7 +429,7 @@
 - **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** postlada
 - **Handling:** lagg → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Grillspaden är klar. Den lägger jag i Rolfs postlåda."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -488,7 +488,7 @@
 - **Moment:** Rolfs brev · **sak:** brev · **bild:** – · **pil:** postlada
 - **Handling:** ta → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Ett nytt brev i Rolfs postlåda. Det läser jag."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -496,7 +496,7 @@
 - **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** skrivare
 - **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Rolf vill ha en tomte till flaket. Den printar jag."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -504,7 +504,7 @@
 - **Moment:** Rolfs brev · **sak:** gava · **bild:** – · **pil:** postlada
 - **Handling:** lagg → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Tomten är klar. Den lägger jag i Rolfs postlåda."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -562,7 +562,7 @@
 - **Moment:** – · **sak:** pappa · **bild:** – · **pil:** gard
 - **Handling:** ga → kontrollhjälp *W A S D*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Pappa kommer förbi i dag. Jag möter honom vid grinden."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -578,7 +578,7 @@
 - **Moment:** – · **sak:** sackkarra · **bild:** sackkarra · **pil:** kvarn
 - **Handling:** lagg → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Den röda kvarnen står. Nu kör jag dit en tunna med kärran."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -586,7 +586,7 @@
 - **Moment:** – · **sak:** byggsats:sol · **bild:** byggsats:sol · **pil:** skjul
 - **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Trampandet räcker inte till två skrivare. En solpanel ska upp på skjulets tak."
 - **Påminnelse:** –
 - **Kvitto:** "Den röda kvarnen drar mer än vinden orkar. Solen får hjälpa till."
 
@@ -594,7 +594,7 @@
 - **Moment:** – · **sak:** fagelskramma · **bild:** beror på läget · **pil:** gard
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Göran snor mina nyckelringar. Han får ett eget ställe, så lämnar han dem i fred."
 - **Påminnelse:** –
 - **Kvitto:** "Göran har ett hem nu. Bättre än jag hade för en vecka sen."
 
@@ -662,7 +662,7 @@
 - **Moment:** – · **sak:** byggsats:skrivare3 · **bild:** byggsats:skrivare3 · **pil:** startYta
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Skrivarna hinner inte med kvarnen. Jag bygger Skrivare L."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -670,7 +670,7 @@
 - **Moment:** – · **sak:** byggsats:magnet · **bild:** byggsats:magnet · **pil:** skrivare
 - **Handling:** ta → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Gripen tar en sak i taget. En magnetpistol tar fler. Den bygger jag."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -686,7 +686,7 @@
 - **Moment:** – · **sak:** byggsats:bank · **bild:** byggsats:bank · **pil:** startYta
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Strömmen tar slut på natten. Jag bygger en batteribank."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -694,7 +694,7 @@
 - **Moment:** – · **sak:** byggsats:hylla · **bild:** byggsats:hylla · **pil:** skjul
 - **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Allt ligger på golvet. Jag bygger en hylla."
 - **Påminnelse:** –
 - **Kvitto:** "En hylla. Jag har en hylla. Saker har en plats nu."
 
@@ -720,7 +720,7 @@
 - **Moment:** – · **sak:** byggsats:solpark · **bild:** byggsats:solpark · **pil:** gard
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Batterierna räcker inte. Jag bygger en solcellspark."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -770,7 +770,7 @@
 - **Moment:** – · **sak:** byggsats:spis · **bild:** beror på läget · **pil:** skjul
 - **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Jag behöver äta något varmt. Först bygger jag en spis."
 - **Påminnelse:** –
 - **Kvitto:** "Varm mat. I skjulet. Mamma skulle inte tro det."
 
@@ -830,7 +830,7 @@
 - **Moment:** – · **sak:** byggsats:kolfskrivare · **bild:** byggsats:kolfskrivare · **pil:** startYta
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Kolfibern behöver en egen skrivare. Den bygger jag bredvid kolfiberkvarnen."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -854,7 +854,7 @@
 - **Moment:** – · **sak:** byggsats:bank · **bild:** byggsats:bank · **pil:** startYta
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Kolfibern drar mycket ström. Jag bygger en batteribank till."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -956,7 +956,7 @@
 - **Moment:** – · **sak:** trivsel · **bild:** beror på läget · **pil:** gard
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Allt är på plats. Nu gör jag det riktigt mysigt här."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -982,7 +982,7 @@
 - **Moment:** – · **sak:** guldflaga · **bild:** guldflaga · **pil:** bengtLada
 - **Handling:** lagg → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Grannen är arg. Flagan lägger jag i Bengt-Åkes brevlåda."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -990,7 +990,7 @@
 - **Moment:** – · **sak:** kapskiva · **bild:** kapskiva · **pil:** postlada
 - **Handling:** lagg → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Rolf har hjälpt mig. Han ska få en kapskiva i kolfiber."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -1016,7 +1016,7 @@
 - **Moment:** – · **sak:** vaskpanna · **bild:** vaskpanna · **pil:** gard
 - **Handling:** ta → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Huset kostar mer än jag har. Jag vaskar guld i floden."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -1024,7 +1024,7 @@
 - **Moment:** – · **sak:** byggsats:solpark · **bild:** byggsats:solpark · **pil:** gard
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Ett hus drar mer ström. Jag bygger en solcellspark på ängen."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -1050,7 +1050,7 @@
 - **Moment:** – · **sak:** fynd4 · **bild:** fynd4 · **pil:** kvarn
 - **Handling:** lagg → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Diamantkvarnen står. Nu mal jag guldet till en rulle."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -1058,7 +1058,7 @@
 - **Moment:** – · **sak:** mark:husgrund · **bild:** – · **pil:** gard
 - **Handling:** kop → kontrollhjälp *– (hos Ali)*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Guldet betalar grunden. Den gjuter jag nu."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -1084,7 +1084,7 @@
 - **Moment:** – · **sak:** byggsats:vindkraft · **bild:** byggsats:vindkraft · **pil:** gard
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Huset drar mer än solen ger. Ett vindkraftverk ska upp på backen."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -1092,7 +1092,7 @@
 - **Moment:** – · **sak:** byggsats:guldskrivare · **bild:** byggsats:guldskrivare · **pil:** startYta
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Guldet behöver en egen skrivare. Den bygger jag."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -1100,7 +1100,7 @@
 - **Moment:** – · **sak:** huset · **bild:** – · **pil:** gard
 - **Handling:** ga → kontrollhjälp *W A S D*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Huset står. Nu flyttar jag in."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -1126,7 +1126,7 @@
 - **Moment:** – · **sak:** kamin · **bild:** – · **pil:** skjul
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Kaminen är klar. Den ställer jag in i skjulet."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -1162,7 +1162,7 @@
 - **Moment:** – · **sak:** julbord · **bild:** julbord · **pil:** skjul
 - **Handling:** ga → kontrollhjälp *W A S D*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Det är julafton. Allt ska vara klart när mamma kommer."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -1170,7 +1170,7 @@
 - **Moment:** – · **sak:** dorrskylt · **bild:** – · **pil:** skjul
 - **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Mamma kommer klockan tre. Skylten med mitt namn ska upp på dörren."
 - **Påminnelse:** –
 - **Kvitto:** –
 
@@ -1178,6 +1178,6 @@
 - **Moment:** – · **sak:** mamma · **bild:** – · **pil:** gard
 - **Handling:** ga → kontrollhjälp *W A S D*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** –
+- **Start (sägs när steget börjar):** "Skylten sitter. Nu tar jag emot mamma vid dörren."
 - **Påminnelse:** –
 - **Kvitto:** –

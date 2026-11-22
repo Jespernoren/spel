@@ -595,9 +595,9 @@
     else { await klick(H.kvarn, 'kvarnen'); }
     await vanta(1); H.byt(0); return true;
   }
-  let vantanIdag = 0;
+  let vantanIdag = 0, dagenSomSpelas = null;   /* inkorg 63: dagen boten spelar – S.dag kan redan ha bytts när kvällen räknas */
   async function vantaPaMorgon() {
-    const dag = S.dag; const slutDag = tid - dagStart;
+    const dag = dagenSomSpelas ?? S.dag; const slutDag = tid - dagStart;
     dagar.push({ dag, sek: slutDag, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat, vantan: vantanIdag, flask: { ...(S.fh?.dag?.[dag] || {}) } }); vantanIdag = 0;
     let n = 0; while (n++ < 400 && (S.dag === dag || !H.ui.igang)) { await vanta(0.5); if (n % 40 === 0) console.log(`[sim] väntar på morgonen (${n}) dag ${S.dag} igång ${H.ui.igang} paus ${H.pausad()} med ${!H.medEl2?.hidden} kort ${!H.ui.overlay?.hidden} panel ${!H.ui.butiksOverlay?.hidden} ${(document.querySelector('.ph-jul, .ph-kap, .ph-kapkort, .ph-rangkort, .fp-modal')?.className || '')}`); }
     await vanta(1); dagStart = tid; handling(`— dag ${S.dag} börjar —`);
@@ -608,7 +608,8 @@
     async kor(tillDag = 6, maxMin = 120) {
       dagStart = tid; window.__textLogg('MÅL', '', H.stegText());
       const stopp = tid + maxMin * 60; let sista = -1, samma = 0, stegT = tid;
-      while (S.dag < tillDag && tid < stopp) {   // B55: boten kör vidare in i kapitel 2
+      while (S.dag < tillDag && tid < stopp && !(S.julFirad && tillDag > 22)) {   // B55: boten kör vidare in i kapitel 2 · inkorg 63: slutar när julen är firad (efterspelet ingår inte)
+        if (dagenSomSpelas == null || (H.ui.igang && !H.pausad())) dagenSomSpelas = S.dag;
         { let w = 0; while (H.pratar?.() && w++ < 120) await vanta(0.1); }   // en spelare lyssnar klart innan hen gör nästa sak
         if (window.__simVidSteg) try { await window.__simVidSteg(H.stegId?.() || ''); } catch {}   /* inkorg 44: testerna kan titta på varje steg */
         const fore = S.steg + ':' + S.dag; console.log(`[sim] dag ${S.dag} ${fmt(tid - dagStart)} ${S.mynt} kr · ${H.stegId?.() || ''} · ${(H.stegText() || '').slice(0, 50)} · kö ${H.kanalLage?.().n ?? "?"}`); await gorSteg();
@@ -621,7 +622,7 @@
         }
         if (fore === sista) { await vanta(1); if (++samma > 60 || tid - stegT > (+(window.__simStegMax || 15)) * 60) { handling('fastnade: ' + H.stegText()); break; } } else { sista = fore; samma = 0; stegT = tid; }
       }
-      if (!dagar.some((d) => d.dag === S.dag)) dagar.push({ dag: S.dag, sek: tid - dagStart, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat, ofardig: true });
+      if (!dagar.some((d) => d.dag === (dagenSomSpelas ?? S.dag))) dagar.push({ dag: dagenSomSpelas ?? S.dag, sek: tid - dagStart, mynt: S.mynt, trivsel: H.trivsel(), bar: H.BARA_SKRAP[H.niva()], printat: S.stat.printat, ofardig: true });
       return { logg, handlingar, dagar, kop, tid, nyFlaggor, regi: NY || window.__taBild ? (window.__regiLogg || []).slice() : [] };
     },
     logg, handlingar, dagar, kop, get tid() { return tid; },

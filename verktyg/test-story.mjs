@@ -49,8 +49,8 @@ const startRad = await p.evaluate(() => window.__printahem.S.hotbar.slice(0, 3).
 let forstaHjalp = ''; for (let i = 0; i < 40 && !forstaHjalp; i++) { forstaHjalp = await p.evaluate(() => document.querySelector('.ph-kontroll')?.textContent || ''); if (!forstaHjalp) await p.waitForTimeout(250); }   /* inkorg 20: första uppmaningen, innan boten gör något */
 await p.evaluate(([u, m, c]) => { window.__vt.start(); window.__simUtforlig = u; window.__simStegMax = m; window.__simCykelForst = c[0]; window.__simStromDirekt = c[1]; }, [!!process.env.UTFORLIG, +(process.env.SIM_STEGMAX || 15), [!!process.env.CYKEL_FORST, !!process.env.STROM_DIREKT]]);   /* A-073: STROM_DIREKT=1 tar generatorn direkt i stället för att vänta på hjälpen */   /* A-071: CYKEL_FORST=1 ställer cykeln före generatorn */
 await p.addScriptTag({ content: fs.readFileSync(new URL('./sim-bot.js', import.meta.url), 'utf8') });
-const r = await p.evaluate(() => window.__simBot.kor(2, 30));
-const L = r.logg.filter((e) => e.dag === 1), ut = []; fs.writeFileSync('/tmp/story-logg.json', JSON.stringify(L));
+const r = await p.evaluate(() => window.__simBot.kor(4, 90));   /* inkorg 63: dag 1–3 */
+const L = r.logg.filter((e) => e.dag === 1), L3 = r.logg.filter((e) => e.dag <= 3), ut = []; fs.writeFileSync('/tmp/story-logg.json', JSON.stringify(L)); fs.writeFileSync('/tmp/story-logg3.json', JSON.stringify(L3));
 const steg1 = STORY_STEG.filter((x) => x.dag === 1);
 // 1. målen i rätt ordning, med texten ur story.js
 const rutor = L.filter((e) => e.kalla === 'målruta').map((e) => e.text);
@@ -77,7 +77,26 @@ ut.push([`kvittot efter steget (${kv.length - kvFel.length}/${kv.length})${kvFel
 // inkorg 59: din egen röst före berättaren – skyltens startreplik först, ingen uppläsning av målet efter
 { const roster = L.filter((e) => e.kalla === 'röst'); const forst = roster.findIndex((e) => String(e.text).includes('Först borde jag spika upp en skylt')); const ber = roster.findIndex((e) => /^Spika upp din adresskylt/.test(String(e.text)));
   ut.push([`inkorg 59: "Först borde jag spika upp en skylt…" sägs (${forst >= 0}), berättaren läser inte "Spika upp din adresskylt." (${ber < 0 ? 'ingen' : 'röst nr ' + ber})`, forst >= 0 && ber < 0]); }
-const FLAGGOR = ['SEKVENSFEL', 'REDAN GJORT', 'FEL PLATS I TEXT', 'GÅVA SOM KÖP', 'PIL PÅ GJORD SAK', 'BERÄTTAREN FÖRE DIG', 'RÖST AVBRUTEN'];
+/* inkorg 63 p.3: varje steg dag 1–3 börjar med din röst och säger nästa handling (startrepliken i något av sakens lägen, eller lägets tanke) */
+{ const G0 = new Proxy({}, { get: (t, k) => k === 'rolfVara' || k === 'rolfNamn' ? () => '' : () => 0 }), LAGESTEST = [{ stat: {}, rolf: {}, saljLagt: {} }, { stat: {}, rolf: {}, saljLagt: {}, cykelBuren: true }, { stat: {}, rolf: {}, saljLagt: {}, cykelStar: true }, { stat: {}, rolf: {}, saljLagt: {}, mynt: 1e6 }];
+  const duRost = L3.filter((e) => e.kalla === 'röst' && /^du$/.test(e.vem || '')).map((e) => String(e.text || ''));
+  const rostAlla = L3.filter((e) => ['röst', 'sak', 'struken'].includes(e.kalla)).map((e) => String(e.text || ''));
+  const varianter = (s) => { const v = new Set(); for (const S0 of LAGESTEST) { try { const t = typeof s.start === 'function' ? s.start(S0, G0) : s.start; if (t) v.add(String(t)); } catch {} } lagT(s).forEach((t) => t && v.add(t)); return [...v]; };
+  const kor = (s) => L3.some((e) => e.kalla === 'händelse' && e.vem === 'malKlart' && (String(e.text).includes('id=' + s.id + ' ') || String(e.text).endsWith('id=' + s.id)));
+  const klarT = (id) => L3.find((e) => e.kalla === 'händelse' && e.vem === 'malKlart' && (String(e.text).includes('id=' + id + ' ') || String(e.text).endsWith('id=' + id)))?.tot;
+  const startT = (id) => L3.find((e) => e.kalla === 'händelse' && e.vem === 'malKlart' && new RegExp('nasta=' + id + '(\\s|$)').test(String(e.text)))?.tot;
+  const direktKlar = (x) => { const a = startT(x.id), b = klarT(x.id); return a != null && b != null && b - a < 2; };   /* steget klarades i samma stund som det började (gården redan städad) – inget att säga */
+  const stegen = STORY_STEG.filter((x) => x.dag <= 3 && !x.sov && x.handling !== 'sov' && kor(x) && orsakSedd(x) && !direktKlar(x));
+  const tyst = stegen.filter((s) => { const v = varianter(s).map((t) => t.replace(/\$\{[^}]*\}/g, '').slice(0, 24)); return !v.some((x) => x && duRost.some((t) => t.includes(x))) && !v.some((x) => x && L3.some((e) => e.kalla === 'struken' && String(e.text).includes(x))); });
+  ut.push([`inkorg 63 p.3: varje steg dag 1–3 som spelades börjar med din röst (${stegen.length - tyst.length}/${stegen.length})${tyst.length ? ' – tyst: ' + tyst.map((s) => s.dag + ':' + s.id).join(', ') : ''}`, !tyst.length]);
+  const gen = L3.filter((e) => e.kalla === 'röst' && /koppla på generatorn/.test(String(e.text || '')));
+  ut.push([`inkorg 63 p.3: när cykeln står sägs "Nu borde jag koppla på generatorn…" med din röst (${gen.length} gånger)`, gen.length >= 1]);
+  const uttag = r.logg.find((e) => e.kalla === 'händelse' && e.vem === 'tagitUrPrint' && /sak=nyckelring/.test(e.text)), foto = r.logg.find((e) => e.kalla === 'foto' && /nyckelring/i.test(String(e.text || '') + String(e.varfor || '')));
+  const dt = uttag && foto ? foto.tot - uttag.tot : null;
+  ut.push([`inkorg 63 p.5: fotot av första nyckelringen ${dt == null ? 'saknas' : dt.toFixed(2) + ' s'} efter att den tagits ut (högst 0,5 s)`, dt != null && dt <= 0.5]);
+  const klarNotis = L3.filter((e) => ['notis', 'toast', 'sak'].includes(e.kalla) && /är klar – ta ut|st klara på skrivaren/.test(String(e.text || '')));
+  ut.push([`inkorg 63 p.4: en klar print ger bara den gröna skylten – 0 notiser om klar print (${klarNotis.length}${klarNotis.length ? ': ' + klarNotis[0].text.slice(0, 40) : ''})`, !klarNotis.length]); }
+const FLAGGOR = ['SEKVENSFEL', 'REDAN GJORT', 'FEL PLATS I TEXT', 'GÅVA SOM KÖP', 'PIL PÅ GJORD SAK', 'BERÄTTAREN FÖRE DIG', 'RÖST AVBRUTEN', 'TYST UPPMANING'];
 const br = L.filter((e) => e.kalla === 'brott' && FLAGGOR.includes(e.vem));
 ut.push([`0 ${FLAGGOR.join(', 0 ')} dag 1 (${br.map((e) => e.vem + ': ' + e.text).join(' · ') || 'inga'})`, !br.length]);
 ut.push([`dag 1 spelad till sömnen (${L.filter((e) => e.kalla === 'händelse' && e.vem === 'malKlart').length} mål)`, r.dagar.length >= 1]);

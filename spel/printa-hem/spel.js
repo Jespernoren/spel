@@ -3993,7 +3993,7 @@ function uppdateraSkrivare(sk, dt) {
         // ritningen är förbrukad – vill du ha en till får du köpa den igen (väggskivor och fönster räknas upp till max)
         if (!['vaggar', 'fonster', 'tapeter'].includes(j.maskin) || arKlar(j.maskin, 1)) S.ritningar = S.ritningar.filter((x) => x !== j.maskin);
         handelse('printKlar', { sak: 'byggsats:' + j.maskin, n: 1 }); aliStolt(j.maskin, m.namn, true);
-        visaPaBadd(sk, sk.klar, 1); ljudH('print-klar'); skrivarNotis(sk, `${m.namn} är klar – ta ut den`, 'guld', true, 'klar'); nastaJobb(sk, null);
+        visaPaBadd(sk, sk.klar, 1); ljudH('print-klar'); nastaJobb(sk, null);   /* inkorg 63 p.4: ingen notis när printen är klar – den gröna skylten över skrivaren räcker */
         
       }
     } else if (S.auto?.lada && sk.upprepa === j.typ && VAROR[j.typ]?.pris > 0) {
@@ -4003,8 +4003,8 @@ function uppdateraSkrivare(sk, dt) {
     } else {
       const fel = humorSpagetti(j.typ); sk.jobb = null; laggUt(sk, fel ? 'spagetti' : j.typ); ljudH('print-klar');
       const nUt = antalUt(sk);
-      if (nUt === 1 && S.stat.printat > 0) skrivarNotis(sk, `${VAROR[j.typ]?.namn || 'Utskriften'} är klar – ta ut den${sk.upprepa === j.typ ? ' (printar en till – tryck på skrivaren för att stoppa)' : ''}`, 'guld', true, 'klar');
-      else if (nUt % 3 === 0) skrivarNotis(sk, `${nUt} st klara på skrivaren – ta ut dem`, 'bra');
+      /* inkorg 63 p.4: ingen notis när printen är klar – bara den gröna skylten över skrivaren (spelaren ser det redan) */
+      /* inkorg 63 p.4: inte heller "N st klara" – den gröna skylten räknar */
       if (VAROR[j.typ]?.lyx) S.ritningar = S.ritningar.filter((x) => x !== 'recept:' + j.typ);   // Alis fina ritningar räcker till en
       aliStolt(j.typ, VAROR[j.typ]?.namn, !!VAROR[j.typ]?.recept);
       S.stat.printat++; S.printTot = { ...(S.printTot || {}), [j.typ]: (S.printTot?.[j.typ] || 0) + 1 }; printDagLogg(j.typ); handelse('printKlar', { sak: j.typ, n: S.printTot[j.typ] });
@@ -4650,10 +4650,12 @@ const arTalare = (it) => !!it.vem && !['du', 'berattare', 'bud'].includes(it.vem
 const arBonus = (it) => it.vikt === 'SMÅPRAT' || !!it.bonus;
 /* inkorg 22: hör det ihop med det du just gjorde? Kvittenser, nya mål och kedjan alltid. Sms, småprat och bonus aldrig.
    Annars: köades det strax efter ett klick (eller i en meny/scen du själv öppnat) är det ett svar. */
+const arSvarReakt = (x) => !!x && (!!x.svar || !!x.infoKvitto) && !x.sms && x.vikt === 'REAKTION' && arKvitto(x) < 1;   /* infoKvitto: "Dörr på plats!" är också svaret på det du gjorde */   /* inkorg 63 p.5: en reaktion på din egen handling */
+const SMS_RADIO_MAX_MS = 5000;   /* inkorg 63 p.5: sms och radio väntar på andrum och handlingar högst så här länge (SEN-gränsen är 20 s) */
 function arSvar(it) {
   if (it.kedja || it.kvitto || it.infoKvitto || it.vikt === 'MÅL' || it.lugnOk) return true;   // lugnOk: prompten före första uppgiften (skylten)
   try { if (it.sms && it.text && orsakNu(it.text)) return true; } catch {}   /* inkorg 61: ett sms som är orsaken till stegets start väntar inte på andrum */
-  if (it.sms || arBonus(it)) return false;
+  if (it.sms || arBonus(it) || it.vem === 'kjelle') return false;   /* inkorg 63 p.5: radion är aldrig ett svar på din handling, inte heller i butiken */
   try { if (regiDirekt() && !ui.butiksOverlay.hidden) return true; } catch {}
   if (/^(värld|notis):/.test(String(it.vem || '')) || it.vem === 'bud') return false;   // det som händer i världen, maskinernas notiser och tips – inte svar om de inte sägs så
   try { return performance.now() - senastHandlingT() < SVAR_FONSTER_MS; } catch { return false; }
@@ -4671,12 +4673,14 @@ function bonusOk(nu) {   // EA/EC#2: dag 1 ingen bonus, sedan en per 4 min (dag 
 const kanal = []; let kanalAktiv = null, kanalFri = 0, senastStory = -1e9;
 // BV: lugn start på dagen
 const LUGN_START = 5300, SMS_TIDIGAST = 30500;
-let iKanalVisa = 0, senastSynlig = -1e9, kanalVisas = null, senastTankeT = -1e9; const TANKAR_MINST_MS = 6000;   /* A-090 p.5: minst 6 s mellan två tankar (målets tanke efter en reaktion räknas) */   /* inkorg 22: meddelandet som visas just nu – det som loggas under tiden ärver dess svar-flagga */ const SYNLIG_MELLAN = 4200, KVITTO_MELLAN = 2000;   /* kvittensen har förtur men får minst 2 s efter det som syntes före */   /* A-065 tillägg: ett talutrymme */
+let iKanalVisa = 0, senastSynlig = -1e9, kanalVisas = null, senastTankeT = -1e9; const TANKAR_MINST_MS = 6000;   /* A-090 p.5: minst 6 s mellan två tankar (målets tanke efter en reaktion räknas) */   /* inkorg 22: meddelandet som visas just nu – det som loggas under tiden ärver dess svar-flagga */ const SYNLIG_MELLAN = 4200, KVITTO_MELLAN = 2000, SVAR_MELLAN = 600;   /* inkorg 63 p.5: svaret på din handling syns inom 1 s */   /* kvittensen har förtur men får minst 2 s efter det som syntes före */   /* A-065 tillägg: ett talutrymme */
 const senastNyckel = new Map();   // notisnyckel → när den senast visades (samma sort inom 30 s slås ihop)   /* A-065: sant medan kön visar något – då får det synas direkt */
 let menyTot = 0, menyVidKlart = 0, scenTot = 0, butikTot = 0, butikVidKlart = 0;   /* A-063: tid i menyer och pausade sidor räknas inte mot målrutans 4 s */
 let lugnTill = 0, dagStartTid = -1e9; const kanalSenare = [];
 function lugnStart() { lugnTill = performance.now() + LUGN_START; dagStartTid = performance.now(); }
 paHandelse('morgonkortStangt', lugnStart);
+/* inkorg 63 p.5: ett sms som kom under natten räknas från dagens start (BV: inget sms de första 30 s) – inte från natten */
+paHandelse('morgonkortStangt', () => { const t = performance.now() + SMS_TIDIGAST;   /* radion också: dagens utrop kommer efter morgonens mål och notiser */ for (const x of [...kanal, ...kanalSenare]) if ((x.sms || x.vem === 'kjelle') && x.vikt !== 'STORY' && !(x.tidigast > t)) { x.tidigast = t; x.fodd = t; x.pausMs = 0; textLogg('väntar', x.vem || '', x.text || '', `${x.vikt} · dagens första 30 s · om ${(SMS_TIDIGAST / 1000).toFixed(1)} s`); } });
 paHandelse('morgonkortStangt', () => { morgonVantar = false; malKlartTid = performance.now(); });
 const arKvitto = (x) => x.vikt === 'MÅL' ? 0 : (x.kedja || x.kvitto) ? 1 : x.infoKvitto ? 0.5 : 0;   /* A-080: ett svar på ett klick är också en kvittens, men efter berättelsens kvittens */   /* A-080: ett svar på det man just gjorde är också en kvittens */   /* A-065 lager 1: kvittensen har förtur framför allt annat i kön */
 /* inkorg 46 p.8: från att skylten sitter på dörren till julscenens slut visas bara julaftonens egna saker (mamma, familjen, Kjelles julsändning, mål och kvittenser).
@@ -4710,6 +4714,7 @@ function kanalLagg(it) {
   const nu0 = performance.now(); it.t = it.t0 ?? nu0; it.vikt = it.vikt || 'REAKTION'; it.dag = it.dag ?? S.dag;
   it.fodd = it.fodd ?? Math.max(it.t, it.tidigast || 0); it.pausMs = it.pausMs || 0;   /* inkorg 45 p.1: när nyheten blev aktuell – tidigast flyttas av andrummet, fodd gör det inte */
   if (it.svar == null) it.svar = arSvar(it);   /* inkorg 22 */
+  if (it.sms && it.egenSms == null) { try { it.egenSms = nu0 - senastHandlingT() < SVAR_FONSTER_MS; } catch { it.egenSms = false; } }   /* inkorg 63 p.5: ett sms som svarar på det du just gjorde ("Fick du igång den??") – inget sms-avstånd, högst 20 s */
   { const fg = [...kanal, ...kanalSenare].find((x) => Math.abs(x.t - it.t) < EA_GRUPP_MS); it.grupp = it.grupp ?? (fg ? fg.grupp : it.t); }   // EA: samma händelse = samma grupp (gruppens starttid)
   // kön får inte växa: max en sak per figur i kön (STORY stryks aldrig – den väntar)
   if (it.vikt !== 'STORY' && it.vem) { const i = kanal.findIndex((x) => x.vem === it.vem && x.vikt !== 'STORY' && x.vikt !== 'MÅL' && !x.kvitto && !(it.paket && x.paket === it.paket) && !(it.sms && x.sms));   /* A-063: en kvittens trängs inte undan av en nyare tanke */   /* EA: delar i samma paket och olika sms tar inte ut varandra */ if (i >= 0) { textLogg('struken', kanal[i].vem, kanal[i].text || '', 'en nyare från samma'); kanal.splice(i, 1); } }
@@ -4738,18 +4743,22 @@ function startaDel(a, nu) {
 let korSenast = 0; const paketStart = new Map(); const KVITTO_TYST_MS = 1500;   // EA: när ett paket började visas
 function korKanal() {
   const nu = performance.now();
-  { const dtK = korSenast ? Math.min(1000, nu - korSenast) : 0; korSenast = nu;   // EA: tiden i en meny (butiken, en dialog) räknas inte mot reaktionens 10 s
+  { const dtK = korSenast ? Math.min(kanalPausad() ? 30000 : 1000, nu - korSenast) : 0; korSenast = nu;   /* inkorg 63 p.5: en paus där kön inte körs räknas hel, inte bara 1 s */   // EA: tiden i en meny (butiken, en dialog) räknas inte mot reaktionens 10 s
     if (dtK && (scenPagar() || animationPagar())) scenTot += dtK;
     if (dtK && !ui.butiksOverlay.hidden) butikTot += dtK;   /* inkorg 46 p.2: i butiken byts målrutan ändå – butikstiden räknas mot TOM RUTA */   /* inkorg 45 p.7: en scen eller animation du själv startade (kameran över tippen, spikandet) räknas inte mot SEN KVITTENS */
     if (dtK && (!ui.butiksOverlay.hidden || !ui.overlay.hidden || !medEl2.hidden || pausad)) { menyTot += dtK; for (const x of kanal) if (x.vikt === 'REAKTION') x.menyMs = (x.menyMs || 0) + dtK; }
-    else if (dtK && nu < pratarTill && (!kanalAktiv || pratarVem !== kanalAktiv.vem)) menyTot += dtK; }
-  { const dtP = nu - (korKanal.pSen || nu); korKanal.pSen = nu; if (dtP > 0 && dtP < 1000 && (kanalPausad() || (() => { try { return sover || morgonVantar; } catch { return false; } })())) for (const x of [...kanal, ...kanalSenare]) x.pausMs = (x.pausMs || 0) + dtP; }   /* inkorg 45 p.1: meny, paus, scen och sömn räknas inte mot nyhetens ålder */   /* A-063: någon pratar direkt (Ali i butiken, ett samtal) – kanalen väntar, och det räknas inte som sent */
+    else if (dtK && nu < pratarTill && (!kanalAktiv || pratarVem !== kanalAktiv.vem)) { menyTot += dtK; if (!kanalPausad()) for (const x of [...kanal, ...kanalSenare]) x.pausMs = (x.pausMs || 0) + dtK; } }   /* inkorg 63 p.5: när någon pratar direkt väntar kön – det räknas inte mot hur sent något kommer */
+  { const dtP = nu - (korKanal.pSen || nu); korKanal.pSen = nu; if (dtP > 0 && dtP < 30000 && (kanalPausad() || (() => { try { return sover || morgonVantar; } catch { return false; } })())) for (const x of [...kanal, ...kanalSenare]) x.pausMs = (x.pausMs || 0) + dtP; }   /* inkorg 45 p.1: meny, paus, scen och sömn räknas inte mot nyhetens ålder */   /* A-063: någon pratar direkt (Ali i butiken, ett samtal) – kanalen väntar, och det räknas inte som sent */
   if (kanalSenare.length) kanal.push(...kanalSenare.splice(0));
   if (kanalAktiv) {
     const a = kanalAktiv; if (nu < a.slut || (pratarVem === a.vem && nu < pratarTill)) {
       /* A-093 p.9: ett långt sms läses upp – en kvittens på det spelaren just gjorde väntar inte på det. Den syns direkt som text (utan röst, så att sms:et inte klipps). */
-      if ((a.sms || a.vem === 'kjelle') && !arKvitto(a) && !kanalPausad()) {   /* inkorg 46: radion är också lång – kvittensen väntar inte på den */ const i = kanal.findIndex((x) => arKvitto(x) && x.visa && !x.delar && nu - x.t > KVITTO_TYST_MS); if (i >= 0) { const kv = kanal.splice(i, 1)[0];
-        textLogg('kvitto-visas', kv.vem || '', kv.text || '', 'A-093 p.9: utan röst medan ett sms läses'); if (kv.kvitto) senKvittensKoll(kv.kvitto, kv.text || kv.vem || '');
+      /* inkorg 63 p.5: en reaktion på din egen handling väntar inte på stämning som redan pratar (en tanke eller bubbla som inte är svar) – stämningen klipps och svaret går */
+      if (!a.svar && !arKvitto(a) && a.vikt === 'REAKTION' && !a.sms && a.vem !== 'kjelle' && !a.delar && !kanalPausad() && kanal.some((x) => x.svar && !x.sms && x.vikt !== 'MÅL' && !(x.tidigast > nu + 300))) {
+        textLogg('klipps', a.vem || '', a.text || '', 'inkorg 63 p.5: ett svar på din handling går före stämningen'); if (pratarVem === a.vem && rostLage() === 'rost') { pratarVem = ''; tystna(); } a.slut = nu; pratarTill = Math.min(pratarTill, nu); }
+      else if (!arKvitto(a) && a.vikt !== 'MÅL' && !kanalPausad()) {   /* inkorg 46: radion är också lång – kvittensen väntar inte på den */   /* inkorg 63 p.5: ett svar som bara är text (info) väntar inte på den som pratar */
+        const lang = a.sms || a.vem === 'kjelle' || (a.vikt === 'STORY' && a.vem !== 'du' && Math.max(a.slut || 0, pratarTill) - nu > 1000);   /* ett brev eller en lång replik från någon annan: svaret på din handling syns som text direkt (utom en uppmaning, som ska höras) */ const i = kanal.findIndex((x) => x.visa && !x.delar && !(x.tidigast > nu) && ((lang && (arKvitto(x) || (x.svar && !x.sms && x.vikt !== 'MÅL' && !arUppmaning(x.vem, x.text || ''))) && nu - x.t > (arKvitto(x) ? KVITTO_TYST_MS : 300)) || (arSvarReakt(x) && x.rost === false && nu - x.t > 200))); if (i >= 0) {   /* inkorg 63 p.5: svaret på din handling syns också direkt, som text */ const kv = kanal.splice(i, 1)[0];
+        textLogg('kvitto-visas', kv.vem || '', kv.text || '', 'A-093 p.9: utan röst medan ett sms läses'); if (!arKvitto(kv)) textLogg('sak', kv.vem || '', kv.text || '', (kv.vikt || 'REAKTION') + ' · svar · text medan sms läses'); if (kv.kvitto) senKvittensKoll(kv.kvitto, kv.text || kv.vem || '');
         kanalVisas = kv; iKanalVisa++; try { kv.visa(); } catch (e) { console.warn(e); } finally { iKanalVisa--; } kanalVisas = null;
         try { const e = regiLogg(regiKanal(kv), regiPrio(kv), kv.vem, kv.text || '', 3000); e.svar = true; } catch {} senastSynlig = nu; } }
       return; }
@@ -4762,7 +4771,7 @@ function korKanal() {
     if (a._regi) a._regi.slut = Math.round(nu);   /* A-080 */
     kanalAktiv = null; if (a.text && !/^\(/.test(a.text)) meddelandeSlut = Math.max(meddelandeSlut, nu); kanalFri = nu + (a.utanPaus ? 0 : (a.kedja || a.kvitto) ? KEDJA_MAL_PAUS : ROST_PAUS);   /* inkorg 22: andrummet räknas från att det senaste slutade */   /* A-065: efter en kvittens kommer nya målet direkt (annat väntar ändå på talutrymmets 4 s) */ if (a.paket) paketStart.set(a.paket, nu); textLogg('klar', a.vem || '', a.text || '(nytt mål i rutan)', a.vikt); try { a.efter?.(); } catch (e) { console.warn(e); } kanalRaknare();
   }
-  if (!kanal.length || nu < pratarTill + DIALOG_PAUS || (nu < kanalFri && !kanal.some((x) => arKvitto(x) && !(x.tidigast > nu)))) return;   /* A-065: en kvittens väntar bara tills rösten pratat klart, inte på pausen mellan två saker */   // B25: kanalen avbryter aldrig någon som pratar direkt (Ali i butiken, samtal)
+  if (!kanal.length || nu < pratarTill + DIALOG_PAUS || (nu < kanalFri && !kanal.some((x) => (arKvitto(x) || (x.svar && !x.sms)) && !(x.tidigast > nu)))) return;   /* inkorg 63 p.5: svaret på din handling går som en kvittens */   /* A-065: en kvittens väntar bara tills rösten pratat klart, inte på pausen mellan två saker */   // B25: kanalen avbryter aldrig någon som pratar direkt (Ali i butiken, samtal)
   // B25: i Alis butik får Alis egna STORY-repliker (t.ex. varför-raden efter bonusen) komma, när ingen pratar
   let endastAli = false;
   if (kanalPausad()) {
@@ -4770,10 +4779,11 @@ function korKanal() {
     else return;
   }
   // BV: lugn start – de första 5 s efter BÖRJA DAGEN (och efter introt och kapitelkort) kommer ingenting
-  if (nu < lugnTill && !kanal.some((x) => x.lugnOk)) return;   /* A-063: prompten före skylten får gå före lugnet */
+  const lugnSvar = nu < lugnTill && !kanal.some((x) => x.lugnOk); if (lugnSvar && !kanal.some(arSvarReakt)) return;   /* inkorg 63 p.5: svaret på ditt klick (FORTSÄTT) väntar inte på den lugna starten – allt annat gör det */   /* A-063: prompten före skylten får gå före lugnet */
   if ((() => { try { return sover || morgonVantar; } catch { return false; } })()) return;   /* A-093 p.8 (try: kan köras innan sover/morgonVantar finns): morgonkortet kommer alltid först på morgonen – inget från kön (notiser, tankar, bubblor) före det */
   // EA: fast ordning – rang (story/reaktion, mål, bonus) → händelse → den som pratar före min tanke → tid
-  const sortKv = (x) => x.vikt === 'MÅL' ? 0.75 : arKvitto(x);   /* inkorg 45 p.4: kvittensen först, sedan nya målet, sedan info-svaret – målet kommer inom 2 s efter kedjan */
+  const smsRadioSen = (x) => (x.sms || x.vem === 'kjelle') && x.vikt !== 'STORY' && !arBonus(x) && performance.now() - (x.fodd ?? x.t) - (x.pausMs || 0) > SMS_RADIO_MAX_MS;   /* inkorg 63 p.5: radio och sms som väntat 12 s går före nya målet (SEN-gränsen 20 s) */
+  const sortKv = (x) => x.vikt === 'MÅL' ? 0.75 : arSvarReakt(x) ? 0.9 : arKvitto(x) || (x.svar && !x.sms ? 0.8 : smsRadioSen(x) ? 0.78 : 0);   /* inkorg 63 p.5: reaktionen på din handling före nästa story-del */   /* inkorg 63 p.5: en reaktion på din egen handling går först, efter kvittensen */   /* inkorg 45 p.4: kvittensen först, sedan nya målet, sedan info-svaret – målet kommer inom 2 s efter kedjan */
   kanal.sort((a, b) => sortKv(b) - sortKv(a) || (b.forst ? 1 : 0) - (a.forst ? 1 : 0) || rang(a) - rang(b) || a.grupp - b.grupp || (a.paket && a.paket === b.paket ? a.ord - b.ord : 0) || arTalare(b) - arTalare(a) || a.t - b.t);
   const senare = kanalSenare; let malSnart = 0, kvSnart = 0;   /* inkorg 45 p.4: ett mål som väntar några sekunder på sin tur släpper inte fram något med lägre rang (info, notiser) före sig */
   while (kanal.length) {
@@ -4794,23 +4804,25 @@ function korKanal() {
     }
     if (it.sms && nu - dagStartTid < SMS_TIDIGAST) it.tidigast = Math.max(it.tidigast || 0, dagStartTid + SMS_TIDIGAST);   // BV: kontrolleras vid leverans
     if (it.gammalMs && nu - it.t - (it.menyMs || 0) > it.gammalMs) { textLogg('struken', it.vem || '', it.text || '', 'A-065: för gammal – tappat sitt sammanhang'); continue; }
-    { const mel = arKvitto(it) ? KVITTO_MELLAN : SYNLIG_MELLAN; if (it.vikt !== 'MÅL' && nu - senastSynlig < mel) it.tidigast = Math.max(it.tidigast || 0, senastSynlig + mel); }
+    { const mel = arKvitto(it) === 1 ? KVITTO_MELLAN : (arSvarReakt(it) || (it.svar && !it.sms)) ? SVAR_MELLAN : arKvitto(it) ? KVITTO_MELLAN : SYNLIG_MELLAN; if (it.vikt !== 'MÅL' && nu - senastSynlig < mel) it.tidigast = Math.max(it.tidigast || 0, senastSynlig + mel); }   /* inkorg 63 p.5: svaret på din handling väntar inte de 4 s */
     if (it.arTanke && !arKvitto(it) && (!it.svar || it.vikt === 'MÅL') && nu - senastTankeT < TANKAR_MINST_MS) it.tidigast = Math.max(it.tidigast || 0, senastTankeT + TANKAR_MINST_MS);   /* A-090 p.5 */   /* A-065: minst 4 s mellan två saker som syns */
-    if (!it.svar && it.vikt !== 'MÅL' && !endastAli) {   /* inkorg 22: andrum för det som inte hör ihop med det du just gjorde */
-      const lugn = Math.max(meddelandeSlut + ANDRUM_MS, senastMalKlartT + ANDRUM_EFTER_KLART_MS, it.sms ? senastSmsT + SMS_MELLAN_MS : 0, it.sms && it.vem === 'mamma' ? senastMammaSmsT + MAMMA_SMS_MELLAN_MS : 0);
+    const smsRadioGammal = smsRadioSen(it);   /* inkorg 63 p.5 */
+    if (!it.svar && it.vikt !== 'MÅL' && !endastAli && !smsRadioGammal) {   /* inkorg 22: andrum för det som inte hör ihop med det du just gjorde */
+      const lugn = it.egenSms ? meddelandeSlut + ROST_PAUS : Math.max(meddelandeSlut + ANDRUM_MS, senastMalKlartT + ANDRUM_EFTER_KLART_MS, it.sms ? senastSmsT + SMS_MELLAN_MS : 0, it.sms && it.vem === 'mamma' ? senastMammaSmsT + MAMMA_SMS_MELLAN_MS : 0);   /* inkorg 63 p.5: sms som svar på din handling väntar bara på att den som pratar är klar */
       if (lugn > nu) it.tidigast = Math.max(it.tidigast || 0, lugn);
-      else if ((handlingNu || (it.sms && (nu - senastHandlingT() < SMS_LUGN_MS || nu < pratarTill))) && nu - (it.vantarSedan ??= nu) < HANDLING_MAX_VANT_MS) it.tidigast = Math.max(it.tidigast || 0, nu + 500);
+      else if (((handlingNu && !it.egenSms) || (it.sms && (nu - senastHandlingT() < SMS_LUGN_MS || nu < pratarTill))) && nu - (it.vantarSedan ??= nu) < (it.egenSms ? 20000 : HANDLING_MAX_VANT_MS)) it.tidigast = Math.max(it.tidigast || 0, nu + 500);
     }
-    if (it.tidigast && nu < it.tidigast) { if (it.vikt === 'MÅL' && it.tidigast - nu < 4000) malSnart = it.tidigast; if (arKvitto(it) === 1 && it.tidigast - nu < 3000) kvSnart = it.tidigast; senare.push(it); continue; }
+    if (lugnSvar && !arSvarReakt(it)) { it.tidigast = Math.max(it.tidigast || 0, lugnTill); senare.push(it); continue; }   /* inkorg 63 p.5 */
+    if (it.tidigast && nu < it.tidigast) { if (it.vikt === 'MÅL' && it.tidigast - nu < 4000) malSnart = it.tidigast; if ((arKvitto(it) === 1 && it.tidigast - nu < 3000) || (arSvarReakt(it) && it.tidigast - nu < 1000)) kvSnart = Math.max(kvSnart, it.tidigast); senare.push(it); continue; }   /* inkorg 63 p.5: reaktionen på din handling går också före nya målet */
     if (kvSnart && it.vikt === 'MÅL') { it.tidigast = Math.max(it.tidigast || 0, kvSnart + 50); senare.push(it); continue; }   /* inkorg 47: en kvittens som väntar ett ögonblick går före nya målet (SEN KVITTENS) */   // BV: väntar på sin tid – nästa sak i kön får gå före
     if (malSnart && it.vikt !== 'MÅL' && sortKv(it) < 0.75) { it.tidigast = Math.max(it.tidigast || 0, malSnart + 50); senare.push(it); continue; }
     if (it.paket && !paketStart.has(it.paket)) paketStart.set(it.paket, nu);
-    if (!it.svar && it.vikt !== 'MÅL' && !endastAli && (nu - meddelandeSlut < ANDRUM_MS - 50 || nu - senastMalKlartT < ANDRUM_EFTER_KLART_MS - 50)) regelvakt.brott('TRÄNGSEL 2', `"${String(it.text || it.vem || '').slice(0, 50)}" ${((nu - meddelandeSlut) / 1000).toFixed(1)} s efter förra meddelandet, ${((nu - senastMalKlartT) / 1000).toFixed(1)} s efter en klar uppgift`);   /* inkorg 22 */
+    if (!it.svar && it.vikt !== 'MÅL' && !endastAli && !smsRadioGammal && (nu - meddelandeSlut < ANDRUM_MS - 50 || nu - senastMalKlartT < ANDRUM_EFTER_KLART_MS - 50)) regelvakt.brott('TRÄNGSEL 2', `"${String(it.text || it.vem || '').slice(0, 50)}" ${((nu - meddelandeSlut) / 1000).toFixed(1)} s efter förra meddelandet, ${((nu - senastMalKlartT) / 1000).toFixed(1)} s efter en klar uppgift`);   /* inkorg 22 */
     if (it.sms) { senastSmsT = nu; if (it.vem === 'mamma') senastMammaSmsT = nu; }
     kanalAktiv = it; it.slut = nu + (it.minMs ?? 2500); if (it.vikt === 'STORY') senastStory = nu;   // BO
     if ((it.vikt === 'STORY' || it.vikt === 'REAKTION') && it.text && !/^\(/.test(it.text) && !String(it.vem || '').startsWith('notis:') && it.vem !== 'bud') senastStoryReakt = nu;   // EC#2
     if (it.delar) { it.delar = it.delar.filter((d) => !d.stryk?.()); if (!it.delar.length) { kanalAktiv = null; textLogg('struken', it.vem || '', it.text || '', 'CG: målet redan gjort'); return; } }   /* inkorg 45 p.3: det som stryks loggas aldrig som visat */
-    textLogg('sak', it.vem || '', it.text || '(nytt mål i rutan)', it.vikt + (it.menyMs ? ` · meny ${(it.menyMs / 1000).toFixed(1)} s` : '') + (it.paket ? ` · paket ${it.paket}` : ''));
+    textLogg('sak', it.vem || '', it.text || '(nytt mål i rutan)', it.vikt + (it.menyMs ? ` · meny ${(it.menyMs / 1000).toFixed(1)} s` : '') + (it.pausMs > 200 ? ` · pausad ${(it.pausMs / 1000).toFixed(1)} s` : '') + (it.svar ? ' · svar' : '') + (it.paket ? ` · paket ${it.paket}` : ''));   /* inkorg 63 p.5: boten räknar inte tiden kanalen var pausad (scen, meny, sömn) och ser vad som är svar */
     if (it.vem === 'ali' && it.sms) sekvensKoll(it.text);
     if (it.delar) { it.delar = it.delar.filter((d) => !d.stryk?.()); if (!it.delar.length) { kanalAktiv = null; textLogg('struken', it.vem || '', it.text || '', 'CG: målet redan gjort'); return; } it.delNr = 0; startaDel(it, nu); kanalRaknare(); return; }
     if (it.kvitto) senKvittensKoll(it.kvitto, it.text || it.vem || '');   /* A-063 */
@@ -4824,6 +4836,7 @@ function korKanal() {
     if (it.antal > 1) textLogg('sammanslagen', it.vem || '', `${it.text} ×${it.antal}`, 'A-065: samma sort');
     if (String(it.vem || '').startsWith('notis:')) senastNyckel.set(notisNyckel(it.text), nu);
     if (it.rost !== false && it.text) { prataNu(it.vem, it.text, it.vikt, { start: it.start }); it.slut = Math.max(it.slut, pratarTill); }
+    else if (it.rost === false && it.text && rostLage() !== 'av' && arUppmaning(it.vem, it.text)) regelvakt.brott('TYST UPPMANING', `"${String(it.text).slice(0, 50)}" visades utan röst`);   /* inkorg 63 p.3 */
     kanalVisas = null; kanalRaknare(); return;
   }
   kanalRaknare();
@@ -6274,7 +6287,7 @@ let morgonKo = null;
 function kapRitAuto() { let n = 0; const iv = setInterval(() => { const k = document.querySelector('.ph-kapritn'); if (!k) { if (++n > 40) clearInterval(iv); return; } clearInterval(iv); setTimeout(() => { if (document.querySelector('.ph-kapritn')) medEl2.querySelector('button.fp-knapp')?.click(); }, 6000); }, 250); }
 /* inkorg 24 p.2: morgonkortets första rad räknar ner till jul – julafton är dag 22. Ingen räknare i HUD. */
 /* A-088 §4: morgonkortets andra rad är insatsen – vad som händer annars (kylan, mamma eller julen). En per dag 1–22. */
-const INSATS = ['Klarar jag inte en natt här får mamma rätt.', 'Utan dörr blåser natten rakt in.', 'Utan tak regnar det in i natt.', 'Drar det i skjulet blir natten lång.', 'Utan pengar blir det ingen jul här.', 'Utan en fabrik räcker pengarna inte till jul.', 'Säljer jag inget blir det tomt till jul.', 'Utan mer ström står allt still i kylan.', 'Utan fler skrivare hinner jag inte till jul.', 'Utan väggar fryser jag i natt.', 'Utan värme håller jag inte till jul.', 'Står maskinerna still får mamma rätt.', 'Utan ett eget rum är det bara ett skjul.', 'Går kvarnen så här långsamt hinner jag inte till jul.', 'Utan adress finns jag inte på riktigt.', 'Utan en egen tomt kan jag inte bli skriven här.', 'Utan pengar blir det inget hus före jul.', 'Utan grund blir det inget hus före jul.', 'Utan hus kommer mamma och hämtar mig.', 'Utan kamin får mamma rätt.', 'Utan adress finns jag inte, hur fint huset än är.', 'Utan skylt på dörren kör mamma hem med mig.'];
+const INSATS = STORY.filter((d) => d.dag >= 1).sort((a, b) => a.dag - b.dag).map((d) => d.insats || '');   /* inkorg 63 p.1: insatsen ägs av dagen i story.js */
 const forstaStor = (t) => String(t || '').charAt(0).toUpperCase() + String(t || '').slice(1);   /* inkorg 26 p.1: rubriken utan dagnummer börjar med stor bokstav */
 function julRad(dag) { const kvar = JULAFTON_DAG - dag; return kvar > 0 ? `${kvar} ${kvar === 1 ? 'dag' : 'dagar'} till jul.` : kvar === 0 ? 'Julafton.' : ''; }   /* inkorg 54 (A-109): bara nedräkningen – inget dagnummer */
 // BN: en mening per dag om dagens storymål (dag 1–22)
@@ -11554,6 +11567,15 @@ function korPratKo() {
   if (n.vikt === 'REAKTION' && performance.now() - n.t > REAKTION_MAX_VANTAN) { textLogg('röst-struken', n.vem, n.text + ' · väntade för länge'); return; }
   prataNu(n.vem, n.text, n.vikt, n.o);
 }
+/* inkorg 63 p.3: det som säger nästa handling i det aktuella steget (start, lägets tanke, påminnelse, medan) läses alltid upp med din röst –
+   också andra gången samma mening kommer (S.hort gäller bara stämning och reaktioner). Visas det utan röst flaggas TYST UPPMANING. */
+function stegUppmaningar() {
+  const ut = new Set(), p = aktivtStoryStag(); if (!p) return ut;
+  const add = (v) => { const t = varde(v, S, storyHjalp); if (t) ut.add(neutralt(String(t))); };
+  add(p.start); add(p.pamin); for (const l of Object.values(p.lagen || {})) add(l.tanke); for (const m of p.medan || []) add(m.tanke);
+  return ut;
+}
+const arUppmaning = (vem, text) => vem === 'du' && !!text && (() => { try { return stegUppmaningar().has(neutralt(String(text))); } catch { return false; } })();
 function prataNu(vem, text, vikt, o = {}) {
   if (vem === 'du') senastDu = performance.now();   /* inkorg 61: KROCK – nästa egna tanke väntar */
   if (!dagbokPrat && !o.lasIgen && !(vem === 'ali' && !ui.butiksOverlay.hidden)) dialogLogg(vem, 'röst', text);   // Alis röst i butiken är bubblan, som redan står i loggen
@@ -11569,7 +11591,7 @@ function prataNu(vem, text, vikt, o = {}) {
   if (text && vem && vem !== 'berattare') markeraSagt(text, vem);   // CT
   /* A-052: det man redan har hört läses inte upp igen (bara texten syns) – utom när man öppnar det i dagboken */
   let hortForut = false;
-  if (text && !dagbokPrat && !o.lasIgen && vikt === 'REAKTION' && !introPagar && !scenPagar()) { const id = replikId(text);   /* A-078 tillägg 12:25: "redan hört" gäller bara tips och reaktioner – introt, dagboken och scenerna läses alltid */ S.hort = S.hort || []; if (S.hort.includes(id)) hortForut = true; else { S.hort.push(id); if (S.hort.length > 4000) S.hort.shift(); } }
+  if (text && !dagbokPrat && !o.lasIgen && vikt === 'REAKTION' && !introPagar && !scenPagar()) { const id = replikId(text);   /* A-078 tillägg 12:25: "redan hört" gäller bara tips och reaktioner – introt, dagboken och scenerna läses alltid */ S.hort = S.hort || []; if (S.hort.includes(id) && !arUppmaning(vem, text)) hortForut = true; else { S.hort.push(id); if (S.hort.length > 4000) S.hort.shift(); } }
   if (!S.hoppaHint && rostLage() === 'rost' && !hortForut && ui.igang) { S.hoppaHint = true; setTimeout(() => regi.info('⏎ Enter – hoppa över', ''), 600); }
   /* A-090 p.3: spelet vet själv när en röst klipps – den förra skulle ha talat till pratarTill (riktig klipplängd, eller uppskattning med talfarten) */
   if (pratarVem && pratarTill && performance.now() < pratarTill - 300 && !dagbokPrat) textLogg('röst-avbruten', pratarVem, `${((pratarTill - performance.now()) / 1000).toFixed(1)} s kvar ← ${vem}: ${String(text).slice(0, 40)}`);
@@ -11793,6 +11815,13 @@ function visaNastaMeddelande() {
   medEl2.firstElementChild.appendChild(ljudKnapp);
   knapp.onclick = () => { const las = !knapp.disabled && !knapp.hidden; stangMeddelande(); if (las && m.id) handelse('brevLast', { id: m.id }); };
 }
+/* inkorg 63 p.2: FORTSÄTT, Läst och OK svarar redan när musknappen trycks ned. Ett klick räknas bara om ned och upp sker på samma element –
+   ändras muslåsningen mellan dem (t.ex. när kortet släpper musen) tappas klicket och det behövdes ett andra klick. Knappen tas bort när rutan
+   stängs, så samma tryck kan inte stänga två gånger. */
+medEl2.addEventListener('pointerdown', (e) => {
+  if (e.button !== 0) return; const k = e.target.closest?.('button.fp-knapp, button.ph-fortsatt'); if (!k || k.disabled || k.hidden || !medEl2.contains(k)) return;
+  e.preventDefault(); e.stopPropagation(); k.click();
+}, true);
 // muslåset kan beviljas en stund efter klicket på Starta – kommer det när ett meddelande visas släpper vi det så att man kan klicka Läst
 document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement && !medEl2.hidden) ui.slappMus(); });
 /* A-076 tillägg 11:45: Esc öppnar och stänger alltid menyn – också under tal, ritningar, kamerarörelser och kontrollhjälp, och när musen inte är låst.
@@ -14172,12 +14201,16 @@ function taFoto(iHanden) {
 function fotografera(p) {
   if ((S.polaroid || []).length >= 2 && Math.random() < 0.3) { p = { ...p, under: (p.under || p.text) + ' (och min tumme)', tumme: true }; skratt('tummen på fotot'); }   /* A-041: fotot misslyckas ibland */
   const bild = taFoto(p.iHanden); S.polaroid = S.polaroid || []; S.polaroid.push({ id: p.id, dag: S.dag, bild }); sparaSnart();
-  kanalLagg({ vikt: 'STORY', vem: 'foto', text: p.under || p.text, rost: false, minMs: 2600, visa: () => {
+  const fotoVisa = () => {
     const blixt = document.createElement('div'); blixt.className = 'ph-blixt'; document.body.appendChild(blixt); setTimeout(() => blixt.remove(), 700);
     ljudH('kamera'); textLogg('foto', 'du', p.under || p.text, p.id);
     if (bild) { const d = document.createElement('div'); d.className = 'ph-polstor'; d.innerHTML = `<img src="${bild}" alt="">${p.tumme ? '<span class="ph-tumme"></span>' : ''}<div>${rens(p.under || p.text)}</div>`; document.body.appendChild(d); setTimeout(() => { d.classList.add('ut'); setTimeout(() => d.remove(), 700); }, 2200); }
-  } });
-  if (p.tanke) paket([{ tanke: p.tanke }], { vikt: 'STORY', varfor: 'EK 26: fotots tanke' });
+  };
+  /* inkorg 63 p.5: ett foto av något du har i handen (första nyckelringen) visas i samma ögonblick – det är en reaktion på det du gjorde.
+     Kön står still medan fotot syns. Andra foton går genom kön som förut. */
+  if (p.iHanden) { fotoVisa(); regiLogg('foto', 'svar', 'foto', p.under || p.text, 2600); const t = performance.now() + 2600; kanalFri = Math.max(kanalFri, t); meddelandeSlut = Math.max(meddelandeSlut, t); senastSynlig = Math.max(senastSynlig, performance.now()); }
+  else kanalLagg({ vikt: 'STORY', vem: 'foto', text: p.under || p.text, rost: false, minMs: 2600, visa: fotoVisa });
+  if (p.tanke) paket([{ tanke: p.tanke }], { vikt: 'STORY', varfor: 'EK 26: fotots tanke', svar: !!p.iHanden });
 }
 { const st = document.createElement('style'); st.textContent = '.ph-polstor{position:fixed;left:50%;top:46%;z-index:94;width:min(420px,60vw);background:#f7f4ec;padding:12px 12px 16px;box-shadow:0 14px 40px rgba(0,0,0,.55);transform:translate(-50%,-50%) rotate(-2deg);pointer-events:none;animation:phPolStor .35s ease-out}.ph-polstor img{width:100%;display:block}.ph-polstor .ph-tumme{position:absolute;left:-6%;bottom:22%;width:38%;height:40%;border-radius:50%;background:radial-gradient(#e8b598,#b97a5c);filter:blur(3px)}.ph-polstor div{font:600 26px "Segoe Print","Comic Sans MS",cursive;color:#2a2a2a;text-align:center;margin-top:10px}.ph-polstor.ut{transition:all .7s ease-in;transform:translate(30vw,-60vh) rotate(12deg) scale(.3);opacity:0}@keyframes phPolStor{from{transform:translate(-50%,-50%) scale(.6);opacity:0}}'; document.head.appendChild(st); }
 // testkrok: __printahem.polaroid(n) tar foto n (1–15) direkt
@@ -14190,6 +14223,7 @@ function kollaPolaroid() {
     if (S.polaroid.some((f) => f.id === p.id)) return;
     fotografera(p); return; }
   const ny = POLAROID.find((p) => !S.polaroid.some((f) => f.id === p.id) && (() => { try { return p.nar(); } catch { return false; } })());
+  if (ny && ny.iHanden) { fotografera(ny); return; }   /* inkorg 63 p.5: saken i handen – fotot direkt */
   if (ny) fotoVantar = { p: ny, t: performance.now() + (ny.vantaMs ?? 1500) };   // en kort stund efteråt, så att det syns på bilden
 }
 setInterval(kollaPolaroid, 700);

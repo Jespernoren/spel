@@ -173,17 +173,21 @@ for (const sm of r.logg.filter((e) => e.kalla === 'sms')) {
 }
 // EA: INAKTUELL – en text visas fast villkoret inte gäller längre (AX:s egna villkor, oberoende av spelets)
 for (const e of r.logg.filter((x) => x.inaktuell)) flaggor.push({ dag: e.dag, t: e.t, typ: 'INAKTUELL', text: `[${e.kalla}] ${e.vem}: "${e.text.slice(0, 70)}" – ${e.inaktuell}` });
-// EA: SEN – en reaktion visas mer än 10 s efter sin händelse (från att den köades, minus planerad väntan och tid i en meny)
-{ const vant = new Map();
-  const paketKlar = {}; let aktivPaket = null;
+// EA: SEN – en reaktion visas mer än 1 s efter sin händelse (sms och radio 20 s, inkorg 63 p.5) (från att den köades, minus planerad väntan och tid i en meny)
+{ const vant = new Map(), smsTexter = new Set(r.logg.filter((x) => /^sms/.test(x.kalla)).map((x) => x.text));
+  const paketKlar = {}; let aktivPaket = null, svarKlar = -1e9, svarVisas = false, senastSakText = ''; const direkt = [];   // röst som inte kommer från kön = någon pratar direkt
   for (const e of r.logg) {
+    if (e.kalla === 'sak') svarVisas = / · svar/.test(e.varfor || ''); else if (e.kalla === 'klar' && svarVisas) { svarKlar = e.tot; svarVisas = false; }   /* inkorg 63 p.5: ett svar som väntar på ett annat svar på samma handling räknas från att det förra var klart */
+    if (e.kalla === 'sak' || e.kalla === 'sak-del') senastSakText = e.text;
+    if (e.kalla === 'röst' && e.text.replace(/ · [^·]*$/, '') !== senastSakText) direkt.push(e.tot + (600 + e.text.length * 62 / 1.15) / 1000);   // någon pratar direkt (Ali i butiken, ett samtal) – kön väntar
     if (e.kalla === 'klar' && aktivPaket) { paketKlar[aktivPaket] = e.tot; aktivPaket = null; }
     if (e.kalla === 'sak') aktivPaket = /paket (\d+)/.exec(e.varfor)?.[1] || null;
     if (e.kalla === 'sak' && /^\(/.test(e.text)) { vant.delete(e.text); continue; }   // paketets tysta delar
-    if (e.kalla === 'väntar' && !vant.has(e.text)) { const om = /om ([\d.]+) s/.exec(e.varfor); vant.set(e.text, e.tot + (om ? +om[1] : 0)); }
+    if (e.kalla === 'väntar' && (!vant.has(e.text) || /dagens första 30 s/.test(e.varfor || ''))) {   /* ett sms från natten räknas från dagens start */ const om = /om ([\d.]+) s/.exec(e.varfor); vant.set(e.text, e.tot + (om ? +om[1] : 0)); }
     if (e.kalla === 'sak' && /^REAKTION/.test(e.varfor) && vant.has(e.text)) {
-      const meny = +(/meny ([\d.]+) s/.exec(e.varfor)?.[1] || 0), pk = /paket (\d+)/.exec(e.varfor)?.[1], v = e.tot - Math.max(vant.get(e.text), (pk && paketKlar[pk]) || 0) - meny; vant.delete(e.text);   // i ett paket: från att förra delen var klar
-      if (v > 10.5) flaggor.push({ dag: e.dag, t: e.t, typ: 'SEN', text: `${v.toFixed(1)} s efter händelsen: ${e.vem}: "${e.text.slice(0, 70)}"` });
+      const meny = Math.max(+(/meny ([\d.]+) s/.exec(e.varfor)?.[1] || 0), +(/pausad ([\d.]+) s/.exec(e.varfor)?.[1] || 0)), pk = /paket (\d+)/.exec(e.varfor)?.[1], sv = / · svar/.test(e.varfor) && svarKlar > vant.get(e.text) ? svarKlar : 0, dr = / · svar/.test(e.varfor) ? Math.max(0, ...direkt.filter((x) => x > vant.get(e.text) && x <= e.tot)) : 0, v = e.tot - Math.max(vant.get(e.text), (pk && paketKlar[pk]) || 0, sv, dr) - meny; vant.delete(e.text);   // i ett paket: från att förra delen var klar
+      const smsEllerRadio = smsTexter.has(e.text) || e.vem === 'kjelle', svar = / · svar/.test(e.varfor), grans = smsEllerRadio || !svar ? 20 : 1;   /* inkorg 63 p.5: reaktionen på din handling (svar) inom 1 s – stämning, tankar om det som händer runt dig, radio, sms och notiser väntar, högst 20 s */   /* inkorg 63 p.5: reaktion > 1 s, sms och radio > 20 s */
+      if (v > grans + 0.05) flaggor.push({ dag: e.dag, t: e.t, typ: 'SEN', text: `${v.toFixed(1)} s efter händelsen (gräns ${grans} s): ${e.vem}: "${e.text.slice(0, 70)}"` });
     } else if (e.kalla === 'sak' || e.kalla === 'struken') vant.delete(e.text);
   }
 }
@@ -274,7 +278,7 @@ for (const dag of [...new Set(r.logg.map((e) => e.dag))]) {
 const malTider = []; { const M = r.logg.filter((e) => e.kalla === 'MÅL'); M.forEach((e, i) => { const n = M[i + 1]; if (n && n.dag === e.dag) malTider.push({ dag: e.dag, mal: e.text, sek: n.t - e.t }); }); }
 fs.writeFileSync(ut.replace(/\.md$/, '') + '.mal.json', JSON.stringify(malTider));
 if (process.env.NYBORJARE) md = nyborjarRapport(r, malTider) + md;
-fs.writeFileSync(ut, md);
+fs.writeFileSync(ut, md); if (process.env.SIM_LOGG) fs.writeFileSync(process.env.SIM_LOGG, JSON.stringify(r.logg));   /* rålogg för analys, utanför repot */
   return flaggor;
 }
 /* A-081: Nybörjarbotens rapport – flaggorna från botens ögon + Regissörens logg (TRÄNGSEL, HANN INTE LÄSA, DOLT) + friktionskurvan */
