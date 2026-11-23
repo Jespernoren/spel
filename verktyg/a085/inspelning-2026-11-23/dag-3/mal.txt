@@ -1,0 +1,11 @@
+01	0:00	rolf1-brev	Möt sopbilen vid grinden
+02	0:29	n2-hamta-skrap	Hämta 5 skräp på soptippen
+03	0:34	rolf1-printa	Printa flasköppnare med magnet
+04	1:11	rolf1-ge	Ge Rolf flasköppnare med magnet
+05	1:34	kopBatteri	Köp Alis gamla bilbatteri
+06	2:32	ryggkorg	Spara till ryggkorgen · 67 / 120 kr
+07	3:45	ryggkorgPa	Ta på ryggkorgen
+08	4:00	n2-bygg-arbetsbord	Bygg ett arbetsbord
+09	5:47	n2-bygg-skrivare-m	Spara till Skrivare M · 37 / 500 kr
+10	9:37	n2-lagg-plattak-skjulet	Lägg plåttak på skjulet
+11	10:57	sov3	Sov när du vill

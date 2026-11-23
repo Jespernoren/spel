@@ -7034,7 +7034,7 @@ interaktor.registrera(postlada, {
     if (S.post.lapp) {
       const l = S.post.lapp; S.post.lapp = null; visaLapp(l);
       if (l === 'mammajul') julEfterBrev();
-      else if (/^rolf:\d+$/.test(l)) rolfBrevLast(+l.split(':')[1]);
+      else if (/^rolf:\d+$/.test(l)) { const n = +l.split(':')[1]; for (let k = 0; k < 5 && S.rolf.i < n && rolfMorgonTack(); k++) {} rolfBrevLast(n); }   /* inkorg 32: ett nytt brev betyder att Rolf har fått gåvan före – tacket för den räknas först, annars står steget "Läs brevet" kvar */
       else if (l.startsWith('rolf')) S.rolf.aktiv = true;
       visaPostInne(); ljud.plock(); sparaSnart(); return;
     }
@@ -7096,7 +7096,7 @@ function rolfBrevLast(i, extra = []) {
 }
 /* inkorg 32 (nybörjarboten fastnade dag 5 i en sparfil): tacket som är förfallet kommer alltid – också när spelet laddas efter dagbytet men före morgonens tack.
    Annars står Rolf kvar på samma gåva: inget nytt brev, och postlådan säger "Printa grillspade först" om en sak han redan har. */
-setInterval(() => { try { if (ui.igang && S.rolf && S.rolf.hamtad != null && S.rolf.hamtad === S.rolf.i && S.dag > (S.rolf.hamtadDag ?? S.dag - 1) && !sover) rolfMorgonTack(); } catch {} }, 2000);
+setInterval(() => { try { if (ui.igang && S.rolf && S.rolf.hamtad != null && S.rolf.hamtad === S.rolf.i && (S.dag > (S.rolf.hamtadDag ?? S.dag - 1) || S.lappar?.includes('rolf:' + (S.rolf.i + 1))) && !sover) rolfMorgonTack(); } catch {} }, 2000);
 // Rolfs tack kommer på morgonen: gåvan han fått (i lådan eller hämtad med sopbilen) blir belöning i lådan
 function rolfMorgonTack() {
   const o = ROLF[S.rolf.i]; if (!o) return false;

@@ -1,0 +1,9 @@
+01	11:57	kopMotor	Spara till kvarnmotorn · 40 / 50 kr
+02	2:17	monteraMotor	Printa kvarnmotorn till kvarnen
+03	3:33	n1-stada-klart-garden	Städa gården
+04	4:04	kopSack	Gå till bilen vid skjulet
+05	5:39	rolf0-printa	Printa ölhållare med kylklamp
+06	5:44	rolf0-ge	Ge Rolf ölhållare med kylklamp
+07	6:13	vindsnurra	Spara till vindsnurran · 101 / 133 kr
+08	7:42	n1-bygg-dorr-skjulet	Bygg en dörr till skjulet
+09	8:49	sov2	Sov när du vill
