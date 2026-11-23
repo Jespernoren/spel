@@ -146,6 +146,7 @@ for (const e of r.logg.filter((x) => x.kalla === 'röst-avbruten')) flaggor.push
 const rostLangd = (t) => Math.min(9, 0.6 + t.length * 0.062);
 const rostFor = (text, efter) => r.logg.find((e) => e.kalla === 'röst' && e.tot >= efter - 0.5 && e.text.includes(text.slice(0, 40)));   /* en replik kan vara en del av en längre (Alis hälsning + gåvan) */
 const kedjeRader = [];
+const SPELAR_HANDLING = new Set(['tagitUrPrint', 'placerat', 'salt', 'monterat', 'plockat', 'kopt', 'lagtIPostlada', 'oppnatButik']);   /* inkorg 66 p.5 */
 for (const kv of r.logg.filter((e) => e.kalla === 'kvittens')) {
   const va = r.logg.find((e) => e.kalla === 'varför' && e.varfor === kv.varfor && e.tot >= kv.tot && e.tot - kv.tot < 30);
   let sista = va || kv, rs = rostFor(sista.text, sista.tot); if (!rs && va) { sista = kv; rs = rostFor(kv.text, kv.tot); }   /* varför-raden kan strykas (målet har en egen knuff) */
@@ -155,7 +156,9 @@ for (const kv of r.logg.filter((e) => e.kalla === 'kvittens')) {
   kedjeRader.push({ dag: kv.dag, t: kv.t, id: kv.varfor, kv: kv.text, va: va?.text || '', gap, mal: mal?.text.replace(/ · MÅL$/, '') || '' });
   if (!rs) flaggor.push({ dag: kv.dag, t: kv.t, typ: 'KEDJA', text: `${kv.varfor}: kvittensen lästes aldrig upp` });
   else if (!r.logg.some((e) => e.kalla === 'händelse' && e.vem === 'malKlart' && e.tot - kv.tot > -2 && e.tot - kv.tot < 1.5)) { /* kvittens mitt i ett mål – inget nytt mål väntas */ }
+  else if ((!mal || mal.tot - slut > 20) && r.logg.some((e) => e.kalla === 'kvittens' && e.tot > kv.tot + 0.5 && e.tot < (mal?.tot ?? kv.tot + 30) && r.logg.some((h) => h.kalla === 'händelse' && h.vem === 'malKlart' && h.tot > kv.tot + 0.5 && h.tot <= e.tot + 0.5))) { /* inkorg 66 p.5: spelaren klarade nästa mål innan det hann sägas – en ny kedja börjar */ }
   else if (!mal || mal.tot - slut > 20) flaggor.push({ dag: kv.dag, t: kv.t, typ: 'KEDJA', text: `${kv.varfor}: inget nytt mål lästes upp efter kedjan` });
+  else if (gap > 2 && r.logg.some((h) => h.kalla === 'händelse' && SPELAR_HANDLING.has(h.vem) && h.tot >= kv.tot - 0.2 && h.tot <= mal.tot) && r.logg.some((e) => e.kalla === 'sak' && /· svar/.test(e.varfor || '') && e.tot >= kv.tot && e.tot <= mal.tot)) { /* inkorg 66 p.5 + 63 p.5: spelaren gjorde något nytt mellan kedjan och målet, och svaret på det går först */ }
   else if (gap > 2 && r.logg.some((e) => (e.kalla === 'meddelande' || (e.kalla === 'lapp' && /^Dag \d/.test(e.text))) && e.tot >= slut - 0.5 && e.tot <= mal.tot)) { /* en dagbokssida (pausad scen) får stå mellan kedjan och målet */ }
   else if (gap > 2 && mal.tot - rs.tot <= 6.6) { /* A-090 p.5: målets tanke väntar 6 s efter förra tanken (kvittensen) */ }
   else if (gap > 2 && r.logg.some((e) => e.kalla === 'kvittens' && e.tot > kv.tot + 0.5 && e.tot < mal.tot && r.logg.some((h) => h.kalla === 'händelse' && h.vem === 'malKlart' && h.tot > kv.tot + 0.5 && h.tot <= e.tot + 0.5))) { /* inkorg 45 p.4: spelaren klarade nästa mål innan det hann sägas – en ny kedja börjar, den gamla har inget mål kvar att säga */ }
