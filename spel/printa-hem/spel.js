@@ -818,9 +818,12 @@ function sparaSnart() { sparaFlagga = true; }   // sparas i nästa ruta (inte di
    Före spelet läser sparningen: (1) en trasig sparning läggs undan (IndexedDB + fil på begäran) i stället för att skrivas över,
    (2) huvudsparningen speglas i IndexedDB – gick localStorage inte att skriva (fullt) tas den nyare kopian därifrån,
    (3) de tre automatiska sparningarna (morgon och när du somnar) läses in, (4) lagringen kollas: privat fönster ger en varning. */
+/* inkorg 76 (A-131): utvecklarläget sparar på en egen plats, så att barnens sparning ligger kvar orörd. Gäller fliken (sessionStorage). */
+const UTV_NYCKEL = `spar:${SPAR_ID}:utv`;
+const UTV = (() => { try { return sessionStorage.getItem('printahem:utv') === '1'; } catch { return false; } })();
 const SPAR_HUVUD = `spar:${SPAR_ID}:v1`, SPAR_AUTO = `spar:${SPAR_ID}:auto`, SPAR_NOLL = `spar:${SPAR_ID}:nollstalld`;
 const AUTO_ANTAL = 3;
-const SPARSTART = await (async () => {
+const SPARSTART = UTV ? { trasig: null, kopia: null, auto: [], lagring: null, aterstalld: null, dagar: [] } : await (async () => {
   const ut = { trasig: null, kopia: null, auto: [], lagring: null, aterstalld: null };
   let raw = null; try { raw = localStorage.getItem(SPAR_HUVUD); } catch {}
   const lokal = lasJson(raw);
@@ -861,16 +864,18 @@ if (MOLN?.data && (MOLN.data.sparadTid || 0) > (spar.data.sparadTid || 0)) {
 }
 /* A-042: en sparfil från före stegnyckeln och kand() (före 2026-11-17) – målnumret pekar in i en äldre mållista */
 if (SPARSTART.aterstalld) spar.data = { ...structuredClone(spar.standard), ...SPARSTART.aterstalld };
+if (UTV) { spar.nyckel = UTV_NYCKEL; let d = null; try { d = JSON.parse(localStorage.getItem(UTV_NYCKEL) || 'null'); } catch {} spar.data = { ...structuredClone(spar.standard), ...(giltigSparning(d) ? d : {}) }; }   /* inkorg 76 */
 const GAMMAL_STEG = !spar.data.stegNyckel && !spar.data.kand && (spar.data.steg || 0) > 0;
 /* inkorg 75: spegeln i IndexedDB. Den skrivs strax efter localStorage; gick localStorage inte att skriva märks kopian lsFel. */
 let speglaT = null;
 function speglaIdb(direkt) {
+  if (UTV) return;   /* inkorg 76: utvecklarläget rör inte barnens kopior */
   clearTimeout(speglaT);
   const gor = () => { let json, lsFel = false; try { json = JSON.stringify(spar.data); } catch { return; } try { localStorage.setItem(SPAR_HUVUD, json); } catch { lsFel = true; } return idbSpara('senaste', { json, tid: Date.now(), lsFel }); };
   if (direkt) return gor(); speglaT = setTimeout(gor, 1500);
 }
-{ const _n = spar.nollstall.bind(spar); spar.nollstall = () => { _n(); try { localStorage.setItem(SPAR_NOLL, String(Date.now())); } catch {} idbSpara('senaste', null); }; }   /* börja om: kopian får inte komma tillbaka */
-addEventListener('pagehide', () => { try { spar.spara(true); } catch {} });
+{ const _n = spar.nollstall.bind(spar); spar.nollstall = () => { _n(); if (UTV) return; try { localStorage.setItem(SPAR_NOLL, String(Date.now())); } catch {} idbSpara('senaste', null); }; }   /* börja om: kopian får inte komma tillbaka */
+addEventListener('pagehide', () => { if (!modulKlar || window.__sparByts) return; try { spar.spara(true); } catch {} });   /* inte om modulen kraschade (felrutan har just lagt sparningen undan) eller om en annan sparning just har lagts in */
 // varje sparning: stämpla tiden, spara lokalt och (lite mer sällan) i molnet
 {
   const lokalt = spar.spara.bind(spar);
@@ -878,7 +883,7 @@ addEventListener('pagehide', () => { try { spar.spara(true); } catch {} });
   spar.spara = (direkt) => {
     spar.data.sparadTid = Date.now(); try { spar.data.stegNyckel = stegNyckel(spar.data.steg); } catch {}   /* A-042: målet sparas med namn, inte bara nummer */
     lokalt(direkt); speglaIdb(direkt);
-    if (!MOLN?.ref) return;
+    if (!MOLN?.ref || UTV) return;
     if (skriver) return direkt ? spar.molnSkrivning?.then(() => spar.spara(true)) : undefined;
     if (!direkt && performance.now() < nasta) return;
     const json = JSON.stringify(spar.data);
@@ -10069,6 +10074,7 @@ async function lasPlats(n) {
   return bast;
 }
 async function sparaPlats(n, namn) {
+  if (UTV) return;   /* inkorg 76: utvecklarläget skriver aldrig på barnens sparplatser */
   spar.spara(true);
   if (namn == null) { try { namn = (await lasPlats(n))?.platsNamn; } catch {} }
   const data = { ...S, sparadTid: Date.now(), platsNamn: namn || '' }, json = JSON.stringify(data);
@@ -10298,7 +10304,7 @@ function sparaKopiaFil() { try { samlaOchSpara(false); } catch {} spar.spara(tru
 /* laddar en sparning (fil, automatisk, kopia) – samma väg som sparplatserna: skrivs som huvudsparning och spelet startas om */
 async function laddaSparData(d) {
   if (!giltigSparning(d)) return false;
-  d = { ...d }; spar.data = d; spar.spara(true);
+  d = { ...d }; spar.data = d; spar.spara(true); window.__sparByts = true;
   try { localStorage.removeItem(SPAR_NOLL); } catch {}
   try { await speglaIdb(true); } catch {}
   try { await MOLN?.ref?.set({ spar: JSON.stringify(spar.data), tid: Date.now() }); } catch {}
@@ -10310,6 +10316,66 @@ async function oppnaSparFil() {
   if (harSparning() && !confirm(`Öppna ${f.namn}? Det du har nu ersätts (spara en kopia först om du vill ha kvar det).`)) return null;
   await laddaSparData(r.data); return null;
 }
+/* ---------- inkorg 76 (A-131): utvecklarläget – börja på valfri dag ----------
+   Bara för Jesper: index.html?utv (koden väljs första gången och sparas i webbläsaren) eller Shift+U fem gånger på startsidan + koden.
+   Läget gäller fliken och sparar under spar:printahem2:utv. Dagarnas sparningar (morgonen dag 1–22) ligger i utv/dagN.json och byggs
+   med boten (verktyg/utv-sparfiler.sh). Shift+U öppnar rutan också mitt i spelet. */
+const UTV_KOD = 'printahem:utvkod', UTV_KAND = 'printahem:utvkand', UTV_DAGAR = 22;
+const utvHash = async (t) => { try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('soptippsvagen:' + t)); return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join(''); } catch { return 'x' + String(t).split('').reverse().join(''); } };
+const lsHamta = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+const lsSatt = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+function utvGaIn(starta = false) { window.__sparByts = true; try { sessionStorage.setItem('printahem:utv', '1'); if (starta) sessionStorage.setItem('printahem:utvPanel', '1'); } catch {} location.reload(); }
+function utvLamna() { try { sessionStorage.removeItem('printahem:utv'); sessionStorage.removeItem('printahem:utvPanel'); } catch {} const u = new URL(location.href); u.searchParams.delete('utv'); location.href = u.toString(); }
+/* koden: första gången väljer Jesper den, sedan frågas den (Shift+U) – ?utv i en webbläsare som redan kan koden går direkt in */
+function utvKodRuta(efter) {
+  document.querySelector('.ph-utvkod')?.remove();
+  const finns = !!lsHamta(UTV_KOD), el = document.createElement('div'); el.className = 'ph-utvkod';
+  el.innerHTML = `<form class="ruta"><b>Utvecklarläge</b><p>${finns ? 'Skriv koden.' : 'Välj en kod. Den sparas i den här webbläsaren och behövs sedan för att komma in.'}</p><input type="password" data-kod autocomplete="off" placeholder="Kod"><p class="fel" hidden>Fel kod.</p><div class="kn"><button type="button" data-avbryt>Avbryt</button><button type="submit">${finns ? 'Gå in' : 'Spara koden'}</button></div></form>`;
+  document.body.appendChild(el); const inp = el.querySelector('[data-kod]'); setTimeout(() => inp.focus(), 50);
+  el.querySelector('[data-avbryt]').onclick = () => el.remove();
+  el.querySelector('form').onsubmit = async (e) => { e.preventDefault(); const kod = inp.value.trim(); if (!kod) return; const h = await utvHash(kod);
+    if (!finns) { lsSatt(UTV_KOD, h); lsSatt(UTV_KAND, '1'); el.remove(); efter(); return; }
+    if (h === lsHamta(UTV_KOD)) { lsSatt(UTV_KAND, '1'); el.remove(); efter(); } else { el.querySelector('.fel').hidden = false; inp.select(); } };
+}
+function utvPanel() {
+  document.querySelector('.ph-utv')?.remove();
+  const st = STEG[S.steg], kapDag = Object.fromEntries(Object.entries(KAP_RITNING).map(([k, v]) => [v.dag, k]));
+  const dagar = Array.from({ length: UTV_DAGAR }, (_, i) => i + 1).map((d) => `<button data-utvdag="${d}" class="${d === 1 || kapDag[d] ? 'kap' : ''}">${d === UTV_DAGAR ? 'Julafton' : datumText(d)}${d === 1 ? '<small>Kapitel 1</small>' : kapDag[d] ? `<small>Kapitel ${kapDag[d]}</small>` : ''}</button>`).join('');
+  const el = document.createElement('div'); el.className = 'ph-utv';
+  el.innerHTML = `<div class="ruta"><div class="topp"><b>Utvecklarläge</b><button data-utvstang>✕</button></div><p class="sm">Sparar på en egen plats – barnens sparning rörs inte.</p><h4>Börja på …</h4><div class="dagar">${dagar}</div>
+    <div class="rad"><button data-utv500>Ge 500 kr</button><button data-utvnasta>Hoppa till nästa steg</button><button data-utvsteg>Visa vilket steg jag är på</button></div><p class="steg" hidden></p>
+    <div class="rad"><button data-utvlamna class="lamna">Lämna utvecklarläget</button></div><p class="fel" hidden></p></div>`;
+  document.body.appendChild(el); menyOppnaLage(true);
+  const stang = () => { el.remove(); if (ui.overlay.hidden) menyOppnaLage(false); };
+  el.querySelector('[data-utvstang]').onclick = stang; el.onclick = (e) => { if (e.target === el) stang(); };
+  const visaSteg = () => { const t = el.querySelector('.steg'); const s2 = STEG[S.steg]; t.hidden = false; t.textContent = `${datumText(S.dag) || 'Efter jul'} · steg ${S.steg}: ${s2?.id || '(slut)'} – ${rens(stegText(s2) || '')}`; };
+  el.querySelector('[data-utv500]').onclick = () => { S.mynt = (S.mynt || 0) + 500; sparaSnart(); textLogg('utv', 'jesper', '+500 kr', 'inkorg 76'); visaSteg(); };
+  el.querySelector('[data-utvnasta]').onclick = () => { if (S.steg < STEG.length) { textLogg('utv', 'jesper', `hoppade över ${STEG[S.steg]?.id}`, 'inkorg 76'); S.steg++; sparaSnart(); } visaSteg(); };
+  el.querySelector('[data-utvsteg]').onclick = visaSteg;
+  el.querySelector('[data-utvlamna]').onclick = () => { spar.spara(true); utvLamna(); };
+  el.querySelectorAll('[data-utvdag]').forEach((k) => { k.onclick = async () => {
+    const d = +k.dataset.utvdag; k.disabled = true; const fel = el.querySelector('.fel');
+    try { const r = await fetch(`utv/dag${d}.json`, { cache: 'no-cache' }); if (!r.ok) throw new Error(`utv/dag${d}.json saknas (${r.status})`); const data = await r.json(); if (!giltigSparning(data)) throw new Error('sparningen har fel form');
+      spar.data = data; spar.spara(true); window.__sparByts = true; try { sessionStorage.setItem('printahem:utvStarta', String(d)); } catch {} textLogg('utv', 'jesper', `börjar på dag ${d}`, 'inkorg 76'); location.reload(); }
+    catch (e) { fel.hidden = false; fel.textContent = String(e.message || e); k.disabled = false; } }; });
+  void st;
+}
+/* startsidan: ?utv eller en flik som redan är i utvecklarläget */
+let utvKollad = false;
+function utvVidStart() {
+  if (utvKollad) return; utvKollad = true;
+  let starta = null, panel = false; try { starta = sessionStorage.getItem('printahem:utvStarta'); sessionStorage.removeItem('printahem:utvStarta'); panel = !!sessionStorage.getItem('printahem:utvPanel'); sessionStorage.removeItem('printahem:utvPanel'); } catch {}
+  if (UTV) { document.body.classList.add('ph-utvlage'); if (starta) setTimeout(() => window.__startaSpel?.(), 400); else if (panel || new URLSearchParams(location.search).has('utv')) setTimeout(utvPanel, 300); return; }
+  if (new URLSearchParams(location.search).has('utv')) { if (lsHamta(UTV_KAND) && lsHamta(UTV_KOD)) utvGaIn(true); else utvKodRuta(() => utvGaIn(true)); }
+}
+/* Shift+U fem gånger på startsidan (inom 3 s) → koden. I utvecklarläget öppnar Shift+U rutan var som helst. */
+{ let n = 0, t0 = 0; addEventListener('keydown', (e) => {
+  if (e.code !== 'KeyU' || !e.shiftKey || e.repeat || document.querySelector('.ph-utvkod') || e.target?.tagName === 'INPUT') return;
+  if (UTV) { e.preventDefault(); ui.slappMus?.(); utvPanel(); return; }
+  if (ui.overlay.hidden || menyPaus) return;
+  const nu = performance.now(); if (nu - t0 > 3000) n = 0; t0 = nu;
+  if (++n >= 5) { n = 0; utvKodRuta(() => utvGaIn(true)); }
+}, true); }
 window.__sparning = { SPARSTART, autoSpara: (n) => autoSpara(n || 'morgon'), sparaKopiaFil, laddaSparData, sparFilNamn, lasPrivat: () => privatLast };   /* testkrok (inkorg 75) */
 async function nyOmgang(titel, text) {
   const info = []; for (let n = 1; n <= PLATSER; n++) info.push(await lasPlats(n));
@@ -10398,6 +10464,7 @@ function menyRita(titel, text) {
     ruta.querySelectorAll('[data-trasigval]').forEach((k) => { k.onclick = async () => { if (trasigFil()) await new Promise((r) => setTimeout(r, 800)); const v = k.dataset.trasigval; trasigVald = true;
       if (v === 'ny') { menyRita(titel, text); return; }
       const d = v === 'kopia' ? SPARSTART.kopia?.data : lasJson(SPARSTART.auto[+v]?.json).data; k.disabled = true; if (!(await laddaSparData(d))) { trasigVald = false; menyRita(titel, text); } }; });
+    if (!menyPaus) utvVidStart();   /* inkorg 76 */
     if (arPrivat() && !menyPaus) { if (navigator.userActivation?.hasBeenActive) lasPrivat(); else ruta.addEventListener('pointerdown', (e) => { if (!e.target.closest('.br-starta')) lasPrivat(); }); }
   } else {
     const rub = { spara: 'Spara och ladda', installningar: 'Inställningar', hjalp: 'Hjälp oss' }[menySida];
@@ -10450,6 +10517,9 @@ body.meny-oppen [class^="hud-"],body.meny-oppen [class*=" hud-"],body.meny-oppen
 .br3-privat{display:flex;gap:10px;align-items:center;margin:0 0 16px;padding:10px 12px;border-radius:12px;background:rgba(255,216,74,.13);border:2px solid rgba(255,216,74,.5);font:600 14px/1.4 system-ui}.br3-privat svg{width:22px;height:22px;flex:none;color:#ffd84a}.br3-privat span{flex:1}
 .br3-trasig{margin:0 0 16px;padding:12px 14px;border-radius:12px;background:rgba(216,57,43,.14);border:2px solid #d8392b}.br3-trasig b{display:flex;gap:8px;align-items:center;font:800 16px system-ui}.br3-trasig b svg{width:20px;height:20px;color:#ff8a7a}.br3-trasig small{display:block;opacity:.8;margin:4px 0 10px}.br3-trasig .val{display:flex;flex-direction:column;gap:6px}.br3-trasig .br3-mini{text-align:left}.br3-mini.gra{background:rgba(255,255,255,.14)}.br3-lank{margin-top:8px;border:0;background:none;color:#9fc3ff;text-decoration:underline;cursor:pointer;font:600 13px system-ui;padding:0}
 .br3-auto{margin-top:16px;display:flex;flex-direction:column;gap:8px}.br3-auto>b{font:800 15px system-ui}.br3-auto>small{opacity:.65;margin-top:-6px}.br3-fil{margin:16px 0 0}.br3-filfel{color:#ffb3aa;margin:0}
+.ph-utvkod,.ph-utv{position:fixed;inset:0;z-index:9800;display:grid;place-items:center;background:rgba(6,9,22,.6);backdrop-filter:blur(4px);font:500 14px/1.4 system-ui;color:#fff}.ph-utvkod .ruta,.ph-utv .ruta{background:#141b33;border-radius:16px;padding:20px 22px;width:min(560px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.5);max-height:90vh;overflow:auto}.ph-utvkod b,.ph-utv .topp b{font:900 20px system-ui}.ph-utvkod input{width:100%;box-sizing:border-box;margin:8px 0;padding:9px 12px;border-radius:10px;border:0;font:600 16px system-ui}.ph-utvkod .kn,.ph-utv .rad{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.ph-utvkod button,.ph-utv button{border:0;border-radius:9px;padding:8px 12px;background:rgba(255,255,255,.12);color:#fff;font:700 13px system-ui;cursor:pointer}.ph-utvkod [type=submit]{background:#2f6fdc}.ph-utvkod .fel,.ph-utv .fel{color:#ffb3aa}
+.ph-utv .topp{display:flex;justify-content:space-between;align-items:center}.ph-utv .sm{opacity:.65;margin:4px 0 10px}.ph-utv h4{margin:6px 0}.ph-utv .dagar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.ph-utv .dagar button{display:flex;flex-direction:column;align-items:flex-start}.ph-utv .dagar button.kap{background:rgba(255,216,74,.2);outline:1px solid rgba(255,216,74,.6)}.ph-utv .dagar small{font:600 11px system-ui;opacity:.8}.ph-utv .steg{background:rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;font:600 13px ui-monospace,monospace}.ph-utv .lamna{background:#d8392b}
+body.ph-utvlage::after{content:'UTV';position:fixed;left:8px;bottom:8px;z-index:9700;background:#d8392b;color:#fff;font:900 11px system-ui;letter-spacing:.1em;padding:3px 7px;border-radius:6px;pointer-events:none}
 .br3-reg{display:flex;align-items:center;gap:10px;margin:6px 0}.br3-reg span{width:110px}.br3-reg input{flex:1}
 .br3-ljud4{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}   /* inkorg 38: de fyra ljuden i två kolumner, så att rutan inte växer */
 .br3-bryt{width:100%;display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:12px;border:2px solid rgba(255,255,255,.12);background:none;color:#fff;cursor:pointer;text-align:left}.br3-bryt .tx{flex:1;display:flex;flex-direction:column}.br3-bryt small{opacity:.7}.br3-bryt em{font:900 12px system-ui;font-style:normal;padding:4px 10px;border-radius:999px;background:#3a2025;color:#ff9aa8}.br3-bryt.pa{border-color:#2f8a52}.br3-bryt.pa em{background:#1e4a2f;color:#9ff0b8}
@@ -13189,6 +13259,7 @@ const BOKMARKE_NYCKEL = `spar:${SPAR_ID}:dagar`;
 const BOKMARKE_MAX = 40;
 function lasBokmarken() { return SPARSTART.dagar || []; }   /* inkorg 75: bokmärkena ligger i IndexedDB (lästa vid start) */
 function sparaDagBokmarke() {
+  if (UTV) return;   /* inkorg 76 */
   try {
     samlaOchSpara(false);
     const lista = lasBokmarken().filter((b) => b.dag !== S.dag);
@@ -13219,7 +13290,7 @@ function oppnaBokmarken() {
 /* inkorg 75 p.2: tre automatiska sparningar – varje morgon och när du somnar – i både localStorage och IndexedDB.
    En per dag: senaste, gårdagens och förrgårdens. Startsidans sparruta visar dem, och rutan vid en trasig sparning erbjuder dem. */
 function autoSpara(nar) {
-  if (!harSparning()) return;
+  if (!harSparning() || UTV) return;
   try { samlaOchSpara(false); } catch {}
   let json; try { json = JSON.stringify(S); } catch { return; }
   const lista = [{ dag: S.dag, nar, tid: Date.now(), mynt: S.mynt || 0, json }, ...SPARSTART.auto.filter((a) => a.dag !== S.dag)].slice(0, AUTO_ANTAL);

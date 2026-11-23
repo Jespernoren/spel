@@ -65,9 +65,9 @@ const vantaMeny = (p) => p.waitForFunction(() => document.querySelector('.br-sta
   ok('c) trasig sparning: spelet startar och visar rutan', /gick inte att läsa/.test(ruta) && /Senaste/.test(ruta) && /Gårdagens/.test(ruta), ruta.split('\n').slice(0, 4).join(' | '));
   const undan = await p.evaluate(() => localStorage.getItem('spar:printahem2:trasig')?.length || 0);
   ok('c) den trasiga är sparad undan (inte överskriven)', undan === trasig.length, `${undan} tecken`);
-  const dl = p.waitForEvent('download', { timeout: 5000 }).catch(() => null);
+  const nedl = []; ctx.on('page', () => {}); p.on('download', (d) => nedl.push(d));
   const nav = p.waitForNavigation({ timeout: 20000 }).catch(() => null);
-  await p.click('[data-trasigval="1"]'); const fil = await dl; await nav;
+  await p.click('[data-trasigval="1"]'); await nav; await p.waitForTimeout(500); const fil = nedl[0] || null;
   ok('c) den trasiga sparas som fil när man väljer', !!fil && /trasig/.test(fil?.suggestedFilename() || ''), fil ? fil.suggestedFilename() : 'ingen nedladdning');
   await p.waitForFunction(() => window.__printahem?.S && document.querySelector('.br-starta'), null, { timeout: 40000 }); await p.waitForTimeout(500);
   const S = await p.evaluate(() => ({ dag: window.__printahem.S.dag, steg: window.__printahem.S.steg }));
