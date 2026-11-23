@@ -167,7 +167,7 @@
   - **ali** (sms, en gång): "Ali här. Glömde en sak. Kom tillbaka, jag har nåt åt dig." · *svarar på* salt:nyckelring · *vet* kandAli
   - **ali** (butik, en gång): "Jag såg dig cykla. Det ser jobbigt ut. Ta den här. Bra kunder får bonus." · *svarar på* oppnatButik · *vet* kandAli
 
-### 16. *(beror på läget)* 'Köp skräpgripen' / 'Spara till gripen' `kopGrip`
+### 16. Köp skräpgripen `kopGrip`
 - **Moment:** Sova · **sak:** byggsats:grip · **bild:** byggsats:grip · **pil:** ali
 - **Handling:** kop → kontrollhjälp *– (hos Ali)*
 - **Kräver:** powerbank · **ger:** gripRitning
@@ -179,7 +179,7 @@
 - **Dialog** (inkorg 61):
   - **ali** (sms, en gång): "Ali här. Nyckelringen sålde direkt. Jag ville bli ingenjör en gång. Nu har jag låtit en AI rita en skräpgrip. Kom och titta." · *svarar på* malKlart:powerbank · *vet* kandAli · *ger* aliHarGrip
   - **ali** (butik, en gång): "Bra val. Ritningen räcker till en skräpgrip." · *svarar på* kopt:grip
-- **Uppläsning:** "Köp en skräpgrip hos Ali. Den kostar femtio kronor." (utan pengar: "Printa och sälj nyckelringar tills du har femtio kronor till gripen.")
+- **Uppläsning:** "Köp en skräpgrip hos Ali. Den kostar femtio kronor."
 
 ### 17. *(beror på läget)* 'byggsats:grip' / 'Ta ut gripen' / 'Printa skräpgripen' `printGrip`
 - **Moment:** Sova · **sak:** byggsats:grip · **bild:** – · **pil:** skrivare
@@ -211,7 +211,7 @@
 - **Kvitto:** –
   - starten väntar på: dialog:aliKrukaSms
 
-### 20. *(beror på läget)* 'Köp sängen' / 'Spara till sängen' `kopSang`
+### 20. Köp sängen `kopSang`
 - **Moment:** Sova · **sak:** sang · **bild:** sang · **pil:** ali
 - **Handling:** kop → kontrollhjälp *– (hos Ali)*
 - **Kräver:** krukaSald · **ger:** sangRitning
@@ -221,7 +221,7 @@
 - **Kvitto:** –
 - **Dialog** (inkorg 61):
   - **ali** (butik, en gång): "Sov gott, min vän." · *svarar på* kopt:sang
-- **Uppläsning:** "Köp 3D-modellen till sängen hos Ali." (utan pengar: "Printa och sälj mer tills du har sextio kronor till sängen.")
+- **Uppläsning:** "Köp 3D-modellen till sängen hos Ali."
 
 ### 21. Printa sängen `printSang`
 - **Moment:** Sova · **sak:** sang · **bild:** sang · **pil:** skrivare
@@ -243,14 +243,14 @@
 
 ## Dag 2 (kapitel 1)
 
-### 1. *(beror på läget)* 'Köp kvarnmotorn hos Ali (50 kr)' `kopMotor`
+### 1. Köp kvarnmotorn `kopMotor`
 - **Moment:** Kvarnmotorn · **sak:** byggsats:kvarnmotor · **bild:** byggsats:kvarnmotor · **pil:** ali
 - **Handling:** kop → kontrollhjälp *– (hos Ali)*
 - **Kräver:** – · **ger:** –
 - **Start (sägs när steget börjar):** "Vevandet tar på armarna. Ali har en motor till kvarnen."
 - **Påminnelse:** –
 - **Kvitto:** –
-- **Uppläsning:** "Köp kvarnmotorn hos Ali." (utan pengar: "Printa och sälj mer tills du har femtio kronor till kvarnmotorn.")
+- **Uppläsning:** "Köp kvarnmotorn hos Ali."
 
 ### 2. Printa kvarnmotorn till kvarnen `monteraMotor`
 - **Moment:** Kvarnmotorn · **sak:** byggsats:kvarnmotor · **bild:** byggsats:kvarnmotor · **pil:** kvarn
@@ -261,24 +261,31 @@
 - **Kvitto:** –
 - **Uppläsning:** "Printa kvarnmotorn på skrivaren och ta ut den. Då sätter du den direkt på kvarnen."
 
-### 3. *(beror på läget)* 'byggsats:korg' / 'Ta på dig sopsäcken' / 'Kolla vad som flög ut från sopbilen' / 'Städa gården' `kopSack`
-- **Moment:** Städa gården · **sak:** byggsats:korg · **bild:** byggsats:korg · **pil:** gard
+### 3. Städa gården `n1-stada-klart-garden`
+- **Moment:** Städa gården · **sak:** skrap · **bild:** – · **pil:** gard
 - **Handling:** ta → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
 - **Start (sägs när steget börjar):** "Gården är full av skräp. Jag börjar vid skjulet."
 - **Påminnelse:** –
 - **Kvitto:** –
-- **Uppläsning:** "Städa gården. Sopbilen brukar köra förbi vid den här tiden."
+- **Uppläsning:** "Städa gården. Mal skräpet i kvarnen."
 
-### 4. Städa klart gården `n1-stada-klart-garden`
-- **Moment:** Städa gården · **sak:** skrap · **bild:** – · **pil:** gard
+### 4. *(beror på läget)* 'byggsats:korg' / 'Ta på dig sopsäcken' / 'Ta sopsäckarna' / 'Gå till bilen vid skjulet' `kopSack`
+- **Moment:** Städa gården · **sak:** byggsats:korg · **bild:** byggsats:korg · **pil:** gard
 - **Handling:** ta → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** "Halva gården är ren. Tar jag resten blir det fint på riktigt."
-- **Påminnelse:** –
+- **Start (sägs när steget börjar):** "En stor bil saktar in vid skjulet. Jag går dit."
+  - medan steget pågår (sackar): "Rolf slängde av något åt mig."
+- **Påminnelse:** *(beror på läget)* 'Säckarna vid staketet.' / 'Bilen vid skjulet.'
 - **Kvitto:** –
+- **Dialog** (inkorg 61):
+  - **rolf** (rop, en gång): "Tjena. Rolf. Ja kör sopbilen. Tippen där borta ä min. Har vart min sen -87." · *svarar på* rolfStannar · *ger* kandRolf
+  - **rolf** (rop, en gång): "Du har städat hela gården. Ingen gör så nuförtin." · *svarar på* dialog:rolfHej · *vet* kandRolf
+  - **rolf** (rop, en gång): "Öj… ä dä du som printar grejer? Dom där nyckelringarna?" · *svarar på* dialog:rolfGarden · *vet* kandRolf
+  - **du** (rop, en gång): "Ja. Av skräp." · *svarar på* dialog:rolfPrintar · *vet* kandRolf
+  - **rolf** (rop, en gång): "Hm. Ja kanske har nåt åt dej. Kolla postlådan vid grinden." · *svarar på* dialog:duAvSkrap · *vet* kandRolf
 
-### 5. *(beror på läget)* ' + i ? ' / 'Läs brevet i Rolfs postlåda' `rolf0-brev`
+### 5. *(beror på läget)* ' + i ? ' / ' : i ? ' / 'Kolla Rolfs postlåda vid grinden' `rolf0-brev`
 - **Moment:** Rolfs brev · **sak:** brev · **bild:** – · **pil:** postlada
 - **Handling:** ta → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
@@ -328,7 +335,7 @@
 
 ## Dag 3 (kapitel 1)
 
-### 1. *(beror på läget)* ' + i ? ' / 'Läs brevet i Rolfs postlåda' `rolf1-brev`
+### 1. *(beror på läget)* ' + i ? ' / ' : i ? ' / 'Kolla Rolfs postlåda vid grinden' `rolf1-brev`
 - **Moment:** Rolfs brev · **sak:** brev · **bild:** – · **pil:** postlada
 - **Handling:** ta → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
@@ -412,7 +419,7 @@
 
 ## Dag 4 (kapitel 1)
 
-### 1. *(beror på läget)* ' + i ? ' / 'Läs brevet i Rolfs postlåda' `rolf2-brev`
+### 1. *(beror på läget)* ' + i ? ' / ' : i ? ' / 'Kolla Rolfs postlåda vid grinden' `rolf2-brev`
 - **Moment:** Rolfs brev · **sak:** brev · **bild:** – · **pil:** postlada
 - **Handling:** ta → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
@@ -487,7 +494,7 @@
 
 ## Dag 5 (kapitel 1)
 
-### 1. *(beror på läget)* ' + i ? ' / 'Läs brevet i Rolfs postlåda' `rolf3-brev`
+### 1. *(beror på läget)* ' + i ? ' / ' : i ? ' / 'Kolla Rolfs postlåda vid grinden' `rolf3-brev`
 - **Moment:** Rolfs brev · **sak:** brev · **bild:** – · **pil:** postlada
 - **Handling:** ta → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
@@ -811,7 +818,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 4. Vänta på den första svartgrå rullen `kolfrulle`
+### 4. *(beror på läget)*  `kolfrulle`
 - **Moment:** – · **sak:** rulle3 · **bild:** rulle3 · **pil:** kvarn
 - **Handling:** veva → kontrollhjälp *Klicka och håll · Veva kvarnen*
 - **Kräver:** – · **ger:** –

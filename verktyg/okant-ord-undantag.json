@@ -824,5 +824,26 @@
   "block": "STORY",
   "ord": "bengt",
   "skal": "inkorg 58 omgång 3: dag 16-texten flyttad från STEG i spel.js (samma text, samma villkor). Bengt-Åke och hans brevlåda finns i världen och nämns av Göran när han ger flagan före steget. Texten går genom Regissören; okandaOrd körs när den köas och boten dag 1–23 mäter OKÄNT ORD."
+ },
+ {
+  "fil": "spel.js",
+  "block": "uppdateraRolf",
+  "skal": "inkorg 73: loggtext när Rolf själv lägger brevet – efter hans presentation"
+ },
+ {
+  "fil": "spel.js",
+  "block": "rolfScenUppdatera",
+  "skal": "inkorg 73: loggtext efter Rolfs presentation i samma scen"
+ },
+ {
+  "fil": "spel.js",
+  "block": "fsHud",
+  "text": "Alis bubbla",
+  "skal": "inkorg 67 p.3: regelvaktens text, visas inte för spelaren"
+ },
+ {
+  "fil": "story.js",
+  "block": "KOP_NAMN",
+  "skal": "inkorg 67 p.1: sparmålen visas bara medan stegen pågår – alla stegen kommer efter att Ali och Rolf har presenterat sig (story-koll kollar ordningen)"
  }
 ]

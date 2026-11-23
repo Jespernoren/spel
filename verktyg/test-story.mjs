@@ -4,7 +4,7 @@
 // Kör: node verktyg/test-story.mjs [url]
 import fs from 'fs';
 import { chromium } from '/home/claude/verktyg/node_modules/playwright-core/index.mjs';
-import { STORY_STEG } from '../spel/printa-hem/story.js';
+import { STORY_STEG, KOP_NAMN } from '../spel/printa-hem/story.js';
 const url = process.argv[2] || 'http://127.0.0.1:8765/ax.html';
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
 const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
@@ -70,7 +70,7 @@ const steg1 = STORY_STEG.filter((x) => x.dag === 1);
 const rutor = L.filter((e) => e.kalla === 'målruta').map((e) => e.text);
 let pos = -1; const fattas = [];
 const lit = (s) => typeof s.mal === 'string' ? [s.mal] : (String(s.mal).match(/'([^']{4,})'/g) || []).map((x) => x.slice(1, -1));
-const traff = (s, t) => lit(s).some((m) => t === m || t.startsWith(m)) || (lit(s).some((m) => /^Spara/.test(m)) && /^(Plocka skräp och mal det|Printa och sälj)/.test(t));   // utan pengar visar rutan flaskhalsens fyllnad (inkorg 47)
+const traff = (s, t) => lit(s).some((m) => t === m || t.startsWith(m)) || (!!KOP_NAMN[s.sak] && (t.startsWith('Spara till ' + KOP_NAMN[s.sak][0] + ' ·') || t === KOP_NAMN[s.sak][1])) ||   /* inkorg 67 p.1: sparmålet med siffran */ (lit(s).some((m) => /^Spara/.test(m)) && /^(Plocka skräp och mal det|Printa och sälj)/.test(t));   // utan pengar visar rutan flaskhalsens fyllnad (inkorg 47)
 for (const s of steg1) { if (s.id === 'skylt') continue; const i = rutor.findIndex((t, j) => j > pos && traff(s, t)); if (i < 0) fattas.push(s.id); else pos = i; }
 console.log('  målrutan:', rutor.join(' → '));
 ut.push([`målen dag 1 i story.js-ordning (${steg1.length - 1} steg efter skylten)${fattas.length ? ' – saknas eller fel ordning: ' + fattas.join(', ') : ''}`, !fattas.length]);

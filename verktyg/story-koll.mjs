@@ -1,7 +1,7 @@
 // story-koll (inkorg 58 §4 p.1, A-113): kollar masterfilen spel/printa-hem/story.js utan att spela.
 // Stoppar committen om ordningen inte går ihop. Kör: node verktyg/story-koll.mjs
 import fs from 'node:fs';
-import { STORY, STORY_STEG, FRAN_START, HANDLINGAR, LAGEN } from '../spel/printa-hem/story.js';
+import { STORY, STORY_STEG, FRAN_START, HANDLINGAR, LAGEN, KOP_NAMN } from '../spel/printa-hem/story.js';
 
 const fel = [];
 const PIL_NAMN = ['bengtLada', 'bradhog', 'vagCykel', 'startYta', 'skrivare', 'cykel', 'ali', 'vevYta', 'skjul', 'gard', 'postlada', 'tippen', 'kvarn', 'bord'];   // samma namn som PIL_MAL i spel.js
@@ -72,5 +72,17 @@ for (const gammal of ['DAG1_FORST', 'DU_BYGG']) if (new RegExp(`const ${gammal}\
       if (t && /\?\s*$/.test(t) && !/[.!]\s/.test(t)) fel.push(`${st.id}: starten är bara en fråga ("${t.slice(0, 40)}") – säg vad jag ska göra (inkorg 63 p.3)`); } } }
 /* inkorg 63 p.1: varje dag 1–22 har en insats i vanligt tal på morgonkortet – aldrig "får mamma rätt" */
 for (let d = 1; d <= 22; d++) { const dg = STORY.find((x) => x.dag === d); if (!dg?.insats) fel.push(`dag ${d}: ingen insats på morgonkortet`); else if (/får mamma rätt/i.test(dg.insats)) fel.push(`dag ${d}: insatsen säger "får mamma rätt" (inkorg 63 p.1)`); }
+/* inkorg 67 p.1–2: varje köpsteg och låst steg har ett sparmål (KOP_NAMN), och inget mål börjar med "Vänta" (VÄNTA-MÅL) */
+{ const G1 = new Proxy({}, { get: (t, k) => k === 'rolfVara' || k === 'rolfNamn' ? () => 'en sak' : k === 'VAROR' ? new Proxy({}, { get: () => ({ recept: 40, namn: 'sak' }) }) : () => 0 });
+  const lagen2 = [{ stat: {}, rolf: {}, saljLagt: {}, ritningar: [], mynt: 0, kolf: {}, kvarn: {} }, { stat: {}, rolf: {}, saljLagt: {}, ritningar: [], mynt: 99999, kolf: {}, kvarn: {}, brevVantar: { lapp: 'rolf:0' }, krukaErbjuden: true }];
+  for (const p of STORY_STEG) {
+    if ((p.handling === 'kop' || p.las) && !KOP_NAMN[p.sak]) fel.push(`${p.id}: köpsteget (${p.sak}) har inget sparmål i KOP_NAMN – målet ska säga "Spara till … · x / y kr" (inkorg 67 p.1)`);
+    for (const S0 of lagen2) { let m = ''; try { m = String(typeof p.mal === 'function' ? p.mal(S0, G1) : p.mal); } catch { m = typeof p.mal === 'string' ? p.mal : ''; }
+      if (/^\s*Vänta\b/i.test(m)) fel.push(`${p.id}: målet "${m.slice(0, 50)}" är att vänta – målet är det du gör (VÄNTA-MÅL, inkorg 67 p.2)`); } } }
+/* inkorg 67 p.5 (rad 40): morgonkortets rubrik handlar om dagens första mål (INSATS UTAN MÅL) – dag 2–22 */
+{ const G2 = new Proxy({}, { get: (t, k) => k === 'rolfVara' || k === 'rolfNamn' ? () => 'en sak' : () => 0 }), S2 = { stat: {}, rolf: {}, ritningar: [], mynt: 0, kolf: {}, kvarn: {}, saljLagt: {} };
+  for (let d = 2; d <= 22; d++) { const dg = STORY.find((x) => x.dag === d); if (!dg) continue; if (!dg.rubrik) { fel.push(`dag ${d}: morgonkortet har ingen rubrik (INSATS UTAN MÅL)`); continue; }
+    const st = dg.steg[0]; let m = ''; try { m = String(typeof st.mal === 'function' ? st.mal(S2, G2) : st.mal).toLowerCase(); } catch { m = ''; }
+    const ord = dg.rubrik.toLowerCase().match(/[a-zåäö-]{4,}/g) || []; if (!ord.some((w) => m.includes(w.slice(0, 5)))) fel.push(`dag ${d}: rubriken "${dg.rubrik}" handlar inte om dagens första mål "${m}" (INSATS UTAN MÅL)`); } }
 if (fel.length) { console.log(`story-koll: ${fel.length} fel`); fel.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
 console.log(`story-koll: ${STORY_STEG.length} steg i ordning, kraver/ger går ihop, ${dialogId.size} repliker svarar på något som redan hänt, 0 fel`);
