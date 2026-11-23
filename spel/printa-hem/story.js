@@ -93,6 +93,9 @@ export const PLATS_FOR = {
 };
 
 export const LAGEN = ['butiken', 'handen', 'raden', 'ryggan', 'kistan', 'stalld', 'monterad', 'borta'];
+/* inkorg 72 p.2: ett mål = en handling. TVÅ HANDLINGAR I MÅL: efter "och" eller "–" kommer ett nytt verb (Bygg ryggkorgen – bär 10 skräp). */
+export const MAL_VERB = new Set(['spika', 'lasta', 'ställ', 'montera', 'välj', 'trampa', 'visa', 'köp', 'veva', 'gör', 'printa', 'sälj', 'koppla', 'gå', 'ta', 'spara', 'städa', 'möt', 'läs', 'kolla', 'ge', 'bygg', 'hämta', 'lägg', 'töm', 'isolera', 'sätt', 'hälsa', 'prata', 'mal', 'skicka', 'tapetsera', 'mata', 'inred', 'vaska', 'gjut', 'flytta', 'bli', 'bär', 'plocka', 'sov', 'lyft', 'fyll', 'ladda', 'häng', 'öppna', 'stäng', 'sälja', 'printa', 'hämta', 'tryck', 'klicka']);
+export const tvaHandlingar = (m) => String(m || '').replace(/\s·.*$/, '').split(/\s(?:och|–|-)\s/).slice(1).some((del) => MAL_VERB.has((del.trim().split(/\s+/)[0] || '').toLowerCase()));
 export const HANDLINGAR = ['spika', 'lyfta', 'stallNer', 'montera', 'valj', 'trampa', 'salj', 'kop', 'lagg', 'veva', 'printa', 'ta', 'sov', 'ga'];
 
 // tillstånd som finns från start (introt): det du har med dig
@@ -119,7 +122,7 @@ function rolf(i, [vara, varanBest]) {
 }
 // kvällen: sov när du vill. Uppgiften läses upp (ingen egen replik).
 function sov(dag, forDu) {
-  return { id: 'sov' + dag, forDu, sak: 'sang', handling: 'sov', pil: 'skjul', sov: true, mal: 'Klart för idag – sov när du vill', klar: (S) => S.dag > dag };
+  return { id: 'sov' + dag, forDu, sak: 'sang', handling: 'sov', pil: 'skjul', sov: true, mal: 'Sov när du vill', klar: (S) => S.dag > dag };
 }
 
 export const STORY = [
@@ -393,9 +396,14 @@ export const STORY = [
       start: 'Ali har ett gammalt bilbatteri. Då sparar jag strömmen.',
       kvitto: 'Nu printar den klart även när jag vilar benen.',
       klar: (S) => !!S.batteriKopt },
-    { id: 'ryggkorg', mom: 'Bära och mala mer', forDu: ['men', 'jag springer för mycket med skräp'], sak: 'byggsats:ryggkorg', handling: 'ta', pil: 'skrivare', bild: 'byggsats:ryggkorg', las: 'ryggkorg',
-      mal: 'Bygg ryggkorgen – bär 10 skräp', tal: 'Bygg ryggkorgen. Då bär du tio saker.',
-      start: 'Jag springer för mycket. Med en ryggkorg bär jag tio saker.',
+    { id: 'ryggkorg', mom: 'Bära och mala mer', forDu: ['men', 'jag springer för mycket med skräp'], sak: 'byggsats:ryggkorg', handling: 'printa', pil: 'skrivare', bild: 'byggsats:ryggkorg', las: 'ryggkorg',
+      mal: (S, G) => G.skrivare().some((x) => x.klar === 'byggsats:ryggkorg') ? 'Ta ut ryggkorgen' : 'Printa ryggkorgen', tal: 'Printa ryggkorgen på skrivaren.',   /* inkorg 72 p.2: ett mål = en handling */
+      start: 'Jag springer för mycket. Med en ryggkorg bär jag sexton saker.',
+      klar: (S, G) => !!S.ryggkorg || G.antalInv('byggsats:ryggkorg') > 0 },
+    { id: 'ryggkorgPa', mom: 'Bära och mala mer', forDu: ['darfor', 'ryggkorgen är printad'], sak: 'byggsats:ryggkorg', handling: 'ta', pil: 'skrivare', bild: 'byggsats:ryggkorg',
+      mal: 'Ta på ryggkorgen', tal: 'Klicka med ryggkorgen i handen.',
+      start: 'Ryggkorgen är klar. På med den.',
+      kvitto: 'Nu bär jag sexton skräp.',
       klar: (S) => !!S.ryggkorg },
     { id: 'n2-bygg-arbetsbord', mom: 'Skrivare M', forDu: ['men', 'en skrivare räcker inte'], sak: 'byggsats:bord', handling: 'stallNer', pil: 'startYta', bild: 'byggsats:bord',
       mal: 'Bygg ett arbetsbord',
@@ -635,9 +643,13 @@ export const STORY = [
       mal: (S, G) => `Inred boden · ${Math.min(3, G.gamerSaker())}/3 gamersaker`,
       start: 'Boden ska vara full. Tre saker.',
       klar: (S, G) => G.gamerSaker() >= 3 },
-    { id: 'f15-printa-stall-ut', forDu: ['darfor', 'fristaden behöver något extra'], sak: 'jacuzzi', handling: 'stallNer', pil: 'gard', bild: 'jacuzzi',
-      mal: 'Printa och ställ ut en jacuzzi',
+    { id: 'f15-printa-stall-ut', forDu: ['darfor', 'fristaden behöver något extra'], sak: 'jacuzzi', handling: 'printa', pil: 'skrivare', bild: 'jacuzzi',   /* inkorg 72 p.2: ett mål = en handling */
+      mal: 'Printa en jacuzzi',
       start: 'En jacuzzi. På en soptipp. Varför inte.',
+      klar: (S, G) => G.printat('jacuzzi') >= 1 || G.harPlacerat('jacuzzi') },
+    { id: 'f15-stall-ut', forDu: ['darfor', 'jacuzzin är printad'], sak: 'jacuzzi', handling: 'stallNer', pil: 'gard', bild: 'jacuzzi',
+      mal: 'Ställ ut jacuzzin',
+      start: 'Jacuzzin är klar. Den ställer jag ut på gården.',
       klar: (S, G) => G.harPlacerat('jacuzzi') },
     { id: 'f15-varldens-basta-fristad', start: 'Allt är på plats. Nu gör jag det riktigt mysigt här.', forDu: ['darfor', 'allt är på plats'], sak: 'trivsel', handling: 'stallNer', pil: 'gard', bild: (S, G) => G.nastaInred(), bildForslag: true,
       mal: (S, G) => `Världens bästa fristad · trivsel ${G.trivsel()}/300`,
@@ -701,10 +713,10 @@ export const STORY = [
     sov(19, ['darfor', 'jag bor i ett hus']),
   ] },
   { dag: 20, kapitel: 4, rubrik: 'En vedkamin.', insats: 'Det blir kallt i huset. En kamin behövs.',   /* inkorg 67 p.5 (rad 40): rubrik och insats om dagens första mål */   /* inkorg 63 p.1: morgonkortets insats i vanligt tal */ steg: [
-    { id: 'm20-printa-stall-ut', forDu: ['men', 'huset är kallt'], sak: 'kamin', handling: 'stallNer', pil: 'gard', bild: 'kamin',
-      mal: 'Printa och ställ ut en vedkamin',
+    { id: 'm20-printa-stall-ut', forDu: ['men', 'huset är kallt'], sak: 'kamin', handling: 'printa', pil: 'skrivare', bild: 'kamin',   /* inkorg 72 p.2: ett mål = en handling – nästa steg ställer in den */
+      mal: 'Printa en vedkamin',
       start: 'Minus fjorton. Skjulet var en sak. Huset ska vara varmt.',
-      klar: (S, G) => G.harPlacerat('kamin') },
+      klar: (S, G) => G.printat('kamin') >= 1 || G.harPlacerat('kamin') },
     { id: 'm20-stall-in-kamin', start: 'Kaminen är klar. Den ställer jag in i skjulet.', forDu: ['darfor', 'kaminen är printad'], sak: 'kamin', handling: 'stallNer', pil: 'skjul',
       mal: 'Ställ in en kamin i skjulet',
       klar: (S, G) => G.varme() >= 9 },

@@ -326,7 +326,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 10. Klart för idag – sov när du vill `sov2`
+### 10. Sov när du vill `sov2`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -377,16 +377,25 @@
 - **Kvitto:** "Nu printar den klart även när jag vilar benen."
 - **Uppläsning:** "Köp Alis gamla bilbatteri."
 
-### 6. Bygg ryggkorgen – bär 10 skräp `ryggkorg`
+### 6. *(beror på läget)* 'byggsats:ryggkorg' / 'Ta ut ryggkorgen' / 'Printa ryggkorgen' `ryggkorg`
+- **Moment:** Bära och mala mer · **sak:** byggsats:ryggkorg · **bild:** byggsats:ryggkorg · **pil:** skrivare
+- **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Jag springer för mycket. Med en ryggkorg bär jag sexton saker."
+- **Påminnelse:** –
+- **Kvitto:** –
+- **Uppläsning:** "Printa ryggkorgen på skrivaren."
+
+### 7. Ta på ryggkorgen `ryggkorgPa`
 - **Moment:** Bära och mala mer · **sak:** byggsats:ryggkorg · **bild:** byggsats:ryggkorg · **pil:** skrivare
 - **Handling:** ta → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** "Jag springer för mycket. Med en ryggkorg bär jag tio saker."
+- **Start (sägs när steget börjar):** "Ryggkorgen är klar. På med den."
 - **Påminnelse:** –
-- **Kvitto:** –
-- **Uppläsning:** "Bygg ryggkorgen. Då bär du tio saker."
+- **Kvitto:** "Nu bär jag sexton skräp."
+- **Uppläsning:** "Klicka med ryggkorgen i handen."
 
-### 7. Bygg ett arbetsbord `n2-bygg-arbetsbord`
+### 8. Bygg ett arbetsbord `n2-bygg-arbetsbord`
 - **Moment:** Skrivare M · **sak:** byggsats:bord · **bild:** byggsats:bord · **pil:** startYta
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** – · **ger:** –
@@ -394,7 +403,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 8. Bygg Skrivare M på bordet `n2-bygg-skrivare-m`
+### 9. Bygg Skrivare M på bordet `n2-bygg-skrivare-m`
 - **Moment:** Skrivare M · **sak:** byggsats:skrivare2 · **bild:** byggsats:skrivare2 · **pil:** bord
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** – · **ger:** –
@@ -402,7 +411,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 9. Lägg plåttak på skjulet `n2-lagg-plattak-skjulet`
+### 10. Lägg plåttak på skjulet `n2-lagg-plattak-skjulet`
 - **Moment:** Taket · **sak:** byggsats:tak · **bild:** byggsats:tak · **pil:** skjul
 - **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
 - **Kräver:** – · **ger:** –
@@ -410,7 +419,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 10. Klart för idag – sov när du vill `sov3`
+### 11. Sov när du vill `sov3`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -485,7 +494,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 9. Klart för idag – sov när du vill `sov4`
+### 9. Sov när du vill `sov4`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -559,7 +568,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 9. Klart för idag – sov när du vill `sov5`
+### 9. Sov när du vill `sov5`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -609,7 +618,7 @@
 - **Påminnelse:** –
 - **Kvitto:** "Göran har ett hem nu. Bättre än jag hade för en vecka sen."
 
-### 6. Klart för idag – sov när du vill `sov6`
+### 6. Sov när du vill `sov6`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -659,7 +668,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 6. Klart för idag – sov när du vill `sov7`
+### 6. Sov när du vill `sov7`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -709,7 +718,7 @@
 - **Påminnelse:** –
 - **Kvitto:** "En hylla. Jag har en hylla. Saker har en plats nu."
 
-### 6. Klart för idag – sov när du vill `sov8`
+### 6. Sov när du vill `sov8`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -751,7 +760,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 5. Klart för idag – sov när du vill `sov9`
+### 5. Sov när du vill `sov9`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -785,7 +794,7 @@
 - **Påminnelse:** –
 - **Kvitto:** "Varm mat. I skjulet. Mamma skulle inte tro det."
 
-### 4. Klart för idag – sov när du vill `sov10`
+### 4. Sov när du vill `sov10`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -827,7 +836,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 5. Klart för idag – sov när du vill `sov11`
+### 5. Sov när du vill `sov11`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -869,7 +878,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 5. Klart för idag – sov när du vill `sov12`
+### 5. Sov när du vill `sov12`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -895,7 +904,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 3. Klart för idag – sov när du vill `sov13`
+### 3. Sov när du vill `sov13`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -929,7 +938,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 4. Klart för idag – sov när du vill `sov14`
+### 4. Sov när du vill `sov14`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -955,15 +964,23 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 3. Printa och ställ ut en jacuzzi `f15-printa-stall-ut`
-- **Moment:** – · **sak:** jacuzzi · **bild:** jacuzzi · **pil:** gard
-- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+### 3. Printa en jacuzzi `f15-printa-stall-ut`
+- **Moment:** – · **sak:** jacuzzi · **bild:** jacuzzi · **pil:** skrivare
+- **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
 - **Kräver:** – · **ger:** –
 - **Start (sägs när steget börjar):** "En jacuzzi. På en soptipp. Varför inte."
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 4. *(beror på läget)*  `f15-varldens-basta-fristad`
+### 4. Ställ ut jacuzzin `f15-stall-ut`
+- **Moment:** – · **sak:** jacuzzi · **bild:** jacuzzi · **pil:** gard
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Jacuzzin är klar. Den ställer jag ut på gården."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 5. *(beror på läget)*  `f15-varldens-basta-fristad`
 - **Moment:** – · **sak:** trivsel · **bild:** beror på läget · **pil:** gard
 - **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
 - **Kräver:** – · **ger:** –
@@ -971,7 +988,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 5. Klart för idag – sov när du vill `sov15`
+### 6. Sov när du vill `sov15`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -1005,7 +1022,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 4. Klart för idag – sov när du vill `sov16`
+### 4. Sov när du vill `sov16`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -1039,7 +1056,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 4. Klart för idag – sov när du vill `sov17`
+### 4. Sov när du vill `sov17`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -1073,7 +1090,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 4. Klart för idag – sov när du vill `sov18`
+### 4. Sov när du vill `sov18`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -1115,7 +1132,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 5. Klart för idag – sov när du vill `sov19`
+### 5. Sov när du vill `sov19`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -1125,9 +1142,9 @@
 
 ## Dag 20 (kapitel 4)
 
-### 1. Printa och ställ ut en vedkamin `m20-printa-stall-ut`
-- **Moment:** – · **sak:** kamin · **bild:** kamin · **pil:** gard
-- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+### 1. Printa en vedkamin `m20-printa-stall-ut`
+- **Moment:** – · **sak:** kamin · **bild:** kamin · **pil:** skrivare
+- **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
 - **Kräver:** – · **ger:** –
 - **Start (sägs när steget börjar):** "Minus fjorton. Skjulet var en sak. Huset ska vara varmt."
 - **Påminnelse:** –
@@ -1141,7 +1158,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 3. Klart för idag – sov när du vill `sov20`
+### 3. Sov när du vill `sov20`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -1159,7 +1176,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 2. Klart för idag – sov när du vill `sov21`
+### 2. Sov när du vill `sov21`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –

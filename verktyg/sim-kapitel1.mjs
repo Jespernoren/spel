@@ -150,7 +150,7 @@ for (const kv of r.logg.filter((e) => e.kalla === 'kvittens')) {
   const va = r.logg.find((e) => e.kalla === 'varför' && e.varfor === kv.varfor && e.tot >= kv.tot && e.tot - kv.tot < 30);
   let sista = va || kv, rs = rostFor(sista.text, sista.tot); if (!rs && va) { sista = kv; rs = rostFor(kv.text, kv.tot); }   /* varför-raden kan strykas (målet har en egen knuff) */
   const slut = rs ? rs.tot + rostLangd(sista.text) : null;
-  const mal = r.logg.find((e) => ((e.kalla === 'röst' && /· MÅL$/.test(e.text)) || (e.kalla === 'sak' && e.vem === 'berattare') || (e.kalla === 'målruta' && /^Klart för idag/.test(e.text))) && e.tot >= (rs?.tot ?? sista.tot));   /* 58 omgång 3: dagens sista kvitto följs av sov-steget, som står tyst i rutan */   /* A-065: ett mål utan uppläsning byts tyst i rutan */
+  const mal = r.logg.find((e) => ((e.kalla === 'röst' && /· MÅL$/.test(e.text)) || (e.kalla === 'sak' && e.vem === 'berattare') || (e.kalla === 'målruta' && /^(Klart för idag|Sov när du vill)/.test(e.text))) && e.tot >= (rs?.tot ?? sista.tot));   /* 58 omgång 3: dagens sista kvitto följs av sov-steget, som står tyst i rutan */   /* A-065: ett mål utan uppläsning byts tyst i rutan */
   const gap = slut != null && mal ? mal.tot - slut : null;
   kedjeRader.push({ dag: kv.dag, t: kv.t, id: kv.varfor, kv: kv.text, va: va?.text || '', gap, mal: mal?.text.replace(/ · MÅL$/, '') || '' });
   if (!rs) flaggor.push({ dag: kv.dag, t: kv.t, typ: 'KEDJA', text: `${kv.varfor}: kvittensen lästes aldrig upp` });

@@ -1,7 +1,7 @@
 // story-koll (inkorg 58 §4 p.1, A-113): kollar masterfilen spel/printa-hem/story.js utan att spela.
 // Stoppar committen om ordningen inte går ihop. Kör: node verktyg/story-koll.mjs
 import fs from 'node:fs';
-import { STORY, STORY_STEG, FRAN_START, HANDLINGAR, LAGEN, KOP_NAMN, PLATS_FOR } from '../spel/printa-hem/story.js';
+import { STORY, STORY_STEG, FRAN_START, HANDLINGAR, LAGEN, KOP_NAMN, PLATS_FOR, tvaHandlingar } from '../spel/printa-hem/story.js';
 
 const fel = [];
 const PIL_NAMN = ['bengtLada', 'bradhog', 'vagCykel', 'startYta', 'skrivare', 'cykel', 'ali', 'vevYta', 'skjul', 'gard', 'postlada', 'tippen', 'kvarn', 'bord'];   // samma namn som PIL_MAL i spel.js
@@ -78,6 +78,7 @@ for (let d = 1; d <= 22; d++) { const dg = STORY.find((x) => x.dag === d); if (!
   for (const p of STORY_STEG) {
     if ((p.handling === 'kop' || p.las) && !KOP_NAMN[p.sak]) fel.push(`${p.id}: köpsteget (${p.sak}) har inget sparmål i KOP_NAMN – målet ska säga "Spara till … · x / y kr" (inkorg 67 p.1)`);
     for (const S0 of lagen2) { let m = ''; try { m = String(typeof p.mal === 'function' ? p.mal(S0, G1) : p.mal); } catch { m = typeof p.mal === 'string' ? p.mal : ''; }
+      if (tvaHandlingar(m)) fel.push(`${p.id}: målet "${m.slice(0, 50)}" säger två handlingar – ett mål = en handling (TVÅ HANDLINGAR I MÅL, inkorg 72 p.2)`);
       if (/^\s*Vänta\b/i.test(m)) fel.push(`${p.id}: målet "${m.slice(0, 50)}" är att vänta – målet är det du gör (VÄNTA-MÅL, inkorg 67 p.2)`); } } }
 /* inkorg 68 p.10: varje sak som monteras har en plats i PLATS_FOR (pilen, kistan och repliken läser den) */
 for (const p of STORY_STEG) if (p.handling === 'montera' && p.sak && !PLATS_FOR[p.sak]) fel.push(`${p.id}: ${p.sak} monteras men saknar plats i PLATS_FOR (SAK UTAN PLATS, inkorg 68 p.10)`);
