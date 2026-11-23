@@ -222,7 +222,7 @@ export const MASKIN_SIFFROR = {
   gamingbod: { ritning: 20000, delar: 6, gram: 700, tid: 20 },
   grip: { ritning: 50, delar: 1, gram: 400, tid: 10 },
   bord: { ritning: 120, delar: 3, gram: 700, tid: 14 },
-  sol: { ritning: 670, delar: 3, gram: 800, tid: 14 },
+  sol: { ritning: 4500,   /* inkorg 32: dag 6 tog 6,8 min – solpanelen är dagens sista köp (2 700 kr) */ delar: 3, gram: 800, tid: 14 },
   rullband: { ritning: 12670, delar: 4, gram: 900, tid: 16 },
   kolfkvarn: { ritning: 10000, delar: 4, gram: 900, tid: 18 },     // DF: linje 3, ca 6 000 kr
   kolfband: { ritning: 12670, delar: 4, gram: 900, tid: 16 },      // DF: rullbandet från tippen till kolfiberkvarnen, ca 7 600 kr
@@ -299,10 +299,18 @@ export const AX_JUSTERING = { husgrund: 0.6, kamin: 2.5, huset: 0.7 };   // huse
 // (mot 8 min, dämpat, högst ×2,5) – boten har sparat ihop för mycket i kapitel 3–4. Dagar på 6–15 min rörs inte.
 // Sparpengarna gör att modellen i ekonomi.mjs inte kan förutsäga de här dagarna – AX mäter dem (TEMPO-flaggan).
 export const DAG_MIN_AX97 = { 11: 4.5, 12: 11.7, 13: 2.3, 14: 2.7, 15: 5.7, 16: 2.0, 17: 7.5, 18: 2.9, 19: 8.2, 20: 1.6, 21: 0.7 };
-export const KORR_MAL_MIN = 8, KORR_MAX = 2.5;   // kortare dagar dras upp mot 8 min, dämpat (roten) och högst ×2,5: AX 98 med full faktor (×4,5) svalt dag 13 i 46 min
-export const KORR_DAGAR = [];   // Avstängd. AX 98: ×4,5 dag 13 → 46 min (kolfibret räcker inte). AX 99: ×2 dag 13–16 → pengarna slut dag 14, dag 15 61 min.
+export const KORR_MAL_MIN = 8, KORR_MAX = 4.5;   // kortare dagar dras upp mot 8 min, dämpat (roten) och högst ×2,5: AX 98 med full faktor (×4,5) svalt dag 13 i 46 min
+export const KORR_DAGAR = [13, 14, 15, 16, 17, 18, 19, 20, 21];   /* inkorg 32 (A-092): på igen, med nybörjarbotens tider från i natt (DAG_MIN_NY) i stället för AX 97 */   // Avstängd. AX 98: ×4,5 dag 13 → 46 min (kolfibret räcker inte). AX 99: ×2 dag 13–16 → pengarna slut dag 14, dag 15 61 min.
 // AX 100: ×1,9–2,5 dag 18, 20, 21 → fortfarande 2,0 · 1,6 · 1,0 min, eftersom boten har 40 000–90 000 kr över. Priset kan inte göra de dagarna längre – de behöver fler mål (se loggen).
-export function korrAX97(dag) { const m = DAG_MIN_AX97[dag]; if (!m || !KORR_DAGAR.includes(dag) || (m >= 6 && m <= 15)) return 1; return Math.min(KORR_MAX, Math.max(1, Math.sqrt((KORR_MAL_MIN / m - 0.3) / 0.7))); }
+/* inkorg 32 (A-092, rad 32): nybörjarboten dag 9–22 på 69cae77 (verktyg/a121/nyborjare-dag9-23.md). Pengarna man har kvar på morgonen är nu 1–12 000 kr
+   (förut 40–90 000), så dagens köp styr dagens längd igen. Dagens köp skalas mot 12 min: tid ≈ 30 % fast + 70 % att tjäna ihop pengarna. Korta dagar blir dyrare
+   (högst ×2,5, dämpat med roten som förut), långa billigare (lägst ×0,6). Dagar på 10–15 min rörs inte. */
+export const DAG_MIN_NY = { 13: 5.5, 14: 4.9, 15: 9.4, 16: 2.9, 17: 18.7, 18: 6.3, 19: 9.2, 20: 4.5, 21: 1.2 };
+export const TEMPO_MAL_MIN = 12, TEMPO_MIN_FAKTOR = 0.6;
+/* Omgång 2 (inkorg 32): formeln räckte inte – vissa dagar styrs av pengarna (dag 14: 4,9 → 21,8 min), andra inte (dag 13, 18, 21: pengarna från dagen före räcker).
+   Därför en faktor per dag, mätt: ny faktor = gammal × √(12 / uppmätt tid), högst ×3. Uppmätt med nybörjarboten dag 12–22 (/tmp/s32, verktyg/a092/). */
+export const TEMPO_FAKTOR = { 13: 2.2, 14: 1.1, 15: 1.4, 16: 3.9, 17: 1.6, 18: 3.3, 19: 1.65, 20: 3.0, 21: 4.5 };   /* omgång 4: dag 14 20,8 · 15 8,2 · 17 7,3 · 20 19,4 min. Spridningen mellan två körningar med samma pris är ca ±5 min (dag 14: 15,2 och 20,8). */   /* omgång 3: efter /tmp/s32c (12–15 inom 10–15 min, 16–21 fortfarande 1–9 min) */
+export function korrAX97(dag) { return KORR_DAGAR.includes(dag) ? (TEMPO_FAKTOR[dag] || 1) : 1; }
 export function trappPris(gammalt, dag) {
   const kap = kapitelFor(Math.min(dag, 22)), langd = Math.min(7, Math.max(0.6, DAG_MAL_MIN / (DAG_MIN_AX[dag] || DAG_MAL_MIN)));
   return runda(gammalt * inkomstPerMin(dag) / INKOMST_AX[kap] * langd * korrAX97(dag));
@@ -333,7 +341,8 @@ for (const [id, dag] of Object.entries(TRAPP_MAL.mark)) { const m = MARK_PRIS[id
 // Lyx-recept (gamingsakerna, jacuzzin, kaminen) och andra priser som stod i spel.js (A-067 §3: en enda källa)
 export const LYX_RECEPT = { gamingstol: 900, hogtalare: 700, kamin: 3330, kyl: 1200, gamingbord: 1800, soffa: 2200, ledpinne: 500, akustik: 600, neonskylt: 900, figurhylla: 1200, projektor: 2500, arkad: 3000, simrig: 4500, biljard: 5000, jacuzzi: 15000, dator: 3500 };
 for (const [id, dag] of Object.entries(TRAPP_MAL.lyx)) LYX_RECEPT[id] = Math.round(runda(trappPris(LYX_RECEPT[id] * PRIS_SKALA, dag) * (AX_JUSTERING[id] || 1)) / PRIS_SKALA);
-export const DIREKT_RITNING = { webbdator: 500, hylla: 250, spis: 600, gs_tak: 400, gs_isolering: 500, gs_dorr: 300 };
+/* inkorg 32: hyllan (dag 8, 8,7 min) och spisen (dag 10, 3,2 min) var dagens köp men kostade nästan inget mot kapitel 2:s ca 600 kr/min */
+export const DIREKT_RITNING = { webbdator: 500, hylla: 2200, spis: 7000, gs_tak: 400, gs_isolering: 500, gs_dorr: 300 };
 export const TAPET_PRIS = [500, 900, 1500, 3000, 6000];
 // Trimsatser: bas och växt per linje. Kolfiberns bas följer trappan (dag 13).
 export const TRIM_KOST = { kvarn: [300, 1.6], skrivare: [400, 1.6], pris: [500, 1.7], sopbil: [250, 1.5], batteri: [200, 1.5], utlager: [120, 1.9], band: [600, 1.6],

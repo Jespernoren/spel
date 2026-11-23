@@ -292,7 +292,7 @@ Object.assign(VAROR, {
   arkad: { namn: 'Arkadmaskin', ikon: '🕹️', recept: B.LYX_RECEPT.arkad, pris: 0, gram: 9000, tid: 80, trivsel: 18, placerbar: true, radie: 0.45, syns: () => S.kapitel >= 3, lyx: 'En riktig arkadmaskin. AI:n gjorde den retro. Med flit.' },
   simrig: { namn: 'Racingsimulator', ikon: '🏎️', recept: B.LYX_RECEPT.simrig, pris: 0, gram: 10000, tid: 90, trivsel: 22, placerbar: true, radie: 0.7, syns: () => S.kapitel >= 3, lyx: 'Racingstol, ratt och pedaler. Snabbare än sopbilen.' },
   biljard: { namn: 'Biljardbord', ikon: '🎱', recept: B.LYX_RECEPT.biljard, pris: 0, gram: 15000, tid: 110, trivsel: 20, placerbar: true, radie: 1.1, syns: () => S.kapitel >= 3, lyx: 'Rolf säger att han är ”proffs”. Han är inte proffs.' },
-  jacuzzi: { namn: 'Jacuzzi', ikon: '🛁', recept: B.LYX_RECEPT.jacuzzi,   /* A-067: priset räknas i balans.js. AX g30/g31: 9 000 g tog 30 min → 6 000 g */ pris: 0, gram: 6000, tid: 120, trivsel: 30, placerbar: true, radie: 1.1, syns: () => S.kapitel >= 3, lyx: 'Varmt bubbelbad vid soptippen. Lyx är relativt.' },
+  jacuzzi: { namn: 'Jacuzzi', ikon: '🛁', recept: B.LYX_RECEPT.jacuzzi,   /* A-067: priset räknas i balans.js. AX g30/g31: 9 000 g tog 30 min → 6 000 g · inkorg 32: nybörjaren printade 6 000 g i 24 min dag 15 → 2 500 g */ pris: 0, gram: 2500, tid: 120, trivsel: 30, placerbar: true, radie: 1.1, syns: () => S.kapitel >= 3, lyx: 'Varmt bubbelbad vid soptippen. Lyx är relativt.' },
   dator: { namn: 'Gamingdator med RGB', ikon: '💻', recept: B.LYX_RECEPT.dator, pris: 0, gram: 2000, tid: 60, trivsel: 20, placerbar: true, radie: 0.25, syns: () => S.kapitel >= 3, lyx: 'Chassit printar du – Ali har en låda med begagnade datordelar.' },
 });
 /* AX g44–g46: de tre första gamersakerna väger 7 000 g i stället för 10 500 – dag 15 har också jacuzzin */
@@ -7094,12 +7094,15 @@ function rolfBrevLast(i, extra = []) {
   paket(delar, { varfor: 'brev rolf:' + i });
   if (!gjord() && !S.servettSagd) { S.servettSagd = true; paket([{ tanke: SERVETT_T }], { om: Math.max(4300, (o.brev || '').length * 75), vikt: 'REAKTION', varfor: 'A-125: en gång, när brevet är läst' }); }
 }
+/* inkorg 32 (nybörjarboten fastnade dag 5 i en sparfil): tacket som är förfallet kommer alltid – också när spelet laddas efter dagbytet men före morgonens tack.
+   Annars står Rolf kvar på samma gåva: inget nytt brev, och postlådan säger "Printa grillspade först" om en sak han redan har. */
+setInterval(() => { try { if (ui.igang && S.rolf && S.rolf.hamtad != null && S.rolf.hamtad === S.rolf.i && S.dag > (S.rolf.hamtadDag ?? S.dag - 1) && !sover) rolfMorgonTack(); } catch {} }, 2000);
 // Rolfs tack kommer på morgonen: gåvan han fått (i lådan eller hämtad med sopbilen) blir belöning i lådan
 function rolfMorgonTack() {
   const o = ROLF[S.rolf.i]; if (!o) return false;
   if (S.post.tillRolf !== o.vara && S.rolf.hamtad !== S.rolf.i) return false;
   if (S.post.tillRolf === o.vara) S.post.tillRolf = null;
-  S.rolf.hamtad = null;
+  S.rolf.hamtad = null; S.rolf.hamtadDag = null;
   S.post.tillMig = [...S.post.tillMig, ...o.belo];
   S.rolf.i++; S.rolf.aktiv = false; rolfLadeILadan(); visaPostInne(); sparaSnart();
   return true;
@@ -8050,7 +8053,7 @@ function uppdateraRolf(dt) {
         if (S.rolf.ja % 2 === 0) S.rolf.boter = 1;   /* A-053: summan räknas när Rudolfs sms kommer – 30 % av det man har då */    // chefen märker vartannat jobb
         ljud.placera(); sparaSnart();
       } else if (onskan && S.post.tillRolf === onskan.vara) {
-        const hv = S.post.tillRolf; S.post.tillRolf = null; if (antalInv('byggsats:servett')) taBortInv('byggsats:servett'); S.rolf.hamtad = S.rolf.i;   // tacket ligger i lådan i morgon bitti
+        const hv = S.post.tillRolf; S.post.tillRolf = null; if (antalInv('byggsats:servett')) taBortInv('byggsats:servett'); S.rolf.hamtad = S.rolf.i; S.rolf.hamtadDag = S.dag;   // tacket ligger i lådan i morgon bitti
         ljud.placera(); sparaSnart(); paket([{ tanke: HAMTAT_T(VAROR[hv] ? enVara(hv) : 'gåvan') }], { vikt: 'REAKTION', varfor: 'EQ 39: han hämtar' });
       }
       visaPostInne();
