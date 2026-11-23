@@ -32,10 +32,6 @@
   "skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
  },
  {
-  "block": "ROLF_SACK_LAPP",
-  "skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
- },
- {
   "block": "ROLF_PAKET_LAPP",
   "skal": "Figuren säger det själv, eller avsändaren är den som presenterar personen (Rolf om Birgitta, Kjelle om Gunnar, storebror om Ali). Avsändaren måste själv vara känd – det kollar okandaOrd när texten köas."
  },
@@ -856,5 +852,10 @@
   "fil": "story.js",
   "block": "PLATS_FOR",
   "skal": "inkorg 68 p.10: platsen sägs bara när saken är i handen – kolfiberbandet finns först i kapitel 3, när tippen är känd"
+ },
+ {
+  "fil": "spel.js",
+  "block": "SERVETT_T",
+  "skal": "inkorg 70 (A-125): sägs när Rolfs servett hamnar i handen – efter brevet som är signerat Rolf och mötet vid bilen dag 2"
  }
 ]
