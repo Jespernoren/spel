@@ -132,9 +132,11 @@ const syn = r.logg.filter(synlig);
 /* A-065: en kvittens har förtur – den får komma 2 s efter det som syntes före (allt annat 4 s) */
 const kvittoText = new Set(r.logg.filter((e) => e.kalla === 'kvitto-visas' || e.kalla === 'kvittens' || e.kalla === 'varför').map((e) => String(e.text).slice(0, 30)));
 const arKv = (e) => kvittoText.has(String(e.text).replace(/^💭 /, '').slice(0, 30));
+/* inkorg 51 p.2: morgonnotiserna (webbshopen, säljlådan, Alis önskan) är ett inslag – staplade med 1 s mellan (rad 35) */
+const morgonNotis = (e) => e.kalla === 'notis' && /paket i natt|st i natt|· \+50 %$/.test(e.text);
 for (let i = 1; i < syn.length; i++) {
   const a = syn[i - 1], c = syn[i];
-  if (c.dag === a.dag && c.tot - a.tot < (arKv(c) ? 2 : 4) && a.text !== c.text && !a.text.includes(c.text.slice(0, 30)) && !c.text.includes(a.text.slice(0, 30)) && !['bubbla'].includes(a.kalla + c.kalla) && c.kalla !== 'morgonkort') {   /* morgonkortet kommer efter sömnen – en egen scen */
+  if (c.dag === a.dag && c.tot - a.tot < (arKv(c) ? 2 : 4) && !(morgonNotis(a) && morgonNotis(c) && c.tot - a.tot < 1.5) && a.text !== c.text && !a.text.includes(c.text.slice(0, 30)) && !c.text.includes(a.text.slice(0, 30)) && !['bubbla'].includes(a.kalla + c.kalla) && c.kalla !== 'morgonkort') {   /* morgonkortet kommer efter sömnen – en egen scen */
     flaggor.push({ dag: c.dag, t: c.t, typ: 'KROCK', text: `${(c.tot - a.tot).toFixed(1)} s mellan [${a.kalla}] "${a.text.slice(0, 60)}" och [${c.kalla}] "${c.text.slice(0, 60)}"` });
   }
 }

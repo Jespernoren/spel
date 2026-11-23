@@ -3904,7 +3904,7 @@ function taUt(typ, n = 1) {
     } else if (typ === 'byggsats:grip') {
       S.grip = true; uppdateraSkrapTraff(); ljudH('utrustning'); regi.info(`🦾 Skräpgripen sitter! Jag bär ${BARA_SKRAP[1]}, siktar lättare och plockar när jag går nära.`, 'guld');
     } else if (typ === 'byggsats:korg') {
-      S.korg = true; uppdateraSkrapTraff(); ljudH('utrustning'); regi.info(`🗑️ Sopsäcken är över axeln! Nu bär jag ${BARA_SKRAP[2]} skräp.`, 'guld');
+      S.korg = true; uppdateraSkrapTraff(); ljudH('utrustning'); regi.info(`🗑️ En sopsäck över axeln! Nu bär jag ${BARA_SKRAP[2]} skräp.`, 'guld');
     } else if (typ === 'byggsats:ryggkorg') {
       S.ryggkorg = true; uppdateraSkrapTraff(); ljudH('utrustning'); regi.info(`🧺 Ryggkorgen sitter på! Nu bär jag ${BARA_SKRAP[3]} skräp.`, 'guld');
     } else if (typ === 'byggsats:ryggsack2') {
@@ -4847,7 +4847,7 @@ const notisNyckel = (t) => String(t).replace(/[\d%]+/g, '#').replace(/×#/g, '')
 /* inkorg 45 p.1: GAMMAL NYHET – hur gammal en sak i kön är, räknat från när den blev aktuell (inte från andrummets väntan).
    Reaktioner (tankar, info, notiser och bubblor om något som nyss hände) har 20 s, sms och radio som inte är story 60 s.
    Story och mål har ingen gräns – de väntar på sin lugna stund. Kvittenser mäts av SEN KVITTENS. */
-const NYHET_REAKTION_MS = 20000, NYHET_SMS_MS = 60000;
+const NYHET_REAKTION_MS = 20000, NYHET_SMS_MS = 20000;   /* inkorg 51 p.1: samma gränser som SEN (rad 63 p.5) – ett sms eller radioinslag som inte är story och inte hunnit visas på 20 s stryks i stället för att komma sent */
 function nyhetGrans(it) {
   if (!it || it.vikt === 'STORY' || it.vikt === 'MÅL' || it.kvitto || it.kedja || it.infoKvitto) return 0;
   return (it.sms || it.vem === 'kjelle') ? NYHET_SMS_MS : NYHET_REAKTION_MS;
@@ -4961,7 +4961,7 @@ function korKanal() {
     if (it.gammalMs && nu - it.t - (it.menyMs || 0) > it.gammalMs) { textLogg('struken', it.vem || '', it.text || '', 'A-065: för gammal – tappat sitt sammanhang'); continue; }
     { const mel = arKvitto(it) === 1 ? KVITTO_MELLAN : (arSvarReakt(it) || (it.svar && !it.sms)) ? SVAR_MELLAN : (arKvitto(it) || it.svar) ? KVITTO_MELLAN : SYNLIG_MELLAN; if (it.vikt !== 'MÅL' && nu - senastSynlig < mel) it.tidigast = Math.max(it.tidigast || 0, senastSynlig + mel); }   /* inkorg 63 p.5: svaret på din handling väntar inte de 4 s */
     /* inkorg 66 p.1: kvittot på förra steget får stå sin tid innan nästa sak syns – talutrymmet (4 s) räknas från att kvittot visades. Gäller nästa stegs start och allt annat som inte är ett svar på din handling. */
-    if (!arKvitto(it) && (!it.svar || it.vikt === 'MÅL') && it.text && !/^\(/.test(it.text) && nu - senastKvittoT < KVITTO_TALUTRYMME_MS) { it.tidigast = Math.max(it.tidigast || 0, senastKvittoT + KVITTO_TALUTRYMME_MS); senare.push(it); continue; }
+    if (!arKvitto(it) && (!it.svar || it.vikt === 'MÅL' || it.vem === 'notis:morgon') && it.text && !/^\(/.test(it.text) && nu - Math.max(senastKvittoT, it.vem === 'notis:morgon' ? senastTankeT : -1e9) < KVITTO_TALUTRYMME_MS) { it.tidigast = Math.max(it.tidigast || 0, Math.max(senastKvittoT, it.vem === 'notis:morgon' ? senastTankeT : -1e9) + KVITTO_TALUTRYMME_MS); senare.push(it); continue; }   /* inkorg 51 p.2: morgonnotiserna väntar också sitt talutrymme efter dagens första tanke */
     if (it.arTanke && !arKvitto(it) && (!it.svar || it.vikt === 'MÅL') && nu - senastTankeT < TANKAR_MINST_MS) it.tidigast = Math.max(it.tidigast || 0, senastTankeT + TANKAR_MINST_MS);   /* A-090 p.5 */   /* A-065: minst 4 s mellan två saker som syns */
     const smsRadioGammal = smsRadioSen(it);   /* inkorg 63 p.5 */
     if (!it.svar && it.vikt !== 'MÅL' && !endastAli && !smsRadioGammal) {   /* inkorg 22: andrum för det som inte hör ihop med det du just gjorde */
@@ -7474,7 +7474,7 @@ MASKINER.ryggkorg.syns = () => upplast('ryggkorg') && !!S.korg && !S.ryggkorg;
    eller tagit på sig den (klicka med saken i handen). Varje sak syns sedan där den sitter. */
 const TA_PA = {
   'byggsats:grip': () => { S.grip = true; uppdateraSkrapTraff(); regi.info(`🦾 Skräpgripen sitter! Jag bär ${BARA_SKRAP[1]}, siktar lättare och plockar när jag går nära.`, 'guld'); },
-  'byggsats:korg': () => { S.korg = true; uppdateraSkrapTraff(); regi.info(`🗑️ Sopsäcken är över axeln! Nu bär jag ${BARA_SKRAP[2]} skräp.`, 'guld'); },
+  'byggsats:korg': () => { S.korg = true; uppdateraSkrapTraff(); regi.info(`🗑️ En sopsäck över axeln! Nu bär jag ${BARA_SKRAP[2]} skräp.`, 'guld'); },
   'byggsats:ryggkorg': () => { S.ryggkorg = true; uppdateraSkrapTraff(); },   /* inkorg 72 p.2: kvittot "Nu bär jag sexton skräp." står i steget */
   'byggsats:ryggsack2': () => { S.storRyggsack = true; while (S.ryggsack.length < RYGG_STOR) S.ryggsack.push(null); regi.info(`🎒 Större ryggsäck – ${RYGG_STOR} platser!`, 'guld'); },
 };
@@ -7976,7 +7976,7 @@ function uppdateraPappa(dt) {
     if (d > 6 || menyOppen()) { if (!b.pausBubbla) { b.pausBubbla = true; bubbla(pappaGubbe, '…'); } return; }   // CN: pausar när du går iväg eller är i en meny
     b.pausBubbla = false;
     b.t -= dt;
-    if (b.t <= 0) {
+    if (b.t <= 0 && performance.now() >= pratarTill + 300) {   /* inkorg 51 p.3: nästa replik i besöket väntar tills den som pratar är klar (RÖST AVBRUTEN) */
       bubbla(pappaGubbe, null); bubbla(rolfBesok, null);
       const rad = b.scen[b.steg++];
       if (!rad) { b.fas = 'gar'; if (!S.pappaBesok) andraRespekt(5, 'Pappa hälsade på'); S.pappaBesok = true; S.pappaNasta = S.dag + 2 + Math.floor(Math.random() * 2); sparaSnart(); pappaGubbe.userData.arm.rotation.x = 0; handelse('pappaKlar'); return; }   // CV: respekt
@@ -10760,7 +10760,7 @@ function underTiden() {
 function nuTips(t) {
   { const p = aktivtStoryStag(); const pa = p && varde(p.pamin, S, storyHjalp); if (pa) return pa; }   /* inkorg 58 omgång 2: dag 1 använder stegets påminnelse i story.js */
   if (/^Ställ (skrivaren|kvarnen)/.test(t)) return kand('tippen') ? 'Gå dit borta mot tippen, där den ska stå' : 'Gå dit borta mot skräpberget, där den ska stå';
-  if (/^Trampa/.test(t)) return S.strom < 2 ? 'Håll inne på pedalerna – sen printa på skrivaren' : 'Klicka på skrivaren och välj nyckelringen';
+  if (/^Trampa/.test(t)) return S.strom < 2 ? 'Håll inne på pedalerna – sen printa på skrivaren' : 'Klicka på skrivaren och välj en nyckelring';
   if (/adresskylt/.test(t)) { const d = Math.round(Math.hypot(VAG_SKYLT.x - spelare.pos.x, VAG_SKYLT.z - spelare.pos.z)); return d > 4 ? `Brädhögen ligger vid vägen · ${d} m – följ den gula pilen` : 'Klicka på brädhögen'; }
   if (/^Efterspelet/.test(t)) return /allt är klart/.test(t) ? 'Tippen på tid finns under Dagbok → Spelet' : 'Mark köper du på tavlan vid vägen · prototyper hos Ali';
   if (/Tänd skylten/.test(t)) return 'Gå till skylten och tänd den.';
@@ -14389,7 +14389,7 @@ function oppnaLager(n, tyst = false) {
   S.tippLager = n; S.tippSteg = Math.max(S.tippSteg || 0, (n - 1) * 3); sparaSnart();
   byggLagerFynd();
   if (!tyst) tippSjunkEffekt();
-  if (!tyst) { regi.info('Marken sjönk. Ett äldre lager kom fram.', 'guld'); paket([{ sms: LAGER_REPLIK[n] }], { om: 8000 }); }   /* A-060: ett dovt dunk */
+  if (!tyst) { if (S.lagerInfoDag !== S.dag) { S.lagerInfoDag = S.dag; regi.info('Marken sjönk. Ett äldre lager kom fram.', 'guld'); } paket([{ sms: LAGER_REPLIK[n] }], { om: 8000 }); }   /* inkorg 51 p.7: samma info högst en gång per dag – sjunker marken igen samma dag syns det i marken och Rolfs sms */   /* A-060: ett dovt dunk */
 }
 // husvagnen från -78 i berget (A-074 §3): skåpet med fotot och stickningen när 1987-lagret är borta (steg 6, kapitel 3)
 const husvagnFri = () => !!S.tippNyckel && S.kapitel >= 3 && tippStegNu >= 5.95;
@@ -17397,7 +17397,9 @@ function niva5Koll() {   /* EO 35 tillägg: första gången en maskin i en linje
   for (const sk of skrivare) { const k = 'skrivare:' + skrivarLinje(sk); n[k] = Math.max(n[k] || 0, skrivarNiva(sk)); }
   for (const [k, v] of Object.entries(n)) if (v >= 5 && !(S.niva5 || []).includes(k)) { S.niva5 = [...(S.niva5 || []), k]; paket([{ sms: ['ali', ALI_NIVA5] }], { vikt: 'SMÅPRAT', varfor: `EO 35: ${k} nivå 5` }); }
 }
+let ytaRitadT = 0;   /* A-106 p.10: när ytan senast ritades – FEL YTA räknas bara om ritningen har hunnit köra och ändå lämnat fel */
 function ritaYtor() {
+  ytaRitadT = performance.now();
   try { linjeYta(kvarn, 'bla', kvarnNiva()); { const k = 0.92 + 0.04 * (kvarnNiva() - 1); kvarn.scale.set(-k, k, k); }   /* A-086: storleken per nivå får inte ta bort speglingen (KVARN läsbar, extrudern till höger) */   /* A-059: kvarnen växer per nivå och per linje */
     for (const p of placerade) { if (p.typ === 'petgkvarn' && p.mesh) p.mesh.scale.setScalar(1.25); if (p.typ === 'kolfkvarn' && p.mesh) p.mesh.scale.setScalar(1.5); }
     for (const sk of skrivare) linjeYta(sk.mesh, skrivarLinje(sk), skrivarNiva(sk));
@@ -17571,7 +17573,7 @@ if (ui) {
   /* inkorg 10c: en knapp som ser klickbar ut måste gå att klicka – inte pointer-events:none och inte täckt av något annat */
   regelvakt.regel('DÖD KNAPP', () => {
     const tackt = (dodKnappTackt ||= new Map());
-    if (!ui.igang || pausad || !ui.overlay.hidden || !ui.butiksOverlay.hidden || !medEl2.hidden || [...document.querySelectorAll('.fp-overlay')].some((o) => !o.hidden && o.offsetParent) || sover || document.querySelector('.ph-fel, .ph-intro, .ph-intro3, .ph-kap, .ph-kapkort, .ph-jul, .ph-resa, .ph-natt, .ph-blick, .ph-hurvar')) { tackt.clear(); return []; }   /* AX A-088: en helskärmsscen (kapitelslut, jul, resa) täcker HUD:en med flit – knappen är inte död */
+    if (!ui.igang || pausad || !ui.overlay.hidden || !ui.butiksOverlay.hidden || !medEl2.hidden || [...document.querySelectorAll('.fp-overlay')].some((o) => !o.hidden && o.offsetParent) || sover || document.querySelector('.ph-fel, .ph-intro, .ph-intro3, .ph-kap, .ph-kapkort, .ph-jul, .ph-resa, .ph-natt, .ph-blick, .ph-hurvar, .ph-polstor')) { tackt.clear(); return []; }   /* AX A-088: en helskärmsscen (kapitelslut, jul, resa) täcker HUD:en med flit – knappen är inte död */
     const ut = [], nu = performance.now(), sett = new Set();   /* täckt i mer än 3 s räknas – en notis som glider förbi gör inte knappen död */
     for (const el of document.querySelectorAll('.ph-lasupp, [data-hjalp], .ph-kontroll button, .dn-uppg button, .ph-notis button, .ph-dagbokkort button')) {
       const r = el.getBoundingClientRect(); if (!r.width || !r.height || !el.offsetParent) continue;
@@ -17756,7 +17758,7 @@ if (ui) {
     return ut;
   });
   regelvakt.regel('MÅL OKÄNT', () => { if (!ui.igang) return []; const k = malKontrakt(); return k && !k.kanGoras() && k.namner.some((n) => !kand(n)) ? [`målet nämner ${k.namner.filter((n) => !kand(n)).join(', ')} som inte är känt`] : []; });
-  regelvakt.regel('FEL YTA', () => { if (!ui.igang) return []; const ut = []; const kolla = (o, l, n, namn) => { const fel = o && o.userData.ytaNyckel && o.userData.ytaNyckel !== l + Math.max(1, Math.min(5, n)); if (!fel) { if (o) o.userData.ytaFelSedan = 0; return; } o.userData.ytaFelSedan ||= performance.now(); if (performance.now() - o.userData.ytaFelSedan > 3500) ut.push(`${namn} har ${o.userData.ytaNyckel}, ska vara ${l}${n}`); };   /* ytan ritas om var 1,5 s – fel först efter 3,5 s */
+  regelvakt.regel('FEL YTA', () => { if (!ui.igang) return []; const ut = []; const kolla = (o, l, n, namn) => { const fel = o && o.userData.ytaNyckel && o.userData.ytaNyckel !== l + Math.max(1, Math.min(5, n)); if (!fel) { if (o) o.userData.ytaFelSedan = 0; return; } o.userData.ytaFelSedan ||= performance.now(); if (performance.now() - o.userData.ytaFelSedan > 3500 && ytaRitadT > o.userData.ytaFelSedan + 50) ut.push(`${namn} har ${o.userData.ytaNyckel}, ska vara ${l}${n}`); };   /* ytan ritas om var 1,5 s – fel först efter 3,5 s */
     { kolla(kvarn, 'bla', kvarnNiva(), 'blå kvarnen'); for (const sk of skrivare) kolla(sk.mesh, skrivarLinje(sk), skrivarNiva(sk), 'skrivare ' + sk.id); } return ut; });   /* EO 35: maskinen har linjens färg och sin nivås yta */
   regelvakt.regel('FEL BAKGRUND', () => [...document.querySelectorAll('[data-kopnu]')].filter((b) => /^(m|r|g):/.test(b.dataset.kopnu) && b.getBoundingClientRect().width && !b.closest('[data-kort]')?.querySelector('.ph-bp')).map((b) => `ritningen ${b.dataset.kopnu} i butiken saknar ritningspapper`));   /* EM 37 */
   regelvakt.regel('SAKNAD STORYSAK', () => !ui.igang ? [] : STORY_BEHOV.filter((b) => b.nar() && !harStorysak(b.t) && (S.storyGiven || {})[b.t] && S.dag > S.storyGiven[b.t] + 1).map((b) => `${b.t} behövs men finns inte`));   /* A-050 */

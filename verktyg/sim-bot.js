@@ -620,7 +620,7 @@
         const fore = S.steg + ':' + S.dag; console.log(`[sim] dag ${S.dag} ${fmt(tid - dagStart)} ${S.mynt} kr · ${H.stegId?.() || ''} · ${(H.stegText() || '').slice(0, 50)} · kö ${H.kanalLage?.().n ?? "?"}`); await gorSteg();
         if (NY && nyMalSteg.steg === S.steg && !H.pausad()) {   /* A-081: framsteg = målet byts. Mer än 30 s → FÖRVIRRAD, mer än 2 min utan en handling → FAST */
           const nyckel = [S.steg, S.stat.plockat, S.stat.printat, S.stat.salt, Math.floor((S.stat.trampat || 0) / 5), S.stat.malt, S.mynt, S.kvarn?.ut | 0].join(':');
-          if (nyckel !== nyFramsteg.k) { nyFramsteg.k = nyckel; nyFramsteg.t = tid; }
+          if (nyckel !== nyFramsteg.k || H.pratar?.()) { nyFramsteg.k = nyckel; nyFramsteg.t = tid; }   /* A-106: medan någon pratar med en lyssnar spelaren – det är inte att vara vilse */
           const g = tid - nyFramsteg.t;   // tid utan framsteg mot målet (målet byts, något plockas, mals, printas, säljs, trampas eller pengarna ändras)
           if (g > 30 && !nyMalSteg.forvirrad) { nyMalSteg.forvirrad = true; nyFlagga('FÖRVIRRAD', `${Math.round(g)} s utan framsteg på "${(H.stegText() || '').slice(0, 60)}"`); }
           if (g > 120 && !nyMalSteg.fast) { nyMalSteg.fast = true; nyFlagga('FAST', `2 min utan framsteg på "${(H.stegText() || '').slice(0, 60)}"`); }

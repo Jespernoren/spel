@@ -59,7 +59,7 @@
 - **Handling:** valj → kontrollhjälp *Klick · Välj modell på skrivaren*
 - **Kräver:** cykelOmbyggd, brorsRulle · **ger:** printJobb
 - **Start (sägs när steget börjar):** "Strömmen finns. Nu ska skrivaren veta vad den ska göra, sen trampar jag."
-- **Påminnelse:** "Klicka på skrivaren och välj nyckelringen."
+- **Påminnelse:** "Klicka på skrivaren och välj en nyckelring."
 - **Kvitto:** "Den piper. Den GÖR något."
 - **Uppläsning:** "Klicka på skrivaren och välj vad du vill printa."
 

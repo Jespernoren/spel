@@ -199,7 +199,7 @@ export const STORY = [
       kraver: ['cykelOmbyggd', 'brorsRulle'], ger: ['printJobb'],
       mal: 'Välj vad skrivaren ska printa', tal: 'Klicka på skrivaren och välj vad du vill printa.',
       start: 'Strömmen finns. Nu ska skrivaren veta vad den ska göra, sen trampar jag.',
-      pamin: 'Klicka på skrivaren och välj nyckelringen.',
+      pamin: 'Klicka på skrivaren och välj en nyckelring.',
       kvitto: 'Den piper. Den GÖR något.',
       klar: (S, G) => G.skrivare().some((x) => x.jobb || x.klar) || G.printat('nyckelring') >= 1 || S.stat.printat >= 1 },
 
