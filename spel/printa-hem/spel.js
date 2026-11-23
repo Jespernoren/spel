@@ -25,6 +25,7 @@ const SPEL_ID = 'printa-hem';
 /* inkorg 75 p.6: medan modulen laddas får inget som läser senare deklarerade const köras (dialogText/S rad 62, pbMesh 09:00, VARN/pausad).
    Text, röst och varningar som väcks under laddningen (t.ex. laggTill med full verktygsrad) väntar tills modulen är klar. */
 let modulKlar = false;
+let senastLasSlut = -1e9;   /* inkorg 74 p.3: när det som syns senast har hunnit läsas */
 const efterLaddning = (f) => { if (modulKlar) return false; setTimeout(f, 0); return true; };
 // Punkt AO: sparformatet nollställdes 2026-11-15. Allt sparas under SPAR_ID ('spar:printahem2:v1' lokalt, 'printahem2' i molnet).
 // Gamla sparfiler (spar:printa-hem:*, molnets 'printahem') används inte – spelaren får en ruta och börjar om. Rekordet (rekord:printa-hem) är kvar.
@@ -542,6 +543,7 @@ const krT = (n) => { n = Math.round(n || 0); const a = Math.abs(n);
   return (Math.round(n / 100000) / 10).toLocaleString('sv-SE', { maximumFractionDigits: 1 }) + ' milj.'; };
 
 // ---------- Story-lappar ----------
+const SOPBIL_FORSTA_T = 'Sopbilen tippade en ny last. Allt det skräpet – och grinden är låst.';   /* inkorg 74 p.2 */
 const LAPPAR = {
   // punkt N: Rolfs brev dag 11 och efter växthuset
   tr_brev: ['✉️ Brev från Rolf', 'ÖJ. Ja va int mä mej själv på konditoriet. Förlåt att ja prata så mycke. Bakom husvagnen fanns Birgittas trädgård. Nu ä dä bara nässlor. Ja har int rört den på sju år. Ja kan int. Men om nån annan började … Ja vet int. Du ä ju bra på skräp. MVH ROLF'],
@@ -552,6 +554,7 @@ const LAPPAR = {
   mammajul: ['🎁 Brev från Mamma', 'Du sa att du skulle fira jul ensam. Jag är glad att du ljög. Kram, Mamma'],   /* inkorg 24c p.3: brevet i julklappen svarar på vadet */
   polett: ['📔 Dagbok', 'Mammas paket kom tillbaka: \"Okänd mottagare\". Det här är mitt hem, men på pappret finns jag inte här.'],
   sopbil: ['📔 Dagbok', 'Sopbilen tippade en ny last.\n\nAllt det skräpet –\noch grinden är låst.'],
+
   malt: ['📔 Dagbok', 'Kvarnen funkar.\n\nSoptippen är en gruva.'],
   motor: ['📔 Dagbok', 'Grip OCH motor.\nNu går det undan.'],
   salt: ['🧺 Ali', 'Ali här. Nyckelringen sålde. Jag ville bli ingenjör, men fick ta över pappas butik. I natt lät jag en AI rita en skräpgrip åt mig. Kom och titta.'],
@@ -909,7 +912,11 @@ function satEffekter(pa) { S.effekter = pa; for (const b of effektBussar) b.gain
 function volym(k) { const v = S.vol?.[k]; return v == null || v > 0 ? 1 : 0; }   /* inkorg 38 (A-097): ljudet är PÅ (full volym) eller AV – en gammal volym över 0 blir PÅ, 0 blir AV */
 const rostVol = (vem) => volym(vem === 'berattare' ? 'berattare' : 'rost');
 /* A-078 tillägg 15:40: talhastighet för all uppläsning – standard 1,3. ?talfart=1.0 i adressen för att prova. */
-const TAL_FARTER = [['lugn', 'Lugn', 1.0], ['normal', 'Normal', 1.15], ['snabb', 'Snabb', 1.3]], TAL_FART_STANDARD = 1.3, TAL_FART_NYCKEL = 'printa-hem:talfart', TAL_FART_INTRO = 1.15, INTRO_LUFT = 300;
+const TAL_FARTER = [['lugn', 'Lugn', 1.0], ['normal', 'Normal', 1.15], ['snabb', 'Snabb', 1.3]], TAL_FART_STANDARD = 1.3, TAL_FART_NYCKEL = 'printa-hem:talfart', TAL_FART_INTRO = 1.3, INTRO_LUFT = 300;
+/* inkorg 74 p.1 (Jesper 08:44): introt går 1,3 gånger fortare hela vägen – rösterna (playbackRate 1,3, samma tonhöjd), shot-tiderna,
+   bildernas rörelser, ritningarna, klockan och musiken – och inga långa pauser. Pauserna mäts efter tempot. */
+const INTRO_TEMPO = 1.3;
+const INTRO_GLAPP = { replik: 400, shot: 600, avsiktlig: 1000, tyst: 2000 };   // ms: högst mellan två repliker, mellan två shots, de tre avsiktliga, och en tyst bild
 /* inkorg 12c: ord i uttalslistan (delat/rost.js) som når talsyntesen orättade – t.ex. om rost.js inte laddats */
 const uttalSaknas = new Set();
 function uttalKoll(t) { try { if (!window.__uttal) { if (/\bfilament/i.test(t)) uttalSaknas.add(t); return; } if (window.__uttal.saknas(t)) uttalSaknas.add(t); } catch {} }
@@ -3297,7 +3304,8 @@ function fickSkylt(text, alltFullt) {
 /* A-076 18:46 (inkorg 10a): allt som hamnar hos spelaren har en synlig källa – du plockar, köper eller printar (ett klick nyss),
    någon räcker över (kalla('ali') m.fl.) eller en maskin du ser gör det (kalla('maskin')). Annars SAK UTAN KÄLLA. */
 let senastKalla = { namn: '', t: -1e9 }, senastKlick = -1e9;
-addEventListener('pointerdown', () => { senastKlick = performance.now(); }, true); addEventListener('keydown', () => { senastKlick = performance.now(); }, true);
+const GA_TANGENTER = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight', 'Space']);
+addEventListener('pointerdown', () => { senastKlick = performance.now(); }, true); addEventListener('keydown', (e) => { if (!GA_TANGENTER.has(e.code)) senastKlick = performance.now(); }, true);   /* inkorg 74 p.3: att gå är ingen handling – en tanke som väcks av att du går nära något (lappen vid låset, en plats) är inget svar och väntar sin tur */
 function kalla(namn) { senastKalla = { namn, t: performance.now() }; }
 function senastHandlingT() { return Math.max(senastKlick, senastKalla.t); }
 let framstegT = 0, framstegNyckel = ''; setInterval(() => { const k = [S.steg, S.stat?.plockat, S.stat?.printat, S.stat?.salt, Math.floor((S.stat?.trampat || 0) / 5), S.stat?.malt, S.mynt].join(':'); if (k !== framstegNyckel) { framstegNyckel = k; framstegT = performance.now(); } }, 1000);   /* inkorg 23 p.2: tid sedan något hände (samma nyckel som nybörjarbotens FÖRVIRRAD) */
@@ -4797,6 +4805,7 @@ function regiLogg(kanal, prio, vem, text, ms = 0) {
   try { if (S.speltest?.pa) stLogg('visat', { kanal, prio, vem, text: String(text ?? '').slice(0, 160) }); } catch {}   /* inkorg 53 */
   const nu = performance.now(), e = { start: Math.round(nu), slut: Math.round(nu + ms), kanal, prio: prio || '', vem: vem || '', text: String(text ?? '').replace(/<[^>]+>/g, '').slice(0, 160), dag: typeof S !== 'undefined' ? S.dag : 0, steg: typeof S !== 'undefined' ? S.steg : 0 };
   try { sammaKoll(e); } catch {}
+  try { if (/^(lapp|notis|bubbla|dagbok|info|sms|tanke|rop|röst)$/.test(kanal) && e.text && !regiDirekt()) senastLasSlut = Math.max(senastLasSlut, nu + lasTid(e.text)); } catch {}   /* inkorg 74 p.3: allt som syns ute i spelet ska hinna läsas innan nästa sak kommer */
   try { if (regiDirekt() || (vem === 'ali' && performance.now() - butikStangdT < 8000)) e.svar = true; else if (kanalVisas) e.svar = !!kanalVisas.svar; } catch {}   /* inkorg 22: i en meny eller scen som du öppnat (och Alis sista ord när du går) är allt ett svar – annars ärvs flaggan från meddelandet som visas */
   if (!['målruta', 'klar', 'kamera', 'hjälp', 'pil', 'nick', 'svep'].includes(kanal) && !/^\(/.test(e.text)) meddelandeSlut = Math.max(meddelandeSlut, e.slut);   /* inkorg 22: andrummet räknas från att det senaste meddelandet slutar – också det som visas direkt */
   REGI_LOGG.push(e); if (REGI_LOGG.length > 60000) REGI_LOGG.splice(0, 10000);
@@ -4947,7 +4956,7 @@ function startaDel(a, nu) {
   const d = a.delar[a.delNr];
   if (d.typ === 'varför' || a.delNr === a.delar.length - 1) a.malSlapp = true;   // nya målet får synas när varför-repliken börjar
   kanalVisas = a; iKanalVisa++; try { d.visa?.(); } catch (e) { console.warn(e); } finally { iKanalVisa--; }
-  senastSynlig = nu;   /* A-065: en kedjedel syns också – talutrymmet räknas från den */
+  senastSynlig = nu; try { senastLasSlut = Math.max(senastLasSlut, nu + (d?.text ? lasTid(String(d.text)) : 0)); } catch {}   /* A-065: en kedjedel syns också – talutrymmet räknas från den · inkorg 74 p.3: och när den hunnit läsas */
   if (a.delNr > 0) textLogg('sak-del', a.vem || '', d.text, a.vikt);
   if (d.typ === 'varför') { textLogg('varför', a.vem || '', d.text, d.kedjaId || '');   /* inkorg 46 p.4: skälet loggas när det sägs, inte när det köas */
     const st = STEG[S.steg]; if (st && 'knuff' in st && st.knuff && st.knuff !== d.text) regelvakt.brott('FEL SKÄL', `skälet "${String(d.text).slice(0, 50)}" sägs men uppgiften "${String(stegText(st) || '').slice(0, 40)}" har sitt eget: "${String(st.knuff).slice(0, 40)}"`); }
@@ -5018,6 +5027,7 @@ function korKanal() {
     }
     if (it.sms && nu - dagStartTid < SMS_TIDIGAST) it.tidigast = Math.max(it.tidigast || 0, dagStartTid + SMS_TIDIGAST);   // BV: kontrolleras vid leverans
     if (it.gammalMs && nu - it.t - (it.menyMs || 0) > it.gammalMs) { textLogg('struken', it.vem || '', it.text || '', 'A-065: för gammal – tappat sitt sammanhang'); continue; }
+    if ((it.efterLast || ((it.arTanke || it.sms) && it.text && !/^\(/.test(it.text) && arKvitto(it) !== 1)) && nu < senastLasSlut) it.tidigast = Math.max(it.tidigast || 0, senastLasSlut);   /* inkorg 74 p.3: väntar tills det förra är uppläst (t.ex. Alis rop efter din tanke om ringen) */
     { const mel = arKvitto(it) === 1 ? KVITTO_MELLAN : (arSvarReakt(it) || (it.svar && !it.sms)) ? SVAR_MELLAN : (arKvitto(it) || it.svar) ? KVITTO_MELLAN : SYNLIG_MELLAN; if (it.vikt !== 'MÅL' && nu - senastSynlig < mel) it.tidigast = Math.max(it.tidigast || 0, senastSynlig + mel); }   /* inkorg 63 p.5: svaret på din handling väntar inte de 4 s */
     /* inkorg 66 p.1: kvittot på förra steget får stå sin tid innan nästa sak syns – talutrymmet (4 s) räknas från att kvittot visades. Gäller nästa stegs start och allt annat som inte är ett svar på din handling. */
     if (!arKvitto(it) && (!it.svar || it.vikt === 'MÅL' || it.vem === 'notis:morgon') && it.text && !/^\(/.test(it.text) && nu - Math.max(senastKvittoT, it.vem === 'notis:morgon' ? senastTankeT : -1e9) < KVITTO_TALUTRYMME_MS) { it.tidigast = Math.max(it.tidigast || 0, Math.max(senastKvittoT, it.vem === 'notis:morgon' ? senastTankeT : -1e9) + KVITTO_TALUTRYMME_MS); senare.push(it); continue; }   /* inkorg 51 p.2: morgonnotiserna väntar också sitt talutrymme efter dagens första tanke */
@@ -5049,7 +5059,7 @@ function korKanal() {
     { const g = nyhetGrans(it); if (g && nyhetAlder(it, nu) > g + 500) regelvakt.brott('GAMMAL NYHET', `"${String(it.text || it.vem || '').slice(0, 50)}" ${(nyhetAlder(it, nu) / 1000).toFixed(0)} s efter händelsen (gräns ${g / 1000} s)`); }
     kanalVisas = it; iKanalVisa++; try { it.visa?.(); } catch (e) { console.warn(e); } finally { iKanalVisa--; }
     if (!it.info && !/^(notis|värld):/.test(String(it.vem || ''))) { it._regi = regiLogg(regiKanal(it), regiPrio(it), it.vem, it.text || '(nytt mål i rutan)', (it.slut || nu) - nu); it._regi.svar = !!it.svar || !!it._regi.svar; }   /* A-080 · inkorg 22: svar eller inte */
-    if (it.vikt !== 'MÅL') senastSynlig = nu;
+    if (it.vikt !== 'MÅL') { senastSynlig = nu; if (it.text && !/^\(/.test(it.text)) try { senastLasSlut = Math.max(senastLasSlut, nu + lasTid(String(it.text))); } catch {} }   /* inkorg 74 p.3 */
     if (it.antal > 1) textLogg('sammanslagen', it.vem || '', `${it.text} ×${it.antal}`, 'A-065: samma sort');
     if (String(it.vem || '').startsWith('notis:')) senastNyckel.set(notisNyckel(it.text), nu);
     if (it.rost !== false && it.text) { prataNu(it.vem, it.text, it.vikt, { start: it.start }); it.slut = Math.max(it.slut, pratarTill); }
@@ -5534,7 +5544,7 @@ const TANKE_UTANFOR = 'Den här måste stå i linjen vid kvarnen, annars når in
 const ALI_KANNA = 'Rolf gav mig en kanna. Som min farmors. Jag ritade en sak åt honom. Säg inget, han gråter lätt.';   // CH
 const ALI_RODKVARN = 'Den röda? Jag har aldrig vågat starta den. Ta den. Starta den långt bort från mig.';   // CM
 const TANKAR_NYA = ['Grinden. Det är Helen, hör jag på stegen.', 'Gäststuga. Alltid bra att ha.', 'Helen. Det finns en gäststuga. Den är din om du vill.', 'Skåpet först.', 'En webbshop. Från ett skjul. Med modem. Varför inte.', 'Den röda tar jag med pirran.', 'Det röda ska i den röda kvarnen.', 'Det blå skräpet går i den blå kvarnen.', 'Vad var det som flög över grinden?', 'En sopsäck. Från sopbilen. Logiskt.', 'Lite närmare.', 'Den här är för tung. Jag behöver nåt med större hjul.', 'Pirran är för de röda sakerna. Skräpet tar jag med händerna.', 'Det börjar kännas som ett hem. På riktigt.'];   // CH, CJ, CL, CM
-const TANKAR_INLINE = [...Object.values(LINJE_TANKE), TUNG_T, KANOT_T, PIRRA_LITEN, STOR_T, KARRA_TUNG_T, KOLF_FORSTA, 'Den här är för stor för lilla kvarnen. Den ska till kolfiberkvarnen.', FICKA_TANKE, ALLT_FULLT_TANKE, 'Det får inte plats. Jag behöver något att tippa i.', 'Den här är för tung för lilla kvarnen.'];
+const TANKAR_INLINE = [SOPBIL_FORSTA_T, SOPBIL_FORSTA_T.replace(/^Sopbilen/, 'En stor bil'), ...Object.values(LINJE_TANKE), TUNG_T, KANOT_T, PIRRA_LITEN, STOR_T, KARRA_TUNG_T, KOLF_FORSTA, 'Den här är för stor för lilla kvarnen. Den ska till kolfiberkvarnen.', FICKA_TANKE, ALLT_FULLT_TANKE, 'Det får inte plats. Jag behöver något att tippa i.', 'Den här är för tung för lilla kvarnen.'];
 function iTratten(gram, tung) {
   if (!S.kvarnStar) return false;   // B23: kvarnen och tratten finns inte i världen före köpet
   if (tung) return petgKvarn() && petgIn(gram) === true ? 'petg' : false;   /* DK: blå kvarnen tar aldrig tunga saker */
@@ -5779,7 +5789,9 @@ const SAK_KALLA = { fynd4: () => (ader.visible ? ader : null) };
 const PIL_EXAKT = { bengtLada: () => bengtLada, postlada: () => postlada };
 function pilViaGruvan(v) { return v && gruvLage !== 'grotta' && iGruvan(v.x, v.z) ? gruvVagn.getWorldPosition(new THREE.Vector3()).setY(1.6) : v; }
 function stegPil() {
-  const st = STEG[S.steg], p = st?.story; if (!p || S.steg <= SI.sov1 || st.sov) return null;
+  const st = STEG[S.steg], p = st?.story; if (!p || st.sov) return null;
+  if (S.steg <= SI.sov1) {   /* inkorg 74 p.5: dag 1 följer story.js pil – utom när skrivaren saknar tråd för det som ska printas, då pekar pilen på tråden (samma materialkedja som dag 2–23) */
+    if (p.handling !== 'printa' || !p.sak || antalInv(p.sak)) return null; const sk = skrivareForSak(p.sak); const pp = sk ? skrivarPil(sk, p.sak) : null; const sp = sk?.mesh?.getWorldPosition?.(new THREE.Vector3()); return pp && sp && Math.hypot(pp.x - sp.x, pp.z - sp.z) > 3 ? pp : null; }
   if (st.las && !upplast(st.las)) return null;   /* flaskhalsen håller steget: rutan säger Printa och sälj, och pilen följer den (alPil) */
   const v = new THREE.Vector3();
   if (p.handling === 'lagg' && p.sak && !antalInv(p.sak) && SAK_KALLA[p.sak]) { const o = SAK_KALLA[p.sak](); if (o) return pilViaGruvan(o.getWorldPosition(v).setY(o.getWorldPosition(v).y + 0.6)); }
@@ -7152,7 +7164,7 @@ function rolfBrevLast(i, extra = []) {
     ...extra];
   if (i === 0) S.rolfBrev1 = true;
   paket(delar, { varfor: 'brev rolf:' + i });
-  if (!gjord() && !S.servettSagd) { S.servettSagd = true; paket([{ tanke: SERVETT_T }], { om: Math.max(4300, (o.brev || '').length * 75), vikt: 'REAKTION', varfor: 'A-125: en gång, när brevet är läst' }); }
+  /* inkorg 74 p.4: din replik "Rolf har ritat själv…" upprepade brevet direkt efter (DUBBEL) – den är borttagen. Rolfs egen rad i brevet säger det. */
 }
 /* inkorg 32 (nybörjarboten fastnade dag 5 i en sparfil): tacket som är förfallet kommer alltid – också när spelet laddas efter dagbytet men före morgonens tack.
    Annars står Rolf kvar på samma gåva: inget nytt brev, och postlådan säger "Printa grillspade först" om en sak han redan har. */
@@ -8494,9 +8506,11 @@ function tippaLast() {
   }
   materialMedSopbilen();   /* DK */
   /* DK: tunnorna kommer via materialMedSopbilen() */
-  { S.notisSett = S.notisSett || []; const sort = ggr > 1 ? 'tippDubbel' : 'tipp';   /* EC#1: lasset syns på tippen – notis bara första gången */
-    if (!S.notisSett.includes(sort) && Math.hypot(spelare.pos.x - TIPP.x, spelare.pos.z - TIPP.z) < 30) { S.notisSett.push(sort); regi.info(ggr > 1 ? '🚛 Rolf tippade DUBBEL last på soptippen!' : '🚛 Sopbilen tippade en ny last på soptippen!', 'guld'); } }
-  if (!S.lappar.includes('sopbil') && !S.tippNyckel) visaLapp('sopbil');
+  /* inkorg 74 p.2: första lasset sägs EN gång, som din replik (förut lappen, dagboksraden och tanken om samma sak). Den skrivs i dagboken utan notis. */
+  { S.notisSett = S.notisSett || [];
+    if (!S.lappar.includes('sopbil') && !S.tippNyckel) { S.lappar.push('sopbil'); S.notisSett.push('tipp'); sparaSnart(); tanke(SOPBIL_FORSTA_T, 'inkorg 74 p.2: första lasset', 'REAKTION'); }
+    else { const sort = ggr > 1 ? 'tippDubbel' : 'tipp';   /* EC#1: lasset syns på tippen – notis bara första gången */
+      if (!S.notisSett.includes(sort) && Math.hypot(spelare.pos.x - TIPP.x, spelare.pos.z - TIPP.z) < 30) { S.notisSett.push(sort); regi.info(ggr > 1 ? '🚛 Rolf tippade DUBBEL last på soptippen!' : '🚛 Sopbilen tippade en ny last på soptippen!', 'guld'); } } }
   /* AX g29: utan nyckel kan gården ta slut innan dörren är printad – då ramlar lite av lasset av flaket vid vägen (aldrig ett dödläge) */
   gardPafyll(6, 'Lite skräp ramlade av flaket på gården');
 }
@@ -8703,7 +8717,7 @@ paHandelse('tagitUrPrint', ({ sak }) => {
   setTimeout(() => {   /* efter att händelsen registrerats (svarPa: tagitUrPrint:nyckelring) */
   const t = dialogReplik('aliRop'); if (!t) return;
   setTimeout(() => { try { tittaMot(ALI.x, ALI.z, 1.6, { nyckel: 'aliRop' }); } catch {} }, 1200);
-  kanalLagg({ vikt: 'REAKTION', vem: 'ali', text: t, svar: true, visa: () => { varldsBubbla(ali, t, 4.5, 0.55); dialogVisas(t, 'rop'); } });   /* ett svar på att ringen kom ut – går först i kön (inkorg 63 p.5) */
+  kanalLagg({ vikt: 'REAKTION', vem: 'ali', text: t, svar: true, efterLast: true, tidigast: performance.now() + 4200, visa: () => { varldsBubbla(ali, t, 4.5, 0.55); dialogVisas(t, 'rop'); } });   /* ett svar på att ringen kom ut – går först i kön (inkorg 63 p.5) */
   }, 50);
 });
 // punkt AS: storebrors två sms när den första nyckelringen är klar (undantag från regeln om inga sms dag 1)
@@ -11172,6 +11186,7 @@ setInterval(() => {   // första gången en högtalare syns: den pulserar extra 
 }, 1000);
 { const st = document.createElement('style'); st.textContent = `.ph-lasupp{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:5px 11px 5px 8px;background:rgba(255,216,74,.18);color:#ffd84a;font:800 13px system-ui;cursor:pointer;pointer-events:auto;vertical-align:middle}.ph-lasupp svg{width:18px;height:18px}.ph-lasupp.liten{padding:5px}.ph-lasupp.pulsar svg,.ph-lasigen.pulsar svg{animation:phLasPuls .8s ease-in-out infinite alternate}.ph-lasupp.forsta{animation:phLasForsta .5s ease-in-out 4 alternate}@keyframes phLasPuls{from{transform:scale(1);opacity:1}to{transform:scale(1.18);opacity:.7}}@keyframes phLasForsta{from{box-shadow:0 0 0 0 rgba(255,216,74,.7)}to{box-shadow:0 0 0 10px rgba(255,216,74,0)}}.ph-papper .ph-lasupp{background:rgba(0,0,0,.08);color:#5a4630}.ph-notis .ph-lasupp{margin-left:6px}.ph-kontroll .ph-lasupp{margin-left:4px}.dn-uppg .dn-las{position:absolute;right:46px;top:50%;transform:translateY(-50%)}`; document.head.appendChild(st); }
 function notisVisa(text, typ = '', o = {}) {
+  try { if (text && !regiDirekt()) senastLasSlut = Math.max(senastLasSlut, performance.now() + lasTid(String(text))); } catch {}   /* inkorg 74 p.3: notiser, lappar och dagboksrader ska hinna läsas */
   text = neutralt(bojTal(text));   /* inkorg 45 p.5 */
   { const ren = String(text).replace(/^💭\s*/, ''), info = STORY_TEXT.get(ren);   /* inkorg 58: en text ur story.js visas bara medan dess steg pågår och saken är i det läge texten säger */
     if (info && (storyStegKlart(info.steg) || (info.lage && lage(info.sak) !== info.lage))) { textLogg('struken', 'du', ren, `inkorg 58: ${storyStegKlart(info.steg) ? 'steget ' + info.steg + ' är klart' : info.sak + ' är ' + lage(info.sak)}`); return; }
@@ -13846,7 +13861,7 @@ const INTRO3 = [
   { shot: '3c', tid: 2000, klocka: 0.09, ljud: 'riv', lager: [IB3('v6s3c', { id: 'dag', cls: 'skak3' }), KAL3('TORSDAG', 'ONSDAG')], tal: [['berattare', 'Och igen.'], ['mamma', 'STÄDA!!!', { b: 'v6s3c', cls: 'rop3' }]] },
   { shot: '4', tid: 3000, rorelse: true, klocka: 0.1, ljud: 'anga', lager: [IB3('v6s4', { cls: 'liv pys' }), KAL3('FREDAG', 'TORSDAG')], tal: [['mamma', 'Det ser ut som en SOPTIPP här inne!']] },
   { shot: '5', tid: 3000, klocka: 0.1, ljudEfter: 'dorr', lager: [IB3('v6s5a'), IB3('v6s5b', { r: 'pek' })], tal: [['mamma', 'Du kan lika gärna BO på en soptipp!', { visa: ['pek', 0.62] }]] },   /* på ordet soptipp pekar hon mot dörren – sedan smäller den */
-  { shot: '6', tid: 3000, rorelse: true, musik: true, ljud: 'trumma', lager: [IB3('v6s6a', { cls: 'liv' }), IB3('v6s6b', { r: 1, cls: 'sen1kort tilt' })], tal: [['du', 'Okej.'], ['du', 'Då gör jag väl det.']] },   /* trumslag på Okej, takten börjar, tickandet tystnar */
+  { shot: '6', paus: INTRO_GLAPP.avsiktlig, tid: 3000, rorelse: true, musik: true, ljud: 'trumma', lager: [IB3('v6s6a', { cls: 'liv' }), IB3('v6s6b', { r: 1, cls: 'sen1kort tilt' })], tal: [['du', 'Okej.'], ['du', 'Då gör jag väl det.']] },   /* trumslag på Okej, takten börjar, tickandet tystnar */
   { shot: '6b', tid: 2500, rorelse: true, svartEfter: 300, lager: [IB3('v4kort9a', { cls: 'folj' }), IB3('v4kort9b', { cls: 'folj sen1' }), IB3('v4kort9', { cls: 'folj sen2' })], tal: [] },   /* Jesper 09:29: förbi mamma, hon gör O med munnen och vänder sig efter dig */
   { shot: '7', tid: 4000, rorelse: true, ljud: 'port', lager: [IB3('v5pack10g', { cls: 'liv' }), { id: 'port', html: '<div class="ph-port"></div>' }], tal: [['du', 'Ryggan på…']] },   /* matchklipp: dörren som smäller → porten som rullar upp */
   { shot: '8', tid: 3000, rorelse: true, ljud: 'band', lager: [IB3('v5pack10a'), IB3('v5pack10b', { cls: 'sen1kort' }), IB3('v5pack10c', { cls: 'sen2kort' })], tal: [['du', '…och storebrors gamla 3D-skrivare.']] },
@@ -13855,9 +13870,9 @@ const INTRO3 = [
   { shot: '11', tid: 3000, rorelse: true, ljud: 'vibb', lager: [{ id: 'duskjul', spel: 'duSkjul', cls: 'suddig' }, { id: 'tel', html: TELEFON('svara') }], tal: [['du', 'Mm?', { fore: 700 }]] },   /* samtalet: ingen musik, bara vind */
   { shot: '12', tid: 9000, lager: [{ id: 'delad', html: '<div class="ph-delad"><div class="v"></div><div class="h"></div></div>' }, IB3('v6s12a', { cls: 'halv vanster' }), { id: 'dush', spel: 'duSkjul', cls: 'halv hoger' }, IB3('v6s12b', { r: 3, cls: 'halv vanster' })], tal: [['mamma', 'Var ÄR du?'], ['du', 'Vid soptippen. Jag bor här nu.'], ['mamma', 'Förra gången du drog höll du i två dagar.'], ['mamma', 'Du kommer hem till jul. Det gör du alltid.']] },
   { shot: '13', tid: 3000, ljudEfter: 'klick', lager: [{ id: 'duskjul2', spel: 'duSkjul', cls: 'narbild' }, { id: 'tel2', html: TELEFON('lagg') }], tal: [['du', 'Inte den här gången. Då firar jag jul ensam.']] },
-  { shot: '14', tid: 5000, rorelse: true, ljud: 'skrik', lager: [{ id: 'n2', spel: 'dorrhalRatta', cls: 'liv' }, { id: 'm2', spel: 'mammaPoff', cls: 'poff2' }], tal: [['berattare', 'Ingen mamma som tjatar.', { pip: true, efter: 2200 }]] },   /* matchklipp: klicket → mamma poppar upp, poff, råttan sitter kvar */
+  { shot: '14', paus: INTRO_GLAPP.avsiktlig, tid: 5000, rorelse: true, ljud: 'skrik', lager: [{ id: 'n2', spel: 'dorrhalRatta', cls: 'liv' }, { id: 'm2', spel: 'mammaPoff', cls: 'poff2' }], tal: [['berattare', 'Ingen mamma som tjatar.', { pip: true, efter: 2200 }]] },   /* matchklipp: klicket → mamma poppar upp, poff, råttan sitter kvar */
   { shot: '15', tid: 6000, rorelse: true, musik: true, lager: [{ id: 'hv', spel: 'hem' }, { id: 'h2', spel: 'hem2', cls: 'hemsteg' }, { id: 'h3', spel: 'hem3', cls: 'hemsteg h3' }, { id: 'h4', spel: 'hem4', cls: 'hemsteg h4' }, { id: 'h5', spel: 'hem5', cls: 'hemsteg h5' }], tal: [['berattare', 'Tänk om det här kunde bli ett riktigt hem? Till jul.', { fore: 300, efter: 1400 }]] },
-  { shot: '16', tid: 3000, rorelse: true, lager: [{ id: 'tavla', tavla: true }], tal: [['berattare', 'Skräp är plast.', { rita: [['skrap', 0]] }], ['berattare', 'En kvarn gör det till filament.', { rita: [['pil1', 0], ['kvarn', 250], ['pil2', 1300], ['filament', 1450]] }], ['berattare', 'Och med filament kan man printa… allt.', { rita: [['pil3', 0], ['skrivare', 400]] }], ['du', 'Jag behöver bara komma på hur.']] },
+  { shot: '16', paus: INTRO_GLAPP.avsiktlig, tid: 3000, rorelse: true, lager: [{ id: 'tavla', tavla: true }], tal: [['berattare', 'Skräp är plast.', { rita: [['skrap', 0]] }], ['berattare', 'En kvarn gör det till filament.', { rita: [['pil1', 0], ['kvarn', 250], ['pil2', 1300], ['filament', 1450]] }], ['berattare', 'Och med filament kan man printa… allt.', { rita: [['pil3', 0], ['skrivare', 400]] }], ['du', 'Jag behöver bara komma på hur.']] },
   { shot: '16b', tid: 2600, rorelse: true, lager: [{ id: 'tavla', tavla: true }, { id: 'titel', html: '<svg class="ph-titel" viewBox="0 0 1000 625"><text x="500" y="330" text-anchor="middle">SOPTIPPSVÄGEN 1</text></svg>' }, { id: 'n4', spel: 'start', cls: 'sistbild3' }], tal: [] },   /* titeln ritas fram, sedan tonar första spelbilden in */
 ];
 const introCss3 = document.createElement('style');
@@ -14020,7 +14035,7 @@ function visaIntro3(klar, o = {}) {
     e.style.transform = 'scale(2.6)'; requestAnimationFrame(() => requestAnimationFrame(() => { e.style.transform = 'scale(1)'; }));
   };
   const spelaRuta = async (p, k) => {
-    introRitarVarld = p.lager.some((l) => l.spel || l.krita);
+    introRitarVarld = p.lager.some((l) => (l.spel && !spelBildCache[l.spel]) || l.krita);   /* inkorg 74: världen ritas bara om bilden inte redan är gjord (förut 2 bildrutor av hela världen per shot) */
     scenEl.querySelectorAll('.ph-bub').forEach((b) => b.remove());
     const nya = new Set(p.lager.filter((l) => l.r == null).map((l) => l.id + '|' + (l.src || l.kal || l.spel || l.loop || '')));
     const gamla = [...pa].filter(([, e]) => !nya.has(e.dataset.nyckel)); gamla.forEach(([id]) => pa.delete(id));
@@ -14033,20 +14048,20 @@ function visaIntro3(klar, o = {}) {
     logg('visas', p.lager.map((l) => l.id + '|' + (l.src || l.spel || l.kal || '')).join(' '));
     textEl.innerHTML = ''; textEl.classList.add('tom');
     if (p.ljud) introLjud3(p.ljud); if (p.musik) introMusik.start(); if (p.musikStopp) introMusik.stopp(p.musikStopp);
-    clearInterval(klockaT); if (p.klocka) { introLjud3.vol = p.klocka; introLjud3('tick'); klockaT = setInterval(() => introLjud3('tick'), 1000); }   /* A-096: väggklockan i rummet, lite högre för varje dag – tystnar på "Okej" */
+    clearInterval(klockaT); if (p.klocka) { introLjud3.vol = p.klocka; introLjud3('tick'); klockaT = setInterval(() => introLjud3('tick'), 1000 / INTRO_TEMPO); }   /* A-096: väggklockan i rummet, lite högre för varje dag – tystnar på "Okej" */
     logg('shot', p.shot || '');
-    const t0 = performance.now();
-    await vanta(INTRO_LUFT, k);   /* inkorg 12b: 300 ms luft före repliken */
+    const t0 = performance.now(), T = INTRO_TEMPO, luft = Math.round(INTRO_LUFT / T), shotPaus = p.paus || INTRO_GLAPP.shot, NASTA_FORE = 320; let slutT = null;   /* NASTA_FORE: nästa shots luft och bildbyte */
+    await vanta(p.tal.length ? Math.round(luft / 2) : 0, k);   /* inkorg 12b + 74: lite luft före första repliken – hela glappet mellan två shots är högst INTRO_GLAPP.shot */
     if (introRitarVarld) { await new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok))); for (const l of p.lager) if (l.spel) spelBild(l.spel); introRitarVarld = 'klar'; }
-    else { const nasta = INTRO3[INTRO3.indexOf(p) + 1]; if (nasta?.lager.some((l) => l.spel)) setTimeout(() => { for (const l of nasta.lager) if (l.spel) spelBild(l.spel); }, Math.max(1500, (p.tid || 3000) - 1500)); }   /* A-096: nästa shots världsbilder görs mot slutet av den här, så att den här shotens rörelse (poffet) inte står still */   /* inkorg 14: nästa rutas världsbilder görs medan den här rutan (utan värld) visas – sista rutan väntar inte */   /* alla bilder ur världen görs medan världen ritas – sedan vilar den */
+    { const nasta = INTRO3[INTRO3.indexOf(p) + 1]; if (nasta?.lager.some((l) => l.spel)) setTimeout(() => { for (const l of nasta.lager) if (l.spel) spelBild(l.spel); }, Math.max(1000, (p.tid || 3000) / INTRO_TEMPO - 1200)); }   /* A-096: nästa shots världsbilder görs mot slutet av den här, så att den här shotens rörelse (poffet) inte står still */   /* inkorg 14: nästa rutas världsbilder görs medan den här rutan (utan värld) visas – sista rutan väntar inte */   /* alla bilder ur världen görs medan världen ritas – sedan vilar den */
     let sistaR = null;
     for (let j = 0; j < p.tal.length; j++) {
       const [vem, text, o = {}] = p.tal[j];
       const rl = p.lager.filter((l) => l.r === j);
       if (rl.length) { if (sistaR) sistaR.forEach(tona); sistaR = rl.map((l) => { const e = visaLager(l); if (/zoomut/.test(l.cls || '')) zoomut(e); return e; }); logg('ritning', j); }
-      if (o.fore) await vanta(Math.min(800, o.fore), k);
-      if (o.rita) for (const [del, ms] of o.rita) { const t = setTimeout(() => { scenEl.querySelector(`[data-del="${del}"]`)?.classList.add('rita'); introLjud3(/sang|tak|jacuzzi|hus/.test(del) ? 'pling' : 'krita'); }, ms); timers.add(t); }
-      if (o.pip) { setTimeout(() => introLjud3('pip'), 300); setTimeout(() => introLjud3('poff'), 1500 + 300); }   /* A-078 tillägg 11:50: mamma-ritningen försvinner med ett poff, musen sitter kvar */
+      if (o.fore) await vanta(Math.min(INTRO_GLAPP.replik - luft, o.fore / T), k);
+      if (o.rita) for (const [del, ms] of o.rita) { const t = setTimeout(() => { scenEl.querySelector(`[data-del="${del}"]`)?.classList.add('rita'); introLjud3(/sang|tak|jacuzzi|hus/.test(del) ? 'pling' : 'krita'); }, ms / T); timers.add(t); }
+      if (o.pip) { setTimeout(() => introLjud3('pip'), 300 / T); setTimeout(() => introLjud3('poff'), 1800 / T); }   /* A-078 tillägg 11:50: mamma-ritningen försvinner med ett poff, musen sitter kvar */
       /* A-078 tillägg 11:35/11:45: korta utrop (STÄDA!) bara i bubblan, allt annat bara i undertextrutan. Inga namn.
          Rutan står still längst ner, texten visas direkt och byts ut. Repliker som hör ihop (samma röst, direkt efter varandra) står tillsammans, högst 2 rader. */
       if (o.b && rens(text).length <= UTROP_MAX) bubbla(p, text, o);
@@ -14059,11 +14074,15 @@ function visaIntro3(klar, o = {}) {
       logg('rad', j);
       let visaFn = null;
       if (o.visa) { const [vid, andel] = o.visa, l = p.lager.find((x) => x.r === vid); let gjort = false; visaFn = () => { if (gjort || !l) return; gjort = true; const ms = Math.max(200, rens(text).length * 62 / talFart() * andel); const t = setTimeout(() => { timers.delete(t); visaLager(l); logg('visa', vid); }, ms); timers.add(t); }; const t2 = setTimeout(() => visaFn(), 900); timers.add(t2); }   /* inkorg 12b: ett lager på ett visst ord – räknat från röstens start (reserv om rösten aldrig startar) */
-      await sag(vem, text, k, () => visaFn?.()); await vanta(INTRO_LUFT + (o.efter || 0), k);   /* o.efter: rutan behöver tid efter repliken (ruta 15 ritar färdigt) */   /* inkorg 12b: 300 ms luft efter varje replik */
+      const sist = j === p.tal.length - 1;
+      await sag(vem, text, k, () => visaFn?.()); if (sist) slutT = performance.now();
+      await vanta(sist ? Math.min(luft + (o.efter || 0) / T, shotPaus - NASTA_FORE) : luft + Math.min((o.efter || 0) / T, INTRO_GLAPP.replik - luft), k);   /* inkorg 74: efter sista repliken räknas glappet mot shotens paus */   /* o.efter: rutan behöver tid efter repliken (ruta 15 ritar färdigt) */   /* inkorg 12b: 300 ms luft efter varje replik */
     }
-    await vanta(p.rorelse ? Math.max(150, p.tid - (performance.now() - t0)) : 0, k);
-    if (p.ljudEfter) { introLjud3(p.ljudEfter); if (p.ljudEfter === 'dorr') { const kort = el.querySelector('.ph-intro-kort'); kort.classList.remove('skak'); void kort.offsetWidth; kort.classList.add('skak'); } await vanta(350, k); }
-    if (p.svartEfter) { const sv = document.createElement('div'); sv.className = 'ph-svart'; scenEl.appendChild(sv); await vanta(p.svartEfter, k); setTimeout(() => sv.remove(), 600); }   /* rutans tid gäller bara när en rörelse behöver den – annars byts bilden 0,3 s efter rösten */
+    { const kvar = (p.tid || 0) / T - (performance.now() - t0);   /* inkorg 74: en rörelse får tid, men med repliker blir det aldrig en lång paus; en tyst bild står högst 2 s */
+      const tak = p.tal.length ? Math.max(0, shotPaus - NASTA_FORE - (performance.now() - (slutT ?? performance.now()))) : INTRO_GLAPP.tyst;   /* hela glappet från sista repliken till nästa shots första är högst shotPaus */
+      await vanta(p.rorelse ? Math.max(0, Math.min(kvar, tak)) : 0, k); }
+    if (p.ljudEfter) { introLjud3(p.ljudEfter); if (p.ljudEfter === 'dorr') { const kort = el.querySelector('.ph-intro-kort'); kort.classList.remove('skak'); void kort.offsetWidth; kort.classList.add('skak'); } await vanta(100, k); }   /* matchklipp: smällen hörs medan nästa bild kommer */
+    if (p.svartEfter) { const sv = document.createElement('div'); sv.className = 'ph-svart'; scenEl.appendChild(sv); await vanta(p.svartEfter / T, k); setTimeout(() => sv.remove(), 600 / T); }   /* rutans tid gäller bara när en rörelse behöver den – annars byts bilden 0,3 s efter rösten */
   };
   const korFran = async (fran) => {
     avbryt(); const k = kor;
@@ -14085,7 +14104,8 @@ function visaIntro3(klar, o = {}) {
     el.onclick = () => { if (i < INTRO3.length - 1) korFran(i + 1); };
     addEventListener('keydown', tangent, true); try { ljudCtx(); } catch {}
     el.innerHTML = `<button class="ph-intro-hoppa">Hoppa över ⏎</button><div class="ph-intro-kort"><div class="ph-ram"><div class="ph-is"></div></div><div class="ph-intro-ord"></div></div>`;   /* inkorg 12: ramen (.ph-ram) står still som en tv – bara bilden (.ph-is) inuti rör sig */
-    scenEl = el.querySelector('.ph-is'); textEl = el.querySelector('.ph-intro-ord'); scenEl.classList.add('kor');   // animationerna (krita, kalenderbladet) får gå
+    scenEl = el.querySelector('.ph-is'); textEl = el.querySelector('.ph-intro-ord'); scenEl.classList.add('kor');
+    { const tempoT = setInterval(() => { if (!el.isConnected) return clearInterval(tempoT); try { el.getAnimations({ subtree: true }).forEach((a) => { if (a.playbackRate !== INTRO_TEMPO) a.playbackRate = INTRO_TEMPO; }); } catch {} }, 60); }   /* inkorg 74: bildernas rörelser, ritningen och övergångarna i samma tempo */   // animationerna (krita, kalenderbladet) får gå
     el.querySelector('.ph-intro-hoppa').onclick = (e) => { e.stopPropagation(); slut(); };
     Promise.race([rostKlar, new Promise((ok) => setTimeout(ok, 2000))]).then(() => korFran(0));
   };
@@ -14128,7 +14148,7 @@ body.dn-forsta .dn-uppg{opacity:0;transform:translateY(-18px)}.dn-uppg{transitio
 // hoppfull musik i introt från "Du packar det viktigaste" – byggs upp lager för lager (Web Audio, inga filer)
 const introMusik = (() => {
   let timer = null, master = null, nasta = 0, steg = 0;
-  const BPM = 84, ST = 60 / BPM / 2;   // åttondelar
+  const BPM = 84 * INTRO_TEMPO, ST = 60 / BPM / 2;   // åttondelar – inkorg 74: musiken följer introts tempo (1,3)
   const hz = (n) => 440 * 2 ** ((n - 69) / 12);
   // D – A – Bm – G (I–V–vi–IV), midi-toner
   const ACK = [[62, 66, 69], [57, 61, 64], [59, 62, 66], [55, 59, 62]];
@@ -15049,6 +15069,7 @@ function iBild(obj) {
 }
 const bubblaNickad = new Set();
 function varldsBubbla(obj, text, sek = 3.5, hojd = 2.3, klass = '') {
+  try { if ((pausad || !ui.igang) && /^TUUT/.test(String(text))) return; } catch {}   /* inkorg 74 p.3: sopbilens tut syns inte när spelet står still (menyn, morgonkortet) */
   text = neutralt(text);   /* inkorg 47 p.1 */
   if (!iKanalVisa && (!ui.igang || scenPagar())) koKoll(String(text), 'värld:', 'bubbla');   /* inkorg 36: bubblor som går förbi kön */
   if (!iKanalVisa && ui.igang && !scenPagar()) { kanalLagg({ vikt: 'REAKTION', vem: 'värld:' + String(text).slice(0, 30), text, rost: false, svar: franKlicket(obj), minMs: Math.min(3000, sek * 1000), gammalMs: 20000, visa: () => varldsBubbla(obj, text, sek, hojd, klass) }); return; }   /* A-065 tillägg: bubblor från världen går också genom kön */
@@ -15382,7 +15403,7 @@ function foreEfterBild() {
 setInterval(() => { try { if (!ui.igang || kameraAk) return;
   if (!S.foreBild && (S.dag || 1) === 1) { S.foreBild = foreEfterBild(); sparaSnart(); }
   if (!S.efterBild && (S.dag || 1) >= 3 && (STEG[S.steg]?.sov || S.utsikt === 'klar')) { S.efterBild = foreEfterBild(); sparaSnart(); }
-  if (S.efterBild && !S.foreEfterVisad && STEG[S.steg]?.sov && S.utsikt !== 'bjuden' && S.utsikt !== 'pagar' && performance.now() > pratarTill + 800 && !kanalAktiv && !pratKo.length && performance.now() - senastSynlig > 4000) visaForeEfter();   /* A-090 p.3: väntar tills sov-uppgiften är uppläst (RÖST AVBRUTEN) */
+  if (S.efterBild && !S.foreEfterVisad && STEG[S.steg]?.sov && S.utsikt !== 'bjuden' && S.utsikt !== 'pagar' && performance.now() > pratarTill + 800 && !kanalAktiv && !pratKo.length && performance.now() - senastSynlig > 4000 && performance.now() > senastLasSlut && !scenPagar() && !sover) visaForeEfter();   /* inkorg 74 p.3: inte mitt i en scen (Rolfs resa) eller innan det förra är läst */   /* A-090 p.3: väntar tills sov-uppgiften är uppläst (RÖST AVBRUTEN) */
 } catch (e) { console.warn(e); } }, 3000);
 function visaForeEfter() {
   if (S.foreEfterVisad || !S.foreBild) return; if (!S.efterBild) S.efterBild = foreEfterBild();

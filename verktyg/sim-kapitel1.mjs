@@ -136,7 +136,7 @@ const arKv = (e) => kvittoText.has(String(e.text).replace(/^💭 /, '').slice(0,
 const morgonNotis = (e) => e.kalla === 'notis' && /paket i natt|st i natt|· \+50 %$/.test(e.text);
 for (let i = 1; i < syn.length; i++) {
   const a = syn[i - 1], c = syn[i];
-  if (c.dag === a.dag && c.tot - a.tot < (arKv(c) ? 2 : 4) && !(morgonNotis(a) && morgonNotis(c) && c.tot - a.tot < 1.5) && a.text !== c.text && !a.text.includes(c.text.slice(0, 30)) && !c.text.includes(a.text.slice(0, 30)) && !['bubbla'].includes(a.kalla + c.kalla) && c.kalla !== 'morgonkort') {   /* morgonkortet kommer efter sömnen – en egen scen */
+  if (c.dag === a.dag && c.tot - a.tot < (arKv(c) ? 2 : 4) && !(morgonNotis(a) && morgonNotis(c) && c.tot - a.tot < 1.5) && a.text !== c.text && !a.text.includes(c.text.slice(0, 30)) && !c.text.includes(a.text.slice(0, 30)) && !['bubbla'].includes(a.kalla + c.kalla) && c.kalla !== 'morgonkort' && !(a.kalla === 'bubbla' && c.kalla === 'bubbla' && a.vem && a.vem === c.vem)) {   /* inkorg 74: repliker i samma samtal (Rolf vid rutan) är ett samtal, ingen krock *//* morgonkortet kommer efter sömnen – en egen scen */
     flaggor.push({ dag: c.dag, t: c.t, typ: 'KROCK', text: `${(c.tot - a.tot).toFixed(1)} s mellan [${a.kalla}] "${a.text.slice(0, 60)}" och [${c.kalla}] "${c.text.slice(0, 60)}"` });
   }
 }
@@ -218,6 +218,7 @@ for (const h of r.logg.filter((e) => e.kalla === 'händelse' && e.vem === 'malKl
   if (fore && r.logg.some((e) => e.kalla === 'händelse' && e.vem === 'malKlart' && e.tot > fore.tot && e.tot < h.tot - 0.05)) continue;
   const mk = r.logg.find((e) => e.kalla === 'händelse' && e.vem === 'morgonkortStangt' && e.tot >= h.tot && e.tot <= m.tot);
   if (r.logg.some((e) => (e.kalla === 'meddelande' || e.kalla === 'morgonkort') && e.tot >= h.tot - 0.05 && e.tot <= m.tot)) continue;   /* EK 25: en pausad dagbokssida räknas inte – inte heller ett helskärmskort (julens slutkort) */
+  if (r.logg.some((e) => e.kalla === 'butiksbubbla' && e.tot >= h.tot - 5 && e.tot <= m.tot)) continue;   /* inkorg 74 p.5: i Alis butik är målrutan dold med flit (HUD ÖVER RUTA) – målet syns när butiken stängs */
   const ov = r.logg.filter((e) => e.kalla === 'orsak-väntan' && e.tot >= h.tot - 0.05 && e.tot <= m.tot + 0.5).reduce((a, e) => a + (+(/([\d.]+) s/.exec(e.varfor)?.[1] || 0)), 0);   /* inkorg 64: målet väntar på sin orsak (Alis sms) – det är rätt ordning, inte en tom ruta */
   const v2 = m.tot - (mk ? mk.tot : h.tot) - ov;
   if (v2 > 4.5) flaggor.push({ dag: h.dag, t: h.t, typ: 'TOM RUTA', text: `${v2.toFixed(1)} s innan "${m.text.slice(0, 60)}" syntes` });

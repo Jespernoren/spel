@@ -85,7 +85,7 @@
   - **ali** (rop, en gång): "Hallå där, nya grannen! Vad är det där du gör?" · *svarar på* tagitUrPrint:nyckelring
 - **Uppläsning:** "Printa en nyckelring till."
 
-### 9. Visa nyckelringarna i affären mitt emot `saljTva`
+### 9. Visa ringarna i affären `saljTva`
 - **Moment:** Gör egen tråd · **sak:** nyckelring · **bild:** nyckelring · **pil:** ali
 - **Handling:** salj → kontrollhjälp *– (hos Ali)*
 - **Kräver:** rullSlut · **ger:** kvarnPengar
@@ -96,7 +96,7 @@
 - **Dialog** (inkorg 61):
   - **ali** (butik, en gång): "Hej. Jag är Ali. Pappas butik – min sedan tjugofem år. Jag köper det du printar." · *svarar på* oppnatButik · *ger* kandAli
   - **ali** (butik, en gång): *(beror på läget)*  · *svarar på* salt:nyckelring · *vet* kandAli · *ger* aliHarKvarn
-- **Uppläsning:** "Visa nyckelringarna i affären mitt emot."
+- **Uppläsning:** "Visa ringarna i affären."
 
 ### 10. Köp kvarnen `aliKvarn`
 - **Moment:** Gör egen tråd · **sak:** byggsats:gammalkvarn · **bild:** byggsats:gammalkvarn · **pil:** ali

@@ -1,6 +1,6 @@
 # Introt v5 (A-096)
 
-101.4 s räknat på rösterna · headless 115.9 s (första gången 124.2 s) · 31 repliker
+89.8 s räknat på rösterna · headless 75.2 s (första gången 82.8 s) · 31 repliker
 
 | Shot | Bild |
 |---|---|

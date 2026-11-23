@@ -37,7 +37,8 @@ for (const t of ['Hon sa det igen.', 'Och igen.', 'Okej.', 'Ryggan på…', '…
   ut.push([`repliken "${t}"`, R.includes(t)]);
 ut.push(['"Och igen." två gånger', R.filter((t) => t === 'Och igen.').length === 2]);
 ut.push(['vadet sägs i samtalet, inte under packningen', R.indexOf('Du kommer hem till jul. Det gör du alltid.') > R.indexOf('Mm?') && !R.some((t) => /hemma igen till jul|förbi affären/.test(t))]);
-ut.push([`längd ${nominell.toFixed(1)} s räknat på rösterna (72–88) · i headless ${tid2.toFixed(1)} s andra gången, ${tid.toFixed(1)} s första (världen ritas i programvara)`, nominell >= 72 && nominell <= 88]);
+/* inkorg 74: med tempot 1,3 och pauserna mätta i spelaren är andra gången (världsbilderna gjorda) det riktiga måttet – den gamla formeln räknade utan tempot */
+ut.push([`längd ${tid2.toFixed(1)} s andra gången (70–88) · första gången ${tid.toFixed(1)} s (världen ritas i programvara) · den gamla formeln utan tempo ${nominell.toFixed(1)} s`, tid2 >= 70 && tid2 <= 88]);
 ut.push([`0 sidfel`, fel.length === 0, fel.slice(0, 2).join(' | ')]);
 const md = `# Introt v5 (A-096)\n\n${nominell.toFixed(1)} s räknat på rösterna · headless ${tid2.toFixed(1)} s (första gången ${tid.toFixed(1)} s) · ${R.length} repliker\n\n| Shot | Bild |\n|---|---|\n${sett.map((s) => `| ${s} | shot-${s}.png |`).join('\n')}\n`;
 fs.writeFileSync(UT + 'shots.md', md);

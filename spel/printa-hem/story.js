@@ -227,7 +227,7 @@ export const STORY = [
 
     { id: 'saljTva', start: 'Affären mitt emot. Han verkar nyfiken. Jag visar honom.', startSvarPa: 'dialog:aliRop', mom: 'Gör egen tråd', forDu: ['men', 'storebrors rulle är slut'], sak: 'nyckelring', handling: 'salj', pil: 'ali', bild: 'nyckelring',
       kraver: ['rullSlut'], ger: ['kvarnPengar'],
-      mal: 'Visa nyckelringarna i affären mitt emot', tal: 'Visa nyckelringarna i affären mitt emot.',
+      mal: 'Visa ringarna i affären', tal: 'Visa ringarna i affären.',   /* inkorg 74 p.6: kortare, ryms i målrutan */
       pamin: 'Han i affären mitt emot ville se ringarna.',
       dialog: [
         { id: 'aliForsta', vem: 'ali', kanal: 'butik', text: 'Hej. Jag är Ali. Pappas butik – min sedan tjugofem år. Jag köper det du printar.', svarPa: 'oppnatButik', fore: ['kandAli'], ger: ['kandAli'], en: true },

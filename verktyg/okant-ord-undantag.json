@@ -857,5 +857,10 @@
   "fil": "spel.js",
   "block": "SERVETT_T",
   "skal": "inkorg 70 (A-125): sägs när Rolfs servett hamnar i handen – efter brevet som är signerat Rolf och mötet vid bilen dag 2"
+ },
+ {
+  "block": "SOPBIL_FORSTA_T",
+  "ord": "sopbil",
+  "skal": "inkorg 74 p.2: samma text som lappen LAPPAR.sopbil (som redan var godkänd). Den sägs som tanke genom Regissören; före presentationen byter okandaOrd/neutralt den till \"En stor bil tippade …\" (eget röstklipp r74)."
  }
 ]

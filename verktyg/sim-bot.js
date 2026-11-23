@@ -137,7 +137,7 @@
   // ---------- rörelse och klick ----------
   const pos = (o) => o.getWorldPosition ? o.getWorldPosition(new H.spelare.pos.constructor()) : o;
   let nyGar = false;
-  async function ga(x, z, namn) {
+  async function ga(x, z, namn, vad = namn) {
     const p = H.spelare.pos, d = Math.hypot(x - p.x, z - p.z);
     if (d < 0.6) return;
     if (NY && !nyGar && nyMalSteg.forstaGa) {   /* A-081: nybörjaren följer pilen (första gången den går efter ett nytt mål) – pekar den någon annanstans går den dit först, tittar sig om och går sedan rätt */
@@ -145,7 +145,7 @@
       try {
         const pp = pilPos();
         if (pp && Math.hypot(pp.x - x, pp.z - z) > 6 && Math.hypot(pp.x - p.x, pp.z - p.z) > 2) {
-          if (!nyMalSteg.avvek) { nyMalSteg.avvek = true; nyFlagga('FÖRVIRRAD', `pilen pekar ${Math.hypot(pp.x - x, pp.z - z).toFixed(0)} m från där målet görs (${namn || 'okänt'})`); }
+          if (!nyMalSteg.avvek) { nyMalSteg.avvek = true; nyFlagga('FÖRVIRRAD', `pilen pekar ${Math.hypot(pp.x - x, pp.z - z).toFixed(0)} m från där målet görs (${vad || 'okänt'})`); }
           await ga(pp.x, pp.z, 'dit pilen pekar'); for (let i = 0; i < 4; i++) { H.spelare.yaw += Math.PI / 2; await vanta(0.6); }
         } else if (slump() < 0.08) { const v = slump() * Math.PI * 2; await ga(p.x + Math.cos(v) * 4, p.z + Math.sin(v) * 4, 'fel håll en bit'); await vanta(1); }
       } finally { nyGar = false; }
@@ -157,7 +157,7 @@
   async function gaTill(o, avst = 1.4, namn) {
     const m = pos(o), p = H.spelare.pos, d = Math.hypot(m.x - p.x, m.z - p.z);
     if (d <= avst) { titta(m); return; }
-    const k = (d - avst) / d; await ga(p.x + (m.x - p.x) * k, p.z + (m.z - p.z) * k, namn); titta(m);
+    const k = (d - avst) / d; await ga(p.x + (m.x - p.x) * k, p.z + (m.z - p.z) * k, namn, namn || o?.userData?.typ || o?.userData?.namn || o?.name || 'objekt utan namn'); titta(m);
   }
   /* inkorg 52: som en spelare – gå runt saken tills siktet står på den (veven syns inte från alla håll) */
   async function siktaPa(o) {
@@ -415,7 +415,7 @@
   async function gorSteg() {
     await stangPopups();
     /* A-061: Rolf tutar – hoppa in och åk upp till bänken (dag 3) eller kör statyn dit */
-    if ((S.utsikt === 'bjuden' || S.statyBank === 'bjuden') && H.bilFas?.() === 'resaVantar') { await klick(H.sopbil, 'sopbilen (Rolfs bänk)', 2.5); let w = 0; while (H.kameraAk?.() && w++ < 200) await vanta(0.5); await stangPopups(); handling('tillbaka från Rolfs bänk'); return; }
+    if ((S.utsikt === 'bjuden' || S.statyBank === 'bjuden') && H.bilFas?.() === 'resaVantar') { nyMalSteg.forstaGa = false; await klick(H.sopbil, 'sopbilen (Rolfs bänk)', 2.5);   /* inkorg 74: Rolfs bänk är ett ärende vid sidan av målet (som posten) – inte att följa pilen */ let w = 0; while (H.kameraAk?.() && w++ < 200) await vanta(0.5); await stangPopups(); handling('tillbaka från Rolfs bänk'); return; }
     /* EA: som en riktig spelare – boten gör nästa mål först när det syns i målrutan (högst 60 s) */
     for (let w = 0; w < 120 && H.malSynligt && !H.malSynligt(); w++) await vanta(0.5);
     await nyLasMal();   /* A-081 */
