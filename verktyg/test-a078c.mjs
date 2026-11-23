@@ -23,7 +23,7 @@ const kor = async (gang) => {
   for (const r of R) { md += `| ${r.ruta} | ${r.vem} | ${r.text} | ${r.kalla}${r.reserv ? ' (reserv)' : ''} | ${((r.start ?? r.t0) - R[0].t0) / 1000} s | ${r.slut && r.start ? ((r.slut - r.start) / 1000).toFixed(1) + ' s' : '–'} | ${((r.t0 - forra) / 1000).toFixed(1)} s |\n`; forra = r.slut || r.t0; }
   md += '\n';
   const pek = await p.evaluate(() => (window.__introLogg || []).some((x) => x.h === 'visa' && x.x === 'pek'));
-  const [min, max] = gang === 1 ? [54, 69] : [54, 63];   /* inkorg 19: lugnt tempo mamma→råtta ger ca +2 s. inkorg 12b: ca 55–60 s; första gången renderar headless 6 världsbilder i programvara (ca 6 s) */
+  const [min, max] = gang === 1 ? [72, 94] : [72, 88];   /* inkorg 37: introt v5, ca 78–82 s → fönstret 72–88 s */   /* inkorg 19: lugnt tempo mamma→råtta ger ca +2 s. inkorg 12b: ca 55–60 s; första gången renderar headless 6 världsbilder i programvara (ca 6 s) */
   ut.push([`${gang}:a gången: ${tid.toFixed(1)} s (${min}–${max}), ${R.length} repliker, ${tysta.length} tysta, ${klippta.length} på reservtimern, "DU:" syntes ${du} gånger, tavlan ritade ${tavla} delar, armen upp på soptipp: ${pek ? 'ja' : 'NEJ'}`, tid >= min && tid <= max && R.length >= 20 && pek && !tysta.length && !klippta.length && !du && tavla <= 9]);
 };
 await kor(1);

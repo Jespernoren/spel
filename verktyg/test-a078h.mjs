@@ -13,10 +13,10 @@ const ut = [];
 await p.waitForFunction(() => /Ryggan på/.test(document.querySelector('.ph-intro-ord')?.textContent || ''), null, { timeout: 300000, polling: 30 });
 await p.waitForTimeout(900); const f1 = await synliga(); await p.screenshot({ path: `${dir}ruta10-klipp1.png` });
 ut.push(['"Ryggan på …" → bara v5pack10g', f1.join(',') === 'v5pack10g', f1.join(',')]);
-await p.waitForFunction(() => /hemma igen till jul/.test(document.querySelector('.ph-intro-ord')?.textContent || ''), null, { timeout: 30000, polling: 30 });
+await p.waitForFunction(() => /storebrors gamla 3D-skrivare/.test(document.querySelector('.ph-intro-ord')?.textContent || ''), null, { timeout: 30000, polling: 30 });
 const t0 = Date.now(), steg = [];
 for (const [ms, n] of [[300, 'a'], [1300, 'b'], [2600, 'c']]) { while (Date.now() - t0 < ms) await p.waitForTimeout(20); const s = await synliga(); steg.push(s.filter((x) => x !== 'v5pack10g').pop() || '-'); await p.screenshot({ path: `${dir}ruta10-klipp2${n}.png` }); }
-ut.push(['"Du är hemma igen till jul …" (inkorg 24) → v5pack10a, b, c i tur och ordning', steg.join(',') === 'v5pack10a,v5pack10b,v5pack10c', steg.join(',')]);
+ut.push(['"…och storebrors gamla 3D-skrivare." (introt v5 shot 8) → v5pack10a, b, c i tur och ordning', steg.join(',') === 'v5pack10a,v5pack10b,v5pack10c', steg.join(',')]);
 ut.push(['0 sidfel', fel.length === 0, fel.slice(0, 2).join(' | ')]);
 for (const [t, ok, x] of ut) console.log(`${ok ? '✓' : '✗'} ${t} ${x || ''}`);
 await b.close();

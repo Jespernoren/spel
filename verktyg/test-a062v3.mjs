@@ -1,7 +1,7 @@
 // A-062 v3: introt enligt storyboard v3 → startmenyn → dagboken sida 1 → spelet. Kör: node verktyg/test-a062v3.mjs [url]
 import { chromium } from '/home/claude/verktyg/node_modules/playwright-core/index.mjs';
 const url = process.argv[2] || 'http://127.0.0.1:8765/printa-hem.html';   /* A-078: introt v4 har 14 rutor; A-076: menyn först, Starta spelar introt */
-const N = 14;
+const N = 20;   /* inkorg 37: introt v5 har 20 shots */
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
 const ctx = await b.newContext({ viewport: { width: 1280, height: 800 } });
 await ctx.addInitScript(() => { if (!sessionStorage.getItem('t')) { sessionStorage.setItem('t', 1); localStorage.clear(); } });
@@ -25,7 +25,7 @@ const diff = await p.evaluate(async () => {
 const L = await p.evaluate(() => window.__introLogg || []);
 const visas = L.filter((x) => x.h === 'visas'), bub = L.filter((x) => x.h === 'bubbla').map((x) => JSON.parse(x.x));
 ut.push([`${N} rutor visades (${visas.length})`, visas.length === N]);
-{ const kal = visas.map((v) => (v.x.match(/kal\|(MÅN|TIS|ONS|TORS|FRE)DAG/) || [])[0]).filter(Boolean).map((x) => x.slice(4)); ut.push([`kalendern ${kal.join(' → ')}`, kal.join() === 'MÅNDAG,TISDAG,ONSDAG,TORSDAG,FREDAG']); }
+{ const kal = visas.map((v) => (v.x.match(/kal\|(MÅN|TIS|ONS|TORS|FRE)DAG/) || [])[0]).filter(Boolean).map((x) => x.slice(4)); ut.push([`kalendern ${kal.join(' → ')}`, kal.join() === 'MÅNDAG,MÅNDAG,TISDAG,ONSDAG,TORSDAG,FREDAG']); }
 { const st = L.filter((x) => x.h === 'röstStart' && /^STÄDA/.test(x.x)).map((x) => x.x); ut.push([`tre hörbara STÄDA: ${st.join(' ')}`, st.length === 3]); }
 { const krock = bub.filter((x) => { const [hx, hy] = x.huvud; const f = [hx - 6, hy - 10, hx + 6, hy + 10]; return !(x.bub[2] < f[0] || x.bub[0] > f[2] || x.bub[3] < f[1] || x.bub[1] > f[3]); }); ut.push([`${bub.length} bubblor (bara korta utrop, A-078 11:45), ingen täcker ett ansikte${krock.length ? ': ' + krock.map((x) => x.text).join(', ') : ''}`, bub.length >= 3 && !krock.length && bub.every((x) => String(x.text).length <= 12)]); }
 { const bryt = []; for (let i = 1; i < visas.length; i++) { const t = visas[i].t, prat = L.filter((x) => x.h === 'röstStart' && x.t < t).pop(), slut = L.filter((x) => x.h === 'röstSlut' && x.t < t).pop(); if (prat && (!slut || slut.t < prat.t)) bryt.push(i + 1); } ut.push([`ingen ruta byts medan någon pratar${bryt.length ? ': ' + bryt.join(',') : ''}`, !bryt.length]); }
