@@ -91,6 +91,25 @@ export const PLATS_FOR = {
   'byggsats:diamantkniv': ['Diamantkniven', 'i diamantkvarnen'],
   dorrskylt: ['Skylten', 'på husets dörr'],
 };
+/* inkorg 69 p.1 (A-124): låsta platser som lockar. Man ser ATT något finns och VAD som behövs – aldrig vad det är (SPOILER).
+   id · var (en punkt i världen, spel.js PLATS_POS) · lasesUppAv (steget som öppnar platsen, story-koll kollar att det finns) · oppen (när platsen är öppen)
+   skylt (lappen vid låset) · las (det du säger första gången du går fram till skylten) · nyfiken (en gång, när du ser platsen på nära håll)
+   ljus eller ljud: ett sken eller ett ljud per plats, som hörs eller syns på håll */
+export const PLATSER = [
+  { id: 'tippen', var: 'tippGrind', lasesUppAv: 'rolf0-ge', oppen: (S) => !!S.tippNyckel,
+    skylt: (S, G) => G.kand('rolf') ? 'LÅST · NYCKELN HAR ROLF' : 'LÅST',
+    las: (S, G) => G.kand('rolf') ? 'Rolf har nyckeln… Jag undrar vad som finns där inne.' : 'Låst. Jag undrar vad som finns där inne.',
+    nyfiken: 'Högar bakom staketet. Där inne ligger mer än på hela gården.', ljud: 'grind' },
+  { id: 'gruvan', var: 'gruvOppning', lasesUppAv: 'm16-ge-rolf-kapskiva', oppen: (S) => !!S.grindKapad,
+    skylt: 'GRUVAN · LIVSFARLIGT · ENDAST MED VAGN', las: 'Endast med vagn. Vilken vagn?',
+    nyfiken: 'Det glittrar där inne. Eller så är det bara mörkt. Jag måste dit.', ljus: 'glitter' },
+  { id: 'floden', var: 'svackGrind', lasesUppAv: 'm16-ge-rolf-kapskiva', oppen: (S) => !!S.grindKapad,
+    skylt: 'IGENSVETSAD', las: 'Igensvetsad. Här behövs en vinkelslip.',
+    fro: 'baeck', ljud: 'vatten' },   /* nyfiken = fröet "En flod. Bakom tomten …" (FRO_T.baeck), så att det inte sägs två gånger */
+  { id: 'angen', var: 'ostStaket', lasesUppAv: 'm17-kop-angen-oster', oppen: (S, G) => G.agerMark('oster'),
+    skylt: 'PRIVAT MARK · SÄLJES EJ', las: 'Säljes ej. Än.',
+    nyfiken: 'En hel äng bakom staketet. Någon vill verkligen inte ha besök.', ljud: 'fagel' },
+];
 
 export const LAGEN = ['butiken', 'handen', 'raden', 'ryggan', 'kistan', 'stalld', 'monterad', 'borta'];
 /* inkorg 72 p.2: ett mål = en handling. TVÅ HANDLINGAR I MÅL: efter "och" eller "–" kommer ett nytt verb (Bygg ryggkorgen – bär 10 skräp). */

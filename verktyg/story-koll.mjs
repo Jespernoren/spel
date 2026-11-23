@@ -1,7 +1,7 @@
 // story-koll (inkorg 58 §4 p.1, A-113): kollar masterfilen spel/printa-hem/story.js utan att spela.
 // Stoppar committen om ordningen inte går ihop. Kör: node verktyg/story-koll.mjs
 import fs from 'node:fs';
-import { STORY, STORY_STEG, FRAN_START, HANDLINGAR, LAGEN, KOP_NAMN, PLATS_FOR, tvaHandlingar } from '../spel/printa-hem/story.js';
+import { STORY, STORY_STEG, FRAN_START, HANDLINGAR, LAGEN, KOP_NAMN, PLATS_FOR, tvaHandlingar, PLATSER } from '../spel/printa-hem/story.js';
 
 const fel = [];
 const PIL_NAMN = ['bengtLada', 'bradhog', 'vagCykel', 'startYta', 'skrivare', 'cykel', 'ali', 'vevYta', 'skjul', 'gard', 'postlada', 'tippen', 'kvarn', 'bord'];   // samma namn som PIL_MAL i spel.js
@@ -87,5 +87,14 @@ for (const p of STORY_STEG) if (p.handling === 'montera' && p.sak && !PLATS_FOR[
   for (let d = 2; d <= 22; d++) { const dg = STORY.find((x) => x.dag === d); if (!dg) continue; if (!dg.rubrik) { fel.push(`dag ${d}: morgonkortet har ingen rubrik (INSATS UTAN MÅL)`); continue; }
     const st = dg.steg[0]; let m = ''; try { m = String(typeof st.mal === 'function' ? st.mal(S2, G2) : st.mal).toLowerCase(); } catch { m = ''; }
     const ord = dg.rubrik.toLowerCase().match(/[a-zåäö-]{4,}/g) || []; if (!ord.some((w) => m.includes(w.slice(0, 5)))) fel.push(`dag ${d}: rubriken "${dg.rubrik}" handlar inte om dagens första mål "${m}" (INSATS UTAN MÅL)`); } }
+/* inkorg 69 p.1: varje låst plats öppnas av ett steg som finns, har en skylt och en replik, och inga ord som avslöjar vad som finns där (SPOILER) */
+{ const ids = new Set(STORY_STEG.map((p) => p.id)), G0 = { kand: () => false, agerMark: () => false }, G1 = { kand: () => true, agerMark: () => false };
+  for (const pl of PLATSER || []) {
+    if (!ids.has(pl.lasesUppAv)) fel.push(`plats ${pl.id}: lasesUppAv "${pl.lasesUppAv}" är inget steg i story.js`);
+    if (!pl.skylt || !pl.las || !(pl.nyfiken || pl.fro)) fel.push(`plats ${pl.id}: saknar skylt, las eller nyfiken`);
+    if (!pl.ljus && !pl.ljud) fel.push(`plats ${pl.id}: saknar ljus eller ljud`);
+    for (const G of [G0, G1]) for (const t of [pl.skylt, pl.las, pl.nyfiken].map((x) => (typeof x === 'function' ? x({}, G) : x) || ''))
+      if (/\bguld|\bmalm|\båder|skatt/i.test(t)) fel.push(`plats ${pl.id}: "${t}" avslöjar vad som finns där (SPOILER)`); } }
+
 if (fel.length) { console.log(`story-koll: ${fel.length} fel`); fel.forEach((f) => console.log('  ✗ ' + f)); process.exit(1); }
 console.log(`story-koll: ${STORY_STEG.length} steg i ordning, kraver/ger går ihop, ${dialogId.size} repliker svarar på något som redan hänt, 0 fel`);

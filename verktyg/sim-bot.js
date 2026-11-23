@@ -517,6 +517,11 @@
     }
     if (/^Ge Göran ett eget ställe/.test(txt)) { if (!H.harRecept('fagelskramma')) await kopRecept('fagelskramma'); if (!H.antalInv('fagelskramma')) await printa({ typ: 'fagelskramma' }); if (H.antalInv('fagelskramma')) await placera('fagelskramma'); return; }   // dag 6
     if (/^Mata in kajaker med bandet|^Vänta på den första svartgrå rullen/.test(txt)) { await tjana(S.mynt + 150, 'bandet hämtar kajaker'); await vanta(2); return; }   // DF
+    { const m = /^Spara till (.+?) · ([\d\s ]+) \/ ([\d\s ]+) kr/.exec(txt); if (m) { await tjana(+m[3].replace(/\D/g, ''), m[1]); return; } }   /* inkorg 67: sparmålet – tjäna till summan */
+    if (/^Printa en (jacuzzi|vedkamin)|^Ställ ut jacuzzin/.test(txt) || /^Printa och ställ ut/.test(txt)) {   // inkorg 72 p.2: målet i två steg – samma kedja: köp receptet (tjäna först), printa, ställ ut
+      const st = H.STEG[S.steg], t = typeof st?.bild === 'function' ? st.bild() : st?.bild;
+      if (t && H.VAROR[t]) { if (H.antalInv(t)) { if (!/^Printa en/.test(txt)) await placera(t); return; } if (!H.harRecept(t)) { if (S.mynt < (H.VAROR[t].recept || 0)) { await tjana(H.VAROR[t].recept, H.VAROR[t].namn.toLowerCase()); return; } await kopRecept(t); return; } await printa({ typ: t }); return; }
+    }
     if (/^Printa och ställ ut/.test(txt)) {   // generiskt: köp receptet (tjäna först), printa, ställ ut
       const st = H.STEG[S.steg], t = typeof st?.bild === 'function' ? st.bild() : st?.bild;
       if (t && H.VAROR[t]) { if (H.antalInv(t)) { await placera(t); return; } if (!H.harRecept(t)) { if (S.mynt < (H.VAROR[t].recept || 0)) { await tjana(H.VAROR[t].recept, H.VAROR[t].namn.toLowerCase()); return; } await kopRecept(t); return; } if (!H.antalInv(t)) { await printa({ typ: t }); return; } await placera(t); return; }
