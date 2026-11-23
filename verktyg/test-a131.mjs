@@ -44,8 +44,17 @@ ok('a) rutan "Börja på …" med alla dagar och kapitlen', rutan.dagar === 22 &
 for (const d of [10, 18]) {
   if (!(await p.$('.ph-utv'))) { await p.keyboard.down('Shift'); await p.keyboard.press('KeyU'); await p.keyboard.up('Shift'); await p.waitForSelector('.ph-utv', { timeout: 5000 }); }
   await p.click(`[data-utvdag="${d}"]`);
-  await p.waitForFunction((d) => window.__printahem?.S?.dag === d && window.__printahem?.ui?.igang, d, { timeout: 60000 }).catch(() => {});
+  /* inkorg 76 rest a: dagen börjar med morgonsidan (eller kapitelkortet), inte mitt på dagen */
+  const morgon = await p.waitForFunction((d) => window.__printahem?.S?.dag === d && [...document.querySelectorAll('button')].some((k) => /FORTSÄTT/i.test(k.innerText) && k.offsetParent), d, { timeout: 60000 }).then(() => true).catch(() => false);
+  const kl = await p.evaluate(() => ({ vaken: window.__printahem.S.vakenTid, kort: document.body.innerText.match(/\d+ dagar? till jul|Julafton/)?.[0] || '' }));
+  ok(`b) dag ${d}: morgonsidan visas först`, morgon && kl.vaken < 5, `${kl.kort} · vaken ${Math.round(kl.vaken)} s`);
+  await p.screenshot({ path: path.join(UT, `dag${d}-morgon.png`) });
+  await p.evaluate(() => [...document.querySelectorAll('button')].find((k) => /FORTSÄTT/i.test(k.innerText) && k.offsetParent)?.click());
+  await p.waitForFunction(() => window.__printahem?.ui?.igang, null, { timeout: 30000 }).catch(() => {});
   await p.waitForTimeout(2500);
+  /* inkorg 76 rest b: datumet står en gång i HUD:en */
+  const datum = await p.evaluate(() => { const t = (document.querySelector('.ui-hud, .fp-hud, #hud')?.innerText || document.body.innerText).toLowerCase(); return (t.match(/\d+ december/g) || []).length; });
+  ok(`b) dag ${d}: datumet en gång i HUD:en`, datum <= 1, `${datum} gånger`);
   const r = await p.evaluate(() => ({ dag: window.__printahem.S.dag, steg: window.__printahem.S.steg, id: window.__printahem.STEG[window.__printahem.S.steg]?.id, igang: window.__printahem.ui.igang }));
   await p.screenshot({ path: path.join(UT, `dag${d}.png`) });
   ok(`b) dag ${d}: spelet startar på rätt morgon`, r.dag === d && r.igang, `dag ${r.dag}, steg ${r.steg} ${r.id}`);
