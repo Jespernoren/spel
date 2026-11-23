@@ -845,5 +845,16 @@
   "fil": "story.js",
   "block": "KOP_NAMN",
   "skal": "inkorg 67 p.1: sparmålen visas bara medan stegen pågår – alla stegen kommer efter att Ali och Rolf har presenterat sig (story-koll kollar ordningen)"
+ },
+ {
+  "fil": "spel.js",
+  "block": "VARN",
+  "text": "Tornet är fullt",
+  "skal": "inkorg 68 p.3: sägs bara när kvarnens torn är fullt – tornet finns och syns då; körningsvakten byter ordet om det ändå är okänt"
+ },
+ {
+  "fil": "story.js",
+  "block": "PLATS_FOR",
+  "skal": "inkorg 68 p.10: platsen sägs bara när saken är i handen – kolfiberbandet finns först i kapitel 3, när tippen är känd"
  }
 ]

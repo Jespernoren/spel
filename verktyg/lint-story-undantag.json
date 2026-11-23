@@ -338,5 +338,15 @@
   "regel": "VISNING UTAN STEG",
   "text": "KONTROLL_HJALP klick",
   "skal": "dag 2–23 – flyttas till story.js i omgång 3"
+ },
+ {
+  "regel": "PLATS UTAN LÄGE",
+  "text": "i ryggsäcken",
+  "skal": "inkorg 68 p.10: PLATS_VAR – namnet på stället där saken INTE får ligga, används bara i nej-repliken när saken försöker läggas just där"
+ },
+ {
+  "regel": "PLATS UTAN LÄGE",
+  "text": "${t} i handen ${Math.round((performance.now() - platsSedan) / 1000)} s utan pil på platsen",
+  "skal": "regelvaktens text (SAK UTAN PLATS), visas aldrig för spelaren"
  }
 ]

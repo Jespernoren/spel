@@ -11,6 +11,7 @@
 - **Start (sägs när steget börjar):** "Först borde jag spika upp en skylt, så att alla ser att jag bor HÄR."
   - i läget **ryggan:** "Hammaren ligger i ryggsäcken. Den ska fram."
   - i läget **borta:** "Jag behöver hammaren."
+  - medan steget pågår (verktygsbyte): "Hammaren ligger i raden. Hjulet eller 2."
 - **Påminnelse:** "Skylten. Hammaren och brädorna vid vägen."
 - **Kvitto:** –
 
@@ -988,11 +989,11 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 2. Lägg flagan i Bengt-Åkes brevlåda `m16-lagg-flagan-bengt`
+### 2. Lägg flagan i Bengt-Åkes postlåda `m16-lagg-flagan-bengt`
 - **Moment:** – · **sak:** guldflaga · **bild:** guldflaga · **pil:** bengtLada
 - **Handling:** lagg → kontrollhjälp *Klick*
 - **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** "Grannen är arg. Flagan lägger jag i Bengt-Åkes brevlåda."
+- **Start (sägs när steget börjar):** "Grannen är arg. Flagan lägger jag i Bengt-Åkes postlåda."
 - **Påminnelse:** –
 - **Kvitto:** –
 

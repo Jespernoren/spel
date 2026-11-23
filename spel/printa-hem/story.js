@@ -57,6 +57,41 @@ export const KOP_NAMN = {
   'byggsats:guldskrivare': ['guldskrivaren', 'Köp guldskrivaren'],
 };
 
+/* inkorg 68 p.10 (A-123): en sak med en bestämd plats visar alltid var den ska. Tabellen läses av pilen, kistan, ryggsäcken, säljlådan och repliken.
+   [namn i bestämd form, var den ska sitta]. story-koll kollar att varje montera-steg har sin sak här. */
+export const PLATS_FOR = {
+  'byggsats:powerbank': ['Powerbanken', 'på cykeln, ovanpå generatorn'],
+  'byggsats:cykelbatteri': ['Batteriet', 'på cykeln, bredvid generatorn'],
+  'byggsats:tippnyckel': ['Nyckeln', 'i låset på grinden'],
+  'byggsats:hylla': ['Hyllan', 'i skjulet'],
+  'byggsats:spis': ['Spisen', 'i skjulet'],
+  'byggsats:gs_tak': ['Taket', 'på husvagnen'],
+  'byggsats:gs_isolering': ['Isoleringen', 'i husvagnens väggar'],
+  'byggsats:gs_dorr': ['Dörren', 'på husvagnen'],
+  'byggsats:kvarnmotor': ['Motorn', 'på kvarnen, där veven sitter'],
+  'byggsats:stortratt': ['Tratten', 'på kvarnen'],
+  'byggsats:vindsnurra': ['Vindsnurran', 'på skjulets tak'],
+  'byggsats:rullstall': ['Rullstället', 'på rulltornet vid kvarnen'],
+  'byggsats:rullband': ['Rullbandet', 'vid kvarnen'],
+  'byggsats:lastarm': ['Lastarmen', 'vid kvarnen'],
+  'byggsats:robotarm': ['Robotarmen', 'vid kvarnen'],
+  'byggsats:utlada': ['Leveranslådan', 'vid kvarnen'],
+  'byggsats:dorr': ['Dörren', 'i skjulets dörrhål'],
+  'byggsats:tak': ['Plåttaket', 'på skjulet'],
+  'byggsats:matarband': ['Sophållaren', 'bakom kvarnen'],
+  'byggsats:vaggar': ['Väggarna', 'i skjulet'],
+  'byggsats:sol': ['Solpanelen', 'på skjulets tak'],
+  'byggsats:petgtorn': ['Rulltornet', 'vid röda kvarnen'],
+  'byggsats:tapeter': ['Tapeterna', 'på skjulets väggar'],
+  varme: ['Kaminen', 'i skjulet'],
+  'byggsats:kolfband': ['Rullbandet', 'mellan tippen och kolfiberkvarnen'],
+  'byggsats:kolfslang': ['Slangfördelaren', 'vid kolfiberkvarnen'],
+  'byggsats:jetmotor': ['Jetmotorn', 'på kolfiberkvarnen'],
+  'byggsats:turbomotor': ['Turbomotorn', 'på röda kvarnen'],
+  'byggsats:diamantkniv': ['Diamantkniven', 'i diamantkvarnen'],
+  dorrskylt: ['Skylten', 'på husets dörr'],
+};
+
 export const LAGEN = ['butiken', 'handen', 'raden', 'ryggan', 'kistan', 'stalld', 'monterad', 'borta'];
 export const HANDLINGAR = ['spika', 'lyfta', 'stallNer', 'montera', 'valj', 'trampa', 'salj', 'kop', 'lagg', 'veva', 'printa', 'ta', 'sov', 'ga'];
 
@@ -95,6 +130,7 @@ export const STORY = [
       mal: 'Spika upp din adresskylt',
       start: 'Först borde jag spika upp en skylt, så att alla ser att jag bor HÄR.',
       lagen: { ryggan: { tanke: 'Hammaren ligger i ryggsäcken. Den ska fram.' }, borta: { tanke: 'Jag behöver hammaren.' } },
+      medan: [{ id: 'verktygsbyte', nar: (S, G) => G.valdTyp() !== 'hammare' && G.lage('hammare') === 'raden', tanke: 'Hammaren ligger i raden. Hjulet eller 2.' }],   /* inkorg 68 p.9: första verktygsbytet sägs högt */
       pamin: 'Skylten. Hammaren och brädorna vid vägen.',
       kvitto: null,   // dagboksnotisen om skylten är kvittot
       klar: (S) => !!S.skyltUppe },
@@ -614,8 +650,8 @@ export const STORY = [
       mal: 'Köp tomten du bor på',
       start: 'Kommunen säljer tomten vid tippen. Ingen annan ville ha den.',
       klar: (S, G) => G.agerMark('egen') },
-    { id: 'm16-lagg-flagan-bengt', start: 'Grannen är arg. Flagan lägger jag i Bengt-Åkes brevlåda.', forDu: ['men', 'grannen är arg'], sak: 'guldflaga', handling: 'lagg', pil: 'bengtLada', bild: 'guldflaga',
-      mal: 'Lägg flagan i Bengt-Åkes brevlåda',
+    { id: 'm16-lagg-flagan-bengt', start: 'Grannen är arg. Flagan lägger jag i Bengt-Åkes postlåda.', forDu: ['men', 'grannen är arg'], sak: 'guldflaga', handling: 'lagg', pil: 'bengtLada', bild: 'guldflaga',
+      mal: 'Lägg flagan i Bengt-Åkes postlåda',
       klar: (S) => !!S.flagaBengt || !!S.grindKapad },
     { id: 'm16-ge-rolf-kapskiva', start: 'Rolf har hjälpt mig. Han ska få en kapskiva i kolfiber.', forDu: ['darfor', 'Rolf har hjälpt mig'], sak: 'kapskiva', handling: 'lagg', pil: 'postlada', bild: 'kapskiva',
       mal: 'Ge Rolf en kapskiva i kolfiber',
