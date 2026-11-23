@@ -850,7 +850,7 @@ AudioNode.prototype.connect = function (dest, ...a) {
 };
 function satEffekter(pa) { S.effekter = pa; for (const b of effektBussar) b.gain.value = pa ? volym('effekt') : 0; sparaSnart(); }
 /* A-052: fyra volymreglage (röster, berättaren, musik, ljudeffekter), sparade i sparfilen. 0–1. */
-function volym(k) { const v = S.vol?.[k]; return v == null ? 1 : Math.max(0, Math.min(1, v)); }
+function volym(k) { const v = S.vol?.[k]; return v == null || v > 0 ? 1 : 0; }   /* inkorg 38 (A-097): ljudet är PÅ (full volym) eller AV – en gammal volym över 0 blir PÅ, 0 blir AV */
 const rostVol = (vem) => volym(vem === 'berattare' ? 'berattare' : 'rost');
 /* A-078 tillägg 15:40: talhastighet för all uppläsning – standard 1,3. ?talfart=1.0 i adressen för att prova. */
 const TAL_FARTER = [['lugn', 'Lugn', 1.0], ['normal', 'Normal', 1.15], ['snabb', 'Snabb', 1.3]], TAL_FART_STANDARD = 1.3, TAL_FART_NYCKEL = 'printa-hem:talfart', TAL_FART_INTRO = 1.15, INTRO_LUFT = 300;
@@ -10249,12 +10249,12 @@ function menyInstallningar(el) {
   menyFlik ||= 'ljud';
   const flikar = `<div class="br3-flikar"><button data-flik="ljud" class="${menyFlik === 'ljud' ? 'pa' : ''}">Ljud och röst</button><button data-flik="kontroller" class="${menyFlik === 'kontroller' ? 'pa' : ''}">Kontroller</button></div>`;
   if (menyFlik === 'ljud') {
-    const reg = (k, n) => `<label class="br3-reg"><span>${n}</span><input type="range" min="0" max="100" value="${Math.round(volym(k) * 100)}" data-vol="${k}"></label>`;
+    const reg = (k, n, sub) => `<button class="br3-bryt ${volym(k) ? 'pa' : ''}" data-volbryt="${k}"><span class="tx"><b>${n}</b><small>${sub}</small></span><em>${volym(k) ? 'PÅ' : 'AV'}</em></button>`;   /* inkorg 38: PÅ/AV i stället för reglage */
     const brytare = (id, n, sub, pa) => `<button class="br3-bryt ${pa ? 'pa' : ''}" data-bryt="${id}"><span class="tx"><b>${n}</b><small>${sub}</small></span><em>${pa ? 'PÅ' : 'AV'}</em></button>`;
-    kropp.innerHTML = flikar + reg('musik', 'Musik') + reg('rost', 'Röster') + reg('berattare', 'Berättaren') + reg('effekt', 'Ljudeffekter')
+    kropp.innerHTML = flikar + `<div class="br3-ljud4">${reg('musik', 'Musik', 'Låten i bakgrunden')}${reg('rost', 'Röster', 'Figurerna pratar')}${reg('berattare', 'Berättaren', 'Berättarens röst')}${reg('effekt', 'Ljudeffekter', 'Kvarn, skrivare, hammare')}</div>`
       + brytare('dagbok', 'Läs upp dagboken', 'Samma som Röst på/av på dagbokskortet', S.rost !== false) + brytare('uppg', 'Läs upp uppgifter och tips', 'Tankarna och uppgifterna sägs högt', S.lasUppg !== false)
       + `<div class="br3-talfart"><b>Talhastighet</b><div>${TAL_FARTER.map(([id, n, v]) => `<button data-talfart="${v}" class="${Math.abs(talFart() - v) < 0.01 ? 'pa' : ''}">${n}<small>${String(v).replace('.', ',')}</small></button>`).join('')}</div></div>`;
-    kropp.querySelectorAll('[data-vol]').forEach((r) => { r.oninput = () => { S.vol = { ...(S.vol || {}), [r.dataset.vol]: r.value / 100 }; satVolymer(); sparaSnart(); }; });
+    kropp.querySelectorAll('[data-volbryt]').forEach((k) => { k.onclick = () => { const id = k.dataset.volbryt; S.vol = { ...(S.vol || {}), [id]: volym(id) ? 0 : 1 }; satVolymer(); if (id === 'rost' || id === 'berattare') tystna(); sparaSnart(); ljud.plock?.(); menyInstallningar(el); }; });
     kropp.querySelectorAll('[data-bryt]').forEach((k) => { k.onclick = () => { if (k.dataset.bryt === 'dagbok') { S.rost = S.rost === false; if (S.rost && (!S.rostLage || S.rostLage === 'av')) S.rostLage = 'rost'; } else S.lasUppg = S.lasUppg === false; sparaSnart(); menyInstallningar(el); }; });
     kropp.querySelectorAll('[data-talfart]').forEach((k) => { k.onclick = () => { satTalFart(+k.dataset.talfart); menyInstallningar(el); }; });
   } else {
@@ -10342,6 +10342,7 @@ body.meny-oppen [class^="hud-"],body.meny-oppen [class*=" hud-"],body.meny-oppen
 .br3-farlig{margin-top:22px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12)}.br3-farlig button{width:100%;display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:12px;border:2px solid #d8392b;background:rgba(216,57,43,.1);color:#ffb3aa;cursor:pointer;text-align:left}.br3-farlig span{display:flex;flex-direction:column}.br3-farlig small{opacity:.75}.br3-farlig svg{width:22px;height:22px}
 .br3-flikar{display:flex;gap:6px;margin-bottom:14px}.br3-flikar button{flex:1;border:0;border-radius:10px;padding:9px;background:rgba(255,255,255,.08);color:#fff;font:700 14px system-ui;cursor:pointer}.br3-flikar button.pa{background:#ffd84a;color:#1a1a1a}
 .br3-reg{display:flex;align-items:center;gap:10px;margin:6px 0}.br3-reg span{width:110px}.br3-reg input{flex:1}
+.br3-ljud4{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}   /* inkorg 38: de fyra ljuden i två kolumner, så att rutan inte växer */
 .br3-bryt{width:100%;display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:12px;border:2px solid rgba(255,255,255,.12);background:none;color:#fff;cursor:pointer;text-align:left}.br3-bryt .tx{flex:1;display:flex;flex-direction:column}.br3-bryt small{opacity:.7}.br3-bryt em{font:900 12px system-ui;font-style:normal;padding:4px 10px;border-radius:999px;background:#3a2025;color:#ff9aa8}.br3-bryt.pa{border-color:#2f8a52}.br3-bryt.pa em{background:#1e4a2f;color:#9ff0b8}
 .br3-talfart{margin-top:14px}.br3-talfart>div{display:flex;gap:6px;margin-top:6px}.br3-talfart button{flex:1;border:2px solid rgba(255,255,255,.12);background:none;color:#fff;border-radius:10px;padding:8px;font:700 14px system-ui;cursor:pointer;display:flex;flex-direction:column;align-items:center}.br3-talfart button.pa{border-color:#2f8a52;background:rgba(47,138,82,.15)}.br3-talfart small{opacity:.7;font-size:11px}
 .br3-tangenter{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center}.br3-tangenter kbd{background:#f2f2f2;color:#111;border-radius:6px;padding:3px 8px;font:800 13px system-ui;text-align:center}
@@ -12246,9 +12247,7 @@ function oppnaLjud(foralder) {
       ${rad('effekter', 'blixt', 'Effektljud', 'Kvarn, skrivare, sopbil, pling', S.effekter !== false)}
       ${rad('roster', 'rost', 'Röster', 'Figurerna pratar och dagboken läses upp', rostLage() !== 'av')}
       <div class="br-talfart" style="margin-top:12px"><b style="display:block;font-size:14px;margin-bottom:6px">Talhastighet</b><div style="display:flex;gap:6px">${TAL_FARTER.map(([id, n, v]) => `<button class="br-ljudrad ${Math.abs(talFart() - v) < 0.01 ? 'pa' : ''}" data-talfart="${v}" style="margin:0;justify-content:center"><span><b>${n}</b><small>${String(v).replace('.', ',')}</small></span></button>`).join('')}</div></div>
-      <div class="br-volymer">${[['rost', 'Röster'], ['berattare', 'Berättaren'], ['musik', 'Musik'], ['effekt', 'Ljudeffekter']].map(([k, n]) => `<label style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="width:96px">${n}</span><input type="range" min="0" max="100" value="${Math.round(volym(k) * 100)}" data-vol="${k}" style="flex:1"></label>`).join('')}</div>
       <div class="br-knappar"><button class="fp-knapp" data-nej>Klar</button></div></div>`;
-    pop.querySelectorAll('[data-vol]').forEach((r) => { r.oninput = () => { S.vol = { ...(S.vol || {}), [r.dataset.vol]: r.value / 100 }; satVolymer(); sparaSnart(); }; });
     pop.querySelectorAll('[data-ljud]').forEach((k) => { k.onclick = () => {
       const id = k.dataset.ljud;
       if (id === 'musik') { S.musik = S.musik === false; if (S.musik === false) bakMusik.stopp(); else bakMusik.start(); }

@@ -19,9 +19,9 @@ ut.push([`Enter hoppar över (pratar ${r1} → ${r2})`, r1 && !r2]);
 const r3 = await p.evaluate(() => { const h = window.__printahem, L = () => h.textLogg().filter((x) => x.kalla === 'röst').length; h.prataNu('mamma', 'Testreplik för A-052, den är ganska lång så att den hinner läsas.', 'REAKTION'); return h.S.hort.length; });
 const r4 = await p.evaluate(() => window.__printahem.S.hort.filter(Boolean).length);
 ut.push([`redan hört sparas en gång (${r3} = ${r4})`, r3 === r4]);
-await p.evaluate(() => { const h = window.__printahem; h.S.vol = { rost: 0.3, berattare: 0.5, musik: 0.2, effekt: 0.7 }; h.spar.spara(true); });
+await p.evaluate(() => { const h = window.__printahem; h.S.vol = { rost: 0, berattare: 1, musik: 0, effekt: 1 }; h.spar.spara(true); });
 await p.reload(); await p.waitForTimeout(8000);
 const v = await p.evaluate(() => { const h = window.__printahem; return ['rost', 'berattare', 'musik', 'effekt'].map((k) => h.volym(k)); });
-ut.push([`fyra reglage sparas (${v})`, JSON.stringify(v) === JSON.stringify([0.3, 0.5, 0.2, 0.7])]);
+ut.push([`fyra PÅ/AV sparas (${v})`, JSON.stringify(v) === JSON.stringify([0, 1, 0, 1])]);   /* inkorg 38: PÅ/AV i stället för reglage */
 for (const [t, ok] of ut) console.log(ok ? '✓' : '✗', t);
 console.log(fel.length ? fel.join('\n') : 'inga sidfel'); await b.close(); process.exit(ut.every((x) => x[1]) && !fel.length ? 0 : 1);
