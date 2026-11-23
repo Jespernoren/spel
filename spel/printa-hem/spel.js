@@ -18,9 +18,14 @@ import { STORY, STORY_STEG, storyStegFor, varde, KOP_NAMN, PLATS_FOR, tvaHandlin
 const { STROM_INGEN, STROM_POWERBANK, FORSTA_PRINT_S, ROST_FART, PRIS_SKALA, MATTNAD, MATTNAD_GOLV, ALI_VILL_BONUS, GROSSIST, SALJ_TILLBAKA, FILAMENT_KOP, SLAPP_PER_DAG, KAP1_BELONING, TRIVSEL_MAL, RESPEKT_NIVAER, JOBB_VARV, JOBB_ANDEL, FYND_ANDEL, SMS_MELLAN, STROM_BAS, BANK_PLUS, TRAMP_PER_S, SOL_PER_S, SOLPARK_PER_S, MOTOR_STROM, BARA_SKRAP, HOTBAR, KISTA_PLATSER, STACK, RYGG_BAS, RYGG_STOR, PLATTA, LASTARM_TID, LASTARM_MAX, BAND_BAS, TRIVSEL_PER_PROCENT, TRIVSEL_MAX_BONUS } = B;
 import { logo, BRAND_CSS, malaSkylt, NAMN, FARG, KOP_SLAG } from './brand.js';
 const MIMIK = ['snall', 'arg1', 'arg2', 'rasande', 'rasande+rok', 'forvanad', 'likgiltig'];   // A-078: mimiken – används av poseFigur, som körs redan när modulen laddas (Helen i en sparfil)
+import { idbHamta, idbSpara, lasJson, giltigSparning, lagringsKoll, sparaFil, valjFil, filDatum, filNamnDel } from './sparlager.js';   /* inkorg 75 (A-130) */
 import { ansikte as hudAnsikte, hjarta as hudHjarta, HUD_CSS, matarFarg } from './hud.js';
 { const st = document.createElement('style'); st.textContent = UI_CSS; document.head.appendChild(st); }
 const SPEL_ID = 'printa-hem';
+/* inkorg 75 p.6: medan modulen laddas får inget som läser senare deklarerade const köras (dialogText/S rad 62, pbMesh 09:00, VARN/pausad).
+   Text, röst och varningar som väcks under laddningen (t.ex. laggTill med full verktygsrad) väntar tills modulen är klar. */
+let modulKlar = false;
+const efterLaddning = (f) => { if (modulKlar) return false; setTimeout(f, 0); return true; };
 // Punkt AO: sparformatet nollställdes 2026-11-15. Allt sparas under SPAR_ID ('spar:printahem2:v1' lokalt, 'printahem2' i molnet).
 // Gamla sparfiler (spar:printa-hem:*, molnets 'printahem') används inte – spelaren får en ruta och börjar om. Rekordet (rekord:printa-hem) är kvar.
 // SPAR_VERSION får ändras igen för det här spelet (regeln om att aldrig ändra den gällde det gamla formatet).
@@ -809,6 +814,42 @@ const stegText = (st) => !st ? '' : typeof st.text === 'function' ? st.text() : 
 const SPAR_VERSION = 1;
 let sparaFlagga = false;
 function sparaSnart() { sparaFlagga = true; }   // sparas i nästa ruta (inte direkt – sparning är dyr)
+/* ---------- inkorg 75 (A-130): sparningen som inte försvinner ----------
+   Före spelet läser sparningen: (1) en trasig sparning läggs undan (IndexedDB + fil på begäran) i stället för att skrivas över,
+   (2) huvudsparningen speglas i IndexedDB – gick localStorage inte att skriva (fullt) tas den nyare kopian därifrån,
+   (3) de tre automatiska sparningarna (morgon och när du somnar) läses in, (4) lagringen kollas: privat fönster ger en varning. */
+const SPAR_HUVUD = `spar:${SPAR_ID}:v1`, SPAR_AUTO = `spar:${SPAR_ID}:auto`, SPAR_NOLL = `spar:${SPAR_ID}:nollstalld`;
+const AUTO_ANTAL = 3;
+const SPARSTART = await (async () => {
+  const ut = { trasig: null, kopia: null, auto: [], lagring: null, aterstalld: null };
+  let raw = null; try { raw = localStorage.getItem(SPAR_HUVUD); } catch {}
+  const lokal = lasJson(raw);
+  if (lokal.finns && !lokal.data) {   /* trasig: läggs undan, aldrig tyst överskriven */
+    ut.trasig = { tid: Date.now(), raw, fel: lokal.fel };
+    try { const l = (await idbHamta('trasiga')) || []; l.push(ut.trasig); await idbSpara('trasiga', l.slice(-5)); } catch {}
+    try { localStorage.setItem(`spar:${SPAR_ID}:trasig`, raw); } catch {}
+    try { localStorage.removeItem(SPAR_HUVUD); } catch {}
+  }
+  const [senaste, autoIdb, lagring] = await Promise.all([idbHamta('senaste'), idbHamta('auto'), lagringsKoll().catch(() => null)]);
+  ut.lagring = lagring;
+  let noll = 0; try { noll = +localStorage.getItem(SPAR_NOLL) || 0; } catch {}
+  const kopia = senaste?.json ? lasJson(senaste.json) : null;
+  if (kopia?.data && (senaste.tid || 0) > noll) {
+    if (ut.trasig) ut.kopia = { tid: senaste.tid, data: kopia.data };   /* erbjuds först i rutan "Sparningen gick inte att läsa" */
+    else if (senaste.lsFel && (!lokal.data || (kopia.data.sparadTid || 0) > (lokal.data.sparadTid || 0))) ut.aterstalld = kopia.data;   /* localStorage var fullt: kopian är nyare */
+  }
+  let autoLs = []; try { autoLs = JSON.parse(localStorage.getItem(SPAR_AUTO) || '[]'); } catch {}
+  const alla = [...(Array.isArray(autoIdb) ? autoIdb : []), ...(Array.isArray(autoLs) ? autoLs : [])].filter((a) => a?.json && lasJson(a.json).data);
+  const perDag = new Map(); for (const a of alla.sort((x, y) => (y.tid || 0) - (x.tid || 0))) if (!perDag.has(a.dag)) perDag.set(a.dag, a);
+  ut.auto = [...perDag.values()].sort((x, y) => (y.tid || 0) - (x.tid || 0)).slice(0, AUTO_ANTAL);
+  /* bokmärkena per dag (Dagar) flyttas till IndexedDB: 22 dagar à 100–150 kB fyllde localStorage, och då gick huvudsparningen inte att skriva */
+  const bkNyckel = `spar:${SPAR_ID}:dagar`; let bkLs = []; try { bkLs = JSON.parse(localStorage.getItem(bkNyckel) || '[]'); } catch {}
+  const bkIdb = await idbHamta('dagar'); const bk = new Map();
+  for (const b of [...(Array.isArray(bkIdb) ? bkIdb : []), ...(Array.isArray(bkLs) ? bkLs : [])]) if (b && b.dag != null && (!bk.has(b.dag) || (b.tid || 0) > (bk.get(b.dag).tid || 0))) bk.set(b.dag, b);
+  ut.dagar = [...bk.values()].sort((x, y) => x.dag - y.dag);
+  if (bkLs.length && await idbSpara('dagar', ut.dagar)) { try { localStorage.removeItem(bkNyckel); } catch {} }
+  return ut;
+})();
 const spar = new Sparning(SPAR_ID, {
   kvarn: { tratt: 0, trattGram: 0, prog: 0, ut: 800, motor: false }, forrad: {},   // punkt AG: nytt spel börjar med kvarnen på 80 %
   mynt: 0, filament: 0, strom: 0, ritningar: [], grip: false, steg: 0,
@@ -819,14 +860,24 @@ if (MOLN?.data && (MOLN.data.sparadTid || 0) > (spar.data.sparadTid || 0)) {
   spar.data = { ...structuredClone(spar.standard), ...MOLN.data };
 }
 /* A-042: en sparfil från före stegnyckeln och kand() (före 2026-11-17) – målnumret pekar in i en äldre mållista */
+if (SPARSTART.aterstalld) spar.data = { ...structuredClone(spar.standard), ...SPARSTART.aterstalld };
 const GAMMAL_STEG = !spar.data.stegNyckel && !spar.data.kand && (spar.data.steg || 0) > 0;
+/* inkorg 75: spegeln i IndexedDB. Den skrivs strax efter localStorage; gick localStorage inte att skriva märks kopian lsFel. */
+let speglaT = null;
+function speglaIdb(direkt) {
+  clearTimeout(speglaT);
+  const gor = () => { let json, lsFel = false; try { json = JSON.stringify(spar.data); } catch { return; } try { localStorage.setItem(SPAR_HUVUD, json); } catch { lsFel = true; } return idbSpara('senaste', { json, tid: Date.now(), lsFel }); };
+  if (direkt) return gor(); speglaT = setTimeout(gor, 1500);
+}
+{ const _n = spar.nollstall.bind(spar); spar.nollstall = () => { _n(); try { localStorage.setItem(SPAR_NOLL, String(Date.now())); } catch {} idbSpara('senaste', null); }; }   /* börja om: kopian får inte komma tillbaka */
+addEventListener('pagehide', () => { try { spar.spara(true); } catch {} });
 // varje sparning: stämpla tiden, spara lokalt och (lite mer sällan) i molnet
 {
   const lokalt = spar.spara.bind(spar);
   let senast = '', skriver = false, nasta = 0;
   spar.spara = (direkt) => {
     spar.data.sparadTid = Date.now(); try { spar.data.stegNyckel = stegNyckel(spar.data.steg); } catch {}   /* A-042: målet sparas med namn, inte bara nummer */
-    lokalt(direkt);
+    lokalt(direkt); speglaIdb(direkt);
     if (!MOLN?.ref) return;
     if (skriver) return direkt ? spar.molnSkrivning?.then(() => spar.spara(true)) : undefined;
     if (!direkt && performance.now() < nasta) return;
@@ -3360,6 +3411,7 @@ function passaIn(m, storlek) {
 }
 let tomhant = false;
 function ritaHand() {
+  if (efterLaddning(ritaHand)) return;   /* inkorg 75 p.6: ritas när modulen är klar – sakernas modeller läser senare const (pbMesh, tapetTex, ROLF_TACK) */
   while (foremal.children.length) foremal.remove(foremal.children[0]);
   const t = tomhant ? null : valdTyp();
   hand.grupp.visible = skrapLage() && !tomhant;
@@ -4762,6 +4814,7 @@ let senastUiT = -1e9; addEventListener('pointerdown', () => { senastUiT = perfor
 const regi = {
   /* toasts och info-rutor: svar på det man just gjorde (fel/bra/guld) är kvittenser, resten är info och slängs om den blivit gammal */
   info(text, typ = '', o = {}) {
+    if (efterLaddning(() => regi.info(text, typ, o))) return;
     const t = String(text ?? ''); if (!t) return;
     if (julTyst() && !o.jul && typ !== 'fel') { textLogg('struken', 'info:' + (typ || 'info'), t, 'inkorg 46 p.8: julafton är tyst'); return; }
     const ms = Math.max(lasTid(t), o.ms || 0), kvitto = typ === 'fel' || typ === 'bra' || typ === 'guld' || !!o.kvitto;
@@ -4862,6 +4915,7 @@ function nyhetAlder(it, nu) {
 const TIDSORD_IGAR = /\b(en natt till|i går|igår|förra natten|som vanligt|förra gången|natten innan)\b/i;
 function tidsKoll(text, vem) { try { if ((S.dag || 1) <= 1 && TIDSORD_IGAR.test(String(text))) regelvakt.brott('TIDSFEL', `dag 1 före första natten: ${vem || ''}: "${String(text).slice(0, 70)}"`); } catch {} }
 function kanalLagg(it) {
+  if (efterLaddning(() => kanalLagg(it))) return;
   if (it.text && !it.tk) { it.tk = 1; tidsKoll(it.text, it.vem); }   /* inkorg 46 p.3 */
   if (it.text && !it.ko) { it.ko = 1; koKoll(it.text, it.vem, it.sms ? 'sms' : it.info ? 'info' : it.arTanke ? 'tanke' : /^värld:/.test(it.vem || '') ? 'bubbla' : 'kön'); }   /* inkorg 36 */
   if (it.sms && performance.now() - dagStartTid < SMS_TIDIGAST) it.tidigast = Math.max(it.tidigast || 0, dagStartTid + SMS_TIDIGAST);   // BV: inget sms de första 30 s
@@ -6391,6 +6445,7 @@ function uppdateraSkymning(dt) {
 }
 function sov() {
   ljudH('sova');
+  autoSpara('natt');   /* inkorg 75 p.2: när du somnar */
   sover = true; morgonVantar = true;
   // B21: småpratet som inte hann fram stryks när dagen tar slut – storyn ligger kvar
   if (S.smsTakt?.length) { for (const x of S.smsTakt.filter((x) => taktVikt(x) !== 'STORY')) textLogg('struken', x[0], x[1], 'småprat, dagen slut'); S.smsTakt = S.smsTakt.filter((x) => taktVikt(x) === 'STORY'); }
@@ -6423,7 +6478,7 @@ function sov() {
     const enStory = () => { for (const f of STORY_MORGON) if (f()) return true; return false; };
     morgonKo = () => { morgonRolf(); enStory(); senareIdag(() => { familjSms(); enStory(); }); };   // B4 L4: Rolfs fynd ligger i lådan med morgonbrevet
     const morgonRolf = () => { if (S.dag >= 6 && S.kapitel >= 2 && S.pappaBesok && !(S.filGava || []).includes(0) && !(S.filGava || []).includes(2)) { S.filGava = [...(S.filGava || []), 0]; S.post.tillMig = [...S.post.tillMig, 'sak:rulle2', 'sak:rulle2', 'sak:rulle2']; visaPostInne(); paket([{ sms: ['rolf', ROLF_RODA] }], { om: 1500 }); } };   // BI: tre rullar röd PETG direkt dag 6
-    setTimeout(sparaDagBokmarke, 1500);
+    setTimeout(() => { sparaDagBokmarke(); autoSpara('morgon'); }, 1500);   /* inkorg 75 */
     skymning = 0; sover = false; sol.position.set(14, 24, 8); if (hemiLjus) hemiLjus.intensity = 1.4; if (skjulLampa) skjulLampa.intensity = skjulLampa.userData.bas || 4;
     setTimeout(() => { if (sl.isConnected) sl.innerHTML = morgonHtml; }, nattExtra);
     satLjus(DAG); const morgonHtml = `<div><svg viewBox="0 0 160 120" style="width:min(340px,70vw);display:block;margin:0 auto 10px">${kalenderSvg(kortDatum(S.dag), 40, 14, kortDatum(natt))}</svg>☀️ ${veckodagDatum(S.dag)}</div>`;   /* inkorg 67 p.4 (A-122): datumet och rätt veckodag – inget dagnummer */   /* morgonen: snarkningen räcker */ if (!nattExtra) sl.innerHTML = morgonHtml;
@@ -8699,6 +8754,7 @@ const VARN = { ryggsack: 'Ryggsäcken. Tryck E så öppnar jag den.', vrid: 'Try
 };
 const varnadTid = {};
 function varna(id) {
+  if (efterLaddning(() => varna(id))) return;
   const t = VARN[id];
   if (id === 'full' && varnadTid.fullSett) { textLogg('toast', 'skak', 'handen skakar: fullt'); ljud.fel(); const h = document.querySelector('.fp-hotbar .vald, .hotbar .vald, .fp-hotbar'); if (h?.animate) h.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }], { duration: 260 }); return; }   /* EG 18: "Fullt i händerna" bara första gången, sedan skakar handen */
   if (id === 'full') varnadTid.fullSett = 1;
@@ -9964,6 +10020,7 @@ function rymsAlla(lista) {
 }
 // första gångerna: visa att E öppnar ryggsäcken (inte mitt i dag 1:s första steg)
 function invIntro(varfor) {
+  if (efterLaddning(() => invIntro(varfor))) return;   /* inkorg 75 p.6: laggTill med full verktygsrad när modulen laddas */
   S.forsta = S.forsta || [];
   if (S.forsta.includes('inv:e') || (S.dag === 1 && S.steg < SI.aliKvarn)) return;
   S.forsta.push('inv:e'); sparaSnart();
@@ -10212,13 +10269,48 @@ function harSparning() { return !!(S.spelarNamn && (S.introSett || S.steg > 0 ||
 function menyRad(attr, ikon, rub, sub, klass = '') { return `<button class="br3-rad ${klass}" ${attr}><span class="ik">${ik(ikon)}</span><span class="tx"><b>${rub}</b><small>${sub}</small></span><span class="pil">›</span></button>`; }
 function menyHem(titel, text) {
   const t = rens(titel), logga = t.includes('<svg') ? t : '', dagTid = `${datumText() || 'Efter jul'} · ${klockText(klockan())}`;
-  const topp = menyPaus ? `<div class="br3-paus"><b>PAUSAD</b><span>${dagTid}</span></div>` : `${logga || `<h1>${t}</h1>`}${harSparning() ? '' : `<div class="br-ingress">${rens(text)}</div>`}`;
+  const topp = menyPaus ? `<div class="br3-paus"><b>PAUSAD</b><span>${dagTid}</span></div>` : `${logga || `<h1>${t}</h1>`}${harSparning() ? '' : `<div class="br-ingress">${rens(text)}</div>`}${trasigRuta()}${privatRad()}`;
   if (menyKort) return `<h1>${t}</h1><div class="br-ingress">${text}</div><div class="br3-par"><button class="fp-knapp br-starta br3-stor">${rens(menyKort.knapp)}</button></div>`;   /* AX dag 5: kapitelkortet visade STARTA (= ny omgång) */
   const stor = !menyPaus
-    ? `<div class="br3-par"><button class="fp-knapp br-starta br3-stor">STARTA</button><button class="br3-sido br3-ladda" data-sida="spara" ${finnsSparning() ? '' : 'disabled'}>${ik('spara')}<span>${finnsSparning() ? 'Ladda' : 'Inga sparningar än'}</span></button></div>`   /* A-076 18:05: STARTA = alltid ny omgång från dag 1, Ladda bredvid */
+    ? `<div class="br3-par"><button class="fp-knapp br-starta br3-stor">STARTA</button><button class="br3-sido br3-ladda" data-sida="spara">${ik('spara')}<span>${finnsSparning() || SPARSTART.auto.length ? 'Ladda' : 'Öppna en sparning'}</span></button></div>`   /* A-076 18:05: STARTA = alltid ny omgång från dag 1, Ladda bredvid */
     : `<div class="br3-par"><button class="fp-knapp br-starta br3-stor"><span>FORTSÄTT</span><small>${menyPaus ? 'eller tryck Esc' : `${dagTid} · ${krT(S.mynt || 0)} kr`}</small></button><button class="br3-sido" data-sida="spara">${ik('spara')}<span>Spara och ladda</span></button></div>`;
   return `${topp}${stor}<div class="br3-rader">${menyRad('data-sida="installningar"', 'hand', 'Inställningar', 'Kontroller, ljud och röst')}${menyRad('data-sida="hjalp"', 'brev', 'Hjälp oss', 'Tyck till, rapportera fel, berätta hur det kändes')}</div><a class="fp-tillbaka" href="../../index.html">← Alla spel</a>`;
 }
+/* ---------- inkorg 75 (A-130): varning i privat fönster, trasig sparning, automatiska sparningar och fil ---------- */
+const PRIVAT_TEXT = 'Du spelar i ett privat fönster. Det du gör sparas inte när fönstret stängs.';
+const arPrivat = () => !!SPARSTART.lagring?.privat && !MOLN?.ref;
+function privatRad() { return arPrivat() && !menyPaus ? `<div class="br3-privat">${ik('varning')}<span>${PRIVAT_TEXT}</span>${lasUppKnapp(PRIVAT_TEXT, 'berattare', { liten: true })}</div>` : ''; }
+let privatLast = false;
+function lasPrivat() { if (privatLast || !arPrivat()) return; privatLast = true; textLogg('varning', 'berattare', PRIVAT_TEXT, 'inkorg 75 p.1'); try { prata('berattare', PRIVAT_TEXT, 'STORY', { direkt: true }); } catch {} }
+const AUTO_ETIKETT = ['Senaste', 'Gårdagens', 'Förrgårdens'];
+const autoBesk = (a) => `${datumText(a.dag) || 'Efter jul'} · ${a.nar === 'natt' ? 'när du somnade' : 'på morgonen'} · ${krT(a.mynt || 0)} kr`;
+let trasigVald = false, trasigNedladdad = false;
+function trasigFil() { if (trasigNedladdad || !SPARSTART.trasig) return false; trasigNedladdad = true; return sparaFil(`soptippsvagen-trasig-sparning-${filDatum()}.json`, SPARSTART.trasig.raw || '', 'application/octet-stream'); }
+function trasigRuta() {
+  if (!SPARSTART.trasig || trasigVald || menyPaus) return '';
+  const val = [SPARSTART.kopia ? `<button class="br3-mini" data-trasigval="kopia">Ladda kopian · ${new Date(SPARSTART.kopia.tid).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</button>` : '',
+    ...SPARSTART.auto.map((a, i) => `<button class="br3-mini" data-trasigval="${i}">${AUTO_ETIKETT[i]} · ${rens(autoBesk(a))}</button>`),
+    `<button class="br3-mini gra" data-trasigval="ny">Börja om</button>`].join('');
+  return `<div class="br3-trasig"><b>${ik('varning')} Sparningen gick inte att läsa</b><small>Den är sparad undan (${rens(String(SPARSTART.trasig.fel || ''))}). Välj en äldre sparning eller börja om.</small><div class="val">${val}</div><button class="br3-lank" data-trasigfil>Spara den trasiga som fil</button></div>`;
+}
+function sparFilNamn() { return `soptippsvagen-${filNamnDel(S.spelarNamn)}-${filDatum()}.json`; }
+function sparaKopiaFil() { try { samlaOchSpara(false); } catch {} spar.spara(true); textLogg('sparfil', 'du', sparFilNamn(), 'inkorg 75 p.3'); return sparaFil(sparFilNamn(), JSON.stringify(S)); }
+/* laddar en sparning (fil, automatisk, kopia) – samma väg som sparplatserna: skrivs som huvudsparning och spelet startas om */
+async function laddaSparData(d) {
+  if (!giltigSparning(d)) return false;
+  d = { ...d }; spar.data = d; spar.spara(true);
+  try { localStorage.removeItem(SPAR_NOLL); } catch {}
+  try { await speglaIdb(true); } catch {}
+  try { await MOLN?.ref?.set({ spar: JSON.stringify(spar.data), tid: Date.now() }); } catch {}
+  location.reload(); return true;
+}
+async function oppnaSparFil() {
+  const f = await valjFil(); if (!f) return null;
+  const r = lasJson(f.text); if (!r.data) { textLogg('sparfil', 'du', `${f.namn}: ${r.fel}`, 'inkorg 75 p.3'); return `Filen ${f.namn} gick inte att läsa.`; }
+  if (harSparning() && !confirm(`Öppna ${f.namn}? Det du har nu ersätts (spara en kopia först om du vill ha kvar det).`)) return null;
+  await laddaSparData(r.data); return null;
+}
+window.__sparning = { SPARSTART, autoSpara: (n) => autoSpara(n || 'morgon'), sparaKopiaFil, laddaSparData, sparFilNamn, lasPrivat: () => privatLast };   /* testkrok (inkorg 75) */
 async function nyOmgang(titel, text) {
   const info = []; for (let n = 1; n <= PLATSER; n++) info.push(await lasPlats(n));
   const ledig = info.findIndex((d) => !d) + 1;
@@ -10235,9 +10327,14 @@ async function menySpara(el) {
   const fullt = menyFullt ? `<p class="br3-fullt">Alla ${PLATSER} platser är fulla. Spara det du har på en plats du inte behöver, så startar en ny omgång.</p>` : '';
   const besk = (d) => d ? `${datumText(d.dag || 1) || 'Efter jul'} · ${krT(d.mynt || 0)} kr · ${new Date(d.sparadTid || 0).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : 'Tom plats';
   el.querySelector('.br3-kropp').innerHTML = `${fullt}<div class="br3-platser">${senast}${info.map((d, i) => `<div class="br3-plats ${platsVald === i + 1 ? 'nu' : ''}"><span class="ik">${ik(d ? 'spara' : 'ny')}</span><span class="tx"><b>${d ? rens(platsTitel(d, i + 1)) : `Plats ${i + 1}`}${platsVald === i + 1 ? ' · <em>du spelar nu</em>' : ''}</b><small>${besk(d)}</small></span><button class="br3-mini" data-spara="${i + 1}">Spara</button>${d ? `<button class="br3-mini" data-ladda="${i + 1}">Ladda</button>` : ''}</div>`).join('')}</div>
+${SPARSTART.auto.length ? `<div class="br3-auto"><b>Automatiska sparningar</b><small>Varje morgon och när du somnar</small>${SPARSTART.auto.map((a, i) => `<div class="br3-plats"><span class="ik">${ik('spara')}</span><span class="tx"><b>${AUTO_ETIKETT[i]}</b><small>${rens(autoBesk(a))}</small></span><button class="br3-mini" data-autoladda="${i}">Ladda</button></div>`).join('')}</div>` : ''}
+    <div class="br3-rader br3-fil">${menyRad('data-sparafil', 'spara', 'Spara en kopia', 'En fil med ditt spel, att ha på datorn')}${menyRad('data-oppnafil', 'pil', 'Öppna en sparning', 'Läs in en fil du har sparat')}<p class="br3-filfel" hidden></p></div>
     <div class="br3-farlig"><button data-borjaom>${ik('omstart')}<span><b>Börja om från början</b><small>Allt du har byggt försvinner</small></span></button></div>`;
   el.querySelectorAll('[data-spara]').forEach((k) => { k.onclick = async () => { const n = +k.dataset.spara; if (info[n - 1] && !confirm(`Skriva över plats ${n}?`)) return; k.disabled = true; await sparaPlats(n); platsVald = n; regi.info(`Sparat på plats ${n}`, 'bra'); if (menyFullt) { menyFullt = false; try { sessionStorage.setItem('printa-hem:nyOmgang', '1'); } catch {} spar.nollstall(); try { await MOLN?.ref?.delete(); } catch {} location.reload(); return; } menySpara(el); }; });
   el.querySelector('[data-fortsatt]')?.addEventListener('click', () => { ui.starta(false); visaDagNotis(); });
+  el.querySelectorAll('[data-autoladda]').forEach((k) => { k.onclick = async () => { const a = SPARSTART.auto[+k.dataset.autoladda]; if (!a) return; if (harSparning() && !confirm(`Ladda sparningen från ${autoBesk(a)}? Det du har nu ersätts.`)) return; k.disabled = true; await laddaSparData(lasJson(a.json).data); }; });
+  el.querySelector('[data-sparafil]').onclick = () => { sparaKopiaFil(); ljud.plock?.(); regi.info?.('Kopian sparades som fil', 'bra'); };
+  el.querySelector('[data-oppnafil]').onclick = async () => { const fel = await oppnaSparFil(); const p = el.querySelector('.br3-filfel'); if (p) { p.hidden = !fel; p.textContent = fel || ''; } };
   el.querySelectorAll('[data-ladda]').forEach((k) => { k.onclick = async () => { if (!confirm('Ladda den sparningen? Det du har nu ersätts (spara det först om du vill ha kvar det).')) return; k.disabled = true; await laddaPlats(+k.dataset.ladda); }; });
   el.querySelector('[data-borjaom]').onclick = () => {
     const pop = document.createElement('div'); pop.className = 'br-bekrafta';
@@ -10296,6 +10393,12 @@ function menyRita(titel, text) {
     };
     try { if (sessionStorage.getItem('printa-hem:nyOmgang')) { sessionStorage.removeItem('printa-hem:nyOmgang'); setTimeout(() => ruta.querySelector('.br-starta')?.click(), 300); } } catch {}   /* efter omladdningen: rakt in i introt */
     ruta.querySelectorAll('[data-sida]').forEach((k) => { k.onclick = () => { menySida = k.dataset.sida; ljud.plock?.(); menyRita(titel, text); }; });
+    /* inkorg 75 */
+    ruta.querySelector('[data-trasigfil]')?.addEventListener('click', () => { trasigNedladdad = false; trasigFil(); });
+    ruta.querySelectorAll('[data-trasigval]').forEach((k) => { k.onclick = async () => { if (trasigFil()) await new Promise((r) => setTimeout(r, 800)); const v = k.dataset.trasigval; trasigVald = true;
+      if (v === 'ny') { menyRita(titel, text); return; }
+      const d = v === 'kopia' ? SPARSTART.kopia?.data : lasJson(SPARSTART.auto[+v]?.json).data; k.disabled = true; if (!(await laddaSparData(d))) { trasigVald = false; menyRita(titel, text); } }; });
+    if (arPrivat() && !menyPaus) { if (navigator.userActivation?.hasBeenActive) lasPrivat(); else ruta.addEventListener('pointerdown', (e) => { if (!e.target.closest('.br-starta')) lasPrivat(); }); }
   } else {
     const rub = { spara: 'Spara och ladda', installningar: 'Inställningar', hjalp: 'Hjälp oss' }[menySida];
     ruta.innerHTML = `<div class="br3-sidtopp"><button class="br3-tillbaka" data-tillbaka>← Tillbaka</button><b>${rub}</b></div><div class="br3-kropp"></div>`;
@@ -10344,6 +10447,9 @@ body.meny-oppen [class^="hud-"],body.meny-oppen [class*=" hud-"],body.meny-oppen
 .br3-mini{border:0;border-radius:8px;padding:7px 12px;background:#2f6fdc;color:#fff;font:700 13px system-ui;cursor:pointer}.br3-mini[data-ladda]{background:rgba(255,255,255,.14)}
 .br3-farlig{margin-top:22px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12)}.br3-farlig button{width:100%;display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:12px;border:2px solid #d8392b;background:rgba(216,57,43,.1);color:#ffb3aa;cursor:pointer;text-align:left}.br3-farlig span{display:flex;flex-direction:column}.br3-farlig small{opacity:.75}.br3-farlig svg{width:22px;height:22px}
 .br3-flikar{display:flex;gap:6px;margin-bottom:14px}.br3-flikar button{flex:1;border:0;border-radius:10px;padding:9px;background:rgba(255,255,255,.08);color:#fff;font:700 14px system-ui;cursor:pointer}.br3-flikar button.pa{background:#ffd84a;color:#1a1a1a}
+.br3-privat{display:flex;gap:10px;align-items:center;margin:0 0 16px;padding:10px 12px;border-radius:12px;background:rgba(255,216,74,.13);border:2px solid rgba(255,216,74,.5);font:600 14px/1.4 system-ui}.br3-privat svg{width:22px;height:22px;flex:none;color:#ffd84a}.br3-privat span{flex:1}
+.br3-trasig{margin:0 0 16px;padding:12px 14px;border-radius:12px;background:rgba(216,57,43,.14);border:2px solid #d8392b}.br3-trasig b{display:flex;gap:8px;align-items:center;font:800 16px system-ui}.br3-trasig b svg{width:20px;height:20px;color:#ff8a7a}.br3-trasig small{display:block;opacity:.8;margin:4px 0 10px}.br3-trasig .val{display:flex;flex-direction:column;gap:6px}.br3-trasig .br3-mini{text-align:left}.br3-mini.gra{background:rgba(255,255,255,.14)}.br3-lank{margin-top:8px;border:0;background:none;color:#9fc3ff;text-decoration:underline;cursor:pointer;font:600 13px system-ui;padding:0}
+.br3-auto{margin-top:16px;display:flex;flex-direction:column;gap:8px}.br3-auto>b{font:800 15px system-ui}.br3-auto>small{opacity:.65;margin-top:-6px}.br3-fil{margin:16px 0 0}.br3-filfel{color:#ffb3aa;margin:0}
 .br3-reg{display:flex;align-items:center;gap:10px;margin:6px 0}.br3-reg span{width:110px}.br3-reg input{flex:1}
 .br3-ljud4{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}   /* inkorg 38: de fyra ljuden i två kolumner, så att rutan inte växer */
 .br3-bryt{width:100%;display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:12px;border:2px solid rgba(255,255,255,.12);background:none;color:#fff;cursor:pointer;text-align:left}.br3-bryt .tx{flex:1;display:flex;flex-direction:column}.br3-bryt small{opacity:.7}.br3-bryt em{font:900 12px system-ui;font-style:normal;padding:4px 10px;border-radius:999px;background:#3a2025;color:#ff9aa8}.br3-bryt.pa{border-color:#2f8a52}.br3-bryt.pa em{background:#1e4a2f;color:#9ff0b8}
@@ -10542,6 +10648,7 @@ document.head.appendChild(css);
 const topp = document.querySelector('.fp-topp');
 const verktygIkon = (st) => !S.grip ? ik('hand') : ikonHtml(niva() === MAGNET_NIVA ? 'byggsats:magnet' : 'byggsats:grip', st);
 function ritaHotbar() {
+  if (efterLaddning(ritaHotbar)) return;   /* inkorg 75 p.6: ritas när modulen är klar – sakernas modeller läser senare const (pbMesh, tapetTex, ROLF_TACK) */
   // första gången du har två saker: visa att hjulet byter sak (försvinner när du har rullat)
   if (!S.tipsHjul && S.hotbar.filter(Boolean).length >= 2 && !document.querySelector('.hud-hjultips')) {
     setTimeout(() => { S.tipsHjul = true; document.querySelector('.hud-hjultips')?.remove(); }, 9000);   // AA: bara en stund
@@ -13080,7 +13187,7 @@ uppdateraMark(); kollaMarkTips(); kollaPolett(); uppdateraArstid();
 // ---------- Bokmärken: varje dag sparas så att man kan hoppa tillbaka i storyn ----------
 const BOKMARKE_NYCKEL = `spar:${SPAR_ID}:dagar`;
 const BOKMARKE_MAX = 40;
-function lasBokmarken() { try { return JSON.parse(localStorage.getItem(BOKMARKE_NYCKEL) || '[]'); } catch { return []; } }
+function lasBokmarken() { return SPARSTART.dagar || []; }   /* inkorg 75: bokmärkena ligger i IndexedDB (lästa vid start) */
 function sparaDagBokmarke() {
   try {
     samlaOchSpara(false);
@@ -13089,7 +13196,7 @@ function sparaDagBokmarke() {
     lista.push({ dag: S.dag, tid: Date.now(), mal, trivsel: trivsel(), respekt: S.respekt, mynt: S.mynt, data: JSON.stringify(S) });
     lista.sort((a, b) => a.dag - b.dag);
     while (lista.length > BOKMARKE_MAX) lista.shift();
-    localStorage.setItem(BOKMARKE_NYCKEL, JSON.stringify(lista));
+    SPARSTART.dagar = lista; idbSpara('dagar', lista);
   } catch (e) { console.warn('bokmärke', e); }
 }
 function oppnaBokmarken() {
@@ -13109,7 +13216,19 @@ function oppnaBokmarken() {
   });
 }
 
-if (!lasBokmarken().some((b) => b.dag === S.dag)) setTimeout(sparaDagBokmarke, 5000);   // dagens bokmärke finns alltid
+/* inkorg 75 p.2: tre automatiska sparningar – varje morgon och när du somnar – i både localStorage och IndexedDB.
+   En per dag: senaste, gårdagens och förrgårdens. Startsidans sparruta visar dem, och rutan vid en trasig sparning erbjuder dem. */
+function autoSpara(nar) {
+  if (!harSparning()) return;
+  try { samlaOchSpara(false); } catch {}
+  let json; try { json = JSON.stringify(S); } catch { return; }
+  const lista = [{ dag: S.dag, nar, tid: Date.now(), mynt: S.mynt || 0, json }, ...SPARSTART.auto.filter((a) => a.dag !== S.dag)].slice(0, AUTO_ANTAL);
+  SPARSTART.auto = lista; idbSpara('auto', lista);
+  for (let n = lista.length; n > 0; n--) { try { localStorage.setItem(SPAR_AUTO, JSON.stringify(lista.slice(0, n))); break; } catch {} }   /* fullt: färre i localStorage – alla tre finns i IndexedDB */
+  textLogg('autosparning', 'du', `${nar} ${datumText(S.dag)}`, 'inkorg 75');
+}
+if (!lasBokmarken().some((b) => b.dag === S.dag)) setTimeout(sparaDagBokmarke, 5000);
+if (!SPARSTART.auto.some((a) => a.dag === S.dag)) setTimeout(() => autoSpara('morgon'), 6000);   // dagens bokmärke finns alltid
 try { ROLF.forEach((o, i) => { if (!S.lappar.includes('rolf:' + i) || S.rolf.i < i) return; for (const f of o.forskott || []) { if (f === 'nyckel' && !S.tippNyckel) { S.tippNyckel = true; oppnaGrind(true); } if (f === 'karra' && !S.karra) { S.karra = true; laggTill('karra'); } } }); if (S.valkomst && !S.powerbank) S.powerbank = true; } catch (e) { console.warn(e); }   // EA: paketets läge om spelet laddades om innan paketet visades
 raknaOmSteg(); visaPostInne(); uppdateraSkjul(); visaAdressSkylt(); ritaRullstall();
 S.kapitel = Math.max(S.kapitel || 1, kapitelNu(), S.kapitelKlart ? 2 : 1);
@@ -13205,6 +13324,7 @@ function rostManus() {
       add('du', `Skräpgripen sitter! Jag bär ${BARA_SKRAP[1]}, siktar lättare och plockar när jag går nära.`); add('du', `Ryggkorgen sitter på! Nu bär jag ${BARA_SKRAP[3]} skräp.`); } catch {} } add('ali', KVARN_ALI_T());
   [STROM_HJALP_T, TRAD_T, TIPP_SVEP_T, ...Object.values(FRO_T)].forEach((t) => typeof t === 'string' && add('du', t));
   rostManus.detalj = D;
+  vid('Startsidan: privat fönster (inkorg 75)'); add('berattare', PRIVAT_TEXT);
   return L;
 }
 // ---------- Punkt AI3/AI4: introt – 14 kort i tre delar, med lager som tonas och rör sig (CSS) ----------
@@ -18697,3 +18817,4 @@ function ritaDN() {
   { const hb = Math.max(dnTopp.getBoundingClientRect().bottom, smsFack.getBoundingClientRect().bottom); document.documentElement.style.setProperty('--bar-h', Math.round(hb) + 'px'); }
 }
 setInterval(() => { try { ritaDN(); } catch (e) { if (!dnC.fel) { dnC.fel = 1; console.warn('DN', e); } } }, 250);
+modulKlar = true; window.__spelKlar = true;   /* inkorg 75 p.5: modulen har kört klart – felrutan i index.html behövs inte */

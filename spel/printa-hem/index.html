@@ -2,6 +2,48 @@
 <html lang="sv">
 <head>
 <script>window.__sidfel = []; addEventListener('error', (e) => window.__sidfel.push(String(e.message || e.error || e))); addEventListener('unhandledrejection', (e) => window.__sidfel.push('löfte: ' + String(e.reason?.message || e.reason)));</script>
+<script>
+/* inkorg 75 p.5 (A-130): aldrig en tom blå skärm. Startar inte spelet (modulen kraschar, three.js blockeras, en sparning går
+   inte att läsa) visas en ruta med felet och tre val. Ligger före modulen, så att den fångar också importfel. */
+(function () {
+  var SPAR = 'spar:printahem2:v1', AUTO = 'spar:printahem2:auto', NOLL = 'spar:printahem2:nollstalld', fel = [], visad = false;
+  function klar() { return !!window.__spelKlar; }
+  function rad(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function fil(namn, text) { try { var u = URL.createObjectURL(new Blob([text], { type: 'application/octet-stream' })), a = document.createElement('a'); a.href = u; a.download = namn; a.click(); } catch (e) {} }
+  function datum() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function visa() {
+    if (visad || klar()) return; visad = true;
+    var auto = []; try { auto = JSON.parse(localStorage.getItem(AUTO) || '[]') || []; } catch (e) {}
+    var cdn = fel.join(' ').indexOf('jsdelivr') >= 0 || fel.join(' ').indexOf('three') >= 0;
+    var d = document.createElement('div'); d.className = 'ph-startfel';
+    d.innerHTML = '<div class="ruta"><b>Spelet kunde inte starta.</b><code>' + rad(fel[0] || 'Inget svar från spelet') + '</code>'
+      + (cdn ? '<p>3D-motorn (three.js från cdn.jsdelivr.net) gick inte att hämta. En reklamspärr kan stoppa den – tillåt sidan och försök igen.</p>' : '')
+      + '<div class="kn"><button data-igen>Försök igen</button>' + (auto.length ? '<button data-auto>Ladda en äldre sparning</button>' : '') + '<button data-utan>Börja om utan sparning</button><button data-fil>Spara felet till fil</button></div>'
+      + '<p class="sm">Börja om utan sparning raderar ingenting: sparningen läggs undan och kan öppnas igen när felet är rättat.</p></div>';
+    var st = document.createElement('style');
+    st.textContent = '.ph-startfel{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;background:#0d1328;font:15px/1.45 system-ui,sans-serif;color:#fff}.ph-startfel .ruta{width:min(560px,92vw);background:#141b33;border-radius:18px;padding:24px 26px;box-shadow:0 20px 60px rgba(0,0,0,.5)}.ph-startfel b{display:block;font:900 22px system-ui;margin-bottom:10px}.ph-startfel code{display:block;background:rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;font:13px ui-monospace,monospace;white-space:pre-wrap;word-break:break-word;max-height:120px;overflow:auto}.ph-startfel .kn{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.ph-startfel button{border:0;border-radius:10px;padding:10px 14px;font:700 14px system-ui;cursor:pointer;background:rgba(255,255,255,.12);color:#fff}.ph-startfel [data-igen]{background:#d8392b}.ph-startfel .sm{opacity:.65;font-size:13px;margin:12px 0 0}';
+    document.head.appendChild(st); document.body.appendChild(d);
+    function lagUndan() { try { var r = localStorage.getItem(SPAR); if (r) localStorage.setItem('spar:printahem2:trasig', r); localStorage.removeItem(SPAR); localStorage.setItem(NOLL, String(Date.now())); } catch (e) {} }
+    d.querySelector('[data-igen]').onclick = function () { location.reload(); };
+    d.querySelector('[data-utan]').onclick = function () { lagUndan(); location.reload(); };
+    if (d.querySelector('[data-auto]')) d.querySelector('[data-auto]').onclick = function () {
+      var a = auto[1] || auto[0]; lagUndan(); try { localStorage.setItem(SPAR, a.json); localStorage.removeItem(NOLL); } catch (e) {} location.reload(); };   /* den näst senaste: den senaste kan vara den som inte startar */
+    d.querySelector('[data-fil]').onclick = function () { var s = ''; try { s = localStorage.getItem(SPAR) || ''; } catch (e) {} fil('soptippsvagen-fel-' + datum() + '.txt', 'Spelet kunde inte starta\n' + new Date().toISOString() + '\n' + location.href + '\n' + navigator.userAgent + '\n\n' + fel.join('\n\n') + '\n\n--- sparningen ---\n' + s); };
+    window.__startfel = fel.slice();
+  }
+  addEventListener('error', function (e) {
+    if (klar()) return;
+    var t = e.target;
+    if (t && t.tagName === 'SCRIPT') { fel.push('Kunde inte ladda ' + (t.src || 'skriptet') + ' (eller något det hämtar, t.ex. three.js)'); setTimeout(visa, 300); return; }
+    fel.push((e.message || 'Fel') + (e.filename ? '\n' + e.filename.replace(location.origin, '') + ':' + e.lineno : '') + (e.error && e.error.stack ? '\n' + String(e.error.stack).split('\n').slice(0, 4).join('\n') : ''));
+    vanta();
+  }, true);
+  /* ett fel medan modulen laddar: väntar tills den antingen blir klar (felet var ofarligt) eller har stått still i 10 s */
+  var vantar = false; function vanta() { if (vantar) return; vantar = true; var t0 = Date.now(); (function k() { if (klar()) return; if (Date.now() - t0 > 10000) return visa(); setTimeout(k, 250); })(); }
+  addEventListener('unhandledrejection', function (e) { if (!klar()) { fel.push('löfte: ' + String(e.reason && e.reason.message || e.reason)); vanta(); } });
+  setTimeout(function () { if (!klar()) { fel.push('Spelet svarade inte på 45 sekunder.'); visa(); } }, 45000);
+})();
+</script>
 <script src="../../delat/rost.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,30 +54,31 @@
 {
  "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-  "./balans.js": "./balans.js?v=hand0905",
-  "./brand.js": "./brand.js?v=hand0905",
-  "./gardplan.js": "./gardplan.js?v=hand0905",
-  "./hud.js": "./hud.js?v=hand0905",
-  "./intro-bilder.js": "./intro-bilder.js?v=hand0905",
-  "./miljo.js": "./miljo.js?v=hand0905",
-  "./regelvakt.js": "./regelvakt.js?v=hand0905",
-  "./rost.js": "./rost.js?v=hand0905",
-  "./spel.js": "./spel.js?v=hand0905",
-  "./story.js": "./story.js?v=hand0905",
-  "./ui-kit.js": "./ui-kit.js?v=hand0905",
-  "../../delat/fp/index.js": "../../delat/fp/index.js?v=hand0905",
-  "../../delat/fp/interaktion.js": "../../delat/fp/interaktion.js?v=hand0905",
-  "../../delat/fp/magi.js": "../../delat/fp/magi.js?v=hand0905",
-  "../../delat/fp/smuts.js": "../../delat/fp/smuts.js?v=hand0905",
-  "../../delat/fp/spelare.js": "../../delat/fp/spelare.js?v=hand0905",
-  "../../delat/fp/system.js": "../../delat/fp/system.js?v=hand0905",
-  "../../delat/fp/ui.js": "../../delat/fp/ui.js?v=hand0905",
-  "../../delat/motor.js": "../../delat/motor.js?v=hand0905"
+  "./balans.js": "./balans.js?v=0a11a8abbe",
+  "./brand.js": "./brand.js?v=0a11a8abbe",
+  "./gardplan.js": "./gardplan.js?v=0a11a8abbe",
+  "./hud.js": "./hud.js?v=0a11a8abbe",
+  "./intro-bilder.js": "./intro-bilder.js?v=0a11a8abbe",
+  "./miljo.js": "./miljo.js?v=0a11a8abbe",
+  "./regelvakt.js": "./regelvakt.js?v=0a11a8abbe",
+  "./rost.js": "./rost.js?v=0a11a8abbe",
+  "./sparlager.js": "./sparlager.js?v=0a11a8abbe",
+  "./spel.js": "./spel.js?v=0a11a8abbe",
+  "./story.js": "./story.js?v=0a11a8abbe",
+  "./ui-kit.js": "./ui-kit.js?v=0a11a8abbe",
+  "../../delat/fp/index.js": "../../delat/fp/index.js?v=0a11a8abbe",
+  "../../delat/fp/interaktion.js": "../../delat/fp/interaktion.js?v=0a11a8abbe",
+  "../../delat/fp/magi.js": "../../delat/fp/magi.js?v=0a11a8abbe",
+  "../../delat/fp/smuts.js": "../../delat/fp/smuts.js?v=0a11a8abbe",
+  "../../delat/fp/spelare.js": "../../delat/fp/spelare.js?v=0a11a8abbe",
+  "../../delat/fp/system.js": "../../delat/fp/system.js?v=0a11a8abbe",
+  "../../delat/fp/ui.js": "../../delat/fp/ui.js?v=0a11a8abbe",
+  "../../delat/motor.js": "../../delat/motor.js?v=0a11a8abbe"
  }
 }
   </script>
 </head>
 <body>
-  <script type="module" src="spel.js?v=hand0905"></script>
+  <script type="module" src="spel.js?v=0a11a8abbe"></script>
 </body>
 </html>

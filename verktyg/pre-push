@@ -1,0 +1,4 @@
+#!/bin/sh
+# inkorg 75 p.6 (A-130): före varje push startas spelet (index.html som modul) med varje sparfil i verktyg/sparfiler/
+# och med varje sak i verktygsraden och handen. 0 sidfel krävs. Installeras med: cp verktyg/pre-push .git/hooks/pre-push
+node verktyg/roktest-sparfiler.mjs || { echo "röktestet med sparningar stoppade pushen (se ovan)"; exit 1; }

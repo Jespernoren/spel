@@ -1,5 +1,5 @@
 // A-076 tillägg 18:00 + 18:05: startrutan. Kör: node verktyg/test-a076l.mjs [url] → skärmdumpar i verktyg/a076/meny/
-// 1 tom profil: menyerna v3 direkt (ingen FpUI-ruta), STARTA + Ladda grå "Inga sparningar än"
+// 1 tom profil: menyerna v3 direkt (ingen FpUI-ruta), STARTA + "Öppna en sparning" (inkorg 75: en fil går alltid att öppna)
 // 2 med sparning: STARTA + Ladda · Ladda öppnar Spara och ladda med "Senast spelad" → Fortsätt
 // 3 samma bredd på start, undersidor och Esc-menyn (0 ANNAN MENYBREDD) · 4 STARTA med sparning → ny sparplats + introt, den gamla finns kvar
 import fs from 'node:fs';
@@ -22,7 +22,7 @@ await p.waitForTimeout(4000);
 const s1 = await H(() => { const l = document.querySelector('.br3-ladda'); return { br3: !!document.querySelector('.br3'), starta: document.querySelector('.br-starta')?.innerText.trim(), ladda: l?.innerText.trim(), gra: !!l?.disabled, gammal: /Sparplatser|Börja om från början/.test(document.querySelector('.fp-overlay')?.innerText || '') }; });
 bredder.push(['start tom', await bredd()]);
 await p.screenshot({ path: dir + 'l1-start-utan-sparning.png' });
-ut.push([`tom profil: menyerna v3 direkt, ingen gammal ruta (tidigt ${!tidig.gammal}, sen ${!s1.gammal}), "${s1.starta}" och "${s1.ladda}" grå ${s1.gra}`, s1.br3 && !tidig.gammal && !s1.gammal && s1.starta === 'STARTA' && s1.gra && /Inga sparningar/.test(s1.ladda)]);
+ut.push([`tom profil: menyerna v3 direkt, ingen gammal ruta (tidigt ${!tidig.gammal}, sen ${!s1.gammal}), "${s1.starta}" och "${s1.ladda}" (grå ${s1.gra})`, s1.br3 && !tidig.gammal && !s1.gammal && s1.starta === 'STARTA' && !s1.gra && /Öppna en sparning/.test(s1.ladda)]);
 // in i spelet för att få en sparning
 await p.click('.br-starta'); await p.waitForTimeout(1200);
 const namn = await p.$('.ph-namn-falt'); if (namn) { await namn.fill('Testaren'); await p.keyboard.press('Enter'); }
