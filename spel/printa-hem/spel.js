@@ -5162,7 +5162,7 @@ for (const typ of S.hand) if (typ.startsWith('skrap')) hand.plocka(skapaSkrap(Nu
 hand.kapacitet = BARA_SKRAP[niva()];
 if (S.karra && !antalInv('karra')) laggTill('karra');
 if (S.magnet && !antalInv('magnet')) laggTill('magnet');
-ritaHand();
+setTimeout(ritaHand, 0);   /* AKUT 09:00: ritas när hela modulen har laddats – en sak i handen (t.ex. powerbanken → pbMesh) kraschade annars spelet vid start */
 
 // ---------- Interaktion: kvarn, cykel, marknad ----------
 // BO: Rolfs brev kommer med sopbilen under dagen (2–6 min in, när det förra målet är klart) – inte på morgonen
