@@ -44,6 +44,17 @@ for (const [fil, ny] of [['start-dag3.json', 3], ['dag8.json', 6], ['dag18.json'
   const r = await p.evaluate(() => ({ dag: window.__printahem.S.dag, fran: window.__printahem.S.kalenderFlyttad, datum: window.__printahem.S.dag + 9 }));
   ut.push([`gammal sparning ${fil} (dag ${r.fran ?? '?'}) → dag ${r.dag}`, r.dag === ny]); await ctx.close();
 }
+/* inkorg 77: kalendern 8 | 9+10 och 19 | 20+21, och "dagen efter" i innehållsdagar (Rolf kapar grinden när dag 17 börjar, samma kalenderdag som dag 16) */
+{ const { p, ctx } = await oppna(UTV + 'dag11.json'); await p.evaluate(() => window.__startaSpel()); await p.waitForTimeout(2500);
+  const r = await p.evaluate(() => { const P = window.__printahem, S = P.S; const k = [8, 9, 10, 20, 21].map((d) => P.nyDag(d));
+    const i16 = P.STEG.findIndex((x) => x.story?.gammalDag === 16), i17 = P.STEG.findIndex((x) => x.story?.gammalDag === 17);
+    S.steg = i16; const fore = P.dagNu(); S.steg = i17; const efter = P.dagNu();
+    S.steg = i16; S.dag = 11; S.kalenderNyckel = 'annan'; S.steg = P.STEG.findIndex((x) => x.story?.gammalDag === 20); S.dag = 13; P.migreraKalender(); const flytt = S.dag;
+    return { k, fore, efter, flytt }; });
+  ut.push([`kalendern: innehållsdag 8 9 10 20 21 → ${r.k.join(' ')}`, r.k.join(' ') === '6 7 7 14 14']);
+  ut.push([`dagen efter: dag 16 = ${r.fore}, dag 17 = ${r.efter} (samma kalenderdag, senare)`, r.fore === 11 && r.efter > r.fore]);
+  ut.push([`ny indelning: en sparning på dag 13 med innehållsdag 20 → dag ${r.flytt}`, r.flytt === 14]);
+  await ctx.close(); }
 ut.push([`0 sidfel (${fel.slice(0, 3).join(' · ') || 'inga'})`, !fel.length]);
 for (const [t, ok] of ut) console.log(ok ? '✓' : '✗', t);
 const n = ut.filter((x) => !x[1]).length; console.log(n ? `✗ test-a132: ${n} fel` : '✓ test-a132 grönt'); await b.close(); process.exit(n ? 1 : 0);

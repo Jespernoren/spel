@@ -358,3 +358,9 @@ export const boterMax = (dag) => Math.max(BOTER_MAX, runda(BOTER_MAX_MIN * inkom
 export const FYND_TVAA = (dag) => dag >= 11 ? trappPris(300, Math.min(dag, 22)) : 300;
 // Dag 21 var 0,9 min (folkbokföringen var gratis). Lagfarten på huset blir dagens mål: ca 6 min av guldlinjens inkomst.
 export const LAGFART = runda(6 * inkomstPerMin(21) * korrAX97(21));   /* A-042: AX 97 dag 21 tog 0,7 min */
+
+/* inkorg 77 + 32 (A-132): priserna för 15 dagar. Varje kalenderdags köpmål (stegen med "Spara till …") får en faktor, mätt med boten:
+   ny faktor = gammal × √(mål / uppmätt tid), mellan ×0,3 och ×2. Ihopslagna dagar har två dagars köp men en dags inkomst (ingen natt emellan),
+   så de blir billigare. Faktorn läggs på sakens grundpris en gång vid start (spel.js, prisForKalender). */
+export const KALENDER_MAL_MIN = 9;   // boten (den snabba); nybörjaren tar ca 1,5 gånger längre → 12–15 min
+export const KALENDER_PRIS = { 3: 0.35, 4: 0.35, 6: 0.35, 7: 0.35, 8: 1.0, 9: 0.75, 10: 1.2, 11: 0.45, 12: 0.45, 13: 0.55, 14: 0.55, 15: 1.6, 16: 0.6, 17: 0.6, 18: 1.9, 19: 1.0, 20: 2.0 };   /* inkorg 77 + 32: faktor på köpmålets grundpris per INNEHÅLLSDAG (gammalDag), så att den följer med när kalendern delas om. Omgång 6 (nybörjarboten, minuter per kalenderdag) – omgång 1: 11,2 7,8 20,4 12,8 21,5 16,3 4,7 22,4 16,5 22,9 24,0 6,7 16,3 0,9 6,3 · omgång 5: 11,5 8,5 18,3 11,6 14,7 8,6 14,6 13,3 9,4 7,0 15,5 6,9 8,1 5,4 6,0. Mål 8–16 min per kalenderdag för nybörjaren */

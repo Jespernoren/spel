@@ -114,6 +114,7 @@
           handling(`popup: "${k.textContent.trim().slice(0, 30)}"`); k.click(); await lasTid(0.3); continue;
         }
         const ov = H.ui.overlay;
+        if (ov && !ov.hidden && ov.querySelector('.br-start .br-starta')) { handling('startmenyn syns – fortsätter spelet'); window.__startaSpel?.(); await lasTid(1); continue; }   /* inkorg 77: STARTA i startmenyn med en sparning är "ny omgång" (sidan laddas om) – boten fortsätter i stället */
         if (ov && !ov.hidden && ov.querySelector('.fp-knapp')) {
           await lasTid(Math.min(10, 1.5 + (ov.innerText || '').length / (LASFART * 2)));
           const k = ov.querySelector('.fp-knapp'); handling(`kort: "${k.textContent.trim()}"`); k.click(); await lasTid(0.3); continue;
@@ -255,7 +256,7 @@
       if (fil(sk) >= 1 && (lin === 'bla' ? H.extruderFull() : !H.tornPlats(lin))) return true;   // DM2: tornet är fullt – skrivaren drar mer medan den printar
       if (sk.gen === 5) {
         if (H.antalInv('rulle3') && H.tornPlats('kolf')) { const p = H.kolfKvarn(); valj('rulle3'); await gaTill(p.mesh, 1.6, 'kolfibertornet'); H.kolfAktivera(p); handling('lägger kolfiber i tornet'); continue; }
-        handling('väntar på kolfiber från bandet'); if (varv % 5 === 0) console.log(`[sim] väntar på kolfiber (${varv})`); if (varv > 30) return false; await vanta(8); continue;   // inte tjana här: tjana → printa kolfiber → filament → tjana … (oändlig rekursion)
+        handling('väntar på kolfiber från bandet'); if (varv % 5 === 0) console.log(`[sim] väntar på kolfiber (${varv})`); if (varv > 30) return false; vantanIdag += 8; await vanta(8); continue;   // inte tjana här: tjana → printa kolfiber → filament → tjana … (oändlig rekursion)
       }
       if (sk.gen === 4) {
         if (H.antalInv('rulle2') && H.tornPlats('rod')) { const p = H.petgKvarn(); valj('rulle2'); await gaTill(p.mesh, 1.6, 'röda tornet'); H.petgAktivera(p); handling('lägger röd PETG i tornet'); continue; }
@@ -334,6 +335,7 @@
     while (S.mynt < mal && varv++ < 30) {
       const kand = Object.keys(H.VAROR).filter((t) => !tjanaFel.has(t) && t !== 'spagetti' && H.VAROR[t].gram > 0 && !/^(g_|h_|hf_|ra_|r_|p_|fynd|burk|rulle|n_)/.test(t) && H.VAROR[t].pris > 0 && !H.VAROR[t].lyx && (!H.VAROR[t].niva || (H.VAROR[t].niva === 2 && H.harPlacerat('skrivarepetg')) || (H.VAROR[t].niva === 3 && H.harPlacerat('kolfskrivare')) || (H.VAROR[t].niva === 4 && H.harPlacerat('guldskrivare') && H.antalInv('rulle4') > 0)) && H.harRecept(t) && (H.VAROR[t].syns?.() ?? true) && !H.VAROR[t].gava && H.VAROR[t].gram > 0);
       kand.sort((a, b) => H.prisNu(b) / H.VAROR[b].tid - H.prisNu(a) / H.VAROR[a].tid);
+      { const kolfTom = (x) => { if (H.VAROR[x].niva !== 3) return false; try { const sk = ledig({ typ: x }); return !sk || fil(sk) < H.VAROR[x].gram; } catch { return true; } }; const alt = kolfTom(kand[0]) && kand.find((x) => !kolfTom(x)); if (alt && mal - S.mynt <= 3 * H.prisNu(alt)) kand.unshift(alt); }   /* inkorg 77: saknas bara lite och är kolfibern slut, printar en spelare något annat i stället för att vänta */
       const t = kand[0]; if (!t) { handling('inget att printa och sälja – väntar på sopbilen'); tjanaFel.clear(); await vanta(30); return; }
       handling(`tjänar pengar${varfor ? ' till ' + varfor : ''}: ${S.mynt}/${mal} kr → printar ${H.VAROR[t].namn.toLowerCase()} (${H.prisNu(t)} kr)`);
       const sk = ledig({ typ: t }); const antal = Math.max(1, Math.min(4, Math.floor(fil(sk) / H.VAROR[t].gram)));   // BP: även röd PETG
@@ -354,7 +356,7 @@
     if (!H.webbOrdrar || !H.placerade.some((p) => p.typ === 'webbdator') || webbDag === S.dag) return;
     webbDag = S.dag;
     for (const o of H.webbOrdrar().filter((x) => !x.packad && !x.levererad && H.harRecept(x.typ))) {
-      let f = 0; while (H.antalInv(o.typ) < o.antal && f++ < 8) { if (!(await printa({ typ: o.typ }))) break; }
+      let f = 0; while (H.antalInv(o.typ) < o.antal && f++ < o.antal) { if (!(await printa({ typ: o.typ }))) break; }   /* inkorg 77: högst så många som beställts – förut printade boten 8 krukor när fickorna var fulla och krukan hamnade i kistan */
     }
     const dator = H.placerade.find((p) => p.typ === 'webbdator');
     if (H.webbOrdrar().some((x) => !x.packad && !x.levererad && H.antalInv(x.typ) >= x.antal)) {

@@ -698,39 +698,7 @@
 - **Påminnelse:** –
 - **Kvitto:** "En hylla. Jag har en hylla. Saker har en plats nu."
 
-### 6. Köp receptet på cykelhjälmen hos Ali `r9-kop-receptet-cykelhjalmen`
-- **Moment:** – · **sak:** n2_hjalm · **bild:** n2_hjalm · **pil:** ali
-- **Handling:** kop → kontrollhjälp *– (hos Ali)*
-- **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** "Cykelhjälmar i röd plast. Säljer bra, säger Ali."
-- **Påminnelse:** –
-- **Kvitto:** –
-
-### 7. Bygg en solcellspark `r9-bygg-solcellspark`
-- **Moment:** – · **sak:** byggsats:solpark · **bild:** byggsats:solpark · **pil:** gard
-- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
-- **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** "Batterierna räcker inte. Jag bygger en solcellspark."
-- **Påminnelse:** –
-- **Kvitto:** –
-
-### 8. *(beror på läget)*  `paket9`
-- **Moment:** – · **sak:** paket · **bild:** paket · **pil:** skjul
-- **Handling:** salj → kontrollhjälp *– (hos Ali)*
-- **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** "Det har kommit beställningar. Paketen ska iväg från datorn."
-- **Påminnelse:** –
-- **Kvitto:** –
-
-### 9. Bygg Rulltorn XL vid röda kvarnen `petgtorn9`
-- **Moment:** – · **sak:** byggsats:petgtorn · **bild:** byggsats:petgtorn · **pil:** kvarn
-- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
-- **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** "Den röda kvarnen står och väntar på plats för rullarna. Ett större torn."
-- **Påminnelse:** –
-- **Kvitto:** –
-
-### 10. Sov när du vill `sov9`
+### 6. Sov när du vill `sov8`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -740,7 +708,39 @@
 
 ## Dag 7 (kapitel 2)
 
-### 1. *(beror på läget)*  `tapeter`
+### 1. Köp receptet på cykelhjälmen hos Ali `r9-kop-receptet-cykelhjalmen`
+- **Moment:** – · **sak:** n2_hjalm · **bild:** n2_hjalm · **pil:** ali
+- **Handling:** kop → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Cykelhjälmar i röd plast. Säljer bra, säger Ali."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Bygg en solcellspark `r9-bygg-solcellspark`
+- **Moment:** – · **sak:** byggsats:solpark · **bild:** byggsats:solpark · **pil:** gard
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Batterierna räcker inte. Jag bygger en solcellspark."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. *(beror på läget)*  `paket9`
+- **Moment:** – · **sak:** paket · **bild:** paket · **pil:** skjul
+- **Handling:** salj → kontrollhjälp *– (hos Ali)*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Det har kommit beställningar. Paketen ska iväg från datorn."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 4. Bygg Rulltorn XL vid röda kvarnen `petgtorn9`
+- **Moment:** – · **sak:** byggsats:petgtorn · **bild:** byggsats:petgtorn · **pil:** kvarn
+- **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Den röda kvarnen står och väntar på plats för rullarna. Ett större torn."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 5. *(beror på läget)*  `tapeter`
 - **Moment:** – · **sak:** byggsats:tapeter · **bild:** byggsats:tapeter · **pil:** skjul
 - **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
 - **Kräver:** – · **ger:** –
@@ -748,7 +748,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 2. Gör skjulet varmt inför kylan `r10-gor-skjulet-varmt`
+### 6. Gör skjulet varmt inför kylan `r10-gor-skjulet-varmt`
 - **Moment:** – · **sak:** varme · **bild:** – · **pil:** skjul
 - **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
 - **Kräver:** – · **ger:** –
@@ -756,7 +756,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 3. Bygg spisen och laga en varm måltid `spis10`
+### 7. Bygg spisen och laga en varm måltid `spis10`
 - **Moment:** – · **sak:** byggsats:spis · **bild:** beror på läget · **pil:** skjul
 - **Handling:** montera → kontrollhjälp *Klick · Klicka för att montera*
 - **Kräver:** – · **ger:** –
@@ -764,7 +764,7 @@
 - **Påminnelse:** –
 - **Kvitto:** "Varm mat. I skjulet. Mamma skulle inte tro det."
 
-### 4. Sov när du vill `sov10`
+### 8. Sov när du vill `sov10`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -1072,23 +1072,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 5. Printa en vedkamin `m20-printa-stall-ut`
-- **Moment:** – · **sak:** kamin · **bild:** kamin · **pil:** skrivare
-- **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
-- **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** "Minus fjorton. Skjulet var en sak. Huset ska vara varmt."
-- **Påminnelse:** –
-- **Kvitto:** –
-
-### 6. Ställ in en kamin i skjulet `m20-stall-in-kamin`
-- **Moment:** – · **sak:** kamin · **bild:** – · **pil:** skjul
-- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
-- **Kräver:** – · **ger:** –
-- **Start (sägs när steget börjar):** "Kaminen är klar. Den ställer jag in i skjulet."
-- **Påminnelse:** –
-- **Kvitto:** –
-
-### 7. Sov när du vill `sov20`
+### 5. Sov när du vill `sov19`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –
@@ -1098,7 +1082,23 @@
 
 ## Dag 14 (kapitel 4)
 
-### 1. Bli folkbokförd – tavlan vid vägen `m21-bli-folkbokford`
+### 1. Printa en vedkamin `m20-printa-stall-ut`
+- **Moment:** – · **sak:** kamin · **bild:** kamin · **pil:** skrivare
+- **Handling:** printa → kontrollhjälp *Klick · Välj modell på skrivaren*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Minus fjorton. Skjulet var en sak. Huset ska vara varmt."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 2. Ställ in en kamin i skjulet `m20-stall-in-kamin`
+- **Moment:** – · **sak:** kamin · **bild:** – · **pil:** skjul
+- **Handling:** stallNer → kontrollhjälp *Klick · Ställ ner · R vrid*
+- **Kräver:** – · **ger:** –
+- **Start (sägs när steget börjar):** "Kaminen är klar. Den ställer jag in i skjulet."
+- **Påminnelse:** –
+- **Kvitto:** –
+
+### 3. Bli folkbokförd – tavlan vid vägen `m21-bli-folkbokford`
 - **Moment:** – · **sak:** folkbok · **bild:** – · **pil:** gard
 - **Handling:** ga → kontrollhjälp *W A S D*
 - **Kräver:** – · **ger:** –
@@ -1106,7 +1106,7 @@
 - **Påminnelse:** –
 - **Kvitto:** –
 
-### 2. Sov när du vill `sov21`
+### 4. Sov när du vill `sov21`
 - **Moment:** – · **sak:** sang · **bild:** – · **pil:** skjul
 - **Handling:** sov → kontrollhjälp *Klick · Sov*
 - **Kräver:** – · **ger:** –

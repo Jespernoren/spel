@@ -143,7 +143,7 @@ function rolf(i, [vara, varanBest]) {
    (blocken nedan, numrerade som förut). Några slås ihop till en kalenderdag; inget tas bort. EN tabell, och allt i spelet som
    jämför med en dag går genom nyDag(): gamla dag N → den kalenderdag där dess innehåll nu ligger. */
 export const DAGAR_TILL_JUL = 15;
-export const KALENDER = [[1], [2], [3, 4], [5], [6, 7], [8, 9], [10], [11, 12], [13, 14], [15], [16, 17], [18], [19, 20], [21], [22]];   // kalenderdag (index + 1) → innehållsdagar
+export const KALENDER = [[1], [2], [3, 4], [5], [6, 7], [8], [9, 10], [11, 12], [13, 14], [15], [16, 17], [18], [19], [20, 21], [22]];   /* inkorg 77: 8 och 21 var för korta ensamma (nybörjaren 4 och 1 min) – nu 8 | 9+10 och 19 | 20+21 */   // kalenderdag (index + 1) → innehållsdagar
 const NY = {}; KALENDER.forEach((g, i) => g.forEach((d) => { NY[d] = i + 1; }));
 /* gammal innehållsdag → kalenderdag (efter julafton: samma avstånd från julafton som förut) */
 export const nyDag = (d) => (d <= 0 ? d : d > 22 ? d - 22 + DAGAR_TILL_JUL : NY[d]);
