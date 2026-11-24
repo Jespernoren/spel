@@ -1,0 +1,21 @@
+01	0:00	lasta	Lasta av skrivaren
+02	0:28	stall	Ställ upp skrivaren
+03	0:43	strom	Skrivaren behöver ström
+04	1:11	bygg	Ställ cykel och generator
+05	1:42	valjModell	Välj vad skrivaren ska printa
+06	1:56	trampa	Trampa cykeln
+07	2:01	rullSlut	En nyckelring till
+08	2:41	saljTva	Visa ringarna i affären
+09	3:21	aliKvarn	Köp kvarnen
+10	3:43	kvarn	Ställ kvarnen
+11	4:12	flaska	Gör egen tråd
+12	4:36	egenPrint	Printa med egen tråd
+13	5:01	salj	Sälj hos Ali
+14	5:32	powerbank	Koppla in powerbanken
+15	6:06	kopGrip	Köp skräpgripen
+16	6:36	printGrip	Printa skräpgripen
+17	7:33	krukaD1	Spara till krukreceptet · 0 / 40 kr
+18	9:10	saljKruka	Sälj blomkrukan
+19	9:37	kopSang	Köp sängen
+20	9:58	printSang	Printa sängen
+21	11:36	sov1	Sängen i skjulet
