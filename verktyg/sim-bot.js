@@ -613,7 +613,7 @@
     async kor(tillDag = 6, maxMin = 120) {
       dagStart = tid; window.__textLogg('MÅL', '', H.stegText());
       const stopp = tid + maxMin * 60; let sista = -1, samma = 0, stegT = tid;
-      while (S.dag < tillDag && tid < stopp && !(S.julFirad && tillDag > 22)) {   // B55: boten kör vidare in i kapitel 2 · inkorg 63: slutar när julen är firad (efterspelet ingår inte)
+      while (S.dag < tillDag && tid < stopp && !(S.julFirad && tillDag > (H.JULAFTON_DAG || 22))) {   // B55: boten kör vidare in i kapitel 2 · inkorg 63: slutar när julen är firad (efterspelet ingår inte)
         if (dagenSomSpelas == null || (H.ui.igang && !H.pausad())) dagenSomSpelas = S.dag;
         { let w = 0; while (H.pratar?.() && w++ < 120) await vanta(0.1); }   // en spelare lyssnar klart innan hen gör nästa sak
         if (window.__simVidSteg) try { await window.__simVidSteg(H.stegId?.() || ''); } catch {}   /* inkorg 44: testerna kan titta på varje steg */

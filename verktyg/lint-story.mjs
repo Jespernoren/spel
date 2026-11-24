@@ -3,7 +3,7 @@
 // Det som redan finns (dag 2–23, som flyttas i omgång 3, och stämning) står i lint-story-undantag.json med skäl. Nya träffar stoppar committen.
 // Kör: node verktyg/lint-story.mjs   ·   skriv om undantagen: node verktyg/lint-story.mjs --undantag
 import fs from 'node:fs';
-const spel = fs.readFileSync(new URL('../spel/printa-hem/spel.js', import.meta.url), 'utf8');
+const spel = fs.readFileSync(new URL('../spel/printa-hem/spel.js', import.meta.url), 'utf8').replace(/nyDag\((\d+)\)/g, '$1');   /* inkorg 77: nyDag(N) läses som dagen N */
 const REGLER = {
   'UPPMANING UTAN STEG': /\b(först borde|nu ska jag|jag behöver|dags att|glöm inte|ska in i|ska upp på|ska stå|ska bli)\b/i,
   'PLATS UTAN LÄGE': /\b(där borta|vid vägen|i handen|i kistan|i ryggsäcken|på cykeln)\b/i,

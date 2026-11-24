@@ -139,12 +139,24 @@ function rolf(i, [vara, varanBest]) {
       klar: (S, G) => S.rolf.i > i || S.post.tillRolf === v(G) || S.rolf.hamtad === i },
   ];
 }
-// kvällen: sov när du vill. Uppgiften läses upp (ingen egen replik).
+/* inkorg 77 (A-132): 15 dagar till jul. Dag 1 = onsdag 10 december, dag 15 = julafton. Innehållet är skrivet i 22 "innehållsdagar"
+   (blocken nedan, numrerade som förut). Några slås ihop till en kalenderdag; inget tas bort. EN tabell, och allt i spelet som
+   jämför med en dag går genom nyDag(): gamla dag N → den kalenderdag där dess innehåll nu ligger. */
+export const DAGAR_TILL_JUL = 15;
+export const KALENDER = [[1], [2], [3, 4], [5], [6, 7], [8, 9], [10], [11, 12], [13, 14], [15], [16, 17], [18], [19, 20], [21], [22]];   // kalenderdag (index + 1) → innehållsdagar
+const NY = {}; KALENDER.forEach((g, i) => g.forEach((d) => { NY[d] = i + 1; }));
+/* gammal innehållsdag → kalenderdag (efter julafton: samma avstånd från julafton som förut) */
+export const nyDag = (d) => (d <= 0 ? d : d > 22 ? d - 22 + DAGAR_TILL_JUL : NY[d]);
+/* kalenderdag → innehållsdagarna den rymmer (första och sista) */
+export const forstaGamla = (n) => (n > DAGAR_TILL_JUL ? n - DAGAR_TILL_JUL + 22 : (KALENDER[n - 1] || [n])[0]);
+export const sistaGamla = (n) => (n > DAGAR_TILL_JUL ? n - DAGAR_TILL_JUL + 22 : (KALENDER[n - 1] || [n]).slice(-1)[0]);
+
+// kvällen: sov när du vill. Uppgiften läses upp (ingen egen replik). Dagen räknas i kalenderdagar (inkorg 77).
 function sov(dag, forDu) {
-  return { id: 'sov' + dag, forDu, sak: 'sang', handling: 'sov', pil: 'skjul', sov: true, mal: 'Sov när du vill', klar: (S) => S.dag > dag };
+  return { id: 'sov' + dag, forDu, sak: 'sang', handling: 'sov', pil: 'skjul', sov: true, mal: 'Sov när du vill', klar: (S) => S.dag > nyDag(dag) };
 }
 
-export const STORY = [
+const STORY_22 = [
   { dag: 1, kapitel: 1, insats: 'Första natten här. Den ska jag klara.',   /* inkorg 63 p.1: morgonkortets insats i vanligt tal */ steg: [
 
     { id: 'skylt', mom: 'Kom igång', sak: 'hammare', handling: 'spika', pil: 'bradhog', bild: 'hammare',
@@ -359,7 +371,7 @@ export const STORY = [
       mal: 'Sängen i skjulet', tal: 'Ställ sängen i skjulet och sov.',
       start: 'Sängen ska in i skjulet. Sen sover jag.',
       pamin: 'Sängen in i skjulet. Sen sover jag.',
-      klar: (S) => !!S.sang && S.dag >= 2 },
+      klar: (S) => !!S.sang && S.dag >= nyDag(2) },
   ] },
   // ---------- omgång 3: kapitel 1, dag 2–5 (inkorg 58, A-113) ----------
   { dag: 2, kapitel: 1, rubrik: 'Kvarnmotorn.', insats: 'Vevar jag för hand hinner jag inget annat.',   /* inkorg 67 p.5 (rad 40): rubrik och insats om dagens första mål */   /* inkorg 63 p.1: morgonkortets insats i vanligt tal */ steg: [
@@ -760,6 +772,14 @@ export const STORY = [
       klar: (S) => !!S.julFirad },
   ] },
 ];
+
+/* inkorg 77: kalenderdagarna. Ihopslagna innehållsdagar blir en dag: stegen i ordning, utan sömnen mellan dem.
+   Rubrik, insats och kapitel kommer från dagens första innehållsdag (dagens första mål, rad 40). */
+export const STORY = KALENDER.map((gamla, i) => {
+  const block = gamla.map((d) => STORY_22.find((x) => x.dag === d)).filter(Boolean), forsta = block[0];
+  const steg = block.flatMap((b, j) => (j < block.length - 1 ? b.steg.filter((st) => !st.sov) : b.steg).map((st) => ({ ...st, gammalDag: b.dag })));   // gammalDag: innehållsdagen (dagens del, ekonomin)
+  return { ...forsta, dag: i + 1, gamla, steg };
+});
 
 // alla steg i ordning, med dag
 export const STORY_STEG = STORY.flatMap((d) => d.steg.map((s) => ({ ...s, dag: d.dag, kapitel: d.kapitel })));

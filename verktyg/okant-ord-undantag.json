@@ -769,7 +769,7 @@
  },
  {
   "fil": "story.js",
-  "block": "STORY",
+  "block": "STORY_22",
   "ord": "ali",
   "skal": "inkorg 58: dag 1-texterna om Ali gäller steg efter att Ali presenterat sig (han ropar \"Hallå! Du där borta …\" när rullen tar slut, steget rullSlut). Texterna går genom Regissören; okandaOrd körs när de köas (förut JAG_TAL/PAMINN_T/STEG_TAL)."
  },
@@ -787,37 +787,37 @@
  },
  {
   "fil": "story.js",
-  "block": "STORY",
+  "block": "STORY_22",
   "ord": "rolf",
   "skal": "inkorg 58 omgång 3: dag 2–5 flyttade från STEG/rolfSteg i spel.js. Rolf, sopbilen och tippen är presenterade före dag 2 (lappen på sopsäckarna, sopbilen dag 1–2, grindskylten). Texterna går genom Regissören och okandaOrd körs när de köas."
  },
  {
   "fil": "story.js",
-  "block": "STORY",
+  "block": "STORY_22",
   "ord": "sopbil",
   "skal": "inkorg 58 omgång 3: dag 2–5 flyttade från STEG/rolfSteg i spel.js. Rolf, sopbilen och tippen är presenterade före dag 2 (lappen på sopsäckarna, sopbilen dag 1–2, grindskylten). Texterna går genom Regissören och okandaOrd körs när de köas."
  },
  {
   "fil": "story.js",
-  "block": "STORY",
+  "block": "STORY_22",
   "ord": "tippen",
   "skal": "inkorg 58 omgång 3: dag 2–5 flyttade från STEG/rolfSteg i spel.js. Rolf, sopbilen och tippen är presenterade före dag 2 (lappen på sopsäckarna, sopbilen dag 1–2, grindskylten). Texterna går genom Regissören och okandaOrd körs när de köas."
  },
  {
   "fil": "story.js",
-  "block": "STORY",
+  "block": "STORY_22",
   "ord": "goran",
   "skal": "inkorg 58 omgång 3: kapitel 2 (dag 6–10) flyttat från STEG i spel.js. Göran och PETG presenteras före dag 6 (Görans första stöld, Alis röda kvarn i butiken). Texterna går genom Regissören och okandaOrd körs när de köas."
  },
  {
   "fil": "story.js",
-  "block": "STORY",
+  "block": "STORY_22",
   "ord": "petg",
   "skal": "inkorg 58 omgång 3: kapitel 2 (dag 6–10) flyttat från STEG i spel.js. Göran och PETG presenteras före dag 6 (Görans första stöld, Alis röda kvarn i butiken). Texterna går genom Regissören och okandaOrd körs när de köas."
  },
  {
   "fil": "story.js",
-  "block": "STORY",
+  "block": "STORY_22",
   "ord": "bengt",
   "skal": "inkorg 58 omgång 3: dag 16-texten flyttad från STEG i spel.js (samma text, samma villkor). Bengt-Åke och hans brevlåda finns i världen och nämns av Göran när han ger flagan före steget. Texten går genom Regissören; okandaOrd körs när den köas och boten dag 1–23 mäter OKÄNT ORD."
  },

@@ -1,6 +1,6 @@
 // test-a131 (inkorg 76): utvecklarläget – börja på valfri dag.
 //  a) ?utv i en webbläsare utan kod: Jesper väljer en kod, rutan "Börja på …" kommer
-//  b) dag 10 och dag 18: spelet startar på rätt morgon, 0 sidfel
+//  b) dag 7 och dag 12 (inkorg 77: 15 dagar): spelet startar på rätt morgon, 0 sidfel
 //  c) Ge 500 kr, Hoppa till nästa steg, Visa steg
 //  d) barnens sparning är orörd efteråt
 //  e) Shift+U fem gånger på startsidan (ny flik) frågar koden; fel kod släpper inte in, rätt kod gör det
@@ -38,10 +38,10 @@ await p.waitForSelector('.ph-utv', { timeout: 40000 });
 await p.screenshot({ path: path.join(UT, 'utv-rutan.png') });
 const rutan = await p.evaluate(() => ({ dagar: document.querySelectorAll('[data-utvdag]').length, text: document.querySelector('.ph-utv')?.innerText || '', utv: document.body.classList.contains('ph-utvlage') }));
 ok('a) ?utv första gången: Jesper väljer en kod', /Välj en kod/.test(fraga));
-ok('a) rutan "Börja på …" med alla dagar och kapitlen', rutan.dagar === 22 && /Kapitel 2/.test(rutan.text) && /Julafton/.test(rutan.text) && rutan.utv, `${rutan.dagar} dagar`);
+ok('a) rutan "Börja på …" med alla dagar och kapitlen', rutan.dagar === 15 && /Kapitel 2/.test(rutan.text) && /Julafton/.test(rutan.text) && rutan.utv, `${rutan.dagar} dagar`);
 
-/* b) dag 10 och dag 18 */
-for (const d of [10, 18]) {
+/* b) dag 7 och dag 12 */
+for (const d of [7, 12]) {
   if (!(await p.$('.ph-utv'))) { await p.keyboard.down('Shift'); await p.keyboard.press('KeyU'); await p.keyboard.up('Shift'); await p.waitForSelector('.ph-utv', { timeout: 5000 }); }
   await p.click(`[data-utvdag="${d}"]`);
   /* inkorg 76 rest a: dagen börjar med morgonsidan (eller kapitelkortet), inte mitt på dagen */
@@ -75,7 +75,7 @@ const lager = await p.evaluate(() => ({ barn: localStorage.getItem('spar:printah
 const orord = utanTid(lager.barn) === utanTid(barnFore);   /* sparadTid kan stämplas av barnens egen sida innan omladdningen – innehållet ska vara samma */
 const skiljer = orord ? [] : (() => { const a = JSON.parse(barnFore), c = JSON.parse(lager.barn); return Object.keys({ ...a, ...c }).filter((k) => JSON.stringify(a[k]) !== JSON.stringify(c[k])); })();
 ok('d) barnens sparning är orörd', orord, orord ? 'samma innehåll som när utvecklarläget slogs på' : 'ÄNDRAD: ' + skiljer.join(', '));
-ok('d) utvecklarläget sparar på sin egen plats', lager.utv === 18, `spar:printahem2:utv dag ${lager.utv}`);
+ok('d) utvecklarläget sparar på sin egen plats', lager.utv === 12, `spar:printahem2:utv dag ${lager.utv}`);
 ok('a–d) 0 sidfel', !fel.length, fel[0]);
 
 /* e) ny flik (inte i utvecklarläget): Shift+U ×5 */

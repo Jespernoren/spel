@@ -27,7 +27,7 @@ const ORD = [
 const fel = [], ok = { villkor: 0, presentatör: 0, senare: 0, undantag: 0, kod: 0 };
 const anvandaUndantag = new Set();
 for (const fil of fs.readdirSync(rot).filter((f) => f.endsWith('.js') && !/^(intro-bilder|regelvakt)\.js$/.test(f))) {
-  const rader = fs.readFileSync(rot + fil, 'utf8').split('\n'); let block = '(toppen)';
+  const rader = fs.readFileSync(rot + fil, 'utf8').replace(/nyDag\((\d+)\)/g, '$1').split('\n');   /* inkorg 77: nyDag(N) läses som dagen N */ let block = '(toppen)';
   rader.forEach((rad, i) => {
     const bm = rad.match(/^(?:export )?(?:async )?(?:const|let|var|function\*?|class) +(\w+)/); if (bm) block = bm[1]; else if (/^[a-zA-Z_$]/.test(rad) && !/^(if|for|while|try|\}|\)|else)/.test(rad)) block = '(toppen)';
     if (/^\s*(\/\/|\/\*|\*)/.test(rad)) return;
